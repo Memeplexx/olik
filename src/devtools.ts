@@ -15,23 +15,23 @@ interface WindowAugmented {
 
 const windowObj = window as any as { __REDUX_DEVTOOLS_EXTENSION__: WindowAugmented };
 
-export function integrateStoreWithReduxDevtools<S>(store: {
-  read: () => S,
-  select: () => AvailableOps<S, S>,
-}, options: { name: string, maxAge?: number }) {
+export function integrateStoreWithReduxDevtools<S>(store: () => AvailableOps<S, S>, options: { name: string, maxAge?: number }) {
+  if (process.env.NODE_ENV === 'test') {
+    return;
+  }
   if (!windowObj.__REDUX_DEVTOOLS_EXTENSION__) {
     console.error('Cannot find Redux Devtools Extension');
     return;
   }
   const devTools = windowObj.__REDUX_DEVTOOLS_EXTENSION__.connect(options);
-  devTools.init(store.read());
+  devTools.init(store().read());
   const storeTyped = store as (typeof store & { xtras: { setDevtoolsDispatchListener: (listener: (action: { type: string, payload?: any }) => any) => any } });
   storeTyped.xtras.setDevtoolsDispatchListener(action => {
-    windowObj.__REDUX_DEVTOOLS_EXTENSION__.send(action, store.read(), {  });
+    windowObj.__REDUX_DEVTOOLS_EXTENSION__.send(action, store().read(), {  });
   });
   devTools.subscribe((message: { type: string, state: any }) => {
     if (message.type === 'DISPATCH' && message.state) {
-      const selection = store.select() as any as (
+      const selection = store() as any as (
         { replace: (state: S, options: { dontTrackWithDevtools: boolean }) => any } & 
         { replaceAll: (state: S, options: { dontTrackWithDevtools: boolean }) => any }
       );

@@ -58,13 +58,3 @@ store
   .filter(e => e.id === 1)
   //...do something
 ```
-
-## Bulk updates / Transactions ##
-
-```Typescript
-// Performs many updates at once
-store.transact('doManyThings', [                                  
-  () => store.select(s => s.user.profile).patch({ firstName: 'Sam' }),                                          
-  () => store.select(s => s.todos).insertAfter(...newTodos),      
-]);
-```

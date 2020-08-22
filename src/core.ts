@@ -1,23 +1,26 @@
 import { integrateStoreWithReduxDevtools } from './devtools';
-import { AvailableOps, Fetcher, Options, StoreResult } from './shape';
+import { AvailableOps, Fetcher, Options } from './shape';
 
 const skipProxyCheck = Symbol();
 
-export function makeStore<S>(state: S, devtoolsName?: string, devtoolsOptions?: { maxAge?: number }) {
+let devtoolsDispatchListener: ((action: { type: string, payload?: any }) => any) | undefined;
+export const setDevtoolsDispatchListener = (listener: (action: { type: string, payload?: any }) => any) => devtoolsDispatchListener = listener;
+
+export function make<S>(name: string, state: S, devtoolsOptions?: { maxAge?: number }) {
   const pathSegments = new Array<string>();
   const changeListeners = new Map<(arg: S) => any, (ar: any) => any>();
   const fetchers = new Map<string, Fetcher<any, any>>();
   let mutableStateCopy = deepCopy(state);
   let segGatherer = defineSegGatherer(mutableStateCopy);
   let currentState = deepFreeze(state) as S;
-  let devtoolsDispatchListener: ((action: { type: string, payload?: any }) => any) | undefined;
+
   const actionReplace = <C>(selector: (s: S) => C, name: string) => (assignment: C, options?: Options) => {
     readPathOfSelector(selector);
     if (!pathSegments.length) { // user must be performing a root update
       updateState<S, C>(selector, `replace()`, assignment,
         old => deepCopy(assignment),
         old => {
-          if(Array.isArray(old)) {
+          if (Array.isArray(old)) {
             old.length = 0; Object.assign(old, assignment);
           } else {
             Object.assign(old, assignment);
@@ -122,7 +125,7 @@ export function makeStore<S>(state: S, devtoolsName?: string, devtoolsOptions?: 
         fetch = () => {
           const cacheHasExpired = (lastFetch + (specs.cacheForMillis || 0)) < Date.now();
           if ((this.status === 'resolved') && !cacheHasExpired) {
-            return Promise.resolve(selector(storeResult.read()));
+            return Promise.resolve(selector(storeResult().read()));
           } else if (this.status === 'resolving') {
             return new Promise<C>((resolve, reject) => otherFetchers.push({ resolve, reject }));
           } else {
@@ -130,12 +133,12 @@ export function makeStore<S>(state: S, devtoolsName?: string, devtoolsOptions?: 
             return promise()
               .then(response => {
                 this.status = 'resolved';
-                const piece = storeResult.select(selector) as any as { replace: (c: C) => void } & { replaceAll: (c: C) => void };
+                const piece = storeResult(selector) as any as { replace: (c: C) => void } & { replaceAll: (c: C) => void };
                 if (piece.replaceAll) { piece.replaceAll(response); } else { piece.replace(response); }
                 lastFetch = Date.now();
                 otherFetchers.forEach(f => f.resolve(response));
                 otherFetchers.length = 0;
-                return selector(storeResult.read());
+                return selector(storeResult().read());
               }).catch(rejection => {
                 this.status = 'error';
                 otherFetchers.forEach(f => f.reject(rejection));
@@ -152,17 +155,15 @@ export function makeStore<S>(state: S, devtoolsName?: string, devtoolsOptions?: 
       changeListeners.set(selector, performAction);
       return { unsubscribe: () => changeListeners.delete(selector) };
     },
+    read: () => selector(currentState),
   } as any as AvailableOps<S, C>);
 
-  const storeResult = {
-    read: () => currentState,
-    select: <C = S>(selector: ((s: S) => C) = (s => s as any as C)) => {
-      const selectorMod = selector as (s: S) => C;
-      selectorMod(currentState);
-      return action(selectorMod);
-    },
-    setDevtoolsDispatchListener: (listener: (action: { type: string, payload?: any }) => any) => devtoolsDispatchListener = listener,
-  } as StoreResult<S>;
+
+  const storeResult = <C = S>(selector: ((s: S) => C) = (s => s as any as C)) => {
+    const selectorMod = selector as (s: S) => C;
+    selectorMod(currentState);
+    return action(selectorMod);
+  };
 
   function updateState<S, C>(
     selector: (s: S) => C,
@@ -174,9 +175,9 @@ export function makeStore<S>(state: S, devtoolsName?: string, devtoolsOptions?: 
       overrideActionName?: boolean,
       dontTrackWithDevtools?: boolean,
     } = {
-      dontTrackWithDevtools: false,
-      overrideActionName: false,
-    },
+        dontTrackWithDevtools: false,
+        overrideActionName: false,
+      },
   ) {
     readPathOfSelector(selector);
     const result = deepFreeze(copyObject(currentState, { ...currentState }, pathSegments.slice(), action));
@@ -195,11 +196,11 @@ export function makeStore<S>(state: S, devtoolsName?: string, devtoolsOptions?: 
   }
 
   function defineSegGatherer<S extends object>(state: S): S {
-    if (typeof(state) !== 'object') { // may happen if we have a top-level primitive
+    if (typeof (state) !== 'object') { // may happen if we have a top-level primitive
       return null as any as S;
     }
     return new Proxy(state, {
-      get: function(target, prop: any) {
+      get: function (target, prop: any) {
         const val = (target as any)[prop];
         if (val !== null && typeof (val) === 'object') {
           pathSegments.push(prop);
@@ -251,11 +252,9 @@ export function makeStore<S>(state: S, devtoolsName?: string, devtoolsOptions?: 
     selector(segGatherer);
   }
 
-  if (devtoolsName) {
-    integrateStoreWithReduxDevtools<S>(storeResult, { name: devtoolsName, ...devtoolsOptions });
-  }
+  integrateStoreWithReduxDevtools<S>(storeResult, { name, ...devtoolsOptions });
 
-  return storeResult as Omit<typeof storeResult, 'setDevtoolsDispatchListener'>;
+  return storeResult;
 }
 
 function deepFreeze(o: any) {

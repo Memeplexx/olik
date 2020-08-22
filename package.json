@@ -11,9 +11,9 @@
     "tsc": "tsc && node node_modules/gulp/bin/gulp.js",
     "build": "rollup -c && npm run tsc",
     "dev": "rollup -c --watch",
-    "test": "jest --coverage --coverageReporters=text-lcov",
-    "test:cov": "npm test --coverage --collectCoverageFrom=src/**/*.{ts}",
-    "test:watch": "jest --watchAll --verbose false"
+    "test": "cross-env NODE_ENV=test jest --coverage --coverageReporters=text-lcov",
+    "test:cov": "cross-env NODE_ENV=test npm test --coverage --collectCoverageFrom=src/**/*.{ts}",
+    "test:watch": "cross-env NODE_ENV=test jest --watchAll --verbose false"
   },
   "author": "",
   "license": "ISC",

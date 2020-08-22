@@ -18,7 +18,8 @@ export interface Fetcher<S, C> {
    */
   fetch: () => Promise<C>,
 
-  store: { select: (state: S) => { onChange: (performAction: (selection: C) => any) => any }, read: () => S }
+  // store: { select: (state: S) => { onChange: (performAction: (selection: C) => any) => any }, read: () => S }
+  store: () => AvailableOps<S, C>,
 }
 
 export type AvailableOps<S, C> =
@@ -196,19 +197,5 @@ export type AvailableOps<S, C> =
     createFetcher: (promise: () => Promise<C>, specs?: { cacheForMillis?: number }) => Fetcher<S, C>,
   } & {
     onChange: (performAction: (selection: C) => any) => { unsubscribe: () => any },
+    read: () => C,
   };
-
-
-export interface StoreResult<S> {
-  /**
-   * @returns the current state
-   */
-  read: () => S;
-  /**
-    * Select a piece of state in order to perform some operation on it
-    * ```
-    * select(s => s.todos)...
-    * ```
-    */
-  select: <C = S>(selector?: ((s: S) => C)) => AvailableOps<S, C>;
-}

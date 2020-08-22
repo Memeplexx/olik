@@ -1,4 +1,4 @@
-import { makeStore } from "../src";
+import { make } from "../src";
 
 describe('Array', () => {
 
@@ -7,10 +7,10 @@ describe('Array', () => {
       array: [{ id: 1, value: 'one' }],
       object: { property: '' },
     };
-    const store = makeStore(initialState);
-    store.select(s => s.array).insertAfter({ id: 2, value: 'two' }, { id: 3, value: 'three' });
-    expect(store.read().array).toEqual([{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }]);
-    expect(store.read().object === initialState.object).toBeTruthy();
+    const getStore = make('state', initialState);
+    getStore(s => s.array).insertAfter({ id: 2, value: 'two' }, { id: 3, value: 'three' });
+    expect(getStore().read().array).toEqual([{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }]);
+    expect(getStore().read().object === initialState.object).toBeTruthy();
   })
 
   it('should insertBefore()', () => {
@@ -18,10 +18,10 @@ describe('Array', () => {
       array: [{ id: 3, value: 'three' }],
       object: { property: '' },
     };
-    const store = makeStore(initialState);
-    store.select(s => s.array).insertBefore({ id: 1, value: 'one' }, { id: 2, value: 'two' });
-    expect(store.read().array).toEqual([{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }]);
-    expect(store.read().object === initialState.object).toBeTruthy();
+    const getStore = make('state', initialState);
+    getStore(s => s.array).insertBefore({ id: 1, value: 'one' }, { id: 2, value: 'two' });
+    expect(getStore().read().array).toEqual([{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }]);
+    expect(getStore().read().object === initialState.object).toBeTruthy();
   })
 
   it('should patchWhere()', () => {
@@ -29,10 +29,10 @@ describe('Array', () => {
       object: { property: '' },
       array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
     };
-    const store = makeStore(initialState);
-    store.select(s => s.array).patchWhere(e => e.value.startsWith('t')).with({ value: 'test' });
-    expect(store.read().array).toEqual([{ id: 1, value: 'one' }, { id: 2, value: 'test' }, { id: 3, value: 'test' }]);
-    expect(store.read().object === initialState.object).toBeTruthy();
+    const getStore = make('state', initialState);
+    getStore(s => s.array).patchWhere(e => e.value.startsWith('t')).with({ value: 'test' });
+    expect(getStore().read().array).toEqual([{ id: 1, value: 'one' }, { id: 2, value: 'test' }, { id: 3, value: 'test' }]);
+    expect(getStore().read().object === initialState.object).toBeTruthy();
   })
 
   it('should REMOVE ALL from an array', () => {
@@ -40,10 +40,10 @@ describe('Array', () => {
       object: { property: '' },
       array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }]
     };
-    const store = makeStore(initialState);
-    store.select(s => s.array).removeAll();
-    expect(store.read().array).toEqual([]);
-    expect(store.read().object === initialState.object).toBeTruthy();
+    const getStore = make('state', initialState);
+    getStore(s => s.array).removeAll();
+    expect(getStore().read().array).toEqual([]);
+    expect(getStore().read().object === initialState.object).toBeTruthy();
   })
 
   it('should REMOVE FIRST element from array', () => {
@@ -51,10 +51,10 @@ describe('Array', () => {
       object: { property: '' },
       array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
     };
-    const store = makeStore(initialState);
-    store.select(s => s.array).removeFirst();
-    expect(store.read().array).toEqual([{ id: 2, value: 'two' }, { id: 3, value: 'three' }]);
-    expect(store.read().object === initialState.object).toBeTruthy();
+    const getStore = make('state', initialState);
+    getStore(s => s.array).removeFirst();
+    expect(getStore().read().array).toEqual([{ id: 2, value: 'two' }, { id: 3, value: 'three' }]);
+    expect(getStore().read().object === initialState.object).toBeTruthy();
   })
 
   it('should REMOVE LAST element from array', () => {
@@ -62,10 +62,10 @@ describe('Array', () => {
       object: { property: '' },
       array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
     };
-    const store = makeStore(initialState);
-    store.select(s => s.array).removeLast();
-    expect(store.read().array).toEqual([{ id: 1, value: 'one' }, { id: 2, value: 'two' }]);
-    expect(store.read().object === initialState.object).toBeTruthy();
+    const getStore = make('state', initialState);
+    getStore(s => s.array).removeLast();
+    expect(getStore().read().array).toEqual([{ id: 1, value: 'one' }, { id: 2, value: 'two' }]);
+    expect(getStore().read().object === initialState.object).toBeTruthy();
   })
 
   it('should REMOVE WHERE specific array elements match a criteria', () => {
@@ -73,10 +73,10 @@ describe('Array', () => {
       object: { property: '' },
       array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
     };
-    const store = makeStore(initialState);
-    store.select(s => s.array).removeWhere(a => a.id === 2);
-    expect(store.read().array).toEqual([{ id: 1, value: 'one' }, { id: 3, value: 'three' }]);
-    expect(store.read().object === initialState.object).toBeTruthy();
+    const getStore = make('state', initialState);
+    getStore(s => s.array).removeWhere(a => a.id === 2);
+    expect(getStore().read().array).toEqual([{ id: 1, value: 'one' }, { id: 3, value: 'three' }]);
+    expect(getStore().read().object === initialState.object).toBeTruthy();
   })
 
   it('should replaceAll()', () => {
@@ -84,10 +84,10 @@ describe('Array', () => {
       array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
       object: { property: '' },
     };
-    const store = makeStore(initialState);
-    store.select(s => s.array).replaceAll([{ id: 4, value: 'four' }, { id: 5, value: 'five' }]);
-    expect(store.read().array).toEqual([{ id: 4, value: 'four' }, { id: 5, value: 'five' }]);
-    expect(store.read().object === initialState.object).toBeTruthy();
+    const getStore = make('state', initialState);
+    getStore(s => s.array).replaceAll([{ id: 4, value: 'four' }, { id: 5, value: 'five' }]);
+    expect(getStore().read().array).toEqual([{ id: 4, value: 'four' }, { id: 5, value: 'five' }]);
+    expect(getStore().read().object === initialState.object).toBeTruthy();
   })
 
   it('should replaceMany()', () => {
@@ -95,10 +95,10 @@ describe('Array', () => {
       array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
       object: { property: '' },
     };
-    const store = makeStore(initialState);
-    store.select(s => s.array).replaceMany(e => e.value.startsWith('t')).with({ id: 4, value: 'four' });
-    expect(store.read().array).toEqual([{ id: 1, value: 'one' }, { id: 4, value: 'four' }, { id: 4, value: 'four' }]);
-    expect(store.read().object === initialState.object).toBeTruthy();
+    const getStore = make('state', initialState);
+    getStore(s => s.array).replaceMany(e => e.value.startsWith('t')).with({ id: 4, value: 'four' });
+    expect(getStore().read().array).toEqual([{ id: 1, value: 'one' }, { id: 4, value: 'four' }, { id: 4, value: 'four' }]);
+    expect(getStore().read().object === initialState.object).toBeTruthy();
   })
 
   it('should replaceOne()', () => {
@@ -106,10 +106,10 @@ describe('Array', () => {
       object: { property: '' },
       array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
     };
-    const store = makeStore(initialState);
-    store.select(s => s.array).replaceOne(a => a.id === 2).with({ id: 5, value: 'hey' });
-    expect(store.read().array).toEqual([{ id: 1, value: 'one' }, { id: 5, value: 'hey' }, { id: 3, value: 'three' }]);
-    expect(store.read().object === initialState.object).toBeTruthy();
+    const getStore = make('state', initialState);
+    getStore(s => s.array).replaceOne(a => a.id === 2).with({ id: 5, value: 'hey' });
+    expect(getStore().read().array).toEqual([{ id: 1, value: 'one' }, { id: 5, value: 'hey' }, { id: 3, value: 'three' }]);
+    expect(getStore().read().object === initialState.object).toBeTruthy();
   })
 
   it('should upsertOne()', () => {
@@ -117,11 +117,11 @@ describe('Array', () => {
       object: { property: '' },
       array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
     };
-    const store = makeStore(initialState);
-    store.select(s => s.array).upsertOne(e => e.id === 1).with({ id: 1, value: 'one updated' });
-    expect(store.read().array).toEqual([{ id: 1, value: 'one updated' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }]);
-    store.select(s => s.array).upsertOne(e => e.id === 4).with({ id: 4, value: 'four inserted' });
-    expect(store.read().array).toEqual([{ id: 1, value: 'one updated' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }, { id: 4, value: 'four inserted' }]);
+    const getStore = make('state', initialState);
+    getStore(s => s.array).upsertOne(e => e.id === 1).with({ id: 1, value: 'one updated' });
+    expect(getStore().read().array).toEqual([{ id: 1, value: 'one updated' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }]);
+    getStore(s => s.array).upsertOne(e => e.id === 4).with({ id: 4, value: 'four inserted' });
+    expect(getStore().read().array).toEqual([{ id: 1, value: 'one updated' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }, { id: 4, value: 'four inserted' }]);
   })
 
   it('should udate deeply nested arrays', () => {
@@ -137,9 +137,9 @@ describe('Array', () => {
         },
       ]
     };
-    const store = makeStore(initialState);
-    store.select(s => s.orgs).filter(o => o.id === 2).patch({ things: ['hello'] });
-    expect(store.read()).toEqual({
+    const store = make('state', initialState);
+    store(s => s.orgs).filter(o => o.id === 2).patch({ things: ['hello'] });
+    expect(store().read()).toEqual({
       orgs: [
         {
           id: 1,

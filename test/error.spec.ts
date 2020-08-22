@@ -1,12 +1,12 @@
-import { makeStore } from "../src";
+import { make } from "../src";
 
 describe('Error', () => {
 
   it('should throw an error when a method is invoked within a selector', () => {
-    const store = makeStore(new Array<string>());
+    const store = make('state', new Array<string>());
     let thrown = false;
     try {
-      store.select(s => s.find(e => true)).replace('');
+      store(s => s.find(e => true)).replace('');
     } catch (e) {
       thrown = true;
     }
