@@ -3,8 +3,7 @@
 *NOTE: it is assumed that the below examples are preceeded with a selection from the store, for example:*
 
 ```Typescript
-store
-  .select(s => s.some.nested.piece.of.state)
+getStore(s => s.some.nested.piece.of.state)
 ```
 ---
 
@@ -12,20 +11,20 @@ store
 
 ```Typescript
   // Partially update an object
-  .patch({ firstName: 'Sam', age: 25 });
+  .patchWith({ firstName: 'Sam', age: 25 });
 
   // Completely replace an object or primitive
-  .replace(updatedUser);
+  .replaceWith(updatedUser);
 ```
 
 ## Array updates ##
 
 ```Typescript
   // Append one or more elements to the end of array
-  .insertAfter(...newTodos);
+  .addAfter(...newTodos);
 
   // Prepend one or more elements to the beginning of array
-  .insertBefore(...newTodos);
+  .addBefore(...newTodos);
 
   // Partially update zero or more elements which match a specific condition
   .patchWhere(t => t.status === 'done').with({ status: 'todo' });
@@ -49,10 +48,10 @@ store
   .replaceMany(t => t.status === 'todo').with(newTodo);
 
   // Subtitute one element
-  .replaceOne(t => t.id === 5).with({ id: 5, text: 'bake cookies' });
+  .replaceWhere(t => t.id === 5).with({ id: 5, text: 'bake cookies' });
 
   // Subtitute or appends an element depending on whether or not it can be found.
-  .upsertOne(t => t.id === 5).with({ id: 5, text: 'bake cookies' });
+  .upsertWhere(t => t.id === 5).with({ id: 5, text: 'bake cookies' });
 
   // Filter for element(s) so that an operation can be performed on them
   .filter(e => e.id === 1)

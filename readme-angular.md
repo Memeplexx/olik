@@ -2,9 +2,10 @@
 
 ### ***Unambigiuous, in-line state-management*** ###
 - **ERGONOMIC -** Entirely typesafe, terse, while providing a standardised set of abstractions for state updates
-- **SMALL -** 2.2kb minified & gzipped, with zero external runtime dependencies
+- **TINY -** 2.4kb minified & gzipped, with zero external runtime dependencies
 - **DEBUGGABLE -** via the [Redux Devtools extension](https://chrome.google.com/webstore/detail/redux-devtools/lmhkpmbekcpmknklioeibfkpmmfibljd?hl=en)
-- **ATOMIC OR COMPOSITE -** No limitations on the size and quantity of stores
+- **ATOMIC OR COMPOSITE -** No limitations on how big, small, or numerous stores can be
+- **FAST -** Roughly equivalent to [Immutable](https://github.com/immutable-js/immutable-js) and significantly faster than [Immer](https://github.com/immerjs/immer)
 
 ## SETUP ##
 ```console
@@ -50,7 +51,7 @@ import { select } from 'oulik-angular';
   `
 })
 export class MyComponent {
-  todos$ = select(store, s => s.todos);
+  todos$ = select(getStore(s => s.todos));
 }
 ```
 [More read options...](./readme-angular-fetchers.md)

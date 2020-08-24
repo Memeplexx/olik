@@ -6,7 +6,7 @@ describe('Error', () => {
     const store = make('state', new Array<string>());
     let thrown = false;
     try {
-      store(s => s.find(e => true)).replace('');
+      store(s => s.find(e => true)).replaceWith('');
     } catch (e) {
       thrown = true;
     }

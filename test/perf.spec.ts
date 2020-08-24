@@ -1,19 +1,11 @@
 import { make } from "../src";
+import { fromJS } from 'immutable';
+import { produce } from 'immer';
 
 describe('Perf', () => {
 
-  it('should perform well', () => {
+  it('should test outlik perf', () => {
     const getStore = make('store', {
-      orgs: [
-        {
-          id: 1,
-          things: new Array<string>()
-        },
-        {
-          id: 2,
-          things: new Array<string>()
-        },
-      ],
       anotherProp: {
         some: {
           deeply: {
@@ -22,13 +14,53 @@ describe('Perf', () => {
             }
           }
         }
-      }
+      },
     })
     const before = Date.now();
     for (let i = 0; i < 1000; i++) {
-      getStore(s => s.anotherProp.some.deeply.nested.object).replace('hey');
+      getStore(s => s.anotherProp.some.deeply.nested.object).replaceWith('hey');
     }
-    console.log(Date.now() - before);
+    console.log(`Oulik: ${Date.now() - before}`);
+  })
+
+  it('should test immutable perf', () => {
+    const nested = fromJS({
+      anotherProp: {
+        some: {
+          deeply: {
+            nested: {
+              object: 'hello'
+            }
+          }
+        }
+      },
+    });
+    const before = Date.now();
+    for (let i = 0; i < 1000; i++) {
+      nested.setIn(['another', 'prop', 'some', 'deeply', 'nested', 'object'], 'hey').toJS();
+    }
+    console.log(`ImmutableJS: ${Date.now() - before}`);
+  })
+
+  it('should test immutable perf', () => {
+    const state = {
+      anotherProp: {
+        some: {
+          deeply: {
+            nested: {
+              object: 'hello'
+            }
+          }
+        }
+      },
+    }
+    const before = Date.now();
+    for (let i = 0; i < 1000; i++) {
+      produce(state, draft => {
+        draft.anotherProp.some.deeply.nested.object = 'hey';
+      });
+    }
+    console.log(`Immer: ${Date.now() - before}`);
   })
 
 });

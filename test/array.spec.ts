@@ -8,7 +8,7 @@ describe('Array', () => {
       object: { property: '' },
     };
     const getStore = make('state', initialState);
-    getStore(s => s.array).insertAfter({ id: 2, value: 'two' }, { id: 3, value: 'three' });
+    getStore(s => s.array).addAfter({ id: 2, value: 'two' }, { id: 3, value: 'three' });
     expect(getStore().read().array).toEqual([{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }]);
     expect(getStore().read().object === initialState.object).toBeTruthy();
   })
@@ -19,7 +19,7 @@ describe('Array', () => {
       object: { property: '' },
     };
     const getStore = make('state', initialState);
-    getStore(s => s.array).insertBefore({ id: 1, value: 'one' }, { id: 2, value: 'two' });
+    getStore(s => s.array).addBefore({ id: 1, value: 'one' }, { id: 2, value: 'two' });
     expect(getStore().read().array).toEqual([{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }]);
     expect(getStore().read().object === initialState.object).toBeTruthy();
   })
@@ -101,26 +101,26 @@ describe('Array', () => {
     expect(getStore().read().object === initialState.object).toBeTruthy();
   })
 
-  it('should replaceOne()', () => {
+  it('should replaceWhere()', () => {
     const initialState = {
       object: { property: '' },
       array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
     };
     const getStore = make('state', initialState);
-    getStore(s => s.array).replaceOne(a => a.id === 2).with({ id: 5, value: 'hey' });
+    getStore(s => s.array).replaceWhere(a => a.id === 2).with({ id: 5, value: 'hey' });
     expect(getStore().read().array).toEqual([{ id: 1, value: 'one' }, { id: 5, value: 'hey' }, { id: 3, value: 'three' }]);
     expect(getStore().read().object === initialState.object).toBeTruthy();
   })
 
-  it('should upsertOne()', () => {
+  it('should upsertWhere()', () => {
     const initialState = {
       object: { property: '' },
       array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
     };
     const getStore = make('state', initialState);
-    getStore(s => s.array).upsertOne(e => e.id === 1).with({ id: 1, value: 'one updated' });
+    getStore(s => s.array).upsertWhere(e => e.id === 1).with({ id: 1, value: 'one updated' });
     expect(getStore().read().array).toEqual([{ id: 1, value: 'one updated' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }]);
-    getStore(s => s.array).upsertOne(e => e.id === 4).with({ id: 4, value: 'four inserted' });
+    getStore(s => s.array).upsertWhere(e => e.id === 4).with({ id: 4, value: 'four inserted' });
     expect(getStore().read().array).toEqual([{ id: 1, value: 'one updated' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }, { id: 4, value: 'four inserted' }]);
   })
 
@@ -138,7 +138,7 @@ describe('Array', () => {
       ]
     };
     const store = make('state', initialState);
-    store(s => s.orgs).filter(o => o.id === 2).patch({ things: ['hello'] });
+    store(s => s.orgs).filter(o => o.id === 2).patchWith({ things: ['hello'] });
     expect(store().read()).toEqual({
       orgs: [
         {

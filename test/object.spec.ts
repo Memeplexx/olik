@@ -6,20 +6,35 @@ describe('Object', () => {
     const initialState = {
       object: { property: 'hello', property2: 'two' },
     };
-    const store = make('state', initialState);
-    store(s => s.object.property).replace('hey');
-    expect(store().read().object.property).toEqual('hey');
-    expect(store().read().object.property2 === initialState.object.property2).toBeTruthy();
+    const getStore = make('state', initialState);
+    getStore(s => s.object.property).replaceWith('hey');
+    expect(getStore().read().object.property).toEqual('hey');
+    expect(getStore().read().object.property2 === initialState.object.property2).toBeTruthy();
   })
 
   it('should PATCH an node', () => {
     const initialState = {
       object: { property: 'hello', property2: 'two' },
     };
-    const store = make('state', initialState);
-    store(s => s.object).patch({ property: 'xxx' });
-    expect(store().read().object.property).toEqual('xxx');
-    expect(store().read().object.property2 === initialState.object.property2).toBeTruthy();
+    const getStore = make('state', initialState);
+    getStore(s => s.object).patchWith({ property: 'xxx' });
+    expect(getStore().read().object.property).toEqual('xxx');
+    expect(getStore().read().object.property2 === initialState.object.property2).toBeTruthy();
+  })
+
+  it('should RESET a node', () => {
+    const initialState = {
+      object: { property: 'hello', property2: 'two' },
+    };
+    const getStore = make('state', initialState);
+    getStore(s => s.object.property).replaceWith('hey');
+    expect(getStore(s => s.object.property).read()).toEqual('hey')
+    getStore(s => s.object.property).reset();
+    expect(getStore(s => s.object.property).read()).toEqual('hello');
+    getStore().replaceWith({ object: { property: 'xx', property2: 'yy' } });
+    expect(getStore().read()).toEqual({ object: { property: 'xx', property2: 'yy' } });
+    getStore().reset();
+    expect(getStore().read()).toEqual(initialState);
   })
 
 });

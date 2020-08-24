@@ -13,6 +13,7 @@ export function make<S>(name: string, state: S, devtoolsOptions?: { maxAge?: num
   let mutableStateCopy = deepCopy(state);
   let segGatherer = defineSegGatherer(mutableStateCopy);
   let currentState = deepFreeze(state) as S;
+  const initialState = currentState;
 
   const actionReplace = <C>(selector: (s: S) => C, name: string) => (assignment: C, options?: Options) => {
     readPathOfSelector(selector);
@@ -40,9 +41,9 @@ export function make<S>(name: string, state: S, devtoolsOptions?: { maxAge?: num
       old => old[lastSeg] = assignment, { overrideActionName: true });
   };
   const action = <C, X extends C & Array<any>>(selector: (s: S) => C) => ({
-    replace: actionReplace(selector, 'replace'),
+    replaceWith: actionReplace(selector, 'replaceWith'),
     replaceAll: actionReplace(selector, 'replaceAll'),
-    patch: (assignment: Partial<C>) => updateState<S, C>(selector, 'patch', assignment,
+    patchWith: (assignment: Partial<C>) => updateState<S, C>(selector, 'patch', assignment,
       old => ({ ...old, ...assignment }),
       old => Object.assign(old, assignment)),
     patchWhere: (where: (e: X) => boolean) => ({
@@ -61,10 +62,10 @@ export function make<S>(name: string, state: S, devtoolsOptions?: { maxAge?: num
           (old: X) => old.forEach((o, i) => { if (items.includes(o)) { items[i] = element; } }));
       }
     }),
-    insertAfter: (...assignment: X) => updateState<S, C>(selector, 'insertAfter', assignment,
+    addAfter: (...assignment: X) => updateState<S, C>(selector, 'addAfter', assignment,
       old => [...old, ...deepCopy(assignment)],
       old => assignment.forEach((a: any) => old.push(a))),
-    insertBefore: (...assignment: X) => updateState<S, C>(selector, 'insertBefore', assignment,
+    addBefore: (...assignment: X) => updateState<S, C>(selector, 'addBefore', assignment,
       old => [...deepCopy(assignment), ...old],
       old => old.unshift(assignment)),
     removeFirst: () => updateState<S, C>(selector, 'removeFirst', (selector(currentState) as any as X).slice(1),
@@ -93,23 +94,21 @@ export function make<S>(name: string, state: S, devtoolsOptions?: { maxAge?: num
     filter: (criteria: (e: X[0]) => boolean) => {
       return action((s: S) => (selector(s) as any as X).filter(criteria, skipProxyCheck) as any as C);
     },
-    upsertOne: (criteria: (e: X[0]) => boolean) => ({
+    upsertWhere: (criteria: (e: X[0]) => boolean) => ({
       with: (element: X[0]) => {
         const items = (selector(currentState) as any as X).filter(criteria, skipProxyCheck);
-        if (items.length > 1) { throw new Error('Cannot upsert more than 1 element') }
         const newSelector = (s: S) => (selector(s) as any as X).filter(criteria, skipProxyCheck) as X;
         return items.length
-          ? action(newSelector).replaceOne(criteria).with(element)
-          : action(newSelector).insertAfter(element);
+          ? action(newSelector).replaceWhere(criteria).with(element)
+          : action(newSelector).addAfter(element);
       }
     }),
-    replaceOne: (criteria: (e: X[0]) => boolean) => ({
+    replaceWhere: (criteria: (e: X[0]) => boolean) => ({
       with: (element: X[0]) => {
         const items = (selector(currentState) as any as X).filter(criteria, skipProxyCheck);
         if (!items.length) { throw new Error('Cannot find element to update') }
-        if (items.length > 1) { throw new Error('Cannot update more than 1 element') }
         const newSelector = (s: S) => (selector(s) as any as X).filter(criteria, skipProxyCheck) as X;
-        return actionReplace(newSelector, 'replaceOne')(element);
+        return actionReplace(newSelector, 'replaceWhere')(element);
       }
     }),
     createFetcher: (promise: () => Promise<C>, specs: { cacheForMillis: number } = { cacheForMillis: 0 }) => {
@@ -120,6 +119,7 @@ export function make<S>(name: string, state: S, devtoolsOptions?: { maxAge?: num
       let lastFetch = 0;
       const result = new (class {
         store = storeResult;
+        selector = selector;
         status: 'pristine' | 'error' | 'resolved' | 'resolving' = 'pristine';
         invalidateCache = () => { lastFetch = 0; }
         fetch = () => {
@@ -156,6 +156,7 @@ export function make<S>(name: string, state: S, devtoolsOptions?: { maxAge?: num
       return { unsubscribe: () => changeListeners.delete(selector) };
     },
     read: () => selector(currentState),
+    reset: () => actionReplace(selector, 'reset()')(selector(initialState)),
   } as any as AvailableOps<S, C>);
 
 
@@ -252,7 +253,7 @@ export function make<S>(name: string, state: S, devtoolsOptions?: { maxAge?: num
     selector(segGatherer);
   }
 
-  integrateStoreWithReduxDevtools<S>(storeResult, { name, ...devtoolsOptions });
+  integrateStoreWithReduxDevtools<S>(storeResult, { name, ...devtoolsOptions }, setDevtoolsDispatchListener);
 
   return storeResult;
 }

@@ -18,8 +18,9 @@ export interface Fetcher<S, C> {
    */
   fetch: () => Promise<C>,
 
-  // store: { select: (state: S) => { onChange: (performAction: (selection: C) => any) => any }, read: () => S }
-  store: () => AvailableOps<S, C>,
+  store: (selector?: (state: S) => C) => AvailableOps<S, C>,
+
+  selector: (state: S) => C,
 }
 
 export type AvailableOps<S, C> =
@@ -27,26 +28,23 @@ export type AvailableOps<S, C> =
     /**
      * Append one or more elements to the end of array
      * ```
-     * store
-     *   .select(s => s.todos)
-     *   .insertAfter(...newTodos);
+     * getStore(s => s.todos)
+     *   .addAfter(...newTodos);
      * ```
      */
-    insertAfter: (...elements: C) => void,
+    addAfter: (...elements: C) => void,
     /**
      * Prepend one or more elements to the beginning of array
      * ```
-     * store
-     *   .select(s => s.todos)
-     *   .insertBefore(...newTodos);
+     * getStore(s => s.todos)
+     *   .addBefore(...newTodos);
      * ```
      */
-    insertBefore: (...elements: C) => void,
+    addBefore: (...elements: C) => void,
     /**
      * Partially update zero or more elements which match a specific condition
      * ```
-     * store
-     *   .select(s => s.todos)
+     * getStore(s => s.todos)
      *   .patchWhere(t => t.status === 'done')
      *   .with({ status: 'todo' });
      * ```
@@ -55,8 +53,7 @@ export type AvailableOps<S, C> =
     /**
      * Remove all elements from array
      * ```
-     * store
-     *   .select(s => s.todos)
+     * getStore(s => s.todos)
      *   .removeAll();
      * ```
      */
@@ -64,8 +61,7 @@ export type AvailableOps<S, C> =
     /**
      * Delete first element from array
      * ```
-     * store
-     *   .select(s => s.todos)
+     * getStore(s => s.todos)
      *   .removeFirst();
      * ```
      */
@@ -73,8 +69,7 @@ export type AvailableOps<S, C> =
     /**
      * Delete last element from array
      * ```
-     * store
-     *   .select(s => s.todos)
+     * getStore(s => s.todos)
      *   .removeLast();
      * ```
      */
@@ -82,8 +77,7 @@ export type AvailableOps<S, C> =
     /**
      * Delete zero or more elements which match a specific condition
      * ```
-     * store
-     *   .select(s => s.todos)
+     * getStore(s => s.todos)
      *   .removeWhere(t => t.status === 'done')
      * ```
      */
@@ -91,8 +85,7 @@ export type AvailableOps<S, C> =
     /**
      * Substitute all elements with a new array
      * ```
-     * store
-     *   .select(s => s.todos)
+     * getStore(s => s.todos)
      *   .replaceAll(newTodos);
      * ```
      */
@@ -100,8 +93,7 @@ export type AvailableOps<S, C> =
     /**
      * Substitute zero or more elements which match a specific condition
      * ```
-     * store
-     *   .select(s => s.todos)
+     *getStore(s => s.todos)
      *   .replaceMany(t => t.status === 'todo')
      *   .with(newTodo)
      * ```
@@ -112,33 +104,30 @@ export type AvailableOps<S, C> =
      * @param where the function which will find the element
      * @param element the element which will replace the old one
      * ```
-     * store
-     *   .select(s => s.todos)
-     *   .replaceOne(t => t.id === 5)
+     * getStore(s => s.todos)
+     *   .replaceWhere(t => t.id === 5)
      *   .with({ id: 5, text: 'bake cookies' });
      * ```
      */
-    replaceOne: (where: (e: C[0]) => boolean) => { with: (element: C[0]) => void },
+    replaceWhere: (where: (e: C[0]) => boolean) => { with: (element: C[0]) => void },
     /**
      * Subtitute or appends an element depending on whether or not it can be found.
      * @param where the function which will attempt to find the element
      * @param element the element will either replace the old one or be inserted
      * ```
-     * store
-     *   .select(s => s.todos)
-     *   .upsertOne(t => t.id === 5)
+     * getStore(s => s.todos)
+     *   .upsertWhere(t => t.id === 5)
      *   .with({ id: 5, text: 'bake cookies' });
      * ```
      */
-    upsertOne: (where: (e: C[0]) => boolean) => { with: (element: C[0]) => void },
+    upsertWhere: (where: (e: C[0]) => boolean) => { with: (element: C[0]) => void },
     /**
      * Filter for element(s) so that an operation can be performed on them
      * @param where the function which will find the element(s)
      * ```
-     * store
-     *   .select(s => s.todos)
+     * getStore(s => s.todos)
      *   .filter(t => t.id === 5)
-     *   .patch({ text: 'bake cookies' })
+     *   .patchWith({ text: 'bake cookies' })
      * ```
      */
     filter: (where: (e: C[0]) => boolean) => AvailableOps<S, C[0]>,
@@ -146,41 +135,37 @@ export type AvailableOps<S, C> =
     /**
      * Partially updates object
      * ```
-     * store
-     *   .select(s => s.user)
-     *   .patch({ firstName: 'James', age: 33 })
+     * getStore(s => s.user)
+     *   .patchWith({ firstName: 'James', age: 33 })
      * ```
      */
-    patch: (partial: Partial<C>) => void,
+    patchWith: (partial: Partial<C>) => void,
     /**
      * Substitutes object
      * ```
-     * store
-     *   .select(s => s.user)
-     *   .replace(newUser)
+     * getStore(s => s.user)
+     *   .replaceWith(newUser)
      * ```
      */
-    replace: (replacement: C, options?: Options) => void,
+    replaceWith: (replacement: C, options?: Options) => void,
   } : C extends boolean ? {
     /**
      * Subtitutes primitive
      * ```
-     * store
-     *   .select(s => s.user.age)
-     *   .replace(33)
+     * getStore(s => s.user.age)
+     *   .replaceWith(33)
      * ```
      */
-    replace: (replacement: boolean) => void,
+    replaceWith: (replacement: boolean) => void,
   } : {
     /**
      * Subtitutes primitive
      * ```
-     * store
-     *   .select(s => s.user.age)
-     *   .replace(33)
+     * getStore(s => s.user.age)
+     *   .replaceWith(33)
      * ```
      */
-    replace: (replacement: C) => void,
+    replaceWith: (replacement: C) => void,
   }) & {
     /**
      * *Fetchers* are an standardized mechanism for:  
@@ -189,13 +174,27 @@ export type AvailableOps<S, C> =
      * * caching request responses (optional).  
      * 
      * ```
-     * const todosFetcher = store
-     *   .select(s => s.todos)
+     * const todosFetcher = getStore(s => s.todos)
      *   .createFetcher(() => fetchTodos(), { cacheForMillis: 1000 * 60 });
      * ```
      */
     createFetcher: (promise: () => Promise<C>, specs?: { cacheForMillis?: number }) => Fetcher<S, C>,
   } & {
+    /**
+     * Listens to any updates on this node
+     * @returns a subscription which may need to be unsubscribed from
+     * ```
+     * getStore(s => s.todos)
+     *   .onChange(todos => console.log(todos)) ;
+     * ```
+     */
     onChange: (performAction: (selection: C) => any) => { unsubscribe: () => any },
+    /**
+     * @returns the current state
+     */
     read: () => C,
+    /**
+     * Reverts the current state to how it was when the store was initialized
+     */
+    reset: () => void,
   };
