@@ -30,7 +30,7 @@ export function integrateStoreWithReduxDevtools<S>(
   const devTools = windowObj.__REDUX_DEVTOOLS_EXTENSION__.connect(options);
   devTools.init(store().read());
   setDevtoolsDispatchListener(action => {
-    windowObj.__REDUX_DEVTOOLS_EXTENSION__.send(action, store().read(), {});
+    devTools.send(action, store().read(), {});
   });
   devTools.subscribe((message: { type: string, state: any }) => {
     if (message.type === 'DISPATCH' && message.state) {
@@ -43,11 +43,13 @@ export function integrateStoreWithReduxDevtools<S>(
       } else {
         selection.replace(JSON.parse(message.state), { dontTrackWithDevtools: true });
       }
+
+      onDispatchListener();
     }
   });
 }
 
-let onDispatchListener: () => any;
+let onDispatchListener = () => null;
 export function listenToDevtoolsDispatch(onDispatch: () => any) {
   onDispatchListener = onDispatch;
 }

@@ -3,8 +3,9 @@ import { AvailableOps, Fetcher, Options } from './shape';
 
 const skipProxyCheck = Symbol();
 
-let devtoolsDispatchListener: ((action: { type: string, payload?: any }) => any) | undefined;
-export const setDevtoolsDispatchListener = (listener: (action: { type: string, payload?: any }) => any) => devtoolsDispatchListener = listener;
+export const log = {
+  actions: false,
+}
 
 export function make<S>(name: string, state: S, devtoolsOptions?: { maxAge?: number }) {
   const pathSegments = new Array<string>();
@@ -14,6 +15,9 @@ export function make<S>(name: string, state: S, devtoolsOptions?: { maxAge?: num
   let segGatherer = defineSegGatherer(mutableStateCopy);
   let currentState = deepFreeze(state) as S;
   const initialState = currentState;
+
+  let devtoolsDispatchListener: ((action: { type: string, payload?: any }) => any) | undefined;
+  const setDevtoolsDispatchListener = (listener: (action: { type: string, payload?: any }) => any) => devtoolsDispatchListener = listener;
 
   const actionReplace = <C>(selector: (s: S) => C, name: string) => (assignment: C, options?: Options) => {
     readPathOfSelector(selector);
@@ -54,20 +58,12 @@ export function make<S>(name: string, state: S, devtoolsOptions?: { maxAge?: num
           (old: X) => old.forEach((o, i) => { if (items.includes(o)) { items[i] = Object.assign(o, partial); } }));
       }
     }),
-    replaceMany: (where: (e: X) => boolean) => ({
-      with: (element: X[0]) => {
-        const items = (selector(currentState) as any as X).filter(where);
-        updateState<S, C>(selector, 'replaceMany', element,
-          (old: X) => old.map(o => items.includes(o) ? element : o),
-          (old: X) => old.forEach((o, i) => { if (items.includes(o)) { items[i] = element; } }));
-      }
-    }),
     addAfter: (...assignment: X) => updateState<S, C>(selector, 'addAfter', assignment,
       old => [...old, ...deepCopy(assignment)],
-      old => assignment.forEach((a: any) => old.push(a))),
+      old => old.push(...assignment)),
     addBefore: (...assignment: X) => updateState<S, C>(selector, 'addBefore', assignment,
       old => [...deepCopy(assignment), ...old],
-      old => old.unshift(assignment)),
+      old => old.unshift(...assignment)),
     removeFirst: () => updateState<S, C>(selector, 'removeFirst', (selector(currentState) as any as X).slice(1),
       old => old.slice(1, old.length),
       old => old.shift()),
@@ -98,6 +94,7 @@ export function make<S>(name: string, state: S, devtoolsOptions?: { maxAge?: num
       with: (element: X[0]) => {
         const items = (selector(currentState) as any as X).filter(criteria, skipProxyCheck);
         const newSelector = (s: S) => (selector(s) as any as X).filter(criteria, skipProxyCheck) as X;
+        // const newSelector = (s: S) => (selector(s) as any as X);
         return items.length
           ? action(newSelector).replaceWhere(criteria).with(element)
           : action(newSelector).addAfter(element);
@@ -184,13 +181,16 @@ export function make<S>(name: string, state: S, devtoolsOptions?: { maxAge?: num
     const result = deepFreeze(copyObject(currentState, { ...currentState }, pathSegments.slice(), action));
     notifySubscribers(result);
     mutator(selector(mutableStateCopy));
+    // mutableStateCopy = deepCopy(result);
     segGatherer = defineSegGatherer(mutableStateCopy);
     currentState = result;
     const actionToDispatch = {
       type: options && options.overrideActionName ? actionName : ((pathSegments.join('.') + (pathSegments.length ? '.' : '') + actionName + '()')),
       payload,
     };
-    // console.log(actionToDispatch.type);
+    if (log.actions) {
+      console.log(actionToDispatch.type);
+    }
     if (devtoolsDispatchListener && !options.dontTrackWithDevtools) {
       devtoolsDispatchListener(actionToDispatch);
     }
@@ -208,9 +208,13 @@ export function make<S>(name: string, state: S, devtoolsOptions?: { maxAge?: num
           return defineSegGatherer(val);
         } else if (typeof (val) === 'function') {
           return function (...args: any[]) {
+            // if (prop !== 'filter' || prop !== 'find') {
+            //   throw new Error(
+            //     `'getStore(...${prop}())' detected. Method invokations within the selector function are now permitted`);
+            // }
             if (prop !== 'filter' || args[1] !== skipProxyCheck) {
               throw new Error(
-                `'select(...${prop}())' detected. Rather complete the 'select()' statement and chain another library function to find the node(s) you want to update`);
+                `'getStore(...${prop}())' detected. If you're trying to filter or find elements, rather use a library function eg. getStore(some.array).removeWhere(e => e.status === 'done')`);
             }
             const filtered = val.apply(target, args) as any[];
             const indices = (target as any[]).map((e, i) => filtered.includes(e) ? i : null).filter(e => e !== null, skipProxyCheck) as number[];

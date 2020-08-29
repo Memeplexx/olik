@@ -1,4 +1,4 @@
-import { make } from "../src";
+import { make, log } from "../src";
 
 describe('Array', () => {
 
@@ -90,17 +90,6 @@ describe('Array', () => {
     expect(getStore().read().object === initialState.object).toBeTruthy();
   })
 
-  it('should replaceMany()', () => {
-    const initialState = {
-      array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
-      object: { property: '' },
-    };
-    const getStore = make('state', initialState);
-    getStore(s => s.array).replaceMany(e => e.value.startsWith('t')).with({ id: 4, value: 'four' });
-    expect(getStore().read().array).toEqual([{ id: 1, value: 'one' }, { id: 4, value: 'four' }, { id: 4, value: 'four' }]);
-    expect(getStore().read().object === initialState.object).toBeTruthy();
-  })
-
   it('should replaceWhere()', () => {
     const initialState = {
       object: { property: '' },
@@ -151,6 +140,15 @@ describe('Array', () => {
         },
       ]
     });
+  })
+
+  it('should filter correctly', () => {
+    const initialState = {
+      array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
+    };
+    const getStore = make('state', initialState);
+    getStore(s => s.array).filter(e => e.id < 3).patchWith({ value: 'xxx' });
+    expect(getStore(s => s.array).read()).toEqual([{ id: 1, value: 'xxx' }, { id: 2, value: 'xxx' }, { id: 3, value: 'three' }]);
   })
 
 });

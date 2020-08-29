@@ -92,15 +92,6 @@ export type AvailableOps<S, C> =
     replaceAll: (replacement: C, options?: Options) => void,
     /**
      * Substitute zero or more elements which match a specific condition
-     * ```
-     *getStore(s => s.todos)
-     *   .replaceMany(t => t.status === 'todo')
-     *   .with(newTodo)
-     * ```
-     */
-    replaceMany: (where: (element: C[0]) => boolean) => { with: (element: C[0]) => void },
-    /**
-     * Subtitute one element
      * @param where the function which will find the element
      * @param element the element which will replace the old one
      * ```
