@@ -1,4 +1,4 @@
-import { make, log } from "../src";
+import { make } from "../src";
 
 describe('Multi-store', () => {
 
@@ -9,17 +9,6 @@ describe('Multi-store', () => {
     getStore2().replaceWith(2);
     expect(getStore1().read()).toEqual(['one']);
     expect(getStore2().read()).toEqual(2);
-  })
-
-  it('test', () => {
-    log.actions = true;
-    const getStore = make('test-xguud-web', {
-      contacts: new Array<{id: number, name: string}>(),
-    });
-    getStore(s => s.contacts).upsertWhere(e => e.id === 1).with({id: 2, name: 'hey'});
-    // getStore(s => s.contacts).addAfter({id: 2, name: 'hey'});
-    console.log(getStore(s => s.contacts).read())
-    log.actions = false;
   })
 
 });

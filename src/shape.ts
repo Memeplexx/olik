@@ -23,6 +23,12 @@ export interface Fetcher<S, C> {
   selector: (state: S) => C,
 }
 
+export type equal<S> = <T = S>(arg: (state: S) => T, value: T) => any;
+export type notEqual<S> = <T = S>(arg: (state: S) => T, value: T) => any;
+export type within<S> = <T extends Array<any>>(arg: (state: S) => T, value: T) => any;
+
+export type and<S> = (...args: ((state: S, arg?: any) => any)[]) => any;
+
 export type AvailableOps<S, C> =
   (C extends undefined ? any : C extends Array<any> ? {
     /**
@@ -112,16 +118,6 @@ export type AvailableOps<S, C> =
      * ```
      */
     upsertWhere: (where: (e: C[0]) => boolean) => { with: (element: C[0]) => void },
-    /**
-     * Filter for element(s) so that an operation can be performed on them
-     * @param where the function which will find the element(s)
-     * ```
-     * getStore(s => s.todos)
-     *   .filter(t => t.id === 5)
-     *   .patchWith({ text: 'bake cookies' })
-     * ```
-     */
-    filter: (where: (e: C[0]) => boolean) => AvailableOps<S, C[0]>,
   } : C extends object ? {
     /**
      * Partially updates object

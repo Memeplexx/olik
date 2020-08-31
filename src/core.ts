@@ -3,8 +3,10 @@ import { AvailableOps, Fetcher, Options } from './shape';
 
 const skipProxyCheck = Symbol();
 
-export const log = {
-  actions: false,
+export const tests = {
+  logActions: false,
+  currentAction: { type: '', payload: null },
+  currentMutableState: null,
 }
 
 export function make<S>(name: string, state: S, devtoolsOptions?: { maxAge?: number }) {
@@ -27,6 +29,8 @@ export function make<S>(name: string, state: S, devtoolsOptions?: { maxAge?: num
         old => {
           if (Array.isArray(old)) {
             old.length = 0; Object.assign(old, assignment);
+          } else if (typeof(old) === 'boolean' || typeof(old) === 'number') {
+            mutableStateCopy = assignment;
           } else {
             Object.assign(old, assignment);
           }
@@ -47,15 +51,22 @@ export function make<S>(name: string, state: S, devtoolsOptions?: { maxAge?: num
   const action = <C, X extends C & Array<any>>(selector: (s: S) => C) => ({
     replaceWith: actionReplace(selector, 'replaceWith'),
     replaceAll: actionReplace(selector, 'replaceAll'),
-    patchWith: (assignment: Partial<C>) => updateState<S, C>(selector, 'patch', assignment,
+    patchWith: (assignment: Partial<C>) => updateState<S, C>(selector, 'patchWith', assignment,
       old => ({ ...old, ...assignment }),
       old => Object.assign(old, assignment)),
-    patchWhere: (where: (e: X) => boolean) => ({
-      with: (partial: Partial<X[0]>) => {
-        const items = (selector(currentState) as any as X).filter(where);
-        updateState<S, C>(selector, 'patchWhere', partial,
-          (old: X) => old.map(o => items.includes(o) ? { ...o, ...partial } : o),
-          (old: X) => old.forEach((o, i) => { if (items.includes(o)) { items[i] = Object.assign(o, partial); } }));
+    patchWhere: (where: (e: X) => boolean) => ({ ////// CHECKED ///////
+      with: (assignment: Partial<X[0]>) => {
+        const itemIndices = (selector(currentState) as any as X).map((e, i) => where(e) ? i : null).filter(i => i !== null);
+        readPathOfSelector(selector);
+        return updateState<S, C>(selector, `${pathSegments.join('.')}${pathSegments.length ? '.' : ''}${itemIndices.join(',')}.patchWhere()`, assignment,
+          old => (old as any[]).map((o, i) => itemIndices.includes(i) ? { ...o, ...assignment } : o),
+          old => {
+            (old as any[]).forEach((el, idx) => {
+              if (itemIndices.includes(idx)) {
+                Object.assign(old[idx], assignment);
+              }
+            })
+          }, { overrideActionName: true });
       }
     }),
     addAfter: (...assignment: X) => updateState<S, C>(selector, 'addAfter', assignment,
@@ -76,43 +87,49 @@ export function make<S>(name: string, state: S, devtoolsOptions?: { maxAge?: num
     removeAll: () => updateState<S, C>(selector, 'removeAll', null,
       () => [],
       old => old.length = 0),
-    removeWhere: (predicate: (arg: X[0]) => boolean) => updateState<S, C>(selector, 'removeWhere', (selector(currentState) as any as X).filter(predicate),
-      old => old.filter((o: any) => !predicate(o)),
-      (old: any[]) => {
-        const toRemove = old.filter(predicate, skipProxyCheck);
-        for (var i = 0; i < old.length; i++) {
-          if (toRemove.includes(old[i])) {
-            old.splice(i, 1);
-            i--;
+    removeWhere: (predicate: (arg: X[0]) => boolean) => {
+      const itemIndices = (selector(currentState) as any as X).map((e, i) => predicate(e) ? i : null).filter(i => i !== null);
+      readPathOfSelector(selector);
+      return updateState<S, C>(selector, `${pathSegments.join('.')}${pathSegments.length ? '.' : ''}${itemIndices.join(',')}.removeWhere()`, (selector(currentState) as any as X).filter(predicate),
+        old => old.filter((o: any) => !predicate(o)),
+        old => {
+          const toRemove = old.filter(predicate, skipProxyCheck);
+          for (var i = 0; i < old.length; i++) {
+            if (toRemove.includes(old[i])) {
+              old.splice(i, 1);
+              i--;
+            }
           }
-        }
-      }),
-    filter: (criteria: (e: X[0]) => boolean) => {
-      return action((s: S) => (selector(s) as any as X).filter(criteria, skipProxyCheck) as any as C);
+        }, { overrideActionName: true });
     },
-    upsertWhere: (criteria: (e: X[0]) => boolean) => ({
+    upsertWhere: (criteria: (e: X[0]) => boolean) => ({ ////// CHECKED ///////
       with: (element: X[0]) => {
-        const items = (selector(currentState) as any as X).filter(criteria, skipProxyCheck);
-        const newSelector = (s: S) => (selector(s) as any as X).filter(criteria, skipProxyCheck) as X;
-        // const newSelector = (s: S) => (selector(s) as any as X);
-        return items.length
-          ? action(newSelector).replaceWhere(criteria).with(element)
-          : action(newSelector).addAfter(element);
+        const itemIndices = (selector(currentState) as any as X).map((e, i) => criteria(e) ? i : null).filter(i => i !== null);
+        if (itemIndices.length > 1) { throw new Error('Cannot upsert more than 1 element'); }
+        return itemIndices.length
+          ? action(selector as (s: S) => X).replaceWhere(criteria).with(element)
+          : action(selector as (s: S) => X).addAfter(element);
       }
     }),
-    replaceWhere: (criteria: (e: X[0]) => boolean) => ({
-      with: (element: X[0]) => {
-        const items = (selector(currentState) as any as X).filter(criteria, skipProxyCheck);
-        if (!items.length) { throw new Error('Cannot find element to update') }
-        const newSelector = (s: S) => (selector(s) as any as X).filter(criteria, skipProxyCheck) as X;
-        return actionReplace(newSelector, 'replaceWhere')(element);
+    replaceWhere: (criteria: (e: X[0]) => boolean) => ({ ////// CHECKED ///////
+      with: (assignment: X[0]) => {
+        const itemIndices = (selector(currentState) as any as X).map((e, i) => criteria(e) ? i : null).filter(i => i !== null);
+        readPathOfSelector(selector);
+        return updateState<S, C>(selector, `${pathSegments.join('.')}${pathSegments.length ? '.' : ''}${itemIndices.join(',')}.replaceWhere()`, assignment,
+          old => (old as any[]).map((o, i) => itemIndices.includes(i) ? deepCopy(assignment) : o),
+          old => {
+            (old as any[]).forEach((el, idx) => {
+              if (itemIndices.includes(idx)) {
+                old[idx] = assignment;
+              }
+            })
+          }, { overrideActionName: true });
       }
     }),
     createFetcher: (promise: () => Promise<C>, specs: { cacheForMillis: number } = { cacheForMillis: 0 }) => {
       const otherFetchers = new Array<{ resolve: (c: C) => void, reject: (e: any) => void }>();
       readPathOfSelector(selector);
       const path = pathSegments.join('.');
-      if (fetchers.get(path)) { return fetchers.get(path); }
       let lastFetch = 0;
       const result = new (class {
         store = storeResult;
@@ -181,16 +198,14 @@ export function make<S>(name: string, state: S, devtoolsOptions?: { maxAge?: num
     const result = deepFreeze(copyObject(currentState, { ...currentState }, pathSegments.slice(), action));
     notifySubscribers(result);
     mutator(selector(mutableStateCopy));
-    // mutableStateCopy = deepCopy(result);
     segGatherer = defineSegGatherer(mutableStateCopy);
     currentState = result;
     const actionToDispatch = {
       type: options && options.overrideActionName ? actionName : ((pathSegments.join('.') + (pathSegments.length ? '.' : '') + actionName + '()')),
       payload,
     };
-    if (log.actions) {
-      console.log(actionToDispatch.type);
-    }
+    tests.currentAction = actionToDispatch;
+    tests.currentMutableState = mutableStateCopy;
     if (devtoolsDispatchListener && !options.dontTrackWithDevtools) {
       devtoolsDispatchListener(actionToDispatch);
     }
@@ -275,7 +290,7 @@ function deepFreeze(o: any) {
   return o;
 }
 
-function deepCopy(o: any): any {
+export function deepCopy(o: any): any {
   let newO;
   let i: any;
   if (typeof o !== 'object') { return o; }
