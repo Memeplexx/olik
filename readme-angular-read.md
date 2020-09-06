@@ -1,10 +1,38 @@
-# OULIK-ANGULAR - 'FETCHERS' #
+# OULIK ANGULAR - READING STATE #
+
+## SYNCHRONOUS READS ##
+```Typescript
+const todos = getCanvas(c => c.todos).read();
+```
+
+## SUBSCRIPTIONS ##
+
+```Typescript
+const listener = getCanvas(c => c.todos).onChange(todos => console.log(todos));
+listener.unsubscribe(); // don't forget to do this to avoid a leak!
+```  
+
+## REACT TO STATE UPDATES IN TEMPLATE ##
+
+```Typescript
+import { select } from 'oulik-angular';
+
+@Component({
+  selector: 'app-component',
+  template: `<div *ngFor="let todo of todos$ | async">{{todo}}</div>`
+})
+export class MyComponent {
+  todos$ = select(getStore(s => s.todos));
+}
+```
+
+## FETCHERS ##
 *Fetchers* are an **optional** standardized mechanism for
 * fetching data from external resources,
 * indicating the status of a request (loading / success / error), and 
-* caching data (optional).
+* caching request responses (optional).
 
-## **DEFINING** A FETCHER ##
+### DEFINING A FETCHER ###
 ```Typescript
 import { store } from './my-store';
 // ... other imports
@@ -21,9 +49,8 @@ export class ApiService {
 }
 ```
 
-## USING OUR FETCHER WITHIN A **COMPONENT** ##
+### USING OUR FETCHER WITHIN A COMPONENT ###
 
-Below we can display the loading / error / success statuses as follows:
 ```Typescript
 import { fetch } from 'heerlik-angular';
 // ... other imports
@@ -34,7 +61,7 @@ import { fetch } from 'heerlik-angular';
   <ng-container *ngIf="todos$ | async; let todos">
     <div *ngIf="todos.loading">loading...</div>
     <div *ngIf="todos.error">Sorry! Could not fetch todos</div>
-    <ul><li *ngFor="let todo of todos.value">{{todo}}<li></ul>
+    <div *ngFor="let todo of todos.value">{{todo}}</div>
   </ng-container>
   `
 })
@@ -46,8 +73,7 @@ export class AppComponent {
 }
 ```
 
-## USING OUR FETCHER WITHIN A **RESOLVER** ##
-If you prefer to fetch your data **before** you component loads, you can use the `resolve()` function within an Angular [RouteResolver](https://angular.io/api/router/Resolve).  
+### USING OUR FETCHER WITHIN A RESOLVER (BEFORE COMPONENT LOADS) ###
 ```Typescript
 import { resolve } from 'heerlik-angular';
 // ... other imports

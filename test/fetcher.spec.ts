@@ -1,6 +1,6 @@
 import { make } from "../src";
 
-describe('Async', () => {
+describe('Fetcher', () => {
 
   it('should perform a basic fetch', done => {
     const initialState = {
@@ -66,6 +66,21 @@ describe('Async', () => {
         done();
       });
     }, 10);
+
   });
+
+  it('should listen to status changes', done => {
+    const initialState = {
+      array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
+    };
+    const getStore = make('state', initialState);
+    const fetcher = getStore(s => s.array).createFetcher(
+      () => new Promise(resolve => setTimeout(() => resolve([{ id: 2, value: 'dd' }]), 10)), { cacheForMillis: 20 });
+    fetcher.onStatusChange(status => console.log(status));
+    fetcher.fetch().then(() => {
+      console.log('DONE!');
+      done();
+    });
+  })
 
 });

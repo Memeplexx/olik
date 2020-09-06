@@ -1,4 +1,4 @@
-import { make, tests } from "../src";
+import { make, tests } from "../src/core";
 
 describe('Object', () => {
 

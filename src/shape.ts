@@ -4,11 +4,13 @@ export interface Options {
   addPrefix?: string;
 }
 
+export type status = 'pristine' | 'error' | 'resolved' | 'resolving';
+
 export interface Fetcher<S, C> {
   /**
    * The current status of the fetch
    */
-  status: 'pristine' | 'error' | 'resolved' | 'resolving';
+  status: status;
   /**
    * Can be called to manually bust a cache before invoking 'fetch()' again
    */
@@ -17,10 +19,21 @@ export interface Fetcher<S, C> {
    * Can be called to fetch the results and automatically add them to the store
    */
   fetch: () => Promise<C>,
-
+  /**
+   * The store that is associated with this fetcher
+   */
   store: (selector?: (state: S) => C) => AvailableOps<S, C>,
-
+  /**
+   * The selector that is associated with this fetcher
+   */
   selector: (state: S) => C,
+  /**
+   * Can be used to react to a status change
+   * ```
+   * myFetcher.onStatusChange(status => console.log('Status is now', status));
+   * ```
+   */
+  onStatusChange: (listener: (status: status) => any) => Unsubscribable,
 }
 
 export type equal<S> = <T = S>(arg: (state: S) => T, value: T) => any;
@@ -175,7 +188,7 @@ export type AvailableOps<S, C> =
      *   .onChange(todos => console.log(todos)) ;
      * ```
      */
-    onChange: (performAction: (selection: C) => any) => { unsubscribe: () => any },
+    onChange: (performAction: (selection: C) => any) => Unsubscribable,
     /**
      * @returns the current state
      */
@@ -185,3 +198,7 @@ export type AvailableOps<S, C> =
      */
     reset: () => void,
   };
+
+  export interface Unsubscribable {
+    unsubscribe: () => any,
+  }

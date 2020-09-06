@@ -1,12 +1,12 @@
 import { integrateStoreWithReduxDevtools } from './devtools';
-import { AvailableOps, Fetcher, Options } from './shape';
+import { AvailableOps, Fetcher, Options, status, Unsubscribable } from './shape';
 
 const skipProxyCheck = Symbol();
 
 export const tests = {
-  logActions: false,
-  currentAction: { type: '', payload: null },
+  currentAction: { type: '', payload: null as any },
   currentMutableState: null,
+  logLevel: 'DEBUG' as 'DEBUG' | 'ERROR'
 }
 
 export function make<S>(name: string, state: S, devtoolsOptions?: { maxAge?: number }) {
@@ -14,22 +14,21 @@ export function make<S>(name: string, state: S, devtoolsOptions?: { maxAge?: num
   const changeListeners = new Map<(arg: S) => any, (ar: any) => any>();
   const fetchers = new Map<string, Fetcher<any, any>>();
   let mutableStateCopy = deepCopy(state);
-  let segGatherer = defineSegGatherer(mutableStateCopy);
+  const segGatherer = defineSegGatherer(mutableStateCopy);
   let currentState = deepFreeze(state) as S;
   const initialState = currentState;
-
   let devtoolsDispatchListener: ((action: { type: string, payload?: any }) => any) | undefined;
   const setDevtoolsDispatchListener = (listener: (action: { type: string, payload?: any }) => any) => devtoolsDispatchListener = listener;
-
   const actionReplace = <C>(selector: (s: S) => C, name: string) => (assignment: C, options?: Options) => {
     readPathOfSelector(selector);
-    if (!pathSegments.length) { // user must be performing a root update
+    const isRootUpdate = !pathSegments.length;
+    if (isRootUpdate) {
       updateState<S, C>(selector, `replace()`, assignment,
         old => deepCopy(assignment),
         old => {
           if (Array.isArray(old)) {
             old.length = 0; Object.assign(old, assignment);
-          } else if (typeof(old) === 'boolean' || typeof(old) === 'number') {
+          } else if (typeof (old) === 'boolean' || typeof (old) === 'number') {
             mutableStateCopy = assignment;
           } else {
             Object.assign(old, assignment);
@@ -54,11 +53,12 @@ export function make<S>(name: string, state: S, devtoolsOptions?: { maxAge?: num
     patchWith: (assignment: Partial<C>) => updateState<S, C>(selector, 'patchWith', assignment,
       old => ({ ...old, ...assignment }),
       old => Object.assign(old, assignment)),
-    patchWhere: (where: (e: X) => boolean) => ({ ////// CHECKED ///////
+    patchWhere: (where: (e: X) => boolean) => ({
       with: (assignment: Partial<X[0]>) => {
         const itemIndices = (selector(currentState) as any as X).map((e, i) => where(e) ? i : null).filter(i => i !== null);
         readPathOfSelector(selector);
-        return updateState<S, C>(selector, `${pathSegments.join('.')}${pathSegments.length ? '.' : ''}${itemIndices.join(',')}.patchWhere()`, assignment,
+        return updateState<S, C>(selector, `${pathSegments.join('.')}${pathSegments.length ? '.' : ''}${itemIndices.join(',')}.patchWhere()`,
+          { patch: assignment, whereClause: where.toString() },
           old => (old as any[]).map((o, i) => itemIndices.includes(i) ? { ...o, ...assignment } : o),
           old => {
             (old as any[]).forEach((el, idx) => {
@@ -90,7 +90,8 @@ export function make<S>(name: string, state: S, devtoolsOptions?: { maxAge?: num
     removeWhere: (predicate: (arg: X[0]) => boolean) => {
       const itemIndices = (selector(currentState) as any as X).map((e, i) => predicate(e) ? i : null).filter(i => i !== null);
       readPathOfSelector(selector);
-      return updateState<S, C>(selector, `${pathSegments.join('.')}${pathSegments.length ? '.' : ''}${itemIndices.join(',')}.removeWhere()`, (selector(currentState) as any as X).filter(predicate),
+      return updateState<S, C>(selector, `${pathSegments.join('.')}${pathSegments.length ? '.' : ''}${itemIndices.join(',')}.removeWhere()`,
+        { toRemove: (selector(currentState) as any as X).filter(predicate), whereClause: predicate.toString() },
         old => old.filter((o: any) => !predicate(o)),
         old => {
           const toRemove = old.filter(predicate, skipProxyCheck);
@@ -102,7 +103,7 @@ export function make<S>(name: string, state: S, devtoolsOptions?: { maxAge?: num
           }
         }, { overrideActionName: true });
     },
-    upsertWhere: (criteria: (e: X[0]) => boolean) => ({ ////// CHECKED ///////
+    upsertWhere: (criteria: (e: X[0]) => boolean) => ({
       with: (element: X[0]) => {
         const itemIndices = (selector(currentState) as any as X).map((e, i) => criteria(e) ? i : null).filter(i => i !== null);
         if (itemIndices.length > 1) { throw new Error('Cannot upsert more than 1 element'); }
@@ -111,11 +112,12 @@ export function make<S>(name: string, state: S, devtoolsOptions?: { maxAge?: num
           : action(selector as (s: S) => X).addAfter(element);
       }
     }),
-    replaceWhere: (criteria: (e: X[0]) => boolean) => ({ ////// CHECKED ///////
+    replaceWhere: (criteria: (e: X[0]) => boolean) => ({
       with: (assignment: X[0]) => {
         const itemIndices = (selector(currentState) as any as X).map((e, i) => criteria(e) ? i : null).filter(i => i !== null);
         readPathOfSelector(selector);
-        return updateState<S, C>(selector, `${pathSegments.join('.')}${pathSegments.length ? '.' : ''}${itemIndices.join(',')}.replaceWhere()`, assignment,
+        return updateState<S, C>(selector, `${pathSegments.join('.')}${pathSegments.length ? '.' : ''}${itemIndices.join(',')}.replaceWhere()`,
+          { replacement: assignment, whereClause: criteria.toString() },
           old => (old as any[]).map((o, i) => itemIndices.includes(i) ? deepCopy(assignment) : o),
           old => {
             (old as any[]).forEach((el, idx) => {
@@ -130,12 +132,15 @@ export function make<S>(name: string, state: S, devtoolsOptions?: { maxAge?: num
       const otherFetchers = new Array<{ resolve: (c: C) => void, reject: (e: any) => void }>();
       readPathOfSelector(selector);
       const path = pathSegments.join('.');
+      const statusChangeListeners = new Set<(status: status) => any>();
       let lastFetch = 0;
       const result = new (class {
         store = storeResult;
         selector = selector;
-        status: 'pristine' | 'error' | 'resolved' | 'resolving' = 'pristine';
+        status: status = 'pristine';
         invalidateCache = () => { lastFetch = 0; }
+        onStatusChange = (listener: (status: status) => Unsubscribable) => { statusChangeListeners.add(listener); return { unsubscribe: () => statusChangeListeners.delete(listener) } }
+        private setStatus = (status: status) => { this.status = status; statusChangeListeners.forEach(listener => listener(status)); }
         fetch = () => {
           const cacheHasExpired = (lastFetch + (specs.cacheForMillis || 0)) < Date.now();
           if ((this.status === 'resolved') && !cacheHasExpired) {
@@ -143,10 +148,10 @@ export function make<S>(name: string, state: S, devtoolsOptions?: { maxAge?: num
           } else if (this.status === 'resolving') {
             return new Promise<C>((resolve, reject) => otherFetchers.push({ resolve, reject }));
           } else {
-            this.status = 'resolving';
+            this.setStatus('resolving');
             return promise()
               .then(response => {
-                this.status = 'resolved';
+                this.setStatus('resolved');
                 const piece = storeResult(selector) as any as { replace: (c: C) => void } & { replaceAll: (c: C) => void };
                 if (piece.replaceAll) { piece.replaceAll(response); } else { piece.replace(response); }
                 lastFetch = Date.now();
@@ -154,7 +159,7 @@ export function make<S>(name: string, state: S, devtoolsOptions?: { maxAge?: num
                 otherFetchers.length = 0;
                 return selector(storeResult().read());
               }).catch(rejection => {
-                this.status = 'error';
+                this.setStatus('error');
                 otherFetchers.forEach(f => f.reject(rejection));
                 otherFetchers.length = 0;
                 throw rejection;
@@ -170,7 +175,7 @@ export function make<S>(name: string, state: S, devtoolsOptions?: { maxAge?: num
       return { unsubscribe: () => changeListeners.delete(selector) };
     },
     read: () => selector(currentState),
-    reset: () => actionReplace(selector, 'reset()')(selector(initialState)),
+    reset: () => actionReplace(selector, 'reset')(selector(initialState)),
   } as any as AvailableOps<S, C>);
 
 
@@ -198,7 +203,7 @@ export function make<S>(name: string, state: S, devtoolsOptions?: { maxAge?: num
     const result = deepFreeze(copyObject(currentState, { ...currentState }, pathSegments.slice(), action));
     notifySubscribers(result);
     mutator(selector(mutableStateCopy));
-    segGatherer = defineSegGatherer(mutableStateCopy);
+    // segGatherer = defineSegGatherer(mutableStateCopy);
     currentState = result;
     const actionToDispatch = {
       type: options && options.overrideActionName ? actionName : ((pathSegments.join('.') + (pathSegments.length ? '.' : '') + actionName + '()')),
@@ -223,10 +228,6 @@ export function make<S>(name: string, state: S, devtoolsOptions?: { maxAge?: num
           return defineSegGatherer(val);
         } else if (typeof (val) === 'function') {
           return function (...args: any[]) {
-            // if (prop !== 'filter' || prop !== 'find') {
-            //   throw new Error(
-            //     `'getStore(...${prop}())' detected. Method invokations within the selector function are now permitted`);
-            // }
             if (prop !== 'filter' || args[1] !== skipProxyCheck) {
               throw new Error(
                 `'getStore(...${prop}())' detected. If you're trying to filter or find elements, rather use a library function eg. getStore(some.array).removeWhere(e => e.status === 'done')`);
@@ -309,4 +310,47 @@ export function deepCopy(o: any): any {
     }
   }
   return newO;
+}
+
+type ReadType<E> = E extends AvailableOps<any, infer W> ? W : never;
+
+type MappedDataTuple<T extends Array<AvailableOps<any, any>>> = {
+  [K in keyof T]: ReadType<T[K]>;
+}
+
+export function derive<X extends AvailableOps<any, any>[]>(...args: X) {
+  let previousParams = new Array<any>();
+  let previousResult = null as any;
+  return {
+    using: <R>(calculation: (...inputs: MappedDataTuple<X>) => R) => {
+      const getValue = () => {
+        const params = (args as Array<AvailableOps<any, any>>).map(arg => arg.read());
+        if (previousParams.length && params.every((v, i) => v === previousParams[i])) {
+          return previousResult;
+        }
+        const result = calculation(...(params as AvailableOps<any, any>));
+        previousParams = params;
+        previousResult = result;
+        return result;
+      }
+      const changeListeners = new Set<(value: R) => any>();
+      return {
+        read: () => getValue(),
+        onChange: (listener: (value: R) => any) => {
+          changeListeners.add(listener);
+          const unsubscribables: Unsubscribable[] = (args as Array<AvailableOps<any, any>>)
+            .map(ops => ops.onChange(() => listener(getValue())));
+          return {
+            unsubscribe: () => {
+              unsubscribables.forEach(u => u.unsubscribe());
+              changeListeners.delete(listener);
+            }
+          }
+        }
+      } as {
+        read: () => R,
+        onChange: (listener: (value: R) => any) => Unsubscribable,
+      };
+    }
+  }
 }

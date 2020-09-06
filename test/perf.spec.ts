@@ -1,4 +1,4 @@
-import { make, deepCopy } from "../src";
+import { make, deepCopy } from "../src/core";
 import { fromJS } from 'immutable';
 import { produce } from 'immer';
 

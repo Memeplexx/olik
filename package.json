@@ -1,6 +1,6 @@
 {
   "name": "heerlik",
-  "version": "1.0.39",
+  "version": "1.0.42",
   "description": "",
   "main": "dist/cjs/heerlik.js",
   "module": "dist/esm/heerlik.js",
@@ -11,14 +11,16 @@
     "tsc": "tsc && node node_modules/gulp/bin/gulp.js",
     "build": "rollup -c && npm run tsc",
     "dev": "rollup -c --watch",
-    "test": "cross-env NODE_ENV=test jest --coverage --coverageReporters=text-lcov",
+    "test": "cross-env NODE_ENV=test jest --coverage --coverageReporters=text-lcov | coveralls",
     "test:cov": "cross-env NODE_ENV=test npm test --coverage --collectCoverageFrom=src/**/*.{ts}",
     "test:watch": "cross-env NODE_ENV=test jest --watchAll --verbose false"
   },
   "author": "",
   "license": "ISC",
-  "dependencies": {},
+  "dependencies": {
+  },
   "devDependencies": {
+    "coveralls": "^3.1.0",
     "@types/jest": "^26.0.7",
     "@types/react": "^16.9.46",
     "cross-env": "^7.0.2",

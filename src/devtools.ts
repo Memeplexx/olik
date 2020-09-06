@@ -3,6 +3,7 @@ import { AvailableOps } from "./shape";
 export interface EnhancerOptions {
   name?: string;
   maxAge?: number;
+  actionsBlacklist?: string[],
 }
 
 // ref: https://medium.com/@zalmoxis/redux-devtools-without-redux-or-how-to-have-a-predictable-state-with-any-architecture-61c5f5a7716f

@@ -7,14 +7,21 @@
 - **ATOMIC OR COMPOSITE -** No limitations on how big, small, or numerous stores can be
 - **FAST -** Roughly equivalent to [Immutable](https://github.com/immutable-js/immutable-js) and significantly faster than [Immer](https://github.com/immerjs/immer)
 
+## MOTIVATION ##
+The goal of this library is to remove ambiguity and indirection while improving consistency when it comes to managing your state updates.  
+So apart from **automatically updating** your state, updates are **described for you** based off your **selector function**, and your use of one of the few **[standard library actions](./readme-actions.md)**.  
+
 ## SETUP ##
 ```console
 npm install oulik-angular
 ```
 ```Typescript
-import { make } from 'oulik-angular';
+import { make } from 'oulik';
 
-const getCanvas = make('box', { width: 10, height: 10 });           // State can be as nested as you like, as long as it is serializable. This will be auto-registered with the devtools extension
+const getCanvas = make('canvas', {              // This name will register your store with the Redux Devtools Extension
+  size: { width: 10, height: 10 },              // This is your initial state. It can be a simple primitive value, or something far more nested. It just needs to be serializable.
+  border: { thickness: 1 }                           
+}); 
 
 @Module(...)
 export class AppModule {
@@ -27,31 +34,15 @@ export class AppModule {
 ## WRITE ##
 
 ```Typescript
-getCanvas(s => s.width).replace(20);                                // The devtools will register the action: `{ type: 'width.replace()', payload: 20 }` and your state will be updated.
+getCanvas(s => s.size.width).replaceWith(20);   // The devtools will register the action: `{ type: 'size.width.replaceWith()', payload: 20 }` and your state will be updated.
 ```
-[More write options...](./readme-actions.md)
+[All write options...](./readme-actions.md)
 
-## READ ##
+## READING ##
 
 ```Typescript
-const canvas = getCanvas().read();
-
-const listener = getCanvas(b => b.width).onChange(width => ...);
+const w = getCanvas(c => c.size.width).read();
 ```
+[All read options...](./readme-angular-read.md)
 
-## OBSERVE ##
 
-```Typescript
-import { select } from 'oulik-angular';
-
-@Component({
-  selector: 'app-component',
-  template: `
-  <ul><li *ngFor="let todo of todos$ | async">{{todo}}<li></ul>
-  `
-})
-export class MyComponent {
-  todos$ = select(getStore(s => s.todos));
-}
-```
-[More read options...](./readme-angular-fetchers.md)
