@@ -32,5 +32,5 @@ describe('Memoize', () => {
     getStore(s => s.counter).replaceWith(4);
   })
 
-  it('should derive() and track events')
+  // it('should derive() and track events')
 });
