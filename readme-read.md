@@ -18,7 +18,7 @@ const getCanvas = make('canvas', {
 
 ## READING STATE SYNCHRONOUSLY ##
 ```Typescript
-const canvasWidth = getCanvas().read().size.width;
+const canvasWidth = getCanvas(s => s.size.width).read();
 ```
 
 ## LISTENING TO STATE UPDATES ##
@@ -30,15 +30,19 @@ listener.unsubscribe(); // Please unsubscribe to avoid memory leaks
 
 ## CALCULATING DERIVED STATE ##
 ```Typescript
-const innerWidth = derive(
+import { derive } from 'oulik';
+
+const innerWidth = deriveFrom(
   getCanvas(s => s.size.width),
   getCanvas(s => s.border.thickness),
-).using((boxWidth, borderThickness) => {
+).usingExpensiveCalc((boxWidth, borderThickness) => {
   return boxWidth - (borderThickness * 2); // Usually we'd be performing a much bigger calculation here
 });
 
 const width = innerWidth.read();
-innerWidth.onChange(innerWidth => console.log('inner width', innerWidth))
+
+const listener = innerWidth.onChange(innerWidth => console.log('inner width', innerWidth));
+listener.unsubscribe(); // Please unsubscribe to avoid memory leaks
 ```
 
 ## FETCHING STATE FROM EXTERNAL SOURCES ##

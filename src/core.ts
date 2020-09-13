@@ -318,11 +318,11 @@ type MappedDataTuple<T extends Array<AvailableOps<any, any>>> = {
   [K in keyof T]: ReadType<T[K]>;
 }
 
-export function derive<X extends AvailableOps<any, any>[]>(...args: X) {
+export function deriveFrom<X extends AvailableOps<any, any>[]>(...args: X) {
   let previousParams = new Array<any>();
   let previousResult = null as any;
   return {
-    using: <R>(calculation: (...inputs: MappedDataTuple<X>) => R) => {
+    usingExpensiveCalc: <R>(calculation: (...inputs: MappedDataTuple<X>) => R) => {
       const getValue = () => {
         const params = (args as Array<AvailableOps<any, any>>).map(arg => arg.read());
         if (previousParams.length && params.every((v, i) => v === previousParams[i])) {
