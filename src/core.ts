@@ -230,7 +230,7 @@ export function make<S>(name: string, state: S, devtoolsOptions?: { maxAge?: num
           return function (...args: any[]) {
             if (prop !== 'filter' || args[1] !== skipProxyCheck) {
               throw new Error(
-                `'getStore(...${prop}())' detected. If you're trying to filter or find elements, rather use a library function eg. getStore(some.array).removeWhere(e => e.status === 'done')`);
+                `'getStore(...${prop}())' detected. If you're trying to filter or find elements, rather use a library function eg. getStore(s => s.todos).removeWhere(e => e.status === 'done')`);
             }
             const filtered = val.apply(target, args) as any[];
             const indices = (target as any[]).map((e, i) => filtered.includes(e) ? i : null).filter(e => e !== null, skipProxyCheck) as number[];

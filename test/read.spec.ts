@@ -26,4 +26,10 @@ describe('Read', () => {
     expect(value).toEqual(1);
   })
 
+  it('should read an array index', () => {
+    const getState = make('state', [{ prop: 'hello' }, { prop: 'world' }]);
+    const value = getState(s => s.findIndex(e => e.prop === 'hello')).read();
+    expect(value).toEqual(0);
+  })
+
 });
