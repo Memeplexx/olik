@@ -229,12 +229,6 @@ export function make<S>(name: string, state: S, devtoolsOptions?: { maxAge?: num
 function copyObject<T>(oldObj: T, newObj: T, segs: string[], action: (newNode: any) => any): any {
   const seg = (segs as (keyof T)[]).shift();
   if (seg) {
-    if ((seg as string).includes(',') || !isNaN(seg as any)) {
-      const arrayIndices = (seg as string).split(',').map(e => +e);
-      return (oldObj as any as any[]).map((e, i) => arrayIndices.includes(i)
-        ? { ...(oldObj as any)[i], ...copyObject((oldObj as any)[i], (newObj as any)[i], segs, action) }
-        : e);
-    }
     return { ...oldObj, [seg]: copyObject(oldObj[seg], newObj[seg], segs, action) };
   } else {
     return action(oldObj);
