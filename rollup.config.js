@@ -1,7 +1,6 @@
 import typescript from 'rollup-plugin-typescript2';
 import fs from 'fs';
 let pkg = JSON.parse(fs.readFileSync('./package.json'));
-import { terser } from "rollup-plugin-terser";
 import peerDepsExternal from 'rollup-plugin-peer-deps-external';
 import resolve from 'rollup-plugin-node-resolve';
 import commonJS from 'rollup-plugin-commonjs'
@@ -32,6 +31,5 @@ export default {
     typescript({
       typescript: require('typescript'),
     }),
-    // terser() // minifies generated bundles
   ],
 };

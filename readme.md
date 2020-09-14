@@ -2,10 +2,10 @@
 
 [![Build Status](https://travis-ci.org/Memeplexx/oulik.svg?branch=master)](https://travis-ci.org/Memeplexx/oulik.svg?branch=master)
 [![Coverage Status](https://coveralls.io/repos/github/Memeplexx/oulik/badge.svg?branch=master)](https://coveralls.io/repos/github/Memeplexx/oulik/badge.svg?branch=master)
+![Package Size](https://badgen.net/bundlephobia/minzip/heerlik)
 
 ### ***Unambigiuous, in-line state-management*** ###
 - **ERGONOMIC -** Completely typesafe & compact API with a standardised set of abstractions for state updates
-- **TINY -** 2.4kb minified & gzipped, with zero external runtime dependencies
 - **DEBUGGABLE -** via the [Redux Devtools extension](https://chrome.google.com/webstore/detail/redux-devtools/lmhkpmbekcpmknklioeibfkpmmfibljd?hl=en)
 - **ATOMIC OR COMPOSITE -** Use small stores (AKA 'atoms') where performance is critical, and a monolythic store everywhere else
 - **FAST -** Roughly equivalent to [Immutable](https://github.com/immutable-js/immutable-js) and significantly faster than [Immer](https://github.com/immerjs/immer)
