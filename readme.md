@@ -29,15 +29,16 @@ npm install oulik
 ```Typescript
 import { make } from 'oulik';
 
-const getCanvas = make('canvas', {              // <- Your store will be be registered with the Redux Devtools Extension using this name.
-  size: { width: 10, height: 10 },              // <- Your initial state must be serializable, but can be a simple primitive value, or something far more nested.
-  border: { thickness: 1 }
+const getCanvas = make('canvas', {              // <- Auto-registers with the Redux Devtools Extension.
+  size: { width: 10, height: 10 },              // <- Initial state must be serializable. It can be a simple
+  border: { thickness: 1 }                      //    primitive, or something far more nested.
 });       
 ```
 
 ## WRITING STATE ##
 ```Typescript
-getCanvas(s => s.size.width).replaceWith(20);   // Devtools will update your state using the action: `{ type: 'size.width.replaceWith()', payload: 20 }`.
+getCanvas(s => s.size.width).replaceWith(20);   // <- Devtools Extension will update your state using the action:
+                                                //    { type: 'size.width.replaceWith()', payload: 20 }
 ```
 [All write options...](./readme-write.md)
 
