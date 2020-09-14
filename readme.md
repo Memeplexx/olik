@@ -5,7 +5,7 @@
 ![Package Size](https://badgen.net/bundlephobia/minzip/heerlik)
 ![Dependency count](https://badgen.net/bundlephobia/dependency-count/heerlik)
 
-### ***Unambigiuous, in-line state-management*** 🐒 ###
+### ***Unambigiuous, in-line state-management*** ###
 - **ERGONOMIC -** Completely typesafe & compact API with a standardised set of abstractions for state updates
 - **DEBUGGABLE -** Via the [Redux Devtools extension](https://chrome.google.com/webstore/detail/redux-devtools/lmhkpmbekcpmknklioeibfkpmmfibljd?hl=en)
 - **ATOMIC OR COMPOSITE -** Use small stores where performance is critical, and a single store everywhere else
