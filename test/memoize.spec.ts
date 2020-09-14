@@ -75,4 +75,26 @@ describe('Memoize', () => {
     expect(eventReceived).toEqual(1);
   })
 
+  it('should deriveFrom() and correctly unsubscribe', () => {
+    const getStore = make('store', {
+      one: 'x',
+      two: 0,
+    });
+    const mem = deriveFrom(
+      getStore(s => s.one),
+      getStore(s => s.two)
+    ).usingExpensiveCalc((one, two) => {
+      return one + two;
+    });
+    let onChangeListenerCallCount = 0;
+    const onChangeListener = mem.onChange(() => onChangeListenerCallCount++);
+    getStore(s => s.two).replaceWith(1);
+    expect(mem.read()).toEqual('x1');
+    expect(onChangeListenerCallCount).toEqual(1);
+    onChangeListener.unsubscribe();
+    getStore(s => s.two).replaceWith(2);
+    expect(mem.read()).toEqual('x2');
+    expect(onChangeListenerCallCount).toEqual(1);
+  })
+
 });
