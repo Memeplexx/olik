@@ -83,4 +83,20 @@ describe('Fetcher', () => {
     });
   })
 
+  it('should handle errors correctly', done => {
+    const initialState = {
+      array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
+    };
+    const getStore = make('state', initialState);
+    const fetcher = getStore(s => s.array).createFetcher(
+      () => new Promise((resolve, reject) => setTimeout(() => reject('Woops'), 10)), { cacheForMillis: 20 });
+    let errorCaught = false;
+    fetcher.fetch()
+      .catch(e => errorCaught = true)
+      .finally(() => {
+        expect(errorCaught).toEqual(true);
+        done();
+      })
+  })
+
 });

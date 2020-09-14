@@ -23,36 +23,56 @@ describe('Memoize', () => {
       counter: 3,
     });
     let recalculating = 0;
+    let eventReceived = 0;
     const mem = deriveFrom(
       getStore(s => s.array),
       getStore(s => s.counter)
     ).usingExpensiveCalc((array, counter) => {
-      recalculating++
+      recalculating++;
       let result = {
         array: new Array<string>(),
         counter: 0,
       };
       for (let i = 0; i < 10000; i++) {
         result.array.push('');
-        counter++;
+        result.counter = counter;
       }
       return result;
     });
+    mem.onChange(() => eventReceived++);
     const result = mem.read();
     expect(result.array.length).toEqual(10000);
     const result2 = mem.read();
     expect(result2.array.length).toEqual(10000);
     expect(recalculating).toEqual(1);
     getStore(s => s.counter).replaceWith(4);
+    const result3 = mem.read();
+    expect(recalculating).toEqual(2);
+    expect(result3.counter).toEqual(4);
+    expect(eventReceived).toEqual(1);
   })
 
-  // it('test', () => {
-  //   const getStore = make('store', {
-  //     array: [{id: 1, text: 'one'}]
-  //   });
-  //   const res = getStore(s => s.array.find(e => e.id === 1)).patchWith({text: 'ddd'});
-  //   console.log('...', res);
-  // })
+  it('should deriveFrom() and emit events only when required', () => {
+    const getStore = make('store', {
+      array: new Array<string>(),
+      counter: 3,
+      string: '',
+    });
+    let recalculating = 0;
+    let eventReceived = 0;
+    const mem = deriveFrom(
+      getStore(s => s.array),
+      getStore(s => s.counter)
+    ).usingExpensiveCalc((array, counter) => {
+      recalculating++;
+    });
+    mem.onChange(() => eventReceived++);
+    getStore(s => s.string).replaceWith('hey');
+    expect(getStore(s => s.string).read()).toEqual('hey');
+    expect(recalculating).toEqual(0);
+    expect(eventReceived).toEqual(0);
+    getStore(s => s.counter).replaceWith(2);
+    expect(eventReceived).toEqual(1);
+  })
 
-  
 });

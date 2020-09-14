@@ -14,7 +14,7 @@ interface WindowAugmented {
   send: (action: { type: string, payload?: any }, state: any, options: EnhancerOptions) => any;
 }
 
-const windowObj = window as any as { __REDUX_DEVTOOLS_EXTENSION__: WindowAugmented };
+let windowObj = window as any as { __REDUX_DEVTOOLS_EXTENSION__: WindowAugmented };
 
 export function integrateStoreWithReduxDevtools<S>(
   store: () => AvailableOps<S, S>,
@@ -22,7 +22,8 @@ export function integrateStoreWithReduxDevtools<S>(
   setDevtoolsDispatchListener: (listener: (action: { type: string, payload?: any }) => any) => any
 ) {
   if (process.env.NODE_ENV === 'test') {
-    return;
+    // return;
+    windowObj = { __REDUX_DEVTOOLS_EXTENSION__: { connect: () => ({ init: () => null, subscribe: () => null, send: () => null }), disconnect: () => null, send: () => null } as WindowAugmented }
   }
   if (!windowObj.__REDUX_DEVTOOLS_EXTENSION__) {
     console.error('Cannot find Redux Devtools Extension');

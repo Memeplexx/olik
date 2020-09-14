@@ -56,6 +56,6 @@ getStore(s => s.todos).replaceMany(t => t.status === 'todo').with(newTodo);
 // Subtitute one element
 getStore(s => s.todos).replaceWhere(t => t.id === 5).with({ id: 5, text: 'bake cookies', status: 'todo' });
 
-// Subtitute or appends an element depending on whether or not it can be found.
+// Subtitute or append an element depending on whether or not it can be found.
 getStore(s => s.todos).upsertWhere(t => t.id === 5).with({ id: 5, text: 'bake cookies', status: 'todo' });
 ```

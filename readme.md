@@ -19,8 +19,8 @@ State operations are typically hidden behind an opaque facade of user-defined 'a
 Some actions fail to describe a state update accurately while other actions needlessly re-describe very simple operations.  
 Furthermore, as your code evolves, there can be a 'drift' between action types, and the state thay purport to operate on.  
 
-This library's unique API makes the precise nature of state updates extremely obvious by removing user-defined abstractions.  
-As a result, your state-management becomes as **direct**, **typesafe**, **legible**, **compact**, **refactorable**, and **debuggable** as possible.  
+This library's unique API makes the precise nature of state updates extremely obvious by exploiting the type system and removing user-defined abstractions.  
+As a result, your state-management becomes far more **direct**, **typesafe**, **legible**, **compact**, **refactorable**, and **debuggable**.  
 
 
 ## GETTING STARTED ##

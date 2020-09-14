@@ -199,6 +199,12 @@ export type AvailableOps<S, C> =
     reset: () => void,
   };
 
-  export interface Unsubscribable {
-    unsubscribe: () => any,
-  }
+export interface Unsubscribable {
+  unsubscribe: () => any,
+}
+
+type ReadType<E> = E extends AvailableOps<any, infer W> ? W : never;
+
+export type MappedDataTuple<T extends Array<AvailableOps<any, any>>> = {
+  [K in keyof T]: ReadType<T[K]>;
+}

@@ -1,5 +1,5 @@
 import { integrateStoreWithReduxDevtools } from './devtools';
-import { AvailableOps, Fetcher, Options, status, Unsubscribable } from './shape';
+import { AvailableOps, Fetcher, Options, status, Unsubscribable, MappedDataTuple } from './shape';
 
 const skipProxyCheck = Symbol();
 
@@ -10,32 +10,30 @@ export const tests = {
 }
 
 export function make<S>(name: string, state: S, devtoolsOptions?: { maxAge?: number }) {
-  const pathSegments = new Array<string>();
   const changeListeners = new Map<(arg: S) => any, (ar: any) => any>();
   const fetchers = new Map<string, Fetcher<any, any>>();
-  let mutableStateCopy = deepCopy(state);
-  const segGatherer = defineSegGatherer(mutableStateCopy);
+  const pathReader = createPathReader(state);
   let currentState = deepFreeze(state) as S;
   const initialState = currentState;
   let devtoolsDispatchListener: ((action: { type: string, payload?: any }) => any) | undefined;
   const setDevtoolsDispatchListener = (listener: (action: { type: string, payload?: any }) => any) => devtoolsDispatchListener = listener;
-  const actionReplace = <C>(selector: (s: S) => C, name: string) => (assignment: C, options?: Options) => {
-    readPathOfSelector(selector);
-    const isRootUpdate = !pathSegments.length;
+  const replace = <C>(selector: (s: S) => C, name: string) => (assignment: C, options?: Options) => {
+    const isRootUpdate = !pathReader.readSelector(selector).length;
     if (isRootUpdate) {
-      updateState<S, C>(selector, `replace()`, assignment,
+      updateState<C>(selector, `replace()`, assignment,
         old => deepCopy(assignment),
         old => {
           if (Array.isArray(old)) {
             old.length = 0; Object.assign(old, assignment);
           } else if (typeof (old) === 'boolean' || typeof (old) === 'number') {
-            mutableStateCopy = assignment;
+            pathReader.mutableStateCopy = assignment;
           } else {
             Object.assign(old, assignment);
           }
         }, { overrideActionName: true, dontTrackWithDevtools: options && options.dontTrackWithDevtools });
       return;
     }
+    const pathSegments = pathReader.pathSegments;
     const lastSeg = pathSegments[pathSegments.length - 1] || '';
     const segsCopy = pathSegments.slice(0, pathSegments.length - 1);
     const selectorRevised = (state: any) => {
@@ -43,21 +41,21 @@ export function make<S>(name: string, state: S, devtoolsOptions?: { maxAge?: num
       segsCopy.forEach(seg => res = res[seg]);
       return res;
     }
-    updateState<S, C>(selectorRevised, `${pathSegments.join('.')}.${name}()`, assignment,
+    updateState<C>(selectorRevised, `${pathSegments.join('.')}.${name}()`, assignment,
       old => Array.isArray(old) ? old.map((o, i) => i === +lastSeg ? deepCopy(assignment) : o) : ({ ...old, [lastSeg]: deepCopy(assignment) }),
       old => old[lastSeg] = assignment, { overrideActionName: true });
   };
   const action = <C, X extends C & Array<any>>(selector: (s: S) => C) => ({
-    replaceWith: actionReplace(selector, 'replaceWith'),
-    replaceAll: actionReplace(selector, 'replaceAll'),
-    patchWith: (assignment: Partial<C>) => updateState<S, C>(selector, 'patchWith', assignment,
+    replaceWith: replace(selector, 'replaceWith'),
+    replaceAll: replace(selector, 'replaceAll'),
+    patchWith: (assignment: Partial<C>) => updateState<C>(selector, 'patchWith', assignment,
       old => ({ ...old, ...assignment }),
       old => Object.assign(old, assignment)),
     patchWhere: (where: (e: X) => boolean) => ({
       with: (assignment: Partial<X[0]>) => {
         const itemIndices = (selector(currentState) as any as X).map((e, i) => where(e) ? i : null).filter(i => i !== null);
-        readPathOfSelector(selector);
-        return updateState<S, C>(selector, `${pathSegments.join('.')}${pathSegments.length ? '.' : ''}${itemIndices.join(',')}.patchWhere()`,
+        const pathSegments = pathReader.readSelector(selector);
+        return updateState<C>(selector, `${pathSegments.join('.')}${pathSegments.length ? '.' : ''}${itemIndices.join(',')}.patchWhere()`,
           { patch: assignment, whereClause: where.toString() },
           old => (old as any[]).map((o, i) => itemIndices.includes(i) ? { ...o, ...assignment } : o),
           old => {
@@ -69,28 +67,28 @@ export function make<S>(name: string, state: S, devtoolsOptions?: { maxAge?: num
           }, { overrideActionName: true });
       }
     }),
-    addAfter: (...assignment: X) => updateState<S, C>(selector, 'addAfter', assignment,
+    addAfter: (...assignment: X) => updateState<C>(selector, 'addAfter', assignment,
       old => [...old, ...deepCopy(assignment)],
       old => old.push(...assignment)),
-    addBefore: (...assignment: X) => updateState<S, C>(selector, 'addBefore', assignment,
+    addBefore: (...assignment: X) => updateState<C>(selector, 'addBefore', assignment,
       old => [...deepCopy(assignment), ...old],
       old => old.unshift(...assignment)),
-    removeFirst: () => updateState<S, C>(selector, 'removeFirst', (selector(currentState) as any as X).slice(1),
+    removeFirst: () => updateState<C>(selector, 'removeFirst', (selector(currentState) as any as X).slice(1),
       old => old.slice(1, old.length),
       old => old.shift()),
     removeLast: () => {
       const selection = selector(currentState) as any as X;
-      updateState<S, C>(selector, 'removeLast', selection.slice(0, selection.length - 1),
+      updateState<C>(selector, 'removeLast', selection.slice(0, selection.length - 1),
         old => old.slice(0, old.length - 1),
         old => old.pop());
     },
-    removeAll: () => updateState<S, C>(selector, 'removeAll', null,
+    removeAll: () => updateState<C>(selector, 'removeAll', null,
       () => [],
       old => old.length = 0),
     removeWhere: (predicate: (arg: X[0]) => boolean) => {
       const itemIndices = (selector(currentState) as any as X).map((e, i) => predicate(e) ? i : null).filter(i => i !== null);
-      readPathOfSelector(selector);
-      return updateState<S, C>(selector, `${pathSegments.join('.')}${pathSegments.length ? '.' : ''}${itemIndices.join(',')}.removeWhere()`,
+      const pathSegments = pathReader.readSelector(selector);
+      return updateState<C>(selector, `${pathSegments.join('.')}${pathSegments.length ? '.' : ''}${itemIndices.join(',')}.removeWhere()`,
         { toRemove: (selector(currentState) as any as X).filter(predicate), whereClause: predicate.toString() },
         old => old.filter((o: any) => !predicate(o)),
         old => {
@@ -115,8 +113,8 @@ export function make<S>(name: string, state: S, devtoolsOptions?: { maxAge?: num
     replaceWhere: (criteria: (e: X[0]) => boolean) => ({
       with: (assignment: X[0]) => {
         const itemIndices = (selector(currentState) as any as X).map((e, i) => criteria(e) ? i : null).filter(i => i !== null);
-        readPathOfSelector(selector);
-        return updateState<S, C>(selector, `${pathSegments.join('.')}${pathSegments.length ? '.' : ''}${itemIndices.join(',')}.replaceWhere()`,
+        const pathSegments = pathReader.readSelector(selector);
+        return updateState<C>(selector, `${pathSegments.join('.')}${pathSegments.length ? '.' : ''}${itemIndices.join(',')}.replaceWhere()`,
           { replacement: assignment, whereClause: criteria.toString() },
           old => (old as any[]).map((o, i) => itemIndices.includes(i) ? deepCopy(assignment) : o),
           old => {
@@ -130,7 +128,7 @@ export function make<S>(name: string, state: S, devtoolsOptions?: { maxAge?: num
     }),
     createFetcher: (promise: () => Promise<C>, specs: { cacheForMillis: number } = { cacheForMillis: 0 }) => {
       const otherFetchers = new Array<{ resolve: (c: C) => void, reject: (e: any) => void }>();
-      readPathOfSelector(selector);
+      const pathSegments = pathReader.readSelector(selector);
       const path = pathSegments.join('.');
       const statusChangeListeners = new Set<(status: status) => any>();
       let lastFetch = 0;
@@ -175,9 +173,8 @@ export function make<S>(name: string, state: S, devtoolsOptions?: { maxAge?: num
       return { unsubscribe: () => changeListeners.delete(selector) };
     },
     read: () => selector(currentState),
-    reset: () => actionReplace(selector, 'reset')(selector(initialState)),
+    reset: () => replace(selector, 'reset')(selector(initialState)),
   } as any as AvailableOps<S, C>);
-
 
   const storeResult = <C = S>(selector: ((s: S) => C) = (s => s as any as C)) => {
     const selectorMod = selector as (s: S) => C;
@@ -185,7 +182,7 @@ export function make<S>(name: string, state: S, devtoolsOptions?: { maxAge?: num
     return action(selectorMod);
   };
 
-  function updateState<S, C>(
+  function updateState<C>(
     selector: (s: S) => C,
     actionName: string,
     payload: any,
@@ -199,63 +196,19 @@ export function make<S>(name: string, state: S, devtoolsOptions?: { maxAge?: num
         overrideActionName: false,
       },
   ) {
-    readPathOfSelector(selector);
+    const pathSegments = pathReader.readSelector(selector);
     const result = deepFreeze(copyObject(currentState, { ...currentState }, pathSegments.slice(), action));
     notifySubscribers(result);
-    mutator(selector(mutableStateCopy));
-    // segGatherer = defineSegGatherer(mutableStateCopy);
+    mutator(selector(pathReader.mutableStateCopy));
     currentState = result;
     const actionToDispatch = {
       type: options && options.overrideActionName ? actionName : ((pathSegments.join('.') + (pathSegments.length ? '.' : '') + actionName + '()')),
       payload,
     };
     tests.currentAction = actionToDispatch;
-    tests.currentMutableState = mutableStateCopy;
+    tests.currentMutableState = pathReader.mutableStateCopy;
     if (devtoolsDispatchListener && !options.dontTrackWithDevtools) {
       devtoolsDispatchListener(actionToDispatch);
-    }
-  }
-
-  function defineSegGatherer<S extends object>(state: S): S {
-    if (typeof (state) !== 'object') { // may happen if we have a top-level primitive
-      return null as any as S;
-    }
-    return new Proxy(state, {
-      get: function (target, prop: any) {
-        const val = (target as any)[prop];
-        if (val !== null && typeof (val) === 'object') {
-          pathSegments.push(prop);
-          return defineSegGatherer(val);
-        } else if (typeof (val) === 'function') {
-          return function (...args: any[]) {
-            if (prop !== 'filter' || args[1] !== skipProxyCheck) {
-              throw new Error(
-                `'getStore(...${prop}())' detected. If you're trying to filter or find elements, rather use a library function eg. getStore(s => s.todos).removeWhere(e => e.status === 'done')`);
-            }
-            const filtered = val.apply(target, args) as any[];
-            const indices = (target as any[]).map((e, i) => filtered.includes(e) ? i : null).filter(e => e !== null, skipProxyCheck) as number[];
-            pathSegments.push(indices.toString());
-            return filtered;
-          };
-        }
-        pathSegments.push(prop);
-        return val;
-      },
-    });
-  }
-
-  function copyObject<T>(oldObj: T, newObj: T, segs: string[], action: (newNode: any) => any): any {
-    const seg = (segs as (keyof T)[]).shift();
-    if (seg) {
-      if ((seg as string).includes(',') || !isNaN(seg as any)) {
-        const arrayIndices = (seg as string).split(',').map(e => +e);
-        return (oldObj as any as any[]).map((e, i) => arrayIndices.includes(i)
-          ? { ...(oldObj as any)[i], ...copyObject((oldObj as any)[i], (newObj as any)[i], segs, action) }
-          : e);
-      }
-      return { ...oldObj, [seg]: copyObject(oldObj[seg], newObj[seg], segs, action) };
-    } else {
-      return action(oldObj);
     }
   }
 
@@ -268,14 +221,59 @@ export function make<S>(name: string, state: S, devtoolsOptions?: { maxAge?: num
     })
   }
 
-  function readPathOfSelector<S, C>(selector: (state: S) => C) {
-    pathSegments.length = 0;
-    selector(segGatherer);
-  }
-
   integrateStoreWithReduxDevtools<S>(storeResult, { name, ...devtoolsOptions }, setDevtoolsDispatchListener);
 
   return storeResult;
+}
+
+function copyObject<T>(oldObj: T, newObj: T, segs: string[], action: (newNode: any) => any): any {
+  const seg = (segs as (keyof T)[]).shift();
+  if (seg) {
+    if ((seg as string).includes(',') || !isNaN(seg as any)) {
+      const arrayIndices = (seg as string).split(',').map(e => +e);
+      return (oldObj as any as any[]).map((e, i) => arrayIndices.includes(i)
+        ? { ...(oldObj as any)[i], ...copyObject((oldObj as any)[i], (newObj as any)[i], segs, action) }
+        : e);
+    }
+    return { ...oldObj, [seg]: copyObject(oldObj[seg], newObj[seg], segs, action) };
+  } else {
+    return action(oldObj);
+  }
+}
+
+function createPathReader<S extends Object>(state: S) {
+  const instance = new class {
+    mutableStateCopy = deepCopy(state);
+    pathSegments = new Array<string>();
+    private initialize(state: S): S {
+      if (typeof (state) !== 'object') { // may happen if we have a top-level primitive
+        return null as any as S;
+      }
+      return new Proxy(state, {
+        get: function (target, prop: any) {
+          const val = (target as any)[prop];
+          if (val !== null && typeof (val) === 'object') {
+            instance.pathSegments.push(prop);
+            return instance.initialize(val);
+          } else if (typeof (val) === 'function') {
+            return function () {
+              throw new Error(
+                `'getStore(...${prop}())' detected. If you're trying to filter or find elements, rather use a library function eg. getStore(s => s.todos).removeWhere(e => e.status === 'done')`);
+            };
+          }
+          instance.pathSegments.push(prop);
+          return val;
+        },
+      });
+    }
+    proxy = this.initialize(this.mutableStateCopy);
+    readSelector<C>(selector: (state: S) => C) {
+      this.pathSegments.length = 0;
+      selector(this.proxy);
+      return this.pathSegments;
+    }
+  }();
+  return instance;
 }
 
 function deepFreeze(o: any) {
@@ -283,7 +281,7 @@ function deepFreeze(o: any) {
   Object.getOwnPropertyNames(o).forEach(prop => {
     if (o.hasOwnProperty(prop)
       && o[prop] !== null
-      && (typeof o[prop] === "object" || typeof o[prop] === "function")
+      && (typeof (o[prop]) === 'object' || typeof (o[prop]) === 'function')
       && !Object.isFrozen(o[prop])) {
       deepFreeze(o[prop]);
     }
@@ -310,12 +308,6 @@ export function deepCopy(o: any): any {
     }
   }
   return newO;
-}
-
-type ReadType<E> = E extends AvailableOps<any, infer W> ? W : never;
-
-type MappedDataTuple<T extends Array<AvailableOps<any, any>>> = {
-  [K in keyof T]: ReadType<T[K]>;
 }
 
 export function deriveFrom<X extends AvailableOps<any, any>[]>(...args: X) {
