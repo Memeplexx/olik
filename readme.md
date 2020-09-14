@@ -5,7 +5,7 @@
 ![Package Size](https://badgen.net/bundlephobia/minzip/heerlik)
 ![Dependency count](https://badgen.net/bundlephobia/dependency-count/heerlik)
 
-### ***Unambigiuous, in-line state-management*** ###
+### ***Unambigiuous, in-line state-management*** 🐒 ###
 - **ERGONOMIC -** Completely typesafe & compact API with a standardised set of abstractions for state updates
 - **DEBUGGABLE -** Via the [Redux Devtools extension](https://chrome.google.com/webstore/detail/redux-devtools/lmhkpmbekcpmknklioeibfkpmmfibljd?hl=en)
 - **ATOMIC OR COMPOSITE -** Use small stores where performance is critical, and a single store everywhere else
@@ -44,6 +44,6 @@ getCanvas(s => s.size.width).replaceWith(20);   // Devtools will update your sta
 ## READING STATE ##
 
 ```Typescript
-const canvasWidth = getCanvas(s => s.size.width).read();
+const canvasWidth = getCanvas().read().size.width;
 ```
 [All read options...](./readme-read.md)

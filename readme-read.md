@@ -1,7 +1,8 @@
 # OULIK - READING STATE #
 
-*NOTE: this guide shows the vanilla (framework-less) way of reading state.  
-It may be more appropriate to checkout [React's]() & [Angular's](./readme-angular-read.md) approach to reading & reacting to state updates.*
+⚠️ This guide shows the vanilla (framework-less) way of reading state. It may be more appropriate to checkout the following bindings for reading & reacting to state updates:
+* [React]() 
+* [Angular](./readme-angular-read.md)
 
 ---
 
@@ -18,7 +19,7 @@ const getCanvas = make('canvas', {
 
 ## READING STATE SYNCHRONOUSLY ##
 ```Typescript
-const canvasWidth = getCanvas(s => s.size.width).read();
+const canvasWidth = getCanvas().read().size.width;
 ```
 
 ## LISTENING TO STATE UPDATES ##
