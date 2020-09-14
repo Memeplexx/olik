@@ -7,8 +7,8 @@
 
 ### ***Unambigiuous, in-line state-management*** ###
 - **ERGONOMIC -** Completely typesafe & compact API with a standardised set of abstractions for state updates
-- **DEBUGGABLE -** via the [Redux Devtools extension](https://chrome.google.com/webstore/detail/redux-devtools/lmhkpmbekcpmknklioeibfkpmmfibljd?hl=en)
-- **ATOMIC OR COMPOSITE -** Use small stores (AKA 'atoms') where performance is critical, and a monolythic store everywhere else
+- **DEBUGGABLE -** Via the [Redux Devtools extension](https://chrome.google.com/webstore/detail/redux-devtools/lmhkpmbekcpmknklioeibfkpmmfibljd?hl=en)
+- **ATOMIC OR COMPOSITE -** Use small stores where performance is critical, and a single store everywhere else
 - **FAST -** Roughly equivalent to [Immutable](https://github.com/immutable-js/immutable-js) and significantly faster than [Immer](https://github.com/immerjs/immer)
 - **IMMUTABLE -** Every state update will result in a new immutable state tree
 - **PORTABLE -** Designed to be framework-agnostic. Currently supports bindings for:
@@ -16,12 +16,9 @@
   - [Angular](./readme-angular.md)
 
 ## MOTIVATION ##
-State operations are typically hidden behind an opaque facade of user-defined 'actions'.  
-Some actions fail to describe a state update accurately while other actions needlessly re-describe very simple operations.  
-Furthermore, as your code evolves, there can be a 'drift' between action types, and the state thay purport to operate on.  
+State operations are typically hidden behind an opaque facade of user-defined 'actions'. Some actions fail to describe a state update accurately while other actions needlessly re-describe very simple operations. Furthermore, as your code evolves, there can be a 'drift' between action types, and the state thay purport to operate on.  
 
-This library's unique API makes the precise nature of state updates extremely obvious by exploiting the type system and removing user-defined abstractions.  
-As a result, your state-management becomes far more **direct**, **typesafe**, **legible**, **compact**, **refactorable**, and **debuggable**.  
+This library's unique API makes the precise nature of state updates extremely obvious by exploiting the type system and removing user-defined abstractions. As a result, your state-management becomes far more **direct**, **typesafe**, **legible**, **compact**, **refactorable**, and **debuggable**.  
 
 
 ## GETTING STARTED ##
