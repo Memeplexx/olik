@@ -6,7 +6,7 @@
 
 ---
 
-Let's first assume that a store has been initialized as follows...
+Let's first assume that a store has been initialized as follows:
 ```Typescript
 import { make } from 'oulik';
 
@@ -31,7 +31,7 @@ listener.unsubscribe(); // Please unsubscribe to avoid memory leaks
 
 ## CALCULATING DERIVED STATE ##
 ```Typescript
-import { derive } from 'oulik';
+import { deriveFrom } from 'oulik';
 
 const innerWidth = deriveFrom(
   getCanvas(s => s.size.width),

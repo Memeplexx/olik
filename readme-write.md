@@ -1,30 +1,27 @@
 # OULIK - WRITING STATE #
 
-## Updating **non-array** nodes ##
-Let's first assume that a store has been initialized as follows...
+👉 Let's first assume that a store has been initialized as follows:
 ```Typescript
 import { make } from 'oulik';
 
-const getStore = make('store', { user: profile: { firstName: '', lastName: '', age: 0 } });
+const getStore = make('store', {
+  user: { firstName: '', lastName: '', age: 0 },
+  todos: new Array<{ id: number, text: string, status: 'todo' | 'done' }>()
+});
 ```
+## Updating **non-array** nodes ##
 ```Typescript
 // Completely replace an object or primitive
-getStore(s => s.user.profile).replaceWith(updatedUser);
+getStore(s => s.user).replaceWith(updatedUser);
 
 // Partially update an object
-getStore(s => s.user.profile).patchWith({ firstName: 'Sam', age: 25 });
+getStore(s => s.user).patchWith({ firstName: 'Sam', age: 25 });
 
 // Completely replace a primitive
-getStore(s => s.user.profile.age).replaceWith(25);
+getStore(s => s.user.age).replaceWith(25);
 ```
 
 ## Updating **array** nodes ##
-Let's first assume that a store has been initialized as follows...
-```Typescript
-import { make } from 'oulik';
-
-const getStore = make('store', { todos: new Array<{ id: number, text: string, status: 'todo' | 'done' }>() });
-```
 ```Typescript
 // Append one or more elements to the end of array
 getStore(s => s.todos).addAfter(...newTodos);
