@@ -3,6 +3,7 @@
 [![Build Status](https://travis-ci.org/Memeplexx/oulik.svg?branch=master)](https://travis-ci.org/Memeplexx/oulik.svg?branch=master)
 [![Coverage Status](https://coveralls.io/repos/github/Memeplexx/oulik/badge.svg?branch=master)](https://coveralls.io/repos/github/Memeplexx/oulik/badge.svg?branch=master)
 ![Package Size](https://badgen.net/bundlephobia/minzip/heerlik)
+![Dependency count](https://badgen.net/bundlephobia/dependency-count/heerlik)
 
 ### ***Unambigiuous, in-line state-management*** ###
 - **ERGONOMIC -** Completely typesafe & compact API with a standardised set of abstractions for state updates
