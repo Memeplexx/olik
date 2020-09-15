@@ -1,9 +1,9 @@
 # REACT BINDINGS #
 ```console
-npm install heerlik-react
+npm install oulik-react
 ```
 ```Typescript
-import { useSelector, mapStateToProps } from 'heerlik-react';
+import { useSelector, mapStateToProps } from 'oulik-react';
 
 // WITH HOOKS
 const todos = useSelector(store, s => s.todos);

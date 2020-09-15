@@ -1,18 +1,18 @@
-# OULIK ANGULAR - READING STATE #
+# OULIK-NG: READING STATE #
 
 ## SYNCHRONOUS READS ##
 ```Typescript
 const todos = getCanvas(c => c.todos).read();
 ```
 
-## SUBSCRIPTIONS ##
-
+## SUBSCRIBING TO STATE UPDATES ##
+You probably won't need this much in your Angular projects, but good to know about anyway
 ```Typescript
 const listener = getCanvas(c => c.todos).onChange(todos => console.log(todos));
 listener.unsubscribe(); // don't forget to do this to avoid a leak!
 ```  
 
-## REACT TO STATE UPDATES IN TEMPLATE ##
+## REACTING TO STATE UPDATES IN TEMPLATE ##
 
 ```Typescript
 import { select } from 'oulik-angular';
@@ -26,11 +26,8 @@ export class MyComponent {
 }
 ```
 
-## FETCHERS ##
-*Fetchers* are an **optional** standardized mechanism for
-* fetching data from external resources,
-* indicating the status of a request (loading / success / error), and 
-* caching request responses (optional).
+## FETCHING STATE FROM EXTERNAL SOURCES ##
+Using *Fetchers* allows you to track the status of a request (loading / success / error) as well as cache request responses.
 
 ### DEFINING A FETCHER ###
 ```Typescript
@@ -52,7 +49,7 @@ export class ApiService {
 ### USING OUR FETCHER WITHIN A COMPONENT ###
 
 ```Typescript
-import { fetch } from 'heerlik-angular';
+import { fetch } from 'oulik-ng';
 // ... other imports
 
 @Component({
@@ -73,9 +70,10 @@ export class AppComponent {
 }
 ```
 
-### USING OUR FETCHER WITHIN A RESOLVER (BEFORE COMPONENT LOADS) ###
+### USING OUR FETCHER WITHIN A RESOLVER (IE BEFORE COMPONENT LOADS) ###
+[Resolvers](https://angular.io/api/router/Resolve) are a handy way of pre-fetching data so that your components have all their data before they are created.
 ```Typescript
-import { resolve } from 'heerlik-angular';
+import { resolve } from 'oulik-ng';
 // ... other imports
 
 @Injectable()

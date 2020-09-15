@@ -1,10 +1,10 @@
 {
-  "name": "heerlik",
-  "version": "1.0.45",
+  "name": "oulik",
+  "version": "0.0.1",
   "description": "",
-  "main": "dist/cjs/heerlik.js",
-  "module": "dist/esm/heerlik.js",
-  "unpkg": "dist/umd/heerlik.js",
+  "main": "dist/cjs/oulik.js",
+  "module": "dist/esm/oulik.js",
+  "unpkg": "dist/umd/oulik.js",
   "types": "types/index.d.ts",
   "scripts": {
     "clean": "rimraf dist coverage",
@@ -17,12 +17,11 @@
   },
   "author": "",
   "license": "ISC",
-  "dependencies": {
-  },
+  "dependencies": {},
   "devDependencies": {
-    "coveralls": "^3.1.0",
     "@types/jest": "^26.0.7",
     "@types/react": "^16.9.46",
+    "coveralls": "^3.1.0",
     "cross-env": "^7.0.2",
     "del": "^5.1.0",
     "gulp": "^4.0.2",
