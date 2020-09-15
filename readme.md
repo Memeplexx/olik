@@ -9,10 +9,9 @@
 ### ***Unambigiuous, in-line state-management*** ###
 ---
 ## MOTIVATION ##
-Since Redux changed the world of state-management, there have been a few attempts to ease the burden of making immutable updates. While this library is no different, it addresses another problem too.
 State operations are typically hidden behind an opaque facade of user-defined 'actions'. Some actions fail to describe a state update accurately while other actions needlessly re-describe very simple operations. Furthermore, as your code evolves, there can be a 'drift' between action types, and the state thay purport to operate on.  
 
-This library's unique API makes the precise nature of state updates extremely obvious by exploiting the type system and removing user-defined abstractions. As a result, your state-management becomes far more **direct**, and **explicit**. This library aims to be:  
+This library's unique API not only makes immutable state updates a breeze, it also leverages the type system to make state updates more transparent than ever before. This library aims to be:  
 - **ERGONOMIC -** Completely typesafe & compact API with a standardised set of abstractions for state updates
 - **ATOMIC OR MONOLITHIC -** Use small stores where performance is critical, and a single store everywhere else
 - **FAST -** Roughly equivalent to [Immutable](https://github.com/immutable-js/immutable-js) and significantly faster than [Immer](https://github.com/immerjs/immer)
