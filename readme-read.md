@@ -2,7 +2,7 @@
 
 ⚠️ This guide shows the vanilla (framework-less) way of reading state. It may be more appropriate to checkout the following bindings for reading & reacting to state updates:
 * [React]() 
-* [Angular](./readme-angular-read.md)
+* [Angular](./readme-ng-read.md)
 
 ---
 
@@ -23,7 +23,6 @@ const canvasWidth = getCanvas().read().size.width;
 ```
 
 ## LISTENING TO STATE UPDATES ##
-
 ```Typescript
 const listener = getCanvas(c => c.size.width).onChange(width => console.log(width));
 listener.unsubscribe(); // Please unsubscribe to avoid memory leaks
@@ -52,7 +51,7 @@ Using *Fetchers* allows you to track the status of a request (loading / success 
 `api.ts`
 ```Typescript
 const canvasSizeFetcher = getCanvas(s => s.size)
-  .createFetcher(() => fetchCanvasSizeFromApi(), { cacheForMillis: 1000 * 60 })
+  .createFetcher(() => fetchCanvasSizeFromApi(), { cacheForMillis: 1000 * 60 });
 ```
 
 `component.ts`

@@ -22,7 +22,6 @@ export function integrateStoreWithReduxDevtools<S>(
   setDevtoolsDispatchListener: (listener: (action: { type: string, payload?: any }) => any) => any
 ) {
   if (process.env.NODE_ENV === 'test') {
-    // return;
     windowObj = { __REDUX_DEVTOOLS_EXTENSION__: { connect: () => ({ init: () => null, subscribe: () => null, send: () => null }), disconnect: () => null, send: () => null } as WindowAugmented }
   }
   if (!windowObj.__REDUX_DEVTOOLS_EXTENSION__) {

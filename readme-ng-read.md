@@ -1,21 +1,34 @@
 # OULIK-NG: READING STATE #
 
-## SYNCHRONOUS READS ##
+This guide shows how to read state in Angular applications. To get started with Oulik-NG, check out the [***Oulik-NG README***](./readme-ng.md).
+
+---
+
+Let's first assume that a store has been initialized as follows:
 ```Typescript
-const todos = getCanvas(c => c.todos).read();
+import { make } from 'oulik-ng';
+
+const getStore = make('store', {
+  todos: new Array<string>(),
+}); 
+```
+---
+
+## READING STATE SYNCHRONOUSLY ##
+```Typescript
+const todos = getStore().read().todos;
 ```
 
-## SUBSCRIBING TO STATE UPDATES ##
-You probably won't need this much in your Angular projects, but good to know about anyway
+## LISTENING TO STATE UPDATES ##
 ```Typescript
-const listener = getCanvas(c => c.todos).onChange(todos => console.log(todos));
-listener.unsubscribe(); // don't forget to do this to avoid a leak!
+const listener = getStore(s => s.todos)
+  .onChange(todos => console.log(todos));
+listener.unsubscribe(); // Please unsubscribe to avoid a memory leak
 ```  
 
 ## REACTING TO STATE UPDATES IN TEMPLATE ##
-
 ```Typescript
-import { select } from 'oulik-angular';
+import { select } from 'oulik-ng';
 
 @Component({
   selector: 'app-component',
@@ -32,17 +45,13 @@ Using *Fetchers* allows you to track the status of a request (loading / success 
 ### DEFINING A FETCHER ###
 ```Typescript
 import { store } from './my-store';
-// ... other imports
 
 export class ApiService {
 
   constructor(private http: HttpClient) { }
 
-  fetchTodos = store.createFetcher({
-    selector: e => e.todos,
-    fetcher: () => this.http.get('http://localhost:8080/todos').toPromise(),
-    cacheForMillis: 1000 * 60,
-  });
+  todosFetcher = getStore(s => s.todos)
+    .createFetcher(() => this.http.get('https://www.example.com/todos'), { cacheForMillis: 1000 * 60 });
 }
 ```
 
@@ -50,7 +59,6 @@ export class ApiService {
 
 ```Typescript
 import { fetch } from 'oulik-ng';
-// ... other imports
 
 @Component({
   selector: 'app-component',
@@ -74,7 +82,6 @@ export class AppComponent {
 [Resolvers](https://angular.io/api/router/Resolve) are a handy way of pre-fetching data so that your components have all their data before they are created.
 ```Typescript
 import { resolve } from 'oulik-ng';
-// ... other imports
 
 @Injectable()
 export class InviteResolver implements Resolve<any> {
