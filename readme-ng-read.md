@@ -1,6 +1,8 @@
 # OULIK-NG: READING STATE #
 
-This guide shows how to read state in Angular applications. To get started with Oulik-NG, check out the [***Oulik-NG README***](./readme-ng.md).
+This guide shows how to read state in Angular applications.  
+To get started with Oulik-NG, check out the [***Oulik-NG README***](./readme-ng.md).  
+To get a high-level overview of what Oulik has to offer, check out the [***Oulik README***](./readme.md).
 
 ---
 
@@ -39,6 +41,17 @@ export class MyComponent {
 }
 ```
 
+## REACTING TO STATE UPDATES IN TEMPLATE (USING MULTIPLE INPUTS) ##
+While this library exposes a `deriveFrom()` function (to memoise a single output from multiple inputs), Angular users should probably instead utilize RXJS (which combines multiple data streams into a single output data stream):
+```Typescript
+import { combineLatest } from 'rxjs';
+
+someCombinedValue$ = combineLatest([
+  select(getStore(s => s.todos)),
+  select(getStore(s => s.some.other.value)),
+]);
+```
+
 ## FETCHING STATE FROM EXTERNAL SOURCES ##
 Using *Fetchers* allows you to track the status of a request (loading / success / error) as well as cache request responses.
 
@@ -74,7 +87,7 @@ export class AppComponent {
 
   constructor(private apiService: ApiService) { }
 
-  todos$ = fetch(apiService.fetchTodos);
+  todos$ = fetch(apiService.todosFetcher);
 }
 ```
 
@@ -89,7 +102,7 @@ export class InviteResolver implements Resolve<any> {
   constructor(private readonly apiService: ApiService) { }
 
   public resolve(route: ActivatedRouteSnapshot, state: RouterStateSnapshot) {
-    return resolve(this.apiService.fetchTodos);
+    return resolve(this.apiService.todosFetcher);
   }
 }
 

@@ -1,8 +1,8 @@
 # OULIK - READING STATE #
 
-⚠️ This guide shows the vanilla (framework-less) way of reading state. It may be more appropriate to checkout the following bindings for reading & reacting to state updates:
-* [React]() 
-* [Angular](./readme-ng-read.md)
+⚠️ This guide shows the vanilla (framework-less) way of reading state and reacting to updates. It may be more appropriate to checkout the following:  
+![](assets/react.ico) [Reading state with **Oulik-React**]()  
+![](assets/angular.png) [Reading state with **Oulik-NG**](./readme-ng-read.md)  
 
 ---
 
@@ -24,7 +24,8 @@ const canvasWidth = getCanvas().read().size.width;
 
 ## LISTENING TO STATE UPDATES ##
 ```Typescript
-const listener = getCanvas(c => c.size.width).onChange(width => console.log(width));
+const listener = getCanvas(c => c.size.width)
+  .onChange(width => console.log(width));
 listener.unsubscribe(); // Please unsubscribe to avoid memory leaks
 ```  
 
@@ -35,7 +36,10 @@ import { deriveFrom } from 'oulik';
 const innerWidth = deriveFrom(
   getCanvas(s => s.size.width),
   getCanvas(s => s.border.thickness),
-).usingExpensiveCalc((boxWidth, borderThickness) => {
+).usingExpensiveCalc((
+  boxWidth,
+  borderThickness,
+) => {
   return boxWidth - (borderThickness * 2); // Usually we'd be performing a much bigger calculation here
 });
 

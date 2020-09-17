@@ -97,4 +97,12 @@ describe('Memoize', () => {
     expect(onChangeListenerCallCount).toEqual(1);
   })
 
+  // it('should', () => {
+  //   const getStore = make('store', {
+  //     array: ['one', 'two', 'three'],
+  //     object: { hello: 'world' },
+  //   });
+    
+  // })
+
 });
