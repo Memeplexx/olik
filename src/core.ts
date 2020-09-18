@@ -1,12 +1,10 @@
 import { integrateStoreWithReduxDevtools } from './devtools';
 import { AvailableOps, Fetcher, Options, status, Unsubscribable, MappedDataTuple } from './shape';
 
-const skipProxyCheck = Symbol();
-
 export const tests = {
   currentAction: { type: '', payload: null as any },
   currentMutableState: null,
-  logLevel: 'DEBUG' as 'DEBUG' | 'ERROR'
+  logLevel: 'NONE' as 'NONE' | 'DEBUG'
 }
 
 export function make<S>(name: string, state: S, devtoolsOptions?: { maxAge?: number }) {
@@ -92,7 +90,7 @@ export function make<S>(name: string, state: S, devtoolsOptions?: { maxAge?: num
         { toRemove: (selector(currentState) as any as X).filter(predicate), whereClause: predicate.toString() },
         old => old.filter((o: any) => !predicate(o)),
         old => {
-          const toRemove = old.filter(predicate, skipProxyCheck);
+          const toRemove = old.filter(predicate);
           for (var i = 0; i < old.length; i++) {
             if (toRemove.includes(old[i])) {
               old.splice(i, 1);
@@ -256,7 +254,7 @@ function createPathReader<S extends Object>(state: S) {
             return instance.initialize(val);
           } else if (typeof (val) === 'function') {
             return function (...args: any[]) {
-              if (prop === 'find') {
+              if (prop === 'find' && Array.isArray(target)) {
                 const found = val.apply(target, args);
                 if (found) {
                   const indice = (target as unknown as any[]).findIndex(e => e === found);

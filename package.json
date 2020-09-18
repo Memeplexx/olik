@@ -19,6 +19,7 @@
   "license": "ISC",
   "dependencies": {},
   "devDependencies": {
+    "@types/immutable": "^3.8.7",
     "@types/jest": "^26.0.7",
     "@types/react": "^16.9.46",
     "coveralls": "^3.1.0",

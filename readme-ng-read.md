@@ -42,14 +42,17 @@ export class MyComponent {
 ```
 
 ## REACTING TO STATE UPDATES IN TEMPLATE (USING MULTIPLE INPUTS) ##
-While this library exposes a `deriveFrom()` function (to memoise a single output from multiple inputs), Angular users should probably instead utilize RXJS (which combines multiple data streams into a single output data stream):
+While this library exposes a `deriveFrom()` function (to memoise a single output from multiple inputs), Angular users enjoy the benefits of RXJS (which can combine, and memoise, multiple data streams into a single output data stream):
 ```Typescript
 import { combineLatest } from 'rxjs';
+import { shareReplay } from 'rxjs/operators';
 
 someCombinedValue$ = combineLatest([
   select(getStore(s => s.todos)),
   select(getStore(s => s.some.other.value)),
-]);
+]).pipe(
+  shareReplay(1),
+);
 ```
 
 ## FETCHING STATE FROM EXTERNAL SOURCES ##
