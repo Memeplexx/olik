@@ -55,4 +55,7 @@ getStore(s => s.todos).replaceWhere(t => t.id === 5).with({ id: 5, text: 'bake c
 
 // Subtitute or append an element depending on whether or not it can be found.
 getStore(s => s.todos).upsertWhere(t => t.id === 5).with({ id: 5, text: 'bake cookies', status: 'todo' });
+
+// Nested update (note: '!' is included below only to comply with Typescript's 'strictNullChecks')
+getStore(s => s.array.find(e => e.id === 2)!.text).replaceWith('something');
 ```

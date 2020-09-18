@@ -229,6 +229,11 @@ export function make<S>(name: string, state: S, devtoolsOptions?: { maxAge?: num
 function copyObject<T>(oldObj: T, newObj: T, segs: string[], action: (newNode: any) => any): any {
   const seg = (segs as (keyof T)[]).shift();
   if (seg) {
+    if (!isNaN(seg as any)) { // must be an array key
+      return (oldObj as any as any[]).map((e, i) => +seg === i
+        ? { ...(oldObj as any)[i], ...copyObject((oldObj as any)[i], (newObj as any)[i], segs, action) }
+        : e);
+    }
     return { ...oldObj, [seg]: copyObject(oldObj[seg], newObj[seg], segs, action) };
   } else {
     return action(oldObj);
@@ -250,9 +255,18 @@ function createPathReader<S extends Object>(state: S) {
             instance.pathSegments.push(prop);
             return instance.initialize(val);
           } else if (typeof (val) === 'function') {
-            return function () {
-              throw new Error(
-                `'getStore(...${prop}())' detected. If you're trying to filter or find elements, rather use a library function eg. getStore(s => s.todos).removeWhere(e => e.status === 'done')`);
+            return function (...args: any[]) {
+              if (prop === 'find') {
+                const found = val.apply(target, args);
+                if (found) {
+                  const indice = (target as unknown as any[]).findIndex(e => e === found);
+                  instance.pathSegments.push(indice.toString());
+                }
+                return instance.initialize(found);
+              } else {
+                throw new Error(
+                  `'${prop}()' is not allowed. If you're trying to filter elements, rather use a library function eg. 'getStore(s => s.todos).removeWhere(e => e.status === 'done')'`);
+              }
             };
           }
           instance.pathSegments.push(prop);

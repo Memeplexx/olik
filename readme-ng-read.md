@@ -68,7 +68,7 @@ export class ApiService {
 }
 ```
 
-### USING OUR FETCHER WITHIN A COMPONENT ###
+### OPTION A: USING OUR FETCHER WITHIN A COMPONENT ###
 
 ```Typescript
 import { fetch } from 'oulik-ng';
@@ -91,7 +91,7 @@ export class AppComponent {
 }
 ```
 
-### USING OUR FETCHER WITHIN A RESOLVER (IE BEFORE COMPONENT LOADS) ###
+### OPTION B: USING OUR FETCHER WITHIN A RESOLVER (IE BEFORE COMPONENT LOADS) ###
 [Resolvers](https://angular.io/api/router/Resolve) are a handy way of pre-fetching data so that your components have all their data before they are created.
 ```Typescript
 import { resolve } from 'oulik-ng';

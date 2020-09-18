@@ -149,4 +149,22 @@ describe('Array', () => {
     expect(tests.currentMutableState).toEqual(getStore().read());
   })
 
+  it('should be able to find() an array element and replace one of its properties', () => {
+    const getStore = make('store', {
+      array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
+      object: { hello: 'world' },
+    });
+    getStore(s => s.array.find(e => e.id === 2)!.value).replaceWith('twoo');
+    expect(getStore().read().array).toEqual([{ id: 1, value: 'one' }, { id: 2, value: 'twoo' }, { id: 3, value: 'three' }]);
+  })
+
+  it('should be able to find() an array element and patch one of its properties', () => {
+    const getStore = make('store', {
+      array: [{ id: 1, value: { a: 'one', b: 'one' } }, { id: 2, value: { a: 'two', b: 'two' } }, { id: 3, value: { a: 'three', b: 'three' } }],
+      object: { hello: 'world' },
+    });
+    getStore(s => s.array.find(e => e.id === 2)!.value).patchWith({ b: 'twoo' });
+    expect(getStore().read().array).toEqual([{ id: 1, value: { a: 'one', b: 'one' } }, { id: 2, value: { a: 'two', b: 'twoo' } }, { id: 3, value: { a: 'three', b: 'three' } }]);
+  })
+
 });

@@ -1,4 +1,4 @@
-import { deriveFrom, make } from '../src/core';
+import { deriveFrom, make, tests } from '../src/core';
 
 describe('Memoize', () => {
 
@@ -97,12 +97,22 @@ describe('Memoize', () => {
     expect(onChangeListenerCallCount).toEqual(1);
   })
 
-  // it('should', () => {
-  //   const getStore = make('store', {
-  //     array: ['one', 'two', 'three'],
-  //     object: { hello: 'world' },
-  //   });
-    
-  // })
+  it('should deriveFrom() on specific array element', () => {
+    const getStore = make('store', {
+      array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
+      object: { hello: 'world' },
+    });
+    let recalculating = 0;
+    const mem = deriveFrom(
+      getStore(s => s.array.find(e => e.id === 2))
+    ).usingExpensiveCalc(val => {
+      recalculating++;
+    });
+    getStore(s => s.array.find(e => e.id === 2)).patchWith({ value: 'twoo' });
+    mem.read();
+    getStore(s => s.array.find(e => e.id === 1)).patchWith({ value: 'onee' });
+    mem.read();
+    expect(recalculating).toEqual(1);
+  })
 
 });
