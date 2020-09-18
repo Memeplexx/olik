@@ -2,7 +2,7 @@
 
 ![Version](https://img.shields.io/npm/v/oulik.svg)
 [![Build Status](https://travis-ci.org/Memeplexx/oulik.svg?branch=master)](https://travis-ci.org/Memeplexx/oulik.svg?branch=master)
-[![Coverage Status](https://coveralls.io/repos/github/Memeplexx/oulik/badge.svg?branch=master)](https://coveralls.io/repos/github/Memeplexx/oulik/badge.svg?branch=master)
+[![Coverage Status](https://coveralls.io/repos/github/Memeplexx/oulik/badge.svg?branch=master)](https://coveralls.io/github/Memeplexx/oulik?branch=master)
 ![Package Size](https://badgen.net/bundlephobia/minzip/oulik)
 ![Dependency count](https://badgen.net/bundlephobia/dependency-count/oulik)
 
