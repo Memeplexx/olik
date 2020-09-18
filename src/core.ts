@@ -13,6 +13,7 @@ export function make<S>(name: string, state: S, devtoolsOptions?: { maxAge?: num
   const pathReader = createPathReader(state);
   let currentState = deepFreeze(state) as S;
   const initialState = currentState;
+  let devtools: { unsubscribe: () => any };
   let devtoolsDispatchListener: ((action: { type: string, payload?: any }) => any) | undefined;
   const setDevtoolsDispatchListener = (listener: (action: { type: string, payload?: any }) => any) => devtoolsDispatchListener = listener;
   const replace = <C>(selector: (s: S) => C, name: string) => (assignment: C, options?: Options) => {
@@ -172,6 +173,7 @@ export function make<S>(name: string, state: S, devtoolsOptions?: { maxAge?: num
     },
     read: () => selector(currentState),
     reset: () => replace(selector, 'reset')(selector(initialState)),
+    unregisterFromDevtools: () => devtools.unsubscribe(),
   } as any as AvailableOps<S, C>);
 
   const storeResult = <C = S>(selector: ((s: S) => C) = (s => s as any as C)) => {
@@ -219,7 +221,7 @@ export function make<S>(name: string, state: S, devtoolsOptions?: { maxAge?: num
     })
   }
 
-  integrateStoreWithReduxDevtools<S>(storeResult, { name, ...devtoolsOptions }, setDevtoolsDispatchListener);
+  devtools = integrateStoreWithReduxDevtools<S>(storeResult, { name, ...devtoolsOptions }, setDevtoolsDispatchListener);
 
   return storeResult;
 }

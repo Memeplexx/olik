@@ -44,10 +44,10 @@ export function integrateStoreWithReduxDevtools<S>(
       } else {
         selection.replace(JSON.parse(message.state), { dontTrackWithDevtools: true });
       }
-
       onDispatchListener();
     }
   });
+  return devTools;
 }
 
 let onDispatchListener = () => null;

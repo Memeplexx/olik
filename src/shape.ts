@@ -197,6 +197,10 @@ export type AvailableOps<S, C> =
      * Reverts the current state to how it was when the store was initialized
      */
     reset: () => void,
+    /**
+     * Ensures that your store is no longer visible in the devtools
+     */
+    unregisterFromDevtools: () => any,
   };
 
 export interface Unsubscribable {
