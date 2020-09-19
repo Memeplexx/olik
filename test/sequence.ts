@@ -1,7 +1,10 @@
 import { make } from '../src/core';
 import { tests } from '../src/tests';
+import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
 describe('Sequence', () => {
+
+  beforeAll(() => tests.windowObject = windowAugmentedWithReduxDevtoolsImpl);
 
   it('should maintain sequence', () => {
     const initialState = {

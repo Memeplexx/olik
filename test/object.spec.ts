@@ -1,7 +1,10 @@
-import { make, makeEnforceTags } from "../src/core";
-import { tests } from "../src/tests";
+import { make, makeEnforceTags } from '../src/core';
+import { tests } from '../src/tests';
+import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
 describe('Object', () => {
+
+  beforeAll(() => tests.windowObject = windowAugmentedWithReduxDevtoolsImpl);
 
   it('should REPLACE a node', () => {
     const initialState = {

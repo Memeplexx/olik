@@ -1,7 +1,10 @@
-import { make, makeEnforceTags } from "../src";
-import { tests } from "../src/tests";
+import { make, makeEnforceTags } from '../src';
+import { tests } from '../src/tests';
+import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
 describe('Fetcher', () => {
+
+  beforeAll(() => tests.windowObject = windowAugmentedWithReduxDevtoolsImpl);
 
   it('should perform a basic fetch', done => {
     const initialState = {

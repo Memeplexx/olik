@@ -1,6 +1,10 @@
-import { make } from "../src";
+import { make } from '../src';
+import { tests } from '../src/tests';
+import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
 describe('Read', () => {
+
+  beforeAll(() => tests.windowObject = windowAugmentedWithReduxDevtoolsImpl);
 
   it('should read', () => {
     const getState = make('state', { some: { object: 'test' } });

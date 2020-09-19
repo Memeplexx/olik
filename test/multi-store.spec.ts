@@ -1,6 +1,10 @@
-import { make } from "../src";
+import { make } from '../src';
+import { tests } from '../src/tests';
+import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
 describe('Multi-store', () => {
+
+  beforeAll(() => tests.windowObject = windowAugmentedWithReduxDevtoolsImpl);
 
   it('should support multiple stores', () => {
     const getStore1 = make('state-1', new Array<string>());

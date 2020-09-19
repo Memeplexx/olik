@@ -1,7 +1,10 @@
 import { deriveFrom, make, makeEnforceTags } from '../src/core';
+import { tests } from '../src/tests';
+import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
 describe('Memoize', () => {
 
+  beforeAll(() => tests.windowObject = windowAugmentedWithReduxDevtoolsImpl);
 
   it('should deriveFrom() corrrectly', () => {
     const getStore = make('store', {

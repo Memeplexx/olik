@@ -1,8 +1,13 @@
-import { make, deepCopy } from "../src/core";
-import { fromJS } from 'immutable';
 import { produce } from 'immer';
+import { fromJS } from 'immutable';
+
+import { make } from '../src/core';
+import { tests } from '../src/tests';
+import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
 describe('Perf', () => {
+
+  beforeAll(() => tests.windowObject = windowAugmentedWithReduxDevtoolsImpl);
 
   it('should test native perf', () => {
     const object = {

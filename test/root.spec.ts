@@ -1,7 +1,10 @@
 import { make } from '../src/core';
 import { tests } from '../src/tests';
+import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
 describe('Root', () => {
+
+  beforeAll(() => tests.windowObject = windowAugmentedWithReduxDevtoolsImpl);
 
   it('should update a top-level object', () => {
     const getStore = make('state', { x: 0, y: 0 });
