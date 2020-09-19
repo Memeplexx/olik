@@ -2,18 +2,19 @@ import { deriveFrom, make, tests } from '../src/core';
 
 describe('Memoize', () => {
 
+
   it('should deriveFrom() corrrectly', () => {
     const getStore = make('store', {
       array: ['1', '2'],
       counter: 3,
     });
-    const eee = deriveFrom(
+    const mem = deriveFrom(
       getStore(s => s.array),
       getStore(s => s.counter),
     ).usingExpensiveCalc((arr, somenum) => {
       return arr.concat(somenum.toString())
     });
-    const result = eee.read();
+    const result = mem.read();
     expect(result).toEqual(['1', '2', '3']);
   })
 

@@ -17,7 +17,7 @@ export interface Fetcher<S, C, B extends boolean> {
   /**
    * Can be called to fetch the results and automatically add them to the store
    */
-  fetch: (tag: Tag<B>) => Promise<C>,
+  fetch: (tag: Tag<boolean>) => Promise<C>,
   /**
    * The store that is associated with this fetcher
    */
@@ -200,7 +200,7 @@ export interface Unsubscribable {
   unsubscribe: () => any,
 }
 
-type ReadType<E> = E extends AvailableOps<any, infer W, any> ? W : never;
+type ReadType<E> = E extends AvailableOps<any, infer W, false> ? W : never;
 
 export type MappedDataTuple<T extends Array<AvailableOps<any, any, any>>> = {
   [K in keyof T]: ReadType<T[K]>;
