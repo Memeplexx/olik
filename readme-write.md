@@ -59,3 +59,18 @@ getStore(s => s.todos).upsertWhere(t => t.id === 5).with({ id: 5, text: 'bake co
 // Nested update (note: '!' is included below only to comply with Typescript's 'strictNullChecks')
 getStore(s => s.array.find(e => e.id === 2)!.text).replaceWith('something');
 ```
+
+## Enforcing the use of **tags** ##
+The debugging experience can be improved by supplying extra information describing the source of an action
+```Typescript
+import { make } from 'oulik';
+
+// Note the use of 'makeEnforeTags()' instead of the usual 'make()'
+const getStore = makeEnforceTags('store', { some: { value: '' } });
+
+// Here, 'MyComponent' is the tag which is made obligatory due to the fact that we
+// initialized the store using 'makeEnforeTags()' instead of the usual 'make()'.
+getStore(s => s.some.value).replaceWith('hello', 'MyComponent');
+```
+Instead of always typing a user-defined string (such as 'MyComponent') you could make use of the `__filename` node variable which will automatically return the directory path of the current file.  
+For Angular-CLI users, there is a little work to set this up, but still well worth the time. Check out this [guide on using the `__filename` variable within the Angular CLI](./readme-ng-tags.md)  
