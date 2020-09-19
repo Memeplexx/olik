@@ -2,7 +2,7 @@
 
 This guide shows how to read state in Angular applications.  
 To get started with Oulik-NG, check out the [***Oulik-NG README***](./readme-ng.md).  
-To get a high-level overview of what Oulik has to offer, check out the [***Oulik README***](./readme.md).
+To get a high-level overview of what Oulik has to offer, check out the [***Oulik README***](../readme.md).
 
 ---
 

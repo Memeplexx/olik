@@ -1,7 +1,7 @@
 # OULIK-NG #
 
 Note: This guide covers using Oulik within your Angular apps.
-To get a high-level overview of what Oulik has to offer, please read the [README for ***Oulik***](./readme.md).
+To get a high-level overview of what Oulik has to offer, please read the [README for ***Oulik***](../readme.md).
 
 
 ## GETTING STARTED ##
