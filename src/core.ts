@@ -19,7 +19,7 @@ export const tests = {
  * 
  * // Note that when updating state, we are required to supply a string as the last argument (in this case 'TodoDetailComponent')
  * getStore(s => s.todos)
- *   .patchWhere(t => t.id = 1)
+ *   .patchWhere(t => t.id === 1)
  *   .with({ text: 'bake cookies' }, 'TodoDetailComponent')
  * 
  * ```
@@ -44,7 +44,7 @@ export function make<S>(nameOrDevtoolsConfig: string | EnhancerOptions, state: S
 
 function makeInternal<S>(nameOrDevtoolsConfig: string | EnhancerOptions, state: S) {
   const changeListeners = new Map<(arg: S) => any, (ar: any) => any>();
-  const fetchers = new Map<string, Fetcher<any, any>>();
+  const fetchers = new Map<string, Fetcher<any, any, any>>();
   const pathReader = createPathReader(state);
   let currentState = deepFreeze(state) as S;
   const initialState = currentState;
@@ -81,9 +81,9 @@ function makeInternal<S>(nameOrDevtoolsConfig: string | EnhancerOptions, state: 
   const action = <C, X extends C & Array<any>>(selector: (s: S) => C) => ({
     replaceWith: replace(selector, 'replaceWith'),
     replaceAll: replace(selector, 'replaceAll'),
-    patchWith: (assignment: Partial<C>) => updateState<C>(selector, 'patchWith', assignment,
+    patchWith: (assignment: Partial<C>, tag?: string) => updateState<C>(selector, 'patchWith', assignment,
       old => ({ ...old, ...assignment }),
-      old => Object.assign(old, assignment)),
+      old => Object.assign(old, assignment), { tag }),
     patchWhere: (where: (e: X) => boolean) => ({
       with: (assignment: Partial<X[0]>, tag?: string) => {
         const itemIndices = (selector(currentState) as any as X).map((e, i) => where(e) ? i : null).filter(i => i !== null);
@@ -118,7 +118,7 @@ function makeInternal<S>(nameOrDevtoolsConfig: string | EnhancerOptions, state: 
     removeAll: (tag?: string) => updateState<C>(selector, 'removeAll', null,
       () => [],
       old => old.length = 0, { tag }),
-    removeWhere: (predicate: (arg: X[0]) => boolean) => {
+    removeWhere: (predicate: (arg: X[0]) => boolean, tag?: string) => {
       const itemIndices = (selector(currentState) as any as X).map((e, i) => predicate(e) ? i : null).filter(i => i !== null);
       const pathSegments = pathReader.readSelector(selector);
       return updateState<C>(selector, `${pathSegments.join('.')}${pathSegments.length ? '.' : ''}${itemIndices.join(',')}.removeWhere()`,
@@ -132,7 +132,7 @@ function makeInternal<S>(nameOrDevtoolsConfig: string | EnhancerOptions, state: 
               i--;
             }
           }
-        }, { overrideActionName: true });
+        }, { overrideActionName: true, tag });
     },
     upsertWhere: (criteria: (e: X[0]) => boolean) => ({
       with: (element: X[0], tag?: string) => {
@@ -140,7 +140,7 @@ function makeInternal<S>(nameOrDevtoolsConfig: string | EnhancerOptions, state: 
         if (itemIndices.length > 1) { throw new Error('Cannot upsert more than 1 element'); }
         return itemIndices.length
           ? action(selector as (s: S) => X).replaceWhere(criteria).with(element, tag)
-          : action(selector as (s: S) => X).addAfter([element]);
+          : action(selector as (s: S) => X).addAfter([element], tag);
       }
     }),
     replaceWhere: (criteria: (e: X[0]) => boolean) => ({
@@ -172,7 +172,7 @@ function makeInternal<S>(nameOrDevtoolsConfig: string | EnhancerOptions, state: 
         invalidateCache = () => { lastFetch = 0; }
         onStatusChange = (listener: (status: status) => Unsubscribable) => { statusChangeListeners.add(listener); return { unsubscribe: () => statusChangeListeners.delete(listener) } }
         private setStatus = (status: status) => { this.status = status; statusChangeListeners.forEach(listener => listener(status)); }
-        fetch = () => {
+        fetch = (tag: string | void) => {
           const cacheHasExpired = (lastFetch + (specs.cacheForMillis || 0)) < Date.now();
           if ((this.status === 'resolved') && !cacheHasExpired) {
             return Promise.resolve(selector(storeResult().read()));
@@ -183,8 +183,8 @@ function makeInternal<S>(nameOrDevtoolsConfig: string | EnhancerOptions, state: 
             return promise()
               .then(response => {
                 this.setStatus('resolved');
-                const piece = storeResult(selector) as any as { replace: (c: C) => void } & { replaceAll: (c: C) => void };
-                if (piece.replaceAll) { piece.replaceAll(response); } else { piece.replace(response); }
+                const piece = storeResult(selector) as any as { replace: (c: C, tag: string | void) => void } & { replaceAll: (c: C, tag: string | void) => void };
+                if (piece.replaceAll) { piece.replaceAll(response, tag); } else { piece.replace(response, tag); }
                 lastFetch = Date.now();
                 otherFetchers.forEach(f => f.resolve(response));
                 otherFetchers.length = 0;

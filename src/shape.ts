@@ -3,8 +3,9 @@ export interface Action<T = any> {
 }
 
 export type status = 'pristine' | 'error' | 'resolved' | 'resolving';
+export type Tag<B> = B extends true ? string : void;
 
-export interface Fetcher<S, C> {
+export interface Fetcher<S, C, B extends boolean> {
   /**
    * The current status of the fetch
    */
@@ -16,7 +17,7 @@ export interface Fetcher<S, C> {
   /**
    * Can be called to fetch the results and automatically add them to the store
    */
-  fetch: () => Promise<C>,
+  fetch: (tag: Tag<B>) => Promise<C>,
   /**
    * The store that is associated with this fetcher
    */
@@ -33,8 +34,6 @@ export interface Fetcher<S, C> {
    */
   onStatusChange: (listener: (status: status) => any) => Unsubscribable,
 }
-
-export type Tag<B> = B extends true ? string : void;
 
 export type AvailableOps<S, C, B extends boolean> =
   (C extends undefined ? any : C extends Array<any> ? {
@@ -172,7 +171,7 @@ export type AvailableOps<S, C, B extends boolean> =
      *   .createFetcher(() => fetchTodos(), { cacheForMillis: 1000 * 60 });
      * ```
      */
-    createFetcher: (promise: () => Promise<C>, specs?: { cacheForMillis?: number }) => Fetcher<S, C>,
+    createFetcher: (promise: () => Promise<C>, specs?: { cacheForMillis?: number }) => Fetcher<S, C, B>,
   } & {
     /**
      * Listens to any updates on this node

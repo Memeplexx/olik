@@ -23,7 +23,7 @@ export function fetch<S, C>(
 ) {
   return new Observable<{ value: C | null, error: any, loading: boolean }>((observer) => {
     const state = { value: null, loading: false, error: null } as { value: C | null, error: any, loading: boolean };
-    observer.next(Object.assign(state, { loading: true, value: fetcher.store(fetcher.selector).read()   }));
+    observer.next(Object.assign(state, { loading: true, value: fetcher.store(fetcher.selector).read() }));
     const subscription = fetcher.store(fetcher.selector)
       .onChange(value => observer.next(Object.assign(state, { value })));
     fetcher.fetch()
