@@ -5,7 +5,7 @@
 npm install --save-dev @angular-builders/custom-webpack @angular-builders/dev-server
 ```
 
-2) Create a file named custom-webpack.config.js in your project root:
+2) Create a file named `custom-webpack.config.js` in your project root:
 ```Javascript
 module.exports = {
   context: __dirname,
@@ -14,7 +14,7 @@ module.exports = {
   }
 };
 ```
-3) Configure your angular.json
+3) Configure your `angular.json`
 
 ```JSON
 "architect": {
@@ -34,7 +34,7 @@ module.exports = {
 }
 ```
 
-4) Create a new type-definition file src/index.d.ts
+4) Create a new type-definition file `src/index.d.ts`
 ```Typescript
 declare var __filename: string;
 ```
