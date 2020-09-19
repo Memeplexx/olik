@@ -200,7 +200,7 @@ export interface Unsubscribable {
   unsubscribe: () => any,
 }
 
-type ReadType<E> = E extends AvailableOps<any, infer W, false> ? W : never;
+type ReadType<E> = E extends AvailableOps<any, infer W, false> ? W : E extends AvailableOps<any, infer W, true> ? W : never;
 
 export type MappedDataTuple<T extends Array<AvailableOps<any, any, any>>> = {
   [K in keyof T]: ReadType<T[K]>;
