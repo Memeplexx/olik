@@ -23,13 +23,13 @@ getStore(s => s.user.age).replaceWith(25);
 
 ## Updating **array** nodes ##
 ```Typescript
-// Append one or more elements to the end of array
-getStore(s => s.todos).addAfter(...newTodos);
+// Append elements to the end of array
+getStore(s => s.todos).addAfter(newTodos);
 
-// Prepend one or more elements to the beginning of array
-getStore(s => s.todos).addBefore(...newTodos);
+// Prepend elements to the beginning of array
+getStore(s => s.todos).addBefore(newTodos);
 
-// Partially update zero or more elements which match a specific condition
+// Partially elements which match a specific condition
 getStore(s => s.todos).patchWhere(t => t.status === 'done').with({ status: 'todo' });
 
 // Remove all elements from array
@@ -41,13 +41,13 @@ getStore(s => s.todos).removeFirst();
 // Delete last element from array
 getStore(s => s.todos).removeLast();
 
-// Delete zero or more elements which match a specific condition
+// Delete elements which match a specific condition
 getStore(s => s.todos).removeWhere(t => t.status === 'done');
 
 // Substitute all elements with a new array
 getStore(s => s.todos).replaceAll(newTodos);
 
-// Substitute zero or more elements which match a specific condition
+// Substitute elements which match a specific condition
 getStore(s => s.todos).replaceMany(t => t.status === 'todo').with(newTodo);
 
 // Subtitute one element

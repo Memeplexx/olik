@@ -38,23 +38,23 @@ export interface Fetcher<S, C, B extends boolean> {
 export type AvailableOps<S, C, B extends boolean> =
   (C extends undefined ? any : C extends Array<any> ? {
     /**
-     * Append one or more elements to the end of array
+     * Append elements to the end of array
      * ```
      * getStore(s => s.todos)
-     *   .addAfter(...newTodos);
+     *   .addAfter(newTodos);
      * ```
      */
     addAfter: (elements: C[0][], tag: Tag<B>) => void,
     /**
-     * Prepend one or more elements to the beginning of array
+     * Prepend elements to the beginning of array
      * ```
      * getStore(s => s.todos)
-     *   .addBefore(...newTodos);
+     *   .addBefore(newTodos);
      * ```
      */
     addBefore: (elements: C[0][], tag: Tag<B>) => void,
     /**
-     * Partially update zero or more elements which match a specific condition
+     * Partially update elements which match a specific condition
      * ```
      * getStore(s => s.todos)
      *   .patchWhere(t => t.status === 'done')
@@ -87,7 +87,7 @@ export type AvailableOps<S, C, B extends boolean> =
      */
     removeLast: (tag: Tag<B>) => void,
     /**
-     * Delete zero or more elements which match a specific condition
+     * Delete elements which match a specific condition
      * ```
      * getStore(s => s.todos)
      *   .removeWhere(t => t.status === 'done')
@@ -103,7 +103,7 @@ export type AvailableOps<S, C, B extends boolean> =
      */
     replaceAll: (replacement: C, tag: Tag<B>) => void,
     /**
-     * Substitute zero or more elements which match a specific condition
+     * Substitute elements which match a specific condition
      * @param where the function which will find the element
      * @param element the element which will replace the old one
      * ```
