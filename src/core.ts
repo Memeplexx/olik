@@ -140,7 +140,7 @@ function makeInternal<S>(nameOrDevtoolsConfig: string | EnhancerOptions, state: 
         if (itemIndices.length > 1) { throw new Error('Cannot upsert more than 1 element'); }
         return itemIndices.length
           ? action(selector as (s: S) => X).replaceWhere(criteria).with(element, tag)
-          : action(selector as (s: S) => X).addAfter(element);
+          : action(selector as (s: S) => X).addAfter([element]);
       }
     }),
     replaceWhere: (criteria: (e: X[0]) => boolean) => ({

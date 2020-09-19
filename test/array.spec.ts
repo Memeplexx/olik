@@ -74,9 +74,6 @@ describe('Array', () => {
     expect(tests.currentAction.type).toEqual('array.1.replaceWhere()');
     expect(tests.currentAction.payload.replacement).toEqual(payload);
     expect(tests.currentMutableState).toEqual(getStore().read());
-
-    // const getStore2 = makeEnforceTags('state', initialState);
-    // getStore2(s => s.array).removeAll();
   })
 
   it('should upsertWhere()', () => {
