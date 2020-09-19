@@ -1,4 +1,4 @@
-import { make, tests } from "../src/core";
+import { make, makeEnforceTags, tests } from "../src/core";
 
 describe('Object', () => {
 
@@ -47,6 +47,18 @@ describe('Object', () => {
     getStore().reset();
     expect(getStore().read()).toEqual(initialState);
     expect(tests.currentMutableState).toEqual(getStore().read());
+  })
+
+  it('should work with tags correctly', () => {
+    const initialState = {
+      object: { property: 'hello', property2: 'two' },
+    };
+    const getStore = makeEnforceTags('store', initialState);
+    const payload = 'hey';
+    const tag = 'mytag';
+    getStore(s => s.object.property).replaceWith(payload, tag);
+    expect(tests.currentAction.type).toEqual(`object.property.replaceWith() [${tag}]`);
+    expect(getStore().read().object.property).toEqual(payload);
   })
 
 });

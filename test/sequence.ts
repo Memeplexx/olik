@@ -14,9 +14,9 @@ describe('Sequence', () => {
     expect(tests.currentMutableState).toEqual(getStore().read());
     getStore(s => s.propOne).patchWith({ subPropOne: 'xxx' });
     expect(tests.currentMutableState).toEqual(getStore().read());
-    getStore(s => s.propTwo).addAfter({ id: 2, value: 'two' });
+    getStore(s => s.propTwo).addAfter([{ id: 2, value: 'two' }]);
     expect(tests.currentMutableState).toEqual(getStore().read());
-    getStore(s => s.propTwo).addBefore({ id: 0, value: 'zero' });
+    getStore(s => s.propTwo).addBefore([{ id: 0, value: 'zero' }]);
     expect(tests.currentMutableState).toEqual(getStore().read());
     getStore(s => s.propTwo).patchWhere(e => e.id === 1).with({ value: 'test' });
     expect(tests.currentMutableState).toEqual(getStore().read());
@@ -31,9 +31,9 @@ describe('Sequence', () => {
   it('should maintain sequence on root array', () => {
     const initialState = new Array<{ id: number, value: string }>();
     const getStore = make('state', initialState);
-    getStore().addAfter({ id: 2, value: 'two' });
+    getStore().addAfter([{ id: 2, value: 'two' }]);
     expect(tests.currentMutableState).toEqual(getStore().read());
-    getStore().addBefore({ id: 0, value: 'zero' });
+    getStore().addBefore([{ id: 0, value: 'zero' }]);
     expect(tests.currentMutableState).toEqual(getStore().read());
     getStore().patchWhere(e => e.id === 1).with({ value: 'test' });
     expect(tests.currentMutableState).toEqual(getStore().read());

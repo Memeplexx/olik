@@ -1,4 +1,5 @@
-import { make } from "../src";
+import { make, makeEnforceTags } from "../src";
+import { tests } from "../src/core";
 
 describe('Fetcher', () => {
 
@@ -97,6 +98,23 @@ describe('Fetcher', () => {
         expect(errorCaught).toEqual(true);
         done();
       })
+  })
+
+  it('should work with tags correctly', done => {
+    const initialState = {
+      array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
+    };
+    const getStore = makeEnforceTags('state', initialState);
+    const fetcher = getStore(s => s.array).createFetcher(
+      () => new Promise(resolve => setTimeout(() => resolve([{ id: 2, value: 'dd' }]), 100)));
+    const tag = 'mytag';
+    const fetchPromise = fetcher.fetch(tag);
+    expect(fetcher.status).toEqual('resolving');
+    fetchPromise.then(r => {
+      expect(r).toEqual([{ id: 2, value: 'dd' }]);
+      expect(tests.currentAction.type).toEqual(`array.replaceAll() [${tag}]`)
+      done();
+    });
   })
 
 });
