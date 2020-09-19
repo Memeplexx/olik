@@ -1,5 +1,5 @@
 import { integrateStoreWithReduxDevtools } from './devtools';
-import { AvailableOps, Fetcher, Options, status, Unsubscribable, MappedDataTuple } from './shape';
+import { AvailableOps, Fetcher, Options, status, Unsubscribable, MappedDataTuple, EnhancerOptions, WindowAugmentedWithReduxDevtools } from './shape';
 
 export const tests = {
   currentAction: { type: '', payload: null as any },
@@ -7,13 +7,13 @@ export const tests = {
   logLevel: 'NONE' as 'NONE' | 'DEBUG'
 }
 
-export function make<S>(name: string, state: S, devtoolsOptions?: { maxAge?: number }) {
+export function make<S>(nameOrDevtoolsConfig: string | EnhancerOptions, state: S) {
   const changeListeners = new Map<(arg: S) => any, (ar: any) => any>();
   const fetchers = new Map<string, Fetcher<any, any>>();
   const pathReader = createPathReader(state);
   let currentState = deepFreeze(state) as S;
   const initialState = currentState;
-  let devtools: { unsubscribe: () => any };
+  let devtools: ReturnType<WindowAugmentedWithReduxDevtools['connect']>;
   let devtoolsDispatchListener: ((action: { type: string, payload?: any }) => any) | undefined;
   const setDevtoolsDispatchListener = (listener: (action: { type: string, payload?: any }) => any) => devtoolsDispatchListener = listener;
   const replace = <C>(selector: (s: S) => C, name: string) => (assignment: C, options?: Options) => {
@@ -173,7 +173,6 @@ export function make<S>(name: string, state: S, devtoolsOptions?: { maxAge?: num
     },
     read: () => selector(currentState),
     reset: () => replace(selector, 'reset')(selector(initialState)),
-    unregisterFromDevtools: () => devtools.unsubscribe(),
   } as any as AvailableOps<S, C>);
 
   const storeResult = <C = S>(selector: ((s: S) => C) = (s => s as any as C)) => {
@@ -221,7 +220,7 @@ export function make<S>(name: string, state: S, devtoolsOptions?: { maxAge?: num
     })
   }
 
-  devtools = integrateStoreWithReduxDevtools<S>(storeResult, { name, ...devtoolsOptions }, setDevtoolsDispatchListener);
+  devtools = integrateStoreWithReduxDevtools<S>(storeResult, typeof(nameOrDevtoolsConfig) === 'string' ? { name: nameOrDevtoolsConfig } : nameOrDevtoolsConfig, setDevtoolsDispatchListener);
 
   return storeResult;
 }

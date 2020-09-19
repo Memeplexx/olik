@@ -1,6 +1,6 @@
 {
   "name": "oulik",
-  "version": "0.0.2",
+  "version": "0.0.6",
   "description": "",
   "main": "dist/cjs/oulik.js",
   "module": "dist/esm/oulik.js",
@@ -30,6 +30,7 @@
     "immutable": "^4.0.0-rc.12",
     "jest": "^26.1.0",
     "react": "^16.13.1",
+    "redux-devtools-extension": "^2.13.8",
     "rimraf": "^3.0.2",
     "rollup": "^2.23.0",
     "rollup-plugin-commonjs": "^10.1.0",

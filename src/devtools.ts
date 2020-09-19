@@ -1,37 +1,38 @@
-import { AvailableOps } from "./shape";
-
-export interface EnhancerOptions {
-  name?: string;
-  maxAge?: number;
-  actionsBlacklist?: string[],
-}
+import { Action, AvailableOps, EnhancerOptions, WindowAugmentedWithReduxDevtools } from "./shape";
 
 // ref: https://medium.com/@zalmoxis/redux-devtools-without-redux-or-how-to-have-a-predictable-state-with-any-architecture-61c5f5a7716f
 // ref: https://github.com/zalmoxisus/redux-devtools-extension/blob/master/docs/API/Methods.md#listen
-interface WindowAugmented {
-  connect: (options: EnhancerOptions) => any;
-  disconnect: () => any;
-  send: (action: { type: string, payload?: any }, state: any, options: EnhancerOptions) => any;
-}
 
-let windowObj = window as any as { __REDUX_DEVTOOLS_EXTENSION__: WindowAugmented };
+
+let windowObj = window as any as { __REDUX_DEVTOOLS_EXTENSION__: WindowAugmentedWithReduxDevtools };
+
+const windowAugmentedWithReduxDevtoolsImpl = {
+  connect: () => ({
+    init: () => null,
+    subscribe: () => null,
+    unsubscribe: () => null,
+    send: () => null
+  }),
+  disconnect: () => null,
+  send: () => null
+} as WindowAugmentedWithReduxDevtools
 
 export function integrateStoreWithReduxDevtools<S>(
   store: () => AvailableOps<S, S>,
-  options: { name: string, maxAge?: number },
+  options: EnhancerOptions,
   setDevtoolsDispatchListener: (listener: (action: { type: string, payload?: any }) => any) => any
 ) {
   if (process.env.NODE_ENV === 'test') {
-    windowObj = { __REDUX_DEVTOOLS_EXTENSION__: { connect: () => ({ init: () => null, subscribe: () => null, send: () => null }), disconnect: () => null, send: () => null } as WindowAugmented }
+    windowObj = { __REDUX_DEVTOOLS_EXTENSION__: windowAugmentedWithReduxDevtoolsImpl }
   }
   if (!windowObj.__REDUX_DEVTOOLS_EXTENSION__) {
     console.error('Cannot find Redux Devtools Extension');
-    return;
+    return windowAugmentedWithReduxDevtoolsImpl.connect(options);
   }
   const devTools = windowObj.__REDUX_DEVTOOLS_EXTENSION__.connect(options);
   devTools.init(store().read());
   setDevtoolsDispatchListener(action => {
-    devTools.send(action, store().read(), {});
+    devTools.send(action, store().read());
   });
   devTools.subscribe((message: { type: string, state: any }) => {
     if (message.type === 'DISPATCH' && message.state) {
