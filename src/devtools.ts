@@ -1,10 +1,8 @@
 import { Action, AvailableOps, EnhancerOptions, WindowAugmentedWithReduxDevtools } from "./shape";
+import { tests } from "./tests";
 
 // ref: https://medium.com/@zalmoxis/redux-devtools-without-redux-or-how-to-have-a-predictable-state-with-any-architecture-61c5f5a7716f
 // ref: https://github.com/zalmoxisus/redux-devtools-extension/blob/master/docs/API/Methods.md#listen
-
-
-let windowObj = window as any as { __REDUX_DEVTOOLS_EXTENSION__: WindowAugmentedWithReduxDevtools };
 
 const windowAugmentedWithReduxDevtoolsImpl = {
   connect: () => ({
@@ -22,11 +20,14 @@ export function integrateStoreWithReduxDevtools<S, C = S>(
   options: EnhancerOptions,
   setDevtoolsDispatchListener: (listener: (action: { type: string, payload?: any }) => any) => any
 ) {
+  let windowObj = window as any as { __REDUX_DEVTOOLS_EXTENSION__: WindowAugmentedWithReduxDevtools };
   if (process.env.NODE_ENV === 'test') {
     windowObj = { __REDUX_DEVTOOLS_EXTENSION__: windowAugmentedWithReduxDevtoolsImpl }
   }
   if (!windowObj.__REDUX_DEVTOOLS_EXTENSION__) {
-    console.error('Cannot find Redux Devtools Extension');
+    const error = 'Cannot find Redux Devtools Extension';
+    console.error(error);
+    tests.errorLogged = error;
     return windowAugmentedWithReduxDevtoolsImpl.connect(options);
   }
   const devTools = windowObj.__REDUX_DEVTOOLS_EXTENSION__.connect(options);

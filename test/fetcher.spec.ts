@@ -1,5 +1,5 @@
 import { make, makeEnforceTags } from "../src";
-import { tests } from "../src/core";
+import { tests } from "../src/tests";
 
 describe('Fetcher', () => {
 

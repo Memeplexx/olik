@@ -1,4 +1,4 @@
-import { deriveFrom, make, tests } from '../src/core';
+import { deriveFrom, make, makeEnforceTags } from '../src/core';
 
 describe('Memoize', () => {
 
@@ -114,6 +114,21 @@ describe('Memoize', () => {
     getStore(s => s.array.find(e => e.id === 1)).patchWith({ value: 'onee' });
     mem.read();
     expect(recalculating).toEqual(1);
+  })
+
+  it('should deriveFrom() using dispatcher tags', () => {
+    const getStore = makeEnforceTags('store', {
+      array: ['1', '2'],
+      counter: 3,
+    });
+    const mem = deriveFrom(
+      getStore(s => s.array),
+      getStore(s => s.counter),
+    ).usingExpensiveCalc((arr, somenum) => {
+      return arr.concat(somenum.toString())
+    });
+    const result = mem.read();
+    expect(result).toEqual(['1', '2', '3']);
   })
 
 });

@@ -1,11 +1,6 @@
 import { integrateStoreWithReduxDevtools } from './devtools';
 import { AvailableOps, EnhancerOptions, Fetcher, MappedDataTuple, status, Unsubscribable } from './shape';
-
-export const tests = {
-  currentAction: { type: '', payload: null as any },
-  currentMutableState: null,
-  logLevel: 'NONE' as 'NONE' | 'DEBUG'
-}
+import { tests } from './tests';
 
 /**
  * Creates a new store which, for typescript users, requires that users supply an additional 'tag' when performing a state update.

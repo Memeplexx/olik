@@ -1,4 +1,5 @@
-import { make, makeEnforceTags, tests } from "../src/core";
+import { make, makeEnforceTags } from "../src/core";
+import { tests } from "../src/tests";
 
 describe('Object', () => {
 

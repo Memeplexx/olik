@@ -1,4 +1,5 @@
-import { make, tests } from '../src/core';
+import { make } from '../src/core';
+import { tests } from '../src/tests';
 
 describe('Array', () => {
 
