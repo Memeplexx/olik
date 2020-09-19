@@ -1,5 +1,5 @@
 import { integrateStoreWithReduxDevtools } from './devtools';
-import { AvailableOps, Fetcher, Options, status, Unsubscribable, MappedDataTuple, EnhancerOptions, WindowAugmentedWithReduxDevtools } from './shape';
+import { AvailableOps, EnhancerOptions, Fetcher, MappedDataTuple, status, Unsubscribable } from './shape';
 
 export const tests = {
   currentAction: { type: '', payload: null as any },
@@ -7,16 +7,50 @@ export const tests = {
   logLevel: 'NONE' as 'NONE' | 'DEBUG'
 }
 
+/**
+ * Creates a new store which, for typescript users, requires that users supply an additional 'tag' when performing a state update.
+ * These tags can improve the debugging experience by describing the source of an update event, for example the name of the component an update was trigger from.
+ * @param nameOrDevtoolsConfig takes either a string, or an object
+ * @param state the initial state  
+ * 
+ * FOR EXAMPLE:
+ * ```
+ * const getStore = makeEnforceTags('store', { todos: Array<{id: number, text: string}>() });
+ * 
+ * // Note that when updating state, we are required to supply a string as the last argument (in this case 'TodoDetailComponent')
+ * getStore(s => s.todos)
+ *   .patchWhere(t => t.id = 1)
+ *   .with({ text: 'bake cookies' }, 'TodoDetailComponent')
+ * 
+ * ```
+ */
+export function makeEnforceTags<S>(nameOrDevtoolsConfig: string | EnhancerOptions, state: S) {
+  return makeInternal(nameOrDevtoolsConfig, state) as any as <C = S>(selector?: (s: S) => C) => AvailableOps<S, C, true>;
+}
+
+/**
+ * Creates a new store
+ * @param nameOrDevtoolsConfig takes either a string, or an object
+ * @param state the initial state
+ * 
+ * FOR EXAMPLE:
+ * ```
+ * const getStore = make('store', { todos: Array<{id: number, text: string}>() });
+ * ```
+ */
 export function make<S>(nameOrDevtoolsConfig: string | EnhancerOptions, state: S) {
+  return makeInternal(nameOrDevtoolsConfig, state) as any as <C = S>(selector?: (s: S) => C) => AvailableOps<S, C, false>;
+}
+
+function makeInternal<S>(nameOrDevtoolsConfig: string | EnhancerOptions, state: S) {
   const changeListeners = new Map<(arg: S) => any, (ar: any) => any>();
   const fetchers = new Map<string, Fetcher<any, any>>();
   const pathReader = createPathReader(state);
   let currentState = deepFreeze(state) as S;
   const initialState = currentState;
-  let devtools: ReturnType<WindowAugmentedWithReduxDevtools['connect']>;
   let devtoolsDispatchListener: ((action: { type: string, payload?: any }) => any) | undefined;
   const setDevtoolsDispatchListener = (listener: (action: { type: string, payload?: any }) => any) => devtoolsDispatchListener = listener;
-  const replace = <C>(selector: (s: S) => C, name: string) => (assignment: C, options?: Options) => {
+  const replace = <C>(selector: (s: S) => C, name: string) => (assignment: C, tag?: string) => {
     const isRootUpdate = !pathReader.readSelector(selector).length;
     if (isRootUpdate) {
       updateState<C>(selector, `replace()`, assignment,
@@ -29,7 +63,7 @@ export function make<S>(nameOrDevtoolsConfig: string | EnhancerOptions, state: S
           } else {
             Object.assign(old, assignment);
           }
-        }, { overrideActionName: true, dontTrackWithDevtools: options && options.dontTrackWithDevtools });
+        }, { overrideActionName: true, tag });
       return;
     }
     const pathSegments = pathReader.pathSegments;
@@ -42,7 +76,7 @@ export function make<S>(nameOrDevtoolsConfig: string | EnhancerOptions, state: S
     }
     updateState<C>(selectorRevised, `${pathSegments.join('.')}.${name}()`, assignment,
       old => Array.isArray(old) ? old.map((o, i) => i === +lastSeg ? deepCopy(assignment) : o) : ({ ...old, [lastSeg]: deepCopy(assignment) }),
-      old => old[lastSeg] = assignment, { overrideActionName: true });
+      old => old[lastSeg] = assignment, { overrideActionName: true, tag });
   };
   const action = <C, X extends C & Array<any>>(selector: (s: S) => C) => ({
     replaceWith: replace(selector, 'replaceWith'),
@@ -51,7 +85,7 @@ export function make<S>(nameOrDevtoolsConfig: string | EnhancerOptions, state: S
       old => ({ ...old, ...assignment }),
       old => Object.assign(old, assignment)),
     patchWhere: (where: (e: X) => boolean) => ({
-      with: (assignment: Partial<X[0]>) => {
+      with: (assignment: Partial<X[0]>, tag?: string) => {
         const itemIndices = (selector(currentState) as any as X).map((e, i) => where(e) ? i : null).filter(i => i !== null);
         const pathSegments = pathReader.readSelector(selector);
         return updateState<C>(selector, `${pathSegments.join('.')}${pathSegments.length ? '.' : ''}${itemIndices.join(',')}.patchWhere()`,
@@ -63,27 +97,27 @@ export function make<S>(nameOrDevtoolsConfig: string | EnhancerOptions, state: S
                 Object.assign(old[idx], assignment);
               }
             })
-          }, { overrideActionName: true });
+          }, { overrideActionName: true, tag });
       }
     }),
-    addAfter: (...assignment: X) => updateState<C>(selector, 'addAfter', assignment,
+    addAfter: (assignment: X[0][], tag?: string) => updateState<C>(selector, 'addAfter', assignment,
       old => [...old, ...deepCopy(assignment)],
-      old => old.push(...assignment)),
-    addBefore: (...assignment: X) => updateState<C>(selector, 'addBefore', assignment,
+      old => old.push(...assignment), { tag }),
+    addBefore: (assignment: X[0][], tag?: string) => updateState<C>(selector, 'addBefore', assignment,
       old => [...deepCopy(assignment), ...old],
-      old => old.unshift(...assignment)),
-    removeFirst: () => updateState<C>(selector, 'removeFirst', (selector(currentState) as any as X).slice(1),
+      old => old.unshift(...assignment), { tag }),
+    removeFirst: (tag?: string) => updateState<C>(selector, 'removeFirst', (selector(currentState) as any as X).slice(1),
       old => old.slice(1, old.length),
-      old => old.shift()),
-    removeLast: () => {
+      old => old.shift(), { tag }),
+    removeLast: (tag?: string) => {
       const selection = selector(currentState) as any as X;
       updateState<C>(selector, 'removeLast', selection.slice(0, selection.length - 1),
         old => old.slice(0, old.length - 1),
-        old => old.pop());
+        old => old.pop(), { tag });
     },
-    removeAll: () => updateState<C>(selector, 'removeAll', null,
+    removeAll: (tag?: string) => updateState<C>(selector, 'removeAll', null,
       () => [],
-      old => old.length = 0),
+      old => old.length = 0, { tag }),
     removeWhere: (predicate: (arg: X[0]) => boolean) => {
       const itemIndices = (selector(currentState) as any as X).map((e, i) => predicate(e) ? i : null).filter(i => i !== null);
       const pathSegments = pathReader.readSelector(selector);
@@ -101,16 +135,16 @@ export function make<S>(nameOrDevtoolsConfig: string | EnhancerOptions, state: S
         }, { overrideActionName: true });
     },
     upsertWhere: (criteria: (e: X[0]) => boolean) => ({
-      with: (element: X[0]) => {
+      with: (element: X[0], tag?: string) => {
         const itemIndices = (selector(currentState) as any as X).map((e, i) => criteria(e) ? i : null).filter(i => i !== null);
         if (itemIndices.length > 1) { throw new Error('Cannot upsert more than 1 element'); }
         return itemIndices.length
-          ? action(selector as (s: S) => X).replaceWhere(criteria).with(element)
+          ? action(selector as (s: S) => X).replaceWhere(criteria).with(element, tag)
           : action(selector as (s: S) => X).addAfter(element);
       }
     }),
     replaceWhere: (criteria: (e: X[0]) => boolean) => ({
-      with: (assignment: X[0]) => {
+      with: (assignment: X[0], tag?: string) => {
         const itemIndices = (selector(currentState) as any as X).map((e, i) => criteria(e) ? i : null).filter(i => i !== null);
         const pathSegments = pathReader.readSelector(selector);
         return updateState<C>(selector, `${pathSegments.join('.')}${pathSegments.length ? '.' : ''}${itemIndices.join(',')}.replaceWhere()`,
@@ -122,7 +156,7 @@ export function make<S>(nameOrDevtoolsConfig: string | EnhancerOptions, state: S
                 old[idx] = assignment;
               }
             })
-          }, { overrideActionName: true });
+          }, { overrideActionName: true, tag });
       }
     }),
     createFetcher: (promise: () => Promise<C>, specs: { cacheForMillis: number } = { cacheForMillis: 0 }) => {
@@ -173,7 +207,7 @@ export function make<S>(nameOrDevtoolsConfig: string | EnhancerOptions, state: S
     },
     read: () => selector(currentState),
     reset: () => replace(selector, 'reset')(selector(initialState)),
-  } as any as AvailableOps<S, C>);
+  } as any as AvailableOps<S, C, any>);
 
   const storeResult = <C = S>(selector: ((s: S) => C) = (s => s as any as C)) => {
     const selectorMod = selector as (s: S) => C;
@@ -189,11 +223,10 @@ export function make<S>(nameOrDevtoolsConfig: string | EnhancerOptions, state: S
     mutator: (newNode: any) => any,
     options: {
       overrideActionName?: boolean,
-      dontTrackWithDevtools?: boolean,
+      tag?: string,
     } = {
-        dontTrackWithDevtools: false,
-        overrideActionName: false,
-      },
+      overrideActionName: false,
+    },
   ) {
     const pathSegments = pathReader.readSelector(selector);
     const result = deepFreeze(copyObject(currentState, { ...currentState }, pathSegments.slice(), action));
@@ -206,7 +239,7 @@ export function make<S>(nameOrDevtoolsConfig: string | EnhancerOptions, state: S
     };
     tests.currentAction = actionToDispatch;
     tests.currentMutableState = pathReader.mutableStateCopy;
-    if (devtoolsDispatchListener && !options.dontTrackWithDevtools) {
+    if (devtoolsDispatchListener && (options.tag && options.tag !== 'dontTrackWithDevtools')) {
       devtoolsDispatchListener(actionToDispatch);
     }
   }
@@ -220,7 +253,7 @@ export function make<S>(nameOrDevtoolsConfig: string | EnhancerOptions, state: S
     })
   }
 
-  devtools = integrateStoreWithReduxDevtools<S>(storeResult, typeof(nameOrDevtoolsConfig) === 'string' ? { name: nameOrDevtoolsConfig } : nameOrDevtoolsConfig, setDevtoolsDispatchListener);
+  integrateStoreWithReduxDevtools<S>(storeResult, typeof (nameOrDevtoolsConfig) === 'string' ? { name: nameOrDevtoolsConfig } : nameOrDevtoolsConfig, setDevtoolsDispatchListener);
 
   return storeResult;
 }
@@ -317,17 +350,17 @@ export function deepCopy(o: any): any {
   return newO;
 }
 
-export function deriveFrom<X extends AvailableOps<any, any>[]>(...args: X) {
+export function deriveFrom<X extends AvailableOps<any, any, any>[]>(...args: X) {
   let previousParams = new Array<any>();
   let previousResult = null as any;
   return {
     usingExpensiveCalc: <R>(calculation: (...inputs: MappedDataTuple<X>) => R) => {
       const getValue = () => {
-        const params = (args as Array<AvailableOps<any, any>>).map(arg => arg.read());
+        const params = (args as Array<AvailableOps<any, any, any>>).map(arg => arg.read());
         if (previousParams.length && params.every((v, i) => v === previousParams[i])) {
           return previousResult;
         }
-        const result = calculation(...(params as AvailableOps<any, any>));
+        const result = calculation(...(params as AvailableOps<any, any, any>));
         previousParams = params;
         previousResult = result;
         return result;
@@ -337,7 +370,7 @@ export function deriveFrom<X extends AvailableOps<any, any>[]>(...args: X) {
         read: () => getValue(),
         onChange: (listener: (value: R) => any) => {
           changeListeners.add(listener);
-          const unsubscribables: Unsubscribable[] = (args as Array<AvailableOps<any, any>>)
+          const unsubscribables: Unsubscribable[] = (args as Array<AvailableOps<any, any, any>>)
             .map(ops => ops.onChange(() => listener(getValue())));
           return {
             unsubscribe: () => {

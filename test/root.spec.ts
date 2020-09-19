@@ -11,7 +11,7 @@ describe('Root', () => {
 
   it('should update a top-level array', () => {
     const getStore = make('state', new Array<{ id: number, text: string }>());
-    getStore().addAfter({ id: 1, text: 'hello' });
+    getStore().addAfter([{ id: 1, text: 'hello' }]);
     expect(getStore().read()).toEqual([{ id: 1, text: 'hello' }]);
     expect(tests.currentMutableState).toEqual(getStore().read());
   })

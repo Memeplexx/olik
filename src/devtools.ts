@@ -17,8 +17,8 @@ const windowAugmentedWithReduxDevtoolsImpl = {
   send: () => null
 } as WindowAugmentedWithReduxDevtools
 
-export function integrateStoreWithReduxDevtools<S>(
-  store: () => AvailableOps<S, S>,
+export function integrateStoreWithReduxDevtools<S, C = S>(
+  store: () => AvailableOps<S, C, any>,
   options: EnhancerOptions,
   setDevtoolsDispatchListener: (listener: (action: { type: string, payload?: any }) => any) => any
 ) {
@@ -37,13 +37,13 @@ export function integrateStoreWithReduxDevtools<S>(
   devTools.subscribe((message: { type: string, state: any }) => {
     if (message.type === 'DISPATCH' && message.state) {
       const selection = store() as any as (
-        { replace: (state: S, options: { dontTrackWithDevtools: boolean }) => any } &
-        { replaceAll: (state: S, options: { dontTrackWithDevtools: boolean }) => any }
+        { replaceWith: (state: S, tag: string) => any } &
+        { replaceAll: (state: S, tag: string) => any }
       );
       if (!!selection.replaceAll) {
-        selection.replaceAll(JSON.parse(message.state), { dontTrackWithDevtools: true });
+        selection.replaceAll(JSON.parse(message.state), 'dontTrackWithDevtools');
       } else {
-        selection.replace(JSON.parse(message.state), { dontTrackWithDevtools: true });
+        selection.replaceWith(JSON.parse(message.state), 'dontTrackWithDevtools');
       }
       onDispatchListener();
     }

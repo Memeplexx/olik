@@ -2,12 +2,6 @@ export interface Action<T = any> {
   type: T
 }
 
-export interface Options {
-  dontTrackWithDevtools?: boolean;
-  addSuffix?: string;
-  addPrefix?: string;
-}
-
 export type status = 'pristine' | 'error' | 'resolved' | 'resolving';
 
 export interface Fetcher<S, C> {
@@ -26,7 +20,7 @@ export interface Fetcher<S, C> {
   /**
    * The store that is associated with this fetcher
    */
-  store: (selector?: (state: S) => C) => AvailableOps<S, C>,
+  store: (selector?: (state: S) => C) => AvailableOps<S, C, any>,
   /**
    * The selector that is associated with this fetcher
    */
@@ -40,13 +34,9 @@ export interface Fetcher<S, C> {
   onStatusChange: (listener: (status: status) => any) => Unsubscribable,
 }
 
-export type equal<S> = <T = S>(arg: (state: S) => T, value: T) => any;
-export type notEqual<S> = <T = S>(arg: (state: S) => T, value: T) => any;
-export type within<S> = <T extends Array<any>>(arg: (state: S) => T, value: T) => any;
+export type Tag<B> = B extends true ? string : void;
 
-export type and<S> = (...args: ((state: S, arg?: any) => any)[]) => any;
-
-export type AvailableOps<S, C> =
+export type AvailableOps<S, C, B extends boolean> =
   (C extends undefined ? any : C extends Array<any> ? {
     /**
      * Append one or more elements to the end of array
@@ -55,7 +45,7 @@ export type AvailableOps<S, C> =
      *   .addAfter(...newTodos);
      * ```
      */
-    addAfter: (...elements: C) => void,
+    addAfter: (elements: C[0][], tag: Tag<B>) => void,
     /**
      * Prepend one or more elements to the beginning of array
      * ```
@@ -63,7 +53,7 @@ export type AvailableOps<S, C> =
      *   .addBefore(...newTodos);
      * ```
      */
-    addBefore: (...elements: C) => void,
+    addBefore: (elements: C[0][], tag: Tag<B>) => void,
     /**
      * Partially update zero or more elements which match a specific condition
      * ```
@@ -72,7 +62,7 @@ export type AvailableOps<S, C> =
      *   .with({ status: 'todo' });
      * ```
      */
-    patchWhere: (where: (e: C[0]) => boolean) => { with: (element: Partial<C[0]>) => void },
+    patchWhere: (where: (e: C[0]) => boolean) => { with: (element: Partial<C[0]>, tag: Tag<B>) => void },
     /**
      * Remove all elements from array
      * ```
@@ -80,7 +70,7 @@ export type AvailableOps<S, C> =
      *   .removeAll();
      * ```
      */
-    removeAll: () => void,
+    removeAll: (tag: Tag<B>) => void,
     /**
      * Delete first element from array
      * ```
@@ -88,7 +78,7 @@ export type AvailableOps<S, C> =
      *   .removeFirst();
      * ```
      */
-    removeFirst: () => void,
+    removeFirst: (tag: Tag<B>) => void,
     /**
      * Delete last element from array
      * ```
@@ -96,7 +86,7 @@ export type AvailableOps<S, C> =
      *   .removeLast();
      * ```
      */
-    removeLast: () => void,
+    removeLast: (tag: Tag<B>) => void,
     /**
      * Delete zero or more elements which match a specific condition
      * ```
@@ -104,7 +94,7 @@ export type AvailableOps<S, C> =
      *   .removeWhere(t => t.status === 'done')
      * ```
      */
-    removeWhere: (where: (arg: C[0]) => boolean) => void,
+    removeWhere: (where: (arg: C[0]) => boolean, tag: Tag<B>) => void,
     /**
      * Substitute all elements with a new array
      * ```
@@ -112,7 +102,7 @@ export type AvailableOps<S, C> =
      *   .replaceAll(newTodos);
      * ```
      */
-    replaceAll: (replacement: C, options?: Options) => void,
+    replaceAll: (replacement: C, tag: Tag<B>) => void,
     /**
      * Substitute zero or more elements which match a specific condition
      * @param where the function which will find the element
@@ -123,7 +113,7 @@ export type AvailableOps<S, C> =
      *   .with({ id: 5, text: 'bake cookies' });
      * ```
      */
-    replaceWhere: (where: (e: C[0]) => boolean) => { with: (element: C[0]) => void },
+    replaceWhere: (where: (e: C[0]) => boolean) => { with: (element: C[0], tag: Tag<B>) => void },
     /**
      * Subtitute or appends an element depending on whether or not it can be found.
      * @param where the function which will attempt to find the element
@@ -134,7 +124,7 @@ export type AvailableOps<S, C> =
      *   .with({ id: 5, text: 'bake cookies' });
      * ```
      */
-    upsertWhere: (where: (e: C[0]) => boolean) => { with: (element: C[0]) => void },
+    upsertWhere: (where: (e: C[0]) => boolean) => { with: (element: C[0], tag: Tag<B>) => void },
   } : C extends object ? {
     /**
      * Partially updates object
@@ -143,7 +133,7 @@ export type AvailableOps<S, C> =
      *   .patchWith({ firstName: 'James', age: 33 })
      * ```
      */
-    patchWith: (partial: Partial<C>) => void,
+    patchWith: (partial: Partial<C>, tag: Tag<B>) => void,
     /**
      * Substitutes object
      * ```
@@ -151,7 +141,7 @@ export type AvailableOps<S, C> =
      *   .replaceWith(newUser)
      * ```
      */
-    replaceWith: (replacement: C, options?: Options) => void,
+    replaceWith: (replacement: C, tag: Tag<B>) => void,
   } : C extends boolean ? {
     /**
      * Subtitutes primitive
@@ -160,7 +150,7 @@ export type AvailableOps<S, C> =
      *   .replaceWith(33)
      * ```
      */
-    replaceWith: (replacement: boolean) => void,
+    replaceWith: (replacement: boolean, tag: Tag<B>) => void,
   } : {
     /**
      * Subtitutes primitive
@@ -169,7 +159,7 @@ export type AvailableOps<S, C> =
      *   .replaceWith(33)
      * ```
      */
-    replaceWith: (replacement: C) => void,
+    replaceWith: (replacement: C, tag: Tag<B>) => void,
   }) & {
     /**
      * *Fetchers* are an standardized mechanism for:  
@@ -211,9 +201,9 @@ export interface Unsubscribable {
   unsubscribe: () => any,
 }
 
-type ReadType<E> = E extends AvailableOps<any, infer W> ? W : never;
+type ReadType<E> = E extends AvailableOps<any, infer W, any> ? W : never;
 
-export type MappedDataTuple<T extends Array<AvailableOps<any, any>>> = {
+export type MappedDataTuple<T extends Array<AvailableOps<any, any, any>>> = {
   [K in keyof T]: ReadType<T[K]>;
 }
 

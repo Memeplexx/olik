@@ -1,4 +1,4 @@
-import { make, tests } from "../src/core";
+import { make, tests } from '../src/core';
 
 describe('Array', () => {
 
@@ -9,7 +9,7 @@ describe('Array', () => {
     };
     const getStore = make('state', initialState);
     const payload = [{ id: 2, value: 'two' }, { id: 3, value: 'three' }];
-    getStore(s => s.array).addAfter(...payload);
+    getStore(s => s.array).addAfter(payload);
     expect(getStore().read().array).toEqual([...initialState.array, ...payload]);
     expect(getStore().read().object === initialState.object).toBeTruthy();
     expect(tests.currentAction.type).toEqual('array.addAfter()');
@@ -24,7 +24,7 @@ describe('Array', () => {
     };
     const getStore = make('state', initialState);
     const payload = [{ id: 1, value: 'one' }, { id: 2, value: 'two' }];
-    getStore(s => s.array).addBefore(...payload);
+    getStore(s => s.array).addBefore(payload);
     expect(getStore().read().array).toEqual([...payload, ...initialState.array]);
     expect(getStore().read().object === initialState.object).toBeTruthy();
     expect(tests.currentAction.type).toEqual('array.addBefore()');
@@ -74,6 +74,9 @@ describe('Array', () => {
     expect(tests.currentAction.type).toEqual('array.1.replaceWhere()');
     expect(tests.currentAction.payload.replacement).toEqual(payload);
     expect(tests.currentMutableState).toEqual(getStore().read());
+
+    // const getStore2 = makeEnforceTags('state', initialState);
+    // getStore2(s => s.array).removeAll();
   })
 
   it('should upsertWhere()', () => {
