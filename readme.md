@@ -45,7 +45,7 @@ const getCanvas = make('canvas', {          // <- Auto-registers with the Redux 
 getCanvas(s => s.size.width)                // <- Your state will be replaced using the action:
   .replaceWith(20);                         //    { type: 'size.width.replaceWith()', payload: 20 }
 ```
-[All write options...](./readme-write.md)
+[All write options...](./docs/readme-write.md)
 
 ## READING STATE ##
 
@@ -53,4 +53,4 @@ getCanvas(s => s.size.width)                // <- Your state will be replaced us
 const canvasWidth = getCanvas()
   .read().size.width;
 ```
-[All read options...](./readme-read.md)
+[All read options...](./docs/readme-read.md)
