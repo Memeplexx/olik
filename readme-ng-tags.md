@@ -38,8 +38,3 @@ module.exports = {
 ```Typescript
 declare var __filename: string;
 ```
-
-5) Update the way you dispatch actions
-```Typescript
-userManager.dispatch.updateAge(__filename, 2);
-```
