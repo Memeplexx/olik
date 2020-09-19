@@ -7,7 +7,7 @@ import { AvailableOps, Fetcher, listenToDevtoolsDispatch } from 'oulik';
 export * from 'oulik';
 
 export function select<S, C>(
-  store: AvailableOps<S, C>,
+  store: AvailableOps<S, C, boolean>,
 ) {
   return new Observable<C>((observer) => {
     observer.next(store.read());

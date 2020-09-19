@@ -234,12 +234,13 @@ function makeInternal<S>(nameOrDevtoolsConfig: string | EnhancerOptions, state: 
     mutator(selector(pathReader.mutableStateCopy));
     currentState = result;
     const actionToDispatch = {
-      type: options && options.overrideActionName ? actionName : ((pathSegments.join('.') + (pathSegments.length ? '.' : '') + actionName + '()')),
+      type: (options && options.overrideActionName ? actionName : ((pathSegments.join('.') + (pathSegments.length ? '.' : '') + actionName + '()')))
+        + (options.tag ? ` [${options.tag}]` : ''),
       payload,
     };
     tests.currentAction = actionToDispatch;
     tests.currentMutableState = pathReader.mutableStateCopy;
-    if (devtoolsDispatchListener && (options.tag && options.tag !== 'dontTrackWithDevtools')) {
+    if (devtoolsDispatchListener && (!options.tag || (options.tag !== 'dontTrackWithDevtools'))) {
       devtoolsDispatchListener(actionToDispatch);
     }
   }
