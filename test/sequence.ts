@@ -13,46 +13,46 @@ describe('Sequence', () => {
       },
       propTwo: new Array<{ id: number, value: string }>(),
     };
-    const getStore = make('state', initialState);
-    getStore(s => s.propOne.subPropOne).replaceWith('hey');
-    expect(tests.currentMutableState).toEqual(getStore().read());
-    getStore(s => s.propOne).patchWith({ subPropOne: 'xxx' });
-    expect(tests.currentMutableState).toEqual(getStore().read());
-    getStore(s => s.propTwo).addAfter([{ id: 2, value: 'two' }]);
-    expect(tests.currentMutableState).toEqual(getStore().read());
-    getStore(s => s.propTwo).addBefore([{ id: 0, value: 'zero' }]);
-    expect(tests.currentMutableState).toEqual(getStore().read());
-    getStore(s => s.propTwo).patchWhere(e => e.id === 1).with({ value: 'test' });
-    expect(tests.currentMutableState).toEqual(getStore().read());
-    getStore(s => s.propTwo).upsertWhere(e => e.id === 1).with({ id: 1, value: 'xxx' })
-    expect(tests.currentMutableState).toEqual(getStore().read());
-    getStore(s => s.propTwo).removeWhere(s => s.id === 1);
-    expect(tests.currentMutableState).toEqual(getStore().read());
-    getStore(s => s.propTwo).removeAll();
-    expect(tests.currentMutableState).toEqual(getStore().read());
+    const store = make('store', initialState);
+    store(s => s.propOne.subPropOne).replaceWith('hey');
+    expect(tests.currentMutableState).toEqual(store().read());
+    store(s => s.propOne).patchWith({ subPropOne: 'xxx' });
+    expect(tests.currentMutableState).toEqual(store().read());
+    store(s => s.propTwo).addAfter([{ id: 2, value: 'two' }]);
+    expect(tests.currentMutableState).toEqual(store().read());
+    store(s => s.propTwo).addBefore([{ id: 0, value: 'zero' }]);
+    expect(tests.currentMutableState).toEqual(store().read());
+    store(s => s.propTwo).patchWhere(e => e.id === 1).with({ value: 'test' });
+    expect(tests.currentMutableState).toEqual(store().read());
+    store(s => s.propTwo).upsertWhere(e => e.id === 1).with({ id: 1, value: 'xxx' })
+    expect(tests.currentMutableState).toEqual(store().read());
+    store(s => s.propTwo).removeWhere(s => s.id === 1);
+    expect(tests.currentMutableState).toEqual(store().read());
+    store(s => s.propTwo).removeAll();
+    expect(tests.currentMutableState).toEqual(store().read());
   })
 
   it('should maintain sequence on root array', () => {
     const initialState = new Array<{ id: number, value: string }>();
-    const getStore = make('state', initialState);
-    getStore().addAfter([{ id: 2, value: 'two' }]);
-    expect(tests.currentMutableState).toEqual(getStore().read());
-    getStore().addBefore([{ id: 0, value: 'zero' }]);
-    expect(tests.currentMutableState).toEqual(getStore().read());
-    getStore().patchWhere(e => e.id === 1).with({ value: 'test' });
-    expect(tests.currentMutableState).toEqual(getStore().read());
-    getStore().upsertWhere(e => e.id === 1).with({ id: 1, value: 'xxx' })
-    expect(tests.currentMutableState).toEqual(getStore().read());
-    getStore().removeWhere(s => s.id === 1);
-    expect(tests.currentMutableState).toEqual(getStore().read());
-    getStore().removeAll();
-    expect(tests.currentMutableState).toEqual(getStore().read());
+    const store = make('store', initialState);
+    store().addAfter([{ id: 2, value: 'two' }]);
+    expect(tests.currentMutableState).toEqual(store().read());
+    store().addBefore([{ id: 0, value: 'zero' }]);
+    expect(tests.currentMutableState).toEqual(store().read());
+    store().patchWhere(e => e.id === 1).with({ value: 'test' });
+    expect(tests.currentMutableState).toEqual(store().read());
+    store().upsertWhere(e => e.id === 1).with({ id: 1, value: 'xxx' })
+    expect(tests.currentMutableState).toEqual(store().read());
+    store().removeWhere(s => s.id === 1);
+    expect(tests.currentMutableState).toEqual(store().read());
+    store().removeAll();
+    expect(tests.currentMutableState).toEqual(store().read());
   })
 
   it('should maintain sequence on root string', () => {
-    const getStore = make('state', '');
-    getStore().replaceWith('hey');
-    expect(tests.currentMutableState).toEqual(getStore().read());
+    const store = make('store', '');
+    store().replaceWith('hey');
+    expect(tests.currentMutableState).toEqual(store().read());
   })
 
 });

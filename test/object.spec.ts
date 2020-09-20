@@ -10,59 +10,59 @@ describe('Object', () => {
     const initialState = {
       object: { property: 'hello', property2: 'two' },
     };
-    const getStore = make('state', initialState);
+    const store = make('state', initialState);
     const payload = 'hey';
-    getStore(s => s.object.property).replaceWith(payload);
-    expect(getStore().read().object.property).toEqual('hey');
-    expect(getStore().read().object.property2 === initialState.object.property2).toBeTruthy();
+    store(s => s.object.property).replaceWith(payload);
+    expect(store().read().object.property).toEqual('hey');
+    expect(store().read().object.property2 === initialState.object.property2).toBeTruthy();
     expect(tests.currentAction.type).toEqual('object.property.replaceWith()');
     expect(tests.currentAction.payload).toEqual(payload);
-    expect(tests.currentMutableState).toEqual(getStore().read());
+    expect(tests.currentMutableState).toEqual(store().read());
   })
 
   it('should PATCH an node', () => {
     const initialState = {
       object: { property: 'hello', property2: 'two' },
     };
-    const getStore = make('state', initialState);
+    const store = make('state', initialState);
     const payload = { property: 'xxx' };
-    getStore(s => s.object).patchWith(payload);
-    expect(getStore().read().object.property).toEqual(payload.property);
-    expect(getStore().read().object.property2 === initialState.object.property2).toBeTruthy();
+    store(s => s.object).patchWith(payload);
+    expect(store().read().object.property).toEqual(payload.property);
+    expect(store().read().object.property2 === initialState.object.property2).toBeTruthy();
     expect(tests.currentAction.type).toEqual('object.patchWith()');
     expect(tests.currentAction.payload).toEqual(payload);
-    expect(tests.currentMutableState).toEqual(getStore().read());
+    expect(tests.currentMutableState).toEqual(store().read());
   })
 
   it('should RESET a node', () => {
     const initialState = {
       object: { property: 'hello', property2: 'two' },
     };
-    const getStore = make('state', initialState);
-    getStore(s => s.object.property).replaceWith('hey');
-    expect(getStore(s => s.object.property).read()).toEqual('hey');
-    expect(tests.currentMutableState).toEqual(getStore().read());
-    getStore(s => s.object.property).reset();
-    expect(getStore(s => s.object.property).read()).toEqual('hello');
-    expect(tests.currentMutableState).toEqual(getStore().read());
-    getStore().replaceWith({ object: { property: 'xx', property2: 'yy' } });
-    expect(getStore().read()).toEqual({ object: { property: 'xx', property2: 'yy' } });
-    expect(tests.currentMutableState).toEqual(getStore().read());
-    getStore().reset();
-    expect(getStore().read()).toEqual(initialState);
-    expect(tests.currentMutableState).toEqual(getStore().read());
+    const store = make('state', initialState);
+    store(s => s.object.property).replaceWith('hey');
+    expect(store(s => s.object.property).read()).toEqual('hey');
+    expect(tests.currentMutableState).toEqual(store().read());
+    store(s => s.object.property).reset();
+    expect(store(s => s.object.property).read()).toEqual('hello');
+    expect(tests.currentMutableState).toEqual(store().read());
+    store().replaceWith({ object: { property: 'xx', property2: 'yy' } });
+    expect(store().read()).toEqual({ object: { property: 'xx', property2: 'yy' } });
+    expect(tests.currentMutableState).toEqual(store().read());
+    store().reset();
+    expect(store().read()).toEqual(initialState);
+    expect(tests.currentMutableState).toEqual(store().read());
   })
 
   it('should work with tags correctly', () => {
     const initialState = {
       object: { property: 'hello', property2: 'two' },
     };
-    const getStore = makeEnforceTags('store', initialState);
+    const store = makeEnforceTags('store', initialState);
     const payload = 'hey';
     const tag = 'mytag';
-    getStore(s => s.object.property).replaceWith(payload, tag);
+    store(s => s.object.property).replaceWith(payload, tag);
     expect(tests.currentAction.type).toEqual(`object.property.replaceWith() [${tag}]`);
-    expect(getStore().read().object.property).toEqual(payload);
+    expect(store().read().object.property).toEqual(payload);
   })
 
 });

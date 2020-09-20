@@ -40,7 +40,7 @@ export type AvailableOps<S, C, B extends boolean> =
     /**
      * Append elements to the end of array
      * ```
-     * getStore(s => s.todos)
+     * store(s => s.todos)
      *   .addAfter(newTodos);
      * ```
      */
@@ -48,7 +48,7 @@ export type AvailableOps<S, C, B extends boolean> =
     /**
      * Prepend elements to the beginning of array
      * ```
-     * getStore(s => s.todos)
+     * store(s => s.todos)
      *   .addBefore(newTodos);
      * ```
      */
@@ -56,7 +56,7 @@ export type AvailableOps<S, C, B extends boolean> =
     /**
      * Partially update elements which match a specific condition
      * ```
-     * getStore(s => s.todos)
+     * store(s => s.todos)
      *   .patchWhere(t => t.status === 'done')
      *   .with({ status: 'todo' });
      * ```
@@ -65,7 +65,7 @@ export type AvailableOps<S, C, B extends boolean> =
     /**
      * Remove all elements from array
      * ```
-     * getStore(s => s.todos)
+     * store(s => s.todos)
      *   .removeAll();
      * ```
      */
@@ -73,7 +73,7 @@ export type AvailableOps<S, C, B extends boolean> =
     /**
      * Delete first element from array
      * ```
-     * getStore(s => s.todos)
+     * store(s => s.todos)
      *   .removeFirst();
      * ```
      */
@@ -81,7 +81,7 @@ export type AvailableOps<S, C, B extends boolean> =
     /**
      * Delete last element from array
      * ```
-     * getStore(s => s.todos)
+     * store(s => s.todos)
      *   .removeLast();
      * ```
      */
@@ -89,7 +89,7 @@ export type AvailableOps<S, C, B extends boolean> =
     /**
      * Delete elements which match a specific condition
      * ```
-     * getStore(s => s.todos)
+     * store(s => s.todos)
      *   .removeWhere(t => t.status === 'done')
      * ```
      */
@@ -97,7 +97,7 @@ export type AvailableOps<S, C, B extends boolean> =
     /**
      * Substitute all elements with a new array
      * ```
-     * getStore(s => s.todos)
+     * store(s => s.todos)
      *   .replaceAll(newTodos);
      * ```
      */
@@ -107,7 +107,7 @@ export type AvailableOps<S, C, B extends boolean> =
      * @param where the function which will find the element
      * @param element the element which will replace the old one
      * ```
-     * getStore(s => s.todos)
+     * store(s => s.todos)
      *   .replaceWhere(t => t.id === 5)
      *   .with({ id: 5, text: 'bake cookies' });
      * ```
@@ -118,7 +118,7 @@ export type AvailableOps<S, C, B extends boolean> =
      * @param where the function which will attempt to find the element
      * @param element the element will either replace the old one or be inserted
      * ```
-     * getStore(s => s.todos)
+     * store(s => s.todos)
      *   .upsertWhere(t => t.id === 5)
      *   .with({ id: 5, text: 'bake cookies' });
      * ```
@@ -128,7 +128,7 @@ export type AvailableOps<S, C, B extends boolean> =
     /**
      * Partially updates object
      * ```
-     * getStore(s => s.user)
+     * store(s => s.user)
      *   .patchWith({ firstName: 'James', age: 33 })
      * ```
      */
@@ -136,7 +136,7 @@ export type AvailableOps<S, C, B extends boolean> =
     /**
      * Substitutes object
      * ```
-     * getStore(s => s.user)
+     * store(s => s.user)
      *   .replaceWith(newUser)
      * ```
      */
@@ -145,7 +145,7 @@ export type AvailableOps<S, C, B extends boolean> =
     /**
      * Subtitutes primitive
      * ```
-     * getStore(s => s.user.age)
+     * store(s => s.user.age)
      *   .replaceWith(33)
      * ```
      */
@@ -154,7 +154,7 @@ export type AvailableOps<S, C, B extends boolean> =
     /**
      * Subtitutes primitive
      * ```
-     * getStore(s => s.user.age)
+     * store(s => s.user.age)
      *   .replaceWith(33)
      * ```
      */
@@ -167,7 +167,7 @@ export type AvailableOps<S, C, B extends boolean> =
      * * caching request responses (optional).  
      * 
      * ```
-     * const todosFetcher = getStore(s => s.todos)
+     * const todosFetcher = store(s => s.todos)
      *   .createFetcher(() => fetchTodos(), { cacheForMillis: 1000 * 60 });
      * ```
      */
@@ -177,7 +177,7 @@ export type AvailableOps<S, C, B extends boolean> =
      * Listens to any updates on this node
      * @returns a subscription which may need to be unsubscribed from
      * ```
-     * getStore(s => s.todos)
+     * store(s => s.todos)
      *   .onChange(todos => console.log(todos)) ;
      * ```
      */
