@@ -12,11 +12,10 @@ import { tests } from './tests';
  * ```
  * const getStore = makeEnforceTags('store', { todos: Array<{id: number, text: string}>() });
  * 
- * // Note that when updating state, we are required to supply a string as the last argument (in this case 'TodoDetailComponent')
+ * // Note that when updating state, we are now required to supply a string as the last argument (in this case 'TodoDetailComponent')
  * getStore(s => s.todos)
  *   .patchWhere(t => t.id === 1)
  *   .with({ text: 'bake cookies' }, 'TodoDetailComponent')
- * 
  * ```
  */
 export function makeEnforceTags<S>(nameOrDevtoolsConfig: string | EnhancerOptions, state: S, tagSanitizer?: (tag: string) => string) {
