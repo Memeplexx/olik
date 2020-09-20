@@ -10,7 +10,7 @@ Let's first assume that a store has been initialized as follows:
 ```Typescript
 import { make } from 'oulik';
 
-const getCanvas = make('canvas', {
+const canvas = make('canvas', {
   size: { width: 10, height: 10 },
   border: { thickness: 1 },
 }); 
@@ -19,12 +19,12 @@ const getCanvas = make('canvas', {
 
 ## READING STATE SYNCHRONOUSLY ##
 ```Typescript
-const canvasWidth = getCanvas().read().size.width;
+const canvasWidth = canvas().read().size.width;
 ```
 
 ## LISTENING TO STATE UPDATES ##
 ```Typescript
-const listener = getCanvas(c => c.size.width)
+const listener = canvas(c => c.size.width)
   .onChange(width => console.log(width));
 listener.unsubscribe(); // Please unsubscribe to avoid memory leaks
 ```  
@@ -34,8 +34,8 @@ listener.unsubscribe(); // Please unsubscribe to avoid memory leaks
 import { deriveFrom } from 'oulik';
 
 const innerWidth = deriveFrom(
-  getCanvas(s => s.size.width),
-  getCanvas(s => s.border.thickness),
+  canvas(s => s.size.width),
+  canvas(s => s.border.thickness),
 ).usingExpensiveCalc((
   boxWidth,
   borderThickness,
@@ -54,7 +54,7 @@ Using *Fetchers* allows you to track the status of a request (loading / success 
 
 `api.ts`
 ```Typescript
-const canvasSizeFetcher = getCanvas(s => s.size)
+const canvasSizeFetcher = canvas(s => s.size)
   .createFetcher(() => fetchCanvasSizeFromApi(), { cacheForMillis: 1000 * 60 });
 ```
 

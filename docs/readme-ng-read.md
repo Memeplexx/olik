@@ -10,7 +10,7 @@ Let's first assume that a store has been initialized as follows:
 ```Typescript
 import { make } from 'oulik-ng';
 
-const getStore = make('store', {
+const store = make('store', {
   todos: new Array<string>(),
 }); 
 ```
@@ -18,12 +18,12 @@ const getStore = make('store', {
 
 ## READING STATE SYNCHRONOUSLY ##
 ```Typescript
-const todos = getStore().read().todos;
+const todos = store().read().todos;
 ```
 
 ## LISTENING TO STATE UPDATES ##
 ```Typescript
-const listener = getStore(s => s.todos)
+const listener = store(s => s.todos)
   .onChange(todos => console.log(todos));
 listener.unsubscribe(); // Please unsubscribe to avoid a memory leak
 ```  
@@ -37,7 +37,7 @@ import { select } from 'oulik-ng';
   template: `<div *ngFor="let todo of todos$ | async">{{todo}}</div>`
 })
 export class MyComponent {
-  todos$ = select(getStore(s => s.todos));
+  todos$ = select(store(s => s.todos));
 }
 ```
 
@@ -48,8 +48,8 @@ import { combineLatest } from 'rxjs';
 import { shareReplay } from 'rxjs/operators';
 
 someCombinedValue$ = combineLatest([
-  select(getStore(s => s.todos)),
-  select(getStore(s => s.some.other.value)),
+  select(store(s => s.todos)),
+  select(store(s => s.some.other.value)),
 ]).pipe(
   shareReplay(1),
 );
@@ -66,7 +66,7 @@ export class ApiService {
 
   constructor(private http: HttpClient) { }
 
-  todosFetcher = getStore(s => s.todos)
+  todosFetcher = store(s => s.todos)
     .createFetcher(() => this.http.get('https://www.example.com/todos'), { cacheForMillis: 1000 * 60 });
 }
 ```
