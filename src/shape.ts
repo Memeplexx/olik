@@ -169,6 +169,8 @@ export type AvailableOps<S, C, B extends boolean> =
      * ```
      * const todosFetcher = store(s => s.todos)
      *   .createFetcher(() => fetchTodos(), { cacheForMillis: 1000 * 60 });
+     * todosFetcher.fetch().then(result => console.log(results));
+     * todosFetcher.onStatusChange(status => console.log('status', status));
      * ```
      */
     createFetcher: (promise: () => Promise<C>, specs?: { cacheForMillis?: number }) => Fetcher<S, C, B>,
