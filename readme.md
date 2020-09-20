@@ -17,7 +17,7 @@ This library's unique API not only **makes immutable state updates a breeze**, i
 - **FAST -** Roughly equivalent to [Immutable](https://github.com/immutable-js/immutable-js) and significantly faster than [Immer](https://github.com/immerjs/immer)
 - **IMMUTABLE -** Every state update will result in a new immutable state tree
 - **PORTABLE -** Designed to be framework-agnostic. Currently supports bindings for React and Angular (read a tiny bit further for links to those guides)
-- **DEBUGGABLE -** Via the [Redux Devtools extension](https://chrome.google.com/webstore/detail/redux-devtools/lmhkpmbekcpmknklioeibfkpmmfibljd?hl=en)
+- **DEBUGGABLE -** Via the [Redux Devtools extension](https://chrome.google.com/webstore/detail/redux-devtools/lmhkpmbekcpmknklioeibfkpmmfibljd?hl=en) and optionally supports the use of 'tags' which help to identify the source of a state update
 
 ---
 

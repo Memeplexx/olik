@@ -1,8 +1,7 @@
-import { ApplicationRef, NgModule } from '@angular/core';
+import { NgModule, NgZone } from '@angular/core';
+import { AvailableOps, Fetcher, listenToDevtoolsDispatch, Tag } from 'oulik';
 import { from, Observable } from 'rxjs';
 import { shareReplay } from 'rxjs/operators';
-
-import { AvailableOps, Fetcher, listenToDevtoolsDispatch, Tag } from 'oulik';
 
 export * from 'oulik';
 
@@ -43,9 +42,9 @@ export function resolve<S, C, B extends boolean>(
   return from(fetcher.fetch(tag));
 }
 
-@NgModule({})
+@NgModule()
 export class OulikNgModule {
-  constructor(changeDetector: ApplicationRef) {
-    listenToDevtoolsDispatch(() => changeDetector.tick());
+  constructor(ngZone: NgZone) {
+    listenToDevtoolsDispatch(() => ngZone.run(() => null));
   }
 }

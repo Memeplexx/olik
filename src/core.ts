@@ -19,8 +19,8 @@ import { tests } from './tests';
  * 
  * ```
  */
-export function makeEnforceTags<S>(nameOrDevtoolsConfig: string | EnhancerOptions, state: S) {
-  return makeInternal(nameOrDevtoolsConfig, state) as any as <C = S>(selector?: (s: S) => C) => AvailableOps<S, C, true>;
+export function makeEnforceTags<S>(nameOrDevtoolsConfig: string | EnhancerOptions, state: S, tagSanitizer?: (tag: string) => string) {
+  return makeInternal(nameOrDevtoolsConfig, state, tagSanitizer) as any as <C = S>(selector?: (s: S) => C) => AvailableOps<S, C, true>;
 }
 
 /**
@@ -37,7 +37,7 @@ export function make<S>(nameOrDevtoolsConfig: string | EnhancerOptions, state: S
   return makeInternal(nameOrDevtoolsConfig, state) as any as <C = S>(selector?: (s: S) => C) => AvailableOps<S, C, false>;
 }
 
-function makeInternal<S>(nameOrDevtoolsConfig: string | EnhancerOptions, state: S) {
+function makeInternal<S>(nameOrDevtoolsConfig: string | EnhancerOptions, state: S, tagSanitizer?: (tag: string) => string) {
   const changeListeners = new Map<(arg: S) => any, (ar: any) => any>();
   const fetchers = new Map<string, Fetcher<any, any, any>>();
   const pathReader = createPathReader(state);
@@ -230,7 +230,7 @@ function makeInternal<S>(nameOrDevtoolsConfig: string | EnhancerOptions, state: 
     currentState = result;
     const actionToDispatch = {
       type: (options && options.overrideActionName ? actionName : ((pathSegments.join('.') + (pathSegments.length ? '.' : '') + actionName + '()')))
-        + (options.tag ? ` [${options.tag}]` : ''),
+        + (options.tag ? ` [${tagSanitizer ? tagSanitizer(options.tag) : options.tag}]` : ''),
       payload,
     };
     tests.currentAction = actionToDispatch;
@@ -346,6 +346,20 @@ export function deepCopy(o: any): any {
   return newO;
 }
 
+/**
+ * Takes an arbitrary number of state selections as input, and performs an expensive calculation only when one of those inputs change value.  
+ * FOR EXAMPLE:
+ * ```Typescript
+ * const memo = deriveFrom(
+ *   getStore(s => s.some.property),
+ *   getStore(s => s.some.other.property),
+ * ).usingExpensiveCalc((someProperty, someOtherProperty) => {
+ *   // perform some expensive calculation and return the result
+ * });
+ * 
+ * const memoizedResult = memo.read();
+ * ```
+ */
 export function deriveFrom<X extends AvailableOps<any, any, any>[]>(...args: X) {
   let previousParams = new Array<any>();
   let previousResult = null as any;
