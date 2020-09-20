@@ -2,7 +2,7 @@ import { ApplicationRef, NgModule } from '@angular/core';
 import { from, Observable } from 'rxjs';
 import { shareReplay } from 'rxjs/operators';
 
-import { AvailableOps, Fetcher, listenToDevtoolsDispatch } from 'oulik';
+import { AvailableOps, Fetcher, listenToDevtoolsDispatch, Tag } from 'oulik';
 
 export * from 'oulik';
 
@@ -18,15 +18,16 @@ export function select<S, C>(
   );
 }
 
-export function fetch<S, C>(
-  fetcher: Fetcher<S, C>,
+export function fetch<S, C, B extends boolean>(
+  fetcher: Fetcher<S, C, B>,
+  tag: Tag<B>,
 ) {
   return new Observable<{ value: C | null, error: any, loading: boolean }>((observer) => {
     const state = { value: null, loading: false, error: null } as { value: C | null, error: any, loading: boolean };
     observer.next(Object.assign(state, { loading: true, value: fetcher.store(fetcher.selector).read() }));
     const subscription = fetcher.store(fetcher.selector)
       .onChange(value => observer.next(Object.assign(state, { value })));
-    fetcher.fetch()
+    fetcher.fetch(tag)
       .then(value => observer.next(Object.assign(state, { loading: false, error: null, value })))
       .catch(error => observer.next(Object.assign(state, { loading: false, error })));
     return () => subscription.unsubscribe();
@@ -35,12 +36,11 @@ export function fetch<S, C>(
   );
 }
 
-export function resolve<C>(
-  fetcher: {
-    fetch: () => Promise<C>,
-  },
+export function resolve<S, C, B extends boolean>(
+  fetcher: Fetcher<S, C, B>,
+  tag: Tag<B>,
 ) {
-  return from(fetcher.fetch());
+  return from(fetcher.fetch(tag));
 }
 
 @NgModule({})

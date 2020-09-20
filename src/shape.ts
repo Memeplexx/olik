@@ -17,7 +17,7 @@ export interface Fetcher<S, C, B extends boolean> {
   /**
    * Can be called to fetch the results and automatically add them to the store
    */
-  fetch: (tag: Tag<boolean>) => Promise<C>,
+  fetch: (tag: Tag<B>) => Promise<C>,
   /**
    * The store that is associated with this fetcher
    */
