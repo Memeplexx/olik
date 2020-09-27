@@ -6,6 +6,20 @@ describe('Fetcher', () => {
 
   beforeAll(() => tests.windowObject = windowAugmentedWithReduxDevtoolsImpl);
 
+  it('should start with the correct initial state', () => {
+    const initialState = {
+      one: {
+        two: ''
+      }
+    };
+    const store = make('store', initialState);
+    const fetcher = store(s => s.one).createFetcher(
+      () => new Promise(resolve => setTimeout(() => resolve({ two: 'x' }), 10))
+    );
+    expect(fetcher.read()).toEqual(initialState.one);
+    fetcher.fetch();
+  });
+
   it('should perform a basic fetch', done => {
     const initialState = {
       array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],

@@ -63,6 +63,7 @@ describe('Array', () => {
     expect(tests.currentAction.type).toEqual('array.1.removeWhere()');
     expect(tests.currentAction.payload.toRemove).toEqual([{ id: 2, value: 'two' }]);
     expect(tests.currentMutableState).toEqual(store().read());
+    expect(initialState.array === store(s => s.array).read()).toBeFalsy();
   })
 
   it('should replaceWhere()', () => {

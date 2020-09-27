@@ -11,6 +11,10 @@ export interface Fetcher<S, C, B extends boolean> {
    */
   status: status;
   /**
+   * The current error, if any
+   */
+  error?: any;
+  /**
    * Can be called to manually bust a cache before invoking 'fetch()' again
    */
   invalidateCache: () => any,
@@ -21,7 +25,7 @@ export interface Fetcher<S, C, B extends boolean> {
   /**
    * The store that is associated with this fetcher
    */
-  store: (selector?: (state: S) => C) => AvailableOps<S, C, any>,
+  read: () => C,
   /**
    * The selector that is associated with this fetcher
    */
@@ -191,7 +195,7 @@ export type AvailableOps<S, C, B extends boolean> =
     /**
      * Reverts the current state to how it was when the store was initialized
      */
-    reset: () => void,
+    reset: (tag: Tag<B>) => void,
   };
 
 export interface Unsubscribable {
@@ -364,6 +368,11 @@ export interface EnhancerOptions {
    */
   traceLimit?: number;
 }
+
+export interface Derivation<R> {
+  read: () => R,
+  onChange: (listener: (value: R) => any) => Unsubscribable,
+};
 
 export interface WindowAugmentedWithReduxDevtools {
   __REDUX_DEVTOOLS_EXTENSION__: {

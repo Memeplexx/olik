@@ -1,5 +1,5 @@
 import { integrateStoreWithReduxDevtools } from './devtools';
-import { AvailableOps, EnhancerOptions, Fetcher, MappedDataTuple, status, Unsubscribable } from './shape';
+import { AvailableOps, Derivation, EnhancerOptions, MappedDataTuple, status, Unsubscribable } from './shape';
 import { tests } from './tests';
 
 /**
@@ -38,7 +38,6 @@ export function make<S>(nameOrDevtoolsConfig: string | EnhancerOptions, state: S
 
 function makeInternal<S>(nameOrDevtoolsConfig: string | EnhancerOptions, state: S, tagSanitizer?: (tag: string) => string) {
   const changeListeners = new Map<(arg: S) => any, (ar: any) => any>();
-  const fetchers = new Map<string, Fetcher<any, any, any>>();
   const pathReader = createPathReader(state);
   let currentState = deepFreeze(state) as S;
   const initialState = currentState;
@@ -153,46 +152,52 @@ function makeInternal<S>(nameOrDevtoolsConfig: string | EnhancerOptions, state: 
           }, { overrideActionName: true, tag });
       }
     }),
+    reset: (tag?: string) => replace(selector, 'reset')(selector(initialState), tag),
     createFetcher: (promise: () => Promise<C>, specs: { cacheForMillis: number } = { cacheForMillis: 0 }) => {
-      const otherFetchers = new Array<{ resolve: (c: C) => void, reject: (e: any) => void }>();
-      const pathSegments = pathReader.readSelector(selector);
-      const path = pathSegments.join('.');
+      const otherFetcherPromises = new Array<{ resolve: (c: C) => void, reject: (e: any) => void }>();
       const statusChangeListeners = new Set<(status: status) => any>();
       let lastFetch = 0;
       const result = new (class {
-        store = storeResult;
+        read = () => storeResult(selector).read();
         selector = selector;
         status: status = 'pristine';
+        error?: any;
         invalidateCache = () => { lastFetch = 0; }
-        onStatusChange = (listener: (status: status) => Unsubscribable) => { statusChangeListeners.add(listener); return { unsubscribe: () => statusChangeListeners.delete(listener) } }
-        private setStatus = (status: status) => { this.status = status; statusChangeListeners.forEach(listener => listener(status)); }
+        onStatusChange = (listener: (payload: status) => Unsubscribable) => {
+          statusChangeListeners.add(listener);
+          return { unsubscribe: () => statusChangeListeners.delete(listener) };
+        }
+        private setState = (status: status) => {
+          this.status = status;
+          statusChangeListeners.forEach(listener => listener(status));
+        }
         fetch = (tag: string | void) => {
           const cacheHasExpired = (lastFetch + (specs.cacheForMillis || 0)) < Date.now();
           if ((this.status === 'resolved') && !cacheHasExpired) {
             return Promise.resolve(selector(storeResult().read()));
           } else if (this.status === 'resolving') {
-            return new Promise<C>((resolve, reject) => otherFetchers.push({ resolve, reject }));
+            return new Promise<C>((resolve, reject) => otherFetcherPromises.push({ resolve, reject }));
           } else {
-            this.setStatus('resolving');
+            this.setState('resolving');
             return promise()
-              .then(response => {
-                this.setStatus('resolved');
+              .then(value => {
                 const piece = storeResult(selector) as any as { replace: (c: C, tag: string | void) => void } & { replaceAll: (c: C, tag: string | void) => void };
-                if (piece.replaceAll) { piece.replaceAll(response, tag); } else { piece.replace(response, tag); }
+                if (piece.replaceAll) { piece.replaceAll(value, tag); } else { piece.replace(value, tag); }
                 lastFetch = Date.now();
-                otherFetchers.forEach(f => f.resolve(response));
-                otherFetchers.length = 0;
-                return selector(storeResult().read());
-              }).catch(rejection => {
-                this.setStatus('error');
-                otherFetchers.forEach(f => f.reject(rejection));
-                otherFetchers.length = 0;
-                throw rejection;
+                otherFetcherPromises.forEach(f => f.resolve(value));
+                otherFetcherPromises.length = 0;
+                this.setState('resolved');
+                return value;
+              }).catch(error => {
+                otherFetcherPromises.forEach(f => f.reject(error));
+                otherFetcherPromises.length = 0;
+                this.error = error;
+                this.setState('error');
+                throw error;
               })
           }
         }
       })();
-      fetchers.set(path, result);
       return result;
     },
     onChange: (performAction: (selection: C) => any) => {
@@ -200,7 +205,6 @@ function makeInternal<S>(nameOrDevtoolsConfig: string | EnhancerOptions, state: 
       return { unsubscribe: () => changeListeners.delete(selector) };
     },
     read: () => selector(currentState),
-    reset: () => replace(selector, 'reset')(selector(initialState)),
   } as any as AvailableOps<S, C, any>);
 
   const storeResult = <C = S>(selector: ((s: S) => C) = (s => s as any as C)) => {
@@ -219,14 +223,15 @@ function makeInternal<S>(nameOrDevtoolsConfig: string | EnhancerOptions, state: 
       overrideActionName?: boolean,
       tag?: string,
     } = {
-      overrideActionName: false,
-    },
+        overrideActionName: false,
+      },
   ) {
     const pathSegments = pathReader.readSelector(selector);
+    const previousState = currentState;
     const result = deepFreeze(copyObject(currentState, { ...currentState }, pathSegments.slice(), action));
-    notifySubscribers(result);
     mutator(selector(pathReader.mutableStateCopy));
     currentState = result;
+    notifySubscribers(previousState, result);
     const actionToDispatch = {
       type: (options && options.overrideActionName ? actionName : ((pathSegments.join('.') + (pathSegments.length ? '.' : '') + actionName + '()')))
         + (options.tag ? ` [${tagSanitizer ? tagSanitizer(options.tag) : options.tag}]` : ''),
@@ -239,11 +244,11 @@ function makeInternal<S>(nameOrDevtoolsConfig: string | EnhancerOptions, state: 
     }
   }
 
-  function notifySubscribers(result: S) {
+  function notifySubscribers(oldState: S, newState: S) {
     changeListeners.forEach((subscriber, selector) => {
-      const selected = selector(result);
-      if (selector(currentState) !== selected) {
-        subscriber(selected);
+      const selectedNewState = selector(newState);
+      if (selector(oldState) !== selectedNewState) {
+        subscriber(selectedNewState);
       }
     })
   }
@@ -388,10 +393,7 @@ export function deriveFrom<X extends AvailableOps<any, any, any>[]>(...args: X) 
             }
           }
         }
-      } as {
-        read: () => R,
-        onChange: (listener: (value: R) => any) => Unsubscribable,
-      };
+      } as Derivation<R>;
     }
   }
 }

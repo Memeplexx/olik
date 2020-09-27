@@ -1,9 +1,7 @@
 import { NgModule, NgZone } from '@angular/core';
-import { AvailableOps, Fetcher, listenToDevtoolsDispatch, Tag } from 'oulik';
+import { AvailableOps, Fetcher, listenToDevtoolsDispatch, status, Tag } from 'oulik';
 import { from, Observable } from 'rxjs';
 import { shareReplay } from 'rxjs/operators';
-
-export * from 'oulik';
 
 export function select<S, C>(
   store: AvailableOps<S, C, boolean>,
@@ -21,14 +19,14 @@ export function fetch<S, C, B extends boolean>(
   fetcher: Fetcher<S, C, B>,
   tag: Tag<B>,
 ) {
-  return new Observable<{ value: C | null, error: any, loading: boolean }>((observer) => {
-    const state = { value: null, loading: false, error: null } as { value: C | null, error: any, loading: boolean };
-    observer.next(Object.assign(state, { loading: true, value: fetcher.store(fetcher.selector).read() }));
-    const subscription = fetcher.store(fetcher.selector)
-      .onChange(value => observer.next(Object.assign(state, { value })));
-    fetcher.fetch(tag)
-      .then(value => observer.next(Object.assign(state, { loading: false, error: null, value })))
-      .catch(error => observer.next(Object.assign(state, { loading: false, error })));
+  return new Observable<{ value: C | null, status: status }>((observer) => {
+    const emitCurrentState = () => observer.next(({
+      status: fetcher.status,
+      value: fetcher.status === 'error' ? fetcher.error : fetcher.store(fetcher.selector).read()
+    }));
+    emitCurrentState();
+    const subscription = fetcher.onStatusChange(() => emitCurrentState());
+    fetcher.fetch(tag);
     return () => subscription.unsubscribe();
   }).pipe(
     shareReplay(1),

@@ -6,7 +6,7 @@
     "@angular/core": "^8.2.0"
   },
   "dependencies": {
-    "oulik": "^0.0.15",
+    "oulik": "^0.0.16",
     "tslib": "^1.10.0"
   }
 }
