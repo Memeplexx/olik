@@ -21,7 +21,7 @@ export class AppModule {
 }
 ```
 ```Typescript
-import { make } from 'oulik';
+import { make } from 'oulik-ng';
 
 const canvas = make('canvas', {          // <- Auto-registers with the Redux Devtools Extension.
   size: { width: 10, height: 10 },       // <- Initial state must be serializable. It can be a

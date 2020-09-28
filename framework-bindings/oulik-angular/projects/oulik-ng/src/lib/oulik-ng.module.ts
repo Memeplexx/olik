@@ -22,7 +22,7 @@ export function fetch<S, C, B extends boolean>(
   return new Observable<{ value: C | null, status: status }>((observer) => {
     const emitCurrentState = () => observer.next(({
       status: fetcher.status,
-      value: fetcher.status === 'error' ? fetcher.error : fetcher.store(fetcher.selector).read()
+      value: fetcher.status === 'error' ? fetcher.error : fetcher.read()
     }));
     emitCurrentState();
     const subscription = fetcher.onStatusChange(() => emitCurrentState());

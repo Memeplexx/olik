@@ -50,7 +50,8 @@ describe('Perf', () => {
   })
 
   it('should test outlik perf', () => {
-    const getStore = make('store', { height: 0, width: 0 })
+    const initialState = { height: 0, width: 0};
+    const getStore = make('store', initialState)
     const before = Date.now();
     for (let i = 0; i < 1000; i++) {
       getStore(s => s.width).replaceWith(

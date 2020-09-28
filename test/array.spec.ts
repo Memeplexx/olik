@@ -160,6 +160,7 @@ describe('Array', () => {
       object: { hello: 'world' },
     });
     store(s => s.array.find(e => e.id === 2)!.value).replaceWith('twoo');
+    expect(tests.currentAction.type).toEqual('array.1.value.replaceWith()');
     expect(store().read().array).toEqual([{ id: 1, value: 'one' }, { id: 2, value: 'twoo' }, { id: 3, value: 'three' }]);
   })
 
@@ -169,6 +170,7 @@ describe('Array', () => {
       object: { hello: 'world' },
     });
     store(s => s.array.find(e => e.id === 2)!.value).patchWith({ b: 'twoo' });
+    expect(tests.currentAction.type).toEqual('array.1.value.patchWith()');
     expect(store().read().array).toEqual([{ id: 1, value: { a: 'one', b: 'one' } }, { id: 2, value: { a: 'two', b: 'twoo' } }, { id: 3, value: { a: 'three', b: 'three' } }]);
   })
 
