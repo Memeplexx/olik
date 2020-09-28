@@ -158,7 +158,7 @@ function makeInternal<S>(nameOrDevtoolsConfig: string | EnhancerOptions, state: 
       const statusChangeListeners = new Set<(status: status) => any>();
       let lastFetch = 0;
       const result = new (class {
-        read = () => storeResult(selector).read();
+        store = storeResult(selector);
         selector = selector;
         status: status = 'pristine';
         error?: any;
@@ -167,10 +167,7 @@ function makeInternal<S>(nameOrDevtoolsConfig: string | EnhancerOptions, state: 
           statusChangeListeners.add(listener);
           return { unsubscribe: () => statusChangeListeners.delete(listener) };
         }
-        private setState = (status: status) => {
-          this.status = status;
-          statusChangeListeners.forEach(listener => listener(status));
-        }
+        private notifyChangeListeners = () => statusChangeListeners.forEach(listener => listener(this.status));
         fetch = (tag: string | void) => {
           const cacheHasExpired = (lastFetch + (specs.cacheForMillis || 0)) < Date.now();
           if ((this.status === 'resolved') && !cacheHasExpired) {
@@ -178,7 +175,8 @@ function makeInternal<S>(nameOrDevtoolsConfig: string | EnhancerOptions, state: 
           } else if (this.status === 'resolving') {
             return new Promise<C>((resolve, reject) => otherFetcherPromises.push({ resolve, reject }));
           } else {
-            this.setState('resolving');
+            this.status = 'resolving';
+            this.notifyChangeListeners();
             return promise()
               .then(value => {
                 const piece = storeResult(selector) as any as { replace: (c: C, tag: string | void) => void } & { replaceAll: (c: C, tag: string | void) => void };
@@ -186,14 +184,21 @@ function makeInternal<S>(nameOrDevtoolsConfig: string | EnhancerOptions, state: 
                 lastFetch = Date.now();
                 otherFetcherPromises.forEach(f => f.resolve(value));
                 otherFetcherPromises.length = 0;
-                this.setState('resolved');
+                this.status = 'resolved';
+                this.notifyChangeListeners();
                 return value;
               }).catch(error => {
                 otherFetcherPromises.forEach(f => f.reject(error));
                 otherFetcherPromises.length = 0;
                 this.error = error;
-                this.setState('error');
-                throw error;
+                this.status = 'error';
+                this.notifyChangeListeners();
+                const sub = this.store.onChange(() => {
+                  this.status = 'updatedAfterError';
+                  this.notifyChangeListeners();
+                  sub.unsubscribe();
+                });
+                return error;
               })
           }
         }
@@ -273,10 +278,10 @@ function copyObject<T>(oldObj: T, newObj: T, segs: string[], action: (newNode: a
 }
 
 function createPathReader<S extends Object>(state: S) {
-  const instance = new class {
-    mutableStateCopy = deepCopy(state);
-    pathSegments = new Array<string>();
-    private initialize(state: S): S {
+  return (() => {
+    const mutableStateCopy = deepCopy(state);
+    const pathSegments = new Array<string>();
+    const initialize = (state: S): S => {
       if (typeof (state) !== 'object') { // may happen if we have a top-level primitive
         return null as any as S;
       }
@@ -284,36 +289,36 @@ function createPathReader<S extends Object>(state: S) {
         get: function (target, prop: any) {
           const val = (target as any)[prop];
           if (val !== null && typeof (val) === 'object') {
-            instance.pathSegments.push(prop);
-            return instance.initialize(val);
+            pathSegments.push(prop);
+            return initialize(val);
           } else if (typeof (val) === 'function') {
             return function (...args: any[]) {
               if (prop === 'find' && Array.isArray(target)) {
                 const found = val.apply(target, args);
                 if (found) {
                   const indice = (target as unknown as any[]).findIndex(e => e === found);
-                  instance.pathSegments.push(indice.toString());
+                  pathSegments.push(indice.toString());
                 }
-                return instance.initialize(found);
+                return initialize(found);
               } else {
                 throw new Error(
                   `'${prop}()' is not allowed. If you're trying to filter elements, rather use a library function eg. 'getStore(s => s.todos).removeWhere(e => e.status === 'done')'`);
               }
             };
           }
-          instance.pathSegments.push(prop);
+          pathSegments.push(prop);
           return val;
         },
       });
     }
-    proxy = this.initialize(this.mutableStateCopy);
-    readSelector<C>(selector: (state: S) => C) {
-      this.pathSegments.length = 0;
-      selector(this.proxy);
-      return this.pathSegments;
+    const proxy = initialize(mutableStateCopy);
+    const readSelector = <C>(selector: (state: S) => C) => {
+      pathSegments.length = 0;
+      selector(proxy);
+      return pathSegments;
     }
-  }();
-  return instance;
+    return { readSelector, mutableStateCopy, pathSegments }
+  })();
 }
 
 function deepFreeze(o: any) {

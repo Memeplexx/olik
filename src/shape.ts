@@ -2,7 +2,7 @@ export interface Action<T = any> {
   type: T
 }
 
-export type status = 'pristine' | 'error' | 'resolved' | 'resolving';
+export type status = 'pristine' | 'error' | 'resolved' | 'resolving' | 'updatedAfterError';
 export type Tag<B> = B extends true ? string : void;
 
 export interface Fetcher<S, C, B extends boolean> {
@@ -25,7 +25,7 @@ export interface Fetcher<S, C, B extends boolean> {
   /**
    * The store that is associated with this fetcher
    */
-  read: () => C,
+  store: AvailableOps<S, C, B>,
   /**
    * The selector that is associated with this fetcher
    */

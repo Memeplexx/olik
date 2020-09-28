@@ -1,5 +1,5 @@
-import { Action, AvailableOps, EnhancerOptions, WindowAugmentedWithReduxDevtools } from "./shape";
-import { tests } from "./tests";
+import { AvailableOps, EnhancerOptions, WindowAugmentedWithReduxDevtools } from './shape';
+import { tests } from './tests';
 
 // ref: https://medium.com/@zalmoxis/redux-devtools-without-redux-or-how-to-have-a-predictable-state-with-any-architecture-61c5f5a7716f
 // ref: https://github.com/zalmoxisus/redux-devtools-extension/blob/master/docs/API/Methods.md#listen
