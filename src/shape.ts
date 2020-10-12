@@ -2,14 +2,14 @@ export interface Action<T = any> {
   type: T
 }
 
-export type status = 'pristine' | 'error' | 'resolved' | 'resolving' | 'updatedAfterError';
+export type FetcherStatus = 'pristine' | 'error' | 'resolved' | 'resolving';
 export type Tag<B> = B extends true ? string : void;
 
 export interface Fetcher<S, C, B extends boolean> {
   /**
    * The current status of the fetch
    */
-  status: status;
+  status: FetcherStatus;
   /**
    * The current error, if any
    */
@@ -36,7 +36,7 @@ export interface Fetcher<S, C, B extends boolean> {
    * myFetcher.onStatusChange(status => console.log('Status is now', status));
    * ```
    */
-  onStatusChange: (listener: (status: status) => any) => Unsubscribable,
+  onStatusChange: (listener: (status: FetcherStatus) => any) => Unsubscribable,
 }
 
 export type AvailableOps<S, C, B extends boolean> =

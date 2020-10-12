@@ -22,11 +22,7 @@ export default mapStateToProps(store, (state, ownProps: { propFromParentComponen
 ## ASYNC READ ##
 
 ```Typescript
-const fetchTodos = store.createFetcher({
-  selector: e => e.todos,
-  fetcher: () => fetchTodos(),
-  cacheForMillis: 1000 * 60,
-});
+const fetchTodos = store(e => e.todos).createFetcher(() => fetchTodos(), { cacheForMillis: 1000 * 60 });
 
-const [todosLoading, todosError, todosError] = useFetcher(fetchTodos);
+const { isLoading, data, hasError, error } = useFetcher(todosFetcher);
 ```

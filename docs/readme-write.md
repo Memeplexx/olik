@@ -16,9 +16,6 @@ store(s => s.user).replaceWith(updatedUser);
 
 // Partially update an object
 store(s => s.user).patchWith({ firstName: 'Sam', age: 25 });
-
-// Completely replace a primitive
-store(s => s.user.age).replaceWith(25);
 ```
 
 ## Updating **array** nodes ##
@@ -57,14 +54,12 @@ store(s => s.todos).replaceWhere(t => t.id === 5).with({ id: 5, text: 'bake cook
 store(s => s.todos).upsertWhere(t => t.id === 5).with({ id: 5, text: 'bake cookies', status: 'todo' });
 
 // Nested update (note: '!' is included below only to comply with Typescript's 'strictNullChecks')
-store(s => s.array.find(e => e.id === 2)!.text).replaceWith('something');
+store(s => s.todos.find(t => t.id === 2)!.text).replaceWith('something else');
 ```
 
 ## Enforcing the use of **tags** ##
 The debugging experience can be improved by supplying extra information describing the source of an action
 ```Typescript
-import { make } from 'oulik';
-
 // Note the use of 'makeEnforeTags()' instead of the usual 'make()'
 const store = makeEnforceTags('store', { some: { value: '' } });
 

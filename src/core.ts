@@ -1,5 +1,5 @@
 import { integrateStoreWithReduxDevtools } from './devtools';
-import { AvailableOps, Derivation, EnhancerOptions, MappedDataTuple, status, Unsubscribable } from './shape';
+import { AvailableOps, Derivation, EnhancerOptions, MappedDataTuple, FetcherStatus, Unsubscribable } from './shape';
 import { tests } from './tests';
 
 /**
@@ -37,7 +37,7 @@ export function make<S>(nameOrDevtoolsConfig: string | EnhancerOptions, state: S
 }
 
 function makeInternal<S>(nameOrDevtoolsConfig: string | EnhancerOptions, state: S, tagSanitizer?: (tag: string) => string) {
-  const changeListeners = new Map<(arg: S) => any, (ar: any) => any>();
+  const changeListeners = new Map<(ar: any) => any, (arg: S) => any>();
   const pathReader = createPathReader(state);
   let currentState = deepFreeze(state) as S;
   const initialState = currentState;
@@ -155,15 +155,15 @@ function makeInternal<S>(nameOrDevtoolsConfig: string | EnhancerOptions, state: 
     reset: (tag?: string) => replace(selector, 'reset')(selector(initialState), tag),
     createFetcher: (promise: () => Promise<C>, specs: { cacheForMillis: number } = { cacheForMillis: 0 }) => {
       const otherFetcherPromises = new Array<{ resolve: (c: C) => void, reject: (e: any) => void }>();
-      const statusChangeListeners = new Set<(status: status) => any>();
+      const statusChangeListeners = new Set<(status: FetcherStatus) => any>();
       let lastFetch = 0;
-      const result = new (class {
+      return new (class {
         store = storeResult(selector);
         selector = selector;
-        status: status = 'pristine';
+        status: FetcherStatus = 'pristine';
         error?: any;
         invalidateCache = () => { lastFetch = 0; }
-        onStatusChange = (listener: (payload: status) => Unsubscribable) => {
+        onStatusChange = (listener: (payload: FetcherStatus) => Unsubscribable) => {
           statusChangeListeners.add(listener);
           return { unsubscribe: () => statusChangeListeners.delete(listener) };
         }
@@ -194,8 +194,10 @@ function makeInternal<S>(nameOrDevtoolsConfig: string | EnhancerOptions, state: 
                 this.status = 'error';
                 this.notifyChangeListeners();
                 const sub = this.store.onChange(() => {
-                  this.status = 'updatedAfterError';
-                  this.notifyChangeListeners();
+                  if (this.status !== 'resolved') {
+                    this.status = 'resolved';
+                    this.notifyChangeListeners();
+                  }
                   sub.unsubscribe();
                 });
                 return error;
@@ -203,11 +205,10 @@ function makeInternal<S>(nameOrDevtoolsConfig: string | EnhancerOptions, state: 
           }
         }
       })();
-      return result;
     },
     onChange: (performAction: (selection: C) => any) => {
-      changeListeners.set(selector, performAction);
-      return { unsubscribe: () => changeListeners.delete(selector) };
+      changeListeners.set(performAction, selector);
+      return { unsubscribe: () => changeListeners.delete(performAction) };
     },
     read: () => selector(currentState),
   } as any as AvailableOps<S, C, any>);
@@ -250,7 +251,7 @@ function makeInternal<S>(nameOrDevtoolsConfig: string | EnhancerOptions, state: 
   }
 
   function notifySubscribers(oldState: S, newState: S) {
-    changeListeners.forEach((subscriber, selector) => {
+    changeListeners.forEach((selector, subscriber) => {
       const selectedNewState = selector(newState);
       if (selector(oldState) !== selectedNewState) {
         subscriber(selectedNewState);

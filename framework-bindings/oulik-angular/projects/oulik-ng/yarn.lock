@@ -2,10 +2,10 @@
 # yarn lockfile v1
 
 
-oulik@^0.0.23:
-  version "0.0.23"
-  resolved "https://registry.yarnpkg.com/oulik/-/oulik-0.0.23.tgz#07117ad20219bbc321ded3901d364961033e8fea"
-  integrity sha512-PzleiVrfAAzwPQ5HwbRZV7HAhykCM6LSkCvBTz5zrgMPc9O731i8nclWdz7XCyywbdPTvKd/zn5kJ3s1GF5pjg==
+oulik@^0.0.24:
+  version "0.0.24"
+  resolved "https://registry.yarnpkg.com/oulik/-/oulik-0.0.24.tgz#0695ed21a71ab2e86054a93c24e04a7178c71e59"
+  integrity sha512-YoajeydlYnQOOnRLjEEm3WcN+SUx+qq1HqygI817btbKCpUgQ9S5jHPFR1Y/n2Ud7iANARJcNBbdK1w3xeGRig==
 
 tslib@^1.10.0:
   version "1.13.0"

@@ -55,7 +55,7 @@ export function useSelector<C>(
  *   () => new Promise(resolve => fetchTodosFromApi()), { cacheForMillis: 1000 * 60 });
  * 
  * // inside your functional component
- * const [loading, error, todos] = useFetcher(todosFetcher);
+ * const { isLoading, data, hasError, error } = useFetcher(todosFetcher);
  * ```
  */
 export function useFetcher<S, C, B extends boolean>(
@@ -64,9 +64,8 @@ export function useFetcher<S, C, B extends boolean>(
 ) {
   const [result, setResult] = React.useState({ isLoading: true, data: fetcher.read(), hasError: false, error: null });
   React.useEffect(() => {
-    fetcher.fetch(tag)
-      .then(response => setResult(r => ({...r, data: response, isLoading: false})))
-      .catch(err => setResult(r => ({...r, hasError: true, error: err, isLoading: false})))
+    fetcher.onStatusChange(status => setResult({ isLoading: status === 'resolving', hasError: fetcher.status === 'error', data: fetcher.read(), error: fetcher.error }))
+    fetcher.fetch(tag);
   }, [fetcher, tag]);
   return result;
 }

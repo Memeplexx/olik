@@ -6,13 +6,13 @@
 ![Package Size](https://badgen.net/bundlephobia/minzip/oulik)
 ![Dependency count](https://badgen.net/bundlephobia/dependency-count/oulik)
 
-### ***Unambigiuous, in-line state-management*** ###
+### ***Unambigiuous, user-abstraction-averse, in-line state-management*** ###
 ---
-## MOTIVATION ##
+## WHAT PROBLEM DOES THIS LIBRARY SOLVE? ##
 State operations are typically hidden behind an opaque facade of user-defined 'actions'. Some actions fail to describe a state update accurately while other actions needlessly re-describe very simple operations. Furthermore, as your code evolves, there can be a 'drift' between action types, and the state thay purport to operate on.  
 
 This library's unique API not only **makes immutable state updates a breeze**, it also leverages the type system so that state updates become **self-documenting** and **consistent**. That said, this library has several goals:  
-- **ERGONOMIC -** Completely typesafe & compact API with a standardised set of abstractions for state updates
+- **ERGONOMIC -** Completely typesafe & compact API with a standardized set of state update abstractions
 - **FLEXIBLE -** Use small stores where performance is critical, and a single store everywhere else
 - **FAST -** Roughly equivalent to [Immutable](https://github.com/immutable-js/immutable-js) and significantly faster than [Immer](https://github.com/immerjs/immer)
 - **IMMUTABLE -** Every state update will result in a new immutable state tree
