@@ -43,7 +43,7 @@ describe('Perf', () => {
     const before = performance.now();
     for (let i = 0; i < 1000; i++) {
       store(s => s.anotherProp.some.deeply.nested.number).replaceWith(
-        store().read().anotherProp.some.deeply.nested.number + 1
+        store(s => s.anotherProp.some.deeply.nested.number).read() + 1
       );
     }
     console.log(`Oulik: ${performance.now() - before}`);
@@ -55,7 +55,7 @@ describe('Perf', () => {
     const before = performance.now();
     for (let i = 0; i < 1000; i++) {
       store(s => s.width).replaceWith(
-        store().read().width + 1
+        store(s => s.width).read() + 1
       );
     }
     console.log(`Oulik simple: ${performance.now() - before}`);

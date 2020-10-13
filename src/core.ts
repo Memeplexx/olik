@@ -10,7 +10,7 @@ import { tests } from './tests';
  * 
  * FOR EXAMPLE:
  * ```
- * const getStore = makeEnforceTags('store', { todos: Array<{id: number, text: string}>() });
+ * const store = makeEnforceTags('store', { todos: Array<{id: number, text: string}>() });
  * 
  * // Note that when updating state, we are now required to supply a string as the last argument (in this case 'TodoDetailComponent')
  * getStore(s => s.todos)
@@ -29,7 +29,7 @@ export function makeEnforceTags<S>(nameOrDevtoolsConfig: string | EnhancerOption
  * 
  * FOR EXAMPLE:
  * ```
- * const getStore = make('store', { todos: Array<{id: number, text: string}>() });
+ * const store = make('store', { todos: Array<{id: number, text: string}>() });
  * ```
  */
 export function make<S>(nameOrDevtoolsConfig: string | EnhancerOptions, state: S) {
@@ -210,7 +210,7 @@ function makeInternal<S>(nameOrDevtoolsConfig: string | EnhancerOptions, state: 
       changeListeners.set(performAction, selector);
       return { unsubscribe: () => changeListeners.delete(performAction) };
     },
-    read: () => selector(currentState),
+    read: () => deepFreeze(selector(currentState)),
   } as any as AvailableOps<S, C, any>);
 
   const storeResult = <C = S>(selector: ((s: S) => C) = (s => s as any as C)) => {
@@ -234,7 +234,7 @@ function makeInternal<S>(nameOrDevtoolsConfig: string | EnhancerOptions, state: 
   ) {
     const pathSegments = pathReader.readSelector(selector);
     const previousState = currentState;
-    const result = deepFreeze(copyObject(currentState, { ...currentState }, pathSegments.slice(), action));
+    const result = /*deepFreeze(*/copyObject(currentState, { ...currentState }, pathSegments.slice(), action)/*)*/;
     mutator(selector(pathReader.mutableStateCopy));
     currentState = result;
     notifySubscribers(previousState, result);
@@ -361,8 +361,8 @@ export function deepCopy(o: any): any {
  * FOR EXAMPLE:
  * ```Typescript
  * const memo = deriveFrom(
- *   getStore(s => s.some.property),
- *   getStore(s => s.some.other.property),
+ *   store(s => s.some.property),
+ *   store(s => s.some.other.property),
  * ).usingExpensiveCalc((someProperty, someOtherProperty) => {
  *   // perform some expensive calculation and return the result
  * });
