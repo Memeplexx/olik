@@ -48,7 +48,7 @@ describe('Fetcher', () => {
       expect(r).toEqual([{ id: 2, value: 'dd' }]);
       expect(numberOfTimesPromiseIsCalled).toEqual(1);
       done();
-    }), 15);
+    }), 5);
   })
 
   it('should expire cache fetches correctly', done => {
