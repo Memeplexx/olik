@@ -13,7 +13,7 @@ import { tests } from './tests';
  * const store = makeEnforceTags('store', { todos: Array<{id: number, text: string}>() });
  * 
  * // Note that when updating state, we are now required to supply a string as the last argument (in this case 'TodoDetailComponent')
- * getStore(s => s.todos)
+ * store(s => s.todos)
  *   .patchWhere(t => t.id === 1)
  *   .with({ text: 'bake cookies' }, 'TodoDetailComponent')
  * ```
@@ -234,7 +234,7 @@ function makeInternal<S>(nameOrDevtoolsConfig: string | EnhancerOptions, state: 
   ) {
     const pathSegments = pathReader.readSelector(selector);
     const previousState = currentState;
-    const result = /*deepFreeze(*/copyObject(currentState, { ...currentState }, pathSegments.slice(), action)/*)*/;
+    const result = Object.freeze(copyObject(currentState, { ...currentState }, pathSegments.slice(), action));
     mutator(selector(pathReader.mutableStateCopy));
     currentState = result;
     notifySubscribers(previousState, result);
@@ -303,7 +303,7 @@ function createPathReader<S extends Object>(state: S) {
                 return initialize(found);
               } else {
                 throw new Error(
-                  `'${prop}()' is not allowed. If you're trying to filter elements, rather use a library function eg. 'getStore(s => s.todos).removeWhere(e => e.status === 'done')'`);
+                  `'${prop}()' is not allowed. If you're trying to filter elements, rather use a library function eg. 'store(s => s.todos).removeWhere(e => e.status === 'done')'`);
               }
             };
           }

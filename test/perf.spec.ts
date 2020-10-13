@@ -103,9 +103,7 @@ describe('Perf', () => {
     console.log(`Immer: ${performance.now() - before}`);
   })
 
-
-
-  it('should test oulik array push perf', () => {
+  it('should test Oulik array push perf', () => {
     const state = ['one', 'two'];
     const store = make('store', state);
     const before = performance.now();
@@ -115,7 +113,7 @@ describe('Perf', () => {
     console.log(`Oulik array push: ${performance.now() - before}`);
   });
 
-  it('should test immutable array push perf', () => {
+  it('should test Immutable array push perf', () => {
     let state = ['one', 'two'];
     let nested = fromJS(state);
     const before = performance.now();
@@ -124,6 +122,17 @@ describe('Perf', () => {
       nested.toJS();
     }
     console.log(`ImmutableJS array push: ${performance.now() - before}`);
+  })
+
+  it('should test Immer array push perf', () => {
+    let state = ['one', 'two'];
+    const before = performance.now();
+    for (let i = 0; i < 1000; i++) {
+      state = produce(state, draft => {
+        draft.push('three');
+      });
+    }
+    console.log(`Immer: ${performance.now() - before}`);
   })
 
 });
