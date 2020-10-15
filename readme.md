@@ -6,7 +6,7 @@
 ![Package Size](https://badgen.net/bundlephobia/minzip/oulik)
 ![Dependency count](https://badgen.net/bundlephobia/dependency-count/oulik)
 
-### ***Lean & transparent state-management*** ###
+### ***Transparent state-management*** ###
 ---
 ## WHAT PROBLEM DOES THIS LIBRARY SOLVE? ##
 State operations are typically hidden behind an opaque facade of user-defined abstractions. Some abstractions fail to describe a state update accurately while others needlessly re-describe very simple updates. Furthermore, as your code evolves, there can be a 'drift' between these abstractions, and the state thay purport to operate on.  
