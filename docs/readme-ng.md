@@ -23,7 +23,7 @@ export class AppModule {
 ```Typescript
 import { make } from 'oulik-ng';
 
-const canvas = make('canvas', {          // <- Auto-registers with the Redux Devtools Extension.
+const store = make('canvas', {           // <- Auto-registers with the Redux Devtools Extension.
   size: { width: 10, height: 10 },       // <- Initial state must be serializable. It can be a
   border: { thickness: 1 }               //    simple primitive, or something far more nested.
 }); 
@@ -31,7 +31,7 @@ const canvas = make('canvas', {          // <- Auto-registers with the Redux Dev
 
 ## WRITING STATE ##
 ```Typescript
-canvas(s => s.size.width)                // <- Your state will be replaced using the action:
+store(s => s.size.width)                 // <- Your state will be replaced using the action:
   .replaceWith(20);                      //    { type: 'size.width.replaceWith()', payload: 20 }
 ```
 [All write options...](./readme-write.md)
@@ -39,8 +39,8 @@ canvas(s => s.size.width)                // <- Your state will be replaced using
 ## READING STATE ##
 
 ```Typescript
-const canvasWidth = canvas()
-  .read().size.width;
+const width = store(s => s.size.width)
+  .read();
 ```
 [All read options...](./readme-ng-read.md)
 

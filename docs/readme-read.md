@@ -10,7 +10,7 @@ Let's first assume that a store has been initialized as follows:
 ```Typescript
 import { make } from 'oulik';
 
-const canvas = make('canvas', {
+const store = make('canvas', {
   size: { width: 10, height: 10 },
   border: { thickness: 1 },
 }); 
@@ -19,12 +19,12 @@ const canvas = make('canvas', {
 
 ## READING STATE SYNCHRONOUSLY ##
 ```Typescript
-const canvasWidth = canvas().read().size.width;
+const width = store(s => s.size.width).read();
 ```
 
 ## LISTENING TO STATE UPDATES ##
 ```Typescript
-const listener = canvas(c => c.size.width)
+const listener = store(c => c.size.width)
   .onChange(width => console.log(width));
 listener.unsubscribe(); // Please unsubscribe to avoid memory leaks
 ```  
@@ -34,8 +34,8 @@ listener.unsubscribe(); // Please unsubscribe to avoid memory leaks
 import { deriveFrom } from 'oulik';
 
 const innerWidth = deriveFrom(
-  canvas(s => s.size.width),
-  canvas(s => s.border.thickness),
+  store(s => s.size.width),
+  store(s => s.border.thickness),
 ).usingExpensiveCalc((
   boxWidth,
   borderThickness,
@@ -54,14 +54,14 @@ Using *Fetchers* allows you to track the status of a request (loading / success 
 
 `api.ts`
 ```Typescript
-const canvasSizeFetcher = canvas(s => s.size)
-  .createFetcher(() => fetchCanvasSizeFromApi(), { cacheForMillis: 1000 * 60 });
+const sizeFetcher = store(s => s.size)
+  .createFetcher(() => fetchSizeFromApi(), { cacheForMillis: 1000 * 60 });
 ```
 
 `component.ts`
 ```Typescript
-canvasSizeFetcher
+sizeFetcher
   .onStatusChange(status => console.log(`Fetcher is status currently ${status}`))
-canvasSizeFetcher.fetch()
+sizeFetcher.fetch()
   .then(size => ...);
 ```

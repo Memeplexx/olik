@@ -26,7 +26,7 @@ store(s => s.todos).addAfter(newTodos);
 // Prepend elements to the beginning of array
 store(s => s.todos).addBefore(newTodos);
 
-// Partially elements which match a specific condition
+// Partially update elements which match a specific condition
 store(s => s.todos).patchWhere(t => t.status === 'done').with({ status: 'todo' });
 
 // Remove all elements from array
