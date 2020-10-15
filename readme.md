@@ -11,7 +11,7 @@
 ## WHAT PROBLEM DOES THIS LIBRARY SOLVE? ##
 State operations are typically hidden behind an opaque facade of user-defined abstractions. Some abstractions fail to describe a state update accurately while others needlessly re-describe very simple updates. Furthermore, as your code evolves, there can be a 'drift' between these abstractions, and the state thay purport to operate on.  
 
-This library's unique API not only **makes immutable state updates a breeze**, it also leverages the type system so that state updates become **self-documenting** and **consistent**.
+This library's unique API not only **makes immutable state updates a breeze**, it also leverages the type system so that state updates become **self-documenting** and **consistent**. Setup is easy and integration with [Redux Devtools extension](https://chrome.google.com/webstore/detail/redux-devtools/lmhkpmbekcpmknklioeibfkpmmfibljd?hl=en) is automatic
 
 ---
 
