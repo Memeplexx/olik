@@ -11,11 +11,7 @@
 ## WHAT PROBLEM DOES THIS LIBRARY SOLVE? ##
 State operations are typically hidden behind an opaque facade of user-defined abstractions. Some abstractions fail to describe a state update accurately while others needlessly re-describe very simple updates. Furthermore, as your code evolves, there can be a 'drift' between these abstractions, and the state thay purport to operate on.  
 
-This library's unique API not only **makes immutable state updates a breeze**, it also leverages the type system so that state updates become **self-documenting** and **consistent**. That said, this library has several goals:  
-- **ERGONOMICS -** Completely typesafe & compact API with a standardized set of state update abstractions
-- **IMMUTABILITY -** Every state update will result in a new immutable state tree
-- **PORTABILITY -** Designed to be framework-agnostic. Currently supports bindings for React and Angular (read a tiny bit further for links to those guides)
-- **DEBUGGABILITY -** Via the [Redux Devtools extension](https://chrome.google.com/webstore/detail/redux-devtools/lmhkpmbekcpmknklioeibfkpmmfibljd?hl=en) and optionally supports the use of 'tags' which help to identify the source of a state update
+This library's unique API not only **makes immutable state updates a breeze**, it also leverages the type system so that state updates become **self-documenting** and **consistent**.
 
 ---
 
