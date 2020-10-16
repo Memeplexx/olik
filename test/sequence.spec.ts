@@ -30,6 +30,9 @@ describe('Sequence', () => {
     expect(tests.currentMutableState).toEqual(store().read());
     store(s => s.propTwo).removeAll();
     expect(tests.currentMutableState).toEqual(store().read());
+
+    // const ee = store(s => s.propTwo.push({ } as any)).read();
+    // console.log('_________', ee);
   })
 
   it('should maintain sequence on root array', () => {

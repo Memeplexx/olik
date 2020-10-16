@@ -103,6 +103,15 @@ describe('Perf', () => {
     console.log(`Immer: ${performance.now() - before}`);
   })
 
+  it('should test native array push perf', () => {
+    const state = ['one', 'two'];
+    const before = performance.now();
+    for (let i = 0; i < 1000; i++) {
+      state.push('three');
+    }
+    console.log(`native array push: ${performance.now() - before}`);
+  });
+
   it('should test Oulik array push perf', () => {
     const state = ['one', 'two'];
     const store = make('store', state);
@@ -132,7 +141,8 @@ describe('Perf', () => {
         draft.push('three');
       });
     }
-    console.log(`Immer: ${performance.now() - before}`);
+    console.log(`Immer array push: ${performance.now() - before}`);
   })
+
 
 });
