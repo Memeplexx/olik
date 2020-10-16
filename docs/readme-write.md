@@ -44,9 +44,6 @@ store(s => s.todos).removeWhere(t => t.status === 'done');
 // Substitute all elements with a new array
 store(s => s.todos).replaceAll(newTodos);
 
-// Substitute elements which match a specific condition
-store(s => s.todos).replaceMany(t => t.status === 'todo').with(newTodo);
-
 // Subtitute one element
 store(s => s.todos).replaceWhere(t => t.id === 5).with({ id: 5, text: 'bake cookies', status: 'todo' });
 
