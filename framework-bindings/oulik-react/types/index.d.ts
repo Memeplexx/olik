@@ -40,7 +40,7 @@ export declare function useSelector<C>(store: {
  *   () => new Promise(resolve => fetchTodosFromApi()), { cacheForMillis: 1000 * 60 });
  *
  * // inside your functional component
- * const [loading, error, todos] = useFetcher(todosFetcher);
+ * const { isLoading, data, hasError, error } = useFetcher(todosFetcher);
  * ```
  */
 export declare function useFetcher<S, C, B extends boolean>(fetcher: Fetcher<S, C, B>, tag: Tag<B>): {

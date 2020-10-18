@@ -13,8 +13,8 @@ describe('Object', () => {
     const store = make('state', initialState);
     const payload = 'hey';
     store(s => s.object.property).replaceWith(payload);
-    expect(store().read().object.property).toEqual('hey');
-    expect(store().read().object.property2 === initialState.object.property2).toBeTruthy();
+    expect(store(s => s.object.property).read()).toEqual('hey');
+    expect(store(s => s.object.property2).read() === initialState.object.property2).toBeTruthy();
     expect(tests.currentAction.type).toEqual('object.property.replaceWith()');
     expect(tests.currentAction.payload).toEqual(payload);
     expect(tests.currentMutableState).toEqual(store().read());
@@ -27,8 +27,8 @@ describe('Object', () => {
     const store = make('state', initialState);
     const payload = { property: 'xxx' };
     store(s => s.object).patchWith(payload);
-    expect(store().read().object.property).toEqual(payload.property);
-    expect(store().read().object.property2 === initialState.object.property2).toBeTruthy();
+    expect(store(s => s.object.property).read()).toEqual(payload.property);
+    expect(store(s => s.object.property2).read() === initialState.object.property2).toBeTruthy();
     expect(tests.currentAction.type).toEqual('object.patchWith()');
     expect(tests.currentAction.payload).toEqual(payload);
     expect(tests.currentMutableState).toEqual(store().read());
@@ -62,7 +62,7 @@ describe('Object', () => {
     const tag = 'mytag';
     store(s => s.object.property).replaceWith(payload, tag);
     expect(tests.currentAction.type).toEqual(`object.property.replaceWith() [${tag}]`);
-    expect(store().read().object.property).toEqual(payload);
+    expect(store(s => s.object.property).read()).toEqual(payload);
   })
 
 });

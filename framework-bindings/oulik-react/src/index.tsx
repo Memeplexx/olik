@@ -62,9 +62,9 @@ export function useFetcher<S, C, B extends boolean>(
   fetcher: Fetcher<S, C, B>,
   tag: Tag<B>,
 ) {
-  const [result, setResult] = React.useState({ isLoading: true, data: fetcher.read(), hasError: false, error: null });
+  const [result, setResult] = React.useState({ isLoading: true, data: fetcher.store.read(), hasError: false, error: null });
   React.useEffect(() => {
-    fetcher.onStatusChange(status => setResult({ isLoading: status === 'resolving', hasError: fetcher.status === 'error', data: fetcher.read(), error: fetcher.error }))
+    fetcher.onStatusChange(status => setResult({ isLoading: status === 'resolving', hasError: fetcher.status === 'error', data: fetcher.store.read(), error: fetcher.error }))
     fetcher.fetch(tag);
   }, [fetcher, tag]);
   return result;

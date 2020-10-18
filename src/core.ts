@@ -37,6 +37,7 @@ export function make<S>(nameOrDevtoolsConfig: string | EnhancerOptions, state: S
 }
 
 function makeInternal<S>(nameOrDevtoolsConfig: string | EnhancerOptions, state: S, tagSanitizer?: (tag: string) => string) {
+  validateState(state);
   const changeListeners = new Map<(ar: any) => any, (arg: S) => any>();
   const pathReader = createPathReader(state);
   let currentState = deepFreeze(state) as S;
@@ -219,6 +220,19 @@ function makeInternal<S>(nameOrDevtoolsConfig: string | EnhancerOptions, state: 
     return action(selectorMod);
   };
 
+  const previousAction: {
+    timestamp: number,
+    type: string,
+    payloads: any[],
+    debounceTimeout: number,
+  } = {
+    type: '',
+    timestamp: 0,
+    payloads: [],
+    debounceTimeout: 0,
+  };
+  const throttleDebounce = 200;
+
   function updateState<C>(
     selector: (s: S) => C,
     actionName: string,
@@ -246,7 +260,30 @@ function makeInternal<S>(nameOrDevtoolsConfig: string | EnhancerOptions, state: 
     tests.currentAction = actionToDispatch;
     tests.currentMutableState = pathReader.mutableStateCopy;
     if (devtoolsDispatchListener && (!options.tag || (options.tag !== 'dontTrackWithDevtools'))) {
-      devtoolsDispatchListener(actionToDispatch);
+      // devtoolsDispatchListener(actionToDispatch);
+      const dispatchtodevtools = (payload?: any[]) => {
+        devtoolsDispatchListener!(payload ? { ...actionToDispatch, payload } : actionToDispatch);
+      }
+      if (previousAction.type !== actionToDispatch.type) {
+        window.clearTimeout(previousAction.debounceTimeout);
+        previousAction.debounceTimeout = 0;
+        previousAction.type = actionToDispatch.type;
+        previousAction.payloads = [actionToDispatch.payload];
+        previousAction.timestamp = 0;
+        dispatchtodevtools();
+      } else {
+        if (previousAction.timestamp < (Date.now() - throttleDebounce)) {
+          previousAction.payloads = [actionToDispatch.payload];
+        } else {
+          previousAction.payloads.push(actionToDispatch.payload);
+          window.clearTimeout(previousAction.debounceTimeout);
+          previousAction.debounceTimeout = window.setTimeout(() => {
+            dispatchtodevtools(previousAction.payloads);
+            previousAction.timestamp = 0;
+          }, throttleDebounce);
+        }
+        previousAction.timestamp = Date.now();
+      }
     }
   }
 
@@ -402,4 +439,10 @@ export function deriveFrom<X extends AvailableOps<any, any, any>[]>(...args: X) 
       } as Derivation<R>;
     }
   }
+}
+
+function validateState(state: any) {
+  if (typeof(state) === 'function') { throw new Error('Initial state cannot be a function') }
+  if (typeof(state) !== 'object') { return; }
+  Object.keys(state).forEach(key => validateState(state[key]));
 }

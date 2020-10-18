@@ -10,7 +10,7 @@ describe('Error', () => {
     const store = make('store', new Array<string>());
     let thrown = false;
     try {
-      store(s => s.find(e => true)).replaceWith('');
+      store(s => s.push('dssd'));
     } catch (e) {
       thrown = true;
     }
@@ -30,10 +30,22 @@ describe('Error', () => {
 
   it('should log an error if no devtools extension could be found', () => {
     tests.windowObject = null;
-    const store = make('store', new Array<string>());
+    make('store', new Array<string>());
     expect(tests.errorLogged).toEqual('Cannot find Redux Devtools Extension');
     tests.errorLogged = '';
     tests.windowObject = windowAugmentedWithReduxDevtoolsImpl;
+  })
+
+  it('should throw an error if the initial state has functions in it', () => {
+    let thrown = false;
+    try {
+      make('store', {
+        hey: () => null
+      });
+    } catch (e) {
+      thrown = true;
+    }
+    expect(thrown).toEqual(true);
   })
 
 });

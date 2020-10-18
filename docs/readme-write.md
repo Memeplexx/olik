@@ -12,10 +12,13 @@ const store = make('store', {
 ## Updating **non-array** nodes ##
 ```Typescript
 // Completely replace an object or primitive
-store(s => s.user).replaceWith(updatedUser);
+store(s => s.user).replaceWith({ firstName: 'Sam', lastName: 'Jones', age: 25 });
 
 // Partially update an object
 store(s => s.user).patchWith({ firstName: 'Sam', age: 25 });
+
+// Update a primitive
+store(s => s.user.age).replaceWith(25);
 ```
 
 ## Updating **array** nodes ##

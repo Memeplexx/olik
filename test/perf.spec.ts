@@ -37,9 +37,41 @@ describe('Perf', () => {
               number: 0
             }
           }
-        }
+        },
       },
-    })
+      array: new Array(200).fill(null).map(e => ({
+        hello: "fddf fdffd dffdffddf",
+        one: 1,
+        two: "heyyyyyy",
+        more: "hey",
+        yetMore: "another",
+        someNum: 1,
+        someBoolean: false,
+        someString: "ffdfdfdfd"
+      })),
+      array2: new Array(200).fill(null).map(e => ({
+        hello: "fddf fdffd dffdffddf",
+        one: 1,
+        two: "heyyyyyy",
+        more: "hey",
+        yetMore: "another",
+        someNum: 1,
+        someBoolean: false,
+        someString: "ffdfdfdfd"
+      })),
+      array3: new Array(200).fill(null).map(e => ({
+        hello: "fddf fdffd dffdffddf",
+        one: 1,
+        two: "heyyyyyy",
+        more: "hey",
+        yetMore: "another",
+        someNum: 1,
+        someBoolean: false,
+        someString: "ffdfdfdfd"
+      })),
+    });
+    store(s => s.array).onChange(e => null);
+    store(s => s.array2).onChange(e => null);
     const before = performance.now();
     for (let i = 0; i < 1000; i++) {
       store(s => s.anotherProp.some.deeply.nested.number).replaceWith(
@@ -49,8 +81,8 @@ describe('Perf', () => {
     console.log(`Oulik: ${performance.now() - before}`);
   })
 
-  it('should test outlik perf', () => {
-    const initialState = { height: 0, width: 0};
+  it('should test oulik perf', () => {
+    const initialState = { height: 0, width: 0 };
     const store = make('store', initialState)
     const before = performance.now();
     for (let i = 0; i < 1000; i++) {
@@ -70,8 +102,38 @@ describe('Perf', () => {
               number: 0
             }
           }
-        }
+        },
       },
+      array: new Array(200).fill(null).map(e => ({
+        hello: "fddf fdffd dffdffddf",
+        one: 1,
+        two: "heyyyyyy",
+        more: "hey",
+        yetMore: "another",
+        someNum: 1,
+        someBoolean: false,
+        someString: "ffdfdfdfd"
+      })),
+      array2: new Array(200).fill(null).map(e => ({
+        hello: "fddf fdffd dffdffddf",
+        one: 1,
+        two: "heyyyyyy",
+        more: "hey",
+        yetMore: "another",
+        someNum: 1,
+        someBoolean: false,
+        someString: "ffdfdfdfd"
+      })),
+      array3: new Array(200).fill(null).map(e => ({
+        hello: "fddf fdffd dffdffddf",
+        one: 1,
+        two: "heyyyyyy",
+        more: "hey",
+        yetMore: "another",
+        someNum: 1,
+        someBoolean: false,
+        someString: "ffdfdfdfd"
+      })),
     };
     let nested = fromJS(initialState);
     const before = performance.now();
@@ -93,6 +155,36 @@ describe('Perf', () => {
           }
         }
       },
+      array: new Array(200).fill(null).map(e => ({
+        hello: "fddf fdffd dffdffddf",
+        one: 1,
+        two: "heyyyyyy",
+        more: "hey",
+        yetMore: "another",
+        someNum: 1,
+        someBoolean: false,
+        someString: "ffdfdfdfd"
+      })),
+      array2: new Array(200).fill(null).map(e => ({
+        hello: "fddf fdffd dffdffddf",
+        one: 1,
+        two: "heyyyyyy",
+        more: "hey",
+        yetMore: "another",
+        someNum: 1,
+        someBoolean: false,
+        someString: "ffdfdfdfd"
+      })),
+      array3: new Array(200).fill(null).map(e => ({
+        hello: "fddf fdffd dffdffddf",
+        one: 1,
+        two: "heyyyyyy",
+        more: "hey",
+        yetMore: "another",
+        someNum: 1,
+        someBoolean: false,
+        someString: "ffdfdfdfd"
+      })),
     }
     const before = performance.now();
     for (let i = 0; i < 1000; i++) {

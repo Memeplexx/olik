@@ -30,9 +30,6 @@ describe('Sequence', () => {
     expect(tests.currentMutableState).toEqual(store().read());
     store(s => s.propTwo).removeAll();
     expect(tests.currentMutableState).toEqual(store().read());
-
-    // const ee = store(s => s.propTwo.push({ } as any)).read();
-    // console.log('_________', ee);
   })
 
   it('should maintain sequence on root array', () => {
@@ -49,12 +46,6 @@ describe('Sequence', () => {
     store().removeWhere(s => s.id === 1);
     expect(tests.currentMutableState).toEqual(store().read());
     store().removeAll();
-    expect(tests.currentMutableState).toEqual(store().read());
-  })
-
-  it('should maintain sequence on root string', () => {
-    const store = make('store', '');
-    store().replaceWith('hey');
     expect(tests.currentMutableState).toEqual(store().read());
   })
 
