@@ -8,7 +8,7 @@
 
 ### ***Boilerplate-free, indirection-free, in-line state-management*** ###
 ---
-## WHAT PROBLEM DOES THIS LIBRARY SOLVE? ##
+## WHAT PROBLEMS DOES THIS LIBRARY TRY TO SOLVE? ##
 State operations are typically characterised by convoluted immutable state update logic, and hidden behind an opaque facade of user-defined abstractions (actions, action-creators etc). Some abstractions fail to describe a state update accurately while others needlessly re-describe very simple updates. Furthermore, as your code evolves, there can be a 'drift' between these abstractions, and the state thay purport to operate on.
 
 This library's unique API not only **makes immutable state updates a breeze**, it also leverages the type system to **describe state updates for you** making your state operations more transparent and consistent. Setup is easy and integration with the [Redux Devtools extension](https://chrome.google.com/webstore/detail/redux-devtools/lmhkpmbekcpmknklioeibfkpmmfibljd?hl=en) is done for you.
