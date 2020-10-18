@@ -58,7 +58,7 @@ store(s => s.todos.find(t => t.id === 2)!.text).replaceWith('something else');
 ```
 
 ## Enforcing the use of **tags** ##
-The debugging experience can be improved by supplying extra information describing the source of an action
+The debugging experience can be improved by supplying an extra piece of information (known as a 'tag') which describes the source of an action.
 ```Typescript
 // Note the use of 'makeEnforeTags()' instead of the usual 'make()'
 const store = makeEnforceTags('store', { some: { value: '' } });
@@ -68,4 +68,4 @@ const store = makeEnforceTags('store', { some: { value: '' } });
 store(s => s.some.value).replaceWith('hello', 'MyComponent');
 ```
 Instead of always typing a user-defined string (such as 'MyComponent') you could make use of the `__filename` node variable which will automatically return the directory path of the current file.  
-For Angular-CLI users, there is a little work to set this up, but still well worth the time. Check out this [guide on using the `__filename` variable within the Angular CLI](./readme-ng-tags.md)  
+For Angular-CLI users, there is a little extra work to set this up, but its still well worth the time. Check out this [guide on using the `__filename` variable within the Angular CLI](./readme-ng-tags.md)  
