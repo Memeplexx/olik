@@ -11,7 +11,7 @@
 ## WHAT PROBLEMS DOES THIS LIBRARY TRY TO SOLVE? ##
 Many current state management solutions are typically characterised by convoluted immutable state update logic, and hidden behind an opaque facade of user-defined abstractions (actions, action-creators etc).  
 Some abstractions fail to describe a state update accurately while others needlessly re-describe very simple updates.  
-Furthermore, as your code evolves, there can be a 'drift' between these abstractions, and the state thay purport to operate on.
+Furthermore, as your code evolves, there can be a 'drift' between these abstractions, and the state they purport to operate on.
 
 This library's unique API not only **makes immutable state updates a breeze**, it also leverages the type system to **describe state updates for you** (generating your action 'types').  
 This makes your state operations more consistent with each other, and more transparent to read and debug.  
