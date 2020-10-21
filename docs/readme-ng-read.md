@@ -47,12 +47,14 @@ While this library exposes a `deriveFrom()` function (to memoise a single output
 import { combineLatest } from 'rxjs';
 import { shareReplay } from 'rxjs/operators';
 
-someCombinedValue$ = combineLatest([
-  select(store(s => s.todos)),
-  select(store(s => s.some.other.value)),
-]).pipe(
-  shareReplay(1),
-);
+export class MyComponent {
+  someDataToBeUsedInYourTemplate$ = combineLatest([
+    select(store(s => s.todos)),
+    select(store(s => s.some.other.value)),
+  ]).pipe(
+    shareReplay(1),
+  );
+}
 ```
 
 ## FETCHING STATE FROM EXTERNAL SOURCES ##
