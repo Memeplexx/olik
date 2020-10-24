@@ -16,10 +16,10 @@
 * actions which needless re-describe simple updates,
 * actions that inaccurately describe complex updates.
 
-🚀 Oulik is designed to address all these issues by:  
-* efficiently updating your state (via a user-friendly API) and 
-* describing state updates for you (generating actions on your behalf), and
-* making setup is simple, while auto-integrating with the [Redux Devtools extension](https://chrome.google.com/webstore/detail/redux-devtools/lmhkpmbekcpmknklioeibfkpmmfibljd?hl=en).
+🚀 Oulik is designed to address all these issues by exposing an API which:  
+* allows you to select a piece of your state, and then apply an update that piece,
+* describes state updates for you (generating actions on your behalf),
+* makes setup simple, including auto-integrating with the [Redux Devtools extension](https://chrome.google.com/webstore/detail/redux-devtools/lmhkpmbekcpmknklioeibfkpmmfibljd?hl=en).
 
 ---
 
