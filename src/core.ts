@@ -260,7 +260,6 @@ function makeInternal<S>(nameOrDevtoolsConfig: string | EnhancerOptions, state: 
     tests.currentAction = actionToDispatch;
     tests.currentMutableState = pathReader.mutableStateCopy;
     if (devtoolsDispatchListener && (!options.tag || (options.tag !== 'dontTrackWithDevtools'))) {
-      // devtoolsDispatchListener(actionToDispatch);
       const dispatchtodevtools = (payload?: any[]) => {
         devtoolsDispatchListener!(payload ? { ...actionToDispatch, payload } : actionToDispatch);
       }
@@ -442,7 +441,7 @@ export function deriveFrom<X extends AvailableOps<any, any, any>[]>(...args: X) 
 }
 
 function validateState(state: any) {
-  if (typeof(state) === 'function') { throw new Error('Initial state cannot be a function') }
+  if (typeof(state) === 'function') { throw new Error('State cannot contain any functions') }
   if (typeof(state) !== 'object') { return; }
   Object.keys(state).forEach(key => validateState(state[key]));
 }
