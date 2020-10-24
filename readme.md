@@ -11,9 +11,10 @@
 ## WHAT PROBLEMS DOES THIS LIBRARY TRY TO SOLVE? ##
 Current state management solutions are typically characterized by:
 * convoluted immutable state updates inside reducers,
+* excessive plumbing around setting up,
+* unergonomic ceremony around data-flow,
 * actions which needless re-describe simple updates,
-* actions that fail to describe complex updates accurately,
-* excessive plumbing around setting up and ceremony around data-flow.
+* actions which inaccurately describe complex updates.
 
 Oulik is designed to address all these issues by:  
 * efficiently updating your state (via a user-friendly API) and 
