@@ -9,14 +9,14 @@
 ### ***Compact, transparent, typesafe, in-line state-management*** ###
 ---
 ## WHAT PROBLEMS DOES THIS LIBRARY TRY TO SOLVE? ##
-Current state management solutions are typically characterized by:
+😧 Current state management solutions are typically characterized by:
 * convoluted immutable state updates inside reducers,
 * excessive plumbing around setting up,
 * unergonomic ceremony around data-flow,
 * actions which needless re-describe simple updates,
 * actions which inaccurately describe complex updates.
 
-Oulik is designed to address all these issues by:  
+🚀 Oulik is designed to address all these issues by:  
 * efficiently updating your state (via a user-friendly API) and 
 * describing state updates for you (generating actions on your behalf), and
 * making setup is simple, while auto-integrating with the [Redux Devtools extension](https://chrome.google.com/webstore/detail/redux-devtools/lmhkpmbekcpmknklioeibfkpmmfibljd?hl=en).
