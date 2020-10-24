@@ -12,10 +12,13 @@
 Current state management solutions are typically characterized by:
 * convoluted immutable state updates inside reducers,
 * actions which needless re-describe simple updates,
-* actions that fail to describe complex updates accurately.  
+* actions that fail to describe complex updates accurately,
+* excessive plumbing around setting up and ceremony around data-flow.
 
-Oulik is designed to address all these issues by exposing an API that allows it to make and describe state updates for you (generating actions on your behalf).  
-Setup is simple, while integration with the [Redux Devtools extension](https://chrome.google.com/webstore/detail/redux-devtools/lmhkpmbekcpmknklioeibfkpmmfibljd?hl=en) is done for you.
+Oulik is designed to address all these issues by:  
+* efficiently updating your state (via a user-friendly API) and 
+* describing state updates for you (generating actions on your behalf) and.   
+* making setup is simple, while auto-integrating with the [Redux Devtools extension](https://chrome.google.com/webstore/detail/redux-devtools/lmhkpmbekcpmknklioeibfkpmmfibljd?hl=en).
 
 ---
 
