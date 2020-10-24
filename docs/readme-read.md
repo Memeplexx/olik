@@ -50,7 +50,11 @@ listener.unsubscribe(); // Please unsubscribe to avoid memory leaks
 ```
 
 ## FETCHING STATE FROM EXTERNAL SOURCES ##
-Using *Fetchers* allows you to track the status of a request (loading / success / error) as well as cache request responses.
+*Fetchers* are an optional mechanism which:
+* tracks the status of a request (loading / success / error) 
+* caches request responses
+* deduplicates multiple requests for the same data into a single request
+* automatically inserts data into the store
 
 `api.ts`
 ```Typescript

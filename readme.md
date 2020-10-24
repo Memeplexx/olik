@@ -13,7 +13,7 @@
 * excessive plumbing around setting up,
 * unergonomic ceremony around data-flow,
 * convoluted immutable state updates inside reducers,
-* actions which needless re-describe simple updates,
+* actions which needlessly re-describe simple updates,
 * actions that inaccurately describe complex updates.
 
 🚀 Oulik is designed to address all these issues by:  
