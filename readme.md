@@ -9,13 +9,11 @@
 ### ***Compact, transparent, typesafe, in-line state-management*** ###
 ---
 ## WHAT PROBLEMS DOES THIS LIBRARY TRY TO SOLVE? ##
-Current state management solutions are typically characterised by convoluted immutable state update logic, and hidden behind an opaque facade of user-defined abstractions (actions, action-creators, functions etc).  
-Some abstractions fail to describe a state update accurately while others needlessly re-describe very simple updates.  
-Furthermore, as your code evolves, there can be a 'drift' between these abstractions, and the state they purport to operate on, causing confusion.
-
-This library's API is not only designed to **make immutable state updates a breeze**, it also leverages the type system to **describe state updates for you** (generating your action 'types').  
-This makes your state operations more consistent with each other, and more transparent to read and debug.  
-Setup is easy and integration with the [Redux Devtools extension](https://chrome.google.com/webstore/detail/redux-devtools/lmhkpmbekcpmknklioeibfkpmmfibljd?hl=en) is done for you.
+Current state management solutions are typically characterized by:
+convoluted immutable state updates inside reducers,
+actions which do nothing more than needless re-describe simple updates,
+actions that fail to describe updates accurately.
+Oulik is designed to address all these issues by exposing an API that allows it to make and describe your state updates for you (generating actions on your behalf). Setup is simple, while integration with the [Redux Devtools extension](https://chrome.google.com/webstore/detail/redux-devtools/lmhkpmbekcpmknklioeibfkpmmfibljd?hl=en) is done for you.
 
 ---
 
