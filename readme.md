@@ -36,23 +36,23 @@ npm install oulik
 ```Typescript
 import { make } from 'oulik';
 
-const store = make('my store', {         // <- Auto-registers with the Redux Devtools Extension.
-  user: { firstname: '', lastname: '' }, // <- Initial state must be serializable. It can be a
-  hobbies: new Array<string>(),          //    simple primitive, or something far more nested.
+const store = make('my store', {
+  user: { firstname: '', lastname: '' },
+  hobbies: new Array<string>(),
 });       
 ```
+*Auto-registers with the Redux Devtools Extension. Initial state must be serializable. It can be a simple primitive, or something far more nested.*
 
 ## WRITING STATE ##
 ```Typescript
-store(s => s.user.firstname)             // <- Your state will be efficiently replaced using the action:
-  .replaceWith('James');                 //    { type: 'user.firstname.replaceWith()', payload: 'James' }
+store(s => s.user.firstname).replaceWith('James');
 ```
+*Your state will be efficiently replaced using the action: `{ type: 'user.firstname.replaceWith()', payload: 'James' }`.*  
 [All write options...](./docs/readme-write.md)
 
 ## READING STATE ##
 
 ```Typescript
-const username = store(s => s.user.firstname)
-  .read();
+const username = store(s => s.user.firstname).read();
 ```
 [All read options...](./docs/readme-read.md)
