@@ -43,3 +43,7 @@ const username = store(s => s.user.firstname).read();
 ```
 ***[All read options...](./readme-ng-read.md)***
 
+## BEST PRACTICES ##
+
+Oulik is absurdly simple to use, and most of the time, the API corrals you into making only 1 decision.  
+That said, if you don't already have some experience with Redux or NGRX, it's worth checking this small guide.
