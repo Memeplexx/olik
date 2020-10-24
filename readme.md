@@ -10,9 +10,9 @@
 ---
 ## WHAT PROBLEMS DOES THIS LIBRARY TRY TO SOLVE? ##
 😧 Current state management solutions are typically characterized by:
-* convoluted immutable state updates inside reducers,
 * excessive plumbing around setting up,
 * unergonomic ceremony around data-flow,
+* convoluted immutable state updates inside reducers,
 * actions which needless re-describe simple updates,
 * actions that inaccurately describe complex updates.
 
