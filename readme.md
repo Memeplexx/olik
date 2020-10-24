@@ -23,7 +23,7 @@
 
 ---
 
-> ⚠️ The rest of this guide illustrates how to use Oulik **without a framework.** It may be more appropriate for you to check out the docs for the following framework bindings:  
+⚠️ The rest of this guide illustrates how to use Oulik **without a framework.** It may be more appropriate for you to check out the docs for the following framework bindings:  
 
 ![](assets/react.ico) <u>[OULIK-REACT](./docs/readme-react.md)</u>  
 ![](assets/angular.png) <u>[OULIK-NG](./docs/readme-ng.md)</u>  
