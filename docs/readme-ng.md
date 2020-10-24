@@ -1,7 +1,6 @@
-# OULIK-NG #
+# OULIK-NG ![](../assets/angular.png) #
 
-> Note: This guide covers using Oulik within your Angular apps.
-To get a high-level overview of what Oulik has to offer, please read the [README for ***Oulik***](../readme.md).
+👉 This guide covers using Oulik within your Angular apps. It may be helpful to read this [***high-level overview of Oulik***](../readme.md) if you haven't already.
 
 
 ## GETTING STARTED ##
@@ -23,24 +22,24 @@ export class AppModule {
 ```Typescript
 import { make } from 'oulik-ng';
 
-const store = make('canvas', {           // <- Auto-registers with the Redux Devtools Extension.
-  size: { width: 10, height: 10 },       // <- Initial state must be serializable. It can be a
-  border: { thickness: 1 }               //    simple primitive, or something far more nested.
-}); 
+const store = make('my store', {
+  user: { firstname: '', lastname: '' },
+  hobbies: new Array<string>(),
+});       
 ```
+*Auto-registers with the Redux Devtools Extension. Initial state must be serializable.*
 
 ## WRITING STATE ##
 ```Typescript
-store(s => s.size.width)                 // <- Your state will be replaced using the action:
-  .replaceWith(20);                      //    { type: 'size.width.replaceWith()', payload: 20 }
+store(s => s.user.firstname).replaceWith('James');
 ```
-[All write options...](./readme-write.md)
+*Your state will be efficiently replaced using the action: `{ type: 'user.firstname.replaceWith()', payload: 'James' }`.*  
+***[All write options...](./readme-write.md)***
 
 ## READING STATE ##
 
 ```Typescript
-const width = store(s => s.size.width)
-  .read();
+const username = store(s => s.user.firstname).read();
 ```
-[All read options...](./readme-ng-read.md)
+***[All read options...](./readme-ng-read.md)***
 

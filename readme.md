@@ -17,7 +17,7 @@
 * actions that inaccurately describe complex updates.
 
 🚀 Oulik is designed to address all these issues by:  
-* allowing you to select a piece of state, and then apply an update to it,
+* allowing you to select a piece of state, and then employ one of the useful library functions to update to it,
 * describing state updates for you, generating actions on your behalf,
 * making setup simple and auto-integrating with the [Redux Devtools extension](https://chrome.google.com/webstore/detail/redux-devtools/lmhkpmbekcpmknklioeibfkpmmfibljd?hl=en).
 
@@ -49,11 +49,11 @@ const store = make('my store', {
 store(s => s.user.firstname).replaceWith('James');
 ```
 *Your state will be efficiently replaced using the action: `{ type: 'user.firstname.replaceWith()', payload: 'James' }`.*  
-[All write options...](./docs/readme-write.md)
+***[All write options...](./docs/readme-write.md)***
 
 ## READING STATE ##
 
 ```Typescript
 const username = store(s => s.user.firstname).read();
 ```
-[All read options...](./docs/readme-read.md)
+***[All read options...](./docs/readme-read.md)***

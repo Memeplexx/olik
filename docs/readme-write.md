@@ -1,6 +1,6 @@
 # OULIK - WRITING STATE #
 
-👉 Let's first assume that a store has been initialized as follows:
+👉 Let's first assume that your store has been initialized as follows:
 ```Typescript
 import { make } from 'oulik';
 
