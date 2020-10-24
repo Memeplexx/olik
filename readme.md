@@ -18,7 +18,7 @@ Current state management solutions are typically characterized by:
 
 Oulik is designed to address all these issues by:  
 * efficiently updating your state (via a user-friendly API) and 
-* describing state updates for you (generating actions on your behalf) and.   
+* describing state updates for you (generating actions on your behalf), and
 * making setup is simple, while auto-integrating with the [Redux Devtools extension](https://chrome.google.com/webstore/detail/redux-devtools/lmhkpmbekcpmknklioeibfkpmmfibljd?hl=en).
 
 ---
