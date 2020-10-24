@@ -14,7 +14,7 @@
 * excessive plumbing around setting up,
 * unergonomic ceremony around data-flow,
 * actions which needless re-describe simple updates,
-* actions which inaccurately describe complex updates.
+* actions that inaccurately describe complex updates.
 
 🚀 Oulik is designed to address all these issues by:  
 * efficiently updating your state (via a user-friendly API) and 
