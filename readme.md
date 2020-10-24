@@ -41,8 +41,7 @@ const store = make('my store', {
   hobbies: new Array<string>(),
 });       
 ```
-*Auto-registers with the Redux Devtools Extension. Initial state must be serializable.  
-It can be a simple primitive, or something far more nested.*
+*Auto-registers with the Redux Devtools Extension. Initial state must be serializable.*
 
 ## WRITING STATE ##
 ```Typescript
