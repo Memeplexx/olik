@@ -16,7 +16,7 @@
 * actions which **needlessly re-describe simple updates**,
 * actions that **inaccurately describe complex updates**.
 
-🚀 Oulik is not only **painless to setup**, it makes **state updates effortless** and **consistent**, while **accurately describing** them for you within the [Redux Devtools extension](https://chrome.google.com/webstore/detail/redux-devtools/lmhkpmbekcpmknklioeibfkpmmfibljd?hl=en)
+🚀 Oulik is not only **painless to setup**, it makes **state updates effortless** and **consistent**, while **accurately describing your action types** for you within the [Redux Devtools extension](https://chrome.google.com/webstore/detail/redux-devtools/lmhkpmbekcpmknklioeibfkpmmfibljd?hl=en)
 
 ---
 
