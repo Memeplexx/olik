@@ -22,7 +22,7 @@ const listener = store(s => s.todos)
 listener.unsubscribe(); // Please unsubscribe to avoid a memory leak
 ```  
 
-## REACTING TO STATE UPDATES IN TEMPLATE ##
+## CONSUMING STATE IN YOUR TEMPLATE ##
 ```Typescript
 import { select } from 'oulik-ng';
 
