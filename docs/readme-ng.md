@@ -1,6 +1,9 @@
 # OULIK-NG ![](../assets/angular.png) #
 
-### **Effortless, inline state management** ###
+## ***Effortless, transparent state management*** ##  
+
+Oulik is designed to make reading, writing, and debugging your application state as **transparent** as possible.  
+Among other things, it's unique API ensures that updates are not only **in-line** and **100% typesafe**, but **described for you** inside the **[Redux Devtools extension](https://chrome.google.com/webstore/detail/redux-devtools/lmhkpmbekcpmknklioeibfkpmmfibljd?hl=en)**
 
 ## GETTING STARTED ##
 
@@ -26,13 +29,10 @@ const store = make('my store', {
   hobbies: new Array<string>(),
 });       
 ```
-*Auto-registers with the Redux Devtools Extension. Initial state must be serializable.*
-
 ## WRITING STATE ##
 ```Typescript
 store(s => s.user.firstname).replaceWith('James');
 ```
-*Your state will be efficiently replaced using the action: `{ type: 'user.firstname.replaceWith()', payload: 'James' }`.*  
 ***[All write options...](./readme-write.md)***
 
 ## READING STATE ##
