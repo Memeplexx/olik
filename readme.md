@@ -8,11 +8,7 @@
 
 ## ***Effortless, inline state management*** ##  
 
-<br>
-
 > This guide illustrates Oulik without a framework. You may prefer ***[OULIK-REACT](./docs/readme-react.md)***, or ***[OULIK-NG](./docs/readme-ng.md)***.  
-
-<br>
 
 ## SETUP ##
 
