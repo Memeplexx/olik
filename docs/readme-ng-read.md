@@ -12,7 +12,7 @@ const store = make('store', {
 
 ## READING STATE SYNCHRONOUSLY ##
 ```Typescript
-const todos = store().read().todos;
+const todos = store(s => s.todos).read();
 ```
 
 ## LISTENING TO STATE UPDATES ##
