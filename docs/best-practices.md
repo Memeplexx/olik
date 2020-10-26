@@ -1,6 +1,6 @@
 # STATE-MANAGEMENT: BEST PRACTICES #
-Oulik, while a fresh take on state management, does still oblige some of the same best practices from the Redux ecosystem.  
-If you're unfamiliar with using Redux or NGRX, it may be worth glossing over this guide.
+Oulik, while a fresh take on state management, does still oblige some of the same best practices Redux recommends.  
+If you're unfamiliar with using Redux, it may be worth glossing over this guide.
 
 * **Why do we need state-management solutions like this library?**  
 Duplicating state is one of the most dangerous things you can do when developing complex applications. Without state management libraries (like Redux, or this one) it is all too easy to have two or more copies of state floating around. State-management libraries are designed to ensure that there is only one, authoritative, source of truth in your application. They prevent you from mutating (changing) state in your store without other parts of your app also receiving that state update. No state-duplication means there is no guess-work regarding which component has up-to-date state and which doesn't. Every component has the latest, and *only* version of your state making your application far more predictable and easy to debug.
