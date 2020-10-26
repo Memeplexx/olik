@@ -6,12 +6,16 @@
 ![Package Size](https://badgen.net/bundlephobia/minzip/oulik)
 ![Dependency count](https://badgen.net/bundlephobia/dependency-count/oulik)
 
-### **Effortless, inline state management** ###  
+## ***Effortless, inline state management*** ##  
 
-> ⚠️ This guide illustrates Oulik without a framework. Perhaps its better to check out ***[OULIK-REACT](./docs/readme-react.md)***, or ***[OULIK-NG](./docs/readme-ng.md)***.  
+<br>
+
+> This guide illustrates Oulik without a framework. You may prefer ***[OULIK-REACT](./docs/readme-react.md)***, or ***[OULIK-NG](./docs/readme-ng.md)***.  
+
+<br>
 
 ## SETUP ##
-[Install the Redux Devtools extension](https://chrome.google.com/webstore/detail/redux-devtools/lmhkpmbekcpmknklioeibfkpmmfibljd?hl=en)
+
 ```console
 npm install oulik
 ```
@@ -24,6 +28,8 @@ const store = make('my store', {
 });       
 //... auto-registers your store with the Redux Devtools Extension.
 ```
+**[Install the Redux Devtools extension](https://chrome.google.com/webstore/detail/redux-devtools/lmhkpmbekcpmknklioeibfkpmmfibljd?hl=en)**
+
 ## WRITE ##
 ```Typescript
 store(s => s.user.firstname).replaceWith('James');
