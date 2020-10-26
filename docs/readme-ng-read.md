@@ -1,7 +1,5 @@
 # OULIK-NG: READING STATE #
 
----
-
 Let's first assume that a store has been initialized as follows:
 ```Typescript
 import { make } from 'oulik-ng';
