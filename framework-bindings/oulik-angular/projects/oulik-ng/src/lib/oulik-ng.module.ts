@@ -1,5 +1,5 @@
 import { NgModule, NgZone } from '@angular/core';
-import { AvailableOps, Fetcher, listenToDevtoolsDispatch, status, Tag, Unsubscribable } from 'oulik';
+import { AvailableOps, Fetcher, listenToDevtoolsDispatch, Tag, Unsubscribable } from 'oulik';
 import { from, Observable } from 'rxjs';
 import { shareReplay } from 'rxjs/operators';
 
@@ -22,12 +22,11 @@ export function fetch<S, C, B extends boolean>(
   tag: Tag<B>,
 ) {
   return new Observable<
-    { isLoading: boolean, data: C | null, hasError: boolean, error?: any, wasUpdatedAfterError: boolean }
+    { isLoading: boolean, data: C | null, hasError: boolean, error?: any }
   >((observer) => {
     const emitCurrentState = () => observer.next(({
       isLoading: fetcher.status === 'resolving',
       hasError: fetcher.status === 'error',
-      wasUpdatedAfterError: fetcher.status === 'updatedAfterError',
       data: fetcher.store.read(),
       error: fetcher.error,
     }));

@@ -24,18 +24,39 @@ export function integrateStoreWithReduxDevtools<S, C = S>(
   setDevtoolsDispatchListener(action => {
     devTools.send(action, store().read());
   });
-  devTools.subscribe((message: { type: string, state: any }) => {
-    if (message.type === 'DISPATCH' && message.state) {
+  devTools.subscribe(message => {
+    if (message.type === 'DISPATCH' && message.payload) {
       const selection = store() as any as (
         { replaceWith: (state: S, tag: string) => any } &
         { replaceAll: (state: S, tag: string) => any }
-      );
-      if (!!selection.replaceAll) {
-        selection.replaceAll(JSON.parse(message.state), 'dontTrackWithDevtools');
-      } else {
-        selection.replaceWith(JSON.parse(message.state), 'dontTrackWithDevtools');
+      ) & { read: () => any, readInitial: () => any };
+      const setState = (state: any) => {
+        if (!!selection.replaceAll) {
+          selection.replaceAll(state, 'dontTrackWithDevtools');
+        }
+        else {
+          selection.replaceWith(state, 'dontTrackWithDevtools');
+        }
       }
-      onDispatchListener();
+      switch (message.payload.type) {
+        case 'JUMP_TO_STATE':
+        case 'JUMP_TO_ACTION':
+          setState(JSON.parse(message.state));
+          return;
+        case 'COMMIT':
+          devTools.init(selection.read());
+          return;
+        case 'RESET':
+          const initialState = selection.readInitial();
+          devTools.init(initialState);
+          setState(initialState);
+          return;
+        case 'ROLLBACK':
+          const parsedState = JSON.parse(message.state);
+          setState(parsedState);
+          devTools.init(parsedState);
+          return;
+      }
     }
   });
   return devTools;

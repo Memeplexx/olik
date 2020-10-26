@@ -1,6 +1,6 @@
 {
   "name": "oulik-react",
-  "version": "0.0.17",
+  "version": "0.0.18",
   "description": "",
   "main": "dist/cjs/index.js",
   "module": "dist/esm/index.js",
@@ -18,7 +18,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "oulik": "^0.0.27"
+    "oulik": "^0.0.28"
   },
   "devDependencies": {
     "@types/jest": "^26.0.7",

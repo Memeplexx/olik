@@ -6457,6 +6457,11 @@ osenv@^0.1.5:
     os-homedir "^1.0.0"
     os-tmpdir "^1.0.0"
 
+oulik@^0.0.28:
+  version "0.0.28"
+  resolved "https://registry.yarnpkg.com/oulik/-/oulik-0.0.28.tgz#40b17e57fd63fa2b214121f6092dcaaf669334ed"
+  integrity sha512-oVnGH/qJUkZol6d85mGcYjbAWx7J2YXGFXr626O5M/msDaTec4VsOlvDK5nuYC0U3igYpQL7kNAu3dD0P8zcEA==
+
 p-cancelable@^1.0.0:
   version "1.1.0"
   resolved "https://registry.yarnpkg.com/p-cancelable/-/p-cancelable-1.1.0.tgz#d078d15a3af409220c886f1d9a0ca2e441ab26cc"

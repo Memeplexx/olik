@@ -378,7 +378,7 @@ export interface WindowAugmentedWithReduxDevtools {
   __REDUX_DEVTOOLS_EXTENSION__: {
     connect: (options: EnhancerOptions) => {
       init: (state: any) => any,
-      subscribe: (listener: (message: { type: string, state: any }) => any) => any,
+      subscribe: (listener: (message: { type: string, payload: any, state?: any }) => any) => any,
       unsubscribe: () => any,
       send: (action: Action, state: any) => any
     };

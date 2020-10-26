@@ -212,6 +212,7 @@ function makeInternal<S>(nameOrDevtoolsConfig: string | EnhancerOptions, state: 
       return { unsubscribe: () => changeListeners.delete(performAction) };
     },
     read: () => deepFreeze(selector(currentState)),
+    readInitial: () => selector(initialState),
   } as any as AvailableOps<S, C, any>);
 
   const storeResult = <C = S>(selector: ((s: S) => C) = (s => s as any as C)) => {
@@ -263,25 +264,30 @@ function makeInternal<S>(nameOrDevtoolsConfig: string | EnhancerOptions, state: 
       const dispatchtodevtools = (payload?: any[]) => {
         devtoolsDispatchListener!(payload ? { ...actionToDispatch, payload } : actionToDispatch);
       }
-      if (previousAction.type !== actionToDispatch.type) {
+      if (previousAction.debounceTimeout) {
         window.clearTimeout(previousAction.debounceTimeout);
         previousAction.debounceTimeout = 0;
+      }
+      if (previousAction.type !== actionToDispatch.type) {
         previousAction.type = actionToDispatch.type;
         previousAction.payloads = [actionToDispatch.payload];
-        previousAction.timestamp = 0;
         dispatchtodevtools();
+        previousAction.debounceTimeout = window.setTimeout(function () {
+          previousAction.type = '';
+          previousAction.payloads = [];
+        }, throttleDebounce);
       } else {
         if (previousAction.timestamp < (Date.now() - throttleDebounce)) {
           previousAction.payloads = [actionToDispatch.payload];
         } else {
           previousAction.payloads.push(actionToDispatch.payload);
-          window.clearTimeout(previousAction.debounceTimeout);
-          previousAction.debounceTimeout = window.setTimeout(() => {
-            dispatchtodevtools(previousAction.payloads);
-            previousAction.timestamp = 0;
-          }, throttleDebounce);
         }
         previousAction.timestamp = Date.now();
+        previousAction.debounceTimeout = window.setTimeout(function () {
+          dispatchtodevtools(previousAction.payloads);
+          previousAction.type = '';
+          previousAction.payloads = [];
+        }, throttleDebounce);
       }
     }
   }
@@ -441,7 +447,7 @@ export function deriveFrom<X extends AvailableOps<any, any, any>[]>(...args: X) 
 }
 
 function validateState(state: any) {
-  if (typeof(state) === 'function') { throw new Error('State cannot contain any functions') }
-  if (typeof(state) !== 'object') { return; }
+  if (typeof (state) === 'function') { throw new Error('State cannot contain any functions') }
+  if (typeof (state) !== 'object') { return; }
   Object.keys(state).forEach(key => validateState(state[key]));
 }
