@@ -37,14 +37,13 @@ const store = make('my store', {
   user: { firstname: '', lastname: '' },
   hobbies: new Array<string>(),
 });       
+//... Auto-registers your store with the Redux Devtools Extension. State must just be serializable.
 ```
-*Auto-registers with the Redux Devtools Extension. Initial state must be serializable.*
-
 ## WRITING STATE ##
 ```Typescript
 store(s => s.user.firstname).replaceWith('James');
+// ...replaces your state using the action: { type: 'user.firstname.replaceWith()', payload: 'James' }.
 ```
-*Your state will be efficiently replaced using the action: `{ type: 'user.firstname.replaceWith()', payload: 'James' }`.*  
 ***[All write options...](./docs/readme-write.md)***
 
 ## READING STATE ##
