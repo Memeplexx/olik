@@ -12,7 +12,7 @@ describe('Devtools', () => {
     store(s => s.x).replaceWith(3);
     expect(store().read()).toEqual({ x: 3, y: 0 });
     const state = { x: 1, y: 0 };
-    tests.windowObject?.__REDUX_DEVTOOLS_EXTENSION__._mockInvokeSubscription({ type: 'DISPATCH', state: JSON.stringify(state) });
+    tests.windowObject?.__REDUX_DEVTOOLS_EXTENSION__._mockInvokeSubscription({ type: 'DISPATCH', state: JSON.stringify(state), payload: { type: 'JUMP_TO_ACTION' } });
     expect(store().read()).toEqual(state);
     expect(tests.currentAction.type).toEqual('replace() [dontTrackWithDevtools]');
   })
@@ -23,7 +23,7 @@ describe('Devtools', () => {
     store().replaceAll(['d', 'e', 'f']);
     expect(store().read()).toEqual(['d', 'e', 'f']);
     const state = ['g', 'h'];
-    tests.windowObject?.__REDUX_DEVTOOLS_EXTENSION__._mockInvokeSubscription({ type: 'DISPATCH', state: JSON.stringify(state) });
+    tests.windowObject?.__REDUX_DEVTOOLS_EXTENSION__._mockInvokeSubscription({ type: 'DISPATCH', state: JSON.stringify(state), payload: { type: 'JUMP_TO_ACTION' } });
     expect(store().read()).toEqual(state);
     expect(tests.currentAction.type).toEqual('replace() [dontTrackWithDevtools]');
   })
