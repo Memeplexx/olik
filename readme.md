@@ -22,7 +22,6 @@ const store = make('my store', {
   user: { firstname: '', lastname: '' },
   hobbies: new Array<string>(),
 });       
-//... auto-registers your store with the Redux Devtools Extension.
 ```
 **[Install the Redux Devtools extension](https://chrome.google.com/webstore/detail/redux-devtools/lmhkpmbekcpmknklioeibfkpmmfibljd?hl=en)**
 
