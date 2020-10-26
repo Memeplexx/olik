@@ -6,7 +6,10 @@
 ![Package Size](https://badgen.net/bundlephobia/minzip/oulik)
 ![Dependency count](https://badgen.net/bundlephobia/dependency-count/oulik)
 
-## ***Effortless, inline state management*** ##  
+## ***Effortless, transparent state management*** ##  
+
+Oulik is designed to make reading, writing, and debugging your application state as **transparent** as possible.  
+It's unique API ensures that all updates are **in-line**, **typesafe**, and **desribed for you** inside the **[Redux Devtools extension](https://chrome.google.com/webstore/detail/redux-devtools/lmhkpmbekcpmknklioeibfkpmmfibljd?hl=en)**
 
 > This guide illustrates Oulik without a framework. You may prefer ***[OULIK-REACT](./docs/readme-react.md)***, or ***[OULIK-NG](./docs/readme-ng.md)***.  
 
@@ -23,8 +26,6 @@ const store = make('my store', {
   hobbies: new Array<string>(),
 });       
 ```
-**[Install the Redux Devtools extension](https://chrome.google.com/webstore/detail/redux-devtools/lmhkpmbekcpmknklioeibfkpmmfibljd?hl=en)**
-
 ## WRITE ##
 ```Typescript
 store(s => s.user.firstname).replaceWith('James');
