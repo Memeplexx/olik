@@ -1,7 +1,6 @@
 # OULIK-NG ![](../assets/angular.png) #
 
-👉 This guide covers using Oulik within your Angular apps. It may be helpful to read this [***high-level overview of Oulik***](../readme.md) if you haven't already.
-
+### **Effortless, inline state management** ###
 
 ## GETTING STARTED ##
 

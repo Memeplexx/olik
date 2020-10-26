@@ -6,27 +6,12 @@
 ![Package Size](https://badgen.net/bundlephobia/minzip/oulik)
 ![Dependency count](https://badgen.net/bundlephobia/dependency-count/oulik)
 
-### ***Compact, transparent, typesafe, in-line state-management*** ###
----
-## WHAT PROBLEMS DOES THIS LIBRARY TRY TO SOLVE? ##
-👽 Many current state management solutions are typically plagued by:
-* **excessive plumbing** around setting up,
-* unergonomic ceremony around **data-flow**,
-* **convoluted immutable state updates** inside reducers,
-* actions which **needlessly re-describe simple updates**,
-* actions that **inaccurately describe complex updates**.
+### **Effortless, inline state management** ###  
 
-🚀 Oulik is not only **painless to setup**, it makes **state updates effortless** and **consistent**, by **generating your actions for you** within the [Redux Devtools extension](https://chrome.google.com/webstore/detail/redux-devtools/lmhkpmbekcpmknklioeibfkpmmfibljd?hl=en)
+> ⚠️ This guide illustrates Oulik without a framework. Perhaps its better to check out ***[OULIK-REACT](./docs/readme-react.md)***, or ***[OULIK-NG](./docs/readme-ng.md)***.  
 
----
-
-⚠️ The rest of this guide illustrates how to use Oulik **without a framework.** It may be more appropriate for you to check out:  
-
-![](assets/react.ico) <u>[OULIK-REACT](./docs/readme-react.md)</u>  
-![](assets/angular.png) <u>[OULIK-NG](./docs/readme-ng.md)</u>  
-
-## GETTING STARTED ##
-
+## SETUP ##
+[Install the Redux Devtools extension](https://chrome.google.com/webstore/detail/redux-devtools/lmhkpmbekcpmknklioeibfkpmmfibljd?hl=en)
 ```console
 npm install oulik
 ```
@@ -37,16 +22,16 @@ const store = make('my store', {
   user: { firstname: '', lastname: '' },
   hobbies: new Array<string>(),
 });       
-//... Auto-registers your store with the Redux Devtools Extension. State must just be serializable.
+//... auto-registers your store with the Redux Devtools Extension.
 ```
-## WRITING STATE ##
+## WRITE ##
 ```Typescript
 store(s => s.user.firstname).replaceWith('James');
-// ...replaces your state using the action: { type: 'user.firstname.replaceWith()', payload: 'James' }.
+// ... updates using { type: 'user.firstname.replaceWith()', payload: 'James' }.
 ```
 ***[All write options...](./docs/readme-write.md)***
 
-## READING STATE ##
+## READ ##
 
 ```Typescript
 const username = store(s => s.user.firstname).read();
