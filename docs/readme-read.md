@@ -1,11 +1,5 @@
 # OULIK - READING STATE #
 
-> This guide shows the vanilla (framework-less) way of reading state and reacting to updates. It may be more appropriate to checkout:  
-![](assets/react.ico) [Reading state with **Oulik-React**]()  
-![](assets/angular.png) [Reading state with **Oulik-NG**](./readme-ng-read.md)  
-
----
-
 Let's first assume that a store has been initialized as follows:
 ```Typescript
 import { make } from 'oulik';
