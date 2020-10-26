@@ -11,7 +11,7 @@
 Oulik is designed to make reading, writing, and debugging your application state as **transparent** as possible.  
 Among other things, it's unique API ensures that all updates are not only **in-line** and **typesafe**, but **described for you** inside the **[Redux Devtools extension](https://chrome.google.com/webstore/detail/redux-devtools/lmhkpmbekcpmknklioeibfkpmmfibljd?hl=en)**
 
-> This guide illustrates Oulik without a framework. You may prefer ***[OULIK-REACT](./docs/readme-react.md)***, or ***[OULIK-NG](./docs/readme-ng.md)***.  
+> This guide illustrates Oulik without a framework. You may prefer to use ***[OULIK-REACT](./docs/readme-react.md)***, or ***[OULIK-NG](./docs/readme-ng.md)***.  
 
 ## SETUP ##
 
