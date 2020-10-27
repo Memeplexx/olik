@@ -1,11 +1,5 @@
 # OULIK-NG: READING STATE #
 
-> This guide shows how to read state in Angular applications.  
-To get started with Oulik-NG, check out the [***Oulik-NG README***](./readme-ng.md).  
-To get a high-level overview of what Oulik has to offer, check out the [***Oulik README***](../readme.md).
-
----
-
 Let's first assume that a store has been initialized as follows:
 ```Typescript
 import { make } from 'oulik-ng';
@@ -18,7 +12,7 @@ const store = make('store', {
 
 ## READING STATE SYNCHRONOUSLY ##
 ```Typescript
-const todos = store().read().todos;
+const todos = store(s => s.todos).read();
 ```
 
 ## LISTENING TO STATE UPDATES ##
@@ -28,7 +22,7 @@ const listener = store(s => s.todos)
 listener.unsubscribe(); // Please unsubscribe to avoid a memory leak
 ```  
 
-## REACTING TO STATE UPDATES IN TEMPLATE ##
+## CONSUMING STATE IN YOUR TEMPLATE ##
 ```Typescript
 import { select } from 'oulik-ng';
 
@@ -41,7 +35,7 @@ export class MyComponent {
 }
 ```
 
-## REACTING TO STATE UPDATES IN TEMPLATE (USING MULTIPLE INPUTS) ##
+## CONSUMING DERIVED STATE IN YOUR TEMPLATE ##
 While this library exposes a `deriveFrom()` function (to memoise a single output from multiple inputs), Angular users enjoy the benefits of RXJS (which can combine, and memoise, multiple data streams into a single output data stream):
 ```Typescript
 import { combineLatest } from 'rxjs';
