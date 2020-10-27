@@ -84,7 +84,6 @@ describe('Fetcher', () => {
         done();
       });
     }, 10);
-
   });
 
   it('should listen to status changes', done => {
