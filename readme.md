@@ -28,7 +28,7 @@ const store = make('my store', {
 ```
 ## WRITE ##
 ```Typescript
-store(s => s.user.firstname).replaceWith('James');
+store(s => s.user.firstname).replaceWith('James'); { type: 'user.firstname', payload: 'James' } 
 ```
 ***[All write options...](./docs/readme-write.md)***
 
