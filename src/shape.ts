@@ -4,8 +4,9 @@ export interface Action<T = any> {
 
 export type FetcherStatus = 'pristine' | 'error' | 'resolved' | 'resolving';
 export type Tag<B> = B extends true ? string : void;
+export type Params<T> = T extends infer T ? T : void;
 
-export interface Fetcher<S, C, B extends boolean> {
+export interface Fetcher<S, C, B extends boolean, P> {
   /**
    * The current status of the fetch
    */
@@ -21,7 +22,7 @@ export interface Fetcher<S, C, B extends boolean> {
   /**
    * Can be called to fetch the results and automatically add them to the store
    */
-  fetch: (tag: Tag<B>) => Promise<C>,
+  fetch: P extends void ? ((tag: Tag<B>) => Promise<C>) : (params: Params<P>, tag: Tag<B>) => Promise<C>,
   /**
    * The store that is associated with this fetcher
    */
@@ -171,13 +172,19 @@ export type AvailableOps<S, C, B extends boolean> =
      * * caching request responses (optional).  
      * 
      * ```
-     * const todosFetcher = store(s => s.todos)
-     *   .createFetcher(() => fetchTodos(), { cacheForMillis: 1000 * 60 });
+     * const todosFetcher = store(s => s.todos).createFetcher({
+     *   promise: () => fetchTodos(),
+     *   cacheForMillis: 1000 * 60,
+     * })
      * todosFetcher.fetch().then(result => console.log(results));
      * todosFetcher.onStatusChange(status => console.log('status', status));
      * ```
      */
-    createFetcher: (promise: () => Promise<C>, specs?: { cacheForMillis?: number }) => Fetcher<S, C, B>,
+    createFetcher: <P = void>(fetcherSpecs: {
+      promise: P extends void ? (() => Promise<C>) : ((params: P) => Promise<C>),
+      resolved?: (args: { store: AvailableOps<S, C, B>, data: C, params: Params<P>, tag: Tag<B> }) => any,
+      cacheForMillis?: number,
+    }) => Fetcher<S, C, B, P>,
   } & {
     /**
      * Listens to any updates on this node
@@ -238,14 +245,14 @@ export interface EnhancerOptions {
    *   See [`jsan`](https://github.com/kolodny/jsan) for more details.
    */
   serialize?: boolean | {
-  date?: boolean;
-  regex?: boolean;
-  undefined?: boolean;
-  error?: boolean;
-  symbol?: boolean;
-  map?: boolean;
-  set?: boolean;
-  function?: boolean | Function;
+    date?: boolean;
+    regex?: boolean;
+    undefined?: boolean;
+    error?: boolean;
+    symbol?: boolean;
+    map?: boolean;
+    set?: boolean;
+    function?: boolean | Function;
   };
   /**
    * function which takes `action` object and id number as arguments, and should return `action` object back.

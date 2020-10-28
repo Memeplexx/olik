@@ -2,6 +2,7 @@ import { make, makeEnforceTags } from '../src';
 import { tests } from '../src/tests';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
+
 describe('Fetcher', () => {
 
   beforeAll(() => tests.windowObject = windowAugmentedWithReduxDevtoolsImpl);
@@ -13,9 +14,9 @@ describe('Fetcher', () => {
       }
     };
     const store = make('store', initialState);
-    const fetcher = store(s => s.one).createFetcher(
-      () => new Promise(resolve => setTimeout(() => resolve({ two: 'x' }), 10))
-    );
+    const fetcher = store(s => s.one).createFetcher({
+      promise: () => new Promise<{ two: string }>(resolve => setTimeout(() => resolve({ two: 'x' }), 10))
+    });
     expect(fetcher.store.read()).toEqual(initialState.one);
     fetcher.fetch();
   });
@@ -25,8 +26,9 @@ describe('Fetcher', () => {
       array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
     };
     const store = make('store', initialState);
-    const fetcher = store(s => s.array).createFetcher(
-      () => new Promise(resolve => setTimeout(() => resolve([{ id: 2, value: 'dd' }]), 100)));
+    const fetcher = store(s => s.array).createFetcher({
+      promise: () => new Promise<[{ id: number, value: string }]>(resolve => setTimeout(() => resolve([{ id: 2, value: 'dd' }]), 10))
+    });
     const fetchPromise = fetcher.fetch();
     expect(fetcher.status).toEqual('resolving');
     fetchPromise.then(r => {
@@ -41,8 +43,10 @@ describe('Fetcher', () => {
     };
     const store = make('store', initialState);
     let numberOfTimesPromiseIsCalled = 0;
-    const fetcher = store(s => s.array).createFetcher(
-      () => new Promise(resolve => setTimeout(() => { numberOfTimesPromiseIsCalled++; resolve([{ id: 2, value: 'dd' }]); }, 10)), { cacheForMillis: 10 })
+    const fetcher = store(s => s.array).createFetcher({
+      promise: () => new Promise<[{ id: number, value: string }]>(resolve => setTimeout(() => { numberOfTimesPromiseIsCalled++; resolve([{ id: 2, value: 'dd' }]); }, 10)),
+      cacheForMillis: 10
+    })
     fetcher.fetch().then();
     setTimeout(() => fetcher.fetch().then(r => {
       expect(r).toEqual([{ id: 2, value: 'dd' }]);
@@ -57,8 +61,10 @@ describe('Fetcher', () => {
     };
     const store = make('store', initialState);
     let numberOfTimesPromiseIsCalled = 0;
-    const fetcher = store(s => s.array).createFetcher(
-      () => new Promise(resolve => setTimeout(() => { numberOfTimesPromiseIsCalled++; resolve([{ id: 2, value: 'dd' }]); }, 10)), { cacheForMillis: 10 })
+    const fetcher = store(s => s.array).createFetcher({
+      promise: () => new Promise<[{ id: number, value: string }]>(resolve => setTimeout(() => { numberOfTimesPromiseIsCalled++; resolve([{ id: 2, value: 'dd' }]); }, 10)),
+      cacheForMillis: 10
+    })
     fetcher.fetch().then();
     setTimeout(() => fetcher.fetch().then(r => {
       expect(r).toEqual([{ id: 2, value: 'dd' }]);
@@ -73,8 +79,10 @@ describe('Fetcher', () => {
     };
     const store = make('store', initialState);
     let numberOfTimesPromiseIsCalled = 0;
-    const fetcher = store(s => s.array).createFetcher(
-      () => new Promise(resolve => setTimeout(() => { numberOfTimesPromiseIsCalled++; resolve([{ id: 2, value: 'dd' }]); }, 10)), { cacheForMillis: 20 })
+    const fetcher = store(s => s.array).createFetcher({
+      promise: () => new Promise<[{ id: number, value: string }]>(resolve => setTimeout(() => { numberOfTimesPromiseIsCalled++; resolve([{ id: 2, value: 'dd' }]); }, 10)),
+      cacheForMillis: 20
+    })
     fetcher.fetch().then();
     setTimeout(() => {
       fetcher.invalidateCache();
@@ -91,8 +99,10 @@ describe('Fetcher', () => {
       array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
     };
     const store = make('store', initialState);
-    const fetcher = store(s => s.array).createFetcher(
-      () => new Promise(resolve => setTimeout(() => resolve([{ id: 2, value: 'dd' }]), 10)), { cacheForMillis: 20 });
+    const fetcher = store(s => s.array).createFetcher({
+      promise: () => new Promise<[{ id: number, value: string }]>(resolve => setTimeout(() => resolve([{ id: 2, value: 'dd' }]), 10)),
+      cacheForMillis: 20
+    })
     fetcher.onStatusChange(status => console.log(status));
     fetcher.fetch().then(() => {
       console.log('DONE!');
@@ -105,8 +115,10 @@ describe('Fetcher', () => {
       array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
     };
     const store = make('store', initialState);
-    const fetcher = store(s => s.array).createFetcher(
-      () => new Promise((resolve, reject) => setTimeout(() => reject('Woops'), 10)), { cacheForMillis: 20 });
+    const fetcher = store(s => s.array).createFetcher({
+      promise: () => new Promise<[{ id: number, value: string }]>((_, reject) => setTimeout(() => reject('Woops'), 10)),
+      cacheForMillis: 20
+    })
     fetcher.fetch()
       .then(() => {
         expect(fetcher.status === 'error').toEqual(true);
@@ -119,14 +131,33 @@ describe('Fetcher', () => {
       array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
     };
     const store = makeEnforceTags('store', initialState);
-    const fetcher = store(s => s.array).createFetcher(
-      () => new Promise(resolve => setTimeout(() => resolve([{ id: 2, value: 'dd' }]), 100)));
+    const fetcher = store(s => s.array).createFetcher({
+      promise: () => new Promise<[{ id: number, value: string }]>(resolve => setTimeout(() => resolve([{ id: 2, value: 'dd' }]), 10)),
+      cacheForMillis: 100
+    })
     const tag = 'mytag';
     const fetchPromise = fetcher.fetch(tag);
     expect(fetcher.status).toEqual('resolving');
     fetchPromise.then(r => {
       expect(r).toEqual([{ id: 2, value: 'dd' }]);
       expect(tests.currentAction.type).toEqual(`array.replaceAll() [${tag}]`)
+      done();
+    });
+  })
+
+  it('test', done => {
+    const initialState = {
+      array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
+    };
+    const store = makeEnforceTags('store', initialState);
+    const fetcher2 = store(s => s.array).createFetcher({
+      promise: (arg: number) => Promise.resolve([initialState.array.find(s => s.id === arg)!]),
+      resolved: ({ store, data, tag }) => store.addBefore(data, tag),
+      cacheForMillis: 20,
+    });
+    fetcher2.fetch(2, 'test').then(result => {
+      console.log('%%%%%%%', result);
+      console.log('................', store().read());
       done();
     });
   })
