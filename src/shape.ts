@@ -2,42 +2,14 @@ export interface Action<T = any> {
   type: T
 }
 
-export type FetcherStatus = 'pristine' | 'error' | 'resolved' | 'resolving';
+export type FetcherStatus = 'pristine' | 'rejected' | 'resolved' | 'resolving';
 export type Tag<B> = B extends true ? string : void;
-
-export interface Fetcher<S, C, B extends boolean> {
-  /**
-   * The current status of the fetch
-   */
-  status: FetcherStatus;
-  /**
-   * The current error, if any
-   */
-  error?: any;
-  /**
-   * Can be called to manually bust a cache before invoking 'fetch()' again
-   */
-  invalidateCache: () => any,
-  /**
-   * Can be called to fetch the results and automatically add them to the store
-   */
-  fetch: (tag: Tag<B>) => Promise<C>,
-  /**
-   * The store that is associated with this fetcher
-   */
-  store: AvailableOps<S, C, B>,
-  /**
-   * The selector that is associated with this fetcher
-   */
-  selector: (state: S) => C,
-  /**
-   * Can be used to react to a status change
-   * ```
-   * myFetcher.onStatusChange(status => console.log('Status is now', status));
-   * ```
-   */
-  onStatusChange: (listener: (status: FetcherStatus) => any) => Unsubscribable,
+export type Params<T> = T extends infer T ? T : void;
+export interface Unsubscribable {
+  unsubscribe: () => any,
 }
+
+export type Fetch = { error: any, status: FetcherStatus, invalidateCache: () => any, onChange: (arg: () => any ) => Unsubscribable };
 
 export type AvailableOps<S, C, B extends boolean> =
   (C extends undefined ? any : C extends Array<any> ? {
@@ -171,13 +143,19 @@ export type AvailableOps<S, C, B extends boolean> =
      * * caching request responses (optional).  
      * 
      * ```
-     * const todosFetcher = store(s => s.todos)
-     *   .createFetcher(() => fetchTodos(), { cacheForMillis: 1000 * 60 });
+     * const todosFetcher = store(s => s.todos).createFetcher({
+     *   promise: () => fetchTodos(),
+     *   cacheForMillis: 1000 * 60,
+     * })
      * todosFetcher.fetch().then(result => console.log(results));
      * todosFetcher.onStatusChange(status => console.log('status', status));
      * ```
      */
-    createFetcher: (promise: () => Promise<C>, specs?: { cacheForMillis?: number }) => Fetcher<S, C, B>,
+    createFetcher: <P = void>(fetcherSpecs: {
+      getData: P extends void ? (() => Promise<C>) : ((params: P) => Promise<C>),
+      setData?: (args: { store: AvailableOps<S, C, B>, data: C, params: Params<P>, tag: Tag<B> }) => any,
+      cacheFor?: number,
+    }) => P extends void ? ((tag: Tag<B>) => Fetch) : ((params: Params<P>, tag: Tag<B>) => Fetch),
   } & {
     /**
      * Listens to any updates on this node
@@ -197,10 +175,6 @@ export type AvailableOps<S, C, B extends boolean> =
      */
     reset: (tag: Tag<B>) => void,
   };
-
-export interface Unsubscribable {
-  unsubscribe: () => any,
-}
 
 type ReadType<E> = E extends AvailableOps<any, infer W, false> ? W : E extends AvailableOps<any, infer W, true> ? W : never;
 
@@ -238,14 +212,14 @@ export interface EnhancerOptions {
    *   See [`jsan`](https://github.com/kolodny/jsan) for more details.
    */
   serialize?: boolean | {
-  date?: boolean;
-  regex?: boolean;
-  undefined?: boolean;
-  error?: boolean;
-  symbol?: boolean;
-  map?: boolean;
-  set?: boolean;
-  function?: boolean | Function;
+    date?: boolean;
+    regex?: boolean;
+    undefined?: boolean;
+    error?: boolean;
+    symbol?: boolean;
+    map?: boolean;
+    set?: boolean;
+    function?: boolean | Function;
   };
   /**
    * function which takes `action` object and id number as arguments, and should return `action` object back.
