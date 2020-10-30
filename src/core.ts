@@ -1,5 +1,5 @@
 import { integrateStoreWithReduxDevtools } from './devtools';
-import { AvailableOps, Derivation, EnhancerOptions, MappedDataTuple, FetcherStatus, Unsubscribable, Params, Tag } from './shape';
+import { AvailableOps, Derivation, EnhancerOptions, MappedDataTuple, FetcherStatus, Unsubscribable, Params, Tag, Fetch } from './shape';
 import { tests } from './tests';
 
 /**
@@ -154,126 +154,72 @@ function makeInternal<S>(nameOrDevtoolsConfig: string | EnhancerOptions, state: 
       }
     }),
     reset: (tag?: string) => replace(selector, 'reset')(selector(initialState), tag),
-    // createFetcher: (promise: () => Promise<C>, specs: { cacheForMillis: number } = { cacheForMillis: 0 }) => {
-    //   const otherFetcherPromises = new Array<{ resolve: (c: C) => void, reject: (e: any) => void }>();
-    //   const statusChangeListeners = new Set<(status: FetcherStatus) => any>();
-    //   let lastFetch = 0;
-    //   return new (class {
-    //     store = storeResult(selector);
-    //     selector = selector;
-    //     status: FetcherStatus = 'pristine';
-    //     error?: any;
-    //     invalidateCache = () => { lastFetch = 0; }
-    //     onStatusChange = (listener: (payload: FetcherStatus) => Unsubscribable) => {
-    //       statusChangeListeners.add(listener);
-    //       return { unsubscribe: () => statusChangeListeners.delete(listener) };
-    //     }
-    //     private notifyChangeListeners = () => statusChangeListeners.forEach(listener => listener(this.status));
-    //     fetch = (tag: string | void) => {
-    //       const cacheHasExpired = (lastFetch + (specs.cacheForMillis || 0)) < Date.now();
-    //       if ((this.status === 'resolved') && !cacheHasExpired) {
-    //         return Promise.resolve(selector(storeResult().read()));
-    //       } else if (this.status === 'resolving') {
-    //         return new Promise<C>((resolve, reject) => otherFetcherPromises.push({ resolve, reject }));
-    //       } else {
-    //         this.status = 'resolving';
-    //         this.notifyChangeListeners();
-    //         return promise()
-    //           .then(value => {
-    //             const piece = storeResult(selector) as any as { replace: (c: C, tag: string | void) => void } & { replaceAll: (c: C, tag: string | void) => void };
-    //             if (piece.replaceAll) { piece.replaceAll(value, tag); } else { piece.replace(value, tag); }
-    //             lastFetch = Date.now();
-    //             otherFetcherPromises.forEach(f => f.resolve(value));
-    //             otherFetcherPromises.length = 0;
-    //             this.status = 'resolved';
-    //             this.notifyChangeListeners();
-    //             return value;
-    //           }).catch(error => {
-    //             otherFetcherPromises.forEach(f => f.reject(error));
-    //             otherFetcherPromises.length = 0;
-    //             this.error = error;
-    //             this.status = 'error';
-    //             this.notifyChangeListeners();
-    //             const sub = this.store.onChange(() => {
-    //               if (this.status !== 'resolved') {
-    //                 this.status = 'resolved';
-    //                 this.notifyChangeListeners();
-    //               }
-    //               sub.unsubscribe();
-    //             });
-    //             return error;
-    //           })
-    //       }
-    //     }
-    //   })();
-    // },
     createFetcher: <P = void>(specs: {
-      promise: ((params: Params<P>) => Promise<C>) | (() => Promise<C>),
-      resolved?: (args: { store: AvailableOps<S, C, boolean>, data: C, params: Params<P>, tag?: string }) => any,
-      cacheForMillis?: number,
+      getData: ((params: Params<P>) => Promise<C>) | (() => Promise<C>),
+      setData?: (args: { store: AvailableOps<S, C, boolean>, data: C, params: Params<P>, tag?: string }) => any,
+      cacheFor?: number,
     }) => {
-      const otherFetcherPromises = new Array<{ resolve: (c: C) => void, reject: (e: any) => void }>();
-      const statusChangeListeners = new Set<(status: FetcherStatus) => any>();
-      let lastFetch = 0;
-      return new (class {
-        store = storeResult(selector);
-        selector = selector;
-        status: FetcherStatus = 'pristine';
-        error?: any;
-        invalidateCache = () => { lastFetch = 0; }
-        onStatusChange = (listener: (payload: FetcherStatus) => Unsubscribable) => {
-          statusChangeListeners.add(listener);
-          return { unsubscribe: () => statusChangeListeners.delete(listener) };
+      const responseCache = new Map<any, {
+        data: C,
+        error: any,
+        lastFetch: number,
+        status: FetcherStatus,
+        changeListeners: Array<(status: FetcherStatus) => Unsubscribable>,
+        fetches: Array<Fetch>,
+      }>();
+      return (paramsOrTag: P | string | void, tag: string | void): Fetch => {
+        const actualTag = supportsTags ? (tag || paramsOrTag) as string : undefined;
+        const actualParams = (((supportsTags && tag) || (!supportsTags && paramsOrTag)) ? paramsOrTag : undefined) as Params<P>;
+        const cacheItem = responseCache.get(actualParams) || responseCache.set(actualParams,
+          { data: undefined as any as C, error: undefined, lastFetch: 0, status: 'pristine', fetches: [], changeListeners: [] }).get(actualParams)!;
+        const cacheHasExpiredOrPromiseNeverCalled = (cacheItem.lastFetch + (specs.cacheFor || 0)) < Date.now();
+        const invalidateCache = () => {
+          cacheItem.data = null as any as C;
+          cacheItem.lastFetch = 0;
         }
-        private notifyChangeListeners = () => statusChangeListeners.forEach(listener => listener(this.status));
-        fetch = (paramsOrTag: P | string | void, tag: string | void) => {
-          const cacheHasExpired = (lastFetch + (specs.cacheForMillis || 0)) < Date.now();
-          if ((this.status === 'resolved') && !cacheHasExpired) {
-            return Promise.resolve(selector(storeResult().read()));
-          } else if (this.status === 'resolving') {
-            return new Promise<C>((resolve, reject) => otherFetcherPromises.push({ resolve, reject }));
-          } else {
-            this.status = 'resolving';
-            this.notifyChangeListeners();
-            const actualTag = supportsTags ? (tag || paramsOrTag) as string : undefined;
-            const actualParams = (((supportsTags && tag) || (!supportsTags && paramsOrTag)) ? paramsOrTag : undefined) as Params<P>;
-            return specs.promise(actualParams)
-              .then(value => {
-                const piece = storeResult(selector) as any as { replace: (c: C, tag: string | void) => void } & { replaceAll: (c: C, tag: string | void) => void };
-                if (specs.resolved) {
-                  specs.resolved({
-                    data: value,
-                    tag: actualTag,
-                    params: actualParams,
-                    store: this.store
-                  });
-                } else {
-                  if (piece.replaceAll) { piece.replaceAll(value, actualTag); } else { piece.replace(value, actualTag); }
-                }
-                lastFetch = Date.now();
-                otherFetcherPromises.forEach(f => f.resolve(value));
-                otherFetcherPromises.length = 0;
-                this.status = 'resolved';
-                this.notifyChangeListeners();
-                return value;
-              }).catch(error => {
-                otherFetcherPromises.forEach(f => f.reject(error));
-                otherFetcherPromises.length = 0;
-                this.error = error;
-                this.status = 'error';
-                this.notifyChangeListeners();
-                const sub = this.store.onChange(() => {
-                  if (this.status !== 'resolved') {
-                    this.status = 'resolved';
-                    this.notifyChangeListeners();
-                  }
-                  sub.unsubscribe();
+        setTimeout(() => invalidateCache, specs.cacheFor); // free memory
+        if (cacheHasExpiredOrPromiseNeverCalled) {
+          cacheItem.status = 'resolving';
+          cacheItem.fetches.forEach(fetch => Object.assign<Fetch, Partial<Fetch>>(fetch, { status: cacheItem.status }));
+          cacheItem.changeListeners.forEach(changeListener => changeListener(cacheItem.status));
+          specs.getData(actualParams)
+            .then(value => {
+              cacheItem.lastFetch = Date.now();
+              if (specs.setData) {
+                specs.setData({
+                  data: deepCopy(value),
+                  tag: actualTag,
+                  params: actualParams,
+                  store: storeResult(selector),
                 });
-                return error;
-              })
-          }
+              } else {
+                const piece = storeResult(selector) as any as { replace: (c: C, tag: string | void) => void } & { replaceAll: (c: C, tag: string | void) => void };
+                if (piece.replaceAll) { piece.replaceAll(value, actualTag); } else { piece.replace(value, actualTag); }
+              }
+              cacheItem.data = deepCopy(value);
+              cacheItem.error = null;
+              cacheItem.status = 'resolved';
+              cacheItem.fetches.forEach(fetch => Object.assign<Fetch, Partial<Fetch>>(fetch, { status: cacheItem.status, error: null }));
+              cacheItem.changeListeners.forEach(changeListener => changeListener(cacheItem.status));
+            }).catch(error => {
+              cacheItem.error = error;
+              cacheItem.status = 'rejected';
+              cacheItem.fetches.forEach(fetch => Object.assign<Fetch, Partial<Fetch>>(fetch, { status: cacheItem.status, error }));
+              cacheItem.changeListeners.forEach(changeListener => changeListener(cacheItem.status));
+            });
         }
-      })();
+        const fetch = {
+          error: cacheItem.error,
+          status: cacheItem.status,
+          invalidateCache,
+          onChange: (listener: () => Unsubscribable) => {
+            cacheItem.changeListeners.push(listener);
+            return { unsubscribe: () => cacheItem.changeListeners.splice(cacheItem.changeListeners.findIndex(changeListener => changeListener === listener), 1) };
+          },
+        } as Fetch;
+        cacheItem.fetches.push(fetch);
+        return fetch;
+      }
     },
     onChange: (performAction: (selection: C) => any) => {
       changeListeners.set(performAction, selector);
