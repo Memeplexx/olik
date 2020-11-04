@@ -1,4 +1,4 @@
-import { AvailableOps, Fetcher, Tag, Unsubscribable } from 'oulik';
+import { Store, Fetch, Unsubscribable } from 'oulik';
 import React, { DependencyList } from 'react';
 
 export * from 'oulik';
@@ -51,22 +51,35 @@ export function useSelector<C>(
  * EXAMPLE
  * ```typescript
  * // outside your functional component
- * const todosFetcher = store(s => s.todos).createFetcher(
- *   () => new Promise(resolve => fetchTodosFromApi()), { cacheForMillis: 1000 * 60 });
+ * const todosFetcher = store(s => s.todos).createFetcher({
+ *   getData: () => fetchTodosFromApi(),
+ *   cacheForMillis: 1000 * 60,
+ * });
  * 
  * // inside your functional component
  * const { isLoading, data, hasError, error } = useFetcher(todosFetcher);
  * ```
  */
-export function useFetcher<S, C, B extends boolean>(
-  fetcher: Fetcher<S, C, B>,
-  tag: Tag<B>,
+export function useFetcher<S, C, P>(
+  getFetch: () => Fetch<S, C, P>,
+  deps?: DependencyList,
 ) {
-  const [result, setResult] = React.useState({ isLoading: true, data: fetcher.store.read(), hasError: false, error: null });
+  const allDeps = [];
+  if (deps) { allDeps.push(...deps); }
+  const fetch = React.useMemo(() => getFetch(), allDeps);
+  const [result, setResult] = React.useState({ isLoading: fetch.status === 'resolving', hasError: fetch.status === 'rejected', error: fetch.error, data: fetch.data, storeData: fetch.store.read() });
   React.useEffect(() => {
-    fetcher.onStatusChange(status => setResult({ isLoading: status === 'resolving', hasError: fetcher.status === 'error', data: fetcher.store.read(), error: fetcher.error }))
-    fetcher.fetch(tag);
-  }, [fetcher, tag]);
+    setResult(result => ({...result, storeData: fetch.store.read() }));
+    let storeSubscription: Unsubscribable | undefined;
+    const subscription = fetch.onChange(() => {
+      setResult(result => ({...result, isLoading: status === 'resolving', hasError: fetch.status === 'rejected', data: fetch.data, error: fetch.error, storeData: fetch.store.read() }));
+      storeSubscription = fetch.store.onChange(state => setResult(r => ({ ...r, storeData: state })))
+    })
+    return () => {
+      subscription.unsubscribe();
+      if (storeSubscription) { storeSubscription.unsubscribe(); }
+    }
+  }, allDeps);
   return result;
 }
 
@@ -89,7 +102,7 @@ export function useFetcher<S, C, B extends boolean>(
  * ```
  */
 export function mapStateToProps<C, P extends {}, M extends {}, B extends boolean>(
-  store: AvailableOps<any, C, B>,
+  store: Store<any, C, B>,
   mapper: (state: C, ownProps: P) => M,
 ) {
   return (Component: React.ComponentType<M>) => {

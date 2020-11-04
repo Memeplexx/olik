@@ -44,22 +44,19 @@ listener.unsubscribe(); // Please unsubscribe to avoid memory leaks
 ```
 
 ## FETCHING STATE FROM EXTERNAL SOURCES ##
-*Fetchers* are an optional mechanism which:
-* tracks the status of a request (loading / success / error) 
-* caches request responses
-* deduplicates multiple requests for the same data into a single request
-* automatically inserts data into the store
+*Fetchers* report the status of an asynchronous request, prevent duplicate simulataneous requests, cache responses, and automatically updates your store. 
 
 `api.ts`
 ```Typescript
-const sizeFetcher = store(s => s.size)
-  .createFetcher(() => fetchSizeFromApi(), { cacheForMillis: 1000 * 60 });
+const fetchSize = store(s => s.size).createFetcher({
+  getData: () => fetchSizeFromApi(),
+  cacheFor: 1000 * 60,
+});
 ```
 
 `component.ts`
 ```Typescript
-sizeFetcher
-  .onStatusChange(status => console.log(`Fetcher is status currently ${status}`))
-sizeFetcher.fetch()
-  .then(size => ...);
+const sizeFetcher = fetchSize();
+const onChangeSubscription = sizeFetcher.onChange(() => console.log(`Fetcher status is currently ${sizeFetcher.status}`));
+onChangeSubscription.unSubscribe(); // don't forget to unsubscribe when you no longer want to receive events to avoid memory leaks
 ```

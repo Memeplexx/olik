@@ -1,11 +1,11 @@
-import { AvailableOps, EnhancerOptions, WindowAugmentedWithReduxDevtools } from './shape';
+import { Store, EnhancerOptions, WindowAugmentedWithReduxDevtools } from './shape';
 import { tests } from './tests';
 
 // ref: https://medium.com/@zalmoxis/redux-devtools-without-redux-or-how-to-have-a-predictable-state-with-any-architecture-61c5f5a7716f
 // ref: https://github.com/zalmoxisus/redux-devtools-extension/blob/master/docs/API/Methods.md#listen
 
 export function integrateStoreWithReduxDevtools<S, C = S>(
-  store: () => AvailableOps<S, C, any>,
+  store: (selector?: (state: S) => C) => Store<S, C, any>,
   options: EnhancerOptions,
   setDevtoolsDispatchListener: (listener: (action: { type: string, payload?: any }) => any) => any
 ) {
@@ -25,6 +25,25 @@ export function integrateStoreWithReduxDevtools<S, C = S>(
     devTools.send(action, store().read());
   });
   devTools.subscribe(message => {
+    if (message.type === 'ACTION' && message.source === '@devtools-extension') {
+      let messagePayload: { type: string, payload: any };
+      try {
+        messagePayload = JSON.parse(message.payload);
+      } catch (e) {
+        throw Error('Please dispatch a valid object and ensure that all keys are enclosed in double-quotes');
+      }
+      if (!messagePayload.type.endsWith('()')) {
+        throw new Error(`Cannot dispatch ${messagePayload.type} because there is no action to perform, eg. replaceWith()`);
+      }
+      let segs = messagePayload.type.split('.');
+      const action = segs.pop() as string;
+      const selection = store(s => {
+        let result = s as any as C;
+        segs.forEach(seg => result = result[seg as keyof typeof result] as any as C)
+        return result as any as C;
+      });
+      (selection[action.substring(0, action.length - 2) as any as keyof typeof selection] as Function)(messagePayload.payload, message.source);
+    }
     if (message.type === 'DISPATCH' && message.payload) {
       const selection = store() as any as (
         { replaceWith: (state: S, tag: string) => any } &

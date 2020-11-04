@@ -170,3 +170,25 @@ describe('Fetcher', () => {
   // })
 
 });
+
+
+// const initialState = {
+//   todos: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
+// };
+// const store = makeEnforceTags('store', initialState);
+// const fetchTodos = store(s => s.todos).createFetcher({
+//   getData: (num: number) => new Promise<[{ id: number, value: string }]>(resolve => setTimeout(() => resolve([{ id: num, value: 'dd' }]), 10)),
+//   cacheFor: 1000,
+// })
+
+
+// export function useFetcher<S, C, P, B extends boolean>(
+//   getFetch: Fetcher<S, C, P, B>,
+//   deps?: ReadonlyArray<any>,
+// ) {
+  
+// }
+
+// const page = 0;
+
+// const { storeData, responseData, responseError, isLoading } = useFetcher(() => fetchTodos(page, __filename), [page]);

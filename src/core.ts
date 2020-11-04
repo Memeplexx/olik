@@ -1,5 +1,5 @@
 import { integrateStoreWithReduxDevtools } from './devtools';
-import { AvailableOps, Derivation, EnhancerOptions, MappedDataTuple, FetcherStatus, Unsubscribable, Params, Tag, Fetch } from './shape';
+import { Store, Derivation, EnhancerOptions, MappedDataTuple, FetcherStatus, Unsubscribable, Params, Tag, Fetch } from './shape';
 import { tests } from './tests';
 
 /**
@@ -18,8 +18,8 @@ import { tests } from './tests';
  *   .with({ text: 'bake cookies' }, 'TodoDetailComponent')
  * ```
  */
-export function makeEnforceTags<S>(nameOrDevtoolsConfig: string | EnhancerOptions, state: S, tagSanitizer?: (tag: string) => string) {
-  return makeInternal(nameOrDevtoolsConfig, state, true, tagSanitizer) as any as <C = S>(selector?: (s: S) => C) => AvailableOps<S, C, true>;
+export function makeEnforceTags<S>(nameOrDevtoolsConfig: string | false | EnhancerOptions, state: S, tagSanitizer?: (tag: string) => string) {
+  return makeInternal(nameOrDevtoolsConfig, state, true, tagSanitizer) as any as <C = S>(selector?: (s: S) => C) => Store<S, C, true>;
 }
 
 /**
@@ -32,11 +32,11 @@ export function makeEnforceTags<S>(nameOrDevtoolsConfig: string | EnhancerOption
  * const store = make('store', { todos: Array<{id: number, text: string}>() });
  * ```
  */
-export function make<S>(nameOrDevtoolsConfig: string | EnhancerOptions, state: S) {
-  return makeInternal(nameOrDevtoolsConfig, state, false) as any as <C = S>(selector?: (s: S) => C) => AvailableOps<S, C, false>;
+export function make<S>(nameOrDevtoolsConfig: string | false | EnhancerOptions, state: S) {
+  return makeInternal(nameOrDevtoolsConfig, state, false) as any as <C = S>(selector?: (s: S) => C) => Store<S, C, false>;
 }
 
-function makeInternal<S>(nameOrDevtoolsConfig: string | EnhancerOptions, state: S, supportsTags: boolean, tagSanitizer?: (tag: string) => string) {
+function makeInternal<S>(nameOrDevtoolsConfig: string | false | EnhancerOptions, state: S, supportsTags: boolean, tagSanitizer?: (tag: string) => string) {
   validateState(state);
   const changeListeners = new Map<(ar: any) => any, (arg: S) => any>();
   const pathReader = createPathReader(state);
@@ -156,7 +156,7 @@ function makeInternal<S>(nameOrDevtoolsConfig: string | EnhancerOptions, state: 
     reset: (tag?: string) => replace(selector, 'reset')(selector(initialState), tag),
     createFetcher: <P = void>(specs: {
       getData: ((params: Params<P>) => Promise<C>) | (() => Promise<C>),
-      setData?: (args: { store: AvailableOps<S, C, boolean>, data: C, params: Params<P>, tag?: string }) => any,
+      setData?: (args: { store: Store<S, C, boolean>, data: C, params: Params<P>, tag?: string }) => any,
       cacheFor?: number,
     }) => {
       const responseCache = new Map<any, {
@@ -165,9 +165,9 @@ function makeInternal<S>(nameOrDevtoolsConfig: string | EnhancerOptions, state: 
         lastFetch: number,
         status: FetcherStatus,
         changeListeners: Array<(status: FetcherStatus) => Unsubscribable>,
-        fetches: Array<Fetch>,
+        fetches: Array<Fetch<S, C, P>>,
       }>();
-      return (paramsOrTag: P | string | void, tag: string | void): Fetch => {
+      return (paramsOrTag: P | string | void, tag: string | void): Fetch<S, C, P> => {
         const actualTag = supportsTags ? (tag || paramsOrTag) as string : undefined;
         const actualParams = (((supportsTags && tag) || (!supportsTags && paramsOrTag)) ? paramsOrTag : undefined) as Params<P>;
         const cacheItem = responseCache.get(actualParams) || responseCache.set(actualParams,
@@ -180,7 +180,7 @@ function makeInternal<S>(nameOrDevtoolsConfig: string | EnhancerOptions, state: 
         setTimeout(() => invalidateCache, specs.cacheFor); // free memory
         if (cacheHasExpiredOrPromiseNeverCalled) {
           cacheItem.status = 'resolving';
-          cacheItem.fetches.forEach(fetch => Object.assign<Fetch, Partial<Fetch>>(fetch, { status: cacheItem.status }));
+          cacheItem.fetches.forEach(fetch => Object.assign<Fetch<S, C, P>, Partial<Fetch<S, C, P>>>(fetch, { status: cacheItem.status }));
           cacheItem.changeListeners.forEach(changeListener => changeListener(cacheItem.status));
           specs.getData(actualParams)
             .then(value => {
@@ -196,19 +196,22 @@ function makeInternal<S>(nameOrDevtoolsConfig: string | EnhancerOptions, state: 
                 const piece = storeResult(selector) as any as { replace: (c: C, tag: string | void) => void } & { replaceAll: (c: C, tag: string | void) => void };
                 if (piece.replaceAll) { piece.replaceAll(value, actualTag); } else { piece.replace(value, actualTag); }
               }
-              cacheItem.data = deepCopy(value);
+              cacheItem.data = deepFreeze(deepCopy(value));
               cacheItem.error = null;
               cacheItem.status = 'resolved';
-              cacheItem.fetches.forEach(fetch => Object.assign<Fetch, Partial<Fetch>>(fetch, { status: cacheItem.status, error: null }));
+              cacheItem.fetches.forEach(fetch => Object.assign<Fetch<S, C, P>, Partial<Fetch<S, C, P>>>(fetch, { status: cacheItem.status, data: deepCopy(cacheItem.data), error: cacheItem.error }));
               cacheItem.changeListeners.forEach(changeListener => changeListener(cacheItem.status));
             }).catch(error => {
               cacheItem.error = error;
               cacheItem.status = 'rejected';
-              cacheItem.fetches.forEach(fetch => Object.assign<Fetch, Partial<Fetch>>(fetch, { status: cacheItem.status, error }));
+              cacheItem.fetches.forEach(fetch => Object.assign<Fetch<S, C, P>, Partial<Fetch<S, C, P>>>(fetch, { status: cacheItem.status, error }));
               cacheItem.changeListeners.forEach(changeListener => changeListener(cacheItem.status));
             });
         }
         const fetch = {
+          data: cacheItem.data,
+          fetchArg: actualParams,
+          store: storeResult(selector),
           error: cacheItem.error,
           status: cacheItem.status,
           invalidateCache,
@@ -216,7 +219,7 @@ function makeInternal<S>(nameOrDevtoolsConfig: string | EnhancerOptions, state: 
             cacheItem.changeListeners.push(listener);
             return { unsubscribe: () => cacheItem.changeListeners.splice(cacheItem.changeListeners.findIndex(changeListener => changeListener === listener), 1) };
           },
-        } as Fetch;
+        } as Fetch<S, C, P>;
         cacheItem.fetches.push(fetch);
         return fetch;
       }
@@ -227,7 +230,7 @@ function makeInternal<S>(nameOrDevtoolsConfig: string | EnhancerOptions, state: 
     },
     read: () => deepFreeze(selector(currentState)),
     readInitial: () => selector(initialState),
-  } as any as AvailableOps<S, C, any>);
+  } as any as Store<S, C, any>);
 
   const storeResult = <C = S>(selector: ((s: S) => C) = (s => s as any as C)) => {
     const selectorMod = selector as (s: S) => C;
@@ -315,7 +318,10 @@ function makeInternal<S>(nameOrDevtoolsConfig: string | EnhancerOptions, state: 
     })
   }
 
-  integrateStoreWithReduxDevtools<S>(storeResult, typeof (nameOrDevtoolsConfig) === 'string' ? { name: nameOrDevtoolsConfig } : nameOrDevtoolsConfig, setDevtoolsDispatchListener);
+  if (nameOrDevtoolsConfig !== false) {
+    integrateStoreWithReduxDevtools<S>(storeResult, typeof (nameOrDevtoolsConfig) === 'string'
+      ? { name: nameOrDevtoolsConfig } : nameOrDevtoolsConfig, setDevtoolsDispatchListener);
+  }
 
   return storeResult;
 }
@@ -426,17 +432,17 @@ export function deepCopy(o: any): any {
  * const memoizedResult = memo.read();
  * ```
  */
-export function deriveFrom<X extends AvailableOps<any, any, any>[]>(...args: X) {
+export function deriveFrom<X extends Store<any, any, any>[]>(...args: X) {
   let previousParams = new Array<any>();
   let previousResult = null as any;
   return {
     usingExpensiveCalc: <R>(calculation: (...inputs: MappedDataTuple<X>) => R) => {
       const getValue = () => {
-        const params = (args as Array<AvailableOps<any, any, any>>).map(arg => arg.read());
+        const params = (args as Array<Store<any, any, any>>).map(arg => arg.read());
         if (previousParams.length && params.every((v, i) => v === previousParams[i])) {
           return previousResult;
         }
-        const result = calculation(...(params as AvailableOps<any, any, any>));
+        const result = calculation(...(params as Store<any, any, any>));
         previousParams = params;
         previousResult = result;
         return result;
@@ -446,7 +452,7 @@ export function deriveFrom<X extends AvailableOps<any, any, any>[]>(...args: X) 
         read: () => getValue(),
         onChange: (listener: (value: R) => any) => {
           changeListeners.add(listener);
-          const unsubscribables: Unsubscribable[] = (args as Array<AvailableOps<any, any, any>>)
+          const unsubscribables: Unsubscribable[] = (args as Array<Store<any, any, any>>)
             .map(ops => ops.onChange(() => listener(getValue())));
           return {
             unsubscribe: () => {

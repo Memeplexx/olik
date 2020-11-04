@@ -9,9 +9,11 @@ export interface Unsubscribable {
   unsubscribe: () => any,
 }
 
-export type Fetch = { error: any, status: FetcherStatus, invalidateCache: () => any, onChange: (arg: () => any ) => Unsubscribable };
+export type Fetch<S, C, P> = { data: C, error: any, status: FetcherStatus, invalidateCache: () => any, onChange: (arg: () => any ) => Unsubscribable, store: Store<S, C, boolean>, fetchArg: Params<P> };
 
-export type AvailableOps<S, C, B extends boolean> =
+export type Fetcher<S, C, P, B extends boolean> = P extends void ? ((tag: Tag<B>) => Fetch<S, C, P>) : ((params: Params<P>, tag: Tag<B>) => Fetch<S, C, P>);
+
+export type Store<S, C, B extends boolean> =
   (C extends undefined ? any : C extends Array<any> ? {
     /**
      * Append elements to the end of array
@@ -153,9 +155,9 @@ export type AvailableOps<S, C, B extends boolean> =
      */
     createFetcher: <P = void>(fetcherSpecs: {
       getData: P extends void ? (() => Promise<C>) : ((params: P) => Promise<C>),
-      setData?: (args: { store: AvailableOps<S, C, B>, data: C, params: Params<P>, tag: Tag<B> }) => any,
+      setData?: (args: { store: Store<S, C, B>, data: C, params: Params<P>, tag: Tag<B> }) => any,
       cacheFor?: number,
-    }) => P extends void ? ((tag: Tag<B>) => Fetch) : ((params: Params<P>, tag: Tag<B>) => Fetch),
+    }) => Fetcher<S, C, P, B>,
   } & {
     /**
      * Listens to any updates on this node
@@ -176,9 +178,9 @@ export type AvailableOps<S, C, B extends boolean> =
     reset: (tag: Tag<B>) => void,
   };
 
-type ReadType<E> = E extends AvailableOps<any, infer W, false> ? W : E extends AvailableOps<any, infer W, true> ? W : never;
+type ReadType<E> = E extends Store<any, infer W, false> ? W : E extends Store<any, infer W, true> ? W : never;
 
-export type MappedDataTuple<T extends Array<AvailableOps<any, any, any>>> = {
+export type MappedDataTuple<T extends Array<Store<any, any, any>>> = {
   [K in keyof T]: ReadType<T[K]>;
 }
 
@@ -352,7 +354,7 @@ export interface WindowAugmentedWithReduxDevtools {
   __REDUX_DEVTOOLS_EXTENSION__: {
     connect: (options: EnhancerOptions) => {
       init: (state: any) => any,
-      subscribe: (listener: (message: { type: string, payload: any, state?: any }) => any) => any,
+      subscribe: (listener: (message: { type: string, payload: any, state?: any, source: string }) => any) => any,
       unsubscribe: () => any,
       send: (action: Action, state: any) => any
     };

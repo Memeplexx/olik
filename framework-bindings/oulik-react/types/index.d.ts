@@ -1,4 +1,4 @@
-import { AvailableOps, Fetcher, Tag, Unsubscribable } from 'oulik';
+import { Store, Fetch, Unsubscribable } from 'oulik';
 import React, { DependencyList } from 'react';
 export * from 'oulik';
 /**
@@ -36,18 +36,21 @@ export declare function useSelector<C>(store: {
  * EXAMPLE
  * ```typescript
  * // outside your functional component
- * const todosFetcher = store(s => s.todos).createFetcher(
- *   () => new Promise(resolve => fetchTodosFromApi()), { cacheForMillis: 1000 * 60 });
+ * const todosFetcher = store(s => s.todos).createFetcher({
+ *   getData: () => fetchTodosFromApi(),
+ *   cacheForMillis: 1000 * 60,
+ * });
  *
  * // inside your functional component
  * const { isLoading, data, hasError, error } = useFetcher(todosFetcher);
  * ```
  */
-export declare function useFetcher<S, C, B extends boolean>(fetcher: Fetcher<S, C, B>, tag: Tag<B>): {
+export declare function useFetcher<S, C, P>(getFetch: () => Fetch<S, C, P>, deps?: DependencyList): {
     isLoading: boolean;
-    data: C;
     hasError: boolean;
-    error: null;
+    error: any;
+    data: C;
+    storeData: C;
 };
 /**
  * Similar, in principal to React-Redux's `mapStateToProps()`
@@ -67,7 +70,7 @@ export declare function useFetcher<S, C, B extends boolean>(fetcher: Fetcher<S, 
  * }))(Todo);
  * ```
  */
-export declare function mapStateToProps<C, P extends {}, M extends {}, B extends boolean>(store: AvailableOps<any, C, B>, mapper: (state: C, ownProps: P) => M): (Component: React.ComponentType<M>) => {
+export declare function mapStateToProps<C, P extends {}, M extends {}, B extends boolean>(store: Store<any, C, B>, mapper: (state: C, ownProps: P) => M): (Component: React.ComponentType<M>) => {
     new (props: any): {
         sub: Unsubscribable;
         render(): JSX.Element;

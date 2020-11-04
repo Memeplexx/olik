@@ -44,7 +44,7 @@ store(s => s.todos.find(t => t.id === 2)!.text).replaceWith('something else');
 ```
 
 ## Enforcing the use of **tags** ##
-The debugging experience can be improved by requiring a 'tag' which identifies the source of each update within the devtools.  
+We can require that all updates are supplemented with a 'tag' which helps to identify the source of each update within the devtools.  
 ```Typescript
 const store = makeEnforceTags('my store', { some: { value: '' } });
 

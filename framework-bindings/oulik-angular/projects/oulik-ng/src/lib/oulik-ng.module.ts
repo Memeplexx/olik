@@ -1,12 +1,12 @@
 import { NgModule, NgZone } from '@angular/core';
-import { AvailableOps, Fetcher, listenToDevtoolsDispatch, Tag, Unsubscribable } from 'oulik';
-import { from, Observable } from 'rxjs';
+import { Fetch, listenToDevtoolsDispatch, Store, Unsubscribable } from 'oulik';
+import { Observable } from 'rxjs';
 import { shareReplay } from 'rxjs/operators';
 
 export * from 'oulik';
 
 export function select<S, C>(
-  store: AvailableOps<S, C, boolean>,
+  store: Store<S, C, boolean>,
 ) {
   return new Observable<C>((observer) => {
     observer.next(store.read());
@@ -17,30 +17,30 @@ export function select<S, C>(
   );
 }
 
-export function fetch<S, C, B extends boolean>(
-  fetcher: Fetcher<S, C, B>,
-  tag: Tag<B>,
+export function fetch<S, C, P>(
+  getFetch: () => Fetch<S, C, P>,
 ) {
   return new Observable<
-    { isLoading: boolean, data: C | null, hasError: boolean, error?: any }
-  >((observer) => {
+    { isLoading: boolean, data: C | null, hasError: boolean, error?: any, storeData: C | null }
+  >(observer => {
+    const fetchState = getFetch();
     const emitCurrentState = () => observer.next(({
-      isLoading: fetcher.status === 'resolving',
-      hasError: fetcher.status === 'error',
-      data: fetcher.store.read(),
-      error: fetcher.error,
+      isLoading: fetchState.status === 'resolving',
+      hasError: fetchState.status === 'rejected',
+      data: fetchState.data,
+      error: fetchState.error,
+      storeData: fetchState.store.read(),
     }));
     emitCurrentState();
-    let onChangeSubscription: Unsubscribable;
-    const statusChangeSubscription = fetcher.onStatusChange(() => {
+    let storeChangeSubscription: Unsubscribable | undefined;
+    const fetchChangeSubscription = fetchState.onChange(() => {
       emitCurrentState();
-      onChangeSubscription = fetcher.store.onChange(() => emitCurrentState());
+      storeChangeSubscription = fetchState.store.onChange(() => emitCurrentState());
     });
-    fetcher.fetch(tag);
     return () => {
-      statusChangeSubscription.unsubscribe();
-      if (onChangeSubscription) {
-        onChangeSubscription.unsubscribe();
+      fetchChangeSubscription.unsubscribe();
+      if (storeChangeSubscription) {
+        storeChangeSubscription.unsubscribe();
       }
     };
   }).pipe(
@@ -48,11 +48,23 @@ export function fetch<S, C, B extends boolean>(
   );
 }
 
-export function resolve<S, C, B extends boolean>(
-  fetcher: Fetcher<S, C, B>,
-  tag: Tag<B>,
+export function resolve<S, C, P>(
+  getFetch: () => Fetch<S, C, P>,
 ) {
-  return from(fetcher.fetch(tag));
+  return new Observable<C>(observer => {
+    const fetchState = getFetch();
+    const changeSubscription = fetchState.onChange(() => {
+      if (fetchState.status === 'resolved') {
+        observer.next(fetchState.data);
+        observer.complete();
+      } else if (fetchState.status === 'rejected') {
+        throw new Error(fetchState.error);
+      }
+    });
+    return () => {
+      changeSubscription.unsubscribe();
+    };
+  });
 }
 
 @NgModule()
