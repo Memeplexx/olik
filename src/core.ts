@@ -164,51 +164,76 @@ function makeInternal<S>(nameOrDevtoolsConfig: string | false | EnhancerOptions,
         error: any,
         lastFetch: number,
         status: FetcherStatus,
-        changeListeners: Array<(status: FetcherStatus) => Unsubscribable>,
+        changeListeners: Array<(fetch: Fetch<S, C, P>) => Unsubscribable>,
+        changeOnceListeners: Array<{ listener: (fetch: Fetch<S, C, P>) => Unsubscribable, unsubscribe: () => any }>,
         fetches: Array<Fetch<S, C, P>>,
       }>();
-      return (paramsOrTag: P | string | void, tag: string | void): Fetch<S, C, P> => {
+      const result = (paramsOrTag: P | string | void, tag: string | void): Fetch<S, C, P> => {
         const actualTag = supportsTags ? (tag || paramsOrTag) as string : undefined;
         const actualParams = (((supportsTags && tag) || (!supportsTags && paramsOrTag)) ? paramsOrTag : undefined) as Params<P>;
         const cacheItem = responseCache.get(actualParams) || responseCache.set(actualParams,
-          { data: undefined as any as C, error: undefined, lastFetch: 0, status: 'pristine', fetches: [], changeListeners: [] }).get(actualParams)!;
-        const cacheHasExpiredOrPromiseNeverCalled = (cacheItem.lastFetch + (specs.cacheFor || 0)) < Date.now();
+          { data: undefined as any as C, error: undefined, lastFetch: 0, status: 'pristine', fetches: [], changeListeners: [], changeOnceListeners: [] }).get(actualParams)!;
+        const cacheHasExpiredOrPromiseNotYetCalled = (cacheItem.lastFetch + (specs.cacheFor || 0)) < Date.now();
         const invalidateCache = () => {
           cacheItem.data = null as any as C;
           cacheItem.lastFetch = 0;
         }
         setTimeout(() => invalidateCache, specs.cacheFor); // free memory
-        if (cacheHasExpiredOrPromiseNeverCalled) {
+        const notifyCacheListeners = (notifyChangeOnceListeners: boolean) => {
+          cacheItem.changeListeners.forEach(changeListener => changeListener(createFetch()));
+          if (notifyChangeOnceListeners) {
+            cacheItem.changeOnceListeners.forEach(changeOnceListener => {
+              changeOnceListener.listener(createFetch());
+              changeOnceListener.unsubscribe();
+            });
+            cacheItem.changeOnceListeners.length = 0;
+          }
+        }
+        if (cacheHasExpiredOrPromiseNotYetCalled) {
           cacheItem.status = 'resolving';
           cacheItem.fetches.forEach(fetch => Object.assign<Fetch<S, C, P>, Partial<Fetch<S, C, P>>>(fetch, { status: cacheItem.status }));
-          cacheItem.changeListeners.forEach(changeListener => changeListener(cacheItem.status));
+          notifyCacheListeners(false);
+          let errorThatWasCaughtInPromise: any = null;
           specs.getData(actualParams)
             .then(value => {
-              cacheItem.lastFetch = Date.now();
-              if (specs.setData) {
-                specs.setData({
-                  data: deepCopy(value),
-                  tag: actualTag,
-                  params: actualParams,
-                  store: storeResult(selector),
-                });
-              } else {
-                const piece = storeResult(selector) as any as { replace: (c: C, tag: string | void) => void } & { replaceAll: (c: C, tag: string | void) => void };
-                if (piece.replaceAll) { piece.replaceAll(value, actualTag); } else { piece.replace(value, actualTag); }
+              try {
+                const valueFrozen = deepFreeze(deepCopy(value));
+                cacheItem.lastFetch = Date.now();
+                if (specs.setData) {
+                  specs.setData({
+                    data: valueFrozen,
+                    tag: actualTag,
+                    params: actualParams,
+                    store: storeResult(selector),
+                  });
+                } else {
+                  const piece = storeResult(selector) as any as { replace: (c: C, tag: string | void) => void } & { replaceAll: (c: C, tag: string | void) => void };
+                  if (piece.replaceAll) { piece.replaceAll(valueFrozen, actualTag); } else { piece.replace(valueFrozen, actualTag); }
+                }
+                cacheItem.data = valueFrozen;
+                cacheItem.error = null;
+                cacheItem.status = 'resolved';
+                cacheItem.fetches.forEach(fetch => Object.assign<Fetch<S, C, P>, Partial<Fetch<S, C, P>>>(fetch, { status: cacheItem.status, data: valueFrozen, error: cacheItem.error }));
+                notifyCacheListeners(true);
+              } catch (e) {
+                errorThatWasCaughtInPromise = e;
               }
-              cacheItem.data = deepFreeze(deepCopy(value));
-              cacheItem.error = null;
-              cacheItem.status = 'resolved';
-              cacheItem.fetches.forEach(fetch => Object.assign<Fetch<S, C, P>, Partial<Fetch<S, C, P>>>(fetch, { status: cacheItem.status, data: deepCopy(cacheItem.data), error: cacheItem.error }));
-              cacheItem.changeListeners.forEach(changeListener => changeListener(cacheItem.status));
             }).catch(error => {
-              cacheItem.error = error;
-              cacheItem.status = 'rejected';
-              cacheItem.fetches.forEach(fetch => Object.assign<Fetch<S, C, P>, Partial<Fetch<S, C, P>>>(fetch, { status: cacheItem.status, error }));
-              cacheItem.changeListeners.forEach(changeListener => changeListener(cacheItem.status));
+              try {
+                cacheItem.error = error;
+                cacheItem.status = 'rejected';
+                cacheItem.fetches.forEach(fetch => Object.assign<Fetch<S, C, P>, Partial<Fetch<S, C, P>>>(fetch, { status: cacheItem.status, error }));
+                notifyCacheListeners(true);
+              } catch (e) {
+                errorThatWasCaughtInPromise = e;
+              }
+            }).finally(() => {
+              if (errorThatWasCaughtInPromise) {
+                throw errorThatWasCaughtInPromise;
+              }
             });
         }
-        const fetch = {
+        const createFetch = () => ({
           data: cacheItem.data,
           fetchArg: actualParams,
           store: storeResult(selector),
@@ -219,10 +244,21 @@ function makeInternal<S>(nameOrDevtoolsConfig: string | false | EnhancerOptions,
             cacheItem.changeListeners.push(listener);
             return { unsubscribe: () => cacheItem.changeListeners.splice(cacheItem.changeListeners.findIndex(changeListener => changeListener === listener), 1) };
           },
-        } as Fetch<S, C, P>;
+          onChangeOnce: (listener: () => Unsubscribable) => {
+            const unsubscribe = () => cacheItem.changeOnceListeners.splice(cacheItem.changeOnceListeners.findIndex(changeOnceListener => changeOnceListener.listener === listener), 1);
+            cacheItem.changeOnceListeners.push({ listener, unsubscribe });
+            return { unsubscribe };
+          },
+          refetch: (paramsOrTag: P | string | void, tag: string | void) => {
+            invalidateCache();
+            return result(paramsOrTag, tag);
+          },
+        }) as Fetch<S, C, P>;
+        const fetch = createFetch();
         cacheItem.fetches.push(fetch);
         return fetch;
       }
+      return result;
     },
     onChange: (performAction: (selection: C) => any) => {
       changeListeners.set(performAction, selector);

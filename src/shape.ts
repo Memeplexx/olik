@@ -9,7 +9,23 @@ export interface Unsubscribable {
   unsubscribe: () => any,
 }
 
-export type Fetch<S, C, P> = { data: C, error: any, status: FetcherStatus, invalidateCache: () => any, onChange: (arg: () => any ) => Unsubscribable, store: Store<S, C, boolean>, fetchArg: Params<P> };
+export interface Fetch<S, C, P> { 
+  data: C;
+  error: any;
+  status: FetcherStatus;
+  store: Store<S, C, boolean>;
+  fetchArg: Params<P>;
+  invalidateCache: () => any;
+  onChange: (arg: (fetch: Fetch<S, C, P>) => any ) => Unsubscribable;
+  onChangeOnce: (arg: (fetch: Fetch<S, C, P>) => any ) => Unsubscribable;
+  refetch: (arg: P) => Fetch<S, C, P>;
+};
+
+export interface FetcherSpecs<S, C, B extends boolean, P> {
+  getData: P extends void ? (() => Promise<C>) : ((params: P) => Promise<C>),
+  setData?: (args: { store: Store<S, C, B>, data: C, params: Params<P>, tag: Tag<B> }) => any,
+  cacheFor?: number,
+};
 
 export type Fetcher<S, C, P, B extends boolean> = P extends void ? ((tag: Tag<B>) => Fetch<S, C, P>) : ((params: Params<P>, tag: Tag<B>) => Fetch<S, C, P>);
 
@@ -145,19 +161,14 @@ export type Store<S, C, B extends boolean> =
      * * caching request responses (optional).  
      * 
      * ```
-     * const todosFetcher = store(s => s.todos).createFetcher({
-     *   promise: () => fetchTodos(),
+     * const fetchTodos = store(s => s.todos).createFetcher({
+     *   promise: () => fetchTodosFromApi(),
      *   cacheForMillis: 1000 * 60,
      * })
-     * todosFetcher.fetch().then(result => console.log(results));
-     * todosFetcher.onStatusChange(status => console.log('status', status));
+     * fetchTodos().onChangeOnce(result => console.log(results.data));
      * ```
      */
-    createFetcher: <P = void>(fetcherSpecs: {
-      getData: P extends void ? (() => Promise<C>) : ((params: P) => Promise<C>),
-      setData?: (args: { store: Store<S, C, B>, data: C, params: Params<P>, tag: Tag<B> }) => any,
-      cacheFor?: number,
-    }) => Fetcher<S, C, P, B>,
+    createFetcher: <P = void>(fetcherSpecs: FetcherSpecs<S, C, B, P>) => Fetcher<S, C, P, B>,
   } & {
     /**
      * Listens to any updates on this node

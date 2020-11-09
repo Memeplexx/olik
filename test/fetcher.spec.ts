@@ -151,44 +151,42 @@ describe('Fetcher', () => {
     })
   })
 
-  // it('should cache fetches correctly with params', done => {
-  //   const initialState = {
-  //     array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
-  //   };
-  //   const store = make('store', initialState);
-  //   let numberOfTimesPromiseIsCalled = 0;
-  //   const fetchArray = store(s => s.array).createFetcher({
-  //     getData: (num: number) => new Promise<[{ id: number, value: string }]>(resolve => setTimeout(() => { numberOfTimesPromiseIsCalled++; resolve([{ id: num, value: 'dd' }]); }, 10)),
-  //     cacheFor: 10
-  //   })
-  //   fetchArray(2);
-  //   setTimeout(() => {
-  //     expect(store(s => s.array).read()).toEqual([{ id: 2, value: 'dd' }]);
-  //     expect(numberOfTimesPromiseIsCalled).toEqual(1);
-  //     done();
-  //   }, 5);
-  // })
+  it('should cache fetches correctly with params', done => {
+    const initialState = {
+      array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
+    };
+    const store = make('store', initialState);
+    let numberOfTimesPromiseIsCalled = 0;
+    const fetchArray = store(s => s.array).createFetcher({
+      getData: (num: number) => new Promise<[{ id: number, value: string }]>(resolve => setTimeout(() => { numberOfTimesPromiseIsCalled++; resolve([{ id: num, value: 'dd' }]); }, 10)),
+      cacheFor: 10
+    })
+    fetchArray(2).onChangeOnce(arg => {
+      expect(arg.data).toEqual([{ id: 2, value: 'dd' }]);
+      expect(store(s => s.array).read()).toEqual([{ id: 2, value: 'dd' }]);
+      expect(numberOfTimesPromiseIsCalled).toEqual(1);
+      done();
+    })
+  })
+
+  it('should be able to refetch', done => {
+    const initialState = {
+      object: { property: 'hello', property2: 'two' },
+    };
+    const store = make('store', initialState);
+    store(s => s.object.property).replaceWith('test');
+    const fetchProp = store(s => s.object.property).createFetcher({
+      getData: (arg: string) => new Promise<string>(resolve => setTimeout(() => resolve(arg), 10)),
+      cacheFor: 1000
+    });
+    fetchProp('test').onChangeOnce(fetchArg => {
+      expect(fetchArg.data).toEqual('test');
+      expect(store(s => s.object.property).read()).toEqual('test');
+      fetchArg.refetch('another').onChangeOnce(() => {
+        expect(store(s => s.object.property).read()).toEqual('another');
+        done();
+      })
+    });
+  })
 
 });
-
-
-// const initialState = {
-//   todos: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
-// };
-// const store = makeEnforceTags('store', initialState);
-// const fetchTodos = store(s => s.todos).createFetcher({
-//   getData: (num: number) => new Promise<[{ id: number, value: string }]>(resolve => setTimeout(() => resolve([{ id: num, value: 'dd' }]), 10)),
-//   cacheFor: 1000,
-// })
-
-
-// export function useFetcher<S, C, P, B extends boolean>(
-//   getFetch: Fetcher<S, C, P, B>,
-//   deps?: ReadonlyArray<any>,
-// ) {
-  
-// }
-
-// const page = 0;
-
-// const { storeData, responseData, responseError, isLoading } = useFetcher(() => fetchTodos(page, __filename), [page]);

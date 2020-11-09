@@ -72,7 +72,7 @@ export function useFetcher<S, C, P>(
     setResult(result => ({...result, storeData: fetch.store.read() }));
     let storeSubscription: Unsubscribable | undefined;
     const subscription = fetch.onChange(() => {
-      setResult(result => ({...result, isLoading: status === 'resolving', hasError: fetch.status === 'rejected', data: fetch.data, error: fetch.error, storeData: fetch.store.read() }));
+      setResult(result => ({...result, isLoading: status === 'resolving', hasError: fetch.status === 'rejected', error: fetch.error, data: fetch.data, storeData: fetch.store.read() }));
       storeSubscription = fetch.store.onChange(state => setResult(r => ({ ...r, storeData: state })))
     })
     return () => {
