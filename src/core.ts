@@ -1,6 +1,8 @@
 import { integrateStoreWithReduxDevtools } from './devtools';
+import { createFetcher } from './fetcher';
 import { Store, Derivation, EnhancerOptions, MappedDataTuple, FetcherStatus, Unsubscribable, Params, Tag, Fetch } from './shape';
 import { tests } from './tests';
+import { copyObject, createPathReader, deepCopy, deepFreeze, validateState } from './utils';
 
 /**
  * Creates a new store which, for typescript users, requires that users supply an additional 'tag' when performing a state update.
@@ -10,7 +12,7 @@ import { tests } from './tests';
  * 
  * FOR EXAMPLE:
  * ```
- * const store = makeEnforceTags('store', { todos: Array<{id: number, text: string}>() });
+ * const store = makeEnforceTags('store', { todos: Array<{ id: number, text: string }>() });
  * 
  * // Note that when updating state, we are now required to supply a string as the last argument (in this case 'TodoDetailComponent')
  * store(s => s.todos)
@@ -29,7 +31,7 @@ export function makeEnforceTags<S>(nameOrDevtoolsConfig: string | false | Enhanc
  * 
  * FOR EXAMPLE:
  * ```
- * const store = make('store', { todos: Array<{id: number, text: string}>() });
+ * const store = make('store', { todos: Array<{ id: number, text: string }>() });
  * ```
  */
 export function make<S>(nameOrDevtoolsConfig: string | false | EnhancerOptions, state: S) {
@@ -154,129 +156,7 @@ function makeInternal<S>(nameOrDevtoolsConfig: string | false | EnhancerOptions,
       }
     }),
     reset: (tag?: string) => replace(selector, 'reset')(selector(initialState), tag),
-    createFetcher: <P = void>(specs: {
-      getData: ((params: Params<P>) => Promise<C>) | (() => Promise<C>),
-      setData?: (args: { store: Store<S, C, boolean>, data: C, params: Params<P>, tag?: string }) => any,
-      cacheFor?: number,
-    }) => {
-      const responseCache = new Map<any, {
-        data: C,
-        error: any,
-        lastFetch: number,
-        status: FetcherStatus,
-        changeListeners: Array<(fetch: Fetch<S, C, P>) => Unsubscribable>,
-        changeOnceListeners: Array<{ listener: (fetch: Fetch<S, C, P>) => Unsubscribable, unsubscribe: () => any }>,
-        cacheExpiredListeners: Array<(fetch: Fetch<S, C, P>) => Unsubscribable>,
-        cacheExpiredOnceListeners: Array<{ listener: (fetch: Fetch<S, C, P>) => Unsubscribable, unsubscribe: () => any }>,
-        fetches: Array<Fetch<S, C, P>>,
-      }>();
-      const result = (paramsOrTag: P | string | void, tag: string | void): Fetch<S, C, P> => {
-        const actualTag = supportsTags ? (tag || paramsOrTag) as string : undefined;
-        const actualParams = (((supportsTags && tag) || (!supportsTags && paramsOrTag)) ? paramsOrTag : undefined) as Params<P>;
-        const cacheItem = responseCache.get(actualParams) || responseCache.set(actualParams,
-          { data: undefined as any as C, error: undefined, lastFetch: 0, status: 'pristine', fetches: [], changeListeners: [], changeOnceListeners: [], cacheExpiredListeners: [], cacheExpiredOnceListeners: [] }).get(actualParams)!;
-        const cacheHasExpiredOrPromiseNotYetCalled = (cacheItem.lastFetch + (specs.cacheFor || 0)) < Date.now();
-        const invalidateCache = () => {
-          cacheItem.data = null as any as C;
-          cacheItem.lastFetch = 0;
-        }
-        const notifyChangeListeners = (notifyChangeOnceListeners: boolean) => {
-          cacheItem.changeListeners.forEach(changeListener => changeListener(createFetch()));
-          if (notifyChangeOnceListeners) {
-            cacheItem.changeOnceListeners.forEach(changeOnceListener => {
-              changeOnceListener.listener(createFetch());
-              changeOnceListener.unsubscribe();
-            });
-          }
-        }
-        if (cacheHasExpiredOrPromiseNotYetCalled) {
-          cacheItem.status = 'resolving';
-          cacheItem.fetches.forEach(fetch => Object.assign<Fetch<S, C, P>, Partial<Fetch<S, C, P>>>(fetch, { status: cacheItem.status }));
-          notifyChangeListeners(false);
-          let errorThatWasCaughtInPromise: any = null;
-          specs.getData(actualParams)
-            .then(value => {
-              try {
-                const valueFrozen = deepFreeze(deepCopy(value));
-                cacheItem.lastFetch = Date.now();
-                if (specs.setData) {
-                  specs.setData({
-                    data: valueFrozen,
-                    tag: actualTag,
-                    params: actualParams,
-                    store: storeResult(selector),
-                  });
-                } else {
-                  const piece = storeResult(selector) as any as { replace: (c: C, tag: string | void) => void } & { replaceAll: (c: C, tag: string | void) => void };
-                  if (piece.replaceAll) { piece.replaceAll(valueFrozen, actualTag); } else { piece.replace(valueFrozen, actualTag); }
-                }
-                cacheItem.data = valueFrozen;
-                cacheItem.error = null;
-                cacheItem.status = 'resolved';
-                cacheItem.fetches.forEach(fetch => Object.assign<Fetch<S, C, P>, Partial<Fetch<S, C, P>>>(fetch, { status: cacheItem.status, data: valueFrozen, error: cacheItem.error }));
-                notifyChangeListeners(true);
-                setTimeout(() => {
-                  invalidateCache();  // free memory
-                  cacheItem.cacheExpiredListeners.forEach(listener => listener(createFetch()));
-                  cacheItem.cacheExpiredOnceListeners.forEach(cacheOnceListener => {
-                    cacheOnceListener.listener(createFetch());
-                    cacheOnceListener.unsubscribe();
-                  });
-                }, specs.cacheFor);
-              } catch (e) {
-                errorThatWasCaughtInPromise = e;
-              }
-            }).catch(error => {
-              try {
-                cacheItem.error = error;
-                cacheItem.status = 'rejected';
-                cacheItem.fetches.forEach(fetch => Object.assign<Fetch<S, C, P>, Partial<Fetch<S, C, P>>>(fetch, { status: cacheItem.status, error }));
-                notifyChangeListeners(true);
-              } catch (e) {
-                errorThatWasCaughtInPromise = e;
-              }
-            }).finally(() => {
-              if (errorThatWasCaughtInPromise) {
-                throw errorThatWasCaughtInPromise;
-              }
-            });
-        }
-        const createFetch = () => ({
-          data: cacheItem.data,
-          fetchArg: actualParams,
-          store: storeResult(selector),
-          error: cacheItem.error,
-          status: cacheItem.status,
-          invalidateCache,
-          refetch: (paramsOrTag: P | string | void, tag: string | void) => {
-            invalidateCache();
-            return result(paramsOrTag, tag);
-          },
-          onChange: (listener: () => Unsubscribable) => {
-            cacheItem.changeListeners.push(listener);
-            return { unsubscribe: () => cacheItem.changeListeners.splice(cacheItem.changeListeners.findIndex(changeListener => changeListener === listener), 1) };
-          },
-          onChangeOnce: (listener: () => Unsubscribable) => {
-            const unsubscribe = () => cacheItem.changeOnceListeners.splice(cacheItem.changeOnceListeners.findIndex(changeOnceListener => changeOnceListener.listener === listener), 1);
-            cacheItem.changeOnceListeners.push({ listener, unsubscribe });
-            return { unsubscribe };
-          },
-          onCacheExpired: (listener: () => Unsubscribable) => {
-            cacheItem.cacheExpiredListeners.push(listener);
-            return { unsubscribe: () => cacheItem.cacheExpiredListeners.splice(cacheItem.cacheExpiredListeners.findIndex(expiredListener => expiredListener === listener), 1) };
-          },
-          onCacheExpiredOnce: (listener: () => Unsubscribable) => {
-            const unsubscribe = () => cacheItem.cacheExpiredOnceListeners.splice(cacheItem.cacheExpiredOnceListeners.findIndex(expiredOnceListener => expiredOnceListener.listener === listener), 1);
-            cacheItem.cacheExpiredOnceListeners.push({ listener, unsubscribe });
-            return { unsubscribe };
-          },
-        }) as Fetch<S, C, P>;
-        const fetch = createFetch();
-        cacheItem.fetches.push(fetch);
-        return fetch;
-      }
-      return result;
-    },
+    createFetcher: createFetcher(storeResult as any as <C = S>(selector?: (s: S) => C) => Store<S, C, any>, supportsTags, selector),
     onChange: (performAction: (selection: C) => any) => {
       changeListeners.set(performAction, selector);
       return { unsubscribe: () => changeListeners.delete(performAction) };
@@ -377,150 +257,4 @@ function makeInternal<S>(nameOrDevtoolsConfig: string | false | EnhancerOptions,
   }
 
   return storeResult;
-}
-
-function copyObject<T>(oldObj: T, newObj: T, segs: string[], action: (newNode: any) => any): any {
-  const seg = (segs as (keyof T)[]).shift();
-  if (seg) {
-    if (!isNaN(seg as any)) { // must be an array key
-      return (oldObj as any as any[]).map((e, i) => +seg === i
-        ? { ...(oldObj as any)[i], ...copyObject((oldObj as any)[i], (newObj as any)[i], segs, action) }
-        : e);
-    }
-    return { ...oldObj, [seg]: copyObject(oldObj[seg], newObj[seg], segs, action) };
-  } else {
-    return action(oldObj);
-  }
-}
-
-function createPathReader<S extends Object>(state: S) {
-  return (() => {
-    const mutableStateCopy = deepCopy(state);
-    const pathSegments = new Array<string>();
-    const initialize = (state: S): S => {
-      if (typeof (state) !== 'object') { // may happen if we have a top-level primitive
-        return null as any as S;
-      }
-      return new Proxy(state, {
-        get: function (target, prop: any) {
-          const val = (target as any)[prop];
-          if (val !== null && typeof (val) === 'object') {
-            pathSegments.push(prop);
-            return initialize(val);
-          } else if (typeof (val) === 'function') {
-            return function (...args: any[]) {
-              if (prop === 'find' && Array.isArray(target)) {
-                const found = val.apply(target, args);
-                if (found) {
-                  const indice = (target as unknown as any[]).findIndex(e => e === found);
-                  pathSegments.push(indice.toString());
-                }
-                return initialize(found);
-              } else {
-                throw new Error(
-                  `'${prop}()' is not allowed. If you're trying to filter elements, rather use a library function eg. 'store(s => s.todos).removeWhere(e => e.status === 'done')'`);
-              }
-            };
-          }
-          pathSegments.push(prop);
-          return val;
-        },
-      });
-    }
-    const proxy = initialize(mutableStateCopy);
-    const readSelector = <C>(selector: (state: S) => C) => {
-      pathSegments.length = 0;
-      selector(proxy);
-      return pathSegments;
-    }
-    return { readSelector, mutableStateCopy, pathSegments }
-  })();
-}
-
-function deepFreeze(o: any) {
-  Object.freeze(o);
-  Object.getOwnPropertyNames(o).forEach(prop => {
-    if (o.hasOwnProperty(prop)
-      && o[prop] !== null
-      && (typeof (o[prop]) === 'object' || typeof (o[prop]) === 'function')
-      && !Object.isFrozen(o[prop])) {
-      deepFreeze(o[prop]);
-    }
-  });
-  return o;
-}
-
-export function deepCopy(o: any): any {
-  let newO;
-  let i: any;
-  if (typeof o !== 'object') { return o; }
-  if (!o) { return o; }
-  if ('[object Array]' === Object.prototype.toString.apply(o)) {
-    newO = [];
-    for (i = 0; i < o.length; i += 1) {
-      newO[i] = deepCopy(o[i]);
-    }
-    return newO;
-  }
-  newO = {} as any;
-  for (i in o) {
-    if (o.hasOwnProperty(i)) {
-      newO[i] = deepCopy(o[i]);
-    }
-  }
-  return newO;
-}
-
-/**
- * Takes an arbitrary number of state selections as input, and performs an expensive calculation only when one of those inputs change value.  
- * FOR EXAMPLE:
- * ```Typescript
- * const memo = deriveFrom(
- *   store(s => s.some.property),
- *   store(s => s.some.other.property),
- * ).usingExpensiveCalc((someProperty, someOtherProperty) => {
- *   // perform some expensive calculation and return the result
- * });
- * 
- * const memoizedResult = memo.read();
- * ```
- */
-export function deriveFrom<X extends Store<any, any, any>[]>(...args: X) {
-  let previousParams = new Array<any>();
-  let previousResult = null as any;
-  return {
-    usingExpensiveCalc: <R>(calculation: (...inputs: MappedDataTuple<X>) => R) => {
-      const getValue = () => {
-        const params = (args as Array<Store<any, any, any>>).map(arg => arg.read());
-        if (previousParams.length && params.every((v, i) => v === previousParams[i])) {
-          return previousResult;
-        }
-        const result = calculation(...(params as Store<any, any, any>));
-        previousParams = params;
-        previousResult = result;
-        return result;
-      }
-      const changeListeners = new Set<(value: R) => any>();
-      return {
-        read: () => getValue(),
-        onChange: (listener: (value: R) => any) => {
-          changeListeners.add(listener);
-          const unsubscribables: Unsubscribable[] = (args as Array<Store<any, any, any>>)
-            .map(ops => ops.onChange(() => listener(getValue())));
-          return {
-            unsubscribe: () => {
-              unsubscribables.forEach(u => u.unsubscribe());
-              changeListeners.delete(listener);
-            }
-          }
-        }
-      } as Derivation<R>;
-    }
-  }
-}
-
-function validateState(state: any) {
-  if (typeof (state) === 'function') { throw new Error('State cannot contain any functions') }
-  if (typeof (state) !== 'object') { return; }
-  Object.keys(state).forEach(key => validateState(state[key]));
 }

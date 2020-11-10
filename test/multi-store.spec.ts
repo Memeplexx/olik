@@ -1,5 +1,4 @@
-import { make } from '../src';
-import { deriveFrom } from '../src/core';
+import { deriveFrom, make } from '../src';
 import { tests } from '../src/tests';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 

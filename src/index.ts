@@ -1,3 +1,4 @@
-export { make, makeEnforceTags, deriveFrom } from './core';
+export { make, makeEnforceTags } from './core';
+export { deriveFrom } from './memoization';
 export * from './shape';
 export * from './devtools';

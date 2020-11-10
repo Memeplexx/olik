@@ -57,8 +57,24 @@ export interface Fetch<S, C, P> {
 };
 
 export interface FetcherSpecs<S, C, B extends boolean, P> {
+  /**
+   * A no-arg function returning a promise to fetch asynchronous data, for example:
+   * ```
+   * getData: () => fetchThingsFromApi(),
+   * ```
+   */
   getData: P extends void ? (() => Promise<C>) : ((params: P) => Promise<C>),
-  setData?: (args: { store: Store<S, C, B>, data: C, params: Params<P>, tag: Tag<B> }) => any,
+  /**
+   * By default, fetchers will simply replace all data associated with part of the store they are bound to.
+   * However, this behavior can be overriden here. For example, maybe you want to append resolved data to existing data as follows:
+   * ```
+   * setData: arg => arg.store.addAfter(arg.data)
+   * ```
+   */
+  setData?: (arg: { store: Store<S, C, B>, data: C, params: Params<P>, tag: Tag<B> }) => any,
+  /**
+   * Specify for how long, in milliseconds, you want the library to cache fetch responses.
+   */
   cacheFor?: number,
 };
 

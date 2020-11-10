@@ -1,4 +1,5 @@
-import { deriveFrom, make, makeEnforceTags } from '../src/core';
+import { make, makeEnforceTags } from '../src/core';
+import { deriveFrom } from '../src/memoization';
 import { tests } from '../src/tests';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
