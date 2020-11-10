@@ -72,7 +72,7 @@ describe('Fetcher', () => {
     let numberOfTimesPromiseIsCalled = 0;
     const fetchArray = store(s => s.array).createFetcher({
       getData: () => new Promise<[{ id: number, value: string }]>(resolve => setTimeout(() => { numberOfTimesPromiseIsCalled++; resolve([{ id: 2, value: 'dd' }]); }, 10)),
-      cacheFor: 20
+      cacheFor: 50
     })
     const fetchArrayState = fetchArray();
     setTimeout(() => {
@@ -83,7 +83,7 @@ describe('Fetcher', () => {
         expect(numberOfTimesPromiseIsCalled).toEqual(2);
         done();
       });
-    }, 10);
+    }, 20);
   });
 
   it('should listen to status changes', done => {
