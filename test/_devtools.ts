@@ -4,7 +4,7 @@ export const windowAugmentedWithReduxDevtoolsImpl = {
   __REDUX_DEVTOOLS_EXTENSION__: new class {
     connect = (options: EnhancerOptions) => ({
       init: (state: any) => null,
-      subscribe: (listener: (message: { type: string, payload: any, state?: any }) => any) => this._subscribers.push(listener),
+      subscribe: (listener: (message: { type: string, payload: any, state?: any, source: any }) => any) => this._subscribers.push(listener),
       unsubscribe: () => null,
       send: () => null,
     });
