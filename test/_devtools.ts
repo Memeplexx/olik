@@ -13,4 +13,4 @@ export const windowAugmentedWithReduxDevtoolsImpl = {
     _subscribers = new Array<(message: { type: string, payload: any, state?: any, source: any }) => any>();
     _mockInvokeSubscription = (message: { type: string, payload: any, state?: any, source: any }) => this._subscribers.forEach(s => s(message));
   }(),
-} as WindowAugmentedWithReduxDevtools;
+} as unknown as WindowAugmentedWithReduxDevtools;
