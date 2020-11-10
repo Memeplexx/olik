@@ -435,8 +435,8 @@ export interface WindowAugmentedWithReduxDevtools {
     };
     disconnect: () => any;
     send: (action: { type: string, payload?: any }, state: any, options: EnhancerOptions) => any;
-    _mockInvokeSubscription: (message: { type: string, payload: any, state?: any }) => any,
-    _subscribers: Array<(message: { type: string, payload: any, state?: any }) => any>,
+    _mockInvokeSubscription: (message: { type: string, payload: any, state?: any, source: any }) => any,
+    _subscribers: Array<(message: { type: string, payload: any, state?: any, source: any }) => any>,
   }
 }
 
