@@ -17,7 +17,7 @@ describe('Fetcher', () => {
     });
     const fetchArrayState = fetchArray();
     expect(fetchArrayState.status).toEqual('resolving');
-    fetchArrayState.onChange(() => {
+    fetchArrayState.onChangeOnce(() => {
       expect(store(s => s.array).read()).toEqual([{ id: 2, value: 'dd' }]);
       done();
     })
@@ -28,19 +28,17 @@ describe('Fetcher', () => {
       array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
     };
     const store = make('store', initialState);
-
     let numberOfTimesPromiseIsCalled = 0;
     const fetchArray = store(s => s.array).createFetcher({
       getData: () => new Promise<[{ id: number, value: string }]>(resolve => setTimeout(() => { numberOfTimesPromiseIsCalled++; resolve([{ id: 2, value: 'dd' }]); }, 10)),
       cacheFor: 30
     })
-    fetchArray();
-    setTimeout(() => {
+    fetchArray().onChangeOnce(arg => {
       fetchArray();
       expect(store(s => s.array).read()).toEqual([{ id: 2, value: 'dd' }]);
       expect(numberOfTimesPromiseIsCalled).toEqual(1);
       done();
-    }, 20);
+    })
   })
 
   it('should expire cache fetches correctly', done => {
@@ -50,18 +48,16 @@ describe('Fetcher', () => {
     const store = make('store', initialState);
     let numberOfTimesPromiseIsCalled = 0;
     const fetchArray = store(s => s.array).createFetcher({
-      getData: () => new Promise<[{ id: number, value: string }]>(resolve => setTimeout(() => { numberOfTimesPromiseIsCalled++; resolve([{ id: 2, value: 'dd' }]); }, 10)),
+      getData: () => { return new Promise<[{ id: number, value: string }]>(resolve => setTimeout(() => { numberOfTimesPromiseIsCalled++; resolve([{ id: 2, value: 'dd' }]); }, 10))},
       cacheFor: 10
     })
-    fetchArray();
-    setTimeout(() => {
-      const fetchArrayState = fetchArray();
-      fetchArrayState.onChange(() => {
+    fetchArray().onCacheExpiredOnce(arg => {
+      fetchArray().onChangeOnce(() => {
         expect(store(s => s.array).read()).toEqual([{ id: 2, value: 'dd' }]);
         expect(numberOfTimesPromiseIsCalled).toEqual(2);
         done();
       });
-    }, 30);
+    })
   })
 
   it('should invalidate cache fetches correctly', done => {
@@ -73,17 +69,15 @@ describe('Fetcher', () => {
     const fetchArray = store(s => s.array).createFetcher({
       getData: () => new Promise<[{ id: number, value: string }]>(resolve => setTimeout(() => { numberOfTimesPromiseIsCalled++; resolve([{ id: 2, value: 'dd' }]); }, 10)),
       cacheFor: 50
-    })
-    const fetchArrayState = fetchArray();
-    setTimeout(() => {
-      fetchArrayState.invalidateCache();
-      fetchArray();
-      fetchArrayState.onChange(() => {
+    });
+    fetchArray().onChangeOnce(arg => {
+      arg.invalidateCache();
+      fetchArray().onChangeOnce(arg2 => {
         expect(store(s => s.array).read()).toEqual([{ id: 2, value: 'dd' }]);
         expect(numberOfTimesPromiseIsCalled).toEqual(2);
         done();
       });
-    }, 20);
+    });
   });
 
   it('should listen to status changes', done => {
@@ -96,7 +90,7 @@ describe('Fetcher', () => {
     })
     const fetchArrayState = fetchArray();
     expect(fetchArrayState.status).toEqual('resolving');
-    fetchArrayState.onChange(() => {
+    fetchArrayState.onChangeOnce(() => {
       expect(fetchArrayState.status).toEqual('resolved');
       done();
     })
@@ -112,7 +106,7 @@ describe('Fetcher', () => {
       cacheFor: 20
     })
     const fetchArrayState = fetchArray();
-    fetchArrayState.onChange(() => {
+    fetchArrayState.onChangeOnce(() => {
       expect(fetchArrayState.status).toEqual('rejected');
       done();
     })
@@ -129,7 +123,7 @@ describe('Fetcher', () => {
     })
     const tag = 'mytag';
     const fetchArrayState = fetchArray(tag);
-    fetchArrayState.onChange(() => {
+    fetchArrayState.onChangeOnce(() => {
       expect(store(s => s.array).read()).toEqual([{ id: 2, value: 'dd' }]);
       expect(tests.currentAction.type).toEqual(`array.replaceAll() [${tag}]`)
       done();
@@ -145,7 +139,7 @@ describe('Fetcher', () => {
       getData: (num: number) => new Promise<[{ id: number, value: string }]>(resolve => setTimeout(() => resolve([{ id: num, value: 'dd' }]), 10)),
     })
     const fetchArrayState = fetchArray(2);
-    fetchArrayState.onChange(() => {
+    fetchArrayState.onChangeOnce(() => {
       expect(store(s => s.array).read()).toEqual([{ id: 2, value: 'dd' }]);
       done();
     })

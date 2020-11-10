@@ -10,14 +10,49 @@ export interface Unsubscribable {
 }
 
 export interface Fetch<S, C, P> { 
+  /**
+   * The current resolved data, if any.
+   */
   data: C;
+  /**
+   * The current rejection, if any.
+   */
   error: any;
+  /**
+   * The current status. Can be observed using onChange() and onChangeOnce().
+   */
   status: FetcherStatus;
+  /**
+   * The store associated with this fetch
+   */
   store: Store<S, C, boolean>;
+  /**
+   * The argument that was used in the request (if any)
+   */
   fetchArg: Params<P>;
+  /**
+   * Clears data from the cache (not the store) so that the next time data it requested, it is also re-fetched
+   */
   invalidateCache: () => any;
-  onChange: (arg: (fetch: Fetch<S, C, P>) => any ) => Unsubscribable;
-  onChangeOnce: (arg: (fetch: Fetch<S, C, P>) => any ) => Unsubscribable;
+  /**
+   * Takes a function that will be invoked whenever the status changes
+   */
+  onChange: (listener: (fetch: Fetch<S, C, P>) => any ) => Unsubscribable;
+  /**
+   * Takes a function that will be invoked only once, when the status next changes
+   */
+  onChangeOnce: (listener: (fetch: Fetch<S, C, P>) => any ) => Unsubscribable;
+  /**
+   * Takes a function that will be invoked whenever the cache expires
+   */
+  onCacheExpired: (listener: (fetch: Fetch<S, C, P>) => any) => Unsubscribable;
+  /**
+   * Takes a function that will only be invoked only once, when the cache next expires
+   */
+  onCacheExpiredOnce: (listener: (fetch: Fetch<S, C, P>) => any) => Unsubscribable;
+  /**
+   * Invalidates the cache and re-fetches
+   */
   refetch: (arg: P) => Fetch<S, C, P>;
 };
 

@@ -22,7 +22,7 @@ describe('Perf', () => {
       },
     };
     const before = performance.now();
-    for (let i = 0; i < 1000; i++) {
+    for (let i = 0; i < 100; i++) {
       object.anotherProp.some.deeply.nested.number++;
     }
     console.log(`Native: ${performance.now() - before}`);
@@ -73,7 +73,7 @@ describe('Perf', () => {
     store(s => s.array).onChange(e => null);
     store(s => s.array2).onChange(e => null);
     const before = performance.now();
-    for (let i = 0; i < 1000; i++) {
+    for (let i = 0; i < 100; i++) {
       store(s => s.anotherProp.some.deeply.nested.number).replaceWith(
         store(s => s.anotherProp.some.deeply.nested.number).read() + 1
       );
@@ -85,7 +85,7 @@ describe('Perf', () => {
     const initialState = { height: 0, width: 0 };
     const store = make('store', initialState)
     const before = performance.now();
-    for (let i = 0; i < 1000; i++) {
+    for (let i = 0; i < 100; i++) {
       store(s => s.width).replaceWith(
         store(s => s.width).read() + 1
       );
@@ -137,7 +137,7 @@ describe('Perf', () => {
     };
     let nested = fromJS(initialState);
     const before = performance.now();
-    for (let i = 0; i < 1000; i++) {
+    for (let i = 0; i < 100; i++) {
       nested = nested.setIn(['anotherProp', 'some', 'deeply', 'nested', 'number'], (nested.toJS() as typeof initialState).anotherProp.some.deeply.nested.number + 1);
       nested.toJS();
     }
@@ -187,7 +187,7 @@ describe('Perf', () => {
       })),
     }
     const before = performance.now();
-    for (let i = 0; i < 1000; i++) {
+    for (let i = 0; i < 100; i++) {
       state = produce(state, draft => {
         draft.anotherProp.some.deeply.nested.number = state.anotherProp.some.deeply.nested.number + 1;
       });
@@ -198,7 +198,7 @@ describe('Perf', () => {
   it('should test native array push perf', () => {
     const state = ['one', 'two'];
     const before = performance.now();
-    for (let i = 0; i < 1000; i++) {
+    for (let i = 0; i < 100; i++) {
       state.push('three');
     }
     console.log(`native array push: ${performance.now() - before}`);
@@ -208,7 +208,7 @@ describe('Perf', () => {
     const state = ['one', 'two'];
     const store = make('store', state);
     const before = performance.now();
-    for (let i = 0; i < 1000; i++) {
+    for (let i = 0; i < 100; i++) {
       store().addAfter(['three']);
     }
     console.log(`Oulik array push: ${performance.now() - before}`);
@@ -218,7 +218,7 @@ describe('Perf', () => {
     let state = ['one', 'two'];
     let nested = fromJS(state);
     const before = performance.now();
-    for (let i = 0; i < 1000; i++) {
+    for (let i = 0; i < 100; i++) {
       nested = nested.push('three');
       nested.toJS();
     }
@@ -228,7 +228,7 @@ describe('Perf', () => {
   it('should test Immer array push perf', () => {
     let state = ['one', 'two'];
     const before = performance.now();
-    for (let i = 0; i < 1000; i++) {
+    for (let i = 0; i < 100; i++) {
       state = produce(state, draft => {
         draft.push('three');
       });
