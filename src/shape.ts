@@ -9,6 +9,19 @@ export interface Unsubscribable {
   unsubscribe: () => any,
 }
 
+
+export type DeepReadonly<T> =
+    T extends (infer R)[] ? DeepReadonlyArray<R> :
+    T extends Function ? T :
+    T extends object ? DeepReadonlyObject<T> :
+    T;
+
+interface DeepReadonlyArray<T> extends ReadonlyArray<DeepReadonly<T>> {}
+
+type DeepReadonlyObject<T> = {
+  readonly [P in keyof T]: DeepReadonly<T[P]>;
+};
+
 export interface Fetch<S, C, P> { 
   /**
    * The current resolved data, if any.
@@ -81,7 +94,7 @@ export interface FetcherSpecs<S, C, B extends boolean, P> {
 export type Fetcher<S, C, P, B extends boolean> = P extends void ? ((tag: Tag<B>) => Fetch<S, C, P>) : ((params: Params<P>, tag: Tag<B>) => Fetch<S, C, P>);
 
 export type Store<S, C, B extends boolean> =
-  (C extends undefined ? any : C extends Array<any> ? {
+  (C extends undefined ? any : C extends DeepReadonlyArray<any> ? {
     /**
      * Append elements to the end of array
      * ```
@@ -233,7 +246,7 @@ export type Store<S, C, B extends boolean> =
     /**
      * @returns the current state
      */
-    read: () => C,
+    read: () => DeepReadonly<C>,
     /**
      * Reverts the current state to how it was when the store was initialized
      */
@@ -426,3 +439,4 @@ export interface WindowAugmentedWithReduxDevtools {
     _subscribers: Array<(message: { type: string, payload: any, state?: any }) => any>,
   }
 }
+

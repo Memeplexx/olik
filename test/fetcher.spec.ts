@@ -1,4 +1,5 @@
 import { make, makeEnforceTags } from '../src';
+import { createFetcher } from '../src/fetcher';
 import { tests } from '../src/tests';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
@@ -32,7 +33,7 @@ describe('Fetcher', () => {
     const fetchArray = store(s => s.array).createFetcher({
       getData: () => new Promise<[{ id: number, value: string }]>(resolve => setTimeout(() => { numberOfTimesPromiseIsCalled++; resolve([{ id: 2, value: 'dd' }]); }, 10)),
       cacheFor: 30
-    })
+    });
     fetchArray().onChangeOnce(arg => {
       fetchArray();
       expect(store(s => s.array).read()).toEqual([{ id: 2, value: 'dd' }]);
@@ -50,7 +51,7 @@ describe('Fetcher', () => {
     const fetchArray = store(s => s.array).createFetcher({
       getData: () => { return new Promise<[{ id: number, value: string }]>(resolve => setTimeout(() => { numberOfTimesPromiseIsCalled++; resolve([{ id: 2, value: 'dd' }]); }, 10))},
       cacheFor: 10
-    })
+    });
     fetchArray().onCacheExpiredOnce(arg => {
       fetchArray().onChangeOnce(() => {
         expect(store(s => s.array).read()).toEqual([{ id: 2, value: 'dd' }]);
@@ -87,13 +88,13 @@ describe('Fetcher', () => {
     const store = make('store', initialState);
     const fetchArray = store(s => s.array).createFetcher({
       getData: () => new Promise<[{ id: number, value: string }]>(resolve => setTimeout(() => resolve([{ id: 2, value: 'dd' }]), 10)),
-    })
+    });
     const fetchArrayState = fetchArray();
     expect(fetchArrayState.status).toEqual('resolving');
     fetchArrayState.onChangeOnce(() => {
       expect(fetchArrayState.status).toEqual('resolved');
       done();
-    })
+    });
   })
 
   it('should handle errors correctly', done => {
@@ -104,12 +105,12 @@ describe('Fetcher', () => {
     const fetchArray = store(s => s.array).createFetcher({
       getData: () => new Promise<[{ id: number, value: string }]>((_, reject) => setTimeout(() => reject('Woops'), 10)),
       cacheFor: 20
-    })
+    });
     const fetchArrayState = fetchArray();
     fetchArrayState.onChangeOnce(() => {
       expect(fetchArrayState.status).toEqual('rejected');
       done();
-    })
+    });
   })
 
   it('should work with tags correctly', done => {
@@ -120,14 +121,14 @@ describe('Fetcher', () => {
     const fetchArray = store(s => s.array).createFetcher({
       getData: () => new Promise<[{ id: number, value: string }]>(resolve => setTimeout(() => resolve([{ id: 2, value: 'dd' }]), 10)),
       cacheFor: 100,
-    })
+    });
     const tag = 'mytag';
     const fetchArrayState = fetchArray(tag);
     fetchArrayState.onChangeOnce(() => {
       expect(store(s => s.array).read()).toEqual([{ id: 2, value: 'dd' }]);
       expect(tests.currentAction.type).toEqual(`array.replaceAll() [${tag}]`)
       done();
-    })
+    });
   })
 
   it('should work with params', done => {
@@ -137,12 +138,12 @@ describe('Fetcher', () => {
     const store = make('store', initialState);
     const fetchArray = store(s => s.array).createFetcher({
       getData: (num: number) => new Promise<[{ id: number, value: string }]>(resolve => setTimeout(() => resolve([{ id: num, value: 'dd' }]), 10)),
-    })
+    });
     const fetchArrayState = fetchArray(2);
     fetchArrayState.onChangeOnce(() => {
       expect(store(s => s.array).read()).toEqual([{ id: 2, value: 'dd' }]);
       done();
-    })
+    });
   })
 
   it('should cache fetches correctly with params', done => {
@@ -154,13 +155,13 @@ describe('Fetcher', () => {
     const fetchArray = store(s => s.array).createFetcher({
       getData: (num: number) => new Promise<[{ id: number, value: string }]>(resolve => setTimeout(() => { numberOfTimesPromiseIsCalled++; resolve([{ id: num, value: 'dd' }]); }, 10)),
       cacheFor: 10
-    })
+    });
     fetchArray(2).onChangeOnce(arg => {
       expect(arg.data).toEqual([{ id: 2, value: 'dd' }]);
       expect(store(s => s.array).read()).toEqual([{ id: 2, value: 'dd' }]);
       expect(numberOfTimesPromiseIsCalled).toEqual(1);
       done();
-    })
+    });
   })
 
   it('should be able to refetch', done => {
@@ -179,7 +180,7 @@ describe('Fetcher', () => {
       fetchArg.refetch('another').onChangeOnce(() => {
         expect(store(s => s.object.property).read()).toEqual('another');
         done();
-      })
+      });
     });
   })
 

@@ -1,6 +1,6 @@
 import { integrateStoreWithReduxDevtools } from './devtools';
 import { createFetcher } from './fetcher';
-import { Store, Derivation, EnhancerOptions, MappedDataTuple, FetcherStatus, Unsubscribable, Params, Tag, Fetch } from './shape';
+import { Store, Derivation, EnhancerOptions, MappedDataTuple, FetcherStatus, Unsubscribable, Params, Tag, Fetch, DeepReadonly } from './shape';
 import { tests } from './tests';
 import { copyObject, createPathReader, deepCopy, deepFreeze, validateState } from './utils';
 
@@ -21,7 +21,7 @@ import { copyObject, createPathReader, deepCopy, deepFreeze, validateState } fro
  * ```
  */
 export function makeEnforceTags<S>(nameOrDevtoolsConfig: string | false | EnhancerOptions, state: S, tagSanitizer?: (tag: string) => string) {
-  return makeInternal(nameOrDevtoolsConfig, state, true, tagSanitizer) as any as <C = S>(selector?: (s: S) => C) => Store<S, C, true>;
+  return makeInternal(nameOrDevtoolsConfig, state, true, tagSanitizer) as any as <C = S>(selector?: (s: DeepReadonly<S>) => C) => Store<S, C, true>;
 }
 
 /**
@@ -35,7 +35,7 @@ export function makeEnforceTags<S>(nameOrDevtoolsConfig: string | false | Enhanc
  * ```
  */
 export function make<S>(nameOrDevtoolsConfig: string | false | EnhancerOptions, state: S) {
-  return makeInternal(nameOrDevtoolsConfig, state, false) as any as <C = S>(selector?: (s: S) => C) => Store<S, C, false>;
+  return makeInternal(nameOrDevtoolsConfig, state, false) as any as <C = S>(selector?: (s: DeepReadonly<S>) => C) => Store<S, C, false>;
 }
 
 function makeInternal<S>(nameOrDevtoolsConfig: string | false | EnhancerOptions, state: S, supportsTags: boolean, tagSanitizer?: (tag: string) => string) {
@@ -165,7 +165,7 @@ function makeInternal<S>(nameOrDevtoolsConfig: string | false | EnhancerOptions,
     readInitial: () => selector(initialState),
   } as any as Store<S, C, any>);
 
-  const storeResult = <C = S>(selector: ((s: S) => C) = (s => s as any as C)) => {
+  const storeResult = <C = S>(selector: ((s: DeepReadonly<S>) => C) = (s => s as any as C)) => {
     const selectorMod = selector as (s: S) => C;
     selectorMod(currentState);
     return action(selectorMod);
@@ -252,7 +252,7 @@ function makeInternal<S>(nameOrDevtoolsConfig: string | false | EnhancerOptions,
   }
 
   if (nameOrDevtoolsConfig !== false) {
-    integrateStoreWithReduxDevtools<S>(storeResult, typeof (nameOrDevtoolsConfig) === 'string'
+    integrateStoreWithReduxDevtools<S>(storeResult as any, typeof (nameOrDevtoolsConfig) === 'string'
       ? { name: nameOrDevtoolsConfig } : nameOrDevtoolsConfig, setDevtoolsDispatchListener);
   }
 
