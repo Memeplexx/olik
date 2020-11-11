@@ -15,9 +15,7 @@ export function integrateStoreWithReduxDevtools<S, C = S>(
     windowObj = tests.windowObject as WindowAugmentedWithReduxDevtools;
   }
   if (!windowObj.__REDUX_DEVTOOLS_EXTENSION__) {
-    const error = 'Cannot find Redux Devtools Extension';
-    console.warn(error);
-    tests.errorLogged = error;
+    console.warn(errorMessages.DEVTOOL_CANNOT_FIND_EXTENSION);
     return;
   }
   const devTools = windowObj.__REDUX_DEVTOOLS_EXTENSION__.connect(options);
@@ -51,10 +49,9 @@ export function integrateStoreWithReduxDevtools<S, C = S>(
         { replaceAll: (state: S, tag: string) => any }
       ) & { read: () => any, readInitial: () => any };
       const setState = (state: any) => {
-        if (!!selection.replaceAll) {
+        if (Array.isArray(selection.read())) {
           selection.replaceAll(state, 'dontTrackWithDevtools');
-        }
-        else {
+        } else {
           selection.replaceWith(state, 'dontTrackWithDevtools');
         }
       }
@@ -79,6 +76,7 @@ export function integrateStoreWithReduxDevtools<S, C = S>(
       }
     }
   });
+  tests.devTools = devTools;
   return devTools;
 }
 

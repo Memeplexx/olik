@@ -1,10 +1,15 @@
 import { make } from '../src';
+import { errorMessages } from '../src/consts';
 import { tests } from '../src/tests';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
 describe('Error', () => {
 
+  const spyWarn = jest.spyOn(console, 'warn');
+
   beforeAll(() => tests.windowObject = windowAugmentedWithReduxDevtoolsImpl);
+
+  beforeEach( () => spyWarn.mockReset()); 
 
   it('should throw an error when a method is invoked within a selector', () => {
     const store = make('store', new Array<string>());
@@ -19,9 +24,7 @@ describe('Error', () => {
   it('should log an error if no devtools extension could be found', () => {
     tests.windowObject = null;
     make('store', new Array<string>());
-    expect(tests.errorLogged).toEqual('Cannot find Redux Devtools Extension');
-    tests.errorLogged = '';
-    tests.windowObject = windowAugmentedWithReduxDevtoolsImpl;
+    expect( spyWarn ).toHaveBeenCalledWith(errorMessages.DEVTOOL_CANNOT_FIND_EXTENSION); 
   })
 
   it('should throw an error if the initial state has functions in it', () => {

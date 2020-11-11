@@ -13,8 +13,7 @@ describe('Devtools', () => {
     expect(store().read()).toEqual({ x: 3, y: 0 });
     const state = { x: 1, y: 0 };
     tests.windowObject?.__REDUX_DEVTOOLS_EXTENSION__._mockInvokeSubscription({ type: 'DISPATCH', state: JSON.stringify(state), payload: { type: 'JUMP_TO_ACTION' }, source: '@devtools-extension' });
-    expect(store().read()).toEqual(state);
-    expect(tests.currentAction.type).toEqual('replace() [dontTrackWithDevtools]');
+    expect(store().read()).toEqual(state);    expect(tests.currentAction.type).toEqual('replaceWith() [dontTrackWithDevtools]');
   });
 
   it('should correctly respond to devtools dispatches where the state is an array', () => {
@@ -24,7 +23,30 @@ describe('Devtools', () => {
     const state = ['g', 'h'];
     tests.windowObject?.__REDUX_DEVTOOLS_EXTENSION__._mockInvokeSubscription({ type: 'DISPATCH', state: JSON.stringify(state), payload: { type: 'JUMP_TO_ACTION' }, source: '@devtools-extension' });
     expect(store().read()).toEqual(state);
-    expect(tests.currentAction.type).toEqual('replace() [dontTrackWithDevtools]');
+    expect(tests.currentAction.type).toEqual('replaceAll() [dontTrackWithDevtools]');
+  });
+
+  it('should handle a COMMIT without throwing an error', () => {
+    make('store', { hello: '' });
+    tests.windowObject?.__REDUX_DEVTOOLS_EXTENSION__._mockInvokeSubscription({ type: 'DISPATCH', payload: { type: 'COMMIT' }, source: '@devtools-extension' });
+  });
+
+  it('should handle a RESET correctly', () => {
+    const store = make('store', { hello: '' });
+    store(s => s.hello).replaceWith('world');
+    expect(store(s => s.hello).read()).toEqual('world');
+    tests.windowObject?.__REDUX_DEVTOOLS_EXTENSION__._mockInvokeSubscription({ type: 'DISPATCH', payload: { type: 'RESET' }, source: '@devtools-extension' });
+    expect(store(s => s.hello).read()).toEqual('');
+  });
+
+  it('should handle a ROLLBACK correctly', () => {
+    const store = make('store', { num: 0 });
+    store(s => s.num).replaceWith(1);
+    expect(store(s => s.num).read()).toEqual(1);
+    store(s => s.num).replaceWith(2);
+    expect(store(s => s.num).read()).toEqual(2);
+    tests.windowObject?.__REDUX_DEVTOOLS_EXTENSION__._mockInvokeSubscription({ type: 'DISPATCH', payload: { type: 'ROLLBACK' }, source: '@devtools-extension', state: '{ "num": 1 }' });
+    expect(store(s => s.num).read()).toEqual(1);
   });
 
   it('should throw an error should a devtools dispatch contain invalid JSON', () => {

@@ -5,7 +5,7 @@ import { make } from '../src/core';
 import { tests } from '../src/tests';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
-describe('Perf', () => {
+describe.skip('Perf', () => {
 
   beforeAll(() => tests.windowObject = windowAugmentedWithReduxDevtoolsImpl);
 

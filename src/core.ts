@@ -49,7 +49,7 @@ function makeInternal<S>(nameOrDevtoolsConfig: string | false | EnhancerOptions,
   const replace = <C>(selector: (s: S) => C, name: string) => (assignment: C, tag?: string) => {
     const isRootUpdate = !pathReader.readSelector(selector).length;
     if (isRootUpdate) {
-      updateState<C>(selector, `replace()`, assignment,
+      updateState<C>(selector, Array.isArray(currentState) ? `replaceAll()` : `replaceWith()`, assignment,
         old => deepCopy(assignment),
         old => {
           if (Array.isArray(old)) {
