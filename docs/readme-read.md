@@ -11,7 +11,7 @@ const store = make('canvas', {
 ```
 ---
 
-## READING STATE SYNCHRONOUSLY ##
+## READING STATE ##
 ```Typescript
 const width = store(s => s.size.width).read();
 ```

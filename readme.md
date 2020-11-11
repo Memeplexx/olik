@@ -6,9 +6,10 @@
 ![Package Size](https://badgen.net/bundlephobia/minzip/oulik)
 ![Dependency count](https://badgen.net/bundlephobia/dependency-count/oulik)
 
-## ***Effortless, transparent state management*** ##  
+## ***Effortless state-management with an incurable magic-string allergy*** ##  
 
 Oulik enables **inline**, **type-safe** updates, and **describes them for you** inside the **[Redux Devtools extension](https://chrome.google.com/webstore/detail/redux-devtools/lmhkpmbekcpmknklioeibfkpmmfibljd?hl=en)**
+without requiring actions, reducers, dispatches, middleware, de-duping requests, or manually tracking loading / error / result states.
 
 > This is a guide introduces Oulik without a framework. You may prefer to use ***[OULIK-REACT](./docs/readme-react.md)***, or ***[OULIK-NG](./docs/readme-ng.md)***.  
 

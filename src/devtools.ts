@@ -1,3 +1,4 @@
+import { errorMessages } from './consts';
 import { Store, EnhancerOptions, WindowAugmentedWithReduxDevtools } from './shape';
 import { tests } from './tests';
 
@@ -15,7 +16,7 @@ export function integrateStoreWithReduxDevtools<S, C = S>(
   }
   if (!windowObj.__REDUX_DEVTOOLS_EXTENSION__) {
     const error = 'Cannot find Redux Devtools Extension';
-    console.error(error);
+    console.warn(error);
     tests.errorLogged = error;
     return;
   }
@@ -30,10 +31,10 @@ export function integrateStoreWithReduxDevtools<S, C = S>(
       try {
         messagePayload = JSON.parse(message.payload);
       } catch (e) {
-        throw Error('Please dispatch a valid object and ensure that all keys are enclosed in double-quotes');
+        throw Error(errorMessages.DEVTOOL_DISPATCHED_INVALID_JSON);
       }
       if (!messagePayload.type.endsWith('()')) {
-        throw new Error(`Cannot dispatch ${messagePayload.type} because there is no action to perform, eg. replaceWith()`);
+        throw new Error(errorMessages.DEVTOOL_DISPATCHED_WITH_NO_ACTION(messagePayload.type));
       }
       let segs = messagePayload.type.split('.');
       const action = segs.pop() as string;
