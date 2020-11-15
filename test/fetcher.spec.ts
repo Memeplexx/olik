@@ -1,5 +1,4 @@
 import { make, makeEnforceTags } from '../src';
-import { createFetcher } from '../src/fetcher';
 import { tests } from '../src/tests';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
@@ -183,5 +182,77 @@ describe('Fetcher', () => {
       });
     });
   })
+
+  it('should setData correctly', done => {
+    const initialState = {
+      array: ['one', 'two'],
+    };
+    const store = make('store', initialState);
+    const fetchArray = store(s => s.array).createFetcher({
+      getData: () => new Promise<string[]>(resolve => setTimeout(() => resolve(['three', 'four']), 10)),
+      setData: arg => arg.store.addAfter([...arg.data]),
+    });
+    fetchArray().onChangeOnce(() => {
+      expect(store(s => s.array).read()).toEqual(['one', 'two', 'three', 'four']);
+      done();
+    })
+  })
+
+  it('should respond to change listeners', done => {
+    const store = make('store', {
+      array: ['one', 'two'],
+    });
+    const fetchArray = store(s => s.array).createFetcher({
+      getData: () => new Promise<string[]>(resolve => setTimeout(() => resolve(['three', 'four']), 10)),
+    });
+    let changeCount = 0;
+    const fetch = fetchArray();
+    fetch.onChange(() => {
+      changeCount++;
+      if (changeCount === 2) {
+        done();
+      }
+    });
+    fetch.refetch();
+  });
+
+  it('should unsubcribe from change listeners', done => {
+    const store = make('store', {
+      array: ['one', 'two'],
+    });
+    const fetchArray = store(s => s.array).createFetcher({
+      getData: () => new Promise<string[]>(resolve => setTimeout(() => resolve(['three', 'four']), 10)),
+    });
+    let changeCount = 0;
+    const fetch = fetchArray();
+    const subscription = fetch.onChange(() => {
+      changeCount++;
+      subscription.unsubscribe();
+    });
+    fetch.refetch().onChangeOnce(() => {
+      expect(changeCount).toEqual(1);
+      done();
+    });
+  });
+
+  it('should unsubcribe from cache expired listeners', done => {
+    const store = make('store', {
+      array: ['one', 'two'],
+    });
+    let cacheExpiredCount = 0;
+    const fetchArray = store(s => s.array).createFetcher({
+      getData: () => new Promise<string[]>(resolve => setTimeout(() => resolve(['three', 'four']), 10)),
+      cacheFor: 10
+    });
+    const fetch = fetchArray();
+    const subscription = fetch.onCacheExpired(() => {
+      cacheExpiredCount++;
+      subscription.unsubscribe();
+      fetch.refetch().onChangeOnce(() => {
+        expect(cacheExpiredCount).toEqual(1);
+        done();
+      });
+    });
+  });
 
 });

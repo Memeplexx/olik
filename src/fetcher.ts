@@ -27,6 +27,36 @@ export const createFetcher = <S, C, P = void>(storeResult: (selector?: (s: S) =>
       cacheItem.data = null as any as C;
       cacheItem.lastFetch = 0;
     }
+    const createFetch = () => ({
+      data: cacheItem.data,
+      fetchArg: actualParams,
+      store: storeResult(selector),
+      error: cacheItem.error,
+      status: cacheItem.status,
+      invalidateCache,
+      refetch: (paramsOrTag: P | string | void, tag: string | void) => {
+        invalidateCache();
+        return result(paramsOrTag, tag);
+      },
+      onChange: (listener: () => Unsubscribable) => {
+        cacheItem.changeListeners.push(listener);
+        return { unsubscribe: () => cacheItem.changeListeners.splice(cacheItem.changeListeners.findIndex(changeListener => changeListener === listener), 1) };
+      },
+      onChangeOnce: (listener: () => Unsubscribable) => {
+        const unsubscribe = () => cacheItem.changeOnceListeners.splice(cacheItem.changeOnceListeners.findIndex(changeOnceListener => changeOnceListener.listener === listener), 1);
+        cacheItem.changeOnceListeners.push({ listener, unsubscribe });
+        return { unsubscribe };
+      },
+      onCacheExpired: (listener: () => Unsubscribable) => {
+        cacheItem.cacheExpiredListeners.push(listener);
+        return { unsubscribe: () => cacheItem.cacheExpiredListeners.splice(cacheItem.cacheExpiredListeners.findIndex(expiredListener => expiredListener === listener), 1) };
+      },
+      onCacheExpiredOnce: (listener: () => Unsubscribable) => {
+        const unsubscribe = () => cacheItem.cacheExpiredOnceListeners.splice(cacheItem.cacheExpiredOnceListeners.findIndex(expiredOnceListener => expiredOnceListener.listener === listener), 1);
+        cacheItem.cacheExpiredOnceListeners.push({ listener, unsubscribe });
+        return { unsubscribe };
+      },
+    }) as Fetch<S, C, P>;
     const notifyChangeListeners = (notifyChangeOnceListeners: boolean) => {
       cacheItem.changeListeners.forEach(changeListener => changeListener(createFetch()));
       if (notifyChangeOnceListeners) {
@@ -88,36 +118,6 @@ export const createFetcher = <S, C, P = void>(storeResult: (selector?: (s: S) =>
           }
         });
     }
-    const createFetch = () => ({
-      data: cacheItem.data,
-      fetchArg: actualParams,
-      store: storeResult(selector),
-      error: cacheItem.error,
-      status: cacheItem.status,
-      invalidateCache,
-      refetch: (paramsOrTag: P | string | void, tag: string | void) => {
-        invalidateCache();
-        return result(paramsOrTag, tag);
-      },
-      onChange: (listener: () => Unsubscribable) => {
-        cacheItem.changeListeners.push(listener);
-        return { unsubscribe: () => cacheItem.changeListeners.splice(cacheItem.changeListeners.findIndex(changeListener => changeListener === listener), 1) };
-      },
-      onChangeOnce: (listener: () => Unsubscribable) => {
-        const unsubscribe = () => cacheItem.changeOnceListeners.splice(cacheItem.changeOnceListeners.findIndex(changeOnceListener => changeOnceListener.listener === listener), 1);
-        cacheItem.changeOnceListeners.push({ listener, unsubscribe });
-        return { unsubscribe };
-      },
-      onCacheExpired: (listener: () => Unsubscribable) => {
-        cacheItem.cacheExpiredListeners.push(listener);
-        return { unsubscribe: () => cacheItem.cacheExpiredListeners.splice(cacheItem.cacheExpiredListeners.findIndex(expiredListener => expiredListener === listener), 1) };
-      },
-      onCacheExpiredOnce: (listener: () => Unsubscribable) => {
-        const unsubscribe = () => cacheItem.cacheExpiredOnceListeners.splice(cacheItem.cacheExpiredOnceListeners.findIndex(expiredOnceListener => expiredOnceListener.listener === listener), 1);
-        cacheItem.cacheExpiredOnceListeners.push({ listener, unsubscribe });
-        return { unsubscribe };
-      },
-    }) as Fetch<S, C, P>;
     const fetch = createFetch();
     cacheItem.fetches.push(fetch);
     return fetch;
