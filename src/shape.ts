@@ -93,96 +93,101 @@ export interface FetcherSpecs<S, C, B extends boolean, P> {
 
 export type Fetcher<S, C, P, B extends boolean> = P extends void ? ((tag: Tag<B>) => Fetch<S, C, P, B>) : ((params: Params<P>, tag: Tag<B>) => Fetch<S, C, P, B>);
 
+type ArrayOfPrimitivesStore<S, C extends DeepReadonlyArray<any>, B extends boolean> = {
+  /**
+   * Append elements to the end of array
+   * ```
+   * store(s => s.todos)
+   *   .addAfter(newTodos);
+   * ```
+   */
+  addAfter: (elements: C[0][], tag: Tag<B>) => void,
+  /**
+   * Prepend elements to the beginning of array
+   * ```
+   * store(s => s.todos)
+   *   .addBefore(newTodos);
+   * ```
+   */
+  addBefore: (elements: C[0][], tag: Tag<B>) => void,
+  /**
+   * Remove all elements from array
+   * ```
+   * store(s => s.todos)
+   *   .removeAll();
+   * ```
+   */
+  removeAll: (tag: Tag<B>) => void,
+  /**
+   * Delete first element from array
+   * ```
+   * store(s => s.todos)
+   *   .removeFirst();
+   * ```
+   */
+  removeFirst: (tag: Tag<B>) => void,
+  /**
+   * Delete last element from array
+   * ```
+   * store(s => s.todos)
+   *   .removeLast();
+   * ```
+   */
+  removeLast: (tag: Tag<B>) => void,
+  /**
+   * Delete elements which match a specific condition
+   * ```
+   * store(s => s.todos)
+   *   .removeWhere(t => t.status === 'done')
+   * ```
+   */
+  removeWhere: (where: (arg: C[0]) => boolean, tag: Tag<B>) => void,
+  /**
+   * Substitute all elements with a new array
+   * ```
+   * store(s => s.todos)
+   *   .replaceAll(newTodos);
+   * ```
+   */
+  replaceAll: (replacement: C, tag: Tag<B>) => void,
+  /**
+   * Substitute elements which match a specific condition
+   * @param where the function which will find the element
+   * @param element the element which will replace the old one
+   * ```
+   * store(s => s.todos)
+   *   .replaceWhere(t => t.id === 5)
+   *   .with({ id: 5, text: 'bake cookies' });
+   * ```
+   */
+  replaceWhere: (where: (e: C[0]) => boolean) => { with: (element: C[0], tag: Tag<B>) => void },
+  /**
+   * Subtitutes or appends an element depending on whether or not it can be found.
+   * @param where the function which will attempt to find the element
+   * @param element the element will either replace the old one or be inserted
+   * ```
+   * store(s => s.todos)
+   *   .upsertWhere(t => t.id === 5)
+   *   .with({ id: 5, text: 'bake cookies' });
+   * ```
+   */
+  upsertWhere: (where: (e: C[0]) => boolean) => { with: (element: C[0], tag: Tag<B>) => void },
+}
+
+type ArrayStore<S, C extends DeepReadonlyArray<any>, B extends boolean> = {
+  /**
+   * Partially update elements which match a specific condition
+   * ```
+   * store(s => s.todos)
+   *   .patchWhere(t => t.status === 'done')
+   *   .with({ status: 'todo' });
+   * ```
+   */
+  patchWhere: (where: (e: C[0]) => boolean) => { with: (element: Partial<C[0]>, tag: Tag<B>) => void },
+} & ArrayOfPrimitivesStore<S, C, B>;
+
 export type Store<S, C, B extends boolean> =
-  (C extends undefined ? any : C extends DeepReadonlyArray<any> ? {
-    /**
-     * Append elements to the end of array
-     * ```
-     * store(s => s.todos)
-     *   .addAfter(newTodos);
-     * ```
-     */
-    addAfter: (elements: C[0][], tag: Tag<B>) => void,
-    /**
-     * Prepend elements to the beginning of array
-     * ```
-     * store(s => s.todos)
-     *   .addBefore(newTodos);
-     * ```
-     */
-    addBefore: (elements: C[0][], tag: Tag<B>) => void,
-    /**
-     * Partially update elements which match a specific condition
-     * ```
-     * store(s => s.todos)
-     *   .patchWhere(t => t.status === 'done')
-     *   .with({ status: 'todo' });
-     * ```
-     */
-    patchWhere: (where: (e: C[0]) => boolean) => { with: (element: Partial<C[0]>, tag: Tag<B>) => void },
-    /**
-     * Remove all elements from array
-     * ```
-     * store(s => s.todos)
-     *   .removeAll();
-     * ```
-     */
-    removeAll: (tag: Tag<B>) => void,
-    /**
-     * Delete first element from array
-     * ```
-     * store(s => s.todos)
-     *   .removeFirst();
-     * ```
-     */
-    removeFirst: (tag: Tag<B>) => void,
-    /**
-     * Delete last element from array
-     * ```
-     * store(s => s.todos)
-     *   .removeLast();
-     * ```
-     */
-    removeLast: (tag: Tag<B>) => void,
-    /**
-     * Delete elements which match a specific condition
-     * ```
-     * store(s => s.todos)
-     *   .removeWhere(t => t.status === 'done')
-     * ```
-     */
-    removeWhere: (where: (arg: C[0]) => boolean, tag: Tag<B>) => void,
-    /**
-     * Substitute all elements with a new array
-     * ```
-     * store(s => s.todos)
-     *   .replaceAll(newTodos);
-     * ```
-     */
-    replaceAll: (replacement: C, tag: Tag<B>) => void,
-    /**
-     * Substitute elements which match a specific condition
-     * @param where the function which will find the element
-     * @param element the element which will replace the old one
-     * ```
-     * store(s => s.todos)
-     *   .replaceWhere(t => t.id === 5)
-     *   .with({ id: 5, text: 'bake cookies' });
-     * ```
-     */
-    replaceWhere: (where: (e: C[0]) => boolean) => { with: (element: C[0], tag: Tag<B>) => void },
-    /**
-     * Subtitute or appends an element depending on whether or not it can be found.
-     * @param where the function which will attempt to find the element
-     * @param element the element will either replace the old one or be inserted
-     * ```
-     * store(s => s.todos)
-     *   .upsertWhere(t => t.id === 5)
-     *   .with({ id: 5, text: 'bake cookies' });
-     * ```
-     */
-    upsertWhere: (where: (e: C[0]) => boolean) => { with: (element: C[0], tag: Tag<B>) => void },
-  } : C extends object ? {
+  (C extends undefined ? any : C extends DeepReadonlyArray<object> ? ArrayStore<S, C, B> : C extends DeepReadonlyArray<any> ? ArrayOfPrimitivesStore<S, C, B> : C extends object ? {
     /**
      * Partially updates object
      * ```

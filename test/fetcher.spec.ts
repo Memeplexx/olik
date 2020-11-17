@@ -52,7 +52,7 @@ describe('Fetcher', () => {
     let numberOfTimesPromiseIsCalled = 0;
     const fetchArray = createFetcher({
       onStore: store(s => s.array),
-      getData: () => { return new Promise<[{ id: number, value: string }]>(resolve => setTimeout(() => { numberOfTimesPromiseIsCalled++; resolve([{ id: 2, value: 'dd' }]); }, 10))},
+      getData: () => { return new Promise<[{ id: number, value: string }]>(resolve => setTimeout(() => { numberOfTimesPromiseIsCalled++; resolve([{ id: 2, value: 'dd' }]); }, 10)) },
       cacheFor: 10
     });
     fetchArray().onCacheExpiredOnce(arg => {
