@@ -22,7 +22,7 @@ type DeepReadonlyObject<T> = {
   readonly [P in keyof T]: DeepReadonly<T[P]>;
 };
 
-export interface Fetch<S, C, P> { 
+export interface Fetch<S, C, P, B extends boolean> { 
   /**
    * The current resolved data, if any.
    */
@@ -38,7 +38,7 @@ export interface Fetch<S, C, P> {
   /**
    * The store associated with this fetch
    */
-  store: Store<S, C, boolean>;
+  store: Store<S, C, B>;
   /**
    * The argument that was used in the request (if any)
    */
@@ -50,23 +50,23 @@ export interface Fetch<S, C, P> {
   /**
    * Takes a function that will be invoked whenever the status changes
    */
-  onChange: (listener: (fetch: Fetch<S, C, P>) => any ) => Unsubscribable;
+  onChange: (listener: (fetch: Fetch<S, C, P, B>) => any ) => Unsubscribable;
   /**
    * Takes a function that will be invoked only once, when the status next changes
    */
-  onChangeOnce: (listener: (fetch: Fetch<S, C, P>) => any ) => Unsubscribable;
+  onChangeOnce: (listener: (fetch: Fetch<S, C, P, B>) => any ) => Unsubscribable;
   /**
    * Takes a function that will be invoked whenever the cache expires
    */
-  onCacheExpired: (listener: (fetch: Fetch<S, C, P>) => any) => Unsubscribable;
+  onCacheExpired: (listener: (fetch: Fetch<S, C, P, B>) => any) => Unsubscribable;
   /**
    * Takes a function that will only be invoked only once, when the cache next expires
    */
-  onCacheExpiredOnce: (listener: (fetch: Fetch<S, C, P>) => any) => Unsubscribable;
+  onCacheExpiredOnce: (listener: (fetch: Fetch<S, C, P, B>) => any) => Unsubscribable;
   /**
    * Invalidates the cache and re-fetches
    */
-  refetch: (arg: P) => Fetch<S, C, P>;
+  refetch: Fetcher<S, C, P, B>;
 };
 
 export interface FetcherSpecs<S, C, B extends boolean, P> {
@@ -91,7 +91,7 @@ export interface FetcherSpecs<S, C, B extends boolean, P> {
   cacheFor?: number,
 };
 
-export type Fetcher<S, C, P, B extends boolean> = P extends void ? ((tag: Tag<B>) => Fetch<S, C, P>) : ((params: Params<P>, tag: Tag<B>) => Fetch<S, C, P>);
+export type Fetcher<S, C, P, B extends boolean> = P extends void ? ((tag: Tag<B>) => Fetch<S, C, P, B>) : ((params: Params<P>, tag: Tag<B>) => Fetch<S, C, P, B>);
 
 export type Store<S, C, B extends boolean> =
   (C extends undefined ? any : C extends DeepReadonlyArray<any> ? {
@@ -219,22 +219,6 @@ export type Store<S, C, B extends boolean> =
     replaceWith: (replacement: C, tag: Tag<B>) => void,
   }) & {
     /**
-     * *Fetchers* are an standardized mechanism for:  
-     * * fetching data from external resources,
-     * * indicating the status of a request (loading / success / error), and 
-     * * caching request responses (optional).  
-     * 
-     * ```
-     * const fetchTodos = store(s => s.todos).createFetcher({
-     *   promise: () => fetchTodosFromApi(),
-     *   cacheForMillis: 1000 * 60,
-     * })
-     * fetchTodos().onChangeOnce(result => console.log(results.data));
-     * ```
-     */
-    createFetcher: <P = void>(fetcherSpecs: FetcherSpecs<S, C, B, P>) => Fetcher<S, C, P, B>,
-  } & {
-    /**
      * Listens to any updates on this node
      * @returns a subscription which may need to be unsubscribed from
      * ```
@@ -246,7 +230,7 @@ export type Store<S, C, B extends boolean> =
     /**
      * @returns the current state
      */
-    read: () => DeepReadonly<C>,
+    read: () => C,
     /**
      * Reverts the current state to how it was when the store was initialized
      */

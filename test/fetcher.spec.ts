@@ -1,4 +1,5 @@
 import { make, makeEnforceTags } from '../src';
+import { createFetcher } from '../src/fetcher';
 import { tests } from '../src/tests';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
@@ -12,7 +13,8 @@ describe('Fetcher', () => {
       array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
     };
     const store = make('store', initialState);
-    const fetchArray = store(s => s.array).createFetcher({
+    const fetchArray = createFetcher({
+      onStore: store(s => s.array),
       getData: () => new Promise<[{ id: number, value: string }]>(resolve => setTimeout(() => resolve([{ id: 2, value: 'dd' }]), 10))
     });
     const fetchArrayState = fetchArray();
@@ -29,10 +31,11 @@ describe('Fetcher', () => {
     };
     const store = make('store', initialState);
     let numberOfTimesPromiseIsCalled = 0;
-    const fetchArray = store(s => s.array).createFetcher({
+    const fetchArray = createFetcher({
+      onStore: store(s => s.array),
       getData: () => new Promise<[{ id: number, value: string }]>(resolve => setTimeout(() => { numberOfTimesPromiseIsCalled++; resolve([{ id: 2, value: 'dd' }]); }, 10)),
-      cacheFor: 30
-    });
+      cacheFor: 30,
+    })
     fetchArray().onChangeOnce(arg => {
       fetchArray();
       expect(store(s => s.array).read()).toEqual([{ id: 2, value: 'dd' }]);
@@ -47,7 +50,8 @@ describe('Fetcher', () => {
     };
     const store = make('store', initialState);
     let numberOfTimesPromiseIsCalled = 0;
-    const fetchArray = store(s => s.array).createFetcher({
+    const fetchArray = createFetcher({
+      onStore: store(s => s.array),
       getData: () => { return new Promise<[{ id: number, value: string }]>(resolve => setTimeout(() => { numberOfTimesPromiseIsCalled++; resolve([{ id: 2, value: 'dd' }]); }, 10))},
       cacheFor: 10
     });
@@ -66,10 +70,11 @@ describe('Fetcher', () => {
     };
     const store = make('store', initialState);
     let numberOfTimesPromiseIsCalled = 0;
-    const fetchArray = store(s => s.array).createFetcher({
+    const fetchArray = createFetcher({
+      onStore: store(s => s.array),
       getData: () => new Promise<[{ id: number, value: string }]>(resolve => setTimeout(() => { numberOfTimesPromiseIsCalled++; resolve([{ id: 2, value: 'dd' }]); }, 10)),
-      cacheFor: 50
-    });
+      cacheFor: 50,
+    })
     fetchArray().onChangeOnce(arg => {
       arg.invalidateCache();
       fetchArray().onChangeOnce(arg2 => {
@@ -85,9 +90,10 @@ describe('Fetcher', () => {
       array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
     };
     const store = make('store', initialState);
-    const fetchArray = store(s => s.array).createFetcher({
+    const fetchArray = createFetcher({
+      onStore: store(s => s.array),
       getData: () => new Promise<[{ id: number, value: string }]>(resolve => setTimeout(() => resolve([{ id: 2, value: 'dd' }]), 10)),
-    });
+    })
     const fetchArrayState = fetchArray();
     expect(fetchArrayState.status).toEqual('resolving');
     fetchArrayState.onChangeOnce(() => {
@@ -101,7 +107,8 @@ describe('Fetcher', () => {
       array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
     };
     const store = make('store', initialState);
-    const fetchArray = store(s => s.array).createFetcher({
+    const fetchArray = createFetcher({
+      onStore: store(s => s.array),
       getData: () => new Promise<[{ id: number, value: string }]>((_, reject) => setTimeout(() => reject('Woops'), 10)),
       cacheFor: 20
     });
@@ -117,7 +124,8 @@ describe('Fetcher', () => {
       array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
     };
     const store = makeEnforceTags('store', initialState);
-    const fetchArray = store(s => s.array).createFetcher({
+    const fetchArray = createFetcher({
+      onStore: store(s => s.array),
       getData: () => new Promise<[{ id: number, value: string }]>(resolve => setTimeout(() => resolve([{ id: 2, value: 'dd' }]), 10)),
       cacheFor: 100,
     });
@@ -135,8 +143,10 @@ describe('Fetcher', () => {
       array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
     };
     const store = make('store', initialState);
-    const fetchArray = store(s => s.array).createFetcher({
+    const fetchArray = createFetcher({
+      onStore: store(s => s.array),
       getData: (num: number) => new Promise<[{ id: number, value: string }]>(resolve => setTimeout(() => resolve([{ id: num, value: 'dd' }]), 10)),
+      testerr: 2
     });
     const fetchArrayState = fetchArray(2);
     fetchArrayState.onChangeOnce(() => {
@@ -151,7 +161,8 @@ describe('Fetcher', () => {
     };
     const store = make('store', initialState);
     let numberOfTimesPromiseIsCalled = 0;
-    const fetchArray = store(s => s.array).createFetcher({
+    const fetchArray = createFetcher({
+      onStore: store(s => s.array),
       getData: (num: number) => new Promise<[{ id: number, value: string }]>(resolve => setTimeout(() => { numberOfTimesPromiseIsCalled++; resolve([{ id: num, value: 'dd' }]); }, 10)),
       cacheFor: 10
     });
@@ -169,9 +180,10 @@ describe('Fetcher', () => {
     };
     const store = make('store', initialState);
     store(s => s.object.property).replaceWith('test');
-    const fetchProp = store(s => s.object.property).createFetcher({
+    const fetchProp = createFetcher({
+      onStore: store(s => s.object.property),
       getData: (arg: string) => new Promise<string>(resolve => setTimeout(() => resolve(arg), 10)),
-      cacheFor: 1000
+      cacheFor: 1000,
     });
     fetchProp('test').onChangeOnce(fetchArg => {
       expect(fetchArg.data).toEqual('test');
@@ -188,7 +200,8 @@ describe('Fetcher', () => {
       array: ['one', 'two'],
     };
     const store = make('store', initialState);
-    const fetchArray = store(s => s.array).createFetcher({
+    const fetchArray = createFetcher({
+      onStore: store(s => s.array),
       getData: () => new Promise<string[]>(resolve => setTimeout(() => resolve(['three', 'four']), 10)),
       setData: arg => arg.store.addAfter([...arg.data]),
     });
@@ -202,7 +215,8 @@ describe('Fetcher', () => {
     const store = make('store', {
       array: ['one', 'two'],
     });
-    const fetchArray = store(s => s.array).createFetcher({
+    const fetchArray = createFetcher({
+      onStore: store(s => s.array),
       getData: () => new Promise<string[]>(resolve => setTimeout(() => resolve(['three', 'four']), 10)),
     });
     let changeCount = 0;
@@ -220,7 +234,8 @@ describe('Fetcher', () => {
     const store = make('store', {
       array: ['one', 'two'],
     });
-    const fetchArray = store(s => s.array).createFetcher({
+    const fetchArray = createFetcher({
+      onStore: store(s => s.array),
       getData: () => new Promise<string[]>(resolve => setTimeout(() => resolve(['three', 'four']), 10)),
     });
     let changeCount = 0;
@@ -240,7 +255,8 @@ describe('Fetcher', () => {
       array: ['one', 'two'],
     });
     let cacheExpiredCount = 0;
-    const fetchArray = store(s => s.array).createFetcher({
+    const fetchArray = createFetcher({
+      onStore: store(s => s.array),
       getData: () => new Promise<string[]>(resolve => setTimeout(() => resolve(['three', 'four']), 10)),
       cacheFor: 10
     });

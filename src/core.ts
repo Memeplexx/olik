@@ -1,9 +1,7 @@
 import { integrateStoreWithReduxDevtools } from './devtools';
-import { createFetcher } from './fetcher';
-import { Store, Derivation, EnhancerOptions, MappedDataTuple, FetcherStatus, Unsubscribable, Params, Tag, Fetch, DeepReadonly } from './shape';
+import { DeepReadonly, EnhancerOptions, Store } from './shape';
 import { tests } from './tests';
 import { copyObject, createPathReader, deepCopy, deepFreeze, validateState } from './utils';
-
 /**
  * Creates a new store which, for typescript users, requires that users supply an additional 'tag' when performing a state update.
  * These tags can improve the debugging experience by describing the source of an update event, for example the name of the component an update was trigger from.
@@ -156,13 +154,13 @@ function makeInternal<S>(nameOrDevtoolsConfig: string | false | EnhancerOptions,
       }
     }),
     reset: (tag?: string) => replace(selector, 'reset')(selector(initialState), tag),
-    createFetcher: createFetcher(storeResult as any as <C = S>(selector?: (s: S) => C) => Store<S, C, any>, supportsTags, selector),
     onChange: (performAction: (selection: C) => any) => {
       changeListeners.set(performAction, selector);
       return { unsubscribe: () => changeListeners.delete(performAction) };
     },
     read: () => deepFreeze(selector(currentState)),
     readInitial: () => selector(initialState),
+    supportsTags,
   } as any as Store<S, C, any>);
 
   const storeResult = <C = S>(selector: ((s: DeepReadonly<S>) => C) = (s => s as any as C)) => {

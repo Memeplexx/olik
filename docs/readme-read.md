@@ -19,7 +19,7 @@ const width = store(s => s.size.width).read();
 ## LISTENING TO STATE UPDATES ##
 ```Typescript
 const listener = store(c => c.size.width).onChange(width => console.log(width));
-listener.unsubscribe(); // Please unsubscribe to avoid memory leaks
+listener.unsubscribe(); // Always unsubscribe to avoid memory leaks
 ```  
 
 ## HANDLING DERIVED STATE ##
@@ -40,7 +40,7 @@ const innerWidth = deriveFrom(
 const width = innerWidth.read();
 
 const listener = innerWidth.onChange(innerWidth => console.log('inner width', innerWidth));
-listener.unsubscribe(); // Please unsubscribe to avoid memory leaks
+listener.unsubscribe(); // Always unsubscribe to avoid memory leaks
 ```
 
 ## FETCHING ASYNC STATE ##
@@ -58,7 +58,7 @@ const fetchSize = store(s => s.size).createFetcher({
 ```Typescript
 const sizeFetcher = fetchSize();
 const onChangeSubscription = sizeFetcher.onChange(() => console.log(`Fetcher status is currently ${sizeFetcher.status}`));
-onChangeSubscription.unSubscribe(); // don't forget to unsubscribe when you no longer want to receive events to avoid memory leaks
+onChangeSubscription.unSubscribe(); // Always unsubscribe to avoid memory leaks
 ```
 
 ## FETCHING ASYNC STATE (WITH ARGS) ##

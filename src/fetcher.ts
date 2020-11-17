@@ -1,23 +1,26 @@
-import { Fetch, FetcherStatus, Params, Store, Unsubscribable } from "./shape";
+import { Fetch, Fetcher, FetcherStatus, Params, Store, Unsubscribable } from "./shape";
 import { deepCopy, deepFreeze } from "./utils";
 
-export const createFetcher = <S, C, P = void>(storeResult: (selector?: (s: S) => C) => Store<S, C, any>, supportsTags: boolean, selector: (s: S) => C) => (specs: {
-  getData: ((params: Params<P>) => Promise<C>) | (() => Promise<C>),
-  setData?: (args: { store: Store<S, C, boolean>, data: C, params: Params<P>, tag?: string }) => any,
+export const createFetcher = <S, C, B extends boolean, X extends (params: any) => Promise<C>, P extends Parameters<X>[0]>(specs: {
+  onStore: Store<S, C, B>,
+  getData: X,
+  setData?: (args: { store: Store<S, C, B>, data: C, param: Parameters<X>[0], tag?: string }) => any,
   cacheFor?: number,
-}) => {
+  testerr?: Parameters<X>[0],
+}): Fetcher<S, C, Parameters<X>[0], B> => {
   const responseCache = new Map<any, {
     data: C,
     error: any,
     lastFetch: number,
     status: FetcherStatus,
-    changeListeners: Array<(fetch: Fetch<S, C, P>) => Unsubscribable>,
-    changeOnceListeners: Array<{ listener: (fetch: Fetch<S, C, P>) => Unsubscribable, unsubscribe: () => any }>,
-    cacheExpiredListeners: Array<(fetch: Fetch<S, C, P>) => Unsubscribable>,
-    cacheExpiredOnceListeners: Array<{ listener: (fetch: Fetch<S, C, P>) => Unsubscribable, unsubscribe: () => any }>,
-    fetches: Array<Fetch<S, C, P>>,
+    changeListeners: Array<(fetch: Fetch<S, C, P, B>) => Unsubscribable>,
+    changeOnceListeners: Array<{ listener: (fetch: Fetch<S, C, P, B>) => Unsubscribable, unsubscribe: () => any }>,
+    cacheExpiredListeners: Array<(fetch: Fetch<S, C, P, B>) => Unsubscribable>,
+    cacheExpiredOnceListeners: Array<{ listener: (fetch: Fetch<S, C, P, B>) => Unsubscribable, unsubscribe: () => any }>,
+    fetches: Array<Fetch<S, C, P, B>>,
   }>();
-  const result = (paramsOrTag: P | string | void, tag: string | void): Fetch<S, C, P> => {
+  const result = (paramsOrTag: P | string | void, tag: string | void): Fetch<S, C, P, B> => {
+    const supportsTags = (specs.onStore as any).supportsTags;
     const actualTag = supportsTags ? (tag || paramsOrTag) as string : undefined;
     const actualParams = (((supportsTags && tag) || (!supportsTags && paramsOrTag)) ? paramsOrTag : undefined) as Params<P>;
     const cacheItem = responseCache.get(actualParams) || responseCache.set(actualParams,
@@ -30,7 +33,7 @@ export const createFetcher = <S, C, P = void>(storeResult: (selector?: (s: S) =>
     const createFetch = () => ({
       data: cacheItem.data,
       fetchArg: actualParams,
-      store: storeResult(selector),
+      store: specs.onStore,
       error: cacheItem.error,
       status: cacheItem.status,
       invalidateCache,
@@ -56,7 +59,7 @@ export const createFetcher = <S, C, P = void>(storeResult: (selector?: (s: S) =>
         cacheItem.cacheExpiredOnceListeners.push({ listener, unsubscribe });
         return { unsubscribe };
       },
-    }) as Fetch<S, C, P>;
+    }) as Fetch<S, C, P, B>;
     const notifyChangeListeners = (notifyChangeOnceListeners: boolean) => {
       cacheItem.changeListeners.forEach(changeListener => changeListener(createFetch()));
       if (notifyChangeOnceListeners) {
@@ -68,7 +71,7 @@ export const createFetcher = <S, C, P = void>(storeResult: (selector?: (s: S) =>
     }
     if (cacheHasExpiredOrPromiseNotYetCalled) {
       cacheItem.status = 'resolving';
-      cacheItem.fetches.forEach(fetch => Object.assign<Fetch<S, C, P>, Partial<Fetch<S, C, P>>>(fetch, { status: cacheItem.status }));
+      cacheItem.fetches.forEach(fetch => Object.assign<Fetch<S, C, P, B>, Partial<Fetch<S, C, P, B>>>(fetch, { status: cacheItem.status }));
       notifyChangeListeners(false);
       let errorThatWasCaughtInPromise: any = null;
       specs.getData(actualParams)
@@ -80,17 +83,17 @@ export const createFetcher = <S, C, P = void>(storeResult: (selector?: (s: S) =>
               specs.setData({
                 data: valueFrozen,
                 tag: actualTag,
-                params: actualParams,
-                store: storeResult(selector),
+                param: actualParams,
+                store: specs.onStore,
               });
             } else {
-              const piece = storeResult(selector) as any as { replace: (c: C, tag: string | void) => void } & { replaceAll: (c: C, tag: string | void) => void };
+              const piece = specs.onStore as any as { replace: (c: C, tag: string | void) => void } & { replaceAll: (c: C, tag: string | void) => void };
               if (piece.replaceAll) { piece.replaceAll(valueFrozen, actualTag); } else { piece.replace(valueFrozen, actualTag); }
             }
             cacheItem.data = valueFrozen;
             cacheItem.error = null;
             cacheItem.status = 'resolved';
-            cacheItem.fetches.forEach(fetch => Object.assign<Fetch<S, C, P>, Partial<Fetch<S, C, P>>>(fetch, { status: cacheItem.status, data: valueFrozen, error: cacheItem.error }));
+            cacheItem.fetches.forEach(fetch => Object.assign<Fetch<S, C, P, B>, Partial<Fetch<S, C, P, B>>>(fetch, { status: cacheItem.status, data: valueFrozen, error: cacheItem.error }));
             notifyChangeListeners(true);
             setTimeout(() => {
               invalidateCache();  // free memory
@@ -107,7 +110,7 @@ export const createFetcher = <S, C, P = void>(storeResult: (selector?: (s: S) =>
           try {
             cacheItem.error = error;
             cacheItem.status = 'rejected';
-            cacheItem.fetches.forEach(fetch => Object.assign<Fetch<S, C, P>, Partial<Fetch<S, C, P>>>(fetch, { status: cacheItem.status, error }));
+            cacheItem.fetches.forEach(fetch => Object.assign<Fetch<S, C, P, B>, Partial<Fetch<S, C, P, B>>>(fetch, { status: cacheItem.status, error }));
             notifyChangeListeners(true);
           } catch (e) {
             errorThatWasCaughtInPromise = e;
@@ -122,5 +125,5 @@ export const createFetcher = <S, C, P = void>(storeResult: (selector?: (s: S) =>
     cacheItem.fetches.push(fetch);
     return fetch;
   }
-  return result;
+  return result as any;
 }
