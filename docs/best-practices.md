@@ -4,8 +4,8 @@ If you're unfamiliar with using Redux, it may be worth glossing over this guide.
 
 * **Why do we need state-management solutions like this library?**  
 Before the advent of state-management libraries, if two different views in your application were to render a users details, they would each need a **copy** of those details first. 
-For small applications this was hardly a problem, but for larger applications it became hard to know copy of our state was the most up-to-date.
-The goal of a state-management library is to ensure that there is only one up-to-date 'version' of your application state. They prevent you from mutating (changing) state in your store without other parts of your app also receiving that state update. Every component has the latest, and *only* version of your state making your application far more predictable and easy to debug.
+For small applications this was hardly a problem, but for larger applications it became hard to know which copy of your state was most recently updated.
+The goal of a state-management libraries, such as Redux, is to ensure that there is only one up-to-date 'version' of your application state. They prevent you from mutating (changing) state in your store without other parts of your app also receiving that state update. Every component has the latest, and *only* version of your state making your application far more predictable and easy to debug.
 
 * **How should I organize my state?**  
 Like with Redux, it is very important to keep your state tree flattened and normalized. Dan Abramov, the author of Redux, explains it better than I could https://redux.js.org/recipes/structuring-reducers/normalizing-state-shape

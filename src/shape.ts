@@ -208,7 +208,7 @@ type ObjectStore<S, C extends any, B extends boolean> = {
   patchWith: (partial: Partial<C>, tag: Tag<B>) => void,
 } & PrimitiveStore<S, C, B>;
 
-type CommonStore<S, C extends any, B extends boolean> = {
+export type CommonReadable<S, C extends any, B extends boolean> = {
   /**
        * Listens to any updates on this node
        * @returns a subscription which may need to be unsubscribed from
@@ -222,20 +222,23 @@ type CommonStore<S, C extends any, B extends boolean> = {
    * @returns the current state
    */
   read: () => C,
+}
+
+export type CommonStore<S, C extends any, B extends boolean> = {
   /**
    * Reverts the current state to how it was when the store was initialized
    */
   reset: (tag: Tag<B>) => void,
-}
+} & CommonReadable<S, C, B>;
 
 export type Store<S, C, B extends boolean> = ([C] extends undefined ? any :
     [C] extends DeepReadonlyArray<object[]> ? ArrayStore<S, [C][0], B> :
     [C] extends DeepReadonlyArray<any[]> ? ArrayOfPrimitivesStore<S, [C][0], B> :
     [C] extends [object] ? ObjectStore<S, C, B> : PrimitiveStore<S, C, B>) & CommonStore<S, C, B>;
 
-type ReadType<E> = E extends Store<any, infer W, false> ? W : E extends Store<any, infer W, true> ? W : never;
+type ReadType<E> = E extends CommonReadable<any, infer W, false> ? W : E extends CommonReadable<any, infer W, true> ? W : never;
 
-export type MappedDataTuple<T extends Array<Store<any, any, any>>> = {
+export type MappedDataTuple<T extends Array<CommonReadable<any, any, any>>> = {
   [K in keyof T]: ReadType<T[K]>;
 }
 

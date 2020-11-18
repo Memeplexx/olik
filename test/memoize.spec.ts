@@ -113,9 +113,9 @@ describe('Memoize', () => {
     ).usingExpensiveCalc(val => {
       recalculating++;
     });
-    store(s => s.array.find(e => e.id === 2)).patchWith({ value: 'twoo' });
+    store(s => s.array.find(e => e.id === 2)!).patchWith({ value: 'twoo' });
     mem.read();
-    store(s => s.array.find(e => e.id === 1)).patchWith({ value: 'onee' });
+    store(s => s.array.find(e => e.id === 1)!).patchWith({ value: 'onee' });
     mem.read();
     expect(recalculating).toEqual(1);
   })

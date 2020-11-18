@@ -1,4 +1,4 @@
-import { Derivation, MappedDataTuple, Store, Unsubscribable } from "./shape";
+import { CommonReadable, Derivation, MappedDataTuple, Store, Unsubscribable } from "./shape";
 
 /**
  * Takes an arbitrary number of state selections as input, and performs an expensive calculation only when one of those inputs change value.  
@@ -14,17 +14,17 @@ import { Derivation, MappedDataTuple, Store, Unsubscribable } from "./shape";
  * const memoizedResult = memo.read();
  * ```
  */
-export function deriveFrom<X extends Store<any, any, any>[]>(...args: X) {
+export function deriveFrom<X extends CommonReadable<any, any, boolean>[]>(...args: X) {
   let previousParams = new Array<any>();
   let previousResult = null as any;
   return {
     usingExpensiveCalc: <R>(calculation: (...inputs: MappedDataTuple<X>) => R) => {
       const getValue = () => {
-        const params = (args as Array<Store<any, any, any>>).map(arg => arg.read());
+        const params = (args as Array<CommonReadable<any, any, boolean>>).map(arg => arg.read());
         if (previousParams.length && params.every((v, i) => v === previousParams[i])) {
           return previousResult;
         }
-        const result = calculation(...(params as Store<any, any, any>));
+        const result = calculation(...(params as any));
         previousParams = params;
         previousResult = result;
         return result;
@@ -34,7 +34,7 @@ export function deriveFrom<X extends Store<any, any, any>[]>(...args: X) {
         read: () => getValue(),
         onChange: (listener: (value: R) => any) => {
           changeListeners.add(listener);
-          const unsubscribables: Unsubscribable[] = (args as Array<Store<any, any, any>>)
+          const unsubscribables: Unsubscribable[] = (args as Array<CommonReadable<any, any, boolean>>)
             .map(ops => ops.onChange(() => listener(getValue())));
           return {
             unsubscribe: () => {
