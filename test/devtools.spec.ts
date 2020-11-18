@@ -1,3 +1,4 @@
+import { listenToDevtoolsDispatch } from '../src';
 import { errorMessages } from '../src/consts';
 import { make } from '../src/core';
 import { tests } from '../src/tests';
@@ -75,6 +76,22 @@ describe('Devtools', () => {
     tests.windowObject?.__REDUX_DEVTOOLS_EXTENSION__
       ._mockInvokeSubscription({ type: 'ACTION', source: '@devtools-extension', payload: '{"type": "hello.replaceWith()", "payload": 2}' });
     expect(store(s => s.hello).read()).toEqual(2);
+  })
+
+  it('should throttle tightly packed updates', done => {
+    const store = make('store', { test: 0 });
+    const payload: number[] = [];
+    for (let i = 0; i < 100; i++) {
+      store(s => s.test).replaceWith(i);
+      expect(tests.currentActionForDevtools.payload).toEqual(0);
+      if (i > 0) {
+        payload.push(i);
+      }
+    }
+    setTimeout(() => {
+      expect(tests.currentActionForDevtools.payload).toEqual(payload);
+      done();
+    }, 300);
   })
 
 });

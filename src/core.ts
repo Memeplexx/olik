@@ -1,3 +1,4 @@
+import { devtoolsDebounce } from './consts';
 import { integrateStoreWithReduxDevtools } from './devtools';
 import { DeepReadonly, EnhancerOptions, Store } from './shape';
 import { tests } from './tests';
@@ -72,7 +73,7 @@ function makeInternal<S>(nameOrDevtoolsConfig: string | false | EnhancerOptions,
       old => Array.isArray(old) ? old.map((o, i) => i === +lastSeg ? deepCopy(assignment) : o) : ({ ...old, [lastSeg]: deepCopy(assignment) }),
       old => old[lastSeg] = assignment, { overrideActionName: true, tag });
   };
-  const action = <C, X extends C & Array<any>>(selector: (s: S) => C) => ({
+  const action = <C, X extends C & ReadonlyArray<any>>(selector: (s: S) => C) => ({
     replaceWith: replace(selector, 'replaceWith'),
     replaceAll: replace(selector, 'replaceAll'),
     patchWith: (assignment: Partial<C>, tag?: string) => updateState<C>(selector, 'patchWith', assignment,
@@ -133,8 +134,8 @@ function makeInternal<S>(nameOrDevtoolsConfig: string | false | EnhancerOptions,
         const itemIndices = (selector(currentState) as any as X).map((e, i) => criteria(e) ? i : null).filter(i => i !== null);
         if (itemIndices.length > 1) { throw new Error('Cannot upsert more than 1 element'); }
         return itemIndices.length
-          ? action(selector as (s: S) => X).replaceWhere(criteria).with(element, tag)
-          : action(selector as (s: S) => X).addAfter([element], tag);
+          ? (action(selector) as any).replaceWhere(criteria).with(element, tag)
+          : (action(selector) as any).addAfter([element], tag);
       }
     }),
     replaceWhere: (criteria: (e: X[0]) => boolean) => ({
@@ -180,8 +181,7 @@ function makeInternal<S>(nameOrDevtoolsConfig: string | false | EnhancerOptions,
     payloads: [],
     debounceTimeout: 0,
   };
-  const throttleDebounce = 200;
-
+  
   function updateState<C>(
     selector: (s: S) => C,
     actionName: string,
@@ -209,8 +209,10 @@ function makeInternal<S>(nameOrDevtoolsConfig: string | false | EnhancerOptions,
     tests.currentAction = actionToDispatch;
     tests.currentMutableState = pathReader.mutableStateCopy;
     if (devtoolsDispatchListener && (!options.tag || (options.tag !== 'dontTrackWithDevtools'))) {
-      const dispatchtodevtools = (payload?: any[]) => {
-        devtoolsDispatchListener!(payload ? { ...actionToDispatch, payload } : actionToDispatch);
+      const dispatchToDevtools = (payload?: any[]) => {
+        const action = payload ? { ...actionToDispatch, payload } : actionToDispatch;
+        tests.currentActionForDevtools = action;
+        devtoolsDispatchListener!(action);
       }
       if (previousAction.debounceTimeout) {
         window.clearTimeout(previousAction.debounceTimeout);
@@ -219,23 +221,23 @@ function makeInternal<S>(nameOrDevtoolsConfig: string | false | EnhancerOptions,
       if (previousAction.type !== actionToDispatch.type) {
         previousAction.type = actionToDispatch.type;
         previousAction.payloads = [actionToDispatch.payload];
-        dispatchtodevtools();
+        dispatchToDevtools();
         previousAction.debounceTimeout = window.setTimeout(function () {
           previousAction.type = '';
           previousAction.payloads = [];
-        }, throttleDebounce);
+        }, devtoolsDebounce);
       } else {
-        if (previousAction.timestamp < (Date.now() - throttleDebounce)) {
+        if (previousAction.timestamp < (Date.now() - devtoolsDebounce)) {
           previousAction.payloads = [actionToDispatch.payload];
         } else {
           previousAction.payloads.push(actionToDispatch.payload);
         }
         previousAction.timestamp = Date.now();
         previousAction.debounceTimeout = window.setTimeout(function () {
-          dispatchtodevtools(previousAction.payloads);
+          dispatchToDevtools(previousAction.payloads);
           previousAction.type = '';
           previousAction.payloads = [];
-        }, throttleDebounce);
+        }, devtoolsDebounce);
       }
     }
   }

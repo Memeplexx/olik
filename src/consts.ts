@@ -3,3 +3,5 @@ export const errorMessages = {
   DEVTOOL_DISPATCHED_WITH_NO_ACTION: (type: string) => `Cannot dispatch ${type} because there is no action to perform, eg. replaceWith()`,
   DEVTOOL_CANNOT_FIND_EXTENSION: 'Cannot find Redux Devtools Extension',
 };
+
+export const devtoolsDebounce = 200;

@@ -1,4 +1,4 @@
-import { EnhancerOptions, WindowAugmentedWithReduxDevtools } from "../src/shape";
+import { EnhancerOptions, WindowAugmentedWithReduxDevtools } from '../src/shape';
 
 export const windowAugmentedWithReduxDevtoolsImpl = {
   __REDUX_DEVTOOLS_EXTENSION__: new class {
