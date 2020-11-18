@@ -11,18 +11,18 @@ export interface Unsubscribable {
 
 
 export type DeepReadonly<T> =
-    T extends (infer R)[] ? DeepReadonlyArray<R> :
-    T extends Function ? T :
-    T extends object ? DeepReadonlyObject<T> :
-    T;
+  T extends (infer R)[] ? DeepReadonlyArray<R> :
+  T extends Function ? T :
+  T extends object ? DeepReadonlyObject<T> :
+  T;
 
-interface DeepReadonlyArray<T> extends ReadonlyArray<DeepReadonly<T>> {}
+interface DeepReadonlyArray<T> extends ReadonlyArray<DeepReadonly<T>> { }
 
 type DeepReadonlyObject<T> = {
   readonly [P in keyof T]: DeepReadonly<T[P]>;
 };
 
-export interface Fetch<S, C, P, B extends boolean> { 
+export interface Fetch<S, C, P, B extends boolean> {
   /**
    * The current resolved data, if any.
    */
@@ -50,11 +50,11 @@ export interface Fetch<S, C, P, B extends boolean> {
   /**
    * Takes a function that will be invoked whenever the status changes
    */
-  onChange: (listener: (fetch: Fetch<S, C, P, B>) => any ) => Unsubscribable;
+  onChange: (listener: (fetch: Fetch<S, C, P, B>) => any) => Unsubscribable;
   /**
    * Takes a function that will be invoked only once, when the status next changes
    */
-  onChangeOnce: (listener: (fetch: Fetch<S, C, P, B>) => any ) => Unsubscribable;
+  onChangeOnce: (listener: (fetch: Fetch<S, C, P, B>) => any) => Unsubscribable;
   /**
    * Takes a function that will be invoked whenever the cache expires
    */
@@ -186,61 +186,52 @@ type ArrayStore<S, C extends DeepReadonlyArray<any>, B extends boolean> = {
   patchWhere: (where: (e: C[0]) => boolean) => { with: (element: Partial<C[0]>, tag: Tag<B>) => void },
 } & ArrayOfPrimitivesStore<S, C, B>;
 
-export type Store<S, C, B extends boolean> =
-  (C extends undefined ? any : C extends DeepReadonlyArray<object> ? ArrayStore<S, C, B> : C extends DeepReadonlyArray<any> ? ArrayOfPrimitivesStore<S, C, B> : C extends object ? {
-    /**
+type PrimitiveStore<S, C extends any, B extends boolean> = {
+  /**
+   * Subtitutes primitive
+   * ```
+   * store(s => s.user.age)
+   *   .replaceWith(33)
+   * ```
+   */
+  replaceWith: (replacement: C, tag: Tag<B>) => void,
+}
+
+type ObjectStore<S, C extends any, B extends boolean> = {
+  /**
      * Partially updates object
      * ```
      * store(s => s.user)
      *   .patchWith({ firstName: 'James', age: 33 })
      * ```
      */
-    patchWith: (partial: Partial<C>, tag: Tag<B>) => void,
-    /**
-     * Substitutes object
-     * ```
-     * store(s => s.user)
-     *   .replaceWith(newUser)
-     * ```
-     */
-    replaceWith: (replacement: C, tag: Tag<B>) => void,
-  } : C extends boolean ? {
-    /**
-     * Subtitutes primitive
-     * ```
-     * store(s => s.user.age)
-     *   .replaceWith(33)
-     * ```
-     */
-    replaceWith: (replacement: boolean, tag: Tag<B>) => void,
-  } : {
-    /**
-     * Subtitutes primitive
-     * ```
-     * store(s => s.user.age)
-     *   .replaceWith(33)
-     * ```
-     */
-    replaceWith: (replacement: C, tag: Tag<B>) => void,
-  }) & {
-    /**
-     * Listens to any updates on this node
-     * @returns a subscription which may need to be unsubscribed from
-     * ```
-     * store(s => s.todos)
-     *   .onChange(todos => console.log(todos)) ;
-     * ```
-     */
-    onChange: (performAction: (selection: C) => any) => Unsubscribable,
-    /**
-     * @returns the current state
-     */
-    read: () => C,
-    /**
-     * Reverts the current state to how it was when the store was initialized
-     */
-    reset: (tag: Tag<B>) => void,
-  };
+  patchWith: (partial: Partial<C>, tag: Tag<B>) => void,
+} & PrimitiveStore<S, C, B>;
+
+type CommonStore<S, C extends any, B extends boolean> = {
+  /**
+       * Listens to any updates on this node
+       * @returns a subscription which may need to be unsubscribed from
+       * ```
+       * store(s => s.todos)
+       *   .onChange(todos => console.log(todos)) ;
+       * ```
+       */
+  onChange: (performAction: (selection: C) => any) => Unsubscribable,
+  /**
+   * @returns the current state
+   */
+  read: () => C,
+  /**
+   * Reverts the current state to how it was when the store was initialized
+   */
+  reset: (tag: Tag<B>) => void,
+}
+
+export type Store<S, C, B extends boolean> = ([C] extends undefined ? any :
+    [C] extends DeepReadonlyArray<object[]> ? ArrayStore<S, [C][0], B> :
+    [C] extends DeepReadonlyArray<any[]> ? ArrayOfPrimitivesStore<S, [C][0], B> :
+    [C] extends [object] ? ObjectStore<S, C, B> : PrimitiveStore<S, C, B>) & CommonStore<S, C, B>;
 
 type ReadType<E> = E extends Store<any, infer W, false> ? W : E extends Store<any, infer W, true> ? W : never;
 
