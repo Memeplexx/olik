@@ -33,9 +33,24 @@ export function deepCopy(o: any): any {
 }
 
 export function validateState(state: any) {
-  if (typeof (state) === 'function') { throw new Error('State cannot contain any functions') }
-  if (typeof (state) !== 'object') { return; }
-  Object.keys(state).forEach(key => validateState(state[key]));
+  const throwError = () => {
+    throw new Error('State can only be primitive or a POJO');
+  };
+  if (
+    state !== null 
+    && !['boolean', 'number', 'string'].some(type => typeof state === type)
+  ) {
+    if (!Array.isArray(state)) {
+      if (typeof state !== "object") {
+        throwError();
+      }
+      const proto = Object.getPrototypeOf(state);
+      if (proto != null && proto !== Object.prototype) {
+        throwError();
+      }
+    }
+    Object.keys(state).forEach(key => validateState(state[key]));
+  }
 }
 
 export function copyObject<T>(oldObj: T, newObj: T, segs: string[], action: (newNode: any) => any): any {

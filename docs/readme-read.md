@@ -48,7 +48,8 @@ listener.unsubscribe(); // Always unsubscribe to avoid memory leaks
 
 `api.ts`
 ```Typescript
-const fetchSize = store(s => s.size).createFetcher({
+const fetchSize = createFetcher({
+  onStore: store(s => s.size),
   getData: () => fetchSizeFromApi(),
   cacheFor: 1000 * 60,
 });
@@ -66,8 +67,9 @@ Some data fetches, such as **pagination** need an argument to be supplied to the
 
 `api.ts`
 ```Typescript
-const fetchTodos = store(s => s.todos).createFetcher({
-  getData: (args: { offset: number, count: number }) => fetchTodosFromApi(),
+const fetchTodos = createFetcher({
+  onStore: store(s => s.todos),
+  getData: (args: { offset: number, count: number }) => fetchTodosFromApi(offset, count),
   cacheFor: 1000 * 60,
 });
 ```

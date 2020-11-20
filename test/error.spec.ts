@@ -29,7 +29,13 @@ describe('Error', () => {
 
   it('should throw an error if the initial state has functions in it', () => {
     expect(() => make('store', {
-      hey: () => null
+      test: () => null,
+    })).toThrow();
+  })
+
+  it('should throw an error if the initial state has a set in it', () => {
+    expect(() => make('store', {
+      test: new Set(),
     })).toThrow();
   })
 

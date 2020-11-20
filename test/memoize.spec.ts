@@ -135,4 +135,24 @@ describe('Memoize', () => {
     expect(result).toEqual(['1', '2', '3']);
   })
 
+  it('should be able to derive from using a derivation as an argument', () => {
+    const store = make('my store', { num: 0, str: 'x' });
+    let originalMemoCalcCount = 0;
+    const mem = deriveFrom(
+      store(s => s.num),
+      store(s => s.str),
+    ).usingExpensiveCalc((num, str) => {
+      originalMemoCalcCount++;
+      return str + num;
+    });
+    const mem2 = deriveFrom(
+      store(s => s.str),
+      mem,
+    ).usingExpensiveCalc((s1, s2) => {
+      return s1 + s2;
+    });
+    expect(mem2.read()).toEqual('xx0');
+    expect(originalMemoCalcCount).toEqual(1);
+  })
+
 });
