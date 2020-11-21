@@ -21,10 +21,7 @@ npm i oulik
 ```Typescript
 import { make } from 'oulik';
 
-const store = make('my store', {
-  user: { firstname: '', lastname: '' },
-  hobbies: new Array<string>(),
-});       
+const store = make('my store', { user: { firstname: '', lastname: '' }, hobbies: new Array<string>() });       
 ```
 ## WRITE ##
 ```Typescript

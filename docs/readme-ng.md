@@ -1,12 +1,8 @@
 # OULIK-NG ![](../assets/angular.png) #
 
-## ***Effortless, transparent state management*** ##  
-
-Oulik enables **inline**, **type-safe** updates, and **describes them for you** inside the **[Redux Devtools extension](https://chrome.google.com/webstore/detail/redux-devtools/lmhkpmbekcpmknklioeibfkpmmfibljd?hl=en)**
-
 ## GETTING STARTED ##
 
-> Oulik depends on Ivy, and therefore requires Angular 10 and above
+> Oulik-NG depends on Ivy. It supports Angular 10 and above.
 
 ```console
 npm i oulik-ng
