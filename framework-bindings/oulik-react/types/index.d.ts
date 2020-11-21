@@ -36,21 +36,23 @@ export declare function useSelector<C>(store: {
  * EXAMPLE
  * ```typescript
  * // outside your functional component
- * const todosFetcher = store(s => s.todos).createFetcher({
+ * const todosFetcher = createFetcher({
+ *   onStore: store(s => s.todos),
  *   getData: () => fetchTodosFromApi(),
- *   cacheForMillis: 1000 * 60,
+ *   cacheFor: 1000 * 60,
  * });
  *
  * // inside your functional component
- * const { isLoading, data, hasError, error } = useFetcher(todosFetcher);
+ * const { isLoading, hasError, error, data, storeData, refetch } = useFetcher(todosFetcher);
  * ```
  */
-export declare function useFetcher<S, C, P>(getFetch: () => Fetch<S, C, P>, deps?: DependencyList): {
+export declare function useFetcher<S, C, P, B extends boolean>(getFetch: () => Fetch<S, C, P, B>, deps?: DependencyList): {
     isLoading: boolean;
     hasError: boolean;
     error: any;
     data: C;
     storeData: C;
+    refetch: import("oulik").Fetcher<S, C, P, B>;
 };
 /**
  * Similar, in principal to React-Redux's `mapStateToProps()`

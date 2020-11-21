@@ -6,8 +6,10 @@ Oulik enables **inline**, **type-safe** updates, and **describes them for you** 
 
 ## GETTING STARTED ##
 
+> Oulik depends on Ivy, and therefore requires Angular 10 and above
+
 ```console
-npm install oulik-ng
+npm i oulik-ng
 ```
 ```Typescript
 import { OulikNgModule } from 'oulik-ng';

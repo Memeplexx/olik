@@ -70,7 +70,7 @@ export class ApiService {
 ### OPTION A: USING OUR FETCHER WITHIN A COMPONENT ###
 
 ```Typescript
-import { fetch } from 'oulik-ng';
+import { selectFetch } from 'oulik-ng';
 
 @Component({
   selector: 'app-component',
@@ -86,7 +86,7 @@ export class AppComponent {
 
   constructor(private apiService: ApiService) { }
 
-  todos$ = fetch(apiService.todosFetcher);
+  todos$ = selectFetch(apiService.todosFetcher);
 }
 ```
 

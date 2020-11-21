@@ -51,23 +51,24 @@ export function useSelector<C>(
  * EXAMPLE
  * ```typescript
  * // outside your functional component
- * const todosFetcher = store(s => s.todos).createFetcher({
+ * const todosFetcher = createFetcher({
+ *   onStore: store(s => s.todos),
  *   getData: () => fetchTodosFromApi(),
- *   cacheForMillis: 1000 * 60,
+ *   cacheFor: 1000 * 60,
  * });
  * 
  * // inside your functional component
- * const { isLoading, data, hasError, error } = useFetcher(todosFetcher);
+ * const { isLoading, hasError, error, data, storeData, refetch } = useFetcher(todosFetcher);
  * ```
  */
-export function useFetcher<S, C, P>(
-  getFetch: () => Fetch<S, C, P>,
+export function useFetcher<S, C, P, B extends boolean>(
+  getFetch: () => Fetch<S, C, P, B>,
   deps?: DependencyList,
 ) {
   const allDeps = [];
   if (deps) { allDeps.push(...deps); }
   const fetch = React.useMemo(() => getFetch(), allDeps);
-  const [result, setResult] = React.useState({ isLoading: fetch.status === 'resolving', hasError: fetch.status === 'rejected', error: fetch.error, data: fetch.data, storeData: fetch.store.read() });
+  const [result, setResult] = React.useState({ isLoading: fetch.status === 'resolving', hasError: fetch.status === 'rejected', error: fetch.error, data: fetch.data, storeData: fetch.store.read(), refetch: fetch.refetch });
   React.useEffect(() => {
     setResult(result => ({...result, storeData: fetch.store.read() }));
     let storeSubscription: Unsubscribable | undefined;

@@ -10,7 +10,7 @@
       "prefix": "lib",
       "architect": {
         "build": {
-          "builder": "@angular-devkit/build-ng-packagr:build",
+          "builder": "@angular-devkit/build-angular:ng-packagr",
           "options": {
             "tsConfig": "projects/oulik-ng/tsconfig.lib.json",
             "project": "projects/oulik-ng/ng-package.json"
@@ -44,7 +44,7 @@
       }
     }},
   "cli": {
-    "analytics": false
+    "analytics": "737857f5-0af2-47dc-86ea-baeea456b314"
   },
   "defaultProject": "oulik-ng"
 }

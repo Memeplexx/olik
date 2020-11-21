@@ -17,11 +17,11 @@ export function select<S, C>(
   );
 }
 
-export function fetch<S, C, P>(
-  getFetch: () => Fetch<S, C, P>,
+export function selectFetch<S, C, P, B extends boolean>(
+  getFetch: () => Fetch<S, C, P, B>,
 ) {
   return new Observable<
-    { isLoading: boolean, data: C | null, hasError: boolean, error?: any, storeData: C | null }
+    { isLoading: boolean, data: C | null, hasError: boolean, error?: any, storeData: C | null, refetch: ReturnType<typeof getFetch>['refetch'] }
   >(observer => {
     const fetchState = getFetch();
     const emitCurrentState = () => observer.next(({
@@ -30,6 +30,7 @@ export function fetch<S, C, P>(
       data: fetchState.data,
       error: fetchState.error,
       storeData: fetchState.store.read(),
+      refetch: fetchState.refetch,
     }));
     emitCurrentState();
     let storeChangeSubscription: Unsubscribable | undefined;
@@ -48,12 +49,12 @@ export function fetch<S, C, P>(
   );
 }
 
-export function resolve<S, C, P>(
-  getFetch: () => Fetch<S, C, P>,
+export function resolve<S, C, P, B extends boolean>(
+  getFetch: () => Fetch<S, C, P, B>,
 ) {
   return new Observable<C>(observer => {
     const fetchState = getFetch();
-    const changeSubscription = fetchState.onChange(() => {
+    const changeSubscription = fetchState.onChangeOnce(() => {
       if (fetchState.status === 'resolved') {
         observer.next(fetchState.data);
         observer.complete();
@@ -61,9 +62,7 @@ export function resolve<S, C, P>(
         throw new Error(fetchState.error);
       }
     });
-    return () => {
-      changeSubscription.unsubscribe();
-    };
+    return () => changeSubscription.unsubscribe();
   });
 }
 

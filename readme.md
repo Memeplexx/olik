@@ -16,7 +16,7 @@ without requiring actions, reducers, dispatches, middleware, de-duping requests,
 ## SETUP ##
 
 ```console
-npm install oulik
+npm i oulik
 ```
 ```Typescript
 import { make } from 'oulik';

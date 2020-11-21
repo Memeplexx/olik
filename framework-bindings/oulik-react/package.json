@@ -1,6 +1,6 @@
 {
   "name": "oulik-react",
-  "version": "0.0.24",
+  "version": "0.0.26",
   "description": "",
   "main": "dist/cjs/index.js",
   "module": "dist/esm/index.js",
@@ -18,7 +18,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "oulik": "^0.0.36"
+    "oulik": "^0.0.39"
   },
   "devDependencies": {
     "@types/jest": "^26.0.7",
@@ -34,9 +34,9 @@
     "rollup-plugin-node-resolve": "^5.2.0",
     "rollup-plugin-peer-deps-external": "^2.2.3",
     "rollup-plugin-terser": "^6.1.0",
-    "rollup-plugin-typescript2": "^0.27.1",
+    "rollup-plugin-typescript2": "^0.29.0",
     "ts-jest": "^26.1.4",
-    "typescript": "3.9.7"
+    "typescript": "4.0.3"
   },
   "jest": {
     "transform": {

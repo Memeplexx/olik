@@ -271,4 +271,29 @@ describe('Fetcher', () => {
     });
   });
 
+  it('should be able to modify a collection after it has been fetched', done => {
+    const store = make('store', { array: ['one', 'two'] });
+    const fetchArray = createFetcher({
+      onStore: store(s => s.array),
+      getData: () => new Promise<string[]>(resolve => setTimeout(() => resolve(['three', 'four']), 10)),
+    });
+    fetchArray().onChangeOnce(arg => {
+      store(s => s.array).addAfter(['five', 'six']);
+      expect(store(s => s.array).read()).toEqual(['three', 'four', 'five', 'six']);
+      done();
+    });
+  })
+
+  it('should be able to unsubscribe from an already unsubscribed change listener', done => {
+    const store = make('store', { one: '' });
+    const fetchThings = createFetcher({
+      onStore: store(s => s.one),
+      getData: () => new Promise<string>(resolve => setTimeout(() => resolve('test'), 10)),
+    });
+    const sub = fetchThings().onChangeOnce(arg => {
+      sub.unsubscribe();
+      done();
+    })
+  })
+
 });

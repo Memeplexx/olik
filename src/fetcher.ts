@@ -77,23 +77,22 @@ export const createFetcher = <S, C, B extends boolean, X extends (params: any) =
       specs.getData(actualParams)
         .then(value => {
           try {
-            const valueFrozen = deepFreeze(deepCopy(value));
             cacheItem.lastFetch = Date.now();
             if (specs.setData) {
               specs.setData({
-                data: valueFrozen,
+                data: value,
                 tag: actualTag,
                 param: actualParams,
                 store: specs.onStore,
               });
             } else {
               const piece = specs.onStore as any as { replace: (c: C, tag: string | void) => void } & { replaceAll: (c: C, tag: string | void) => void };
-              if (piece.replaceAll) { piece.replaceAll(valueFrozen, actualTag); } else { piece.replace(valueFrozen, actualTag); }
+              if (piece.replaceAll) { piece.replaceAll(value, actualTag); } else { piece.replace(value, actualTag); }
             }
-            cacheItem.data = valueFrozen;
+            cacheItem.data = deepFreeze(deepCopy(value));
             cacheItem.error = null;
             cacheItem.status = 'resolved';
-            cacheItem.fetches.forEach(fetch => Object.assign<Fetch<S, C, P, B>, Partial<Fetch<S, C, P, B>>>(fetch, { status: cacheItem.status, data: valueFrozen, error: cacheItem.error }));
+            cacheItem.fetches.forEach(fetch => Object.assign<Fetch<S, C, P, B>, Partial<Fetch<S, C, P, B>>>(fetch, { status: cacheItem.status, data: value, error: cacheItem.error }));
             notifyChangeListeners(true);
             setTimeout(() => {
               invalidateCache();  // free memory
