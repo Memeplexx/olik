@@ -21,19 +21,18 @@ npm i oulik
 ```Typescript
 import { make } from 'oulik';
 
-const store = make('my store', 
-  { user: { firstname: '', lastname: '' }, hobbies: new Array<string>() });       
+const store = make('my store', { user: { name: '', email: '' }, hobbies: new Array<string>() });       
 ```
 ## WRITE ##
 ```Typescript
-store(s => s.user.firstname).replaceWith('James');
+store(s => s.user.name).replaceWith('James');
 ```
 ***[All write options...](./docs/readme-write.md)***
 
 ## READ ##
 
 ```Typescript
-const username = store(s => s.user.firstname).read();
+const username = store(s => s.user.name).read();
 ```
 ***[All read options...](./docs/readme-read.md)***
 
