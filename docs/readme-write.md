@@ -50,4 +50,5 @@ const store = makeEnforceTags('my store', { some: { value: '' } });
 
 store(s => s.some.value).replaceWith('new value', 'MyComponent');
 ```
-It may be more convenient to use the `__filename` node global object as a tag. If you're an Angular CLI user, you will need to check out [this guide](./readme-ng-tags.md)  
+In the above example, we've used 'MyComponent' as the tag but any user-defined string is acceptable.  
+For webpack users, it may be more convenient to use the `__filename` node global object as a tag.
