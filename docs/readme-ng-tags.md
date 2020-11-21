@@ -42,12 +42,7 @@ module.exports = {
 declare var __filename: string;
 ```
 
-5) restart your project for the changes to take effect.
-```console
-ng serve
-```
-
-6) Start using the variable in your state updates, for example
+5) restart your project for the changes to take effect, and start making use of the `__filename` variable
 ```Typescript
 store(s => s.user.name).replaceWith('John', __filename);
 ```
