@@ -48,6 +48,6 @@ We can require that all updates are supplemented with a 'tag' which helps to ide
 ```Typescript
 const store = makeEnforceTags('my store', { some: { value: '' } });
 
-store(s => s.some.value).replaceWith('hello', 'MyComponent');
+store(s => s.some.value).replaceWith('new value', 'MyComponent');
 ```
-You could also use the `__filename` node global object as a tag. Angular CLI users will need to check out [this guide](./readme-ng-tags.md)  
+It may be more convenient to use the `__filename` node global object as a tag. If you're an Angular CLI user, you will need to check out [this guide](./readme-ng-tags.md)  
