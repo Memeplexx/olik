@@ -6288,10 +6288,10 @@ osenv@^0.1.5:
     os-homedir "^1.0.0"
     os-tmpdir "^1.0.0"
 
-oulik@^0.0.40:
-  version "0.0.40"
-  resolved "https://registry.yarnpkg.com/oulik/-/oulik-0.0.40.tgz#37222036571c9b807f744e831174e8a4f0a4621e"
-  integrity sha512-lBKyNzoalVQUU4+O8ckYA15f3FXfIb54XLCmRUvxOVb+oEwk5KExt52fNAIB9h0aoRPiZsJxASAqpi6Pa7gd4w==
+oulik@^0.0.41:
+  version "0.0.41"
+  resolved "https://registry.yarnpkg.com/oulik/-/oulik-0.0.41.tgz#bc9941213a3d01c55ae49c0302cfb8e2578d9c99"
+  integrity sha512-3fsvuPPA5GCdT7sRDLMgObpCCdrXBI9kAoIkzPmiNXvboB08ZzQEZ4qozIjgaFIR4LFhzNnabZ0gJtkIBlydLg==
 
 p-finally@^1.0.0:
   version "1.0.0"

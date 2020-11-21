@@ -59,6 +59,7 @@ export function integrateStoreWithReduxDevtools<S, C = S>(
         case 'JUMP_TO_STATE':
         case 'JUMP_TO_ACTION':
           setState(JSON.parse(message.state));
+          onDispatchListener();
           return;
         case 'COMMIT':
           devTools.init(selection.read());

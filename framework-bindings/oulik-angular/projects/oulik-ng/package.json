@@ -1,12 +1,12 @@
 {
   "name": "oulik-ng",
-  "version": "0.0.42",
+  "version": "0.0.44",
   "peerDependencies": {
     "@angular/common": "^10.0.0",
     "@angular/core": "^10.0.0"
   },
   "dependencies": {
-    "oulik": "^0.0.40",
+    "oulik": "^0.0.41",
     "tslib": "^2.0.0"
   }
 }

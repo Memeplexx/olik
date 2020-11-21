@@ -25,11 +25,29 @@ export function selectFetch<S, C, P, B extends boolean>(
   >(observer => {
     const fetchState = getFetch();
     const emitCurrentState = () => observer.next(({
+      /**
+       * Whether or not the fetch is currently resolving
+       */
       isLoading: fetchState.status === 'resolving',
+      /**
+       * Whether or not the latest fetch was rejected
+       */
       hasError: fetchState.status === 'rejected',
+      /**
+       * The current resolved data, if any.
+       */
       data: fetchState.data,
+      /**
+       * The current rejection, if any.
+       */
       error: fetchState.error,
+      /**
+       * The current store data associated with this fetcher
+       */
       storeData: fetchState.store.read(),
+      /**
+       * Invalidates the cache and re-fetches
+       */
       refetch: fetchState.refetch,
     }));
     emitCurrentState();
