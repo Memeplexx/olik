@@ -44,7 +44,7 @@ store(s => s.todos.find(t => t.id === 2)!.text).replaceWith('something else');
 ```
 
 ## Enforcing the use of **tags** ##
-We can require that all updates are supplemented with a 'tag' which helps to identify the origin of as state update within the devtools.  
+We can require that all updates are supplemented with a 'tag' which helps to identify the origin of a state update within the devtools.  
 ```Typescript
 const store = makeEnforceTags('my store', { some: { value: '' } });
 
