@@ -26,6 +26,7 @@ const store = make('my store', { user: { name: '', email: '' }, hobbies: new Arr
 ## WRITE ##
 ```Typescript
 store(s => s.user.name).replaceWith('James');
+// dispatches ({ type: 'user.name', payload: 'James' }) and updates for you
 ```
 ***[All write options...](./docs/readme-write.md)***
 
