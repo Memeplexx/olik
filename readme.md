@@ -11,7 +11,7 @@
 Oulik enables **inline**, **type-safe** state updates, and **accurately describes them for you** inside the **[Redux Devtools extension](https://chrome.google.com/webstore/detail/redux-devtools/lmhkpmbekcpmknklioeibfkpmmfibljd?hl=en)**
 without requiring actions, reducers, dispatches, middleware, de-duping requests, custom caching code, or manually tracking loading / error / result states.
 
-> This guide introduces Oulik without a framework. You may prefer to use ***![](./docs/assets/react.png)[<u>OULIK-REACT</u>](./docs/readme-react.md)***, or ***![](./docs/assets/angular.png)[<u>OULIK-NG</u>](./docs/readme-ng.md)***.  
+> This guide introduces Oulik without a framework. You may prefer to use ***![](./docs/assets/react.png)&nbsp;[OULIK-REACT](./docs/readme-react.md)***, or ***![](./docs/assets/angular.png)&nbsp;[OULIK-NG](./docs/readme-ng.md)***.  
 
 ## SETUP ##
 
