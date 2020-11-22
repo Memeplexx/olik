@@ -8,7 +8,7 @@ describe('Memoize', () => {
   beforeAll(() => tests.windowObject = windowAugmentedWithReduxDevtoolsImpl);
 
   it('should deriveFrom() corrrectly', () => {
-    const store = make('store', {
+    const store = make({
       array: ['1', '2'],
       counter: 3,
     });
@@ -23,7 +23,7 @@ describe('Memoize', () => {
   })
 
   it('should deriveFrom() and cache correctly', () => {
-    const store = make('store', {
+    const store = make({
       array: new Array<string>(),
       counter: 3,
     });
@@ -58,7 +58,7 @@ describe('Memoize', () => {
   })
 
   it('should deriveFrom() and emit events only when required', () => {
-    const store = make('store', {
+    const store = make({
       array: new Array<string>(),
       counter: 3,
       string: '',
@@ -81,7 +81,7 @@ describe('Memoize', () => {
   })
 
   it('should deriveFrom() and correctly unsubscribe', () => {
-    const store = make('store', {
+    const store = make({
       one: 'x',
       two: 0,
     });
@@ -103,7 +103,7 @@ describe('Memoize', () => {
   })
 
   it('should deriveFrom() on specific array element', () => {
-    const store = make('store', {
+    const store = make({
       array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
       object: { hello: 'world' },
     });
@@ -121,7 +121,7 @@ describe('Memoize', () => {
   })
 
   it('should deriveFrom() using dispatcher tags', () => {
-    const store = makeEnforceTags('store', {
+    const store = makeEnforceTags({
       array: ['1', '2'],
       counter: 3,
     });
@@ -136,7 +136,7 @@ describe('Memoize', () => {
   })
 
   it('should be able to derive from using a derivation as an argument', () => {
-    const store = make('my store', { num: 0, str: 'x' });
+    const store = make({ num: 0, str: 'x' });
     let originalMemoCalcCount = 0;
     const mem = deriveFrom(
       store(s => s.num),

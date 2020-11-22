@@ -29,7 +29,7 @@ describe.skip('Perf', () => {
   })
 
   it('should test outlik perf', () => {
-    const store = make('store', {
+    const store = make({
       anotherProp: {
         some: {
           deeply: {
@@ -83,7 +83,7 @@ describe.skip('Perf', () => {
 
   it('should test oulik perf', () => {
     const initialState = { height: 0, width: 0 };
-    const store = make('store', initialState)
+    const store = make(initialState)
     const before = performance.now();
     for (let i = 0; i < 100; i++) {
       store(s => s.width).replaceWith(
@@ -205,8 +205,7 @@ describe.skip('Perf', () => {
   });
 
   it('should test Oulik array push perf', () => {
-    const state = ['one', 'two'];
-    const store = make('store', state);
+    const store = make(['one', 'two']);
     const before = performance.now();
     for (let i = 0; i < 100; i++) {
       store().addAfter(['three']);
@@ -215,8 +214,7 @@ describe.skip('Perf', () => {
   });
 
   it('should test Immutable array push perf', () => {
-    let state = ['one', 'two'];
-    let nested = fromJS(state);
+    let nested = fromJS(['one', 'two']);
     const before = performance.now();
     for (let i = 0; i < 100; i++) {
       nested = nested.push('three');

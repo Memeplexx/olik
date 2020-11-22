@@ -13,7 +13,7 @@ describe('Sequence', () => {
       },
       propTwo: new Array<{ id: number, value: string }>(),
     };
-    const store = make('store', initialState);
+    const store = make(initialState);
     store(s => s.propOne.subPropOne).replaceWith('hey');
     expect(tests.currentMutableState).toEqual(store().read());
     store(s => s.propOne).patchWith({ subPropOne: 'xxx' });
@@ -34,7 +34,7 @@ describe('Sequence', () => {
 
   it('should maintain sequence on root array', () => {
     const initialState = new Array<{ id: number, value: string }>();
-    const store = make('store', initialState);
+    const store = make(initialState);
     store().addAfter([{ id: 2, value: 'two' }]);
     expect(tests.currentMutableState).toEqual(store().read());
     store().addBefore([{ id: 0, value: 'zero' }]);

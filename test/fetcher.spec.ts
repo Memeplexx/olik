@@ -12,7 +12,7 @@ describe('Fetcher', () => {
     const initialState = {
       array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
     };
-    const store = make('store', initialState);
+    const store = make(initialState);
     const fetchArray = createFetcher({
       onStore: store(s => s.array),
       getData: () => new Promise<[{ id: number, value: string }]>(resolve => setTimeout(() => resolve([{ id: 2, value: 'dd' }]), 10))
@@ -29,7 +29,7 @@ describe('Fetcher', () => {
     const initialState = {
       array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
     };
-    const store = make('store', initialState);
+    const store = make(initialState);
     let numberOfTimesPromiseIsCalled = 0;
     const fetchArray = createFetcher({
       onStore: store(s => s.array),
@@ -48,7 +48,7 @@ describe('Fetcher', () => {
     const initialState = {
       array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
     };
-    const store = make('store', initialState);
+    const store = make(initialState);
     let numberOfTimesPromiseIsCalled = 0;
     const fetchArray = createFetcher({
       onStore: store(s => s.array),
@@ -68,7 +68,7 @@ describe('Fetcher', () => {
     const initialState = {
       array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
     };
-    const store = make('store', initialState);
+    const store = make(initialState);
     let numberOfTimesPromiseIsCalled = 0;
     const fetchArray = createFetcher({
       onStore: store(s => s.array),
@@ -89,7 +89,7 @@ describe('Fetcher', () => {
     const initialState = {
       array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
     };
-    const store = make('store', initialState);
+    const store = make(initialState);
     const fetchArray = createFetcher({
       onStore: store(s => s.array),
       getData: () => new Promise<[{ id: number, value: string }]>(resolve => setTimeout(() => resolve([{ id: 2, value: 'dd' }]), 10)),
@@ -106,7 +106,7 @@ describe('Fetcher', () => {
     const initialState = {
       array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
     };
-    const store = make('store', initialState);
+    const store = make(initialState);
     const fetchArray = createFetcher({
       onStore: store(s => s.array),
       getData: () => new Promise<[{ id: number, value: string }]>((_, reject) => setTimeout(() => reject('Woops'), 10)),
@@ -123,7 +123,7 @@ describe('Fetcher', () => {
     const initialState = {
       array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
     };
-    const store = makeEnforceTags('store', initialState);
+    const store = makeEnforceTags(initialState);
     const fetchArray = createFetcher({
       onStore: store(s => s.array),
       getData: () => new Promise<[{ id: number, value: string }]>(resolve => setTimeout(() => resolve([{ id: 2, value: 'dd' }]), 10)),
@@ -142,7 +142,7 @@ describe('Fetcher', () => {
     const initialState = {
       array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
     };
-    const store = make('store', initialState);
+    const store = make(initialState);
     const fetchArray = createFetcher({
       onStore: store(s => s.array),
       getData: (num: number) => new Promise<[{ id: number, value: string }]>(resolve => setTimeout(() => resolve([{ id: num, value: 'dd' }]), 10)),
@@ -159,7 +159,7 @@ describe('Fetcher', () => {
     const initialState = {
       array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
     };
-    const store = make('store', initialState);
+    const store = make(initialState);
     let numberOfTimesPromiseIsCalled = 0;
     const fetchArray = createFetcher({
       onStore: store(s => s.array),
@@ -178,7 +178,7 @@ describe('Fetcher', () => {
     const initialState = {
       object: { property: 'hello', property2: 'two' },
     };
-    const store = make('store', initialState);
+    const store = make(initialState);
     store(s => s.object.property).replaceWith('test');
     const fetchProp = createFetcher({
       onStore: store(s => s.object.property),
@@ -199,7 +199,7 @@ describe('Fetcher', () => {
     const initialState = {
       array: ['one', 'two'],
     };
-    const store = make('store', initialState);
+    const store = make(initialState);
     const fetchArray = createFetcher({
       onStore: store(s => s.array),
       getData: () => new Promise<string[]>(resolve => setTimeout(() => resolve(['three', 'four']), 10)),
@@ -212,7 +212,7 @@ describe('Fetcher', () => {
   })
 
   it('should respond to change listeners', done => {
-    const store = make('store', {
+    const store = make({
       array: ['one', 'two'],
     });
     const fetchArray = createFetcher({
@@ -231,7 +231,7 @@ describe('Fetcher', () => {
   });
 
   it('should unsubcribe from change listeners', done => {
-    const store = make('store', {
+    const store = make({
       array: ['one', 'two'],
     });
     const fetchArray = createFetcher({
@@ -251,7 +251,7 @@ describe('Fetcher', () => {
   });
 
   it('should unsubcribe from cache expired listeners', done => {
-    const store = make('store', {
+    const store = make({
       array: ['one', 'two'],
     });
     let cacheExpiredCount = 0;
@@ -272,7 +272,7 @@ describe('Fetcher', () => {
   });
 
   it('should be able to modify a collection after it has been fetched', done => {
-    const store = make('store', { array: ['one', 'two'] });
+    const store = make({ array: ['one', 'two'] });
     const fetchArray = createFetcher({
       onStore: store(s => s.array),
       getData: () => new Promise<string[]>(resolve => setTimeout(() => resolve(['three', 'four']), 10)),
@@ -285,7 +285,7 @@ describe('Fetcher', () => {
   })
 
   it('should be able to unsubscribe from an already unsubscribed change listener', done => {
-    const store = make('store', { one: '' });
+    const store = make({ one: '' });
     const fetchThings = createFetcher({
       onStore: store(s => s.one),
       getData: () => new Promise<string>(resolve => setTimeout(() => resolve('test'), 10)),

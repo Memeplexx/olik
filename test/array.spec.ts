@@ -11,7 +11,7 @@ describe('Array', () => {
       array: [{ id: 1, value: 'one' }],
       object: { property: '' },
     };
-    const store = make('store', initialState);
+    const store = make(initialState);
     const payload = [{ id: 2, value: 'two' }, { id: 3, value: 'three' }];
     store(s => s.array).addAfter(payload);
     expect(store(s => s.array).read()).toEqual([...initialState.array, ...payload]);
@@ -25,7 +25,7 @@ describe('Array', () => {
       array: [{ id: 3, value: 'three' }],
       object: { property: '' },
     };
-    const store = make('store', initialState);
+    const store = make(initialState);
     const payload = [{ id: 1, value: 'one' }, { id: 2, value: 'two' }];
     store(s => s.array).addBefore(payload);
     expect(store(s => s.array).read()).toEqual([...payload, ...initialState.array]);
@@ -39,7 +39,7 @@ describe('Array', () => {
       object: { property: '' },
       array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
     };
-    const store = make('store', initialState);
+    const store = make(initialState);
     const payload = { value: 'test' };
     store(s => s.array).patchWhere(e => e.value.startsWith('t')).with(payload);
     expect(store(s => s.array).read()).toEqual([{ id: 1, value: 'one' }, { id: 2, value: 'test' }, { id: 3, value: 'test' }]);
@@ -53,7 +53,7 @@ describe('Array', () => {
       object: { property: '' },
       array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
     };
-    const store = make('store', initialState);
+    const store = make(initialState);
     store(s => s.array).removeWhere(a => a.id === 2);
     expect(store(s => s.array).read()).toEqual([{ id: 1, value: 'one' }, { id: 3, value: 'three' }]);
     expect(tests.currentAction.type).toEqual('array.1.removeWhere()');
@@ -67,7 +67,7 @@ describe('Array', () => {
       object: { property: '' },
       array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
     };
-    const store = make('store', initialState);
+    const store = make(initialState);
     const payload = { id: 5, value: 'hey' };
     store(s => s.array).replaceWhere(a => a.id === 2).with(payload);
     expect(store(s => s.array).read()).toEqual([{ id: 1, value: 'one' }, payload, { id: 3, value: 'three' }]);
@@ -81,7 +81,7 @@ describe('Array', () => {
       object: { property: '' },
       array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
     };
-    const store = make('store', initialState);
+    const store = make(initialState);
     const payload = { id: 1, value: 'one updated' };
     store(s => s.array).upsertWhere(e => e.id === 1).with(payload);
     expect(store(s => s.array).read()).toEqual([payload, { id: 2, value: 'two' }, { id: 3, value: 'three' }]);
@@ -100,7 +100,7 @@ describe('Array', () => {
       object: { property: '' },
       array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }]
     };
-    const store = make('store', initialState);
+    const store = make(initialState);
     store(s => s.array).removeAll();
     expect(store(s => s.array).read()).toEqual([]);
     expect(tests.currentAction.type).toEqual('array.removeAll()');
@@ -112,7 +112,7 @@ describe('Array', () => {
       object: { property: '' },
       array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
     };
-    const store = make('store', initialState);
+    const store = make(initialState);
     store(s => s.array).removeFirst();
     expect(store(s => s.array).read()).toEqual([{ id: 2, value: 'two' }, { id: 3, value: 'three' }]);
     expect(tests.currentAction.type).toEqual('array.removeFirst()');
@@ -124,7 +124,7 @@ describe('Array', () => {
       object: { property: '' },
       array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
     };
-    const store = make('store', initialState);
+    const store = make(initialState);
     store(s => s.array).removeLast();
     expect(store(s => s.array).read()).toEqual([{ id: 1, value: 'one' }, { id: 2, value: 'two' }]);
     expect(tests.currentAction.type).toEqual('array.removeLast()');
@@ -136,7 +136,7 @@ describe('Array', () => {
       array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
       object: { property: '' },
     };
-    const store = make('store', initialState);
+    const store = make(initialState);
     const payload = [{ id: 4, value: 'four' }, { id: 5, value: 'five' }];
     store(s => s.array).replaceAll(payload);
     expect(store(s => s.array).read()).toEqual([{ id: 4, value: 'four' }, { id: 5, value: 'five' }]);
@@ -146,7 +146,7 @@ describe('Array', () => {
   })
 
   it('should be able to find() an array element and replace one of its properties', () => {
-    const store = make('store', {
+    const store = make({
       array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
       object: { hello: 'world' },
     });
@@ -156,7 +156,7 @@ describe('Array', () => {
   })
 
   it('should be able to find() an array element and patch one of its properties', () => {
-    const store = make('store', {
+    const store = make({
       array: [{ id: 1, value: { a: 'one', b: 'one' } }, { id: 2, value: { a: 'two', b: 'two' } }, { id: 3, value: { a: 'three', b: 'three' } }],
       object: { hello: 'world' },
     });

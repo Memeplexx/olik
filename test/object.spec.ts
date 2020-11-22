@@ -10,7 +10,7 @@ describe('Object', () => {
     const initialState = {
       object: { property: 'hello', property2: 'two' },
     };
-    const store = make('state', initialState);
+    const store = make(initialState);
     const payload = 'hey';
     store(s => s.object.property).replaceWith(payload);
     expect(store(s => s.object.property).read()).toEqual('hey');
@@ -24,7 +24,7 @@ describe('Object', () => {
     const initialState = {
       object: { property: 'hello', property2: 'two' },
     };
-    const store = make('state', initialState);
+    const store = make(initialState);
     const payload = { property: 'xxx' };
     store(s => s.object).patchWith(payload);
     expect(store(s => s.object.property).read()).toEqual(payload.property);
@@ -38,7 +38,7 @@ describe('Object', () => {
     const initialState = {
       object: { property: 'hello', property2: 'two' },
     };
-    const store = make('state', initialState);
+    const store = make(initialState);
     store(s => s.object.property).replaceWith('hey');
     expect(store(s => s.object.property).read()).toEqual('hey');
     expect(tests.currentMutableState).toEqual(store().read());
@@ -54,10 +54,9 @@ describe('Object', () => {
   })
 
   it('should work with tags correctly', () => {
-    const initialState = {
+    const store = makeEnforceTags({
       object: { property: 'hello', property2: 'two' },
-    };
-    const store = makeEnforceTags('store', initialState);
+    });
     const payload = 'hey';
     const tag = 'mytag';
     store(s => s.object.property).replaceWith(payload, tag);

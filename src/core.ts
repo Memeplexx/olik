@@ -19,8 +19,8 @@ import { copyObject, createPathReader, deepCopy, deepFreeze, validateState } fro
  *   .with({ text: 'bake cookies' }, 'TodoDetailComponent')
  * ```
  */
-export function makeEnforceTags<S>(nameOrDevtoolsConfig: string | false | EnhancerOptions, state: S, tagSanitizer?: (tag: string) => string) {
-  return makeInternal(nameOrDevtoolsConfig, state, true, tagSanitizer) as any as <C = S>(selector?: (s: DeepReadonly<S>) => C) => Store<S, C, true>;
+export function makeEnforceTags<S>(state: S, options: { devtools: EnhancerOptions | false, tagSanitizer?: (tag: string) => string } = { devtools: {} }) {
+  return makeInternal(state, { ...options, supportsTags: true }) as any as <C = S>(selector?: (s: DeepReadonly<S>) => C) => Store<S, C, true>;
 }
 
 /**
@@ -33,11 +33,15 @@ export function makeEnforceTags<S>(nameOrDevtoolsConfig: string | false | Enhanc
  * const store = make('store', { todos: Array<{ id: number, text: string }>() });
  * ```
  */
-export function make<S>(nameOrDevtoolsConfig: string | false | EnhancerOptions, state: S) {
-  return makeInternal(nameOrDevtoolsConfig, state, false) as any as <C = S>(selector?: (s: DeepReadonly<S>) => C) => Store<S, C, false>;
+export function make<S>(state: S, options: { devtools: EnhancerOptions | false } = { devtools: {} }) {
+  return makeInternal(state, { ...options, supportsTags: false }) as any as <C = S>(selector?: (s: DeepReadonly<S>) => C) => Store<S, C, false>;
 }
 
-function makeInternal<S>(nameOrDevtoolsConfig: string | false | EnhancerOptions, state: S, supportsTags: boolean, tagSanitizer?: (tag: string) => string) {
+// export function makeLib<L>(name: string, state: L) {
+//   return makeInternal(name, state, false);
+// }
+
+function makeInternal<S>(state: S, options: { supportsTags: boolean, devtools: EnhancerOptions | false, tagSanitizer?: (tag: string) => string }) {
   validateState(state);
   const changeListeners = new Map<(ar: any) => any, (arg: S) => any>();
   const pathReader = createPathReader(state);
@@ -161,7 +165,7 @@ function makeInternal<S>(nameOrDevtoolsConfig: string | false | EnhancerOptions,
     },
     read: () => deepFreeze(selector(currentState)),
     readInitial: () => selector(initialState),
-    supportsTags,
+    supportsTags: options.supportsTags,
   } as any as Store<S, C, any>);
 
   const storeResult = <C = S>(selector: ((s: DeepReadonly<S>) => C) = (s => s as any as C)) => {
@@ -188,7 +192,7 @@ function makeInternal<S>(nameOrDevtoolsConfig: string | false | EnhancerOptions,
     payload: any,
     action: (newNode: any) => any,
     mutator: (newNode: any) => any,
-    options: {
+    updateOptions: {
       overrideActionName?: boolean,
       tag?: string,
     } = {
@@ -202,13 +206,13 @@ function makeInternal<S>(nameOrDevtoolsConfig: string | false | EnhancerOptions,
     currentState = result;
     notifySubscribers(previousState, result);
     const actionToDispatch = {
-      type: (options && options.overrideActionName ? actionName : ((pathSegments.join('.') + (pathSegments.length ? '.' : '') + actionName + '()')))
-        + (options.tag ? ` [${tagSanitizer ? tagSanitizer(options.tag) : options.tag}]` : ''),
+      type: (updateOptions && updateOptions.overrideActionName ? actionName : ((pathSegments.join('.') + (pathSegments.length ? '.' : '') + actionName + '()')))
+        + (updateOptions.tag ? ` [${options.tagSanitizer ? options.tagSanitizer(updateOptions.tag) : updateOptions.tag}]` : ''),
       payload,
     };
     tests.currentAction = actionToDispatch;
     tests.currentMutableState = pathReader.mutableStateCopy;
-    if (devtoolsDispatchListener && (!options.tag || (options.tag !== 'dontTrackWithDevtools'))) {
+    if (devtoolsDispatchListener && (!updateOptions.tag || (updateOptions.tag !== 'dontTrackWithDevtools'))) {
       const dispatchToDevtools = (payload?: any[]) => {
         const action = payload ? { ...actionToDispatch, payload } : actionToDispatch;
         tests.currentActionForDevtools = action;
@@ -251,9 +255,8 @@ function makeInternal<S>(nameOrDevtoolsConfig: string | false | EnhancerOptions,
     })
   }
 
-  if (nameOrDevtoolsConfig !== false) {
-    integrateStoreWithReduxDevtools<S>(storeResult as any, typeof (nameOrDevtoolsConfig) === 'string'
-      ? { name: nameOrDevtoolsConfig } : nameOrDevtoolsConfig, setDevtoolsDispatchListener);
+  if (options.devtools !== false) {
+    integrateStoreWithReduxDevtools<S>(storeResult as any, options.devtools, setDevtoolsDispatchListener);
   }
 
   return storeResult;

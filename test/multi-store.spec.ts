@@ -7,8 +7,8 @@ describe('Multi-store', () => {
   beforeAll(() => tests.windowObject = windowAugmentedWithReduxDevtoolsImpl);
 
   it('should support multiple stores', () => {
-    const store1 = make('store-1', new Array<string>());
-    const store2 = make('store-2', 0);
+    const store1 = make(new Array<string>());
+    const store2 = make(0);
     store1().replaceAll(['one']);
     store2().replaceWith(2);
     expect(store1().read()).toEqual(['one']);
@@ -16,8 +16,8 @@ describe('Multi-store', () => {
   })
 
   it('should memoise using multiple stores', () => {
-    const store1 = make('store-1', { array: new Array<number>(), string: '' });
-    const store2 = make('store-2', { number: 0 });
+    const store1 = make({ array: new Array<number>(), string: '' });
+    const store2 = make({ number: 0 });
     const mem = deriveFrom(
       store1(s => s.array),
       store2(s => s.number),
