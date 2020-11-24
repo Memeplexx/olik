@@ -6,9 +6,7 @@ Let's first assume that a store has been initialized as follows:
 ```Typescript
 import { make } from 'oulik';
 
-const store = make({
-  todos: new Array<{ id: number, text: string }>(),
-}); 
+const store = make({ todos: new Array<{ id: number, text: string }>() }); 
 ```
 ---
 
