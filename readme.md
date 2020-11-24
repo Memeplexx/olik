@@ -23,10 +23,10 @@ const store = make({ favoriteThings: { color: '', food: '' } });
 
 store(s => s.favoriteThings.color).replaceWith('red'); 
 ```
-***[All write options...](./docs/readme-write.md)***
+***[✍️ Writing state...](./docs/readme-write.md)***
 
-***[All read options...](./docs/readme-read.md)***
+***[📖 Reading state...](./docs/readme-read.md)***
 
-***[Fetching data...](./docs/readme-fetch.md)***
+***[🐕‍🦺 Fetching data...](./docs/readme-fetch.md)***
 
-***[Best practices...](./docs/best-practices.md)***
+***[👩‍🎓 Best practices...](./docs/best-practices.md)***
