@@ -3,20 +3,31 @@
 ## FETCHING ASYNC STATE ##
 **Fetchers** report the status of a request, prevent duplicate simulataneous requests, cache responses, and automatically update your store. 
 
+
+Let's first assume that a store has been initialized as follows:
+```Typescript
+import { make } from 'oulik';
+
+const store = make({
+  todos: new Array<{ id: number, text: string }>(),
+}); 
+```
+---
+
 `api.ts`
 ```Typescript
-const fetchSize = createFetcher({
-  onStore: store(s => s.size),
-  getData: () => fetchSizeFromApi(),
+const fetchTodos = createFetcher({
+  onStore: store(s => s.todos),
+  getData: () => fetchTodosFromApi(),
   cacheFor: 1000 * 60,
 });
 ```
 
 `component.ts`
 ```Typescript
-const sizeFetcher = fetchSize();
-const onChangeSubscription = sizeFetcher.onChange(() => console.log(`Fetcher status is currently ${sizeFetcher.status}`));
-onChangeSubscription.unSubscribe(); // Always unsubscribe to avoid memory leaks
+const subscription = fetchTodos()
+  .onChange(() => console.log(`Fetcher status is currently ${sizeFetcher.status}`));
+subscription.unSubscribe(); // Always unsubscribe to avoid memory leaks
 ```
 
 ## FETCHING ASYNC STATE (WITH ARGS) ##

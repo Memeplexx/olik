@@ -4,7 +4,7 @@ Let's first assume that a store has been initialized as follows:
 ```Typescript
 import { make } from 'oulik';
 
-const store = make('canvas', {
+const store = make({
   size: { width: 10, height: 10 },
   border: { thickness: 1 },
 }); 
