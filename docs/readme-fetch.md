@@ -36,6 +36,7 @@ Some data fetches, such as **pagination** need an argument to be supplied to the
 const fetchTodos = createFetcher({
   onStore: store(s => s.todos),
   getData: (args: { offset: number, count: number }) => fetchTodosFromApi(offset, count),
+  setData: (arg) => arg.store.addAfter(arg.data),
   cacheFor: 1000 * 60,
 });
 ```
