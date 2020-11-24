@@ -1,8 +1,6 @@
 # OULIK - FETCHING DATA #
 
-## FETCHING ASYNC STATE ##
-**Fetchers** report the status of a request, prevent duplicate simulataneous requests, cache responses, and automatically update your store. 
-
+> **Fetchers** report the status of a request, prevent duplicate simulataneous requests, cache responses, and automatically update your store. 
 
 Let's first assume that a store has been initialized as follows:
 ```Typescript
@@ -13,6 +11,8 @@ const store = make({
 }); 
 ```
 ---
+
+## FETCHING ASYNC STATE ##
 
 `api.ts`
 ```Typescript
