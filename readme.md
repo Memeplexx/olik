@@ -19,10 +19,8 @@ npm i oulik
 ```Typescript
 import { make } from 'oulik';
 
-// define store
 const store = make({ favoriteThings: { color: '', food: '' } });       
 
-// perform an update
 store(s => s.favoriteThings.color).replaceWith('red'); 
 ```
 ***[All write options...](./docs/readme-write.md)***
