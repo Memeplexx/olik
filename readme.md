@@ -13,30 +13,22 @@ without requiring actions, reducers, dispatches, middleware, de-duping requests,
 
 > This guide introduces Oulik without a framework. You may prefer to use ***[![](./docs/assets/react.png)&nbsp;OULIK-REACT](./docs/readme-react.md)***, or ***[![](./docs/assets/angular.png)&nbsp;OULIK-NG](./docs/readme-ng.md)***.  
 
-## SETUP ##
-
 ```console
 npm i oulik
 ```
 ```Typescript
 import { make } from 'oulik';
 
+// define store
 const store = make({ favoriteThings: { color: '', food: '' } });       
-```
-## WRITE ##
-```Typescript
+
+// perform an update
 store(s => s.favoriteThings.color).replaceWith('red'); 
-// dispatches and updates using { type: 'favoriteThings.color.replaceWith()', payload: 'red' }
 ```
 ***[All write options...](./docs/readme-write.md)***
 
-## READ ##
-
-```Typescript
-const favoriteColor = store(s => s.favoriteThings.color).read();
-```
 ***[All read options...](./docs/readme-read.md)***
 
-## BEST PRACTICES ##
-If you don't already have some experience with Redux or NGRX, it's worth checking this small guide.  
-***[State-management best practices](./docs/best-practices.md)***
+***[Fetching data...](./docs/readme-fetch.md)***
+
+***[Best practices...](./docs/best-practices.md)***
