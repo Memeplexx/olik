@@ -64,4 +64,10 @@ describe('Object', () => {
     expect(store(s => s.object.property).read()).toEqual(payload);
   })
 
+  it('should be able to add a new property onto an object', () => {
+    const store = make({} as { [key: string]: string });
+    store().patchWith({ hello: 'world' });
+    expect(store().read()).toEqual({ hello: 'world' });
+  })
+  
 });

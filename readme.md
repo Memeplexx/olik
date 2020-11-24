@@ -21,18 +21,18 @@ npm i oulik
 ```Typescript
 import { make } from 'oulik';
 
-const store = make({ name: '', hobbies: new Array<string>() });       
+const store = make({ favoriteThings: { color: '', food: '' } });       
 ```
 ## WRITE ##
 ```Typescript
-store(s => s.hobbies).addAfter('Baking'); // dispatches { type: 'hobbies.addAfter()', payload: 'Baking' }
+store(s => s.favoriteThings.color).replaceWith('red'); // dispatches { type: 'favoriteThings.color.replaceWith()', payload: 'red' }
 ```
 ***[All write options...](./docs/readme-write.md)***
 
 ## READ ##
 
 ```Typescript
-const username = store(s => s.name).read();
+const favoriteColor = store(s => s.favoriteThings.color).read();
 ```
 ***[All read options...](./docs/readme-read.md)***
 

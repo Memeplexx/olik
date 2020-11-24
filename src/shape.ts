@@ -18,7 +18,7 @@ export type DeepReadonly<T> =
 
 interface DeepReadonlyArray<T> extends ReadonlyArray<DeepReadonly<T>> { }
 
-type DeepReadonlyObject<T> = {
+export type DeepReadonlyObject<T> = {
   readonly [P in keyof T]: DeepReadonly<T[P]>;
 };
 
@@ -101,7 +101,7 @@ type ArrayOfPrimitivesStore<S, C extends DeepReadonlyArray<any>, B extends boole
    *   .addAfter(newTodos);
    * ```
    */
-  addAfter: (elements: C[0][], tag: Tag<B>) => void,
+  addAfter: (elements: C[0] | C[0][], tag: Tag<B>) => void,
   /**
    * Prepend elements to the beginning of array
    * ```
@@ -109,7 +109,7 @@ type ArrayOfPrimitivesStore<S, C extends DeepReadonlyArray<any>, B extends boole
    *   .addBefore(newTodos);
    * ```
    */
-  addBefore: (elements: C[0][], tag: Tag<B>) => void,
+  addBefore: (elements: C[0] | C[0][], tag: Tag<B>) => void,
   /**
    * Remove all elements from array
    * ```
@@ -174,7 +174,7 @@ type ArrayOfPrimitivesStore<S, C extends DeepReadonlyArray<any>, B extends boole
   upsertWhere: (where: (e: C[0]) => boolean) => { with: (element: C[0], tag: Tag<B>) => void },
 }
 
-type ArrayStore<S, C extends DeepReadonlyArray<any>, B extends boolean> = {
+export type ArrayStore<S, C extends DeepReadonlyArray<any>, B extends boolean> = {
   /**
    * Partially update elements which match a specific condition
    * ```
@@ -186,7 +186,7 @@ type ArrayStore<S, C extends DeepReadonlyArray<any>, B extends boolean> = {
   patchWhere: (where: (e: C[0]) => boolean) => { with: (element: Partial<C[0]>, tag: Tag<B>) => void },
 } & ArrayOfPrimitivesStore<S, C, B>;
 
-type PrimitiveStore<S, C extends any, B extends boolean> = {
+export type PrimitiveStore<S, C extends any, B extends boolean> = {
   /**
    * Subtitutes primitive
    * ```
@@ -197,26 +197,26 @@ type PrimitiveStore<S, C extends any, B extends boolean> = {
   replaceWith: (replacement: C, tag: Tag<B>) => void,
 }
 
-type ObjectStore<S, C extends any, B extends boolean> = {
+export type ObjectStore<S, C extends any, B extends boolean> = {
   /**
-     * Partially updates object
-     * ```
-     * store(s => s.user)
-     *   .patchWith({ firstName: 'James', age: 33 })
-     * ```
-     */
+   * Partially updates object
+   * ```
+   * store(s => s.user)
+   *   .patchWith({ firstName: 'James', age: 33 })
+   * ```
+   */
   patchWith: (partial: Partial<C>, tag: Tag<B>) => void,
 } & PrimitiveStore<S, C, B>;
 
 export type CommonReadable<S, C extends any, B extends boolean> = {
   /**
-       * Listens to any updates on this node
-       * @returns a subscription which may need to be unsubscribed from
-       * ```
-       * store(s => s.todos)
-       *   .onChange(todos => console.log(todos)) ;
-       * ```
-       */
+   * Listens to any updates on this node
+   * @returns a subscription which may need to be unsubscribed from
+   * ```
+   * store(s => s.todos)
+   *   .onChange(todos => console.log(todos)) ;
+   * ```
+   */
   onChange: (performAction: (selection: C) => any) => Unsubscribable,
   /**
    * @returns the current state
@@ -235,6 +235,8 @@ export type Store<S, C, B extends boolean> = ([C] extends undefined ? any :
     [C] extends DeepReadonlyArray<object[]> ? ArrayStore<S, [C][0], B> :
     [C] extends DeepReadonlyArray<any[]> ? ArrayOfPrimitivesStore<S, [C][0], B> :
     [C] extends [object] ? ObjectStore<S, C, B> : PrimitiveStore<S, C, B>) & CommonStore<S, C, B>;
+
+export type LibStore<S, C, B extends boolean> = Store<S, C, B> & { stopTracking: () => void };
 
 type ReadType<E> = E extends CommonReadable<any, infer W, false> ? W : E extends CommonReadable<any, infer W, true> ? W : never;
 

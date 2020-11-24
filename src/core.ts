@@ -1,17 +1,19 @@
 import { devtoolsDebounce } from './consts';
 import { integrateStoreWithReduxDevtools } from './devtools';
-import { DeepReadonly, EnhancerOptions, Store } from './shape';
+import { ArrayStore, CommonStore, DeepReadonly, DeepReadonlyObject, EnhancerOptions, LibStore, ObjectStore, Store } from './shape';
 import { tests } from './tests';
 import { copyObject, createPathReader, deepCopy, deepFreeze, validateState } from './utils';
+
+let nestedContainerStore: ((selector?: ((s: DeepReadonly<any>) => any) | undefined) => Store<any, any, boolean>) | undefined;
+
 /**
  * Creates a new store which, for typescript users, requires that users supply an additional 'tag' when performing a state update.
  * These tags can improve the debugging experience by describing the source of an update event, for example the name of the component an update was trigger from.
- * @param nameOrDevtoolsConfig takes either a string, or an object
  * @param state the initial state  
  * 
  * FOR EXAMPLE:
  * ```
- * const store = makeEnforceTags('store', { todos: Array<{ id: number, text: string }>() });
+ * const store = makeEnforceTags({ todos: Array<{ id: number, text: string }>() });
  * 
  * // Note that when updating state, we are now required to supply a string as the last argument (in this case 'TodoDetailComponent')
  * store(s => s.todos)
@@ -19,34 +21,75 @@ import { copyObject, createPathReader, deepCopy, deepFreeze, validateState } fro
  *   .with({ text: 'bake cookies' }, 'TodoDetailComponent')
  * ```
  */
-export function makeEnforceTags<S>(state: S, options: { devtools: EnhancerOptions | false, tagSanitizer?: (tag: string) => string } = { devtools: {} }) {
-  return makeInternal(state, { ...options, supportsTags: true }) as any as <C = S>(selector?: (s: DeepReadonly<S>) => C) => Store<S, C, true>;
+export function makeEnforceTags<S>(state: S, options: { devtools?: EnhancerOptions | false, tagSanitizer?: (tag: string) => string, containerForNestedStores?: boolean } = {}) {
+  const store = makeInternal(state, { devtools: options.devtools || {}, supportsTags: true });
+  if (options.containerForNestedStores) {
+    nestedContainerStore = store;
+  }
+  return store;
 }
 
 /**
  * Creates a new store
- * @param nameOrDevtoolsConfig takes either a string, or an object
  * @param state the initial state
  * 
  * FOR EXAMPLE:
  * ```
- * const store = make('store', { todos: Array<{ id: number, text: string }>() });
+ * const store = make({ todos: Array<{ id: number, text: string }>() });
  * ```
  */
-export function make<S>(state: S, options: { devtools: EnhancerOptions | false } = { devtools: {} }) {
-  return makeInternal(state, { ...options, supportsTags: false }) as any as <C = S>(selector?: (s: DeepReadonly<S>) => C) => Store<S, C, false>;
+export function make<S>(state: S, options: { devtools?: EnhancerOptions | false, containerForNestedStores?: boolean } = {}) {
+  const store = makeInternal(state, { devtools: options.devtools || {}, supportsTags: false });
+  if (options.containerForNestedStores) {
+    nestedContainerStore = store;
+  }
+  return store;
 }
 
-// export function makeLib<L>(name: string, state: L) {
-//   return makeInternal(name, state, false);
-// }
+/**
+ * Creates a new store which is capable of being nested inside another store.
+ * If an existing store is already defined as `make({...}, { containerForNestedStores: true });`
+ * then this store will be automatically nested within that store, under the property `nested`.
+ * If the opposite is true, then a new top-level store will be registered within the devtools
+ * @param state The initial state
+ * @param options A configuration object which, at minimum, must contain the `name` of the nested store
+ */
+export function makeNested<L>(state: L, options: { name: string }) {
+  const name = options.name;
+  if (!nestedContainerStore) {
+    return <C = L>(selector?: (arg: DeepReadonly<L>) => C) => (selector
+      ? makeInternal(state, { devtools: { name }, supportsTags: false })(selector)
+      : null) as any as LibStore<L, C, any>;
+  }
+  const initialState = (nestedContainerStore() as any).readInitial();
+  if (!nestedContainerStore().read().nested) {
+    (nestedContainerStore() as any as ObjectStore<any, any, any>).patchWith({ nested: { [name]: { '0': state } } });
+    (nestedContainerStore() as any).renew({ ...initialState, nested: { [name]: { '0': state } } });
+  } else if (!nestedContainerStore().read().nested[name]) {
+    (nestedContainerStore(s => s.nested) as any as ObjectStore<any, any, any>).patchWith({ [name]: { '0': state } });
+    (nestedContainerStore() as any).renew({ ...initialState, nested: { ...initialState.nested, [name]: { '0': state } } });
+  } else {
+    const values = (nestedContainerStore(s => s.nested[name]) as any as CommonStore<any, any, any>).read();
+    const keys = Object.keys(values);
+    (nestedContainerStore(s => s.nested[name]) as any as ObjectStore<any, any, any>).patchWith({ [+keys[keys.length - 1] + 1]: state });
+  }
+  const index = Object.keys(nestedContainerStore(s => s.nested[name]).read()).length - 1;
+  return <C = L>(selector?: (arg: DeepReadonlyObject<L>) => C) => {
+    const lStore = nestedContainerStore!(s => {
+      const libState = s.nested[name][index.toString()];
+      return selector ? selector(libState) : libState;
+    });
+    (lStore as any)['stopTracking'] = (lStore as any)['defineStopTracking'](name, index);
+    return lStore as any as LibStore<L, C, any>;
+  };
+}
 
 function makeInternal<S>(state: S, options: { supportsTags: boolean, devtools: EnhancerOptions | false, tagSanitizer?: (tag: string) => string }) {
   validateState(state);
   const changeListeners = new Map<(ar: any) => any, (arg: S) => any>();
-  const pathReader = createPathReader(state);
+  let pathReader = createPathReader(state);
   let currentState = deepFreeze(state) as S;
-  const initialState = currentState;
+  let initialState = currentState;
   let devtoolsDispatchListener: ((action: { type: string, payload?: any }) => any) | undefined;
   const setDevtoolsDispatchListener = (listener: (action: { type: string, payload?: any }) => any) => devtoolsDispatchListener = listener;
   const replace = <C>(selector: (s: S) => C, name: string) => (assignment: C, tag?: string) => {
@@ -100,11 +143,11 @@ function makeInternal<S>(state: S, options: { supportsTags: boolean, devtools: E
       }
     }),
     addAfter: (assignment: X[0][], tag?: string) => updateState<C>(selector, 'addAfter', assignment,
-      old => [...old, ...deepCopy(assignment)],
-      old => old.push(...assignment), { tag }),
+      old => [...old, ...(deepCopy(Array.isArray(assignment) ? assignment : [assignment]))],
+      old => old.push(...(Array.isArray(assignment) ? assignment : [assignment])), { tag }),
     addBefore: (assignment: X[0][], tag?: string) => updateState<C>(selector, 'addBefore', assignment,
-      old => [...deepCopy(assignment), ...old],
-      old => old.unshift(...assignment), { tag }),
+      old => [...(deepCopy(Array.isArray(assignment) ? assignment : [assignment])), ...old],
+      old => old.unshift(...(Array.isArray(assignment) ? assignment : [assignment])), { tag }),
     removeFirst: (tag?: string) => updateState<C>(selector, 'removeFirst', (selector(currentState) as any as X).slice(1),
       old => old.slice(1, old.length),
       old => old.shift(), { tag }),
@@ -166,6 +209,24 @@ function makeInternal<S>(state: S, options: { supportsTags: boolean, devtools: E
     read: () => deepFreeze(selector(currentState)),
     readInitial: () => selector(initialState),
     supportsTags: options.supportsTags,
+    renew: (state: S) => {
+      pathReader = createPathReader(state);
+      currentState = deepFreeze(state) as S;
+      initialState = currentState;
+    },
+    defineStopTracking: (name: string, key: string) => () => {
+      if (nestedContainerStore) {
+        state = deepCopy(currentState);
+        if (Object.keys((state as any).nested[name]).length === 1) {
+          delete (state as any).nested[name];
+        } else {
+          delete (state as any).nested[name][key];
+        }
+        pathReader = createPathReader(state);
+        currentState = deepFreeze(state) as S;
+        initialState = currentState;
+      }
+    }
   } as any as Store<S, C, any>);
 
   const storeResult = <C = S>(selector: ((s: DeepReadonly<S>) => C) = (s => s as any as C)) => {
@@ -185,7 +246,7 @@ function makeInternal<S>(state: S, options: { supportsTags: boolean, devtools: E
     payloads: [],
     debounceTimeout: 0,
   };
-  
+
   function updateState<C>(
     selector: (s: S) => C,
     actionName: string,

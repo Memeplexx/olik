@@ -56,7 +56,8 @@ export function validateState(state: any) {
 export function copyObject<T>(oldObj: T, newObj: T, segs: string[], action: (newNode: any) => any): any {
   const seg = (segs as (keyof T)[]).shift();
   if (seg) {
-    if (!isNaN(seg as any)) { // must be an array key
+    // if (!isNaN(seg as any)) { // must be an array key
+    if (Array.isArray(oldObj)) {
       return (oldObj as any as any[]).map((e, i) => +seg === i
         ? { ...(oldObj as any)[i], ...copyObject((oldObj as any)[i], (newObj as any)[i], segs, action) }
         : e);

@@ -4,7 +4,7 @@
 ```Typescript
 import { make } from 'oulik';
 
-const store = make('store', {
+const store = make({
   user: { firstName: '', lastName: '', age: 0 },
   todos: new Array<{ id: number, text: string, status: 'todo' | 'done' }>()
 });
@@ -46,7 +46,7 @@ store(s => s.todos.find(t => t.id === 2)!.text).replaceWith('something else');
 ## Enforcing the use of **tags** ##
 We can require that all updates are supplemented with a 'tag' which helps to identify the origin of a state update within the devtools.  
 ```Typescript
-const store = makeEnforceTags('my store', { some: { value: '' } });
+const store = makeEnforceTags({ some: { value: '' } });
 
 store(s => s.some.value).replaceWith('new value', 'MyComponent');
 ```

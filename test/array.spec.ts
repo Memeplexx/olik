@@ -6,7 +6,7 @@ describe('Array', () => {
 
   beforeAll(() => tests.windowObject = windowAugmentedWithReduxDevtoolsImpl);
 
-  it('should addAfter()', () => {
+  it('should addAfter() with an arraay as payload', () => {
     const initialState = {
       array: [{ id: 1, value: 'one' }],
       object: { property: '' },
@@ -20,7 +20,21 @@ describe('Array', () => {
     expect(tests.currentMutableState).toEqual(store().read());
   })
 
-  it('should addBefore()', () => {
+  it('should addAfter() with a single item as payload', () => {
+    const initialState = {
+      array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }],
+      object: { property: '' },
+    };
+    const store = make(initialState);
+    const payload = { id: 3, value: 'three' };
+    store(s => s.array).addAfter(payload);
+    expect(store(s => s.array).read()).toEqual([...initialState.array, payload]);
+    expect(tests.currentAction.type).toEqual('array.addAfter()');
+    expect(tests.currentAction.payload).toEqual(payload);
+    expect(tests.currentMutableState).toEqual(store().read());
+  })
+
+  it('should addBefore() with an arraay as payload', () => {
     const initialState = {
       array: [{ id: 3, value: 'three' }],
       object: { property: '' },
@@ -29,6 +43,20 @@ describe('Array', () => {
     const payload = [{ id: 1, value: 'one' }, { id: 2, value: 'two' }];
     store(s => s.array).addBefore(payload);
     expect(store(s => s.array).read()).toEqual([...payload, ...initialState.array]);
+    expect(tests.currentAction.type).toEqual('array.addBefore()');
+    expect(tests.currentAction.payload).toEqual(payload);
+    expect(tests.currentMutableState).toEqual(store().read());
+  })
+
+  it('should addBefore() with a single item as payload', () => {
+    const initialState = {
+      array: [{ id: 2, value: 'two' }, { id: 3, value: 'three' }],
+      object: { property: '' },
+    };
+    const store = make(initialState);
+    const payload = { id: 1, value: 'one' };
+    store(s => s.array).addBefore(payload);
+    expect(store(s => s.array).read()).toEqual([payload, ...initialState.array]);
     expect(tests.currentAction.type).toEqual('array.addBefore()');
     expect(tests.currentAction.payload).toEqual(payload);
     expect(tests.currentMutableState).toEqual(store().read());
