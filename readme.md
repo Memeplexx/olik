@@ -26,7 +26,7 @@ const store = make({ favoriteThings: { color: '', food: '' } });
 ## WRITE ##
 ```Typescript
 store(s => s.favoriteThings.color).replaceWith('red'); 
-// dispatches { type: 'favoriteThings.color.replaceWith()', payload: 'red' } and performs an immutable update
+// dispatches and updates using { type: 'favoriteThings.color.replaceWith()', payload: 'red' }
 ```
 ***[All write options...](./docs/readme-write.md)***
 
