@@ -1,6 +1,6 @@
 import { devtoolsDebounce } from './consts';
 import { integrateStoreWithReduxDevtools } from './devtools';
-import { ArrayStore, CommonStore, DeepReadonly, DeepReadonlyObject, EnhancerOptions, LibStore, ObjectStore, Store } from './shape';
+import { CommonStore, DeepReadonly, DeepReadonlyObject, EnhancerOptions, LibStore, ObjectStore, Store } from './shape';
 import { tests } from './tests';
 import { copyObject, createPathReader, deepCopy, deepFreeze, validateState } from './utils';
 
@@ -22,11 +22,7 @@ let nestedContainerStore: ((selector?: ((s: DeepReadonly<any>) => any) | undefin
  * ```
  */
 export function makeEnforceTags<S>(state: S, options: { devtools?: EnhancerOptions | false, tagSanitizer?: (tag: string) => string, containerForNestedStores?: boolean } = {}) {
-  const store = makeInternal(state, { devtools: options.devtools || {}, supportsTags: true });
-  if (options.containerForNestedStores) {
-    nestedContainerStore = store;
-  }
-  return store;
+  return makeInternalRootStore(state, {...options, supportsTags: true});
 }
 
 /**
@@ -39,11 +35,7 @@ export function makeEnforceTags<S>(state: S, options: { devtools?: EnhancerOptio
  * ```
  */
 export function make<S>(state: S, options: { devtools?: EnhancerOptions | false, containerForNestedStores?: boolean } = {}) {
-  const store = makeInternal(state, { devtools: options.devtools || {}, supportsTags: false });
-  if (options.containerForNestedStores) {
-    nestedContainerStore = store;
-  }
-  return store;
+  return makeInternalRootStore(state, {...options, supportsTags: false});
 }
 
 /**
@@ -84,6 +76,17 @@ export function makeNested<L>(state: L, options: { name: string }) {
     (lStore as any)['removeFromContainingStore'] = (lStore as any)['defineRemoveFromContainingStore'](name, index);
     return lStore as any as LibStore<L, C, any>;
   };
+}
+
+function makeInternalRootStore<S>(state: S, options: { containerForNestedStores?: boolean, supportsTags: boolean, devtools?: EnhancerOptions | false, tagSanitizer?: (tag: string) => string }) {
+  const store = makeInternal(state, { devtools: options.devtools || {}, supportsTags: options.supportsTags });
+  if (options.containerForNestedStores) {
+    if ((typeof(state) !== 'object') || Array.isArray(state)) {
+      throw new Error(`If a store is marked with 'containerForNestedStores: true', then it's initial state cannot be a primitive or an array`);
+    }
+    nestedContainerStore = store;
+  }
+  return store;
 }
 
 function makeInternal<S>(state: S, options: { supportsTags: boolean, devtools: EnhancerOptions | false, tagSanitizer?: (tag: string) => string }) {

@@ -30,4 +30,4 @@ store(s => s.favoriteThings.color).replaceWith('red');
 
 ***[🥚 Nesting stores](./docs/readme-fetch.md)*** - enhance the debuggability of your component's states by nesting component-level stores
 
-***[👩‍🎓 Best practices...](./docs/best-practices.md)***
+***[👩‍🎓 Best practices](./docs/best-practices.md)*** - if you don't already have some experience using Redux or NGRX

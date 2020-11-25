@@ -128,10 +128,12 @@ describe('Nested', () => {
     expect(store().read()).toEqual({ test: '', nested: { [name]: { 0: 0 }, [name2]: { 0: 0 } } });
   })
 
-  it('', () => {
-    const store = make(0, { containerForNestedStores: true });
-    const nested = makeNested(0, { name: 'myComp' });
-    console.log(store().read());
+  it('should throw an error if the containing stores state is a primitive', () => {
+    expect(() => make(0, { containerForNestedStores: true }));
+  })
+
+  it('should throw an error if the containing stores state is an array', () => {
+    expect(() => make(new Array<string>(), { containerForNestedStores: true }));
   })
 
 });
