@@ -43,5 +43,5 @@ const fetchTodos = createFetcher({
 
 `component.ts`
 ```Typescript
-const todosFetcher = fetchTodos({ offset: 0, count: 10 });
+const todosFetch = fetchTodos({ offset: 0, count: 10 });
 ```

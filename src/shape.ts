@@ -9,7 +9,6 @@ export interface Unsubscribable {
   unsubscribe: () => any,
 }
 
-
 export type DeepReadonly<T> =
   T extends (infer R)[] ? DeepReadonlyArray<R> :
   T extends Function ? T :
@@ -236,7 +235,12 @@ export type Store<S, C, B extends boolean> = ([C] extends undefined ? any :
     [C] extends DeepReadonlyArray<any[]> ? ArrayOfPrimitivesStore<S, [C][0], B> :
     [C] extends [object] ? ObjectStore<S, C, B> : PrimitiveStore<S, C, B>) & CommonStore<S, C, B>;
 
-export type LibStore<S, C, B extends boolean> = Store<S, C, B> & { stopTracking: () => void };
+export type LibStore<S, C, B extends boolean> = Store<S, C, B> & {
+  /**
+   * Removes this nested store from the store which was marked as a `containerForNestedStores`.
+   */
+  removeFromContainingStore: () => void
+};
 
 type ReadType<E> = E extends CommonReadable<any, infer W, false> ? W : E extends CommonReadable<any, infer W, true> ? W : never;
 

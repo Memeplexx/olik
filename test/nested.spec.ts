@@ -57,30 +57,81 @@ describe('Nested', () => {
   it('should be able to stopTracking a lib store correctly', () => {
     const initialState = {
       test: '',
-      nested: {},
     };
     const store = make(initialState, { containerForNestedStores: true });
     const name = 'myComp';
     const nestedStore = makeNested({ one: '' }, { name });
     expect(store().read()).toEqual({ test: '', nested: { [name]: { 0: { one: '' } } } });
-    nestedStore().stopTracking();
+    nestedStore().removeFromContainingStore();
     expect(store().read()).toEqual({ test: '', nested: {} });
   })
 
   it('should be able to stopTracking a lib store where there are multiple stores for the same lib', () => {
     const initialState = {
       test: '',
-      nested: {},
     };
     const store = make(initialState, { containerForNestedStores: true });
     const name = 'myComp';
     const nestedStore = makeNested({ one: '' }, { name });
     const nestedStore2 = makeNested({ one: '' }, { name });
-    expect(store().read()).toEqual({ test: '', nested: { myComp: { '0': { one: '' }, '1': { one: '' } } } });
-    nestedStore().stopTracking();
-    expect(store().read()).toEqual({ test: '', nested: { myComp: { '1': { one: '' } } } });
-    nestedStore2().stopTracking();
+    expect(store().read()).toEqual({ test: '', nested: { [name]: { '0': { one: '' }, '1': { one: '' } } } });
+    nestedStore().removeFromContainingStore();
+    expect(store().read()).toEqual({ test: '', nested: { [name]: { '1': { one: '' } } } });
+    nestedStore2().removeFromContainingStore();
     expect(store().read()).toEqual({ test: '', nested: { } });
+  })
+
+  it('should be able to perform an update on a second nested store', () => {
+    const initialState = {
+      test: '',
+    };
+    const store = make(initialState, { containerForNestedStores: true });
+    const name = 'myComp';
+    const nestedStore = makeNested({ one: '' }, { name });
+    nestedStore(s => s.one).replaceWith('test1');
+    const nestedStore2 = makeNested({ one: '' }, { name });
+    nestedStore2(s => s.one).replaceWith('test2');
+    expect(store().read()).toEqual({ test: '', nested: { [name]: { 0: { one: 'test1' }, 1: { one: 'test2' } } } })
+  })
+
+  it('should be able to support nested store which is a top-level array', () => {
+    const initialState = {
+      test: '',
+    };
+    const store = make(initialState, { containerForNestedStores: true });
+    const name = 'myComp';
+    const nestedStore = makeNested(new Array<string>(), { name });
+    nestedStore().addAfter('test');
+    expect(store().read()).toEqual({ test: '', nested: { [name]: { 0: ['test'] } } });
+  })
+
+  it('should be able to support nested store which is a top-level number', () => {
+    const initialState = {
+      test: '',
+    };
+    const store = make(initialState, { containerForNestedStores: true });
+    const name = 'myComp';
+    const nestedStore = makeNested(0, { name });
+    nestedStore().replaceWith(1);
+    expect(store().read()).toEqual({ test: '', nested: { [name]: { 0: 1 } } });
+  })
+
+  it('should be able to support more than one nested store type', () => {
+    const initialState = {
+      test: '',
+    };
+    const store = make(initialState, { containerForNestedStores: true });
+    const name = 'myComp';
+    const nestedStore = makeNested(0, { name });
+    const name2 = 'myComp2';
+    const nestedStore2 = makeNested(0, { name: name2 });
+    expect(store().read()).toEqual({ test: '', nested: { [name]: { 0: 0 }, [name2]: { 0: 0 } } });
+  })
+
+  it('', () => {
+    const store = make(0, { containerForNestedStores: true });
+    const nested = makeNested(0, { name: 'myComp' });
+    console.log(store().read());
   })
 
 });

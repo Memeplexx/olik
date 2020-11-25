@@ -61,17 +61,19 @@ export function makeNested<L>(state: L, options: { name: string }) {
       ? makeInternal(state, { devtools: { name }, supportsTags: false })(selector)
       : null) as any as LibStore<L, C, any>;
   }
-  const initialState = (nestedContainerStore() as any).readInitial();
+  const wrapperState = (nestedContainerStore() as any).read();
   if (!nestedContainerStore().read().nested) {
     (nestedContainerStore() as any as ObjectStore<any, any, any>).patchWith({ nested: { [name]: { '0': state } } });
-    (nestedContainerStore() as any).renew({ ...initialState, nested: { [name]: { '0': state } } });
+    (nestedContainerStore() as any).renew({ ...wrapperState, nested: { [name]: { '0': state } } });
   } else if (!nestedContainerStore().read().nested[name]) {
     (nestedContainerStore(s => s.nested) as any as ObjectStore<any, any, any>).patchWith({ [name]: { '0': state } });
-    (nestedContainerStore() as any).renew({ ...initialState, nested: { ...initialState.nested, [name]: { '0': state } } });
+    (nestedContainerStore() as any).renew({ ...wrapperState, nested: { ...wrapperState.nested, [name]: { '0': state } } });
   } else {
     const values = (nestedContainerStore(s => s.nested[name]) as any as CommonStore<any, any, any>).read();
     const keys = Object.keys(values);
-    (nestedContainerStore(s => s.nested[name]) as any as ObjectStore<any, any, any>).patchWith({ [+keys[keys.length - 1] + 1]: state });
+    const key = +keys[keys.length - 1] + 1;
+    (nestedContainerStore(s => s.nested[name]) as any as ObjectStore<any, any, any>).patchWith({ [key]: state });
+    (nestedContainerStore() as any).renew({ ...wrapperState, nested: { ...wrapperState.nested, [name]: { ...wrapperState.nested[name], [key]: state } } });
   }
   const index = Object.keys(nestedContainerStore(s => s.nested[name]).read()).length - 1;
   return <C = L>(selector?: (arg: DeepReadonlyObject<L>) => C) => {
@@ -79,7 +81,7 @@ export function makeNested<L>(state: L, options: { name: string }) {
       const libState = s.nested[name][index.toString()];
       return selector ? selector(libState) : libState;
     });
-    (lStore as any)['stopTracking'] = (lStore as any)['defineStopTracking'](name, index);
+    (lStore as any)['removeFromContainingStore'] = (lStore as any)['defineRemoveFromContainingStore'](name, index);
     return lStore as any as LibStore<L, C, any>;
   };
 }
@@ -214,7 +216,7 @@ function makeInternal<S>(state: S, options: { supportsTags: boolean, devtools: E
       currentState = deepFreeze(state) as S;
       initialState = currentState;
     },
-    defineStopTracking: (name: string, key: string) => () => {
+    defineRemoveFromContainingStore: (name: string, key: string) => () => {
       if (nestedContainerStore) {
         state = deepCopy(currentState);
         if (Object.keys((state as any).nested[name]).length === 1) {
