@@ -1,11 +1,12 @@
 {
   "name": "oulik",
-  "version": "0.0.43",
+  "version": "0.0.44",
   "description": "",
   "main": "dist/cjs/oulik.js",
   "module": "dist/esm/oulik.js",
   "unpkg": "dist/umd/oulik.js",
   "types": "types/index.d.ts",
+  "sideEffects": false,
   "scripts": {
     "clean": "rimraf dist coverage",
     "typings": "node node_modules/gulp/bin/gulp.js",
