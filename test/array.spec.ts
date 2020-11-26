@@ -1,3 +1,4 @@
+import { errorMessages } from '../src/consts';
 import { make } from '../src/core';
 import { tests } from '../src/tests';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
@@ -121,6 +122,15 @@ describe('Array', () => {
     expect(store(s => s.array).read()).toEqual([payload, { id: 2, value: 'two' }, { id: 3, value: 'three' }, payload2]);
     expect(tests.currentAction.type).toEqual('array.addAfter()');
     expect(tests.currentMutableState).toEqual(store().read());
+  })
+
+  it('should fail to upsertWhere() should more than one element match the where clause', () => {
+    const initialState = {
+      object: { property: '' },
+      array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
+    };
+    const store = make(initialState);
+    expect(() => store(s => s.array).upsertWhere(e => e.value.startsWith('t')).with({ id: 0, value: 'x' })).toThrowError(errorMessages.UPSERT_MORE_THAN_ONE_MATCH);
   })
 
   it('should removeAll()', () => {

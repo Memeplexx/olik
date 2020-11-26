@@ -64,10 +64,21 @@ describe('Object', () => {
     expect(store(s => s.object.property).read()).toEqual(payload);
   })
 
+  it('should sanitize tags correctly', () => {
+    const store = makeEnforceTags({
+      test: '',
+    }, {
+      tagSanitizer: (tag) => tag + 'x',
+    });
+    const tag = 'mytag';
+    store(s => s.test).replaceWith('test', tag);
+    expect(tests.currentAction.type).toEqual(`test.replaceWith() [${tag}x]`);
+  })
+
   it('should be able to add a new property onto an object', () => {
     const store = make({} as { [key: string]: string });
     store().patchWith({ hello: 'world' });
     expect(store().read()).toEqual({ hello: 'world' });
   })
-  
+
 });

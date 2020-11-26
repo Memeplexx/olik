@@ -23,7 +23,7 @@ let nestedContainerStore: ((selector?: ((s: DeepReadonly<any>) => any) | undefin
  * ```
  */
 export function makeEnforceTags<S>(state: S, options: MakeOptionsTagged = {}) {
-  return makeInternalRootStore(state, {...options, supportsTags: true});
+  return makeInternalRootStore<S, true>(state, {...options, supportsTags: true});
 }
 
 /**
@@ -37,7 +37,7 @@ export function makeEnforceTags<S>(state: S, options: MakeOptionsTagged = {}) {
  * ```
  */
 export function make<S>(state: S, options: MakeOptions = {}) {
-  return makeInternalRootStore(state, {...options, supportsTags: false});
+  return makeInternalRootStore<S, false>(state, {...options, supportsTags: false});
 }
 
 /**
@@ -53,7 +53,7 @@ export function makeNested<L>(state: L, options: { name: string, keyGenerator?: 
   if (!nestedContainerStore) {
     return <C = L>(selector?: (arg: DeepReadonly<L>) => C) => (selector
       ? makeInternal(state, { devtools: { name }, supportsTags: false })(selector)
-      : null) as any as LibStore<L, C, any>;
+      : null) as any as LibStore<L, C, false>;
   }
   const generateKey = (arg?: string) => (!arg && !options.keyGenerator) ? '0' : !options.keyGenerator ? +arg! + 1 : options.keyGenerator(arg);
   const wrapperState = (nestedContainerStore() as any).read();
@@ -79,22 +79,22 @@ export function makeNested<L>(state: L, options: { name: string, keyGenerator?: 
       return selector ? selector(libState) : libState;
     });
     (lStore as any)['removeFromContainingStore'] = (lStore as any)['defineRemoveFromContainingStore'](name, index);
-    return lStore as any as LibStore<L, C, any>;
+    return lStore as any as LibStore<L, C, false>;
   };
 }
 
-function makeInternalRootStore<S>(state: S, options: { containerForNestedStores?: boolean, supportsTags: boolean, devtools?: EnhancerOptions | false, tagSanitizer?: (tag: string) => string }) {
-  const store = makeInternal(state, { devtools: options.devtools || {}, supportsTags: options.supportsTags });
+function makeInternalRootStore<S, B extends boolean>(state: S, options: { containerForNestedStores?: boolean, supportsTags: boolean, devtools?: EnhancerOptions | false, tagSanitizer?: (tag: string) => string }) {
+  const store = makeInternal<S, B>(state, { devtools: options.devtools || {}, supportsTags: options.supportsTags, tagSanitizer: options.tagSanitizer });
   if (options.containerForNestedStores) {
     if ((typeof(state) !== 'object') || Array.isArray(state)) {
       throw new Error(errorMessages.INVALID_CONTAINER_FOR_NESTED_STORES);
     }
-    nestedContainerStore = store;
+    nestedContainerStore = store as any;
   }
   return store;
 }
 
-function makeInternal<S>(state: S, options: { supportsTags: boolean, devtools: EnhancerOptions | false, tagSanitizer?: (tag: string) => string }) {
+function makeInternal<S, B extends boolean>(state: S, options: { supportsTags: boolean, devtools: EnhancerOptions | false, tagSanitizer?: (tag: string) => string }) {
   validateState(state);
   const changeListeners = new Map<(ar: any) => any, (arg: S) => any>();
   let pathReader = createPathReader(state);
@@ -189,7 +189,7 @@ function makeInternal<S>(state: S, options: { supportsTags: boolean, devtools: E
     upsertWhere: (criteria: (e: X[0]) => boolean) => ({
       with: (element: X[0], tag?: string) => {
         const itemIndices = (selector(currentState) as any as X).map((e, i) => criteria(e) ? i : null).filter(i => i !== null);
-        if (itemIndices.length > 1) { throw new Error('Cannot upsert more than 1 element'); }
+        if (itemIndices.length > 1) { throw new Error(errorMessages.UPSERT_MORE_THAN_ONE_MATCH); }
         return itemIndices.length
           ? (action(selector) as any).replaceWhere(criteria).with(element, tag)
           : (action(selector) as any).addAfter([element], tag);
@@ -222,7 +222,6 @@ function makeInternal<S>(state: S, options: { supportsTags: boolean, devtools: E
     renew: (state: S) => {
       pathReader = createPathReader(state);
       currentState = deepFreeze(state) as S;
-      initialState = currentState;
     },
     defineRemoveFromContainingStore: (name: string, key: string) => () => {
       if (nestedContainerStore) {
@@ -237,7 +236,7 @@ function makeInternal<S>(state: S, options: { supportsTags: boolean, devtools: E
         initialState = currentState;
       }
     }
-  } as any as Store<S, C, any>);
+  } as any as Store<S, C, B>);
 
   const storeResult = <C = S>(selector: ((s: DeepReadonly<S>) => C) = (s => s as any as C)) => {
     const selectorMod = selector as (s: S) => C;

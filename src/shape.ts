@@ -6,12 +6,14 @@ export type FetcherStatus = 'pristine' | 'rejected' | 'resolved' | 'resolving';
 export type Tag<B> = B extends true ? string : void;
 export type Params<T> = T extends infer T ? T : void;
 export interface Unsubscribable {
+  /**
+   * Unsubscribes from this listener thereby preventing any memory leak.
+   */
   unsubscribe: () => any,
 }
 
 export type DeepReadonly<T> =
   T extends (infer R)[] ? DeepReadonlyArray<R> :
-  T extends Function ? T :
   T extends object ? DeepReadonlyObject<T> :
   T;
 
@@ -31,7 +33,7 @@ export interface Fetch<S, C, P, B extends boolean> {
    */
   error: any;
   /**
-   * The current status. Can be observed using onChange() and onChangeOnce().
+   * The current status. Changes to this value can be observed using onChange() and onChangeOnce().
    */
   status: FetcherStatus;
   /**
@@ -63,7 +65,7 @@ export interface Fetch<S, C, P, B extends boolean> {
    */
   onCacheExpiredOnce: (listener: (fetch: Fetch<S, C, P, B>) => any) => Unsubscribable;
   /**
-   * Invalidates the cache and re-fetches
+   * Invalidates the cache (if any data is cached) and re-fetches
    */
   refetch: Fetcher<S, C, P, B>;
 };
@@ -77,15 +79,15 @@ export interface FetcherSpecs<S, C, B extends boolean, P> {
    */
   getData: P extends void ? (() => Promise<C>) : ((params: P) => Promise<C>),
   /**
-   * By default, fetchers will simply replace all data associated with part of the store they are bound to.
-   * However, this behavior can be overriden here. For example, maybe you want to append resolved data to existing data as follows:
+   * By default, fetchers will simply replace all data associated with part of the store specified by the `getData` property.
+   * However, this behavior can be overriden here. For example, maybe you want to append resolved data to existing store data as follows:
    * ```
    * setData: arg => arg.store.addAfter(arg.data)
    * ```
    */
   setData?: (arg: { store: Store<S, C, B>, data: C, params: Params<P>, tag: Tag<B> }) => any,
   /**
-   * Specify for how long, in milliseconds, you want the library to cache fetch responses.
+   * How long, in milliseconds, you want the library to cache fetch responses.
    */
   cacheFor?: number,
 };
@@ -94,7 +96,7 @@ export type Fetcher<S, C, P, B extends boolean> = P extends void ? ((tag: Tag<B>
 
 type ArrayOfPrimitivesStore<S, C extends DeepReadonlyArray<any>, B extends boolean> = {
   /**
-   * Append elements to the end of array
+   * Appends an element, or an array of elements, to the end of array
    * ```
    * store(s => s.todos)
    *   .addAfter(newTodos);
@@ -102,7 +104,7 @@ type ArrayOfPrimitivesStore<S, C extends DeepReadonlyArray<any>, B extends boole
    */
   addAfter: (elements: C[0] | C[0][], tag: Tag<B>) => void,
   /**
-   * Prepend elements to the beginning of array
+   * Prepends an element, or an array of elements, to the beginning of array
    * ```
    * store(s => s.todos)
    *   .addBefore(newTodos);
@@ -110,7 +112,7 @@ type ArrayOfPrimitivesStore<S, C extends DeepReadonlyArray<any>, B extends boole
    */
   addBefore: (elements: C[0] | C[0][], tag: Tag<B>) => void,
   /**
-   * Remove all elements from array
+   * Removes all elements from array
    * ```
    * store(s => s.todos)
    *   .removeAll();
@@ -118,7 +120,7 @@ type ArrayOfPrimitivesStore<S, C extends DeepReadonlyArray<any>, B extends boole
    */
   removeAll: (tag: Tag<B>) => void,
   /**
-   * Delete first element from array
+   * Deletes the first element from array
    * ```
    * store(s => s.todos)
    *   .removeFirst();
@@ -126,7 +128,7 @@ type ArrayOfPrimitivesStore<S, C extends DeepReadonlyArray<any>, B extends boole
    */
   removeFirst: (tag: Tag<B>) => void,
   /**
-   * Delete last element from array
+   * Deletes the last element from array
    * ```
    * store(s => s.todos)
    *   .removeLast();
@@ -142,7 +144,7 @@ type ArrayOfPrimitivesStore<S, C extends DeepReadonlyArray<any>, B extends boole
    */
   removeWhere: (where: (arg: C[0]) => boolean, tag: Tag<B>) => void,
   /**
-   * Substitute all elements with a new array
+   * Substitutes all elements with a new array of elements
    * ```
    * store(s => s.todos)
    *   .replaceAll(newTodos);
@@ -151,43 +153,40 @@ type ArrayOfPrimitivesStore<S, C extends DeepReadonlyArray<any>, B extends boole
   replaceAll: (replacement: C, tag: Tag<B>) => void,
   /**
    * Substitute elements which match a specific condition
-   * @param where the function which will find the element
-   * @param element the element which will replace the old one
    * ```
    * store(s => s.todos)
    *   .replaceWhere(t => t.id === 5)
    *   .with({ id: 5, text: 'bake cookies' });
    * ```
    */
-  replaceWhere: (where: (e: C[0]) => boolean) => { with: (element: C[0], tag: Tag<B>) => void },
+  replaceWhere: (where: (element: C[0]) => boolean) => { with: (element: C[0], tag: Tag<B>) => void },
   /**
    * Subtitutes or appends an element depending on whether or not it can be found.
-   * @param where the function which will attempt to find the element
-   * @param element the element will either replace the old one or be inserted
+   * Note that if more than one element is found which matches the criteria specified in the 'where' clause, an error will be thrown
    * ```
    * store(s => s.todos)
    *   .upsertWhere(t => t.id === 5)
    *   .with({ id: 5, text: 'bake cookies' });
    * ```
    */
-  upsertWhere: (where: (e: C[0]) => boolean) => { with: (element: C[0], tag: Tag<B>) => void },
+  upsertWhere: (where: (element: C[0]) => boolean) => { with: (element: C[0], tag: Tag<B>) => void },
 }
 
 export type ArrayStore<S, C extends DeepReadonlyArray<any>, B extends boolean> = {
   /**
-   * Partially update elements which match a specific condition
+   * Partially updates zero or more elements which match a specific condition
    * ```
    * store(s => s.todos)
    *   .patchWhere(t => t.status === 'done')
    *   .with({ status: 'todo' });
    * ```
    */
-  patchWhere: (where: (e: C[0]) => boolean) => { with: (element: Partial<C[0]>, tag: Tag<B>) => void },
+  patchWhere: (where: (element: C[0]) => boolean) => { with: (element: Partial<C[0]>, tag: Tag<B>) => void },
 } & ArrayOfPrimitivesStore<S, C, B>;
 
 export type PrimitiveStore<S, C extends any, B extends boolean> = {
   /**
-   * Subtitutes primitive
+   * Subtitutes the primitive value
    * ```
    * store(s => s.user.age)
    *   .replaceWith(33)
@@ -198,7 +197,7 @@ export type PrimitiveStore<S, C extends any, B extends boolean> = {
 
 export type ObjectStore<S, C extends any, B extends boolean> = {
   /**
-   * Partially updates object
+   * Partially updates the object
    * ```
    * store(s => s.user)
    *   .patchWith({ firstName: 'James', age: 33 })
@@ -210,7 +209,7 @@ export type ObjectStore<S, C extends any, B extends boolean> = {
 export type CommonReadable<S, C extends any, B extends boolean> = {
   /**
    * Listens to any updates on this node
-   * @returns a subscription which may need to be unsubscribed from
+   * @returns a subscription which will need to be unsubscribed from to prevent a memory leak
    * ```
    * store(s => s.todos)
    *   .onChange(todos => console.log(todos)) ;
@@ -255,13 +254,17 @@ export interface MakeOptions {
    */
   devtools?: EnhancerOptions | false;
   /**
-   * Setting this to true will mean that any stores which are subsequently created using `makeNested()` are automatically be nested within this store.
+   * Setting this to true will mean that any stores which are subsequently created using `makeNested()` will automatically be nested within this store.
    * Those nested stores will then be visible within the Redux devtools extension.
    */
   containerForNestedStores?: boolean;
 }
 
 export interface MakeOptionsTagged extends MakeOptions {
+  /**
+   * If supplied, this function can transform all tags passed in when updating state.
+   * This is of use if, for example, you are using the __filename node variable as a tag, and you would like the abbreviate the file path to something more readable.
+   */
   tagSanitizer?: (tag: string) => string;
 }
 
@@ -427,7 +430,18 @@ export interface EnhancerOptions {
 }
 
 export interface Derivation<R> {
+  /**
+   * The current value of the derivation
+   */
   read: () => R,
+  /**
+   * Listens to any updates on this derivation
+   * @returns a subscription which will need to be unsubscribed from to prevent a memory leak
+   * ```
+   * deriveFrom(...)
+   *   .onChange(result => console.log(result)) ;
+   * ```
+   */
   onChange: (listener: (value: R) => any) => Unsubscribable,
 };
 

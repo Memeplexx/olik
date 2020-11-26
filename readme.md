@@ -8,21 +8,23 @@
 
 ## ***Effortless state-management with an incurable magic-string allergy*** ##  
 
-**Inline**, **type-safe** state updates, **accurately described for you** inside the **[Redux Devtools extension](https://chrome.google.com/webstore/detail/redux-devtools/lmhkpmbekcpmknklioeibfkpmmfibljd?hl=en)**.  
+Oulik is designed to make your state updates as **compact**, **type-safe**, **transparent**, and **debuggable** as possible.  
+You can even use it to manage and debug your component's internal states while keeping that state loosely coupled to your application store.
 
 > This guide introduces Oulik without a framework. You may prefer to use ***[![](./docs/assets/react.png)&nbsp;OULIK-REACT](./docs/readme-react.md)***, or ***[![](./docs/assets/angular.png)&nbsp;OULIK-NG](./docs/readme-ng.md)***.  
 
 ```console
 npm i oulik
 ```
+Install the **[Redux Devtools extension](https://chrome.google.com/webstore/detail/redux-devtools/lmhkpmbekcpmknklioeibfkpmmfibljd?hl=en)**
 ```Typescript
 import { make } from 'oulik';
 
-const store = make({ favoriteThings: { color: '', food: '' } });       
+const store = make({ favoriteThings: { color: '', foods: new Array<string>() } });       
 
 store(s => s.favoriteThings.color).replaceWith('red'); 
 ```
-***[✍️ Writing state](./docs/readme-write.md)*** - update your state using a minimal but powerful set of state update primitives
+***[✍️ Writing state](./docs/readme-write.md)*** - update your state using a minimal but powerful set of state-update utilities
 
 ***[📖 Reading state](./docs/readme-read.md)*** - read synchronously, listen to updates, and memoise derived state
 

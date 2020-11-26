@@ -6,7 +6,11 @@ import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
 describe('Devtools', () => {
 
+  const spyWarn = jest.spyOn(console, 'warn');
+
   beforeAll(() => tests.windowObject = windowAugmentedWithReduxDevtoolsImpl);
+  
+  beforeEach( () => spyWarn.mockReset());
 
   it('should correctly respond to devtools dispatches where the state is an object', () => {
     const store = make({ x: 0, y: 0 });
@@ -92,6 +96,12 @@ describe('Devtools', () => {
       expect(tests.currentActionForDevtools.payload).toEqual(payload);
       done();
     }, 300);
+  })
+
+  it('should log an error if no devtools extension could be found', () => {
+    tests.windowObject = null;
+    make(new Array<string>());
+    expect( spyWarn ).toHaveBeenCalledWith(errorMessages.DEVTOOL_CANNOT_FIND_EXTENSION); 
   })
 
 });
