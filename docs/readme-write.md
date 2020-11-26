@@ -1,14 +1,14 @@
 # OULIK - WRITING STATE #
 
-> 👉 Let's first assume that your store has been initialized as follows:
-> ```Typescript
-> import { make } from 'oulik';
-> 
-> const store = make({
->   user: { firstName: '', lastName: '', age: 0 },
->   todos: new Array<{ id: number, text: string, status: 'todo' | 'done' }>()
-> });
-> ```
+>👉 Let's first assume that your store has been initialized as follows:
+>```Typescript
+>import { make } from 'oulik';
+>
+>const store = make({
+>  user: { firstName: '', lastName: '', age: 0 },
+>  todos: new Array<{ id: number, text: string, status: 'todo' | 'done' }>()
+>});
+>```
 ## Updating **non-array** nodes ##
 ```Typescript
 store(s => s.user).replaceWith({ firstName: 'Sam', lastName: 'Jones', age: 25 });
