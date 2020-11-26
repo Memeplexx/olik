@@ -10,7 +10,7 @@
 
 Oulik is designed to make your state updates as **compact**, **type-safe**, **transparent**, and **debuggable** as possible.  
 It has many **opt-in**, **tree-shakable** features including **memoization**, **de-duping async requests**, and **caching responses**.
-You can even create **component-level stores** which are loosely coupled from your application store.
+You can even nest **component-level stores** which are loosely coupled from your application store.
 
 > This guide introduces Oulik without a framework. You may prefer to use ***[![](./docs/assets/react.png)&nbsp;OULIK-REACT](./docs/readme-react.md)***, or ***[![](./docs/assets/angular.png)&nbsp;OULIK-NG](./docs/readme-ng.md)***.  
 
