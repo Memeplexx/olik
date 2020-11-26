@@ -26,7 +26,7 @@ store(s => s.favoriteThings.color).replaceWith('red');
 
 ***[📖 Reading state](./docs/readme-read.md)*** - read synchronously, listen to updates, and memoise derived state
 
-***[🐕‍🦺 Fetching data](./docs/readme-fetch.md)*** - de-duplicate simulatenous requests, cache responses, and track loading / error / result states
+***[🐕‍🦺 Fetching state](./docs/readme-fetch.md)*** - de-duplicate simulatenous requests, cache responses, and track loading / error / result states
 
 ***[🥚 Nesting stores](./docs/readme-fetch.md)*** - nest component-level stores inside your application-level store
 
