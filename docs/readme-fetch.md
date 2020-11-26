@@ -8,7 +8,6 @@
 >
 >const store = make({ todos: new Array<{ id: number, text: string }>() }); 
 >```
->---
 
 ## FETCHING ASYNC STATE ##
 
