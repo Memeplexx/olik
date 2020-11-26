@@ -48,24 +48,27 @@ export function make<S>(state: S, options: MakeOptions = {}) {
  * @param state The initial state
  * @param options A configuration object which, at minimum, must contain the `name` of the nested store
  */
-export function makeNested<L>(state: L, options: { name: string }) {
+export function makeNested<L>(state: L, options: { name: string, keyGenerator?: (previousKey?: string) => string }) {
   const name = options.name;
   if (!nestedContainerStore) {
     return <C = L>(selector?: (arg: DeepReadonly<L>) => C) => (selector
       ? makeInternal(state, { devtools: { name }, supportsTags: false })(selector)
       : null) as any as LibStore<L, C, any>;
   }
+  const generateKey = (arg?: string) => (!arg && !options.keyGenerator) ? '0' : !options.keyGenerator ? +arg! + 1 : options.keyGenerator(arg);
   const wrapperState = (nestedContainerStore() as any).read();
   if (!nestedContainerStore().read().nested) {
-    (nestedContainerStore() as any as ObjectStore<any, any, any>).patchWith({ nested: { [name]: { '0': state } } });
-    (nestedContainerStore() as any).renew({ ...wrapperState, nested: { [name]: { '0': state } } });
+    const key = generateKey();
+    (nestedContainerStore() as any as ObjectStore<any, any, any>).patchWith({ nested: { [name]: { [key]: state } } });
+    (nestedContainerStore() as any).renew({ ...wrapperState, nested: { [name]: { [key]: state } } });
   } else if (!nestedContainerStore().read().nested[name]) {
-    (nestedContainerStore(s => s.nested) as any as ObjectStore<any, any, any>).patchWith({ [name]: { '0': state } });
-    (nestedContainerStore() as any).renew({ ...wrapperState, nested: { ...wrapperState.nested, [name]: { '0': state } } });
+    const key = generateKey();
+    (nestedContainerStore(s => s.nested) as any as ObjectStore<any, any, any>).patchWith({ [name]: { [key]: state } });
+    (nestedContainerStore() as any).renew({ ...wrapperState, nested: { ...wrapperState.nested, [name]: { [key]: state } } });
   } else {
     const values = (nestedContainerStore(s => s.nested[name]) as any as CommonStore<any, any, any>).read();
     const keys = Object.keys(values);
-    const key = +keys[keys.length - 1] + 1;
+    const key = generateKey(keys[keys.length - 1]);
     (nestedContainerStore(s => s.nested[name]) as any as ObjectStore<any, any, any>).patchWith({ [key]: state });
     (nestedContainerStore() as any).renew({ ...wrapperState, nested: { ...wrapperState.nested, [name]: { ...wrapperState.nested[name], [key]: state } } });
   }

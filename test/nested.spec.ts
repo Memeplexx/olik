@@ -137,4 +137,17 @@ describe('Nested', () => {
     expect(() => make(new Array<string>(), { containerForNestedStores: true })).toThrowError(errorMessages.INVALID_CONTAINER_FOR_NESTED_STORES);
   })
 
+  it('should be able to generate custom keys', () => {
+    const initialState = {
+      test: '',
+    };
+    const store = make(initialState, { containerForNestedStores: true });
+    const name = 'myComp';
+    const keyGenerator = (arg?: string) => !arg ? 'x' : arg + 'x';
+    makeNested(0, { name, keyGenerator  });
+    makeNested(0, { name, keyGenerator  });
+    makeNested(0, { name, keyGenerator  });
+    expect(store().read()).toEqual({ test: '', nested: { [name]: { x: 0, xx: 0, xxx: 0 } } });
+  })
+
 });
