@@ -30,13 +30,13 @@ describe('Error', () => {
   it('should throw an error if the initial state has functions in it', () => {
     expect(() => make({
       test: () => null,
-    })).toThrow();
+    })).toThrowError(errorMessages.INVALID_STATE_INPUT);
   })
 
   it('should throw an error if the initial state has a set in it', () => {
     expect(() => make({
       test: new Set(),
-    })).toThrow();
+    })).toThrowError(errorMessages.INVALID_STATE_INPUT);
   })
 
 });

@@ -9,7 +9,7 @@ Without adequate state-management, if two different views in your application ar
 Like with Redux, it is very important to keep your state tree flattened and normalized. Dan Abramov, the author of Redux, explains it better than I could https://redux.js.org/recipes/structuring-reducers/normalizing-state-shape
 
 * **When should I use local component state?**  
-You don't have to put all your state in your store. Indeed, components have a nice habit of resetting their internal state when they are destroyed. Also, if you want to create reusable library components, you shouldn't couple those components with the store. If a certain piece of state is only relevant to a specific component it may not be worth putting in the store, however, if you are still confused about what is going on inside that component, or you want that state to persist when that component is destroyed and re-created, you may want to put that state in the store.
+You don't have to put all your state in your store. Indeed, components have a nice habit of resetting their internal state when they are destroyed. However, Oulik does provide a way to nest component-level stores inside your application-level store.
 
 * **Should my form state go into my store?**  
 Probably not. This can add needless complexity without much benefit. That being said, it can be useful to save an incomplete form's state to your store when your component is destroyed. When navigating back to your form, you can patch that form with data from your store so the user does not lose unsaved progress.

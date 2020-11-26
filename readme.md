@@ -28,6 +28,6 @@ store(s => s.favoriteThings.color).replaceWith('red');
 
 ***[🐕‍🦺 Fetching data](./docs/readme-fetch.md)*** - de-duplicate simulatenous requests, cache responses, and track loading / error / result states
 
-***[🥚 Nesting stores](./docs/readme-fetch.md)*** - enhance the debuggability of your component's states by nesting component-level stores
+***[🥚 Nesting stores](./docs/readme-fetch.md)*** - nest component-level stores inside your application-level store
 
 ***[👩‍🎓 Best practices](./docs/best-practices.md)*** - if you don't already have some experience using Redux or NGRX

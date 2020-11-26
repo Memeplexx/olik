@@ -1,6 +1,6 @@
-import { devtoolsDebounce } from './consts';
+import { devtoolsDebounce, errorMessages } from './consts';
 import { integrateStoreWithReduxDevtools } from './devtools';
-import { CommonStore, DeepReadonly, DeepReadonlyObject, EnhancerOptions, LibStore, ObjectStore, Store } from './shape';
+import { CommonStore, DeepReadonly, DeepReadonlyObject, EnhancerOptions, LibStore, MakeOptions, MakeOptionsTagged, ObjectStore, Store } from './shape';
 import { tests } from './tests';
 import { copyObject, createPathReader, deepCopy, deepFreeze, validateState } from './utils';
 
@@ -10,6 +10,7 @@ let nestedContainerStore: ((selector?: ((s: DeepReadonly<any>) => any) | undefin
  * Creates a new store which, for typescript users, requires that users supply an additional 'tag' when performing a state update.
  * These tags can improve the debugging experience by describing the source of an update event, for example the name of the component an update was trigger from.
  * @param state the initial state  
+ * @param options some additional configuration options
  * 
  * FOR EXAMPLE:
  * ```
@@ -21,20 +22,21 @@ let nestedContainerStore: ((selector?: ((s: DeepReadonly<any>) => any) | undefin
  *   .with({ text: 'bake cookies' }, 'TodoDetailComponent')
  * ```
  */
-export function makeEnforceTags<S>(state: S, options: { devtools?: EnhancerOptions | false, tagSanitizer?: (tag: string) => string, containerForNestedStores?: boolean } = {}) {
+export function makeEnforceTags<S>(state: S, options: MakeOptionsTagged = {}) {
   return makeInternalRootStore(state, {...options, supportsTags: true});
 }
 
 /**
  * Creates a new store
  * @param state the initial state
+ * @param options some additional configuration options
  * 
  * FOR EXAMPLE:
  * ```
  * const store = make({ todos: Array<{ id: number, text: string }>() });
  * ```
  */
-export function make<S>(state: S, options: { devtools?: EnhancerOptions | false, containerForNestedStores?: boolean } = {}) {
+export function make<S>(state: S, options: MakeOptions = {}) {
   return makeInternalRootStore(state, {...options, supportsTags: false});
 }
 
@@ -82,7 +84,7 @@ function makeInternalRootStore<S>(state: S, options: { containerForNestedStores?
   const store = makeInternal(state, { devtools: options.devtools || {}, supportsTags: options.supportsTags });
   if (options.containerForNestedStores) {
     if ((typeof(state) !== 'object') || Array.isArray(state)) {
-      throw new Error(`If a store is marked with 'containerForNestedStores: true', then it's initial state cannot be a primitive or an array`);
+      throw new Error(errorMessages.INVALID_CONTAINER_FOR_NESTED_STORES);
     }
     nestedContainerStore = store;
   }

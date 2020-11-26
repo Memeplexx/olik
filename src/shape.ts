@@ -248,6 +248,23 @@ export type MappedDataTuple<T extends Array<CommonReadable<any, any, any>>> = {
   [K in keyof T]: ReadType<T[K]>;
 }
 
+export interface MakeOptions {
+  /**
+   * Specifications for the Redux Devtools Extension. Pass 'false' if you do not want your store to be tracked within the Redux devtools extension.
+   * See https://github.com/zalmoxisus/redux-devtools-extension/blob/master/docs/API/Arguments.md for more info
+   */
+  devtools?: EnhancerOptions | false;
+  /**
+   * Setting this to true will mean that any stores which are subsequently created using `makeNested()` are automatically be nested within this store.
+   * Those nested stores will then be visible within the Redux devtools extension.
+   */
+  containerForNestedStores?: boolean;
+}
+
+export interface MakeOptionsTagged extends MakeOptions {
+  tagSanitizer?: (tag: string) => string;
+}
+
 export interface EnhancerOptions {
   /**
    * the instance name to be showed on the monitor page. Default value is `document.title`.

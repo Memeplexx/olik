@@ -1,3 +1,5 @@
+import { errorMessages } from './consts';
+
 export function deepFreeze(o: any) {
   Object.freeze(o);
   Object.getOwnPropertyNames(o).forEach(prop => {
@@ -34,7 +36,7 @@ export function deepCopy(o: any): any {
 
 export function validateState(state: any) {
   const throwError = () => {
-    throw new Error('State can only be primitive or a POJO');
+    throw new Error(errorMessages.INVALID_STATE_INPUT);
   };
   if (
     state !== null 

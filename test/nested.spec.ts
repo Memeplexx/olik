@@ -1,3 +1,4 @@
+import { errorMessages } from '../src/consts';
 import { make, makeNested } from '../src/core';
 import { tests } from '../src/tests';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
@@ -129,11 +130,11 @@ describe('Nested', () => {
   })
 
   it('should throw an error if the containing stores state is a primitive', () => {
-    expect(() => make(0, { containerForNestedStores: true }));
+    expect(() => make(0, { containerForNestedStores: true })).toThrowError(errorMessages.INVALID_CONTAINER_FOR_NESTED_STORES);
   })
 
   it('should throw an error if the containing stores state is an array', () => {
-    expect(() => make(new Array<string>(), { containerForNestedStores: true }));
+    expect(() => make(new Array<string>(), { containerForNestedStores: true })).toThrowError(errorMessages.INVALID_CONTAINER_FOR_NESTED_STORES);
   })
 
 });
