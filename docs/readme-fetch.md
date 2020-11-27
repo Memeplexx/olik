@@ -2,7 +2,8 @@
 
 **🐕‍🦺 Fetchers** report the status of a request, prevent duplicate simulataneous requests, cache responses, and automatically update your store. 
 
-👉 Let's first assume that a store has been initialized as follows:
+## BEFORE WE BEGIN... ##  
+Let's first assume that a store has been initialized as follows:
 ```Typescript
 import { make } from 'oulik';
 
@@ -34,7 +35,7 @@ Some data fetches, such as **pagination** need an argument to be supplied to the
 ```Typescript
 const fetchTodos = createFetcher({
   onStore: store(s => s.todos),
-  getData: (args: { offset: number, count: number }) => fetchTodosFromApi(offset, count),
+  getData: (arg: { offset: number, count: number }) => fetchTodosFromApi(arg.offset, arg.count),
   setData: (arg) => arg.store.addAfter(arg.data),
   cacheFor: 1000 * 60,
 });
