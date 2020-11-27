@@ -1,6 +1,7 @@
 # OULIK - WRITING STATE #
 
-👉 Let's first assume that your store has been initialized as follows:
+## BEFORE WE BEGIN... ##
+Let's first assume that a store has been initialized as follows:
 ```Typescript
 import { make } from 'oulik';
 
@@ -10,7 +11,7 @@ const store = make({
 });
 ```
 ---
-## Updating **non-array** nodes ##
+## UPDATING **NON-ARRAY** NODES ##
 ```Typescript
 store(s => s.user).replaceWith({ firstName: 'Sam', lastName: 'Jones', age: 25 });
 
@@ -19,7 +20,7 @@ store(s => s.user).patchWith({ firstName: 'Sam', age: 25 });
 store(s => s.user.age).replaceWith(25);
 ```
 
-## Updating **array** nodes ##
+## UPDATING **ARRAY** NODES ##
 ```Typescript
 store(s => s.todos).addAfter(newTodos);
 
@@ -44,7 +45,7 @@ store(s => s.todos).upsertWhere(t => t.id === 5).with({ id: 5, text: 'bake cooki
 store(s => s.todos.find(t => t.id === 2)!.text).replaceWith('something else');
 ```
 
-## Enforcing the use of **tags** ##
+## ENFORCING THE USE OF **TAGS** ##
 We can require that all updates are supplemented with a 'tag' which helps to identify the origin of a state update within the devtools.  
 ```Typescript
 const store = makeEnforceTags({ some: { value: '' } });

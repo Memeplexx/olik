@@ -1,6 +1,7 @@
 # OULIK - READING STATE #
 
-👉 Let's first assume that a store has been initialized as follows:
+## BEFORE WE BEGIN... ##  
+Let's first assume that a store has been initialized as follows:
 ```Typescript
 import { make } from 'oulik';
 
@@ -11,19 +12,21 @@ const store = make({
 ```
 ---
 
-## READING STATE ##
+## SYNCHRONOUS READS ##
+Read data directly from the store
 ```Typescript
 const width = store(s => s.size.width).read();
 ```
 
-## LISTENING TO STATE UPDATES ##
+## ASYNCHRONOUS READS ##
+Listen to updates to a particular part of the store
 ```Typescript
 const listener = store(c => c.size.width).onChange(width => console.log(width));
 listener.unsubscribe(); // Always unsubscribe to avoid memory leaks
 ```  
 
-## HANDLING DERIVED STATE ##
-We can derive state from the store
+## MEMOIZED READS ##
+Memoize computationally expensive state that has been derived from the store
 ```Typescript
 import { deriveFrom } from 'oulik';
 
