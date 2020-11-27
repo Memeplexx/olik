@@ -8,8 +8,7 @@
 
 ## ***Effortless state-management with an incurable magic-string allergy*** ##  
 
-Oulik exploits the type-system to make your state updates as **compact**, **type-safe**, **transparent**, and **debuggable** as possible.  
-It also supports various **opt-in**, **tree-shakable** features including **memoization**, **caching**, and the ability to nest **component-level stores** within your application-level store.
+Oulik exploits the type-system to make your state updates as **compact**, **type-safe**, **transparent**, and **debuggable** as possible. It also supports various **opt-in**, **tree-shakable** features including **memoization**, **caching**, and the ability to nest **component-level stores** within your application-level store.
 
 > This guide introduces Oulik without a framework. You may prefer to use ***[![](./docs/assets/react.png)&nbsp;OULIK-REACT](./docs/readme-react.md)***, or ***[![](./docs/assets/angular.png)&nbsp;OULIK-NG](./docs/readme-ng.md)***.  
 
