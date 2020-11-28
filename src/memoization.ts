@@ -5,8 +5,8 @@ import { CommonReadable, Derivation, MappedDataTuple, Store, Unsubscribable } fr
  * FOR EXAMPLE:
  * ```Typescript
  * const memo = deriveFrom(
- *   store(s => s.some.property),
- *   store(s => s.some.other.property),
+ *   select(s => s.some.property),
+ *   select(s => s.some.other.property),
  * ).usingExpensiveCalc((someProperty, someOtherProperty) => {
  *   // perform some expensive calculation and return the result
  * });

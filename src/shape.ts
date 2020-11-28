@@ -98,7 +98,7 @@ type ArrayOfPrimitivesStore<S, C extends DeepReadonlyArray<any>, B extends boole
   /**
    * Appends an element, or an array of elements, to the end of array
    * ```
-   * store(s => s.todos)
+   * select(s => s.todos)
    *   .addAfter(newTodos);
    * ```
    */
@@ -106,7 +106,7 @@ type ArrayOfPrimitivesStore<S, C extends DeepReadonlyArray<any>, B extends boole
   /**
    * Prepends an element, or an array of elements, to the beginning of array
    * ```
-   * store(s => s.todos)
+   * select(s => s.todos)
    *   .addBefore(newTodos);
    * ```
    */
@@ -114,7 +114,7 @@ type ArrayOfPrimitivesStore<S, C extends DeepReadonlyArray<any>, B extends boole
   /**
    * Removes all elements from array
    * ```
-   * store(s => s.todos)
+   * select(s => s.todos)
    *   .removeAll();
    * ```
    */
@@ -122,7 +122,7 @@ type ArrayOfPrimitivesStore<S, C extends DeepReadonlyArray<any>, B extends boole
   /**
    * Deletes the first element from array
    * ```
-   * store(s => s.todos)
+   * select(s => s.todos)
    *   .removeFirst();
    * ```
    */
@@ -130,7 +130,7 @@ type ArrayOfPrimitivesStore<S, C extends DeepReadonlyArray<any>, B extends boole
   /**
    * Deletes the last element from array
    * ```
-   * store(s => s.todos)
+   * select(s => s.todos)
    *   .removeLast();
    * ```
    */
@@ -138,7 +138,7 @@ type ArrayOfPrimitivesStore<S, C extends DeepReadonlyArray<any>, B extends boole
   /**
    * Delete elements which match a specific condition
    * ```
-   * store(s => s.todos)
+   * select(s => s.todos)
    *   .removeWhere(t => t.status === 'done')
    * ```
    */
@@ -146,7 +146,7 @@ type ArrayOfPrimitivesStore<S, C extends DeepReadonlyArray<any>, B extends boole
   /**
    * Substitutes all elements with a new array of elements
    * ```
-   * store(s => s.todos)
+   * select(s => s.todos)
    *   .replaceAll(newTodos);
    * ```
    */
@@ -154,7 +154,7 @@ type ArrayOfPrimitivesStore<S, C extends DeepReadonlyArray<any>, B extends boole
   /**
    * Substitute elements which match a specific condition
    * ```
-   * store(s => s.todos)
+   * select(s => s.todos)
    *   .replaceWhere(t => t.id === 5)
    *   .with({ id: 5, text: 'bake cookies' });
    * ```
@@ -164,7 +164,7 @@ type ArrayOfPrimitivesStore<S, C extends DeepReadonlyArray<any>, B extends boole
    * Subtitutes or appends an element depending on whether or not it can be found.
    * Note that if more than one element is found which matches the criteria specified in the 'where' clause, an error will be thrown
    * ```
-   * store(s => s.todos)
+   * select(s => s.todos)
    *   .upsertWhere(t => t.id === 5)
    *   .with({ id: 5, text: 'bake cookies' });
    * ```
@@ -176,7 +176,7 @@ export type ArrayStore<S, C extends DeepReadonlyArray<any>, B extends boolean> =
   /**
    * Partially updates zero or more elements which match a specific condition
    * ```
-   * store(s => s.todos)
+   * select(s => s.todos)
    *   .patchWhere(t => t.status === 'done')
    *   .with({ status: 'todo' });
    * ```
@@ -188,7 +188,7 @@ export type PrimitiveStore<S, C extends any, B extends boolean> = {
   /**
    * Subtitutes the primitive value
    * ```
-   * store(s => s.user.age)
+   * select(s => s.user.age)
    *   .replaceWith(33)
    * ```
    */
@@ -199,7 +199,7 @@ export type ObjectStore<S, C extends any, B extends boolean> = {
   /**
    * Partially updates the object
    * ```
-   * store(s => s.user)
+   * select(s => s.user)
    *   .patchWith({ firstName: 'James', age: 33 })
    * ```
    */
@@ -211,7 +211,7 @@ export type CommonReadable<S, C extends any, B extends boolean> = {
    * Listens to any updates on this node
    * @returns a subscription which will need to be unsubscribed from to prevent a memory leak
    * ```
-   * store(s => s.todos)
+   * select(s => s.todos)
    *   .onChange(todos => console.log(todos)) ;
    * ```
    */

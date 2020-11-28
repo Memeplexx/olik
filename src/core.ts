@@ -26,10 +26,10 @@ let nestedContainerStore: ((selector?: ((s: DeepReadonly<any>) => any) | undefin
  * 
  * FOR EXAMPLE:
  * ```
- * const store = makeEnforceTags({ todos: Array<{ id: number, text: string }>() });
+ * const select = makeEnforceTags({ todos: Array<{ id: number, text: string }>() });
  * 
  * // Note that when updating state, we are now required to supply a string as the last argument (in this case 'TodoDetailComponent')
- * store(s => s.todos)
+ * select(s => s.todos)
  *   .patchWhere(t => t.id === 1)
  *   .with({ text: 'bake cookies' }, 'TodoDetailComponent')
  * ```
@@ -45,7 +45,7 @@ export function makeEnforceTags<S>(state: S, options: MakeOptionsTagged = {}): S
  * 
  * FOR EXAMPLE:
  * ```
- * const store = make({ todos: Array<{ id: number, text: string }>() });
+ * const select = make({ todos: Array<{ id: number, text: string }>() });
  * ```
  */
 export function make<S>(state: S, options: MakeOptions = {}): StoreSelector<S> {

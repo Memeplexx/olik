@@ -5,7 +5,7 @@ import { shareReplay } from 'rxjs/operators';
 
 export * from 'oulik';
 
-export function select<S, C>(
+export function observe<S, C>(
   store: Store<S, C, boolean>,
 ) {
   return new Observable<C>((observer) => {
@@ -17,7 +17,7 @@ export function select<S, C>(
   );
 }
 
-export function selectFetch<S, C, P, B extends boolean>(
+export function observeFetch<S, C, P, B extends boolean>(
   getFetch: () => Fetch<S, C, P, B>,
 ) {
   return new Observable<
