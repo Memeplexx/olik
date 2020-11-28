@@ -1,10 +1,6 @@
-export interface Action<T = any> {
-  type: T
-}
-
 export type FetcherStatus = 'pristine' | 'rejected' | 'resolved' | 'resolving';
 export type Tag<B> = B extends true ? string : void;
-export type Params<T> = T extends infer T ? T : void;
+export type FetchArgument<T> = T extends infer T ? T : void;
 export interface Unsubscribable {
   /**
    * Unsubscribes from this listener thereby preventing any memory leak.
@@ -43,7 +39,7 @@ export interface Fetch<S, C, P, B extends boolean> {
   /**
    * The argument that was used in the request (if any)
    */
-  fetchArg: Params<P>;
+  fetchArg: FetchArgument<P>;
   /**
    * Clears data from the cache (not the store) so that the next time data it requested, it is also re-fetched
    */
@@ -70,7 +66,11 @@ export interface Fetch<S, C, P, B extends boolean> {
   refetch: Fetcher<S, C, P, B>;
 };
 
-export interface FetcherSpecs<S, C, B extends boolean, P> {
+export interface OptionsForCreatingAFetcher<S, C, B extends boolean, P> {
+  /**
+   * The store that you want this fetcher to read to and write from
+   */
+  onStore: Store<S, C, B>,
   /**
    * A no-arg function returning a promise to fetch asynchronous data, for example:
    * ```
@@ -85,16 +85,16 @@ export interface FetcherSpecs<S, C, B extends boolean, P> {
    * setData: arg => arg.store.addAfter(arg.data)
    * ```
    */
-  setData?: (arg: { store: Store<S, C, B>, data: C, params: Params<P>, tag: Tag<B> }) => any,
+  setData?: (arg: { store: Store<S, C, B>, data: C, param: FetchArgument<P>, tag: Tag<B> }) => any,
   /**
    * How long, in milliseconds, you want the library to cache fetch responses.
    */
   cacheFor?: number,
 };
 
-export type Fetcher<S, C, P, B extends boolean> = P extends void ? ((tag: Tag<B>) => Fetch<S, C, P, B>) : ((params: Params<P>, tag: Tag<B>) => Fetch<S, C, P, B>);
+export type Fetcher<S, C, P, B extends boolean> = P extends void ? ((tag: Tag<B>) => Fetch<S, C, P, B>) : ((params: FetchArgument<P>, tag: Tag<B>) => Fetch<S, C, P, B>);
 
-type ArrayOfPrimitivesStore<S, C extends DeepReadonlyArray<any>, B extends boolean> = {
+type StoreForAnArrayOfPrimitives<S, C extends DeepReadonlyArray<any>, B extends boolean> = {
   /**
    * Appends an element, or an array of elements, to the end of array
    * ```
@@ -172,7 +172,7 @@ type ArrayOfPrimitivesStore<S, C extends DeepReadonlyArray<any>, B extends boole
   upsertWhere: (where: (element: C[0]) => boolean) => { with: (element: C[0], tag: Tag<B>) => void },
 }
 
-export type ArrayStore<S, C extends DeepReadonlyArray<any>, B extends boolean> = {
+export type StoreForAnArray<S, C extends DeepReadonlyArray<any>, B extends boolean> = {
   /**
    * Partially updates zero or more elements which match a specific condition
    * ```
@@ -182,9 +182,9 @@ export type ArrayStore<S, C extends DeepReadonlyArray<any>, B extends boolean> =
    * ```
    */
   patchWhere: (where: (element: C[0]) => boolean) => { with: (element: Partial<C[0]>, tag: Tag<B>) => void },
-} & ArrayOfPrimitivesStore<S, C, B>;
+} & StoreForAnArrayOfPrimitives<S, C, B>;
 
-export type PrimitiveStore<S, C extends any, B extends boolean> = {
+export type StoreForAPrimitive<C extends any, B extends boolean> = {
   /**
    * Subtitutes the primitive value
    * ```
@@ -195,7 +195,7 @@ export type PrimitiveStore<S, C extends any, B extends boolean> = {
   replaceWith: (replacement: C, tag: Tag<B>) => void,
 }
 
-export type ObjectStore<S, C extends any, B extends boolean> = {
+export type StoreForAnObject<S, C extends any, B extends boolean> = {
   /**
    * Partially updates the object
    * ```
@@ -204,9 +204,9 @@ export type ObjectStore<S, C extends any, B extends boolean> = {
    * ```
    */
   patchWith: (partial: Partial<C>, tag: Tag<B>) => void,
-} & PrimitiveStore<S, C, B>;
+} & StoreForAPrimitive<C, B>;
 
-export type CommonReadable<S, C extends any, B extends boolean> = {
+export type StoreWhichIsReadable<C> = {
   /**
    * Listens to any updates on this node
    * @returns a subscription which will need to be unsubscribed from to prevent a memory leak
@@ -222,54 +222,54 @@ export type CommonReadable<S, C extends any, B extends boolean> = {
   read: () => C,
 }
 
-export type CommonStore<S, C extends any, B extends boolean> = {
+export type StoreWhichIsResettable<C extends any, B extends boolean> = {
   /**
    * Reverts the current state to how it was when the store was initialized.
    * Beware that if this store is marked as a `containerForNestedStores`, then all nested stores will also be removed
    */
   reset: (tag: Tag<B>) => void,
-} & CommonReadable<S, C, B>;
+} & StoreWhichIsReadable<C>;
 
-export type ContainerStore<S, C, B extends boolean> = ObjectStore<C, C, B> & CommonReadable<S, C, B> & {
+export type StoreWhichMayContainOtherStores<S, C, B extends boolean> = StoreForAnObject<C, C, B> & StoreWhichIsReadable<C> & {
   renew: (state: S) => void;
   reset: () => void;
 };
 
 export type Store<S, C, B extends boolean> = ([C] extends undefined ? any :
-    [C] extends DeepReadonlyArray<object[]> ? ArrayStore<S, [C][0], B> :
-    [C] extends DeepReadonlyArray<any[]> ? ArrayOfPrimitivesStore<S, [C][0], B> :
-    [C] extends [object] ? ObjectStore<S, C, B> : PrimitiveStore<S, C, B>) & CommonStore<S, C, B>;
+    [C] extends DeepReadonlyArray<object[]> ? StoreForAnArray<S, [C][0], B> :
+    [C] extends DeepReadonlyArray<any[]> ? StoreForAnArrayOfPrimitives<S, [C][0], B> :
+    [C] extends [object] ? StoreForAnObject<S, C, B> : StoreForAPrimitive<C, B>) & StoreWhichIsResettable<C, B>;
 
-export type NestedStore<S, C, B extends boolean> = Store<S, C, B> & {
+export type StoreWhichIsNested<S, C, B extends boolean> = Store<S, C, B> & {
   /**
    * Removes this nested store from the store which was marked as a `containerForNestedStores`.
    */
   removeFromContainingStore: () => void;
 };
 
-export type NestedStoreInternal<S, C, B extends boolean> = Store<S, C, B> & {
+export type StoreWhichIsNestedInternal<S, C, B extends boolean> = Store<S, C, B> & {
   defineReset: (initState: S) => () => any;
   defineRemoveFromContainingStore: (name: string, key: string) => () => any;
-} & NestedStore<S, C, B>;
+} & StoreWhichIsNested<S, C, B>;
 
-export type NestedStoreSelector<S> = (<C = S>(selector?: (arg: DeepReadonly<S>) => C) => NestedStore<S, C, false>);
+export type SelectorFromANestedStore<S> = (<C = S>(selector?: (arg: DeepReadonly<S>) => C) => StoreWhichIsNested<S, C, false>);
 
-export type StoreSelector<S> = (<C = S>(selector?: (arg: DeepReadonly<S>) => C) => Store<S, C, false>);
+export type SelectorFromAStore<S> = (<C = S>(selector?: (arg: DeepReadonly<S>) => C) => Store<S, C, false>);
 
-export type StoreTaggedSelector<S> = (<C = S>(selector?: (arg: DeepReadonly<S>) => C) => Store<S, C, true>);
+export type SelectorFromANestedStoreEnforcingTags<S> = (<C = S>(selector?: (arg: DeepReadonly<S>) => C) => Store<S, C, true>);
 
-type ReadType<E> = E extends CommonReadable<any, infer W, false> ? W : E extends CommonReadable<any, infer W, true> ? W : never;
+type DerivationCalculationInput<E> = E extends StoreWhichIsReadable<infer W> ? W : E extends StoreWhichIsReadable<infer W> ? W : never;
 
-export type MappedDataTuple<T extends Array<CommonReadable<any, any, any>>> = {
-  [K in keyof T]: ReadType<T[K]>;
+export type DerivationCalculationInputs<T extends Array<StoreWhichIsReadable<any>>> = {
+  [K in keyof T]: DerivationCalculationInput<T[K]>;
 }
 
-export interface MakeOptions {
+export interface OptionsForMakingAStore {
   /**
    * Specifications for the Redux Devtools Extension. Pass 'false' if you do not want your store to be tracked within the Redux devtools extension.
    * See https://github.com/zalmoxisus/redux-devtools-extension/blob/master/docs/API/Arguments.md for more info
    */
-  devtools?: EnhancerOptions | false;
+  devtools?: OptionsForReduxDevtools | false;
   /**
    * Setting this to true will mean that any stores which are subsequently created using `makeNested()` will automatically be nested within this store.
    * Those nested stores will then be visible within the Redux devtools extension.
@@ -277,7 +277,7 @@ export interface MakeOptions {
   containerForNestedStores?: boolean;
 }
 
-export interface MakeOptionsTagged extends MakeOptions {
+export interface OptionsForMakingAStoreEnforcingTags extends OptionsForMakingAStore {
   /**
    * If supplied, this function can transform all tags passed in when updating state.
    * This is of use if, for example, you are using the __filename node variable as a tag, and you would like the abbreviate the file path to something more readable.
@@ -285,108 +285,12 @@ export interface MakeOptionsTagged extends MakeOptions {
   tagSanitizer?: (tag: string) => string;
 }
 
-export interface EnhancerOptions {
+export interface OptionsForReduxDevtools {
   /**
    * the instance name to be showed on the monitor page. Default value is `document.title`.
    * If not specified and there's no document title, it will consist of `tabId` and `instanceId`.
    */
   name?: string;
-  /**
-   * if more than one action is dispatched in the indicated interval, all new actions will be collected and sent at once.
-   * It is the joint between performance and speed. When set to `0`, all actions will be sent instantly.
-   * Set it to a higher value when experiencing perf issues (also `maxAge` to a lower value).
-   *
-   * @default 500 ms.
-   */
-  latency?: number;
-  /**
-   * (> 1) - maximum allowed actions to be stored in the history tree. The oldest actions are removed once maxAge is reached. It's critical for performance.
-   *
-   * @default 50
-   */
-  maxAge?: number;
-  /**
-   * - `undefined` - will use regular `JSON.stringify` to send data (it's the fast mode).
-   * - `false` - will handle also circular references.
-   * - `true` - will handle also date, regex, undefined, error objects, symbols, maps, sets and functions.
-   * - object, which contains `date`, `regex`, `undefined`, `error`, `symbol`, `map`, `set` and `function` keys.
-   *   For each of them you can indicate if to include (by setting as `true`).
-   *   For `function` key you can also specify a custom function which handles serialization.
-   *   See [`jsan`](https://github.com/kolodny/jsan) for more details.
-   */
-  serialize?: boolean | {
-    date?: boolean;
-    regex?: boolean;
-    undefined?: boolean;
-    error?: boolean;
-    symbol?: boolean;
-    map?: boolean;
-    set?: boolean;
-    function?: boolean | Function;
-  };
-  /**
-   * function which takes `action` object and id number as arguments, and should return `action` object back.
-   */
-  actionSanitizer?: <A extends Action>(action: A, id: number) => A;
-  /**
-   * function which takes `state` object and index as arguments, and should return `state` object back.
-   */
-  stateSanitizer?: <S>(state: S, index: number) => S;
-  /**
-   * *string or array of strings as regex* - actions types to be hidden / shown in the monitors (while passed to the reducers).
-   * If `actionsWhitelist` specified, `actionsBlacklist` is ignored.
-   */
-  actionsBlacklist?: string | string[];
-  /**
-   * *string or array of strings as regex* - actions types to be hidden / shown in the monitors (while passed to the reducers).
-   * If `actionsWhitelist` specified, `actionsBlacklist` is ignored.
-   */
-  actionsWhitelist?: string | string[];
-  /**
-   * called for every action before sending, takes `state` and `action` object, and returns `true` in case it allows sending the current data to the monitor.
-   * Use it as a more advanced version of `actionsBlacklist`/`actionsWhitelist` parameters.
-   */
-  predicate?: <S, A extends Action>(state: S, action: A) => boolean;
-  /**
-   * if specified as `false`, it will not record the changes till clicking on `Start recording` button.
-   * Available only for Redux enhancer, for others use `autoPause`.
-   *
-   * @default true
-   */
-  shouldRecordChanges?: boolean;
-  /**
-   * if specified, whenever clicking on `Pause recording` button and there are actions in the history log, will add this action type.
-   * If not specified, will commit when paused. Available only for Redux enhancer.
-   *
-   * @default "@@PAUSED""
-   */
-  pauseActionType?: string;
-  /**
-   * auto pauses when the extension’s window is not opened, and so has zero impact on your app when not in use.
-   * Not available for Redux enhancer (as it already does it but storing the data to be sent).
-   *
-   * @default false
-   */
-  autoPause?: boolean;
-  /**
-   * if specified as `true`, it will not allow any non-monitor actions to be dispatched till clicking on `Unlock changes` button.
-   * Available only for Redux enhancer.
-   *
-   * @default false
-   */
-  shouldStartLocked?: boolean;
-  /**
-   * if set to `false`, will not recompute the states on hot reloading (or on replacing the reducers). Available only for Redux enhancer.
-   *
-   * @default true
-   */
-  shouldHotReload?: boolean;
-  /**
-   * if specified as `true`, whenever there's an exception in reducers, the monitors will show the error message, and next actions will not be dispatched.
-   *
-   * @default false
-   */
-  shouldCatchErrors?: boolean;
   /**
    * If you want to restrict the extension, specify the features you allow.
    * If not specified, all of the features are enabled. When set as an object, only those included as `true` will be allowed.
@@ -398,10 +302,6 @@ export interface EnhancerOptions {
      * start/pause recording of dispatched actions
      */
     pause?: boolean;
-    /**
-     * lock/unlock dispatching actions and side effects
-     */
-    lock?: boolean;
     /**
      * persist states on page reloading
      */
@@ -423,27 +323,10 @@ export interface EnhancerOptions {
      */
     skip?: boolean;
     /**
-     * drag and drop actions in the history list
-     */
-    reorder?: boolean;
-    /**
      * dispatch custom actions or action creators
      */
     dispatch?: boolean;
-    /**
-     * generate tests for the selected actions
-     */
-    test?: boolean;
   };
-  /**
-   * Set to true or a stacktrace-returning function to record call stack traces for dispatched actions.
-   * Defaults to false.
-   */
-  trace?: boolean | (<A extends Action>(action: A) => string);
-  /**
-   * The maximum number of stack trace entries to record per action. Defaults to 10.
-   */
-  traceLimit?: number;
 }
 
 export interface Derivation<R> {
@@ -464,14 +347,14 @@ export interface Derivation<R> {
 
 export interface WindowAugmentedWithReduxDevtools {
   __REDUX_DEVTOOLS_EXTENSION__: {
-    connect: (options: EnhancerOptions) => {
+    connect: (options: OptionsForReduxDevtools) => {
       init: (state: any) => any,
       subscribe: (listener: (message: { type: string, payload: any, state?: any, source: string }) => any) => any,
       unsubscribe: () => any,
-      send: (action: Action, state: any) => any
+      send: (action: { type: string }, state: any) => any
     };
     disconnect: () => any;
-    send: (action: { type: string, payload?: any }, state: any, options: EnhancerOptions) => any;
+    send: (action: { type: string, payload?: any }, state: any, options: OptionsForReduxDevtools) => any;
     _mockInvokeSubscription: (message: { type: string, payload: any, state?: any, source: any }) => any,
     _subscribers: Array<(message: { type: string, payload: any, state?: any, source: any }) => any>,
   }

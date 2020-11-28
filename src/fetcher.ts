@@ -1,4 +1,4 @@
-import { Fetch, Fetcher, FetcherStatus, Params, Store, Unsubscribable } from "./shape";
+import { Fetch, Fetcher, FetcherStatus, FetchArgument, Store, Unsubscribable } from "./shape";
 import { deepCopy, deepFreeze } from "./utils";
 
 export const createFetcher = <S, C, B extends boolean, X extends (params: any) => Promise<C>, P extends Parameters<X>[0]>(specs: {
@@ -22,7 +22,7 @@ export const createFetcher = <S, C, B extends boolean, X extends (params: any) =
   const result = (paramsOrTag: P | string | void, tag: string | void): Fetch<S, C, P, B> => {
     const supportsTags = (specs.onStore as any).supportsTags;
     const actualTag = supportsTags ? (tag || paramsOrTag) as string : undefined;
-    const actualParams = (((supportsTags && tag) || (!supportsTags && paramsOrTag)) ? paramsOrTag : undefined) as Params<P>;
+    const actualParams = (((supportsTags && tag) || (!supportsTags && paramsOrTag)) ? paramsOrTag : undefined) as FetchArgument<P>;
     const cacheItem = responseCache.get(actualParams) || responseCache.set(actualParams,
       { data: undefined as any as C, error: undefined, lastFetch: 0, status: 'pristine', fetches: [], changeListeners: [], changeOnceListeners: [], cacheExpiredListeners: [], cacheExpiredOnceListeners: [] }).get(actualParams)!;
     const cacheHasExpiredOrPromiseNotYetCalled = (cacheItem.lastFetch + (specs.cacheFor || 0)) < Date.now();

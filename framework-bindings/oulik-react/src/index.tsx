@@ -84,7 +84,7 @@ export function useFetcher<S, C, P, B extends boolean>(
   return result;
 }
 
-// export function useComponentStore(
+// export function useStore(
 //   store: 
 // ) {
 

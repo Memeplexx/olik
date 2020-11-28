@@ -1,22 +1,22 @@
 import { devtoolsDebounce, errorMessages } from './consts';
 import { integrateStoreWithReduxDevtools } from './devtools';
 import {
-  ContainerStore,
   DeepReadonly,
-  EnhancerOptions,
-  NestedStore,
-  NestedStoreInternal,
-  NestedStoreSelector,
-  MakeOptions,
-  MakeOptionsTagged,
+  OptionsForMakingAStore,
+  OptionsForMakingAStoreEnforcingTags,
+  OptionsForReduxDevtools,
+  SelectorFromANestedStore,
+  SelectorFromAStore,
   Store,
-  StoreSelector,
-  StoreTaggedSelector,
+  SelectorFromANestedStoreEnforcingTags,
+  StoreWhichIsNested,
+  StoreWhichIsNestedInternal,
+  StoreWhichMayContainOtherStores,
 } from './shape';
 import { tests } from './tests';
 import { copyObject, createPathReader, deepCopy, deepFreeze, validateState } from './utils';
 
-let nestedContainerStore: ((selector?: ((s: DeepReadonly<any>) => any) | undefined) => ContainerStore<any, any, boolean>) | undefined;
+let nestedContainerStore: ((selector?: ((s: DeepReadonly<any>) => any) | undefined) => StoreWhichMayContainOtherStores<any, any, boolean>) | undefined;
 
 /**
  * Creates a new store which, for typescript users, requires that users supply an additional 'tag' when performing a state update.
@@ -34,7 +34,7 @@ let nestedContainerStore: ((selector?: ((s: DeepReadonly<any>) => any) | undefin
  *   .with({ text: 'bake cookies' }, 'TodoDetailComponent')
  * ```
  */
-export function makeEnforceTags<S>(state: S, options: MakeOptionsTagged = {}): StoreTaggedSelector<S> {
+export function makeEnforceTags<S>(state: S, options: OptionsForMakingAStoreEnforcingTags = {}): SelectorFromANestedStoreEnforcingTags<S> {
   return makeInternalRootStore<S, true>(state, { ...options, supportsTags: true });
 }
 
@@ -48,7 +48,7 @@ export function makeEnforceTags<S>(state: S, options: MakeOptionsTagged = {}): S
  * const select = make({ todos: Array<{ id: number, text: string }>() });
  * ```
  */
-export function make<S>(state: S, options: MakeOptions = {}): StoreSelector<S> {
+export function make<S>(state: S, options: OptionsForMakingAStore = {}): SelectorFromAStore<S> {
   return makeInternalRootStore<S, false>(state, { ...options, supportsTags: false });
 }
 
@@ -60,12 +60,12 @@ export function make<S>(state: S, options: MakeOptions = {}): StoreSelector<S> {
  * @param state The initial state
  * @param options A configuration object which, at minimum, must contain the `name` of the nested store
  */
-export function makeNested<L>(state: L, options: { name: string, storeKey?: string | ((previousKey?: string) => string) }): NestedStoreSelector<L> {
+export function makeNested<L>(state: L, options: { name: string, storeKey?: string | ((previousKey?: string) => string) }): SelectorFromANestedStore<L> {
   const name = options.name;
   if (!nestedContainerStore) {
     return (<C = L>(selector?: (arg: DeepReadonly<L>) => C) => (selector
       ? makeInternal(state, { devtools: { name }, supportsTags: false })(selector)
-      : null)) as NestedStoreSelector<L>;
+      : null)) as SelectorFromANestedStore<L>;
   }
   const generateKey = (arg?: string) => (!arg && !options.storeKey) ? '0' :
     !options.storeKey ? (+arg! + 1).toString() : typeof (options.storeKey) === 'function' ? options.storeKey(arg) : options.storeKey;
@@ -90,14 +90,14 @@ export function makeNested<L>(state: L, options: { name: string, storeKey?: stri
     const lStore = nestedContainerStore!(s => {
       const libState = s.nested[name][key];
       return selector ? selector(libState) : libState;
-    }) as any as NestedStoreInternal<L, C, any>;
+    }) as any as StoreWhichIsNestedInternal<L, C, any>;
     lStore.removeFromContainingStore = lStore.defineRemoveFromContainingStore(name, key);
     lStore.reset = lStore.defineReset(state);
-    return lStore as NestedStore<L, C, false>;
+    return lStore as StoreWhichIsNested<L, C, false>;
   };
 }
 
-function makeInternalRootStore<S, B extends boolean>(state: S, options: { containerForNestedStores?: boolean, supportsTags: boolean, devtools?: EnhancerOptions | false, tagSanitizer?: (tag: string) => string }) {
+function makeInternalRootStore<S, B extends boolean>(state: S, options: { containerForNestedStores?: boolean, supportsTags: boolean, devtools?: OptionsForReduxDevtools | false, tagSanitizer?: (tag: string) => string }) {
   const store = makeInternal<S, B>(state, { devtools: options.devtools || {}, supportsTags: options.supportsTags, tagSanitizer: options.tagSanitizer });
   if (options.containerForNestedStores) {
     if ((typeof (state) !== 'object') || Array.isArray(state)) {
@@ -108,7 +108,7 @@ function makeInternalRootStore<S, B extends boolean>(state: S, options: { contai
   return store;
 }
 
-function makeInternal<S, B extends boolean>(state: S, options: { supportsTags: boolean, devtools: EnhancerOptions | false, tagSanitizer?: (tag: string) => string }) {
+function makeInternal<S, B extends boolean>(state: S, options: { supportsTags: boolean, devtools: OptionsForReduxDevtools | false, tagSanitizer?: (tag: string) => string }) {
   validateState(state);
   const changeListeners = new Map<(ar: any) => any, (arg: S) => any>();
   let pathReader = createPathReader(state);

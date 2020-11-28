@@ -146,7 +146,6 @@ describe('Fetcher', () => {
     const fetchArray = createFetcher({
       onStore: store(s => s.array),
       getData: (num: number) => new Promise<[{ id: number, value: string }]>(resolve => setTimeout(() => resolve([{ id: num, value: 'dd' }]), 10)),
-      testerr: 2
     });
     const fetchArrayState = fetchArray(2);
     fetchArrayState.onChangeOnce(() => {
