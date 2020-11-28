@@ -240,19 +240,19 @@ export type Store<S, C, B extends boolean> = ([C] extends undefined ? any :
     [C] extends DeepReadonlyArray<any[]> ? ArrayOfPrimitivesStore<S, [C][0], B> :
     [C] extends [object] ? ObjectStore<S, C, B> : PrimitiveStore<S, C, B>) & CommonStore<S, C, B>;
 
-export type LibStore<S, C, B extends boolean> = Store<S, C, B> & {
+export type NestedStore<S, C, B extends boolean> = Store<S, C, B> & {
   /**
    * Removes this nested store from the store which was marked as a `containerForNestedStores`.
    */
   removeFromContainingStore: () => void;
 };
 
-export type LibStoreInternal<S, C, B extends boolean> = Store<S, C, B> & {
+export type NestedStoreInternal<S, C, B extends boolean> = Store<S, C, B> & {
   defineReset: (initState: S) => () => any;
   defineRemoveFromContainingStore: (name: string, key: string) => () => any;
-} & LibStore<S, C, B>;
+} & NestedStore<S, C, B>;
 
-export type LibStoreSelector<S> = (<C = S>(selector?: (arg: DeepReadonly<S>) => C) => LibStore<S, C, false>);
+export type NestedStoreSelector<S> = (<C = S>(selector?: (arg: DeepReadonly<S>) => C) => NestedStore<S, C, false>);
 
 export type StoreSelector<S> = (<C = S>(selector?: (arg: DeepReadonly<S>) => C) => Store<S, C, false>);
 

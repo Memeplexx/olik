@@ -4,9 +4,9 @@ import {
   ContainerStore,
   DeepReadonly,
   EnhancerOptions,
-  LibStore,
-  LibStoreInternal,
-  LibStoreSelector,
+  NestedStore,
+  NestedStoreInternal,
+  NestedStoreSelector,
   MakeOptions,
   MakeOptionsTagged,
   Store,
@@ -60,12 +60,12 @@ export function make<S>(state: S, options: MakeOptions = {}): StoreSelector<S> {
  * @param state The initial state
  * @param options A configuration object which, at minimum, must contain the `name` of the nested store
  */
-export function makeNested<L>(state: L, options: { name: string, storeKey?: (previousKey?: string) => string }): LibStoreSelector<L> {
+export function makeNested<L>(state: L, options: { name: string, storeKey?: string | ((previousKey?: string) => string) }): NestedStoreSelector<L> {
   const name = options.name;
   if (!nestedContainerStore) {
     return (<C = L>(selector?: (arg: DeepReadonly<L>) => C) => (selector
       ? makeInternal(state, { devtools: { name }, supportsTags: false })(selector)
-      : null)) as any as LibStoreSelector<L>;
+      : null)) as NestedStoreSelector<L>;
   }
   const generateKey = (arg?: string) => (!arg && !options.storeKey) ? '0' :
     !options.storeKey ? (+arg! + 1).toString() : typeof (options.storeKey) === 'function' ? options.storeKey(arg) : options.storeKey;
@@ -90,10 +90,10 @@ export function makeNested<L>(state: L, options: { name: string, storeKey?: (pre
     const lStore = nestedContainerStore!(s => {
       const libState = s.nested[name][key];
       return selector ? selector(libState) : libState;
-    }) as any as LibStoreInternal<any, C, any>;
+    }) as any as NestedStoreInternal<L, C, any>;
     lStore.removeFromContainingStore = lStore.defineRemoveFromContainingStore(name, key);
     lStore.reset = lStore.defineReset(state);
-    return lStore as any as LibStore<L, C, false>;
+    return lStore as NestedStore<L, C, false>;
   };
 }
 

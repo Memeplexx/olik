@@ -92,7 +92,7 @@ describe('Nested', () => {
     nestedStore(s => s.one).replaceWith('test1');
     const nestedStore2 = makeNested({ one: '' }, { name });
     nestedStore2(s => s.one).replaceWith('test2');
-    expect(store().read()).toEqual({ test: '', nested: { [name]: { 0: { one: 'test1' }, 1: { one: 'test2' } } } })
+    expect(store().read()).toEqual({ test: '', nested: { [name]: { 0: { one: 'test1' }, 1: { one: 'test2' } } } });
   })
 
   it('should be able to support nested store which is a top-level array', () => {
@@ -137,7 +137,7 @@ describe('Nested', () => {
     expect(() => make(new Array<string>(), { containerForNestedStores: true })).toThrowError(errorMessages.INVALID_CONTAINER_FOR_NESTED_STORES);
   })
 
-  it('should be able to generate custom keys', () => {
+  it('should be able to generate custom keys using a function', () => {
     const initialState = {
       test: '',
     };

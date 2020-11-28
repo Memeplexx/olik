@@ -1,4 +1,4 @@
-import { Store, Fetch, Unsubscribable } from 'oulik';
+import { Store, Fetch, Unsubscribable,  } from 'oulik';
 import React, { DependencyList } from 'react';
 
 export * from 'oulik';
@@ -83,6 +83,12 @@ export function useFetcher<S, C, P, B extends boolean>(
   }, allDeps);
   return result;
 }
+
+// export function useComponentStore(
+//   store: 
+// ) {
+
+// }
 
 /**
  * Similar, in principal to React-Redux's `mapStateToProps()`

@@ -13,7 +13,7 @@ export function observe<S, C>(
     const subscription = store.onChange(v => observer.next(v));
     return () => subscription.unsubscribe();
   }).pipe(
-    shareReplay(1),
+    shareReplay({ bufferSize: 1, refCount: true }),
   );
 }
 
@@ -63,7 +63,7 @@ export function observeFetch<S, C, P, B extends boolean>(
       }
     };
   }).pipe(
-    shareReplay(1),
+    shareReplay({ bufferSize: 1, refCount: true }),
   );
 }
 
