@@ -23,9 +23,9 @@ const fetchTodos = createFetcher({
 
 `component.ts`
 ```Typescript
-const subscription = fetchTodos()
+const todosFetch = fetchTodos()
   .onChange(() => console.log(`Fetcher status is currently ${sizeFetcher.status}`));
-subscription.unSubscribe(); // Always unsubscribe to avoid memory leaks
+todosFetch.unSubscribe(); // Always unsubscribe to avoid memory leaks
 ```
 
 ## FETCHING ASYNC STATE (WITH ARGS) ##

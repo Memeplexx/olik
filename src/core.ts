@@ -1,10 +1,22 @@
 import { devtoolsDebounce, errorMessages } from './consts';
 import { integrateStoreWithReduxDevtools } from './devtools';
-import { CommonStore, DeepReadonly, DeepReadonlyObject, EnhancerOptions, LibStore, MakeOptions, MakeOptionsTagged, ObjectStore, Store } from './shape';
+import {
+  ContainerStore,
+  DeepReadonly,
+  EnhancerOptions,
+  LibStore,
+  LibStoreInternal,
+  LibStoreSelector,
+  MakeOptions,
+  MakeOptionsTagged,
+  Store,
+  StoreSelector,
+  StoreTaggedSelector,
+} from './shape';
 import { tests } from './tests';
 import { copyObject, createPathReader, deepCopy, deepFreeze, validateState } from './utils';
 
-let nestedContainerStore: ((selector?: ((s: DeepReadonly<any>) => any) | undefined) => Store<any, any, boolean>) | undefined;
+let nestedContainerStore: ((selector?: ((s: DeepReadonly<any>) => any) | undefined) => ContainerStore<any, any, boolean>) | undefined;
 
 /**
  * Creates a new store which, for typescript users, requires that users supply an additional 'tag' when performing a state update.
@@ -22,8 +34,8 @@ let nestedContainerStore: ((selector?: ((s: DeepReadonly<any>) => any) | undefin
  *   .with({ text: 'bake cookies' }, 'TodoDetailComponent')
  * ```
  */
-export function makeEnforceTags<S>(state: S, options: MakeOptionsTagged = {}) {
-  return makeInternalRootStore<S, true>(state, {...options, supportsTags: true});
+export function makeEnforceTags<S>(state: S, options: MakeOptionsTagged = {}): StoreTaggedSelector<S> {
+  return makeInternalRootStore<S, true>(state, { ...options, supportsTags: true });
 }
 
 /**
@@ -36,8 +48,8 @@ export function makeEnforceTags<S>(state: S, options: MakeOptionsTagged = {}) {
  * const store = make({ todos: Array<{ id: number, text: string }>() });
  * ```
  */
-export function make<S>(state: S, options: MakeOptions = {}) {
-  return makeInternalRootStore<S, false>(state, {...options, supportsTags: false});
+export function make<S>(state: S, options: MakeOptions = {}): StoreSelector<S> {
+  return makeInternalRootStore<S, false>(state, { ...options, supportsTags: false });
 }
 
 /**
@@ -48,37 +60,39 @@ export function make<S>(state: S, options: MakeOptions = {}) {
  * @param state The initial state
  * @param options A configuration object which, at minimum, must contain the `name` of the nested store
  */
-export function makeNested<L>(state: L, options: { name: string, keyGenerator?: (previousKey?: string) => string }) {
+export function makeNested<L>(state: L, options: { name: string, storeKey?: (previousKey?: string) => string }): LibStoreSelector<L> {
   const name = options.name;
   if (!nestedContainerStore) {
-    return <C = L>(selector?: (arg: DeepReadonly<L>) => C) => (selector
+    return (<C = L>(selector?: (arg: DeepReadonly<L>) => C) => (selector
       ? makeInternal(state, { devtools: { name }, supportsTags: false })(selector)
-      : null) as any as LibStore<L, C, false>;
+      : null)) as any as LibStoreSelector<L>;
   }
-  const generateKey = (arg?: string) => (!arg && !options.keyGenerator) ? '0' : !options.keyGenerator ? +arg! + 1 : options.keyGenerator(arg);
-  const wrapperState = (nestedContainerStore() as any).read();
+  const generateKey = (arg?: string) => (!arg && !options.storeKey) ? '0' :
+    !options.storeKey ? (+arg! + 1).toString() : typeof (options.storeKey) === 'function' ? options.storeKey(arg) : options.storeKey;
+  const wrapperState = nestedContainerStore().read();
+  let key: string;
   if (!nestedContainerStore().read().nested) {
-    const key = generateKey();
-    (nestedContainerStore() as any as ObjectStore<any, any, any>).patchWith({ nested: { [name]: { [key]: state } } });
-    (nestedContainerStore() as any).renew({ ...wrapperState, nested: { [name]: { [key]: state } } });
+    key = generateKey();
+    nestedContainerStore().patchWith({ nested: { [name]: { [key]: state } } });
+    nestedContainerStore().renew({ ...wrapperState, nested: { [name]: { [key]: state } } });
   } else if (!nestedContainerStore().read().nested[name]) {
-    const key = generateKey();
-    (nestedContainerStore(s => s.nested) as any as ObjectStore<any, any, any>).patchWith({ [name]: { [key]: state } });
-    (nestedContainerStore() as any).renew({ ...wrapperState, nested: { ...wrapperState.nested, [name]: { [key]: state } } });
+    key = generateKey();
+    nestedContainerStore(s => s.nested).patchWith({ [name]: { [key]: state } });
+    nestedContainerStore().renew({ ...wrapperState, nested: { ...wrapperState.nested, [name]: { [key]: state } } });
   } else {
-    const values = (nestedContainerStore(s => s.nested[name]) as any as CommonStore<any, any, any>).read();
+    const values = nestedContainerStore(s => s.nested[name]).read();
     const keys = Object.keys(values);
-    const key = generateKey(keys[keys.length - 1]);
-    (nestedContainerStore(s => s.nested[name]) as any as ObjectStore<any, any, any>).patchWith({ [key]: state });
-    (nestedContainerStore() as any).renew({ ...wrapperState, nested: { ...wrapperState.nested, [name]: { ...wrapperState.nested[name], [key]: state } } });
+    key = generateKey(keys[keys.length - 1]);
+    nestedContainerStore(s => s.nested[name]).patchWith({ [key]: state });
+    nestedContainerStore().renew({ ...wrapperState, nested: { ...wrapperState.nested, [name]: { ...wrapperState.nested[name], [key]: state } } });
   }
-  const index = Object.keys(nestedContainerStore(s => s.nested[name]).read()).length - 1;
-  return <C = L>(selector?: (arg: DeepReadonlyObject<L>) => C) => {
+  return <C = L>(selector?: (arg: DeepReadonly<L>) => C) => {
     const lStore = nestedContainerStore!(s => {
-      const libState = s.nested[name][index.toString()];
+      const libState = s.nested[name][key];
       return selector ? selector(libState) : libState;
-    });
-    (lStore as any)['removeFromContainingStore'] = (lStore as any)['defineRemoveFromContainingStore'](name, index);
+    }) as any as LibStoreInternal<any, C, any>;
+    lStore.removeFromContainingStore = lStore.defineRemoveFromContainingStore(name, key);
+    lStore.reset = lStore.defineReset(state);
     return lStore as any as LibStore<L, C, false>;
   };
 }
@@ -86,7 +100,7 @@ export function makeNested<L>(state: L, options: { name: string, keyGenerator?: 
 function makeInternalRootStore<S, B extends boolean>(state: S, options: { containerForNestedStores?: boolean, supportsTags: boolean, devtools?: EnhancerOptions | false, tagSanitizer?: (tag: string) => string }) {
   const store = makeInternal<S, B>(state, { devtools: options.devtools || {}, supportsTags: options.supportsTags, tagSanitizer: options.tagSanitizer });
   if (options.containerForNestedStores) {
-    if ((typeof(state) !== 'object') || Array.isArray(state)) {
+    if ((typeof (state) !== 'object') || Array.isArray(state)) {
       throw new Error(errorMessages.INVALID_CONTAINER_FOR_NESTED_STORES);
     }
     nestedContainerStore = store as any;
@@ -235,7 +249,8 @@ function makeInternal<S, B extends boolean>(state: S, options: { supportsTags: b
         currentState = deepFreeze(state) as S;
         initialState = currentState;
       }
-    }
+    },
+    defineReset: (initState: any) => () => replace(e => selector(e), 'reset')(initState),
   } as any as Store<S, C, B>);
 
   const storeResult = <C = S>(selector: ((s: DeepReadonly<S>) => C) = (s => s as any as C)) => {

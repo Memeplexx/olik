@@ -18,9 +18,9 @@ npm i oulik
 ```Typescript
 import { make } from 'oulik';
 
-const store = make({ favoriteThings: { color: '', foods: new Array<string>() } });       
+const select = make({ favoriteThings: { color: '', foods: new Array<string>() } });       
 
-store(s => s.favoriteThings.color).replaceWith('red'); 
+select(s => s.favoriteThings.color).replaceWith('red'); 
 ```
 ***[✍️ Writing state](./docs/readme-write.md)*** - update your state using a minimal but powerful set of state-update utilities
 

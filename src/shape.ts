@@ -224,10 +224,16 @@ export type CommonReadable<S, C extends any, B extends boolean> = {
 
 export type CommonStore<S, C extends any, B extends boolean> = {
   /**
-   * Reverts the current state to how it was when the store was initialized
+   * Reverts the current state to how it was when the store was initialized.
+   * Beware that if this store is marked as a `containerForNestedStores`, then all nested stores will also be removed
    */
   reset: (tag: Tag<B>) => void,
 } & CommonReadable<S, C, B>;
+
+export type ContainerStore<S, C, B extends boolean> = ObjectStore<C, C, B> & CommonReadable<S, C, B> & {
+  renew: (state: S) => void;
+  reset: () => void;
+};
 
 export type Store<S, C, B extends boolean> = ([C] extends undefined ? any :
     [C] extends DeepReadonlyArray<object[]> ? ArrayStore<S, [C][0], B> :
@@ -238,8 +244,19 @@ export type LibStore<S, C, B extends boolean> = Store<S, C, B> & {
   /**
    * Removes this nested store from the store which was marked as a `containerForNestedStores`.
    */
-  removeFromContainingStore: () => void
+  removeFromContainingStore: () => void;
 };
+
+export type LibStoreInternal<S, C, B extends boolean> = Store<S, C, B> & {
+  defineReset: (initState: S) => () => any;
+  defineRemoveFromContainingStore: (name: string, key: string) => () => any;
+} & LibStore<S, C, B>;
+
+export type LibStoreSelector<S> = (<C = S>(selector?: (arg: DeepReadonly<S>) => C) => LibStore<S, C, false>);
+
+export type StoreSelector<S> = (<C = S>(selector?: (arg: DeepReadonly<S>) => C) => Store<S, C, false>);
+
+export type StoreTaggedSelector<S> = (<C = S>(selector?: (arg: DeepReadonly<S>) => C) => Store<S, C, true>);
 
 type ReadType<E> = E extends CommonReadable<any, infer W, false> ? W : E extends CommonReadable<any, infer W, true> ? W : never;
 

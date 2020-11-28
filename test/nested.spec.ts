@@ -143,10 +143,10 @@ describe('Nested', () => {
     };
     const store = make(initialState, { containerForNestedStores: true });
     const name = 'myComp';
-    const keyGenerator = (arg?: string): string => !arg ? 'x' : arg + 'x';
-    makeNested(0, { name, keyGenerator });
-    makeNested(0, { name, keyGenerator });
-    makeNested(0, { name, keyGenerator });
+    const storeKey = (arg?: string): string => !arg ? 'x' : arg + 'x';
+    makeNested(0, { name, storeKey });
+    makeNested(0, { name, storeKey });
+    makeNested(0, { name, storeKey });
     expect(store().read()).toEqual({ test: '', nested: { [name]: { x: 0, xx: 0, xxx: 0 } } });
   })
 
@@ -163,16 +163,22 @@ describe('Nested', () => {
     expect(store().read()).toEqual(initialState);
   })
 
-  // it('should be able to reset the state of a nested store', () => {
-  //   const initialState = {
-  //     test: '',
-  //   };
-  //   const store = make(initialState, { containerForNestedStores: true });
-  //   const name = 'myComp';
-  //   const nested = makeNested(0, { name });
-  //   nested().replaceWith(1);
-  //   nested().reset();
-  //   console.log(nested().read());
-  // })
+  it('should be able to reset the state of a nested store', () => {
+    const initialState = {
+      test: '',
+    };
+    interface X {
+      test: string
+    }
+    const store = make<X>(initialState, { containerForNestedStores: true });
+    const name = 'myComp';
+    const nested = makeNested(0, { name });
+    nested().replaceWith(1);
+    expect(store().read()).toEqual({ test: '', nested: { myComp: { '0': 1 } } });
+    nested().reset();
+    expect(store().read()).toEqual({ test: '', nested: { myComp: { '0': 0 } } });
+    expect(nested().read()).toEqual(0);
+    store().reset();
+  })
 
 });
