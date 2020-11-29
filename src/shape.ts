@@ -4,7 +4,7 @@
 export type FetcherStatus = 'pristine' | 'rejected' | 'resolved' | 'resolving';
 
 /**
- * A tag which may need to be supplied when updating state
+ * A tag which may need to be supplied when performing a state update
  */
 export type Tag<B> = B extends true ? string : void;
 
@@ -102,15 +102,15 @@ export type OptionsForCreatingAFetcher<C, B extends boolean, X extends (params: 
    */
   onStore: Store<C, B>,
   /**
-   * A no-arg function returning a promise to fetch asynchronous data, for example:
+   * A function returning a promise to fetch asynchronous data, for example:
    * ```
    * getData: () => fetchThingsFromApi(),
    * ```
    */
   getData: X,
   /**
-   * By default, fetchers will simply replace all data associated with part of the store specified by the `getData` property.
-   * However, this behavior can be overriden here. For example, maybe you want to append resolved data to existing store data as follows:
+   * By default, fetchers will simply replace all data associated with a part of the store specified by the `getData` property.
+   * However, this behavior can be overridden here. For example, maybe you want to append resolved data to existing store data as follows:
    * ```
    * setData: arg => arg.store.addAfter(arg.data)
    * ```
@@ -142,7 +142,7 @@ export type FetchFunction<S, C, P, B extends boolean> = P extends void ? FetchFu
  */
 type StoreForAnArrayOfPrimitives<C extends DeepReadonlyArray<any>, B extends boolean> = {
   /**
-   * Appends an element, or an array of elements, to the end of array
+   * Appends an element, or an array of elements, onto the end of an array
    * ```
    * select(s => s.todos)
    *   .addAfter(newTodos);
@@ -150,7 +150,7 @@ type StoreForAnArrayOfPrimitives<C extends DeepReadonlyArray<any>, B extends boo
    */
   addAfter: (elements: C[0] | C[0][], tag: Tag<B>) => void,
   /**
-   * Prepends an element, or an array of elements, to the beginning of array
+   * Prepends an element, or an array of elements, into the beginning of an array
    * ```
    * select(s => s.todos)
    *   .addBefore(newTodos);
@@ -158,7 +158,7 @@ type StoreForAnArrayOfPrimitives<C extends DeepReadonlyArray<any>, B extends boo
    */
   addBefore: (elements: C[0] | C[0][], tag: Tag<B>) => void,
   /**
-   * Removes all elements from array
+   * Removes all elements from an array
    * ```
    * select(s => s.todos)
    *   .removeAll();
@@ -166,7 +166,7 @@ type StoreForAnArrayOfPrimitives<C extends DeepReadonlyArray<any>, B extends boo
    */
   removeAll: (tag: Tag<B>) => void,
   /**
-   * Deletes the first element from array
+   * Deletes the first element from an array
    * ```
    * select(s => s.todos)
    *   .removeFirst();
@@ -174,7 +174,7 @@ type StoreForAnArrayOfPrimitives<C extends DeepReadonlyArray<any>, B extends boo
    */
   removeFirst: (tag: Tag<B>) => void,
   /**
-   * Deletes the last element from array
+   * Deletes the last element from an array
    * ```
    * select(s => s.todos)
    *   .removeLast();
@@ -207,7 +207,7 @@ type StoreForAnArrayOfPrimitives<C extends DeepReadonlyArray<any>, B extends boo
    */
   replaceWhere: (where: (element: C[0]) => boolean) => { with: (element: C[0], tag: Tag<B>) => void },
   /**
-   * Subtitutes or appends an element depending on whether or not it can be found.
+   * Substitutes or appends an element depending on whether or not it can be found.
    * Note that if more than one element is found which matches the criteria specified in the 'where' clause, an error will be thrown
    * ```
    * select(s => s.todos)
@@ -238,7 +238,7 @@ export type StoreForAnArray<C extends DeepReadonlyArray<any>, B extends boolean>
  */
 export type StoreForAPrimitive<C extends any, B extends boolean> = {
   /**
-   * Subtitutes the primitive value
+   * Substitutes the primitive value
    * ```
    * select(s => s.user.age)
    *   .replaceWith(33)
@@ -330,15 +330,15 @@ export type StoreWhichIsNested<C, B extends boolean> = Store<C, B> & {
 /**
  * For internal use only.
  */
-export type StoreWhichIsNestedInternal<S, C, B extends boolean> = Store<C, B> & {
+export type StoreWhichIsNestedInternal<S, C> = Store<C, false> & {
   defineReset: (initState: S) => () => any;
   defineRemoveFromContainingStore: (name: string, key: string) => () => any;
-} & StoreWhichIsNested<C, B>;
+} & StoreWhichIsNested<C, false>;
 
 /**
  * A function which selects from a nested store
  */
-export type SelectorFromANestedStore<S> = (<C = S>(selector?: (arg: DeepReadonly<S>) => C) => StoreWhichDoesntEnforceTags<C>);
+export type SelectorFromANestedStore<S> = (<C = S>(selector?: (arg: DeepReadonly<S>) => C) => StoreWhichIsNested<C, false>);
 
 /**
  * A function which selects from a store
@@ -346,7 +346,7 @@ export type SelectorFromANestedStore<S> = (<C = S>(selector?: (arg: DeepReadonly
 export type SelectorFromAStore<S> = (<C = S>(selector?: (arg: DeepReadonly<S>) => C) => StoreWhichDoesntEnforceTags<C>);
 
 /**
- * A function which selects from a store which enforces the use of tags when updating state
+ * A function which selects from a store which enforces the use of tags when performing a state update
  */
 export type SelectorFromAStoreEnforcingTags<S> = (<C = S>(selector?: (arg: DeepReadonly<S>) => C) => StoreWhichEnforcesTags<C>);
 
@@ -364,13 +364,13 @@ export type DerivationCalculationInputs<T extends Array<StoreWhichIsReadable<any
 
 export type OptionsForMakingAStore = {
   /**
-   * Specifications for the Redux Devtools Extension. Pass 'false' if you do not want your store to be tracked within the Redux devtools extension.
+   * Specifications for the Redux Devtools Extension. Pass 'false' if you do not want your store to be tracked within the Redux Devtools extension.
    * See https://github.com/zalmoxisus/redux-devtools-extension/blob/master/docs/API/Arguments.md for more info
    */
   devtools?: OptionsForReduxDevtools | false;
   /**
    * Setting this to true will mean that any stores which are subsequently created using `makeNested()` will automatically be nested within this store.
-   * Those nested stores will then be visible within the Redux devtools extension.
+   * Those nested stores will then be visible within the Redux Devtools extension.
    */
   containerForNestedStores?: boolean;
 }
@@ -384,7 +384,7 @@ export type OptionsForMakingAStoreEnforcingTags = {
 } & OptionsForMakingAStore;
 
 /**
- * An object representing options which the Redux devtools extension accepts
+ * An object representing options which the Redux Ddevtools extension accepts
  */
 export type OptionsForReduxDevtools = {
   /**
@@ -395,7 +395,7 @@ export type OptionsForReduxDevtools = {
   /**
    * If you want to restrict the extension, specify the features you allow.
    * If not specified, all of the features are enabled. When set as an object, only those included as `true` will be allowed.
-   * Note that except `true`/`false`, `import` and `export` can be set as `custom` (which is by default for Redux enhancer), meaning that the importing/exporting occurs on the client side.
+   * Note that except `true`/`false`, `import` and `export` can be set as `custom` (which is by default for Redux enhancer), meaning that the importing/exporting occurs on the client-side.
    * Otherwise, you'll get/set the data right from the monitor part.
    */
   features?: {
@@ -416,7 +416,7 @@ export type OptionsForReduxDevtools = {
      */
     import?: boolean | "custom";
     /**
-     * jump back and forth (time travelling)
+     * jump back and forth (time traveling
      */
     jump?: boolean;
     /**

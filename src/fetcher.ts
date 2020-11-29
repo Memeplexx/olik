@@ -8,6 +8,27 @@ import {
 } from './shape';
 import { deepCopy, deepFreeze } from './utils';
 
+/**
+ * This is a factory function which, when invoked, returns another function which can be used to fetch data asynchronously.
+ * For example:
+ * ```
+ * const fetchTodos = createFetcher({
+ *   onStore: select(s => s.todos),
+ *   getData: () => fetchTodosFromApiReturningPromise(),
+ *   setData: arg => arg.store.addAfter(arg.data),
+ *   cacheFor: 1000 * 60 // cache for 60 seconds
+ * });
+ * const todosFetchState = fetchTodos();
+ * todosFetchState.onChangeOnce(state => {
+ *   console.log(`Status is currently: ${state.status}`);
+ *   if (state.status === 'resolved') {
+ *     console.log(`Resolved data is: ${state.data}`);
+ *   } else if (state.status === 'rejected') {
+ *     console.log(`Rejection is: ${state.error}`);
+ *   }
+ * });
+ * ```
+ */
 export const createFetcher = <S, C, B extends boolean, X extends (params: any) => Promise<C>, P extends Parameters<X>[0]>(
   specs: OptionsForCreatingAFetcher<C, B, X>,
 ): FetchFunction<S, C, Parameters<X>[0], B> => {

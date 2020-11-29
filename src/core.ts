@@ -65,7 +65,7 @@ export function makeNested<L>(state: L, options: { name: string, storeKey?: stri
   if (!nestedContainerStore) {
     return (<C = L>(selector?: (arg: DeepReadonly<L>) => C) => (selector
       ? makeInternal(state, { devtools: { name }, supportsTags: false })(selector)
-      : null)) as SelectorFromANestedStore<L>;
+      : null)) as any as SelectorFromANestedStore<L>;
   }
   const generateKey = (arg?: string) => (!arg && !options.storeKey) ? '0' :
     !options.storeKey ? (+arg! + 1).toString() : typeof (options.storeKey) === 'function' ? options.storeKey(arg) : options.storeKey;
@@ -86,15 +86,15 @@ export function makeNested<L>(state: L, options: { name: string, storeKey?: stri
     nestedContainerStore(s => s.nested[name]).patchWith({ [key]: state });
     nestedContainerStore().renew({ ...wrapperState, nested: { ...wrapperState.nested, [name]: { ...wrapperState.nested[name], [key]: state } } });
   }
-  return <C = L>(selector?: (arg: DeepReadonly<L>) => C) => {
+  return (<C = L>(selector?: (arg: DeepReadonly<L>) => C) => {
     const lStore = nestedContainerStore!(s => {
       const libState = s.nested[name][key];
       return selector ? selector(libState) : libState;
-    }) as any as StoreWhichIsNestedInternal<L, C, any>;
+    }) as any as StoreWhichIsNestedInternal<L, C>;
     lStore.removeFromContainingStore = lStore.defineRemoveFromContainingStore(name, key);
     lStore.reset = lStore.defineReset(state);
     return lStore as StoreWhichIsNested<C, false>;
-  };
+  }) as any as SelectorFromANestedStore<L>;
 }
 
 function makeInternalRootStore<S, B extends boolean>(state: S, options: { containerForNestedStores?: boolean, supportsTags: boolean, devtools?: OptionsForReduxDevtools | false, tagSanitizer?: (tag: string) => string }) {

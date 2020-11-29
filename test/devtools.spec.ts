@@ -13,12 +13,12 @@ describe('Devtools', () => {
   beforeEach( () => spyWarn.mockReset());
 
   it('should correctly respond to devtools dispatches where the state is an object', () => {
-    const store = make({ x: 0, y: 0 });
-    store(s => s.x).replaceWith(3);
-    expect(store().read()).toEqual({ x: 3, y: 0 });
+    const select = make({ x: 0, y: 0 });
+    select(s => s.x).replaceWith(3);
+    expect(select().read()).toEqual({ x: 3, y: 0 });
     const state = { x: 1, y: 0 };
     tests.windowObject?.__REDUX_DEVTOOLS_EXTENSION__._mockInvokeSubscription({ type: 'DISPATCH', state: JSON.stringify(state), payload: { type: 'JUMP_TO_ACTION' }, source: '@devtools-extension' });
-    expect(store().read()).toEqual(state);    expect(tests.currentAction.type).toEqual('replaceWith() [dontTrackWithDevtools]');
+    expect(select().read()).toEqual(state);    expect(tests.currentAction.type).toEqual('replaceWith() [dontTrackWithDevtools]');
   });
 
   it('should correctly respond to devtools dispatches where the state is an array', () => {

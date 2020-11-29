@@ -29,7 +29,7 @@ describe.skip('Perf', () => {
   })
 
   it('should test outlik perf', () => {
-    const store = make({
+    const select = make({
       anotherProp: {
         some: {
           deeply: {
@@ -70,12 +70,12 @@ describe.skip('Perf', () => {
         someString: "ffdfdfdfd"
       })),
     });
-    store(s => s.array).onChange(e => null);
-    store(s => s.array2).onChange(e => null);
+    select(s => s.array).onChange(e => null);
+    select(s => s.array2).onChange(e => null);
     const before = performance.now();
     for (let i = 0; i < 100; i++) {
-      store(s => s.anotherProp.some.deeply.nested.number).replaceWith(
-        store(s => s.anotherProp.some.deeply.nested.number).read() + 1
+      select(s => s.anotherProp.some.deeply.nested.number).replaceWith(
+        select(s => s.anotherProp.some.deeply.nested.number).read() + 1
       );
     }
     console.log(`Oulik: ${performance.now() - before}`);
@@ -83,11 +83,11 @@ describe.skip('Perf', () => {
 
   it('should test oulik perf', () => {
     const initialState = { height: 0, width: 0 };
-    const store = make(initialState)
+    const select = make(initialState)
     const before = performance.now();
     for (let i = 0; i < 100; i++) {
-      store(s => s.width).replaceWith(
-        store(s => s.width).read() + 1
+      select(s => s.width).replaceWith(
+        select(s => s.width).read() + 1
       );
     }
     console.log(`Oulik simple: ${performance.now() - before}`);
@@ -205,10 +205,10 @@ describe.skip('Perf', () => {
   });
 
   it('should test Oulik array push perf', () => {
-    const store = make(['one', 'two']);
+    const select = make(['one', 'two']);
     const before = performance.now();
     for (let i = 0; i < 100; i++) {
-      store().addAfter(['three']);
+      select().addAfter(['three']);
     }
     console.log(`Oulik array push: ${performance.now() - before}`);
   });

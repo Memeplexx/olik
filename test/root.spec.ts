@@ -7,45 +7,45 @@ describe('Root', () => {
   beforeAll(() => tests.windowObject = windowAugmentedWithReduxDevtoolsImpl);
 
   it('should update a top-level object', () => {
-    const store = make({ x: 0, y: 0 });
-    store(s => s.x).replaceWith(3);
-    expect(store().read()).toEqual({ x: 3, y: 0 });
-    expect(tests.currentMutableState).toEqual(store().read());
+    const select = make({ x: 0, y: 0 });
+    select(s => s.x).replaceWith(3);
+    expect(select().read()).toEqual({ x: 3, y: 0 });
+    expect(tests.currentMutableState).toEqual(select().read());
   })
 
   it('should update a top-level array', () => {
-    const store = make(new Array<{ id: number, text: string }>());
-    store().addAfter([{ id: 1, text: 'hello' }]);
-    expect(store().read()).toEqual([{ id: 1, text: 'hello' }]);
-    expect(tests.currentMutableState).toEqual(store().read());
+    const select = make(new Array<{ id: number, text: string }>());
+    select().addAfter([{ id: 1, text: 'hello' }]);
+    expect(select().read()).toEqual([{ id: 1, text: 'hello' }]);
+    expect(tests.currentMutableState).toEqual(select().read());
   })
 
   it('should replace a top-level number', () => {
-    const store = make(0);
-    store().replaceWith(3);
-    expect(store().read()).toEqual(3);
-    expect(tests.currentMutableState).toEqual(store().read());
+    const select = make(0);
+    select().replaceWith(3);
+    expect(select().read()).toEqual(3);
+    expect(tests.currentMutableState).toEqual(select().read());
   })
 
   it('should replace a top-level boolean', () => {
-    const store = make(false);
-    store().replaceWith(true);
-    expect(store().read()).toEqual(true);
-    expect(tests.currentMutableState).toEqual(store().read());
+    const select = make(false);
+    select().replaceWith(true);
+    expect(select().read()).toEqual(true);
+    expect(tests.currentMutableState).toEqual(select().read());
   })
 
   it('should replace top-level object', () => {
-    const store = make({ hello: 'world', another: new Array<string>() });
-    store().replaceWith({ hello: 'test', another: ['test'] });
-    expect(store().read()).toEqual({ hello: 'test', another: ['test'] });
-    expect(tests.currentMutableState).toEqual(store().read());
+    const select = make({ hello: 'world', another: new Array<string>() });
+    select().replaceWith({ hello: 'test', another: ['test'] });
+    expect(select().read()).toEqual({ hello: 'test', another: ['test'] });
+    expect(tests.currentMutableState).toEqual(select().read());
   })
 
   it('should replace root array', () => {
-    const store = make(['one', 'two', 'three']);
-    store().replaceAll(['four', 'five', 'six', 'seven']);
-    expect(store().read()).toEqual(['four', 'five', 'six', 'seven']);
-    expect(tests.currentMutableState).toEqual(store().read());
+    const select = make(['one', 'two', 'three']);
+    select().replaceAll(['four', 'five', 'six', 'seven']);
+    expect(select().read()).toEqual(['four', 'five', 'six', 'seven']);
+    expect(tests.currentMutableState).toEqual(select().read());
   })
 
 });
