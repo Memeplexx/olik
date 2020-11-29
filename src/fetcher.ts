@@ -1,5 +1,5 @@
-import { Fetch, Fetcher, FetcherStatus, FetchArgument, Store, Unsubscribable } from "./shape";
-import { deepCopy, deepFreeze } from "./utils";
+import { Fetch, FetchArgument, Fetcher, FetcherStatus, Store, Unsubscribable } from './shape';
+import { deepCopy, deepFreeze } from './utils';
 
 export const createFetcher = <S, C, B extends boolean, X extends (params: any) => Promise<C>, P extends Parameters<X>[0]>(specs: {
   onStore: Store<S, C, B>,

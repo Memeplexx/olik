@@ -1,5 +1,5 @@
 import { errorMessages } from './consts';
-import { Store, EnhancerOptions, WindowAugmentedWithReduxDevtools } from './shape';
+import { Store, OptionsForReduxDevtools, WindowAugmentedWithReduxDevtools } from './shape';
 import { tests } from './tests';
 
 // ref: https://medium.com/@zalmoxis/redux-devtools-without-redux-or-how-to-have-a-predictable-state-with-any-architecture-61c5f5a7716f
@@ -7,7 +7,7 @@ import { tests } from './tests';
 
 export function integrateStoreWithReduxDevtools<S, C = S>(
   store: (selector?: (state: S) => C) => Store<S, C, any>,
-  options: EnhancerOptions,
+  options: OptionsForReduxDevtools,
   setDevtoolsDispatchListener: (listener: (action: { type: string, payload?: any }) => any) => any
 ) {
   let windowObj = window as any as WindowAugmentedWithReduxDevtools;

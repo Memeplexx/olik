@@ -18,7 +18,7 @@ npm i oulik
 ```Typescript
 import { make } from 'oulik';
 
-const select = make({ favoriteThings: { color: '', foods: new Array<string>() } });       
+const select = make({ favoriteThings: { color: '' } });       
 
 select(s => s.favoriteThings.color).replaceWith('red'); 
 ```
