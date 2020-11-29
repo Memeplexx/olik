@@ -1,25 +1,28 @@
-import { Fetch, FetchArgument, Fetcher, FetcherStatus, Store, Unsubscribable } from './shape';
+import {
+  FetchArgument,
+  FetcherStatus,
+  FetchFunction,
+  FetchState,
+  OptionsForCreatingAFetcher,
+  Unsubscribable,
+} from './shape';
 import { deepCopy, deepFreeze } from './utils';
 
-export const createFetcher = <S, C, B extends boolean, X extends (params: any) => Promise<C>, P extends Parameters<X>[0]>(specs: {
-  onStore: Store<S, C, B>,
-  getData: X,
-  setData?: (args: { store: Store<S, C, B>, data: C, param: Parameters<X>[0], tag?: string }) => any,
-  cacheFor?: number,
-  testerr?: Parameters<X>[0],
-}): Fetcher<S, C, Parameters<X>[0], B> => {
+export const createFetcher = <S, C, B extends boolean, X extends (params: any) => Promise<C>, P extends Parameters<X>[0]>(
+  specs: OptionsForCreatingAFetcher<C, B, X>,
+): FetchFunction<S, C, Parameters<X>[0], B> => {
   const responseCache = new Map<any, {
     data: C,
     error: any,
     lastFetch: number,
     status: FetcherStatus,
-    changeListeners: Array<(fetch: Fetch<S, C, P, B>) => Unsubscribable>,
-    changeOnceListeners: Array<{ listener: (fetch: Fetch<S, C, P, B>) => Unsubscribable, unsubscribe: () => any }>,
-    cacheExpiredListeners: Array<(fetch: Fetch<S, C, P, B>) => Unsubscribable>,
-    cacheExpiredOnceListeners: Array<{ listener: (fetch: Fetch<S, C, P, B>) => Unsubscribable, unsubscribe: () => any }>,
-    fetches: Array<Fetch<S, C, P, B>>,
+    changeListeners: Array<(fetch: FetchState<S, C, P, B>) => Unsubscribable>,
+    changeOnceListeners: Array<{ listener: (fetch: FetchState<S, C, P, B>) => Unsubscribable, unsubscribe: () => any }>,
+    cacheExpiredListeners: Array<(fetch: FetchState<S, C, P, B>) => Unsubscribable>,
+    cacheExpiredOnceListeners: Array<{ listener: (fetch: FetchState<S, C, P, B>) => Unsubscribable, unsubscribe: () => any }>,
+    fetches: Array<FetchState<S, C, P, B>>,
   }>();
-  const result = (paramsOrTag: P | string | void, tag: string | void): Fetch<S, C, P, B> => {
+  const result = (paramsOrTag: P | string | void, tag: string | void): FetchState<S, C, P, B> => {
     const supportsTags = (specs.onStore as any).supportsTags;
     const actualTag = supportsTags ? (tag || paramsOrTag) as string : undefined;
     const actualParams = (((supportsTags && tag) || (!supportsTags && paramsOrTag)) ? paramsOrTag : undefined) as FetchArgument<P>;
@@ -59,7 +62,7 @@ export const createFetcher = <S, C, B extends boolean, X extends (params: any) =
         cacheItem.cacheExpiredOnceListeners.push({ listener, unsubscribe });
         return { unsubscribe };
       },
-    }) as Fetch<S, C, P, B>;
+    }) as FetchState<S, C, P, B>;
     const notifyChangeListeners = (notifyChangeOnceListeners: boolean) => {
       cacheItem.changeListeners.forEach(changeListener => changeListener(createFetch()));
       if (notifyChangeOnceListeners) {
@@ -71,7 +74,7 @@ export const createFetcher = <S, C, B extends boolean, X extends (params: any) =
     }
     if (cacheHasExpiredOrPromiseNotYetCalled) {
       cacheItem.status = 'resolving';
-      cacheItem.fetches.forEach(fetch => Object.assign<Fetch<S, C, P, B>, Partial<Fetch<S, C, P, B>>>(fetch, { status: cacheItem.status }));
+      cacheItem.fetches.forEach(fetch => Object.assign<FetchState<S, C, P, B>, Partial<FetchState<S, C, P, B>>>(fetch, { status: cacheItem.status }));
       notifyChangeListeners(false);
       let errorThatWasCaughtInPromise: any = null;
       specs.getData(actualParams)
@@ -92,7 +95,7 @@ export const createFetcher = <S, C, B extends boolean, X extends (params: any) =
             cacheItem.data = deepFreeze(deepCopy(value));
             cacheItem.error = null;
             cacheItem.status = 'resolved';
-            cacheItem.fetches.forEach(fetch => Object.assign<Fetch<S, C, P, B>, Partial<Fetch<S, C, P, B>>>(fetch, { status: cacheItem.status, data: value, error: cacheItem.error }));
+            cacheItem.fetches.forEach(fetch => Object.assign<FetchState<S, C, P, B>, Partial<FetchState<S, C, P, B>>>(fetch, { status: cacheItem.status, data: value, error: cacheItem.error }));
             notifyChangeListeners(true);
             setTimeout(() => {
               invalidateCache();  // free memory
@@ -109,7 +112,7 @@ export const createFetcher = <S, C, B extends boolean, X extends (params: any) =
           try {
             cacheItem.error = error;
             cacheItem.status = 'rejected';
-            cacheItem.fetches.forEach(fetch => Object.assign<Fetch<S, C, P, B>, Partial<Fetch<S, C, P, B>>>(fetch, { status: cacheItem.status, error }));
+            cacheItem.fetches.forEach(fetch => Object.assign<FetchState<S, C, P, B>, Partial<FetchState<S, C, P, B>>>(fetch, { status: cacheItem.status, error }));
             notifyChangeListeners(true);
           } catch (e) {
             errorThatWasCaughtInPromise = e;

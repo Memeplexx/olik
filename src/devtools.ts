@@ -2,11 +2,8 @@ import { errorMessages } from './consts';
 import { Store, OptionsForReduxDevtools, WindowAugmentedWithReduxDevtools } from './shape';
 import { tests } from './tests';
 
-// ref: https://medium.com/@zalmoxis/redux-devtools-without-redux-or-how-to-have-a-predictable-state-with-any-architecture-61c5f5a7716f
-// ref: https://github.com/zalmoxisus/redux-devtools-extension/blob/master/docs/API/Methods.md#listen
-
 export function integrateStoreWithReduxDevtools<S, C = S>(
-  store: (selector?: (state: S) => C) => Store<S, C, any>,
+  store: (selector?: (state: S) => C) => Store<C, any>,
   options: OptionsForReduxDevtools,
   setDevtoolsDispatchListener: (listener: (action: { type: string, payload?: any }) => any) => any
 ) {
@@ -85,3 +82,6 @@ let onDispatchListener = () => null;
 export function listenToDevtoolsDispatch(onDispatch: () => any) {
   onDispatchListener = onDispatch;
 }
+
+// ref: https://medium.com/@zalmoxis/redux-devtools-without-redux-or-how-to-have-a-predictable-state-with-any-architecture-61c5f5a7716f
+// ref: https://github.com/zalmoxisus/redux-devtools-extension/blob/master/docs/API/Methods.md#listen

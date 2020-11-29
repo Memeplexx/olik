@@ -7,16 +7,16 @@ import {
   OptionsForReduxDevtools,
   SelectorFromANestedStore,
   SelectorFromAStore,
+  SelectorFromAStoreEnforcingTags,
   Store,
-  SelectorFromANestedStoreEnforcingTags,
   StoreWhichIsNested,
   StoreWhichIsNestedInternal,
-  StoreWhichMayContainOtherStores,
+  StoreWhichMayContainNestedStores,
 } from './shape';
 import { tests } from './tests';
 import { copyObject, createPathReader, deepCopy, deepFreeze, validateState } from './utils';
 
-let nestedContainerStore: ((selector?: ((s: DeepReadonly<any>) => any) | undefined) => StoreWhichMayContainOtherStores<any, any, boolean>) | undefined;
+let nestedContainerStore: ((selector?: ((s: DeepReadonly<any>) => any) | undefined) => StoreWhichMayContainNestedStores<any, any, boolean>) | undefined;
 
 /**
  * Creates a new store which, for typescript users, requires that users supply an additional 'tag' when performing a state update.
@@ -34,7 +34,7 @@ let nestedContainerStore: ((selector?: ((s: DeepReadonly<any>) => any) | undefin
  *   .with({ text: 'bake cookies' }, 'TodoDetailComponent')
  * ```
  */
-export function makeEnforceTags<S>(state: S, options: OptionsForMakingAStoreEnforcingTags = {}): SelectorFromANestedStoreEnforcingTags<S> {
+export function makeEnforceTags<S>(state: S, options: OptionsForMakingAStoreEnforcingTags = {}): SelectorFromAStoreEnforcingTags<S> {
   return makeInternalRootStore<S, true>(state, { ...options, supportsTags: true });
 }
 
@@ -93,7 +93,7 @@ export function makeNested<L>(state: L, options: { name: string, storeKey?: stri
     }) as any as StoreWhichIsNestedInternal<L, C, any>;
     lStore.removeFromContainingStore = lStore.defineRemoveFromContainingStore(name, key);
     lStore.reset = lStore.defineReset(state);
-    return lStore as StoreWhichIsNested<L, C, false>;
+    return lStore as StoreWhichIsNested<C, false>;
   };
 }
 
@@ -251,7 +251,7 @@ function makeInternal<S, B extends boolean>(state: S, options: { supportsTags: b
       }
     },
     defineReset: (initState: any) => () => replace(e => selector(e), 'reset')(initState),
-  } as any as Store<S, C, B>);
+  } as any as Store<C, B>);
 
   const storeResult = <C = S>(selector: ((s: DeepReadonly<S>) => C) = (s => s as any as C)) => {
     const selectorMod = selector as (s: S) => C;

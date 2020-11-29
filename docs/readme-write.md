@@ -46,12 +46,12 @@ store(s => s.todos.find(t => t.id === 2)!.text).replaceWith('something else');
 ```
 
 ## ENFORCING THE USE OF **TAGS** ##
-We can require that all updates are supplemented with a 'tag' which helps to identify the origin of a state update within the devtools.  
+We can require that all updates are supplemented with a 'tag' which helps to identify the origin of a state update within the Devtools.  
 ```Typescript
 const store = makeEnforceTags({ some: { value: '' } });
 
 store(s => s.some.value).replaceWith('new value', 'MyComponent');
 ```
 In the above example, we've used 'MyComponent' as the tag but any user-defined string is acceptable.  
-For webpack users, it may be more convenient to use the `__filename` node global object as a tag.  
+For Webpack users, it may be more convenient to use the `__filename` node global object as a tag.  
 For Angular-CLI users, you will need to refer to ***[this guide](./readme-ng-tags.md)*** to make use of the `__filename` variable.

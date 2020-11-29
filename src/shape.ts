@@ -1,6 +1,21 @@
+/**
+ * The current status of a fetch
+ */
 export type FetcherStatus = 'pristine' | 'rejected' | 'resolved' | 'resolving';
+
+/**
+ * A tag which may need to be supplied when updating state
+ */
 export type Tag<B> = B extends true ? string : void;
+
+/**
+ * An argument which can be supplied when fetching data
+ */
 export type FetchArgument<T> = T extends infer T ? T : void;
+
+/**
+ * An object which can be unsubscribed from
+ */
 export interface Unsubscribable {
   /**
    * Unsubscribes from this listener thereby preventing any memory leak.
@@ -8,18 +23,30 @@ export interface Unsubscribable {
   unsubscribe: () => any,
 }
 
+/**
+ * An object or an array which cannot be mutated
+ */
 export type DeepReadonly<T> =
   T extends (infer R)[] ? DeepReadonlyArray<R> :
   T extends object ? DeepReadonlyObject<T> :
   T;
 
+/**
+ * An array which cannot be mutated
+ */
 interface DeepReadonlyArray<T> extends ReadonlyArray<DeepReadonly<T>> { }
 
+/**
+ * An object which cannot be mutated
+ */
 export type DeepReadonlyObject<T> = {
   readonly [P in keyof T]: DeepReadonly<T[P]>;
 };
 
-export interface Fetch<S, C, P, B extends boolean> {
+/**
+ * The state of a current fetch
+ */
+export interface FetchState<S, C, P, B extends boolean> {
   /**
    * The current resolved data, if any.
    */
@@ -35,7 +62,7 @@ export interface Fetch<S, C, P, B extends boolean> {
   /**
    * The store associated with this fetch
    */
-  store: Store<S, C, B>;
+  store: Store<C, B>;
   /**
    * The argument that was used in the request (if any)
    */
@@ -47,37 +74,40 @@ export interface Fetch<S, C, P, B extends boolean> {
   /**
    * Takes a function that will be invoked whenever the status changes
    */
-  onChange: (listener: (fetch: Fetch<S, C, P, B>) => any) => Unsubscribable;
+  onChange: (listener: (fetch: FetchState<S, C, P, B>) => any) => Unsubscribable;
   /**
    * Takes a function that will be invoked only once, when the status next changes
    */
-  onChangeOnce: (listener: (fetch: Fetch<S, C, P, B>) => any) => Unsubscribable;
+  onChangeOnce: (listener: (fetch: FetchState<S, C, P, B>) => any) => Unsubscribable;
   /**
    * Takes a function that will be invoked whenever the cache expires
    */
-  onCacheExpired: (listener: (fetch: Fetch<S, C, P, B>) => any) => Unsubscribable;
+  onCacheExpired: (listener: (fetch: FetchState<S, C, P, B>) => any) => Unsubscribable;
   /**
    * Takes a function that will only be invoked only once, when the cache next expires
    */
-  onCacheExpiredOnce: (listener: (fetch: Fetch<S, C, P, B>) => any) => Unsubscribable;
+  onCacheExpiredOnce: (listener: (fetch: FetchState<S, C, P, B>) => any) => Unsubscribable;
   /**
    * Invalidates the cache (if any data is cached) and re-fetches
    */
-  refetch: Fetcher<S, C, P, B>;
+  refetch: FetchFunction<S, C, P, B>;
 };
 
-export interface OptionsForCreatingAFetcher<S, C, B extends boolean, P> {
+/**
+ * An object which can be passed in when creating a fetcher
+ */
+export type OptionsForCreatingAFetcher<C, B extends boolean, X extends (params: any) => Promise<C>> = {
   /**
    * The store that you want this fetcher to read to and write from
    */
-  onStore: Store<S, C, B>,
+  onStore: Store<C, B>,
   /**
    * A no-arg function returning a promise to fetch asynchronous data, for example:
    * ```
    * getData: () => fetchThingsFromApi(),
    * ```
    */
-  getData: P extends void ? (() => Promise<C>) : ((params: P) => Promise<C>),
+  getData: X,
   /**
    * By default, fetchers will simply replace all data associated with part of the store specified by the `getData` property.
    * However, this behavior can be overriden here. For example, maybe you want to append resolved data to existing store data as follows:
@@ -85,16 +115,32 @@ export interface OptionsForCreatingAFetcher<S, C, B extends boolean, P> {
    * setData: arg => arg.store.addAfter(arg.data)
    * ```
    */
-  setData?: (arg: { store: Store<S, C, B>, data: C, param: FetchArgument<P>, tag: Tag<B> }) => any,
+  setData?: (args: { store: Store<C, B>, data: C, param: Parameters<X>[0], tag?: string }) => any,
   /**
    * How long, in milliseconds, you want the library to cache fetch responses.
    */
   cacheFor?: number,
 };
 
-export type Fetcher<S, C, P, B extends boolean> = P extends void ? ((tag: Tag<B>) => Fetch<S, C, P, B>) : ((params: FetchArgument<P>, tag: Tag<B>) => Fetch<S, C, P, B>);
+/**
+ * A function which fetches data, but takes no argument
+ */
+export type FetchFunctionTakingNoArg<S, C, P, B extends boolean> = (tag: Tag<B>) => FetchState<S, C, P, B>;
 
-type StoreForAnArrayOfPrimitives<S, C extends DeepReadonlyArray<any>, B extends boolean> = {
+/**
+ * A function which fetches data and takes an argument
+ */
+export type FetchFunctionTakingAnArg<S, C, P, B extends boolean> = (params: FetchArgument<P>, tag: Tag<B>) => FetchState<S, C, P, B>;
+
+/**
+ * A function returned when a fetcher is first created. This function can then be invoked when a fetch is needed.
+ */
+export type FetchFunction<S, C, P, B extends boolean> = P extends void ? FetchFunctionTakingNoArg<S, C, P, B> : FetchFunctionTakingAnArg<S, C, P, B>;
+
+/**
+ * An object which is capable of storing and updating state which is in the shape of an array of primitives
+ */
+type StoreForAnArrayOfPrimitives<C extends DeepReadonlyArray<any>, B extends boolean> = {
   /**
    * Appends an element, or an array of elements, to the end of array
    * ```
@@ -172,7 +218,10 @@ type StoreForAnArrayOfPrimitives<S, C extends DeepReadonlyArray<any>, B extends 
   upsertWhere: (where: (element: C[0]) => boolean) => { with: (element: C[0], tag: Tag<B>) => void },
 }
 
-export type StoreForAnArray<S, C extends DeepReadonlyArray<any>, B extends boolean> = {
+/**
+ * An object which is capable of storing and updating state which is in the shape of an array
+ */
+export type StoreForAnArray<C extends DeepReadonlyArray<any>, B extends boolean> = {
   /**
    * Partially updates zero or more elements which match a specific condition
    * ```
@@ -182,8 +231,11 @@ export type StoreForAnArray<S, C extends DeepReadonlyArray<any>, B extends boole
    * ```
    */
   patchWhere: (where: (element: C[0]) => boolean) => { with: (element: Partial<C[0]>, tag: Tag<B>) => void },
-} & StoreForAnArrayOfPrimitives<S, C, B>;
+} & StoreForAnArrayOfPrimitives<C, B>;
 
+/**
+ * An object which is capable of storing and updating state which is in the shape of a primitive
+ */
 export type StoreForAPrimitive<C extends any, B extends boolean> = {
   /**
    * Subtitutes the primitive value
@@ -195,7 +247,10 @@ export type StoreForAPrimitive<C extends any, B extends boolean> = {
   replaceWith: (replacement: C, tag: Tag<B>) => void,
 }
 
-export type StoreForAnObject<S, C extends any, B extends boolean> = {
+/**
+ * An object which is capable of storing and updating state which is in the shape of an object
+ */
+export type StoreForAnObject<C extends any, B extends boolean> = {
   /**
    * Partially updates the object
    * ```
@@ -206,6 +261,9 @@ export type StoreForAnObject<S, C extends any, B extends boolean> = {
   patchWith: (partial: Partial<C>, tag: Tag<B>) => void,
 } & StoreForAPrimitive<C, B>;
 
+/**
+ * An object which is capable of reading from and listening to changes made to a certain piece of state
+ */
 export type StoreWhichIsReadable<C> = {
   /**
    * Listens to any updates on this node
@@ -222,6 +280,9 @@ export type StoreWhichIsReadable<C> = {
   read: () => C,
 }
 
+/**
+ * An object which is capable of resetting its internal state
+ */
 export type StoreWhichIsResettable<C extends any, B extends boolean> = {
   /**
    * Reverts the current state to how it was when the store was initialized.
@@ -230,41 +291,78 @@ export type StoreWhichIsResettable<C extends any, B extends boolean> = {
   reset: (tag: Tag<B>) => void,
 } & StoreWhichIsReadable<C>;
 
-export type StoreWhichMayContainOtherStores<S, C, B extends boolean> = StoreForAnObject<C, C, B> & StoreWhichIsReadable<C> & {
+/**
+ * An object which is capable of storing nested stores
+ */
+export type StoreWhichMayContainNestedStores<S, C, B extends boolean> = StoreForAnObject<C, B> & StoreWhichIsReadable<C> & {
   renew: (state: S) => void;
   reset: () => void;
 };
 
-export type Store<S, C, B extends boolean> = ([C] extends undefined ? any :
-    [C] extends DeepReadonlyArray<object[]> ? StoreForAnArray<S, [C][0], B> :
-    [C] extends DeepReadonlyArray<any[]> ? StoreForAnArrayOfPrimitives<S, [C][0], B> :
-    [C] extends [object] ? StoreForAnObject<S, C, B> : StoreForAPrimitive<C, B>) & StoreWhichIsResettable<C, B>;
+/**
+ * An object which is capable of managing states of various shapes
+ */
+export type Store<C, B extends boolean> = ([C] extends undefined ? any :
+    [C] extends DeepReadonlyArray<object[]> ? StoreForAnArray<[C][0], B> :
+    [C] extends DeepReadonlyArray<any[]> ? StoreForAnArrayOfPrimitives<[C][0], B> :
+    [C] extends [object] ? StoreForAnObject<C, B> : StoreForAPrimitive<C, B>) & StoreWhichIsResettable<C, B>;
 
-export type StoreWhichIsNested<S, C, B extends boolean> = Store<S, C, B> & {
+/**
+ * An object which support state updates which do not require tags
+ */
+export type StoreWhichDoesntEnforceTags<C> = Store<C, false>;
+
+/**
+ * An object which support state updates which require tags
+ */
+export type StoreWhichEnforcesTags<C> = Store<C, true>;
+
+/**
+ * An object which is capable of managing state, but which can also be nested within another store
+ */
+export type StoreWhichIsNested<C, B extends boolean> = Store<C, B> & {
   /**
    * Removes this nested store from the store which was marked as a `containerForNestedStores`.
    */
   removeFromContainingStore: () => void;
 };
 
-export type StoreWhichIsNestedInternal<S, C, B extends boolean> = Store<S, C, B> & {
+/**
+ * For internal use only.
+ */
+export type StoreWhichIsNestedInternal<S, C, B extends boolean> = Store<C, B> & {
   defineReset: (initState: S) => () => any;
   defineRemoveFromContainingStore: (name: string, key: string) => () => any;
-} & StoreWhichIsNested<S, C, B>;
+} & StoreWhichIsNested<C, B>;
 
-export type SelectorFromANestedStore<S> = (<C = S>(selector?: (arg: DeepReadonly<S>) => C) => StoreWhichIsNested<S, C, false>);
+/**
+ * A function which selects from a nested store
+ */
+export type SelectorFromANestedStore<S> = (<C = S>(selector?: (arg: DeepReadonly<S>) => C) => StoreWhichDoesntEnforceTags<C>);
 
-export type SelectorFromAStore<S> = (<C = S>(selector?: (arg: DeepReadonly<S>) => C) => Store<S, C, false>);
+/**
+ * A function which selects from a store
+ */
+export type SelectorFromAStore<S> = (<C = S>(selector?: (arg: DeepReadonly<S>) => C) => StoreWhichDoesntEnforceTags<C>);
 
-export type SelectorFromANestedStoreEnforcingTags<S> = (<C = S>(selector?: (arg: DeepReadonly<S>) => C) => Store<S, C, true>);
+/**
+ * A function which selects from a store which enforces the use of tags when updating state
+ */
+export type SelectorFromAStoreEnforcingTags<S> = (<C = S>(selector?: (arg: DeepReadonly<S>) => C) => StoreWhichEnforcesTags<C>);
 
+/**
+ * An input for a derivation
+ */
 type DerivationCalculationInput<E> = E extends StoreWhichIsReadable<infer W> ? W : E extends StoreWhichIsReadable<infer W> ? W : never;
 
+/**
+ * All inputs for a particular derivation
+ */
 export type DerivationCalculationInputs<T extends Array<StoreWhichIsReadable<any>>> = {
   [K in keyof T]: DerivationCalculationInput<T[K]>;
 }
 
-export interface OptionsForMakingAStore {
+export type OptionsForMakingAStore = {
   /**
    * Specifications for the Redux Devtools Extension. Pass 'false' if you do not want your store to be tracked within the Redux devtools extension.
    * See https://github.com/zalmoxisus/redux-devtools-extension/blob/master/docs/API/Arguments.md for more info
@@ -277,15 +375,18 @@ export interface OptionsForMakingAStore {
   containerForNestedStores?: boolean;
 }
 
-export interface OptionsForMakingAStoreEnforcingTags extends OptionsForMakingAStore {
+export type OptionsForMakingAStoreEnforcingTags = {
   /**
    * If supplied, this function can transform all tags passed in when updating state.
    * This is of use if, for example, you are using the __filename node variable as a tag, and you would like the abbreviate the file path to something more readable.
    */
   tagSanitizer?: (tag: string) => string;
-}
+} & OptionsForMakingAStore;
 
-export interface OptionsForReduxDevtools {
+/**
+ * An object representing options which the Redux devtools extension accepts
+ */
+export type OptionsForReduxDevtools = {
   /**
    * the instance name to be showed on the monitor page. Default value is `document.title`.
    * If not specified and there's no document title, it will consist of `tabId` and `instanceId`.
@@ -329,7 +430,10 @@ export interface OptionsForReduxDevtools {
   };
 }
 
-export interface Derivation<R> {
+/**
+ * An object representing derived state
+ */
+export type Derivation<R> = {
   /**
    * The current value of the derivation
    */
@@ -345,7 +449,7 @@ export interface Derivation<R> {
   onChange: (listener: (value: R) => any) => Unsubscribable,
 };
 
-export interface WindowAugmentedWithReduxDevtools {
+export type WindowAugmentedWithReduxDevtools = {
   __REDUX_DEVTOOLS_EXTENSION__: {
     connect: (options: OptionsForReduxDevtools) => {
       init: (state: any) => any,

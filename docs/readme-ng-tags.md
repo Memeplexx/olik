@@ -5,7 +5,7 @@
 npm i -D @angular-builders/custom-webpack
 ```
 
-2) Create a custom webpack config `custom-webpack.config.js` in your project root:
+2) Create a custom Webpack config `custom-webpack.config.js` in your project root:
 ```Javascript
 module.exports = {
   context: __dirname,
