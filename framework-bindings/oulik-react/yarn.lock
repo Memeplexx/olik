@@ -3716,10 +3716,10 @@ os-locale@^1.4.0:
   dependencies:
     lcid "^1.0.0"
 
-oulik@^0.0.46:
-  version "0.0.46"
-  resolved "https://registry.yarnpkg.com/oulik/-/oulik-0.0.46.tgz#2105ff832584fe0cb884723ce7b9339194dba8a9"
-  integrity sha512-9yh0Fbdp+I1+GUrvdvYRPsZktnOEP3fYcHUmRRebP3PnSKbzBNyih71dbj64iOUTWJyk8aFGevrsbFu0O/JK0Q==
+oulik@^0.0.50:
+  version "0.0.50"
+  resolved "https://registry.yarnpkg.com/oulik/-/oulik-0.0.50.tgz#551177441a36879508c5fbf9d620c95b6cf175ab"
+  integrity sha512-9zIOxMiTg7plsC1Z0oPO6SGrAeu0qVvbYqyPLRXXuS7WaL6OkjBHgvSSYc+NF+lWN6qaZK1Q3mNEWLVjaZDEvA==
 
 p-each-series@^2.1.0:
   version "2.1.0"

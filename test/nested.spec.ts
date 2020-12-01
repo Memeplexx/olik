@@ -22,9 +22,9 @@ describe('Nested', () => {
   })
 
   it('should revert to a top-level store correctly', () => {
-    const store = make({ test: '' });
+    const select = make({ test: '' });
     const nested = makeNested({ test: '' }, { name: 'nested' });
-    expect(store().read()).toEqual({ test: '' });
+    expect(select().read()).toEqual({ test: '' });
     expect(nested().read()).toEqual({ test: '' });
   })
 

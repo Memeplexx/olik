@@ -1,4 +1,4 @@
-import { Store, Fetch, Unsubscribable } from 'oulik';
+import { Store, FetchState, Unsubscribable, SelectorFromANestedStore } from 'oulik';
 import React, { DependencyList } from 'react';
 export * from 'oulik';
 /**
@@ -9,7 +9,7 @@ export * from 'oulik';
  * EXAMPLE 1: NORMAL STORE SELECTION
  * ```typescript
  * const value = useSelector(
- *   store(s => s.some.property)
+ *   select(s => s.some.property)
  * );
  * ```
  *
@@ -17,8 +17,8 @@ export * from 'oulik';
  * ```typescript
  * const value = useSelector(
  *   deriveFrom(
- *     store(s => s.some.property),
- *     store(s => s.some.other.property),
+ *     select(s => s.some.property),
+ *     select(s => s.some.other.property),
  *   ).usingExpensiveCalc((someProperty, someOtherProperty) => someProperty * someOtherProperty)
  * ));
  * ```
@@ -37,7 +37,7 @@ export declare function useSelector<C>(store: {
  * ```typescript
  * // outside your functional component
  * const todosFetcher = createFetcher({
- *   onStore: store(s => s.todos),
+ *   onStore: select(s => s.todos),
  *   getData: () => fetchTodosFromApi(),
  *   cacheFor: 1000 * 60,
  * });
@@ -46,14 +46,24 @@ export declare function useSelector<C>(store: {
  * const { isLoading, hasError, error, data, storeData, refetch } = useFetcher(todosFetcher);
  * ```
  */
-export declare function useFetcher<S, C, P, B extends boolean>(getFetch: () => Fetch<S, C, P, B>, deps?: DependencyList): {
+export declare function useFetcher<S, C, P, B extends boolean>(getFetch: () => FetchState<S, C, P, B>, deps?: DependencyList): {
     isLoading: boolean;
     hasError: boolean;
     error: any;
     data: C;
     storeData: C;
-    refetch: import("oulik").Fetcher<S, C, P, B>;
+    refetch: import("oulik").FetchFunction<S, C, P, B>;
 };
+/**
+ * A hook for creating a store which is capable of being nested inside your application store
+ * @param getStore a no-args function which returns a new store
+ *
+ * EXAMPLE
+ * ```typescript
+ * const store = useStore(() => makeNested({ someString: '', someNumber: 0 }));
+ * ```
+ */
+export declare function useStore<C>(getStore: () => SelectorFromANestedStore<C>): SelectorFromANestedStore<C>;
 /**
  * Similar, in principal to React-Redux's `mapStateToProps()`
  * @param store The store that was previously defined using `make()` or `makeEnforceTags()`
@@ -65,14 +75,14 @@ export declare function useFetcher<S, C, P, B extends boolean>(getFetch: () => F
  *   // ...
  * }
  *
- * export default mapStateToProps(store(), (state, ownProps: { someProp: string }) => ({
+ * export default mapStateToProps(select(), (state, ownProps: { someProp: string }) => ({
  *   todos: state.todos,
  *   userName: state.user.firstName,
  *   someProp: ownProps.someProp,
  * }))(Todo);
  * ```
  */
-export declare function mapStateToProps<C, P extends {}, M extends {}, B extends boolean>(store: Store<any, C, B>, mapper: (state: C, ownProps: P) => M): (Component: React.ComponentType<M>) => {
+export declare function mapStateToProps<C, P extends {}, M extends {}, B extends boolean>(store: Store<C, B>, mapper: (state: C, ownProps: P) => M): (Component: React.ComponentType<M>) => {
     new (props: any): {
         sub: Unsubscribable;
         render(): JSX.Element;

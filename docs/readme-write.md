@@ -5,7 +5,7 @@ Let's first assume that a store has been initialized as follows:
 ```Typescript
 import { make } from 'oulik';
 
-const store = make({
+const select = make({
   user: { firstName: '', lastName: '', age: 0 },
   todos: new Array<{ id: number, text: string, status: 'todo' | 'done' }>()
 });
@@ -13,44 +13,44 @@ const store = make({
 ---
 ## UPDATING **NON-ARRAY** NODES ##
 ```Typescript
-store(s => s.user).replaceWith({ firstName: 'Sam', lastName: 'Jones', age: 25 });
+select(s => s.user).replaceWith({ firstName: 'Sam', lastName: 'Jones', age: 25 });
 
-store(s => s.user).patchWith({ firstName: 'Sam', age: 25 });
+select(s => s.user).patchWith({ firstName: 'Sam', age: 25 });
 
-store(s => s.user.age).replaceWith(25);
+select(s => s.user.age).replaceWith(25);
 ```
 
 ## UPDATING **ARRAY** NODES ##
 ```Typescript
-store(s => s.todos).addAfter(newTodos);
+select(s => s.todos).addAfter(newTodos);
 
-store(s => s.todos).addBefore(newTodos);
+select(s => s.todos).addBefore(newTodos);
 
-store(s => s.todos).patchWhere(t => t.status === 'done').with({ status: 'todo' });
+select(s => s.todos).patchWhere(t => t.status === 'done').with({ status: 'todo' });
 
-store(s => s.todos).removeAll();
+select(s => s.todos).removeAll();
 
-store(s => s.todos).removeFirst();
+select(s => s.todos).removeFirst();
 
-store(s => s.todos).removeLast();
+select(s => s.todos).removeLast();
 
-store(s => s.todos).removeWhere(t => t.status === 'done');
+select(s => s.todos).removeWhere(t => t.status === 'done');
 
-store(s => s.todos).replaceAll(newTodos);
+select(s => s.todos).replaceAll(newTodos);
 
-store(s => s.todos).replaceWhere(t => t.id === 5).with({ id: 5, text: 'bake cookies', status: 'todo' });
+select(s => s.todos).replaceWhere(t => t.id === 5).with({ id: 5, text: 'bake cookies', status: 'todo' });
 
-store(s => s.todos).upsertWhere(t => t.id === 5).with({ id: 5, text: 'bake cookies', status: 'todo' });
+select(s => s.todos).upsertWhere(t => t.id === 5).with({ id: 5, text: 'bake cookies', status: 'todo' });
 
-store(s => s.todos.find(t => t.id === 2)!.text).replaceWith('something else');
+select(s => s.todos.find(t => t.id === 2)!.text).replaceWith('something else');
 ```
 
 ## ENFORCING THE USE OF **TAGS** ##
 We can require that all updates are supplemented with a 'tag' which helps to identify the origin of a state update within the Devtools.  
 ```Typescript
-const store = makeEnforceTags({ some: { value: '' } });
+const select = makeEnforceTags({ some: { value: '' } });
 
-store(s => s.some.value).replaceWith('new value', 'MyComponent');
+select(s => s.some.value).replaceWith('new value', 'MyComponent');
 ```
 In the above example, we've used 'MyComponent' as the tag but any user-defined string is acceptable.  
 For Webpack users, it may be more convenient to use the `__filename` node global object as a tag.  

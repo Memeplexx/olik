@@ -91,14 +91,14 @@ export function makeNested<L>(state: L, options: { name: string, storeKey?: stri
       const libState = s.nested[name][key];
       return selector ? selector(libState) : libState;
     }) as any as StoreWhichIsNestedInternal<L, C>;
-    lStore.removeFromContainingStore = lStore.defineRemoveFromContainingStore(name, key);
+    lStore.removeFromContainingStore = lStore.defineRemoveNestedStore(name, key);
     lStore.reset = lStore.defineReset(state);
-    return lStore as StoreWhichIsNested<C, false>;
+    return lStore as StoreWhichIsNested<C>;
   }) as any as SelectorFromANestedStore<L>;
 }
 
 function makeInternalRootStore<S, B extends boolean>(state: S, options: { containerForNestedStores?: boolean, supportsTags: boolean, devtools?: OptionsForReduxDevtools | false, tagSanitizer?: (tag: string) => string }) {
-  const store = makeInternal<S, B>(state, { devtools: options.devtools || {}, supportsTags: options.supportsTags, tagSanitizer: options.tagSanitizer });
+  const store = makeInternal<S, B>(state, { devtools: options.devtools === undefined ? {} : options.devtools, supportsTags: options.supportsTags, tagSanitizer: options.tagSanitizer });
   if (options.containerForNestedStores) {
     if ((typeof (state) !== 'object') || Array.isArray(state)) {
       throw new Error(errorMessages.INVALID_CONTAINER_FOR_NESTED_STORES);
@@ -237,17 +237,22 @@ function makeInternal<S, B extends boolean>(state: S, options: { supportsTags: b
       pathReader = createPathReader(state);
       currentState = deepFreeze(state) as S;
     },
-    defineRemoveFromContainingStore: (name: string, key: string) => () => {
-      if (nestedContainerStore) {
-        state = deepCopy(currentState);
-        if (Object.keys((state as any).nested[name]).length === 1) {
-          delete (state as any).nested[name];
-        } else {
-          delete (state as any).nested[name][key];
-        }
-        pathReader = createPathReader(state);
-        currentState = deepFreeze(state) as S;
-        initialState = currentState;
+    defineRemoveNestedStore: (name: string, key: string) => () => {
+      if (!nestedContainerStore) { return; }
+      if (Object.keys((currentState as any).nested[name]).length === 1) {
+        return updateState<C>((s: any) => s.nested, 'remove', { name, key }, old => {
+          const { [name]: toRemove, ...others } = old;
+          return others;
+        }, s => {
+          delete s[name];
+        })
+      } else {
+        return updateState<C>((s: any) => s.nested[name], 'remove', { name, key }, old => {
+          const { [key]: toRemove, ...others } = old;
+          return others;
+        }, s => {
+          delete s[key];
+        })
       }
     },
     defineReset: (initState: any) => () => replace(e => selector(e), 'reset')(initState),

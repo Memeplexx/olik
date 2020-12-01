@@ -4,7 +4,7 @@ Let's first assume that a store has been initialized as follows:
 ```Typescript
 import { make } from 'oulik-ng';
 
-const store = make('store', {
+const select = make('store', {
   todos: new Array<string>(),
 }); 
 ```
@@ -12,26 +12,26 @@ const store = make('store', {
 
 ## READING STATE SYNCHRONOUSLY ##
 ```Typescript
-const todos = store(s => s.todos).read();
+const todos = select(s => s.todos).read();
 ```
 
 ## LISTENING TO STATE UPDATES ##
 ```Typescript
-const listener = store(s => s.todos)
+const listener = select(s => s.todos)
   .onChange(todos => console.log(todos));
 listener.unsubscribe(); // Please unsubscribe to avoid a memory leak
 ```  
 
 ## CONSUMING STATE IN YOUR TEMPLATE ##
 ```Typescript
-import { select } from 'oulik-ng';
+import { make } from 'oulik-ng';
 
 @Component({
   selector: 'app-component',
   template: `<div *ngFor="let todo of todos$ | async">{{todo}}</div>`
 })
 export class MyComponent {
-  todos$ = select(store(s => s.todos));
+  todos$ = observe(select(s => s.todos));
 }
 ```
 
@@ -43,8 +43,8 @@ import { shareReplay } from 'rxjs/operators';
 
 export class MyComponent {
   someDataToBeUsedInYourTemplate$ = combineLatest([
-    select(store(s => s.todos)),
-    select(store(s => s.some.other.value)),
+    observe(select(s => s.todos)),
+    observe(select(s => s.some.other.value)),
   ]).pipe(
     shareReplay(1),
   );
@@ -56,21 +56,24 @@ Using *Fetchers* allows you to track the status of a request (loading / success 
 
 ### DEFINING A FETCHER ###
 ```Typescript
-import { store } from './my-store';
+import { select } from './my-store';
 
 export class ApiService {
 
   constructor(private http: HttpClient) { }
 
-  todosFetcher = store(s => s.todos)
-    .createFetcher(() => this.http.get('https://www.example.com/todos'), { cacheForMillis: 1000 * 60 });
+  fetchTodos = createFetcher({
+    onStore: select(s => s.todos)
+    getData: () => this.http.get('https://www.example.com/todos'),
+    cacheFor: 1000 * 60,
+  });
 }
 ```
 
 ### OPTION A: USING OUR FETCHER WITHIN A COMPONENT ###
 
 ```Typescript
-import { selectFetch } from 'oulik-ng';
+import { resolve } from 'oulik-ng';
 
 @Component({
   selector: 'app-component',
@@ -86,7 +89,7 @@ export class AppComponent {
 
   constructor(private apiService: ApiService) { }
 
-  todos$ = selectFetch(apiService.todosFetcher);
+  todos$ = resolve(() => this.apiService.fetchTodos());
 }
 ```
 
@@ -98,10 +101,10 @@ import { resolve } from 'oulik-ng';
 @Injectable()
 export class InviteResolver implements Resolve<any> {
 
-  constructor(private readonly apiService: ApiService) { }
+  constructor(private apiService: ApiService) { }
 
   public resolve(route: ActivatedRouteSnapshot, state: RouterStateSnapshot) {
-    return resolve(this.apiService.todosFetcher);
+    return resolve(() => this.apiService.fetchTodos());
   }
 }
 

@@ -320,7 +320,7 @@ export type StoreWhichEnforcesTags<C> = Store<C, true>;
 /**
  * An object which is capable of managing state, but which can also be nested within another store
  */
-export type StoreWhichIsNested<C, B extends boolean> = Store<C, B> & {
+export type StoreWhichIsNested<C> = Store<C, false> & {
   /**
    * Removes this nested store from the store which was marked as a `containerForNestedStores`.
    */
@@ -333,12 +333,13 @@ export type StoreWhichIsNested<C, B extends boolean> = Store<C, B> & {
 export type StoreWhichIsNestedInternal<S, C> = Store<C, false> & {
   defineReset: (initState: S) => () => any;
   defineRemoveFromContainingStore: (name: string, key: string) => () => any;
-} & StoreWhichIsNested<C, false>;
+  defineRemoveNestedStore: (name: string, key: string) => () => any;
+} & StoreWhichIsNested<C>;
 
 /**
  * A function which selects from a nested store
  */
-export type SelectorFromANestedStore<S> = (<C = S>(selector?: (arg: DeepReadonly<S>) => C) => StoreWhichIsNested<C, false>);
+export type SelectorFromANestedStore<S> = (<C = S>(selector?: (arg: DeepReadonly<S>) => C) => StoreWhichIsNested<C>);
 
 /**
  * A function which selects from a store

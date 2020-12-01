@@ -1,4 +1,4 @@
-import { Store, Fetch, Unsubscribable,  } from 'oulik';
+import { Store, FetchState, Unsubscribable, StoreWhichIsNested, makeNested, SelectorFromANestedStore, } from 'oulik';
 import React, { DependencyList } from 'react';
 
 export * from 'oulik';
@@ -11,7 +11,7 @@ export * from 'oulik';
  * EXAMPLE 1: NORMAL STORE SELECTION
  * ```typescript
  * const value = useSelector(
- *   store(s => s.some.property)
+ *   select(s => s.some.property)
  * );
  * ```
  * 
@@ -19,8 +19,8 @@ export * from 'oulik';
  * ```typescript
  * const value = useSelector(
  *   deriveFrom(
- *     store(s => s.some.property),
- *     store(s => s.some.other.property),
+ *     select(s => s.some.property),
+ *     select(s => s.some.other.property),
  *   ).usingExpensiveCalc((someProperty, someOtherProperty) => someProperty * someOtherProperty)
  * ));
  * ```
@@ -52,7 +52,7 @@ export function useSelector<C>(
  * ```typescript
  * // outside your functional component
  * const todosFetcher = createFetcher({
- *   onStore: store(s => s.todos),
+ *   onStore: select(s => s.todos),
  *   getData: () => fetchTodosFromApi(),
  *   cacheFor: 1000 * 60,
  * });
@@ -62,7 +62,7 @@ export function useSelector<C>(
  * ```
  */
 export function useFetcher<S, C, P, B extends boolean>(
-  getFetch: () => Fetch<S, C, P, B>,
+  getFetch: () => FetchState<S, C, P, B>,
   deps?: DependencyList,
 ) {
   const allDeps = [];
@@ -70,10 +70,10 @@ export function useFetcher<S, C, P, B extends boolean>(
   const fetch = React.useMemo(() => getFetch(), allDeps);
   const [result, setResult] = React.useState({ isLoading: fetch.status === 'resolving', hasError: fetch.status === 'rejected', error: fetch.error, data: fetch.data, storeData: fetch.store.read(), refetch: fetch.refetch });
   React.useEffect(() => {
-    setResult(result => ({...result, storeData: fetch.store.read() }));
+    setResult(result => ({ ...result, storeData: fetch.store.read() }));
     let storeSubscription: Unsubscribable | undefined;
     const subscription = fetch.onChange(() => {
-      setResult(result => ({...result, isLoading: status === 'resolving', hasError: fetch.status === 'rejected', error: fetch.error, data: fetch.data, storeData: fetch.store.read() }));
+      setResult(result => ({ ...result, isLoading: status === 'resolving', hasError: fetch.status === 'rejected', error: fetch.error, data: fetch.data, storeData: fetch.store.read() }));
       storeSubscription = fetch.store.onChange(state => setResult(r => ({ ...r, storeData: state })))
     })
     return () => {
@@ -84,11 +84,24 @@ export function useFetcher<S, C, P, B extends boolean>(
   return result;
 }
 
-// export function useStore(
-//   store: 
-// ) {
-
-// }
+/**
+ * A hook for creating a store which is capable of being nested inside your application store
+ * @param getStore a no-args function which returns a new store
+ * 
+ * EXAMPLE
+ * ```typescript
+ * const store = useStore(() => makeNested({ someString: '', someNumber: 0 }));
+ * ```
+ */
+export function useStore<C>(
+  getStore: () => SelectorFromANestedStore<C>,
+) {
+  const result = React.useMemo(() => getStore(), []);
+  React.useEffect(() => {
+    return () => { setTimeout(() => result().removeFromContainingStore()) }
+  }, []);
+  return result;
+}
 
 /**
  * Similar, in principal to React-Redux's `mapStateToProps()`
@@ -101,7 +114,7 @@ export function useFetcher<S, C, P, B extends boolean>(
  *   // ...
  * }
  *
- * export default mapStateToProps(store(), (state, ownProps: { someProp: string }) => ({
+ * export default mapStateToProps(select(), (state, ownProps: { someProp: string }) => ({
  *   todos: state.todos,
  *   userName: state.user.firstName,
  *   someProp: ownProps.someProp,
@@ -109,7 +122,7 @@ export function useFetcher<S, C, P, B extends boolean>(
  * ```
  */
 export function mapStateToProps<C, P extends {}, M extends {}, B extends boolean>(
-  store: Store<any, C, B>,
+  store: Store<C, B>,
   mapper: (state: C, ownProps: P) => M,
 ) {
   return (Component: React.ComponentType<M>) => {
