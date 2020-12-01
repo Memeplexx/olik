@@ -1,12 +1,12 @@
 import { NgModule, NgZone } from '@angular/core';
-import { Fetch, listenToDevtoolsDispatch, Store, Unsubscribable } from 'oulik';
+import { FetchState, listenToDevtoolsDispatch, Store, Unsubscribable } from 'oulik';
 import { Observable } from 'rxjs';
 import { shareReplay } from 'rxjs/operators';
 
 export * from 'oulik';
 
-export function observe<S, C>(
-  store: Store<S, C, boolean>,
+export function observe<C, B extends boolean>(
+  store: Store<C, B>,
 ) {
   return new Observable<C>((observer) => {
     observer.next(store.read());
@@ -18,7 +18,7 @@ export function observe<S, C>(
 }
 
 export function observeFetch<S, C, P, B extends boolean>(
-  getFetch: () => Fetch<S, C, P, B>,
+  getFetch: () => FetchState<S, C, P, B>,
 ) {
   return new Observable<
     { isLoading: boolean, data: C | null, hasError: boolean, error?: any, storeData: C | null, refetch: ReturnType<typeof getFetch>['refetch'] }
@@ -68,7 +68,7 @@ export function observeFetch<S, C, P, B extends boolean>(
 }
 
 export function resolve<S, C, P, B extends boolean>(
-  getFetch: () => Fetch<S, C, P, B>,
+  getFetch: () => FetchState<S, C, P, B>,
 ) {
   return new Observable<C>(observer => {
     const fetchState = getFetch();
