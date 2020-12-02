@@ -247,7 +247,7 @@ function makeInternal<S, B extends boolean>(state: S, options: { supportsTags: b
           delete s[name];
         })
       } else {
-        return updateState<C>((s: any) => s.nested[name], 'remove', { name, key }, old => {
+        return updateState<C>((s: any) => s.nested[name], 'remove', key, old => {
           const { [key]: toRemove, ...others } = old;
           return others;
         }, s => {

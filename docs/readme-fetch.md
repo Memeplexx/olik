@@ -7,7 +7,7 @@ Let's first assume that a store has been initialized as follows:
 ```Typescript
 import { make } from 'oulik';
 
-const store = make({ todos: new Array<{ id: number, text: string }>() }); 
+const select = make({ todos: new Array<{ id: number, text: string }>() }); 
 ```
 ---
 ## FETCHING ASYNC STATE ##
@@ -15,7 +15,7 @@ const store = make({ todos: new Array<{ id: number, text: string }>() });
 `api.ts`
 ```Typescript
 const fetchTodos = createFetcher({
-  onStore: store(s => s.todos),
+  onStore: select(s => s.todos),
   getData: () => fetchTodosFromApi(),
   cacheFor: 1000 * 60,
 });
@@ -34,7 +34,7 @@ Some data fetches, such as **pagination** need an argument to be supplied to the
 `api.ts`
 ```Typescript
 const fetchTodos = createFetcher({
-  onStore: store(s => s.todos),
+  onStore: select(s => s.todos),
   getData: (arg: { offset: number, count: number }) => fetchTodosFromApi(arg.offset, arg.count),
   setData: (arg) => arg.store.addAfter(arg.data),
   cacheFor: 1000 * 60,
