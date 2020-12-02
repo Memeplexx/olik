@@ -8,7 +8,7 @@
 
 ## ***Effortless state-management with an incurable magic-string allergy*** ##  
 
-Oulik exploits the type-system to **describe your state updates for you** with the **[Redux Devtools extension](https://chrome.google.com/webstore/detail/redux-devtools/lmhkpmbekcpmknklioeibfkpmmfibljd?hl=en)**. It also supports various **opt-in**, **tree-shakable** features including **memoization**, **caching**, and the ability to **dynamically nest component-level stores** within your application-level store.
+Oulik exploits the type-system to **describe your state updates for you** within the **[Redux Devtools extension](https://chrome.google.com/webstore/detail/redux-devtools/lmhkpmbekcpmknklioeibfkpmmfibljd?hl=en)**. It also supports various **opt-in**, **tree-shakable** features including **memoization**, **caching**, and the ability to **dynamically nest component-level stores** within your application-level store.
 
 > This rest of this guide covers the vanilla JS version. You may prefer to use ***[![](./docs/assets/react.png)&nbsp;OULIK-REACT](./docs/readme-react.md)***, or ***[![](./docs/assets/angular.png)&nbsp;OULIK-NG](./docs/readme-ng.md)***.  
 
