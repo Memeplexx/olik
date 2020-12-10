@@ -139,10 +139,9 @@ describe('Fetcher', () => {
   })
 
   it('should work with params', done => {
-    const initialState = {
+    const select = make({
       array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
-    };
-    const select = make(initialState);
+    });
     const fetchArray = createFetcher({
       onStore: select(s => s.array),
       getData: (num: number) => new Promise<[{ id: number, value: string }]>(resolve => setTimeout(() => resolve([{ id: num, value: 'dd' }]), 10)),

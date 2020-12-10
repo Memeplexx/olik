@@ -1,3 +1,4 @@
+import { createFetcher } from '../src';
 import { errorMessages } from '../src/consts';
 import { make } from '../src/core';
 import { tests } from '../src/tests';
@@ -191,6 +192,7 @@ describe('Array', () => {
     select(s => s.array.find(e => e.id === 2)!.value).replaceWith('twoo');
     expect(tests.currentAction.type).toEqual('array.1.value.replaceWith()');
     expect(select(s => s.array).read()).toEqual([{ id: 1, value: 'one' }, { id: 2, value: 'twoo' }, { id: 3, value: 'three' }]);
+    expect(tests.currentMutableState).toEqual(select().read());
   })
 
   it('should be able to find() an array element and patch one of its properties', () => {
@@ -201,6 +203,18 @@ describe('Array', () => {
     select(s => s.array.find(e => e.id === 2)!.value).patchWith({ b: 'twoo' });
     expect(tests.currentAction.type).toEqual('array.1.value.patchWith()');
     expect(select(s => s.array).read()).toEqual([{ id: 1, value: { a: 'one', b: 'one' } }, { id: 2, value: { a: 'two', b: 'twoo' } }, { id: 3, value: { a: 'three', b: 'three' } }]);
+    expect(tests.currentMutableState).toEqual(select().read());
+  })
+
+  it('should be able to mergeWhere()', () => {
+    const select = make({
+      array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
+      object: { hello: 'world' },
+    });
+    select(s => s.array).mergeWhere((e0, e1) => e0.id === e1.id).with([{ id: 2, value: 'twoo' }, { id: 3, value: 'threee' }, { id: 4, value: 'four' }, { id: 5, value: 'five' }]);
+    expect(select(s => s.array).read()).toEqual([{ id: 1, value: 'one' }, { id: 2, value: 'twoo' }, { id: 3, value: 'threee' }, { id: 4, value: 'four' }, { id: 5, value: 'five' }]);
+    expect(tests.currentAction.type).toEqual('array.mergeWhere()');
+    expect(tests.currentMutableState).toEqual(select().read());
   })
 
 });

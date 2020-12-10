@@ -62,6 +62,7 @@ describe('Object', () => {
     select(s => s.object.property).replaceWith(payload, tag);
     expect(tests.currentAction.type).toEqual(`object.property.replaceWith() [${tag}]`);
     expect(select(s => s.object.property).read()).toEqual(payload);
+    expect(tests.currentMutableState).toEqual(select().read());
   })
 
   it('should sanitize tags correctly', () => {
@@ -73,12 +74,14 @@ describe('Object', () => {
     const tag = 'mytag';
     select(s => s.test).replaceWith('test', tag);
     expect(tests.currentAction.type).toEqual(`test.replaceWith() [${tag}x]`);
+    expect(tests.currentMutableState).toEqual(select().read());
   })
 
   it('should be able to add a new property onto an object', () => {
     const select = make({} as { [key: string]: string });
     select().patchWith({ hello: 'world' });
     expect(select().read()).toEqual({ hello: 'world' });
+    expect(tests.currentMutableState).toEqual(select().read());
   })
 
 });

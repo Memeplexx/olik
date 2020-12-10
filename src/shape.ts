@@ -18,7 +18,7 @@ export type FetchArgument<T> = T extends infer T ? T : void;
  */
 export interface Unsubscribable {
   /**
-   * Unsubscribes from this listener thereby preventing any memory leak.
+   * Unsubscribes from this listener thereby preventing a memory leak.
    */
   unsubscribe: () => any,
 }
@@ -84,7 +84,7 @@ export interface FetchState<S, C, P, B extends boolean> {
    */
   onCacheExpired: (listener: (fetch: FetchState<S, C, P, B>) => any) => Unsubscribable;
   /**
-   * Takes a function that will only be invoked only once, when the cache next expires
+   * Takes a function that will be invoked only once, when the cache next expires
    */
   onCacheExpiredOnce: (listener: (fetch: FetchState<S, C, P, B>) => any) => Unsubscribable;
   /**
@@ -142,7 +142,7 @@ export type FetchFunction<S, C, P, B extends boolean> = P extends void ? FetchFu
  */
 type StoreForAnArrayOfPrimitives<C extends DeepReadonlyArray<any>, B extends boolean> = {
   /**
-   * Appends an element, or an array of elements, onto the end of an array
+   * Appends an element, or an array of elements, onto the end of the array
    * ```
    * select(s => s.todos)
    *   .addAfter(newTodos);
@@ -150,7 +150,7 @@ type StoreForAnArrayOfPrimitives<C extends DeepReadonlyArray<any>, B extends boo
    */
   addAfter: (elements: C[0] | C[0][], tag: Tag<B>) => void,
   /**
-   * Prepends an element, or an array of elements, into the beginning of an array
+   * Prepends an element, or an array of elements, into the beginning of the array
    * ```
    * select(s => s.todos)
    *   .addBefore(newTodos);
@@ -158,7 +158,7 @@ type StoreForAnArrayOfPrimitives<C extends DeepReadonlyArray<any>, B extends boo
    */
   addBefore: (elements: C[0] | C[0][], tag: Tag<B>) => void,
   /**
-   * Removes all elements from an array
+   * Removes all elements from the array
    * ```
    * select(s => s.todos)
    *   .removeAll();
@@ -166,7 +166,7 @@ type StoreForAnArrayOfPrimitives<C extends DeepReadonlyArray<any>, B extends boo
    */
   removeAll: (tag: Tag<B>) => void,
   /**
-   * Deletes the first element from an array
+   * Deletes the first element from the array
    * ```
    * select(s => s.todos)
    *   .removeFirst();
@@ -174,7 +174,7 @@ type StoreForAnArrayOfPrimitives<C extends DeepReadonlyArray<any>, B extends boo
    */
   removeFirst: (tag: Tag<B>) => void,
   /**
-   * Deletes the last element from an array
+   * Deletes the last element from the array
    * ```
    * select(s => s.todos)
    *   .removeLast();
@@ -216,6 +216,16 @@ type StoreForAnArrayOfPrimitives<C extends DeepReadonlyArray<any>, B extends boo
    * ```
    */
   upsertWhere: (where: (element: C[0]) => boolean) => { with: (element: C[0], tag: Tag<B>) => void },
+  /**
+   * Merges the supplied array into the existing array.  
+   * Any supplied elements will either replace their corresponding element in the store (if a match could be found) or else they will be appended to the store array.  
+   * ```
+   * select(s => s.todos)
+   *   .mergeWhere((existingElement, newElement) => existingElement.id === newElement.id)
+   *   .with(newTodosArray);
+   * ```
+   */
+  mergeWhere: (where: (existingElement: C[0], newElement: C[0]) => boolean) => { with: (elements: C, tag: Tag<B>) => void },
 }
 
 /**

@@ -22,9 +22,9 @@ select(s => s.user.age).replaceWith(25);
 
 ## UPDATING **ARRAY** NODES ##
 ```Typescript
-select(s => s.todos).addAfter(newTodos);
+select(s => s.todos).addAfter(arrayOfNewTodos);
 
-select(s => s.todos).addBefore(newTodos);
+select(s => s.todos).addBefore(arrayOfNewTodos);
 
 select(s => s.todos).patchWhere(t => t.status === 'done').with({ status: 'todo' });
 
@@ -36,11 +36,13 @@ select(s => s.todos).removeLast();
 
 select(s => s.todos).removeWhere(t => t.status === 'done');
 
-select(s => s.todos).replaceAll(newTodos);
+select(s => s.todos).replaceAll(arrayOfNewTodos);
 
 select(s => s.todos).replaceWhere(t => t.id === 5).with({ id: 5, text: 'bake cookies', status: 'todo' });
 
 select(s => s.todos).upsertWhere(t => t.id === 5).with({ id: 5, text: 'bake cookies', status: 'todo' });
+
+select(s => s.todos).mergeWhere((currentTodo, newTodo) => currentTodo.id === newTodo.id).with(arrayOfNewTodos);
 
 select(s => s.todos.find(t => t.id === 2)!.text).replaceWith('something else');
 ```

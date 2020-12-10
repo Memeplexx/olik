@@ -53,7 +53,7 @@ export function make<S>(state: S, options: OptionsForMakingAStore = {}): Selecto
 }
 
 /**
- * Creates a new store which is capable of being nested inside another store.
+ * Creates a new store which can be (but doesn't have to be) nested inside your application store.
  * If an existing store is already defined as `make({...}, { containerForNestedStores: true });`
  * then this store will be automatically nested within that store, under the property `nested`.
  * If the opposite is true, then a new top-level store will be registered within the devtools
@@ -207,6 +207,16 @@ function makeInternal<S, B extends boolean>(state: S, options: { supportsTags: b
         return itemIndices.length
           ? (action(selector) as any).replaceWhere(criteria).with(element, tag)
           : (action(selector) as any).addAfter([element], tag);
+      }
+    }),
+    mergeWhere: (criteria: (existingElement: X[0], newElement: X[0]) => boolean) => ({
+      with: (elements: X, tag?: string) => {
+        updateState(selector, 'mergeWhere', elements, (old: X) => [
+          ...old.map(oe => elements.find(ne => criteria(oe, ne)) || oe),
+          ...elements.filter(ne => !old.some(oe => criteria(oe, ne)))
+        ], (old: any[]) => { old.forEach((oe, oi) => { const found = elements.find(ne => criteria(oe, ne)); if (found) { old[oi] = found; } });
+          elements.filter(ne => !old.some(oe => criteria(oe, ne))).forEach(ne => old.push(ne));
+        }, { tag })
       }
     }),
     replaceWhere: (criteria: (e: X[0]) => boolean) => ({
