@@ -76,25 +76,21 @@ export interface FetchState<S, C, P, B extends boolean> {
    */
   onChange: (listener: (fetch: FetchState<S, C, P, B>) => any) => Unsubscribable;
   /**
-   * Takes a function that will be invoked only once, when the status next changes
+   * Returns the underlying promise associated with this fetch
    */
-  onChangeOnce: (listener: (fetch: FetchState<S, C, P, B>) => any) => Unsubscribable;
+  onChangeOnce: () => Promise<FetchState<S, C, P, B>>;
   /**
    * Takes a function that will be invoked whenever the cache expires
    */
   onCacheExpired: (listener: (fetch: FetchState<S, C, P, B>) => any) => Unsubscribable;
   /**
-   * Takes a function that will be invoked only once, when the cache next expires
+   * Returns a promise which will resolve when the cache next expires
    */
-  onCacheExpiredOnce: (listener: (fetch: FetchState<S, C, P, B>) => any) => Unsubscribable;
+  onCacheExpiredOnce: () => Promise<FetchState<S, C, P, B>>;
   /**
    * Invalidates the cache (if any data is cached) and re-fetches
    */
   refetch: FetchFunction<S, C, P, B>;
-  /**
-   * Returns the underlying promise associated with this fetch
-   */
-  toPromise: () => Promise<C>;
 };
 
 /**
