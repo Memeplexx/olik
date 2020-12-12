@@ -85,7 +85,6 @@ export const createFetcher = <S, C, B extends boolean, X extends (params: any) =
         return { unsubscribe };
       },
       toPromise: () => {
-        // cacheItem.promises.push()
         return new Promise<C>((resolve, reject) => cacheItem.promises.push({ resolve, reject }));
       },
     }) as FetchState<S, C, P, B>;

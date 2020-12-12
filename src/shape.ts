@@ -91,7 +91,9 @@ export interface FetchState<S, C, P, B extends boolean> {
    * Invalidates the cache (if any data is cached) and re-fetches
    */
   refetch: FetchFunction<S, C, P, B>;
-
+  /**
+   * Returns the underlying promise associated with this fetch
+   */
   toPromise: () => Promise<C>;
 };
 
