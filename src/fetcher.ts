@@ -41,6 +41,7 @@ export const createFetcher = <S, C, B extends boolean, X extends (params: any) =
     changeOnceListeners: Array<{ listener: (fetch: FetchState<S, C, P, B>) => Unsubscribable, unsubscribe: () => any }>,
     cacheExpiredListeners: Array<(fetch: FetchState<S, C, P, B>) => Unsubscribable>,
     cacheExpiredOnceListeners: Array<{ listener: (fetch: FetchState<S, C, P, B>) => Unsubscribable, unsubscribe: () => any }>,
+    promises: Array<{ resolve: (c: C) => void, reject: (e: any) => void }>,
     fetches: Array<FetchState<S, C, P, B>>,
   }>();
   const result = (paramsOrTag: P | string | void, tag: string | void): FetchState<S, C, P, B> => {
@@ -48,7 +49,7 @@ export const createFetcher = <S, C, B extends boolean, X extends (params: any) =
     const actualTag = supportsTags ? (tag || paramsOrTag) as string : undefined;
     const actualParams = (((supportsTags && tag) || (!supportsTags && paramsOrTag)) ? paramsOrTag : undefined) as FetchArgument<P>;
     const cacheItem = responseCache.get(actualParams) || responseCache.set(actualParams,
-      { data: undefined as any as C, error: undefined, lastFetch: 0, status: 'pristine', fetches: [], changeListeners: [], changeOnceListeners: [], cacheExpiredListeners: [], cacheExpiredOnceListeners: [] }).get(actualParams)!;
+      { data: undefined as any as C, error: undefined, lastFetch: 0, status: 'pristine', fetches: [], changeListeners: [], changeOnceListeners: [], cacheExpiredListeners: [], cacheExpiredOnceListeners: [], promises: [] }).get(actualParams)!;
     const cacheHasExpiredOrPromiseNotYetCalled = (cacheItem.lastFetch + (specs.cacheFor || 0)) < Date.now();
     const invalidateCache = () => {
       cacheItem.data = null as any as C;
@@ -83,6 +84,10 @@ export const createFetcher = <S, C, B extends boolean, X extends (params: any) =
         cacheItem.cacheExpiredOnceListeners.push({ listener, unsubscribe });
         return { unsubscribe };
       },
+      toPromise: () => {
+        // cacheItem.promises.push()
+        return new Promise<C>((resolve, reject) => cacheItem.promises.push({ resolve, reject }));
+      },
     }) as FetchState<S, C, P, B>;
     const notifyChangeListeners = (notifyChangeOnceListeners: boolean) => {
       cacheItem.changeListeners.forEach(changeListener => changeListener(createFetch()));
@@ -93,6 +98,9 @@ export const createFetcher = <S, C, B extends boolean, X extends (params: any) =
         });
       }
     }
+    if (cacheItem.status === 'resolving') {
+      return cacheItem.fetches[cacheItem.fetches.length - 1];
+    } else
     if (cacheHasExpiredOrPromiseNotYetCalled) {
       cacheItem.status = 'resolving';
       cacheItem.fetches.forEach(fetch => Object.assign<FetchState<S, C, P, B>, Partial<FetchState<S, C, P, B>>>(fetch, { status: cacheItem.status }));
@@ -118,6 +126,10 @@ export const createFetcher = <S, C, B extends boolean, X extends (params: any) =
             cacheItem.status = 'resolved';
             cacheItem.fetches.forEach(fetch => Object.assign<FetchState<S, C, P, B>, Partial<FetchState<S, C, P, B>>>(fetch, { status: cacheItem.status, data: value, error: cacheItem.error }));
             notifyChangeListeners(true);
+
+            cacheItem.promises.forEach(promise => promise.resolve(cacheItem.data));
+            cacheItem.promises.length = 0;
+
             setTimeout(() => {
               invalidateCache();  // free memory
               cacheItem.cacheExpiredListeners.forEach(listener => listener(createFetch()));
@@ -135,6 +147,9 @@ export const createFetcher = <S, C, B extends boolean, X extends (params: any) =
             cacheItem.status = 'rejected';
             cacheItem.fetches.forEach(fetch => Object.assign<FetchState<S, C, P, B>, Partial<FetchState<S, C, P, B>>>(fetch, { status: cacheItem.status, error }));
             notifyChangeListeners(true);
+
+            cacheItem.promises.forEach(promise => promise.reject(error));
+            cacheItem.promises.length = 0;
           } catch (e) {
             errorThatWasCaughtInPromise = e;
           }

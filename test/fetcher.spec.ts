@@ -217,15 +217,12 @@ describe('Fetcher', () => {
       onStore: select(s => s.array),
       getData: () => new Promise<string[]>(resolve => setTimeout(() => resolve(['three', 'four']), 10)),
     });
-    let changeCount = 0;
     const fetch = fetchArray();
-    fetch.onChange(() => {
-      changeCount++;
-      if (changeCount === 2) {
+    fetch.onChangeOnce(() => {
+      fetch.refetch().onChangeOnce(() => {
         done();
-      }
+      });
     });
-    fetch.refetch();
   });
 
   it('should unsubcribe from change listeners', done => {
@@ -292,6 +289,55 @@ describe('Fetcher', () => {
       sub.unsubscribe();
       done();
     })
+  })
+
+  it('should be able to de-duplicate simultaneous requests', () => {
+    const select = make({ value: '' });
+    let count = 0;
+    const fetchValue = createFetcher({
+      onStore: select(s => s.value),
+      getData: () => {
+        count++;
+        return new Promise<string>(resolve => {
+          setTimeout(() => resolve('val'), 10);
+        })
+      }
+    });
+    fetchValue();
+    fetchValue();
+    expect(count).toEqual(1);
+  })
+
+  it('should be able to handle promises resolving correctly', done => {
+    const select = make({ value: '' });
+    const fetchValue = createFetcher({
+      onStore: select(s => s.value),
+      getData: () => {
+        return new Promise<string>(resolve => {
+          setTimeout(() => resolve('val'), 10);
+        })
+      }
+    });
+    fetchValue().toPromise().then(data => {
+      expect(data).toEqual('val');
+      done();
+    });
+  })
+
+  it('should be able to handle promises rejecting correctly', done => {
+    const select = make({ value: '' });
+    const fetchValue = createFetcher({
+      onStore: select(s => s.value),
+      getData: () => {
+        return new Promise<string>((resolve, reject) => {
+          setTimeout(() => reject('val'), 10);
+        })
+      }
+    });
+    fetchValue().toPromise().catch(error => {
+      expect(error).toEqual('val');
+      done();
+    });
   })
 
 });
