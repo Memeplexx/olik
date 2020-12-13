@@ -20,15 +20,17 @@ import { make } from 'oulik';
 
 const select = make({
   userName: '',
-  favoriteFoods: new Array<string>(),
-  hobbies: new Array<string>()
+  favorite: {
+    foods: new Array<string>()
+    hobbies: new Array<string>()
+  },
 });       
 
 select(s => s.userName).replaceWith('Terence');
 
-select(s => s.favoriteFoods).replaceAll(['Indian', 'Sushi']);
+select(s => s.favorite.foods).replaceAll(['Indian', 'Sushi']);
 
-select(s => s.hobbies).replaceWhere(h => h === 'Coding').with('Programming');
+select(s => s.favorite.hobbies).replaceWhere(h => h === 'Coding').with('Programming');
 ```
 ***[✍️ Writing state](./docs/readme-write.md)*** - update your state using a minimal but powerful set of state-update utilities
 
