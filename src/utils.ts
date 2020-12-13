@@ -1,8 +1,8 @@
 import { errorMessages } from './consts';
 
-export function deepFreeze(o: any) {
+export function deepFreeze<T extends Object>(o: T): T {
   Object.freeze(o);
-  Object.getOwnPropertyNames(o).forEach(prop => {
+  (Object.getOwnPropertyNames(o) as Array<keyof T>).forEach(prop => {
     if (o.hasOwnProperty(prop)
       && o[prop] !== null
       && (typeof (o[prop]) === 'object' || typeof (o[prop]) === 'function')
@@ -13,6 +13,7 @@ export function deepFreeze(o: any) {
   return o;
 }
 
+export function deepCopy<T>(o: T): T;
 export function deepCopy(o: any): any {
   let newO;
   let i: any;

@@ -115,13 +115,13 @@ describe('Array', () => {
     const payload = { id: 1, value: 'one updated' };
     select(s => s.array).upsertWhere(e => e.id === 1).with(payload);
     expect(select(s => s.array).read()).toEqual([payload, { id: 2, value: 'two' }, { id: 3, value: 'three' }]);
-    expect(tests.currentAction.type).toEqual('array.0.replaceWhere()');
-    expect(tests.currentAction.payload.replacement).toEqual(payload);
+    expect(tests.currentAction.type).toEqual('array.0.upsertWhere()');
+    expect(tests.currentAction.payload).toEqual(payload);
     expect(tests.currentMutableState).toEqual(select().read());
     const payload2 = { id: 4, value: 'four inserted' };
     select(s => s.array).upsertWhere(e => e.id === 4).with(payload2);
     expect(select(s => s.array).read()).toEqual([payload, { id: 2, value: 'two' }, { id: 3, value: 'three' }, payload2]);
-    expect(tests.currentAction.type).toEqual('array.addAfter()');
+    expect(tests.currentAction.type).toEqual('array.upsertWhere()');
     expect(tests.currentMutableState).toEqual(select().read());
   })
 

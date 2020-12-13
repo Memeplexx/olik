@@ -117,17 +117,19 @@ function makeInternal<S, B extends boolean>(state: S, options: { supportsTags: b
   let devtoolsDispatchListener: ((action: { type: string, payload?: any }) => any) | undefined;
   const setDevtoolsDispatchListener = (listener: (action: { type: string, payload?: any }) => any) => devtoolsDispatchListener = listener;
   const replace = <C>(selector: (s: S) => C, name: string) => (assignment: C, tag?: string) => {
+    const payloadFrozen = deepFreeze(assignment);
+    const payloadCopied = deepCopy(assignment);
     const isRootUpdate = !pathReader.readSelector(selector).length;
     if (isRootUpdate) {
-      updateState<C>(selector, Array.isArray(currentState) ? `replaceAll()` : `replaceWith()`, assignment,
-        old => deepCopy(assignment),
+      updateState<C>(selector, Array.isArray(currentState) ? `replaceAll()` : `replaceWith()`, payloadFrozen,
+        old => deepCopy(payloadFrozen),
         old => {
           if (Array.isArray(old)) {
-            old.length = 0; Object.assign(old, assignment);
+            old.length = 0; Object.assign(old, payloadCopied);
           } else if (typeof (old) === 'boolean' || typeof (old) === 'number') {
-            pathReader.mutableStateCopy = assignment;
+            pathReader.mutableStateCopy = payloadCopied as any as S;
           } else {
-            Object.assign(old, assignment);
+            Object.assign(old, payloadCopied);
           }
         }, { overrideActionName: true, tag });
       return;
@@ -140,38 +142,46 @@ function makeInternal<S, B extends boolean>(state: S, options: { supportsTags: b
       segsCopy.forEach(seg => res = res[seg]);
       return res;
     }
-    updateState<C>(selectorRevised, `${pathSegments.join('.')}.${name}()`, assignment,
-      old => Array.isArray(old) ? old.map((o, i) => i === +lastSeg ? deepCopy(assignment) : o) : ({ ...old, [lastSeg]: deepCopy(assignment) }),
-      old => old[lastSeg] = assignment, { overrideActionName: true, tag });
+    updateState<C>(selectorRevised, `${pathSegments.join('.')}.${name}()`, payloadFrozen,
+      old => Array.isArray(old) ? old.map((o, i) => i === +lastSeg ? deepCopy(payloadFrozen) : o) : ({ ...old, [lastSeg]: deepCopy(payloadFrozen) }),
+      old => old[lastSeg] = payloadCopied, { overrideActionName: true, tag });
   };
   const action = <C, X extends C & ReadonlyArray<any>>(selector: (s: S) => C) => ({
     replaceWith: replace(selector, 'replaceWith'),
     replaceAll: replace(selector, 'replaceAll'),
-    patchWith: (assignment: Partial<C>, tag?: string) => updateState<C>(selector, 'patchWith', assignment,
-      old => ({ ...old, ...assignment }),
-      old => Object.assign(old, assignment), { tag }),
+    patchWith: (assignment: Partial<C>, tag?: string) => {
+      const payloadFrozen = deepFreeze(assignment);
+      const payloadCopied = deepCopy(assignment);
+      updateState<C>(selector, 'patchWith', assignment,
+        old => ({ ...old, ...payloadFrozen }),
+        old => Object.assign(old, payloadCopied), { tag });
+    },
     patchWhere: (where: (e: X) => boolean) => ({
       with: (assignment: Partial<X[0]>, tag?: string) => {
-        const itemIndices = (selector(currentState) as any as X).map((e, i) => where(e) ? i : null).filter(i => i !== null);
+        const payloadFrozen = deepFreeze(assignment);
+        const payloadCopied = deepCopy(assignment);
+        const itemIndices = (selector(currentState) as any as X).map((e, i) => where(e) ? i : null).filter(i => i !== null) as number[];
         const pathSegments = pathReader.readSelector(selector);
         return updateState<C>(selector, `${pathSegments.join('.')}${pathSegments.length ? '.' : ''}${itemIndices.join(',')}.patchWhere()`,
-          { patch: assignment, whereClause: where.toString() },
-          old => (old as any[]).map((o, i) => itemIndices.includes(i) ? { ...o, ...assignment } : o),
-          old => {
-            (old as any[]).forEach((el, idx) => {
-              if (itemIndices.includes(idx)) {
-                Object.assign(old[idx], assignment);
-              }
-            })
-          }, { overrideActionName: true, tag });
+          { patch: payloadFrozen, whereClause: where.toString() },
+          old => (old as any[]).map((o, i) => itemIndices.includes(i) ? { ...o, ...payloadFrozen } : o),
+          (old: any[]) => itemIndices.forEach(i => Object.assign(old[i], payloadCopied)), { overrideActionName: true, tag });
       }
     }),
-    addAfter: (assignment: X[0][], tag?: string) => updateState<C>(selector, 'addAfter', assignment,
-      old => [...old, ...(deepCopy(Array.isArray(assignment) ? assignment : [assignment]))],
-      old => old.push(...(Array.isArray(assignment) ? assignment : [assignment])), { tag }),
-    addBefore: (assignment: X[0][], tag?: string) => updateState<C>(selector, 'addBefore', assignment,
-      old => [...(deepCopy(Array.isArray(assignment) ? assignment : [assignment])), ...old],
-      old => old.unshift(...(Array.isArray(assignment) ? assignment : [assignment])), { tag }),
+    addAfter: (assignment: X[0][], tag?: string) => {
+      const payloadFrozen = deepFreeze(assignment);
+      const payloadCopied = deepCopy(assignment);
+      updateState<C>(selector, 'addAfter', payloadFrozen,
+        old => [...old, ...(deepCopy(Array.isArray(payloadFrozen) ? payloadFrozen : [payloadFrozen]))],
+        old => old.push(...(Array.isArray(payloadCopied) ? payloadCopied : [payloadCopied])), { tag });
+    },
+    addBefore: (assignment: X[0][], tag?: string) => {
+      const payloadFrozen = deepFreeze(assignment);
+      const payloadCopied = deepCopy(assignment);
+      updateState<C>(selector, 'addBefore', payloadFrozen,
+        old => [...(deepCopy(Array.isArray(payloadFrozen) ? payloadFrozen : [payloadFrozen])), ...old],
+        old => old.unshift(...(Array.isArray(payloadCopied) ? payloadCopied : [payloadCopied])), { tag })
+    },
     removeFirst: (tag?: string) => updateState<C>(selector, 'removeFirst', (selector(currentState) as any as X).slice(1),
       old => old.slice(1, old.length),
       old => old.shift(), { tag }),
@@ -202,34 +212,43 @@ function makeInternal<S, B extends boolean>(state: S, options: { supportsTags: b
     },
     upsertWhere: (criteria: (e: X[0]) => boolean) => ({
       with: (element: X[0], tag?: string) => {
+        const payloadFrozen = deepFreeze(element);
+        const payloadCopied = deepCopy(element);
         const itemIndices = (selector(currentState) as any as X).map((e, i) => criteria(e) ? i : null).filter(i => i !== null);
         if (itemIndices.length > 1) { throw new Error(errorMessages.UPSERT_MORE_THAN_ONE_MATCH); }
-        return itemIndices.length
-          ? (action(selector) as any).replaceWhere(criteria).with(element, tag)
-          : (action(selector) as any).addAfter([element], tag);
+        const found = itemIndices.length;
+        const indice = itemIndices[0];
+        updateState(selector, indice !== undefined ? `${indice}.upsertWhere` : 'upsertWhere', payloadFrozen,
+          (o: any[]) => found ? o.map((o, i) => i === indice ? payloadFrozen : o) : [...o, payloadFrozen],
+          (o: any[]) => found ? o[indice as number] = payloadCopied : o.push(payloadCopied))
       }
     }),
     mergeWhere: (criteria: (existingElement: X[0], newElement: X[0]) => boolean) => ({
       with: (elements: X, tag?: string) => {
-        updateState(selector, 'mergeWhere', elements, (old: X) => [
-          ...old.map(oe => elements.find(ne => criteria(oe, ne)) || oe),
-          ...elements.filter(ne => !old.some(oe => criteria(oe, ne)))
-        ], (old: any[]) => { old.forEach((oe, oi) => { const found = elements.find(ne => criteria(oe, ne)); if (found) { old[oi] = found; } });
-          elements.filter(ne => !old.some(oe => criteria(oe, ne))).forEach(ne => old.push(ne));
+        const payloadFrozen = deepFreeze(elements);
+        const payloadCopied = deepCopy(elements);
+        updateState(selector, 'mergeWhere', payloadFrozen, (old: X) => [
+          ...old.map(oe => payloadFrozen.find(ne => criteria(oe, ne)) || oe),
+          ...payloadFrozen.filter(ne => !old.some(oe => criteria(oe, ne)))
+        ], (old: any[]) => {
+          old.forEach((oe, oi) => { const found = payloadCopied.find(ne => criteria(oe, ne)); if (found) { old[oi] = deepCopy(found); } });
+          payloadCopied.filter(ne => !old.some(oe => criteria(oe, ne))).forEach(ne => old.push(ne));
         }, { tag })
       }
     }),
     replaceWhere: (criteria: (e: X[0]) => boolean) => ({
       with: (assignment: X[0], tag?: string) => {
+        const payloadFrozen = deepFreeze(assignment);
+        const payloadCopied = deepCopy(assignment);
         const itemIndices = (selector(currentState) as any as X).map((e, i) => criteria(e) ? i : null).filter(i => i !== null);
         const pathSegments = pathReader.readSelector(selector);
         return updateState<C>(selector, `${pathSegments.join('.')}${pathSegments.length ? '.' : ''}${itemIndices.join(',')}.replaceWhere()`,
-          { replacement: assignment, whereClause: criteria.toString() },
-          old => (old as any[]).map((o, i) => itemIndices.includes(i) ? deepCopy(assignment) : o),
+          { replacement: payloadFrozen, whereClause: criteria.toString() },
+          old => (old as any[]).map((o, i) => itemIndices.includes(i) ? deepCopy(payloadFrozen) : o),
           old => {
             (old as any[]).forEach((el, idx) => {
               if (itemIndices.includes(idx)) {
-                old[idx] = assignment;
+                old[idx] = payloadCopied;
               }
             })
           }, { overrideActionName: true, tag });
@@ -311,7 +330,7 @@ function makeInternal<S, B extends boolean>(state: S, options: { supportsTags: b
       payload,
     };
     tests.currentAction = actionToDispatch;
-    tests.currentMutableState = pathReader.mutableStateCopy;
+    tests.currentMutableState = pathReader.mutableStateCopy as any;
     if (devtoolsDispatchListener && (!updateOptions.tag || (updateOptions.tag !== 'dontTrackWithDevtools'))) {
       const dispatchToDevtools = (payload?: any[]) => {
         const action = payload ? { ...actionToDispatch, payload } : actionToDispatch;
