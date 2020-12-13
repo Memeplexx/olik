@@ -5,9 +5,11 @@ import {
   OptionsForMakingAStore,
   OptionsForMakingAStoreEnforcingTags,
   OptionsForReduxDevtools,
+  Selector,
   SelectorFromANestedStore,
   SelectorFromAStore,
   SelectorFromAStoreEnforcingTags,
+  SimpleObject,
   Store,
   StoreWhichIsNested,
   StoreWhichIsNestedInternal,
@@ -116,12 +118,12 @@ function makeInternal<S, B extends boolean>(state: S, options: { supportsTags: b
   let initialState = currentState;
   let devtoolsDispatchListener: ((action: { type: string, payload?: any }) => any) | undefined;
   const setDevtoolsDispatchListener = (listener: (action: { type: string, payload?: any }) => any) => devtoolsDispatchListener = listener;
-  const replace = <C>(selector: (s: S) => C, name: string) => (assignment: C, tag?: string) => {
+  const replace = <C>(selector: Selector<S, C>, name: string) => (assignment: C, tag?: string) => {
     const payloadFrozen = deepFreeze(assignment);
     const payloadCopied = deepCopy(assignment);
     const isRootUpdate = !pathReader.readSelector(selector).length;
     if (isRootUpdate) {
-      updateState<C>(selector, Array.isArray(currentState) ? `replaceAll()` : `replaceWith()`, payloadFrozen,
+      updateState<C, C>(selector, Array.isArray(currentState) ? `replaceAll()` : `replaceWith()`, payloadFrozen,
         old => deepCopy(payloadFrozen),
         old => {
           if (Array.isArray(old)) {
@@ -137,22 +139,22 @@ function makeInternal<S, B extends boolean>(state: S, options: { supportsTags: b
     const pathSegments = pathReader.pathSegments;
     const lastSeg = pathSegments[pathSegments.length - 1] || '';
     const segsCopy = pathSegments.slice(0, pathSegments.length - 1);
-    const selectorRevised = (state: any) => {
-      let res = state;
+    const selectorRevised = (((state: S) => {
+      let res = state as SimpleObject;
       segsCopy.forEach(seg => res = res[seg]);
       return res;
-    }
-    updateState<C>(selectorRevised, `${pathSegments.join('.')}.${name}()`, payloadFrozen,
+    })) as Selector<S, C>;
+    updateState<C, C>(selectorRevised, `${pathSegments.join('.')}.${name}()`, payloadFrozen,
       old => Array.isArray(old) ? old.map((o, i) => i === +lastSeg ? deepCopy(payloadFrozen) : o) : ({ ...old, [lastSeg]: deepCopy(payloadFrozen) }),
-      old => old[lastSeg] = payloadCopied, { overrideActionName: true, tag });
+      (old: SimpleObject) => old[lastSeg] = payloadCopied, { overrideActionName: true, tag });
   };
-  const action = <C, X extends C & ReadonlyArray<any>>(selector: (s: S) => C) => ({
+  const action = <C, X extends C & Array<any>>(selector: Selector<S, C, X>) => ({
     replaceWith: replace(selector, 'replaceWith'),
     replaceAll: replace(selector, 'replaceAll'),
     patchWith: (assignment: Partial<C>, tag?: string) => {
       const payloadFrozen = deepFreeze(assignment);
       const payloadCopied = deepCopy(assignment);
-      updateState<C>(selector, 'patchWith', assignment,
+      updateState<C, X>(selector, 'patchWith', assignment,
         old => ({ ...old, ...payloadFrozen }),
         old => Object.assign(old, payloadCopied), { tag });
     },
@@ -160,46 +162,48 @@ function makeInternal<S, B extends boolean>(state: S, options: { supportsTags: b
       with: (assignment: Partial<X[0]>, tag?: string) => {
         const payloadFrozen = deepFreeze(assignment);
         const payloadCopied = deepCopy(assignment);
-        const itemIndices = (selector(currentState) as any as X).map((e, i) => where(e) ? i : null).filter(i => i !== null) as number[];
+        const itemIndices = (selector(currentState) as X).map((e, i) => where(e) ? i : null).filter(i => i !== null) as number[];
         const pathSegments = pathReader.readSelector(selector);
-        return updateState<C>(selector, `${pathSegments.join('.')}${pathSegments.length ? '.' : ''}${itemIndices.join(',')}.patchWhere()`,
+        return updateState<C, X>(selector, `${pathSegments.join('.')}${pathSegments.length ? '.' : ''}${itemIndices.join(',')}.patchWhere()`,
           { patch: payloadFrozen, whereClause: where.toString() },
-          old => (old as any[]).map((o, i) => itemIndices.includes(i) ? { ...o, ...payloadFrozen } : o),
-          (old: any[]) => itemIndices.forEach(i => Object.assign(old[i], payloadCopied)), { overrideActionName: true, tag });
+          old => old.map((o, i) => itemIndices.includes(i) ? { ...o, ...payloadFrozen } : o),
+          old => itemIndices.forEach(i => Object.assign(old[i], payloadCopied)), { overrideActionName: true, tag });
       }
     }),
     addAfter: (assignment: X[0][], tag?: string) => {
       const payloadFrozen = deepFreeze(assignment);
       const payloadCopied = deepCopy(assignment);
-      updateState<C>(selector, 'addAfter', payloadFrozen,
+      updateState<C, X>(selector, 'addAfter', payloadFrozen,
         old => [...old, ...(deepCopy(Array.isArray(payloadFrozen) ? payloadFrozen : [payloadFrozen]))],
         old => old.push(...(Array.isArray(payloadCopied) ? payloadCopied : [payloadCopied])), { tag });
     },
     addBefore: (assignment: X[0][], tag?: string) => {
       const payloadFrozen = deepFreeze(assignment);
       const payloadCopied = deepCopy(assignment);
-      updateState<C>(selector, 'addBefore', payloadFrozen,
+      updateState<C, X>(selector, 'addBefore', payloadFrozen,
         old => [...(deepCopy(Array.isArray(payloadFrozen) ? payloadFrozen : [payloadFrozen])), ...old],
         old => old.unshift(...(Array.isArray(payloadCopied) ? payloadCopied : [payloadCopied])), { tag })
     },
-    removeFirst: (tag?: string) => updateState<C>(selector, 'removeFirst', (selector(currentState) as any as X).slice(1),
-      old => old.slice(1, old.length),
-      old => old.shift(), { tag }),
+    removeFirst: (tag?: string) => {
+      updateState<C, X>(selector, 'removeFirst', (selector(currentState) as any as X).slice(1),
+        old => old.slice(1, old.length),
+        old => old.shift(), { tag });
+    },
     removeLast: (tag?: string) => {
-      const selection = selector(currentState) as any as X;
-      updateState<C>(selector, 'removeLast', selection.slice(0, selection.length - 1),
+      const selection = selector(currentState) as X;
+      updateState<C, X>(selector, 'removeLast', selection.slice(0, selection.length - 1),
         old => old.slice(0, old.length - 1),
         old => old.pop(), { tag });
     },
-    removeAll: (tag?: string) => updateState<C>(selector, 'removeAll', null,
+    removeAll: (tag?: string) => updateState<C, X>(selector, 'removeAll', null,
       () => [],
       old => old.length = 0, { tag }),
     removeWhere: (predicate: (arg: X[0]) => boolean, tag?: string) => {
-      const itemIndices = (selector(currentState) as any as X).map((e, i) => predicate(e) ? i : null).filter(i => i !== null);
+      const itemIndices = (selector(currentState) as X).map((e, i) => predicate(e) ? i : null).filter(i => i !== null);
       const pathSegments = pathReader.readSelector(selector);
-      return updateState<C>(selector, `${pathSegments.join('.')}${pathSegments.length ? '.' : ''}${itemIndices.join(',')}.removeWhere()`,
-        { toRemove: (selector(currentState) as any as X).filter(predicate), whereClause: predicate.toString() },
-        old => old.filter((o: any) => !predicate(o)),
+      return updateState<C, X>(selector, `${pathSegments.join('.')}${pathSegments.length ? '.' : ''}${itemIndices.join(',')}.removeWhere()`,
+        { toRemove: (selector(currentState) as X).filter(predicate), whereClause: predicate.toString() },
+        old => old.filter(o => !predicate(o)),
         old => {
           const toRemove = old.filter(predicate);
           for (var i = 0; i < old.length; i++) {
@@ -214,23 +218,23 @@ function makeInternal<S, B extends boolean>(state: S, options: { supportsTags: b
       with: (element: X[0], tag?: string) => {
         const payloadFrozen = deepFreeze(element);
         const payloadCopied = deepCopy(element);
-        const itemIndices = (selector(currentState) as any as X).map((e, i) => criteria(e) ? i : null).filter(i => i !== null);
+        const itemIndices = (selector(currentState) as X).map((e, i) => criteria(e) ? i : null).filter(i => i !== null);
         if (itemIndices.length > 1) { throw new Error(errorMessages.UPSERT_MORE_THAN_ONE_MATCH); }
         const found = itemIndices.length;
         const indice = itemIndices[0];
-        updateState(selector, indice !== undefined ? `${indice}.upsertWhere` : 'upsertWhere', payloadFrozen,
-          (o: any[]) => found ? o.map((o, i) => i === indice ? payloadFrozen : o) : [...o, payloadFrozen],
-          (o: any[]) => found ? o[indice as number] = payloadCopied : o.push(payloadCopied))
+        updateState<C, X>(selector, indice !== undefined ? `${indice}.upsertWhere` : 'upsertWhere', payloadFrozen,
+          o => found ? o.map((o, i) => i === indice ? payloadFrozen : o) : [...o, payloadFrozen],
+          o => found ? o[indice as number] = payloadCopied : o.push(payloadCopied), { tag })
       }
     }),
     mergeWhere: (criteria: (existingElement: X[0], newElement: X[0]) => boolean) => ({
       with: (elements: X, tag?: string) => {
         const payloadFrozen = deepFreeze(elements);
         const payloadCopied = deepCopy(elements);
-        updateState(selector, 'mergeWhere', payloadFrozen, (old: X) => [
+        updateState<C, X>(selector, 'mergeWhere', payloadFrozen, old => [
           ...old.map(oe => payloadFrozen.find(ne => criteria(oe, ne)) || oe),
           ...payloadFrozen.filter(ne => !old.some(oe => criteria(oe, ne)))
-        ], (old: any[]) => {
+        ], old => {
           old.forEach((oe, oi) => { const found = payloadCopied.find(ne => criteria(oe, ne)); if (found) { old[oi] = deepCopy(found); } });
           payloadCopied.filter(ne => !old.some(oe => criteria(oe, ne))).forEach(ne => old.push(ne));
         }, { tag })
@@ -240,13 +244,13 @@ function makeInternal<S, B extends boolean>(state: S, options: { supportsTags: b
       with: (assignment: X[0], tag?: string) => {
         const payloadFrozen = deepFreeze(assignment);
         const payloadCopied = deepCopy(assignment);
-        const itemIndices = (selector(currentState) as any as X).map((e, i) => criteria(e) ? i : null).filter(i => i !== null);
+        const itemIndices = (selector(currentState) as X).map((e, i) => criteria(e) ? i : null).filter(i => i !== null);
         const pathSegments = pathReader.readSelector(selector);
-        return updateState<C>(selector, `${pathSegments.join('.')}${pathSegments.length ? '.' : ''}${itemIndices.join(',')}.replaceWhere()`,
+        return updateState<C, X>(selector, `${pathSegments.join('.')}${pathSegments.length ? '.' : ''}${itemIndices.join(',')}.replaceWhere()`,
           { replacement: payloadFrozen, whereClause: criteria.toString() },
-          old => (old as any[]).map((o, i) => itemIndices.includes(i) ? deepCopy(payloadFrozen) : o),
+          old => old.map((o, i) => itemIndices.includes(i) ? deepCopy(payloadFrozen) : o),
           old => {
-            (old as any[]).forEach((el, idx) => {
+            old.forEach((el, idx) => {
               if (itemIndices.includes(idx)) {
                 old[idx] = payloadCopied;
               }
@@ -268,29 +272,29 @@ function makeInternal<S, B extends boolean>(state: S, options: { supportsTags: b
     },
     defineRemoveNestedStore: (name: string, key: string) => () => {
       if (!nestedContainerStore) { return; }
-      if (Object.keys((currentState as any).nested[name]).length === 1) {
-        return updateState<C>((s: any) => s.nested, 'remove', { name, key }, old => {
-          const { [name]: toRemove, ...others } = old;
+      if (Object.keys((currentState as S & { nested: any }).nested[name]).length === 1) {
+        return updateState<C>(((s: S & { nested: any }) => s.nested) as Selector<S, C>, 'remove', { name, key }, old => {
+          const { [name]: toRemove, ...others } = old as SimpleObject;
           return others;
-        }, s => {
+        }, (s: SimpleObject) => {
           delete s[name];
         })
       } else {
-        return updateState<C>((s: any) => s.nested[name], 'remove', key, old => {
-          const { [key]: toRemove, ...others } = old;
+        return updateState<C>(((s: S & { nested: any }) => s.nested[name]) as Selector<S, C>, 'remove', key, old => {
+          const { [key]: toRemove, ...others } = old as SimpleObject;
           return others;
-        }, s => {
+        }, (s: SimpleObject) => {
           delete s[key];
         })
       }
     },
-    defineReset: (initState: any) => () => replace(e => selector(e), 'reset')(initState),
+    defineReset: (initState: C) => () => replace((e => selector(e)) as Selector<S, C>, 'reset')(initState),
   } as any as Store<C, B>);
 
-  const storeResult = <C = S>(selector: ((s: DeepReadonly<S>) => C) = (s => s as any as C)) => {
-    const selectorMod = selector as (s: S) => C;
+  const storeResult = <X extends C & Array<any>, C = S>(selector: ((s: DeepReadonly<S>) => C) = (s => s as any as C)) => {
+    const selectorMod = selector as Selector<S, C, X>;
     selectorMod(currentState);
-    return action(selectorMod);
+    return action<C, X>(selectorMod);
   };
 
   const previousAction: {
@@ -305,12 +309,12 @@ function makeInternal<S, B extends boolean>(state: S, options: { supportsTags: b
     debounceTimeout: 0,
   };
 
-  function updateState<C>(
-    selector: (s: S) => C,
+  function updateState<C, X extends C = C>(
+    selector: Selector<S, C, X>,
     actionName: string,
     payload: any,
-    action: (newNode: any) => any,
-    mutator: (newNode: any) => any,
+    action: (newNode: X) => any,
+    mutator: (newNode: X) => any,
     updateOptions: {
       overrideActionName?: boolean,
       tag?: string,
@@ -321,7 +325,7 @@ function makeInternal<S, B extends boolean>(state: S, options: { supportsTags: b
     const pathSegments = pathReader.readSelector(selector);
     const previousState = currentState;
     const result = Object.freeze(copyObject(currentState, { ...currentState }, pathSegments.slice(), action));
-    mutator(selector(pathReader.mutableStateCopy));
+    mutator(selector(pathReader.mutableStateCopy) as any as X);
     currentState = result;
     notifySubscribers(previousState, result);
     const actionToDispatch = {

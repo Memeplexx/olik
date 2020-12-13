@@ -346,6 +346,10 @@ export type StoreWhichIsNestedInternal<S, C> = Store<C, false> & {
   defineRemoveNestedStore: (name: string, key: string) => () => any;
 } & StoreWhichIsNested<C>;
 
+export type SimpleObject = { [key: string]: any };
+
+export type Selector<S, C, X = C> = X extends C & ReadonlyArray<any> ? (s: S) => X : (s: S) => C;
+
 /**
  * A function which selects from a nested store
  */
