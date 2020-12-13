@@ -1,6 +1,6 @@
 {
   "name": "oulik",
-  "version": "0.0.50",
+  "version": "0.0.52",
   "description": "",
   "main": "dist/cjs/oulik.js",
   "module": "dist/esm/oulik.js",

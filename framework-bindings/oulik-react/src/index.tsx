@@ -1,4 +1,4 @@
-import { Store, FetchState, Unsubscribable, StoreWhichIsNested, makeNested, SelectorFromANestedStore, } from 'oulik';
+import { Store, FetchState, Unsubscribable, SelectorFromANestedStore, } from 'oulik';
 import React, { DependencyList } from 'react';
 
 export * from 'oulik';

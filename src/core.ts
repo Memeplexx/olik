@@ -67,7 +67,7 @@ export function makeNested<L>(state: L, options: { name: string, storeKey?: stri
   if (!nestedContainerStore) {
     return (<C = L>(selector?: (arg: DeepReadonly<L>) => C) => (selector
       ? makeInternal(state, { devtools: { name }, supportsTags: false })(selector)
-      : null)) as any as SelectorFromANestedStore<L>;
+      : null)) as SelectorFromANestedStore<L>;
   }
   const generateKey = (arg?: string) => (!arg && !options.storeKey) ? '0' :
     !options.storeKey ? (+arg! + 1).toString() : typeof (options.storeKey) === 'function' ? options.storeKey(arg) : options.storeKey;
@@ -96,7 +96,7 @@ export function makeNested<L>(state: L, options: { name: string, storeKey?: stri
     lStore.removeFromContainingStore = lStore.defineRemoveNestedStore(name, key);
     lStore.reset = lStore.defineReset(state);
     return lStore as StoreWhichIsNested<C>;
-  }) as any as SelectorFromANestedStore<L>;
+  }) as SelectorFromANestedStore<L>;
 }
 
 function makeInternalRootStore<S, B extends boolean>(state: S, options: { containerForNestedStores?: boolean, supportsTags: boolean, devtools?: OptionsForReduxDevtools | false, tagSanitizer?: (tag: string) => string }) {
@@ -185,7 +185,7 @@ function makeInternal<S, B extends boolean>(state: S, options: { supportsTags: b
         old => old.unshift(...(Array.isArray(payloadCopied) ? payloadCopied : [payloadCopied])), { tag })
     },
     removeFirst: (tag?: string) => {
-      updateState<C, X>(selector, 'removeFirst', (selector(currentState) as any as X).slice(1),
+      updateState<C, X>(selector, 'removeFirst', (selector(currentState) as X).slice(1),
         old => old.slice(1, old.length),
         old => old.shift(), { tag });
     },
@@ -325,7 +325,7 @@ function makeInternal<S, B extends boolean>(state: S, options: { supportsTags: b
     const pathSegments = pathReader.readSelector(selector);
     const previousState = currentState;
     const result = Object.freeze(copyObject(currentState, { ...currentState }, pathSegments.slice(), action));
-    mutator(selector(pathReader.mutableStateCopy) as any as X);
+    mutator(selector(pathReader.mutableStateCopy) as X);
     currentState = result;
     notifySubscribers(previousState, result);
     const actionToDispatch = {

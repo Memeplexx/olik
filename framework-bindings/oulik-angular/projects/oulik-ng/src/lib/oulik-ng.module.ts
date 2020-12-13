@@ -5,6 +5,19 @@ import { shareReplay } from 'rxjs/operators';
 
 export * from 'oulik';
 
+/**
+ * Allows you to observe a specific part of your store
+ * ```
+ * @Component({
+ *   template: `
+ *   <div *ngFor="let todo of todos$ | async">{{todo}}</div>
+ * `,
+ * })
+ * export class MyComponent {
+ *   todos$ = observe(select(s => s.todos));
+ * }
+ * ```
+ */
 export function observe<C, B extends boolean>(
   store: Store<C, B>,
 ) {
@@ -17,6 +30,24 @@ export function observe<C, B extends boolean>(
   );
 }
 
+/**
+ * Wraps a Fetch inside an Observable which can be consumed by your component template
+ * ```
+ * export class MyComponent {
+ *   constructor(
+ *     private http: HttpClient,
+ *   ){}
+ *   // This part should probably be in another class, eg. ApiService
+ *   fetchTodos = createFetcher({
+ *     onStore: select(s => s.todos),
+ *     getData: () => this.http.get<Todo>('https://www.example.com/todos'),
+ *     cacheFor: 10
+ *   });
+ *   // Here is the important bit
+ *   todos$ = observeFetch(() => this.fetchTodos());
+ * }
+ * ```
+ */
 export function observeFetch<S, C, P, B extends boolean>(
   getFetch: () => FetchState<S, C, P, B>,
 ) {
@@ -67,12 +98,32 @@ export function observeFetch<S, C, P, B extends boolean>(
   );
 }
 
+/**
+ * To be used inside a Resolver to fetch data via a Fetcher
+ * ```
+ * export class MyResolver implements Resolver<any> {
+ *   constructor(
+ *     private http: HttpClient,
+ *   ){}
+ *   // This part should probably be in another class, eg. ApiService
+ *   fetchTodos = createFetcher({
+ *     onStore: select(s => s.todos),
+ *     getData: () => this.http.get<Todo>('https://www.example.com/todos'),
+ *     cacheFor: 10
+ *   });
+ *   // Here is the important bit
+ *   resolve(route: ActivatedRouteSnapshot, state: RouterStateSnapshot) {
+ *     return resolve(() => this.fetchTodos());
+ *   }
+ * }
+ * ```
+ */
 export function resolve<S, C, P, B extends boolean>(
   getFetch: () => FetchState<S, C, P, B>,
 ) {
   return new Observable<C>(observer => {
     const fetchState = getFetch();
-    const changeSubscription = fetchState.onChangeOnce(() => {
+    fetchState.onChangeOnce().then(() => {
       if (fetchState.status === 'resolved') {
         observer.next(fetchState.data);
         observer.complete();
@@ -80,7 +131,6 @@ export function resolve<S, C, P, B extends boolean>(
         throw new Error(fetchState.error);
       }
     });
-    return () => changeSubscription.unsubscribe();
   });
 }
 
