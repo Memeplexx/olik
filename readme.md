@@ -21,8 +21,8 @@ import { make } from 'oulik';
 const select = make({
   userName: '',
   favorite: {
-    foods: new Array<string>()
-    hobbies: new Array<string>()
+    foods: new Array<string>(),
+    hobbies: new Array<string>(),
   },
 });       
 
