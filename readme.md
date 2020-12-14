@@ -27,19 +27,19 @@ const select = make({
 });       
 
 select(s => s.userName).replaceWith('Terence');
-/* DEVTOOLS DISPLAYS: { 
+/* { 
   type: 'userName.replaceWith()', 
   replacement: 'Terence',
 } */
 
 select(s => s.favorite.foods).replaceAll(['Indian', 'Sushi']);
-/* DEVTOOLS DISPLAYS: {
+/* {
   type: 'favorite.foods.replaceAll()',
   replacement: ['Indian', 'Sushi'],
 } */
 
 select(s => s.favorite.hobbies).replaceWhere(h => h === 'Coding').with('Programming');
-/* DEVTOOLS DISPLAYS: {
+/* {
   type: 'favorite.hobbies.3.replaceWhere()',
   toReplace: 'Coding',
   replacement: 'Programming',
