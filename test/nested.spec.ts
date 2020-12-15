@@ -73,10 +73,10 @@ describe('Nested', () => {
     };
     const select = make(initialState, { containerForNestedStores: true });
     const name = 'myComp';
-    const nestedStore = makeNested({ one: '' }, { name });
+    const nestedStore1 = makeNested({ one: '' }, { name });
     const nestedStore2 = makeNested({ one: '' }, { name });
     expect(select().read()).toEqual({ test: '', nested: { [name]: { '0': { one: '' }, '1': { one: '' } } } });
-    nestedStore().removeFromContainingStore();
+    nestedStore1().removeFromContainingStore();
     expect(select().read()).toEqual({ test: '', nested: { [name]: { '1': { one: '' } } } });
     nestedStore2().removeFromContainingStore();
     expect(select().read()).toEqual({ test: '', nested: { } });

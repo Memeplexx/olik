@@ -46,7 +46,7 @@ export type DeepReadonlyObject<T> = {
 /**
  * The state of a current fetch
  */
-export interface FetchState<S, C, P, B extends boolean> {
+export interface FetchState<C, P, B extends boolean> {
   /**
    * The current resolved data, if any.
    */
@@ -74,23 +74,23 @@ export interface FetchState<S, C, P, B extends boolean> {
   /**
    * Takes a function that will be invoked whenever the status changes
    */
-  onChange: (listener: (fetch: FetchState<S, C, P, B>) => any) => Unsubscribable;
+  onChange: (listener: (fetch: FetchState<C, P, B>) => any) => Unsubscribable;
   /**
    * Returns the underlying promise associated with this fetch
    */
-  onChangeOnce: () => Promise<FetchState<S, C, P, B>>;
+  onChangeOnce: () => Promise<FetchState<C, P, B>>;
   /**
    * Takes a function that will be invoked whenever the cache expires
    */
-  onCacheExpired: (listener: (fetch: FetchState<S, C, P, B>) => any) => Unsubscribable;
+  onCacheExpired: (listener: (fetch: FetchState<C, P, B>) => any) => Unsubscribable;
   /**
    * Returns a promise which will resolve when the cache next expires
    */
-  onCacheExpiredOnce: () => Promise<FetchState<S, C, P, B>>;
+  onCacheExpiredOnce: () => Promise<FetchState<C, P, B>>;
   /**
    * Invalidates the cache (if any data is cached) and re-fetches
    */
-  refetch: FetchFunction<S, C, P, B>;
+  refetch: FetchFunction<C, P, B>;
 };
 
 /**
@@ -125,17 +125,17 @@ export type OptionsForCreatingAFetcher<C, B extends boolean, X extends (params: 
 /**
  * A function which fetches data, but takes no argument
  */
-export type FetchFunctionTakingNoArg<S, C, P, B extends boolean> = (tag: Tag<B>) => FetchState<S, C, P, B>;
+export type FetchFunctionTakingNoArg<C, P, B extends boolean> = (tag: Tag<B>) => FetchState<C, P, B>;
 
 /**
  * A function which fetches data and takes an argument
  */
-export type FetchFunctionTakingAnArg<S, C, P, B extends boolean> = (params: FetchArgument<P>, tag: Tag<B>) => FetchState<S, C, P, B>;
+export type FetchFunctionTakingAnArg<C, P, B extends boolean> = (params: FetchArgument<P>, tag: Tag<B>) => FetchState<C, P, B>;
 
 /**
  * A function returned when a fetcher is first created. This function can then be invoked when a fetch is needed.
  */
-export type FetchFunction<S, C, P, B extends boolean> = P extends void ? FetchFunctionTakingNoArg<S, C, P, B> : FetchFunctionTakingAnArg<S, C, P, B>;
+export type FetchFunction<C, P, B extends boolean> = P extends void ? FetchFunctionTakingNoArg<C, P, B> : FetchFunctionTakingAnArg<C, P, B>;
 
 /**
  * An object which is capable of storing and updating state which is in the shape of an array of primitives

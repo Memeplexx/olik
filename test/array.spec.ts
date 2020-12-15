@@ -1,4 +1,3 @@
-import { createFetcher } from '../src';
 import { errorMessages } from '../src/consts';
 import { make } from '../src/core';
 import { tests } from '../src/tests';

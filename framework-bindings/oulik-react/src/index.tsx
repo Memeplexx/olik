@@ -21,7 +21,9 @@ export * from 'oulik';
  *   deriveFrom(
  *     select(s => s.some.property),
  *     select(s => s.some.other.property),
- *   ).usingExpensiveCalc((someProperty, someOtherProperty) => someProperty * someOtherProperty)
+ *   ).usingExpensiveCalc((someProperty, someOtherProperty) => {
+ *     return someProperty * someOtherProperty;
+ *   })
  * ));
  * ```
  */
@@ -88,10 +90,17 @@ export function useFetcher<S, C, P, B extends boolean>(
  * A hook for creating a store which is capable of being nested inside your application store
  * @param getStore a no-args function which returns a new store
  * 
- * EXAMPLE
- * ```typescript
- * const store = useStore(() => makeNested({ someString: '', someNumber: 0 }));
+ * Note that in order for your store to be nested in the application store, you will need to
+ * mark it as follows:
  * ```
+ * const select = make({...}, { containerForNestedStores: true });
+ * ```
+ * Then, in your component, you can use this function as follows:
+ * ```
+ * const select = useStore(() => makeNested({...}, { name: 'MyComponent' }));
+ * ```
+ * Finally, note that if your application store is not marked with `containerForNestedStores`,
+ * then your component will register a new store within the devtools with the name your provided,
  */
 export function useStore<C>(
   getStore: () => SelectorFromANestedStore<C>,
@@ -108,13 +117,13 @@ export function useStore<C>(
  * @param store The store that was previously defined using `make()` or `makeEnforceTags()`
  * @param mapper a function which takes in state from the store, and returns state which will be used
  * 
- * EXAMPLE
- * ```typescript
+ * The following example component receives props from the store as well as from the parent component
+ * ```
  * class Todo extends React.Component<{ todos: Todo[], userName: string, someProp: number }> {
  *   // ...
  * }
  *
- * export default mapStateToProps(select(), (state, ownProps: { someProp: string }) => ({
+ * export default mapStateToProps(select(s => s.some.state), (state, ownProps: { someProp: string }) => ({
  *   todos: state.todos,
  *   userName: state.user.firstName,
  *   someProp: ownProps.someProp,
