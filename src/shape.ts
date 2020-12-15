@@ -6,12 +6,17 @@ export type FetcherStatus = 'pristine' | 'rejected' | 'resolved' | 'resolving';
 /**
  * A tag which may need to be supplied when performing a state update
  */
-export type Tag<B> = B extends true ? string : void;
+export type Tag<B> = B extends 'tagged' ? string : void;
 
 /**
  * An argument which can be supplied when fetching data
  */
 export type FetchArgument<T> = T extends infer T ? T : void;
+
+/**
+ * Whether updates to the store requires tags or not
+ */
+export type Trackability = 'tagged' | 'untagged';
 
 /**
  * An object which can be unsubscribed from
@@ -46,7 +51,7 @@ export type DeepReadonlyObject<T> = {
 /**
  * The state of a current fetch
  */
-export interface FetchState<C, P, B extends boolean> {
+export interface FetchState<C, P, Trackability> {
   /**
    * The current resolved data, if any.
    */
@@ -62,7 +67,7 @@ export interface FetchState<C, P, B extends boolean> {
   /**
    * The store associated with this fetch
    */
-  store: Store<C, B>;
+  store: Store<C, Trackability>;
   /**
    * The argument that was used in the request (if any)
    */
@@ -74,33 +79,33 @@ export interface FetchState<C, P, B extends boolean> {
   /**
    * Takes a function that will be invoked whenever the status changes
    */
-  onChange: (listener: (fetch: FetchState<C, P, B>) => any) => Unsubscribable;
+  onChange: (listener: (fetch: FetchState<C, P, Trackability>) => any) => Unsubscribable;
   /**
    * Returns the underlying promise associated with this fetch
    */
-  onChangeOnce: () => Promise<FetchState<C, P, B>>;
+  onChangeOnce: () => Promise<FetchState<C, P, Trackability>>;
   /**
    * Takes a function that will be invoked whenever the cache expires
    */
-  onCacheExpired: (listener: (fetch: FetchState<C, P, B>) => any) => Unsubscribable;
+  onCacheExpired: (listener: (fetch: FetchState<C, P, Trackability>) => any) => Unsubscribable;
   /**
    * Returns a promise which will resolve when the cache next expires
    */
-  onCacheExpiredOnce: () => Promise<FetchState<C, P, B>>;
+  onCacheExpiredOnce: () => Promise<FetchState<C, P, Trackability>>;
   /**
    * Invalidates the cache (if any data is cached) and re-fetches
    */
-  refetch: FetchFunction<C, P, B>;
+  refetch: FetchFunction<C, P, Trackability>;
 };
 
 /**
  * An object which can be passed in when creating a fetcher
  */
-export type OptionsForCreatingAFetcher<C, B extends boolean, X extends (params: any) => Promise<C>> = {
+export type OptionsForCreatingAFetcher<C, Trackability, X extends (params: any) => Promise<C>> = {
   /**
    * The store that you want this fetcher to read to and write from
    */
-  onStore: Store<C, B>,
+  onStore: Store<C, Trackability>,
   /**
    * A function returning a promise to fetch asynchronous data, for example:
    * ```
@@ -115,7 +120,7 @@ export type OptionsForCreatingAFetcher<C, B extends boolean, X extends (params: 
    * setData: arg => arg.store.addAfter(arg.data)
    * ```
    */
-  setData?: (args: { store: Store<C, B>, data: C, param: Parameters<X>[0], tag?: string }) => any,
+  setData?: (args: { store: Store<C, Trackability>, data: C, param: Parameters<X>[0], tag?: string }) => any,
   /**
    * How long, in milliseconds, you want the library to cache fetch responses.
    */
@@ -125,22 +130,22 @@ export type OptionsForCreatingAFetcher<C, B extends boolean, X extends (params: 
 /**
  * A function which fetches data, but takes no argument
  */
-export type FetchFunctionTakingNoArg<C, P, B extends boolean> = (tag: Tag<B>) => FetchState<C, P, B>;
+export type FetchFunctionTakingNoArg<C, P, Trackability> = (tag: Tag<Trackability>) => FetchState<C, P, Trackability>;
 
 /**
  * A function which fetches data and takes an argument
  */
-export type FetchFunctionTakingAnArg<C, P, B extends boolean> = (params: FetchArgument<P>, tag: Tag<B>) => FetchState<C, P, B>;
+export type FetchFunctionTakingAnArg<C, P, Trackability> = (params: FetchArgument<P>, tag: Tag<Trackability>) => FetchState<C, P, Trackability>;
 
 /**
  * A function returned when a fetcher is first created. This function can then be invoked when a fetch is needed.
  */
-export type FetchFunction<C, P, B extends boolean> = P extends void ? FetchFunctionTakingNoArg<C, P, B> : FetchFunctionTakingAnArg<C, P, B>;
+export type FetchFunction<C, P, Trackability> = P extends void ? FetchFunctionTakingNoArg<C, P, Trackability> : FetchFunctionTakingAnArg<C, P, Trackability>;
 
 /**
  * An object which is capable of storing and updating state which is in the shape of an array of primitives
  */
-type StoreForAnArrayOfPrimitives<C extends DeepReadonlyArray<any>, B extends boolean> = {
+type StoreForAnArrayOfPrimitives<C extends DeepReadonlyArray<any>, Trackability> = {
   /**
    * Appends an element, or an array of elements, onto the end of the array
    * ```
@@ -148,7 +153,7 @@ type StoreForAnArrayOfPrimitives<C extends DeepReadonlyArray<any>, B extends boo
    *   .addAfter(newTodos);
    * ```
    */
-  addAfter: (elements: C[0] | C[0][], tag: Tag<B>) => void,
+  addAfter: (elements: C[0] | C[0][], tag: Tag<Trackability>) => void,
   /**
    * Prepends an element, or an array of elements, into the beginning of the array
    * ```
@@ -156,7 +161,7 @@ type StoreForAnArrayOfPrimitives<C extends DeepReadonlyArray<any>, B extends boo
    *   .addBefore(newTodos);
    * ```
    */
-  addBefore: (elements: C[0] | C[0][], tag: Tag<B>) => void,
+  addBefore: (elements: C[0] | C[0][], tag: Tag<Trackability>) => void,
   /**
    * Removes all elements from the array
    * ```
@@ -164,7 +169,7 @@ type StoreForAnArrayOfPrimitives<C extends DeepReadonlyArray<any>, B extends boo
    *   .removeAll();
    * ```
    */
-  removeAll: (tag: Tag<B>) => void,
+  removeAll: (tag: Tag<Trackability>) => void,
   /**
    * Deletes the first element from the array
    * ```
@@ -172,7 +177,7 @@ type StoreForAnArrayOfPrimitives<C extends DeepReadonlyArray<any>, B extends boo
    *   .removeFirst();
    * ```
    */
-  removeFirst: (tag: Tag<B>) => void,
+  removeFirst: (tag: Tag<Trackability>) => void,
   /**
    * Deletes the last element from the array
    * ```
@@ -180,7 +185,7 @@ type StoreForAnArrayOfPrimitives<C extends DeepReadonlyArray<any>, B extends boo
    *   .removeLast();
    * ```
    */
-  removeLast: (tag: Tag<B>) => void,
+  removeLast: (tag: Tag<Trackability>) => void,
   /**
    * Delete elements which match a specific condition
    * ```
@@ -188,7 +193,7 @@ type StoreForAnArrayOfPrimitives<C extends DeepReadonlyArray<any>, B extends boo
    *   .removeWhere(t => t.status === 'done')
    * ```
    */
-  removeWhere: (where: (arg: C[0]) => boolean, tag: Tag<B>) => void,
+  removeWhere: (where: (arg: C[0]) => boolean, tag: Tag<Trackability>) => void,
   /**
    * Substitutes all elements with a new array of elements
    * ```
@@ -196,7 +201,7 @@ type StoreForAnArrayOfPrimitives<C extends DeepReadonlyArray<any>, B extends boo
    *   .replaceAll(newTodos);
    * ```
    */
-  replaceAll: (replacement: C, tag: Tag<B>) => void,
+  replaceAll: (replacement: C, tag: Tag<Trackability>) => void,
   /**
    * Substitute elements which match a specific condition
    * ```
@@ -205,7 +210,7 @@ type StoreForAnArrayOfPrimitives<C extends DeepReadonlyArray<any>, B extends boo
    *   .with({ id: 5, text: 'bake cookies' });
    * ```
    */
-  replaceWhere: (where: (element: C[0]) => boolean) => { with: (element: C[0], tag: Tag<B>) => void },
+  replaceWhere: (where: (element: C[0]) => boolean) => { with: (element: C[0], tag: Tag<Trackability>) => void },
   /**
    * Substitutes or appends an element depending on whether or not it can be found.
    * Note that if more than one element is found which matches the criteria specified in the 'where' clause, an error will be thrown
@@ -215,7 +220,7 @@ type StoreForAnArrayOfPrimitives<C extends DeepReadonlyArray<any>, B extends boo
    *   .with({ id: 5, text: 'bake cookies' });
    * ```
    */
-  upsertWhere: (where: (element: C[0]) => boolean) => { with: (element: C[0], tag: Tag<B>) => void },
+  upsertWhere: (where: (element: C[0]) => boolean) => { with: (element: C[0], tag: Tag<Trackability>) => void },
   /**
    * Merges the supplied array into the existing array.  
    * Any supplied elements will either replace their corresponding element in the store (if a match could be found) or else they will be appended to the store array.  
@@ -225,13 +230,13 @@ type StoreForAnArrayOfPrimitives<C extends DeepReadonlyArray<any>, B extends boo
    *   .with(newTodosArray);
    * ```
    */
-  mergeWhere: (where: (existingElement: C[0], newElement: C[0]) => boolean) => { with: (elements: C, tag: Tag<B>) => void },
+  mergeWhere: (where: (existingElement: C[0], newElement: C[0]) => boolean) => { with: (elements: C, tag: Tag<Trackability>) => void },
 }
 
 /**
  * An object which is capable of storing and updating state which is in the shape of an array
  */
-export type StoreForAnArray<C extends DeepReadonlyArray<any>, B extends boolean> = {
+export type StoreForAnArray<C extends DeepReadonlyArray<any>, Trackability> = {
   /**
    * Partially updates zero or more elements which match a specific condition
    * ```
@@ -240,13 +245,13 @@ export type StoreForAnArray<C extends DeepReadonlyArray<any>, B extends boolean>
    *   .with({ status: 'todo' });
    * ```
    */
-  patchWhere: (where: (element: C[0]) => boolean) => { with: (element: Partial<C[0]>, tag: Tag<B>) => void },
-} & StoreForAnArrayOfPrimitives<C, B>;
+  patchWhere: (where: (element: C[0]) => boolean) => { with: (element: Partial<C[0]>, tag: Tag<Trackability>) => void },
+} & StoreForAnArrayOfPrimitives<C, Trackability>;
 
 /**
  * An object which is capable of storing and updating state which is in the shape of a primitive
  */
-export type StoreForAPrimitive<C extends any, B extends boolean> = {
+export type StoreForAPrimitive<C extends any, Trackability> = {
   /**
    * Substitutes the primitive value
    * ```
@@ -254,13 +259,13 @@ export type StoreForAPrimitive<C extends any, B extends boolean> = {
    *   .replaceWith(33)
    * ```
    */
-  replaceWith: (replacement: C, tag: Tag<B>) => void,
+  replaceWith: (replacement: C, tag: Tag<Trackability>) => void,
 }
 
 /**
  * An object which is capable of storing and updating state which is in the shape of an object
  */
-export type StoreForAnObject<C extends any, B extends boolean> = {
+export type StoreForAnObject<C extends any, Trackability> = {
   /**
    * Partially updates the object
    * ```
@@ -268,8 +273,8 @@ export type StoreForAnObject<C extends any, B extends boolean> = {
    *   .patchWith({ firstName: 'James', age: 33 })
    * ```
    */
-  patchWith: (partial: Partial<C>, tag: Tag<B>) => void,
-} & StoreForAPrimitive<C, B>;
+  patchWith: (partial: Partial<C>, tag: Tag<Trackability>) => void,
+} & StoreForAPrimitive<C, Trackability>;
 
 /**
  * An object which is capable of reading from and listening to changes made to a certain piece of state
@@ -293,18 +298,18 @@ export type StoreWhichIsReadable<C> = {
 /**
  * An object which is capable of resetting its internal state
  */
-export type StoreWhichIsResettable<C extends any, B extends boolean> = {
+export type StoreWhichIsResettable<C extends any, Trackability> = {
   /**
    * Reverts the current state to how it was when the store was initialized.
    * Beware that if this store is marked as a `containerForNestedStores`, then all nested stores will also be removed
    */
-  reset: (tag: Tag<B>) => void,
+  reset: (tag: Tag<Trackability>) => void,
 } & StoreWhichIsReadable<C>;
 
 /**
  * An object which is capable of storing nested stores
  */
-export type StoreWhichMayContainNestedStores<S, C, B extends boolean> = StoreForAnObject<C, B> & StoreWhichIsReadable<C> & {
+export type StoreWhichMayContainNestedStores<S, C, Trackability> = StoreForAnObject<C, Trackability> & StoreWhichIsReadable<C> & {
   renew: (state: S) => void;
   reset: () => void;
 };
@@ -312,20 +317,20 @@ export type StoreWhichMayContainNestedStores<S, C, B extends boolean> = StoreFor
 /**
  * An object which is capable of managing states of various shapes
  */
-export type Store<C, B extends boolean> = ([C] extends undefined ? any :
-    [C] extends DeepReadonlyArray<object[]> ? StoreForAnArray<[C][0], B> :
-    [C] extends DeepReadonlyArray<any[]> ? StoreForAnArrayOfPrimitives<[C][0], B> :
-    [C] extends [object] ? StoreForAnObject<C, B> : StoreForAPrimitive<C, B>) & StoreWhichIsResettable<C, B>;
+export type Store<C, Trackability> = ([C] extends undefined ? any :
+    [C] extends DeepReadonlyArray<object[]> ? StoreForAnArray<[C][0], Trackability> :
+    [C] extends DeepReadonlyArray<any[]> ? StoreForAnArrayOfPrimitives<[C][0], Trackability> :
+    [C] extends [object] ? StoreForAnObject<C, Trackability> : StoreForAPrimitive<C, Trackability>) & StoreWhichIsResettable<C, Trackability>;
 
 /**
  * An object which support state updates which do not require tags
  */
-export type StoreWhichDoesntEnforceTags<C> = Store<C, false>;
+export type StoreWhichDoesntEnforceTags<C> = Store<C, 'untagged'>;
 
 /**
  * An object which support state updates which require tags
  */
-export type StoreWhichEnforcesTags<C> = Store<C, true>;
+export type StoreWhichEnforcesTags<C> = Store<C, 'tagged'>;
 
 /**
  * An object which is capable of managing state, but which can also be nested within another store

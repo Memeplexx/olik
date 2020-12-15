@@ -95,8 +95,7 @@ export function createPathReader<S extends Object>(state: S) {
                 }
                 return initialize(found);
               } else {
-                throw new Error(
-                  `'${prop}()' is not allowed. If you're trying to filter elements, rather use a library function eg. 'select(s => s.todos).removeWhere(e => e.status === 'done')'`);
+                throw new Error(errorMessages.ILLEGAL_FUNCTION_INVOKED_WITHIN_SELECTOR(prop));
               }
             };
           }

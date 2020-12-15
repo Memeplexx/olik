@@ -48,4 +48,10 @@ describe('Root', () => {
     expect(tests.currentMutableState).toEqual(select().read());
   })
 
+  it('should replaceWhere root array', () => {
+    const select = make(['one', 'two', 'three']);
+    select().replaceWhere(e => e === 'two').with('twoo');
+    expect(select().read()).toEqual(['one', 'twoo', 'three']);
+  })
+
 });

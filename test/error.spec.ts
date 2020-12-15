@@ -9,12 +9,12 @@ describe('Error', () => {
 
   it('should throw an error when a method is invoked within a selector', () => {
     const select = make(new Array<string>());
-    expect(() => select(s => s.some(e => true)).replaceWith(false)).toThrow();
+    expect(() => select(s => s.some(e => true)).replaceWith(false)).toThrowError(errorMessages.ILLEGAL_FUNCTION_INVOKED_WITHIN_SELECTOR('some'));
   })
 
   it('should throw an error when filter() is invoked within a selector', () => {
     const select = make(new Array<string>());
-    expect(() => select(s => s.filter(e => true)).replaceAll([])).toThrow();
+    expect(() => select(s => s.filter(e => true)).replaceAll([])).toThrowError(errorMessages.ILLEGAL_FUNCTION_INVOKED_WITHIN_SELECTOR('filter'));
   })
 
   it('should throw an error if the initial state has functions in it', () => {

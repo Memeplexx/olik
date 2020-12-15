@@ -5,6 +5,7 @@ export const errorMessages = {
   INVALID_CONTAINER_FOR_NESTED_STORES: `If a store is marked with 'containerForNestedStores: true', then it's initial state cannot be a primitive or an array`,
   INVALID_STATE_INPUT: 'State can only be primitive or a POJO. It may not contain any functions, sets, maps etc',
   UPSERT_MORE_THAN_ONE_MATCH: 'Cannot upsert more than 1 element',
+  ILLEGAL_FUNCTION_INVOKED_WITHIN_SELECTOR: (prop: string) => `'${prop}()' is not allowed within the selector function. If you're trying to filter elements, rather use a library function eg. 'select(s => s.todos).removeWhere(e => e.status === 'done')'`,
 };
 
 export const devtoolsDebounce = 200;
