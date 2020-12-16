@@ -24,8 +24,9 @@ describe('Nested', () => {
   it('should revert to a top-level store correctly', () => {
     const select = make({ test: '' });
     const nested = makeNested({ test: '' }, { name: 'nested' });
+    nested(s => s.test).replaceWith('test');
     expect(select().read()).toEqual({ test: '' });
-    expect(nested().read()).toEqual({ test: '' });
+    expect(nested().read()).toEqual({ test: 'test' });
   })
 
   it('should be able to update a lib store correctly', () => {

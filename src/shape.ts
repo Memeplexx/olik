@@ -9,14 +9,14 @@ export type FetcherStatus = 'pristine' | 'rejected' | 'resolved' | 'resolving';
 export type Tag<B> = B extends 'tagged' ? string : void;
 
 /**
- * An argument which can be supplied when fetching data
- */
-export type FetchArgument<T> = T extends infer T ? T : void;
-
-/**
  * Whether updates to the store requires tags or not
  */
 export type Trackability = 'tagged' | 'untagged';
+
+/**
+ * An argument which can be supplied when fetching data
+ */
+export type FetchArgument<T> = T extends infer T ? T : void;
 
 /**
  * An object which can be unsubscribed from
@@ -115,7 +115,7 @@ export type OptionsForCreatingAFetcher<C, Trackability, X extends (params: any) 
   getData: X,
   /**
    * By default, fetchers will simply replace all data associated with a part of the store specified by the `getData` property.
-   * However, this behavior can be overridden here. For example, maybe you want to append resolved data to existing store data as follows:
+   * However, this behavior can be overridden here. The following example appends resolved data to existing array within the store:
    * ```
    * setData: arg => arg.store.addAfter(arg.data)
    * ```

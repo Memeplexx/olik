@@ -117,7 +117,7 @@ export function useStore<C>(
  * @param store The store that was previously defined using `make()` or `makeEnforceTags()`
  * @param mapper a function which takes in state from the store, and returns state which will be used
  * 
- * The following example component receives props from the store as well as from the parent component
+ * The following example component receives props from the store as well as from its parent component
  * ```
  * class Todo extends React.Component<{ todos: Todo[], userName: string, someProp: number }> {
  *   // ...

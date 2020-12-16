@@ -5,7 +5,6 @@ export const windowAugmentedWithReduxDevtoolsImpl = {
     connect = (options: OptionsForReduxDevtools) => ({
       init: (state: any) => null,
       subscribe: (listener: (message: { type: string, payload: any, state?: any, source: any }) => any) => this._subscribers.push(listener),
-      unsubscribe: () => null,
       send: () => null,
     });
     disconnect = () => null;
