@@ -5,7 +5,7 @@ Let's first assume that a store has been initialized as follows:
 ```Typescript
 import { make } from 'oulik';
 
-const store = make({
+const get = make({
   size: { width: 10, height: 10 },
   border: { thickness: 1 },
 }); 
@@ -15,13 +15,13 @@ const store = make({
 ## SYNCHRONOUS READS ##
 Read data directly from the store
 ```Typescript
-const width = store(s => s.size.width).read();
+const width = get(s => s.size.width).read();
 ```
 
 ## ASYNCHRONOUS READS ##
 Listen to updates to a particular part of the store
 ```Typescript
-const listener = store(c => c.size.width).onChange(width => console.log(width));
+const listener = get(c => c.size.width).onChange(width => console.log(width));
 listener.unsubscribe(); // Always unsubscribe to avoid memory leaks
 ```  
 
@@ -31,8 +31,8 @@ Memoize computationally expensive state that has been derived from the store
 import { deriveFrom } from 'oulik';
 
 const innerWidth = deriveFrom(
-  store(s => s.size.width),
-  store(s => s.border.thickness),
+  get(s => s.size.width),
+  get(s => s.border.thickness),
 ).usingExpensiveCalc((
   boxWidth,
   borderThickness,

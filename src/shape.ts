@@ -149,7 +149,7 @@ type StoreForAnArrayOfPrimitives<C extends DeepReadonlyArray<any>, Trackability>
   /**
    * Appends an element, or an array of elements, onto the end of the array
    * ```
-   * select(s => s.todos)
+   * get(s => s.todos)
    *   .addAfter(newTodos);
    * ```
    */
@@ -157,55 +157,49 @@ type StoreForAnArrayOfPrimitives<C extends DeepReadonlyArray<any>, Trackability>
   /**
    * Prepends an element, or an array of elements, into the beginning of the array
    * ```
-   * select(s => s.todos)
-   *   .addBefore(newTodos);
+   * get(s => s.todos).addBefore(newTodos);
    * ```
    */
   addBefore: (elements: C[0] | C[0][], tag: Tag<Trackability>) => void,
   /**
    * Removes all elements from the array
    * ```
-   * select(s => s.todos)
-   *   .removeAll();
+   * get(s => s.todos).removeAll();
    * ```
    */
   removeAll: (tag: Tag<Trackability>) => void,
   /**
    * Deletes the first element from the array
    * ```
-   * select(s => s.todos)
-   *   .removeFirst();
+   * get(s => s.todos).removeFirst();
    * ```
    */
   removeFirst: (tag: Tag<Trackability>) => void,
   /**
    * Deletes the last element from the array
    * ```
-   * select(s => s.todos)
-   *   .removeLast();
+   * get(s => s.todos).removeLast();
    * ```
    */
   removeLast: (tag: Tag<Trackability>) => void,
   /**
    * Delete elements which match a specific condition
    * ```
-   * select(s => s.todos)
-   *   .removeWhere(t => t.status === 'done')
+   * get(s => s.todos).removeWhere(t => t.status === 'done')
    * ```
    */
   removeWhere: (where: (arrayElement: C[0]) => boolean, tag: Tag<Trackability>) => void,
   /**
    * Substitutes all elements with a new array of elements
    * ```
-   * select(s => s.todos)
-   *   .replaceAll(newTodos);
+   * get(s => s.todos).replaceAll(newTodos);
    * ```
    */
   replaceAll: (replacement: C, tag: Tag<Trackability>) => void,
   /**
    * Substitute elements which match a specific condition
    * ```
-   * select(s => s.todos)
+   * get(s => s.todos)
    *   .replaceWhere(t => t.id === 5)
    *   .with({ id: 5, text: 'bake cookies' });
    * ```
@@ -215,7 +209,7 @@ type StoreForAnArrayOfPrimitives<C extends DeepReadonlyArray<any>, Trackability>
    * Substitutes or appends an element depending on whether or not it can be found.
    * Note that if more than one element is found which matches the criteria specified in the 'where' clause, an error will be thrown
    * ```
-   * select(s => s.todos)
+   * get(s => s.todos)
    *   .upsertWhere(t => t.id === 5)
    *   .with({ id: 5, text: 'bake cookies' });
    * ```
@@ -225,7 +219,7 @@ type StoreForAnArrayOfPrimitives<C extends DeepReadonlyArray<any>, Trackability>
    * Merges the supplied array into the existing array.  
    * Any supplied elements will either replace their corresponding element in the store (if a match could be found) or else they will be appended to the store array.  
    * ```
-   * select(s => s.todos)
+   * get(s => s.todos)
    *   .mergeWhere((existingElement, newElement) => existingElement.id === newElement.id)
    *   .with(newTodosArray);
    * ```
@@ -240,7 +234,7 @@ export type StoreForAnArray<C extends DeepReadonlyArray<any>, Trackability> = {
   /**
    * Partially updates zero or more elements which match a specific condition
    * ```
-   * select(s => s.todos)
+   * get(s => s.todos)
    *   .patchWhere(t => t.status === 'done')
    *   .with({ status: 'todo' });
    * ```
@@ -255,7 +249,7 @@ export type StoreForAPrimitive<C extends any, Trackability> = {
   /**
    * Substitutes the primitive value
    * ```
-   * select(s => s.user.age)
+   * get(s => s.user.age)
    *   .replace(33)
    * ```
    */
@@ -269,7 +263,7 @@ export type StoreForAnObject<C extends any, Trackability> = {
   /**
    * Partially updates the object
    * ```
-   * select(s => s.user)
+   * get(s => s.user)
    *   .patch({ firstName: 'James', age: 33 })
    * ```
    */
@@ -284,7 +278,7 @@ export type StoreWhichIsReadable<C> = {
    * Listens to any updates on this node
    * @returns a subscription which will need to be unsubscribed from to prevent a memory leak
    * ```
-   * select(s => s.todos)
+   * get(s => s.todos)
    *   .onChange(todos => console.log(todos)) ;
    * ```
    */

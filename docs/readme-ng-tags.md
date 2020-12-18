@@ -44,5 +44,5 @@ declare var __filename: string;
 
 5) restart your project for the changes to take effect, and start making use of the `__filename` variable
 ```Typescript
-store(s => s.user.name).replaceWith('John', __filename);
+get(s => s.user.name).replaceWith('John', __filename);
 ```

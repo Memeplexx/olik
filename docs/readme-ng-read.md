@@ -4,7 +4,7 @@ Let's first assume that a store has been initialized as follows:
 ```Typescript
 import { make } from 'oulik-ng';
 
-const select = make('store', {
+const get = make('store', {
   todos: new Array<string>(),
 }); 
 ```
@@ -12,12 +12,12 @@ const select = make('store', {
 
 ## READING STATE SYNCHRONOUSLY ##
 ```Typescript
-const todos = select(s => s.todos).read();
+const todos = get(s => s.todos).read();
 ```
 
 ## LISTENING TO STATE UPDATES ##
 ```Typescript
-const listener = select(s => s.todos)
+const listener = get(s => s.todos)
   .onChange(todos => console.log(todos));
 listener.unsubscribe(); // Please unsubscribe to avoid a memory leak
 ```  
@@ -31,7 +31,7 @@ import { make } from 'oulik-ng';
   template: `<div *ngFor="let todo of todos$ | async">{{todo}}</div>`
 })
 export class MyComponent {
-  todos$ = observe(select(s => s.todos));
+  todos$ = observe(get(s => s.todos));
 }
 ```
 
@@ -43,8 +43,8 @@ import { shareReplay } from 'rxjs/operators';
 
 export class MyComponent {
   someDataToBeUsedInYourTemplate$ = combineLatest([
-    observe(select(s => s.todos)),
-    observe(select(s => s.some.other.value)),
+    observe(get(s => s.todos)),
+    observe(get(s => s.some.other.value)),
   ]).pipe(
     shareReplay(1),
   );
@@ -56,14 +56,14 @@ Using *Fetchers* allows you to track the status of a request (loading / success 
 
 ### DEFINING A FETCHER ###
 ```Typescript
-import { select } from './my-store';
+import { get } from './my-store';
 
 export class ApiService {
 
   constructor(private http: HttpClient) { }
 
   fetchTodos = createFetcher({
-    onStore: select(s => s.todos)
+    onStore: get(s => s.todos)
     getData: () => this.http.get('https://www.example.com/todos'),
     cacheFor: 1000 * 60,
   });

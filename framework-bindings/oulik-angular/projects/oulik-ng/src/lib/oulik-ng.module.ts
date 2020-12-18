@@ -14,7 +14,7 @@ export * from 'oulik';
  * `,
  * })
  * export class MyComponent {
- *   todos$ = observe(select(s => s.todos));
+ *   todos$ = observe(get(s => s.todos));
  * }
  * ```
  */
@@ -39,7 +39,7 @@ export function observe<C, B extends boolean>(
  *   ){}
  *   // This part should probably be in another class, eg. ApiService
  *   fetchTodos = createFetcher({
- *     onStore: select(s => s.todos),
+ *     onStore: get(s => s.todos),
  *     getData: () => this.http.get<Todo>('https://www.example.com/todos'),
  *     cacheFor: 10
  *   });
@@ -107,7 +107,7 @@ export function observeFetch<S, C, P, B extends boolean>(
  *   ){}
  *   // This part should probably be in another class, eg. ApiService
  *   fetchTodos = createFetcher({
- *     onStore: select(s => s.todos),
+ *     onStore: get(s => s.todos),
  *     getData: () => this.http.get<Todo>('https://www.example.com/todos'),
  *     cacheFor: 10
  *   });

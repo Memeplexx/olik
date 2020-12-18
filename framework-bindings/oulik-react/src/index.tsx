@@ -11,7 +11,7 @@ export * from 'oulik';
  * EXAMPLE 1: NORMAL STORE SELECTION
  * ```typescript
  * const value = useSelector(
- *   select(s => s.some.property)
+ *   get(s => s.some.property)
  * );
  * ```
  * 
@@ -19,8 +19,8 @@ export * from 'oulik';
  * ```typescript
  * const value = useSelector(
  *   deriveFrom(
- *     select(s => s.some.property),
- *     select(s => s.some.other.property),
+ *     get(s => s.some.property),
+ *     get(s => s.some.other.property),
  *   ).usingExpensiveCalc((someProperty, someOtherProperty) => {
  *     return someProperty * someOtherProperty;
  *   })
@@ -93,11 +93,11 @@ export function useFetcher<S, C, P, B extends boolean>(
  * Note that in order for your store to be nested in the application store, you will need to
  * mark it as follows:
  * ```
- * const select = make({...}, { containerForNestedStores: true });
+ * const get = make({...}, { containerForNestedStores: true });
  * ```
  * Then, in your component, you can use this function as follows:
  * ```
- * const select = useStore(() => makeNested({...}, { name: 'MyComponent' }));
+ * const get = useStore(() => makeNested({...}, { name: 'MyComponent' }));
  * ```
  * Finally, note that if your application store is not marked with `containerForNestedStores`,
  * then your component will register a new store within the devtools with the name your provided,

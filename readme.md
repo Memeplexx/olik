@@ -18,7 +18,7 @@ npm i oulik
 ```Typescript
 import { make } from 'oulik';
 
-const select = make({
+const get = make({
   name: '',
   favorite: {
     foods: new Array<string>(),
@@ -26,11 +26,11 @@ const select = make({
   },
 });       
 
-select(s => s.name).replace('Terence');
+get(s => s.name).replace('Terence');
 
-select(s => s.favorite.foods).replaceAll(['Indian', 'Sushi']);
+get(s => s.favorite.foods).replaceAll(['Indian', 'Sushi']);
 
-select(s => s.favorite.hobbies).replaceWhere(h => h === 'Coding').with('Napping');
+get(s => s.favorite.hobbies).replaceWhere(h => h === 'Coding').with('Napping');
 ```
 ***[✍️ Writing state](./docs/readme-write.md)*** - update your state using a minimal but powerful set of state-update utilities
 

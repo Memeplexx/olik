@@ -21,21 +21,21 @@ export class AppModule {
 ```Typescript
 import { make } from 'oulik-ng';
 
-const store = make('my store', {
+const get = make('my store', {
   user: { firstname: '', lastname: '' },
   hobbies: new Array<string>(),
 });       
 ```
 ## WRITING STATE ##
 ```Typescript
-store(s => s.user.firstname).replaceWith('James');
+get(s => s.user.firstname).replaceWith('James');
 ```
 ***[All write options...](./readme-write.md)***
 
 ## READING STATE ##
 
 ```Typescript
-const username = store(s => s.user.firstname).read();
+const username = get(s => s.user.firstname).read();
 ```
 ***[All read options...](./readme-ng-read.md)***
 
