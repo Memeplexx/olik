@@ -14,9 +14,9 @@ describe('Sequence', () => {
       propTwo: new Array<{ id: number, value: string }>(),
     };
     const select = make(initialState);
-    select(s => s.propOne.subPropOne).replaceWith('hey');
+    select(s => s.propOne.subPropOne).replace('hey');
     expect(tests.currentMutableState).toEqual(select().read());
-    select(s => s.propOne).patchWith({ subPropOne: 'xxx' });
+    select(s => s.propOne).patch({ subPropOne: 'xxx' });
     expect(tests.currentMutableState).toEqual(select().read());
     select(s => s.propTwo).addAfter([{ id: 2, value: 'two' }]);
     expect(tests.currentMutableState).toEqual(select().read());

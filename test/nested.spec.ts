@@ -24,7 +24,7 @@ describe('Nested', () => {
   it('should revert to a top-level store correctly', () => {
     const select = make({ test: '' });
     const nested = makeNested({ test: '' }, { name: 'nested' });
-    nested(s => s.test).replaceWith('test');
+    nested(s => s.test).replace('test');
     expect(select().read()).toEqual({ test: '' });
     expect(nested().read()).toEqual({ test: 'test' });
   })
@@ -38,8 +38,8 @@ describe('Nested', () => {
     const name = 'myComp';
     const nestedStore = makeNested({ one: '' }, { name });
     expect(nestedStore(s => s.one).read()).toEqual('');
-    nestedStore(s => s.one).replaceWith('test');
-    expect(tests.currentAction.type).toEqual(`nested.${name}.0.one.replaceWith()`);
+    nestedStore(s => s.one).replace('test');
+    expect(tests.currentAction.type).toEqual(`nested.${name}.0.one.replace()`);
     expect(nestedStore(s => s.one).read()).toEqual('test');
   })
 
@@ -52,7 +52,7 @@ describe('Nested', () => {
     const name = 'myComp';
     const nestedStore = makeNested({ one: '' }, { name });
     expect(nestedStore(s => s.one).read()).toEqual('');
-    select(s => s.nested.myComp['0'].one).replaceWith('test');
+    select(s => s.nested.myComp['0'].one).replace('test');
     expect(nestedStore(s => s.one).read()).toEqual('test');
   })
 
@@ -90,9 +90,9 @@ describe('Nested', () => {
     const select = make(initialState, { containerForNestedStores: true });
     const name = 'myComp';
     const nestedStore = makeNested({ one: '' }, { name });
-    nestedStore(s => s.one).replaceWith('test1');
+    nestedStore(s => s.one).replace('test1');
     const nestedStore2 = makeNested({ one: '' }, { name });
-    nestedStore2(s => s.one).replaceWith('test2');
+    nestedStore2(s => s.one).replace('test2');
     expect(select().read()).toEqual({ test: '', nested: { [name]: { 0: { one: 'test1' }, 1: { one: 'test2' } } } });
   })
 
@@ -114,7 +114,7 @@ describe('Nested', () => {
     const select = make(initialState, { containerForNestedStores: true });
     const name = 'myComp';
     const nestedStore = makeNested(0, { name });
-    nestedStore().replaceWith(1);
+    nestedStore().replace(1);
     expect(select().read()).toEqual({ test: '', nested: { [name]: { 0: 1 } } });
   })
 
@@ -174,7 +174,7 @@ describe('Nested', () => {
     const select = make<X>(initialState, { containerForNestedStores: true });
     const name = 'myComp';
     const nested = makeNested(0, { name });
-    nested().replaceWith(1);
+    nested().replace(1);
     expect(select().read()).toEqual({ test: '', nested: { myComp: { '0': 1 } } });
     nested().reset();
     expect(select().read()).toEqual({ test: '', nested: { myComp: { '0': 0 } } });

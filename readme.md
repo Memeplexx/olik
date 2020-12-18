@@ -19,18 +19,18 @@ npm i oulik
 import { make } from 'oulik';
 
 const select = make({
-  userName: '',
+  name: '',
   favorite: {
     foods: new Array<string>(),
     hobbies: new Array<string>(),
   },
 });       
 
-select(s => s.userName).replaceWith('Terence');
+select(s => s.name).replace('Terence');
 
 select(s => s.favorite.foods).replaceAll(['Indian', 'Sushi']);
 
-select(s => s.favorite.hobbies).replaceWhere(h => h === 'Coding').with('Programming');
+select(s => s.favorite.hobbies).replaceWhere(h => h === 'Coding').with('Napping');
 ```
 ***[✍️ Writing state](./docs/readme-write.md)*** - update your state using a minimal but powerful set of state-update utilities
 

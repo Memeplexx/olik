@@ -193,7 +193,7 @@ type StoreForAnArrayOfPrimitives<C extends DeepReadonlyArray<any>, Trackability>
    *   .removeWhere(t => t.status === 'done')
    * ```
    */
-  removeWhere: (where: (arg: C[0]) => boolean, tag: Tag<Trackability>) => void,
+  removeWhere: (where: (arrayElement: C[0]) => boolean, tag: Tag<Trackability>) => void,
   /**
    * Substitutes all elements with a new array of elements
    * ```
@@ -210,7 +210,7 @@ type StoreForAnArrayOfPrimitives<C extends DeepReadonlyArray<any>, Trackability>
    *   .with({ id: 5, text: 'bake cookies' });
    * ```
    */
-  replaceWhere: (where: (element: C[0]) => boolean) => { with: (element: C[0], tag: Tag<Trackability>) => void },
+  replaceWhere: (where: (arrayElement: C[0]) => boolean) => { with: (element: C[0], tag: Tag<Trackability>) => void },
   /**
    * Substitutes or appends an element depending on whether or not it can be found.
    * Note that if more than one element is found which matches the criteria specified in the 'where' clause, an error will be thrown
@@ -220,7 +220,7 @@ type StoreForAnArrayOfPrimitives<C extends DeepReadonlyArray<any>, Trackability>
    *   .with({ id: 5, text: 'bake cookies' });
    * ```
    */
-  upsertWhere: (where: (element: C[0]) => boolean) => { with: (element: C[0], tag: Tag<Trackability>) => void },
+  upsertWhere: (where: (arrayElement: C[0]) => boolean) => { with: (element: C[0], tag: Tag<Trackability>) => void },
   /**
    * Merges the supplied array into the existing array.  
    * Any supplied elements will either replace their corresponding element in the store (if a match could be found) or else they will be appended to the store array.  
@@ -230,7 +230,7 @@ type StoreForAnArrayOfPrimitives<C extends DeepReadonlyArray<any>, Trackability>
    *   .with(newTodosArray);
    * ```
    */
-  mergeWhere: (where: (existingElement: C[0], newElement: C[0]) => boolean) => { with: (elements: C, tag: Tag<Trackability>) => void },
+  mergeWhere: (where: (existingArrayElement: C[0], newArrayElement: C[0]) => boolean) => { with: (elements: C, tag: Tag<Trackability>) => void },
 }
 
 /**
@@ -245,7 +245,7 @@ export type StoreForAnArray<C extends DeepReadonlyArray<any>, Trackability> = {
    *   .with({ status: 'todo' });
    * ```
    */
-  patchWhere: (where: (element: C[0]) => boolean) => { with: (element: Partial<C[0]>, tag: Tag<Trackability>) => void },
+  patchWhere: (where: (arrayElement: C[0]) => boolean) => { with: (element: Partial<C[0]>, tag: Tag<Trackability>) => void },
 } & StoreForAnArrayOfPrimitives<C, Trackability>;
 
 /**
@@ -256,10 +256,10 @@ export type StoreForAPrimitive<C extends any, Trackability> = {
    * Substitutes the primitive value
    * ```
    * select(s => s.user.age)
-   *   .replaceWith(33)
+   *   .replace(33)
    * ```
    */
-  replaceWith: (replacement: C, tag: Tag<Trackability>) => void,
+  replace: (replacement: C, tag: Tag<Trackability>) => void,
 }
 
 /**
@@ -270,10 +270,10 @@ export type StoreForAnObject<C extends any, Trackability> = {
    * Partially updates the object
    * ```
    * select(s => s.user)
-   *   .patchWith({ firstName: 'James', age: 33 })
+   *   .patch({ firstName: 'James', age: 33 })
    * ```
    */
-  patchWith: (partial: Partial<C>, tag: Tag<Trackability>) => void,
+  patch: (partial: Partial<C>, tag: Tag<Trackability>) => void,
 } & StoreForAPrimitive<C, Trackability>;
 
 /**
@@ -292,7 +292,7 @@ export type StoreWhichIsReadable<C> = {
   /**
    * @returns the current state
    */
-  read: () => C,
+  read: () => DeepReadonly<C>,
 }
 
 /**

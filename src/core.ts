@@ -75,17 +75,17 @@ export function makeNested<L>(state: L, options: { name: string, storeKey?: stri
   let key: string;
   if (!nestedContainerStore().read().nested) {
     key = generateKey();
-    nestedContainerStore().patchWith({ nested: { [name]: { [key]: state } } });
+    nestedContainerStore().patch({ nested: { [name]: { [key]: state } } });
     nestedContainerStore().renew({ ...wrapperState, nested: { [name]: { [key]: state } } });
   } else if (!nestedContainerStore().read().nested[name]) {
     key = generateKey();
-    nestedContainerStore(s => s.nested).patchWith({ [name]: { [key]: state } });
+    nestedContainerStore(s => s.nested).patch({ [name]: { [key]: state } });
     nestedContainerStore().renew({ ...wrapperState, nested: { ...wrapperState.nested, [name]: { [key]: state } } });
   } else {
     const values = nestedContainerStore(s => s.nested[name]).read();
     const keys = Object.keys(values);
     key = generateKey(keys[keys.length - 1]);
-    nestedContainerStore(s => s.nested[name]).patchWith({ [key]: state });
+    nestedContainerStore(s => s.nested[name]).patch({ [key]: state });
     nestedContainerStore().renew({ ...wrapperState, nested: { ...wrapperState.nested, [name]: { ...wrapperState.nested[name], [key]: state } } });
   }
   return (<C = L>(selector?: (arg: DeepReadonly<L>) => C) => {
@@ -123,11 +123,11 @@ function makeInternal<S, Trackability>(state: S, options: { supportsTags: boolea
     const payloadCopied = deepCopy(assignment);
     const isRootUpdate = !pathReader.readSelector(selector).length;
     if (isRootUpdate) {
-      updateState<C, C>(selector, Array.isArray(currentState) ? `replaceAll()` : `replaceWith()`, payloadFrozen,
+      updateState<C, C>(selector, Array.isArray(currentState) ? `replaceAll()` : `replace()`, payloadFrozen,
         old => payloadFrozen,
         old => {
           if (Array.isArray(old)) {
-            old.length = 0; Object.assign(old, payloadCopied);
+            (old as Array<any>).length = 0; Object.assign(old, payloadCopied);
           } else if (typeof (old) === 'boolean' || typeof (old) === 'number') {
             pathReader.mutableStateCopy = payloadCopied as any as S;
           } else {
@@ -145,16 +145,16 @@ function makeInternal<S, Trackability>(state: S, options: { supportsTags: boolea
       return res;
     })) as Selector<S, C>;
     updateState<C, C>(selectorRevised, `${pathSegments.join('.')}.${name}()`, payloadFrozen,
-      old => Array.isArray(old) ? old.map((o, i) => i === +lastSeg ? deepCopy(payloadFrozen) : o) : ({ ...old, [lastSeg]: deepCopy(payloadFrozen) }),
+      old => Array.isArray(old) ? (old as Array<any>).map((o, i) => i === +lastSeg ? deepCopy(payloadFrozen) : o) : ({ ...old, [lastSeg]: deepCopy(payloadFrozen) }),
       (old: SimpleObject) => old[lastSeg] = payloadCopied, { overrideActionName: true, tag });
   };
   const action = <C, X extends C & Array<any>>(selector: Selector<S, C, X>) => ({
-    replaceWith: replace(selector, 'replaceWith'),
+    replace: replace(selector, 'replace'),
     replaceAll: replace(selector, 'replaceAll'),
-    patchWith: (assignment: Partial<C>, tag?: string) => {
+    patch: (assignment: Partial<C>, tag?: string) => {
       const payloadFrozen = deepFreeze(deepCopy(assignment));
       const payloadCopied = deepCopy(assignment);
-      updateState<C, X>(selector, 'patchWith', payloadFrozen,
+      updateState<C, X>(selector, 'patch', payloadFrozen,
         old => ({ ...old, ...payloadFrozen }),
         old => Object.assign(old, payloadCopied), { tag });
     },

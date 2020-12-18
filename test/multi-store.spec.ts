@@ -10,7 +10,7 @@ describe('Multi-store', () => {
     const select1 = make(new Array<string>());
     const select2 = make(0);
     select1().replaceAll(['one']);
-    select2().replaceWith(2);
+    select2().replace(2);
     expect(select1().read()).toEqual(['one']);
     expect(select2().read()).toEqual(2);
   })
@@ -27,7 +27,7 @@ describe('Multi-store', () => {
     ) => array.concat(number));
     let changes = 0;
     mem.onChange(() => changes++);
-    select1(s => s.string).replaceWith('hey');
+    select1(s => s.string).replace('hey');
     expect(changes).toEqual(0);
     expect(mem.read()).toEqual([0]);
     select1(s => s.array).addAfter([3]);

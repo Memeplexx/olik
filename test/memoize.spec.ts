@@ -50,7 +50,7 @@ describe('Memoize', () => {
     const result2 = mem.read();
     expect(result2.array.length).toEqual(10000);
     expect(recalculating).toEqual(1);
-    select(s => s.counter).replaceWith(4);
+    select(s => s.counter).replace(4);
     const result3 = mem.read();
     expect(recalculating).toEqual(2);
     expect(result3.counter).toEqual(4);
@@ -72,11 +72,11 @@ describe('Memoize', () => {
       recalculating++;
     });
     mem.onChange(() => eventReceived++);
-    select(s => s.string).replaceWith('hey');
+    select(s => s.string).replace('hey');
     expect(select(s => s.string).read()).toEqual('hey');
     expect(recalculating).toEqual(0);
     expect(eventReceived).toEqual(0);
-    select(s => s.counter).replaceWith(2);
+    select(s => s.counter).replace(2);
     expect(eventReceived).toEqual(1);
   })
 
@@ -93,11 +93,11 @@ describe('Memoize', () => {
     });
     let onChangeListenerCallCount = 0;
     const onChangeListener = mem.onChange(() => onChangeListenerCallCount++);
-    select(s => s.two).replaceWith(1);
+    select(s => s.two).replace(1);
     expect(mem.read()).toEqual('x1');
     expect(onChangeListenerCallCount).toEqual(1);
     onChangeListener.unsubscribe();
-    select(s => s.two).replaceWith(2);
+    select(s => s.two).replace(2);
     expect(mem.read()).toEqual('x2');
     expect(onChangeListenerCallCount).toEqual(1);
   })
@@ -113,9 +113,9 @@ describe('Memoize', () => {
     ).usingExpensiveCalc(val => {
       recalculating++;
     });
-    select(s => s.array.find(e => e.id === 2)!).patchWith({ value: 'twoo' });
+    select(s => s.array.find(e => e.id === 2)!).patch({ value: 'twoo' });
     mem.read();
-    select(s => s.array.find(e => e.id === 1)!).patchWith({ value: 'onee' });
+    select(s => s.array.find(e => e.id === 1)!).patch({ value: 'onee' });
     mem.read();
     expect(recalculating).toEqual(1);
   })

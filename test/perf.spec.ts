@@ -74,7 +74,7 @@ describe.skip('Perf', () => {
     select(s => s.array2).onChange(e => null);
     const before = performance.now();
     for (let i = 0; i < 100; i++) {
-      select(s => s.anotherProp.some.deeply.nested.number).replaceWith(
+      select(s => s.anotherProp.some.deeply.nested.number).replace(
         select(s => s.anotherProp.some.deeply.nested.number).read() + 1
       );
     }
@@ -86,7 +86,7 @@ describe.skip('Perf', () => {
     const select = make(initialState)
     const before = performance.now();
     for (let i = 0; i < 100; i++) {
-      select(s => s.width).replaceWith(
+      select(s => s.width).replace(
         select(s => s.width).read() + 1
       );
     }

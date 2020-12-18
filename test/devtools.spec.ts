@@ -14,11 +14,11 @@ describe('Devtools', () => {
 
   it('should correctly respond to devtools dispatches where the state is an object', () => {
     const select = make({ x: 0, y: 0 });
-    select(s => s.x).replaceWith(3);
+    select(s => s.x).replace(3);
     expect(select().read()).toEqual({ x: 3, y: 0 });
     const state = { x: 1, y: 0 };
     tests.windowObject?.__REDUX_DEVTOOLS_EXTENSION__._mockInvokeSubscription({ type: 'DISPATCH', state: JSON.stringify(state), payload: { type: 'JUMP_TO_ACTION' }, source: '@devtools-extension' });
-    expect(select().read()).toEqual(state);    expect(tests.currentAction.type).toEqual('replaceWith() [dontTrackWithDevtools]');
+    expect(select().read()).toEqual(state);    expect(tests.currentAction.type).toEqual('replace() [dontTrackWithDevtools]');
   });
 
   it('should correctly respond to devtools dispatches where the state is an array', () => {
@@ -38,7 +38,7 @@ describe('Devtools', () => {
 
   it('should handle a RESET correctly', () => {
     const select = make({ hello: '' });
-    select(s => s.hello).replaceWith('world');
+    select(s => s.hello).replace('world');
     expect(select(s => s.hello).read()).toEqual('world');
     tests.windowObject?.__REDUX_DEVTOOLS_EXTENSION__._mockInvokeSubscription({ type: 'DISPATCH', payload: { type: 'RESET' }, source: '@devtools-extension' });
     expect(select(s => s.hello).read()).toEqual('');
@@ -46,9 +46,9 @@ describe('Devtools', () => {
 
   it('should handle a ROLLBACK correctly', () => {
     const select = make({ num: 0 });
-    select(s => s.num).replaceWith(1);
+    select(s => s.num).replace(1);
     expect(select(s => s.num).read()).toEqual(1);
-    select(s => s.num).replaceWith(2);
+    select(s => s.num).replace(2);
     expect(select(s => s.num).read()).toEqual(2);
     tests.windowObject?.__REDUX_DEVTOOLS_EXTENSION__._mockInvokeSubscription({ type: 'DISPATCH', payload: { type: 'ROLLBACK' }, source: '@devtools-extension', state: '{ "num": 1 }' });
     expect(select(s => s.num).read()).toEqual(1);
@@ -57,28 +57,28 @@ describe('Devtools', () => {
   it('should throw an error should a devtools dispatch contain invalid JSON', () => {
     make({ hello: 0 });
     expect(() => tests.windowObject?.__REDUX_DEVTOOLS_EXTENSION__
-      ._mockInvokeSubscription({ type: 'ACTION', source: '@devtools-extension', payload: "{'type': 'hello.replaceWith', 'payload': 2}" }))
+      ._mockInvokeSubscription({ type: 'ACTION', source: '@devtools-extension', payload: "{'type': 'hello.replace', 'payload': 2}" }))
       .toThrow(errorMessages.DEVTOOL_DISPATCHED_INVALID_JSON);
   });
 
   it('should throw an error should a devtools dispatch not contain parenthesis', () => {
     make({ hello: 0 });
     expect(() => tests.windowObject?.__REDUX_DEVTOOLS_EXTENSION__
-      ._mockInvokeSubscription({ type: 'ACTION', source: '@devtools-extension', payload: '{"type": "hello.replaceWith", "payload": 2}' }))
-      .toThrow(errorMessages.DEVTOOL_DISPATCHED_WITH_NO_ACTION('hello.replaceWith'));
+      ._mockInvokeSubscription({ type: 'ACTION', source: '@devtools-extension', payload: '{"type": "hello.replace", "payload": 2}' }))
+      .toThrow(errorMessages.DEVTOOL_DISPATCHED_WITH_NO_ACTION('hello.replace'));
   });
 
   it('should throw an error should a devtools dispatch not contain parenthesis', () => {
     make({ hello: 0 });
     expect(() => tests.windowObject?.__REDUX_DEVTOOLS_EXTENSION__
-      ._mockInvokeSubscription({ type: 'ACTION', source: '@devtools-extension', payload: '{"type": "hello.replaceWith", "payload": 2}' }))
-      .toThrow(errorMessages.DEVTOOL_DISPATCHED_WITH_NO_ACTION('hello.replaceWith'));
+      ._mockInvokeSubscription({ type: 'ACTION', source: '@devtools-extension', payload: '{"type": "hello.replace", "payload": 2}' }))
+      .toThrow(errorMessages.DEVTOOL_DISPATCHED_WITH_NO_ACTION('hello.replace'));
   });
 
   it('should correctly devtools dispatch made by user', () => {
     const select = make({ hello: 0 });
     tests.windowObject?.__REDUX_DEVTOOLS_EXTENSION__
-      ._mockInvokeSubscription({ type: 'ACTION', source: '@devtools-extension', payload: '{"type": "hello.replaceWith()", "payload": 2}' });
+      ._mockInvokeSubscription({ type: 'ACTION', source: '@devtools-extension', payload: '{"type": "hello.replace()", "payload": 2}' });
     expect(select(s => s.hello).read()).toEqual(2);
   })
 
@@ -86,7 +86,7 @@ describe('Devtools', () => {
     const select = make({ test: 0 });
     const payload: number[] = [];
     for (let i = 0; i < 100; i++) {
-      select(s => s.test).replaceWith(i);
+      select(s => s.test).replace(i);
       expect(tests.currentActionForDevtools.payload).toEqual(0);
       if (i > 0) {
         payload.push(i);

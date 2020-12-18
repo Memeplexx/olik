@@ -177,7 +177,7 @@ describe('Fetcher', () => {
       object: { property: 'hello', property2: 'two' },
     };
     const select = make(initialState);
-    select(s => s.object.property).replaceWith('test');
+    select(s => s.object.property).replace('test');
     const fetchProp = createFetcher({
       onStore: select(s => s.object.property),
       getData: (arg: string) => new Promise<string>(resolve => setTimeout(() => resolve(arg), 10)),

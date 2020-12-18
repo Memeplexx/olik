@@ -42,14 +42,14 @@ export function integrateStoreWithReduxDevtools<S, C = S>(
     }
     if (message.type === 'DISPATCH' && message.payload) {
       const selection = store() as any as (
-        { replaceWith: (state: S, tag: string) => any } &
+        { replace: (state: S, tag: string) => any } &
         { replaceAll: (state: S, tag: string) => any }
       ) & { read: () => any, readInitial: () => any };
       const setState = (state: any) => {
         if (Array.isArray(selection.read())) {
           selection.replaceAll(state, 'dontTrackWithDevtools');
         } else {
-          selection.replaceWith(state, 'dontTrackWithDevtools');
+          selection.replace(state, 'dontTrackWithDevtools');
         }
       }
       switch (message.payload.type) {

@@ -12,10 +12,10 @@ describe('Object', () => {
     };
     const select = make(initialState);
     const payload = 'hey';
-    select(s => s.object.property).replaceWith(payload);
+    select(s => s.object.property).replace(payload);
     expect(select(s => s.object.property).read()).toEqual('hey');
     expect(select(s => s.object.property2).read() === initialState.object.property2).toBeTruthy();
-    expect(tests.currentAction.type).toEqual('object.property.replaceWith()');
+    expect(tests.currentAction.type).toEqual('object.property.replace()');
     expect(tests.currentAction.payload).toEqual(payload);
     expect(tests.currentMutableState).toEqual(select().read());
   })
@@ -26,10 +26,10 @@ describe('Object', () => {
     };
     const select = make(initialState);
     const payload = { property: 'xxx' };
-    select(s => s.object).patchWith(payload);
+    select(s => s.object).patch(payload);
     expect(select(s => s.object.property).read()).toEqual(payload.property);
     expect(select(s => s.object.property2).read() === initialState.object.property2).toBeTruthy();
-    expect(tests.currentAction.type).toEqual('object.patchWith()');
+    expect(tests.currentAction.type).toEqual('object.patch()');
     expect(tests.currentAction.payload).toEqual(payload);
     expect(tests.currentMutableState).toEqual(select().read());
   })
@@ -39,13 +39,13 @@ describe('Object', () => {
       object: { property: 'hello', property2: 'two' },
     };
     const select = make(initialState);
-    select(s => s.object.property).replaceWith('hey');
+    select(s => s.object.property).replace('hey');
     expect(select(s => s.object.property).read()).toEqual('hey');
     expect(tests.currentMutableState).toEqual(select().read());
     select(s => s.object.property).reset();
     expect(select(s => s.object.property).read()).toEqual('hello');
     expect(tests.currentMutableState).toEqual(select().read());
-    select().replaceWith({ object: { property: 'xx', property2: 'yy' } });
+    select().replace({ object: { property: 'xx', property2: 'yy' } });
     expect(select().read()).toEqual({ object: { property: 'xx', property2: 'yy' } });
     expect(tests.currentMutableState).toEqual(select().read());
     select().reset();
@@ -59,8 +59,8 @@ describe('Object', () => {
     });
     const payload = 'hey';
     const tag = 'mytag';
-    select(s => s.object.property).replaceWith(payload, tag);
-    expect(tests.currentAction.type).toEqual(`object.property.replaceWith() [${tag}]`);
+    select(s => s.object.property).replace(payload, tag);
+    expect(tests.currentAction.type).toEqual(`object.property.replace() [${tag}]`);
     expect(select(s => s.object.property).read()).toEqual(payload);
     expect(tests.currentMutableState).toEqual(select().read());
   })
@@ -72,14 +72,14 @@ describe('Object', () => {
       tagSanitizer: (tag) => tag + 'x',
     });
     const tag = 'mytag';
-    select(s => s.test).replaceWith('test', tag);
-    expect(tests.currentAction.type).toEqual(`test.replaceWith() [${tag}x]`);
+    select(s => s.test).replace('test', tag);
+    expect(tests.currentAction.type).toEqual(`test.replace() [${tag}x]`);
     expect(tests.currentMutableState).toEqual(select().read());
   })
 
   it('should be able to add a new property onto an object', () => {
     const select = make({} as { [key: string]: string });
-    select().patchWith({ hello: 'world' });
+    select().patch({ hello: 'world' });
     expect(select().read()).toEqual({ hello: 'world' });
     expect(tests.currentMutableState).toEqual(select().read());
   })

@@ -12,13 +12,13 @@ describe('Array', () => {
       array: [{ id: 1, value: 'one' }],
       object: { property: '' },
     };
-    const select = make(initialState);
+    const get = make(initialState);
     const payload = [{ id: 2, value: 'two' }, { id: 3, value: 'three' }];
-    select(s => s.array).addAfter(payload);
-    expect(select(s => s.array).read()).toEqual([...initialState.array, ...payload]);
+    get(s => s.array).addAfter(payload);
+    expect(get(s => s.array).read()).toEqual([...initialState.array, ...payload]);
     expect(tests.currentAction.type).toEqual('array.addAfter()');
     expect(tests.currentAction.payload).toEqual(payload);
-    expect(tests.currentMutableState).toEqual(select().read());
+    expect(tests.currentMutableState).toEqual(get().read());
   })
 
   it('should addAfter() with a single item as payload', () => {
@@ -188,8 +188,8 @@ describe('Array', () => {
       array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
       object: { hello: 'world' },
     });
-    select(s => s.array.find(e => e.id === 2)!.value).replaceWith('twoo');
-    expect(tests.currentAction.type).toEqual('array.1.value.replaceWith()');
+    select(s => s.array.find(e => e.id === 2)!.value).replace('twoo');
+    expect(tests.currentAction.type).toEqual('array.1.value.replace()');
     expect(select(s => s.array).read()).toEqual([{ id: 1, value: 'one' }, { id: 2, value: 'twoo' }, { id: 3, value: 'three' }]);
     expect(tests.currentMutableState).toEqual(select().read());
   })
@@ -199,8 +199,8 @@ describe('Array', () => {
       array: [{ id: 1, value: { a: 'one', b: 'one' } }, { id: 2, value: { a: 'two', b: 'two' } }, { id: 3, value: { a: 'three', b: 'three' } }],
       object: { hello: 'world' },
     });
-    select(s => s.array.find(e => e.id === 2)!.value).patchWith({ b: 'twoo' });
-    expect(tests.currentAction.type).toEqual('array.1.value.patchWith()');
+    select(s => s.array.find(e => e.id === 2)!.value).patch({ b: 'twoo' });
+    expect(tests.currentAction.type).toEqual('array.1.value.patch()');
     expect(select(s => s.array).read()).toEqual([{ id: 1, value: { a: 'one', b: 'one' } }, { id: 2, value: { a: 'two', b: 'twoo' } }, { id: 3, value: { a: 'three', b: 'three' } }]);
     expect(tests.currentMutableState).toEqual(select().read());
   })
