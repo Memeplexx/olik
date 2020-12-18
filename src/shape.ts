@@ -148,14 +148,15 @@ export type FetchFunction<C, P, Trackability> = P extends void ? FetchFunctionTa
 type StoreForAnArrayOfPrimitives<C extends DeepReadonlyArray<any>, Trackability> = {
   /**
    * Appends an element, or an array of elements, onto the end of the array
+   * @example
    * ```
-   * get(s => s.todos)
-   *   .addAfter(newTodos);
+   * get(s => s.todos).addAfter(newTodos);
    * ```
    */
   addAfter: (elements: C[0] | C[0][], tag: Tag<Trackability>) => void,
   /**
    * Prepends an element, or an array of elements, into the beginning of the array
+   * @example
    * ```
    * get(s => s.todos).addBefore(newTodos);
    * ```
@@ -163,6 +164,7 @@ type StoreForAnArrayOfPrimitives<C extends DeepReadonlyArray<any>, Trackability>
   addBefore: (elements: C[0] | C[0][], tag: Tag<Trackability>) => void,
   /**
    * Removes all elements from the array
+   * @example
    * ```
    * get(s => s.todos).removeAll();
    * ```
@@ -170,6 +172,7 @@ type StoreForAnArrayOfPrimitives<C extends DeepReadonlyArray<any>, Trackability>
   removeAll: (tag: Tag<Trackability>) => void,
   /**
    * Deletes the first element from the array
+   * @example
    * ```
    * get(s => s.todos).removeFirst();
    * ```
@@ -177,6 +180,7 @@ type StoreForAnArrayOfPrimitives<C extends DeepReadonlyArray<any>, Trackability>
   removeFirst: (tag: Tag<Trackability>) => void,
   /**
    * Deletes the last element from the array
+   * @example
    * ```
    * get(s => s.todos).removeLast();
    * ```
@@ -184,6 +188,7 @@ type StoreForAnArrayOfPrimitives<C extends DeepReadonlyArray<any>, Trackability>
   removeLast: (tag: Tag<Trackability>) => void,
   /**
    * Delete elements which match a specific condition
+   * @example
    * ```
    * get(s => s.todos).removeWhere(t => t.status === 'done')
    * ```
@@ -191,6 +196,7 @@ type StoreForAnArrayOfPrimitives<C extends DeepReadonlyArray<any>, Trackability>
   removeWhere: (where: (arrayElement: C[0]) => boolean, tag: Tag<Trackability>) => void,
   /**
    * Substitutes all elements with a new array of elements
+   * @example
    * ```
    * get(s => s.todos).replaceAll(newTodos);
    * ```
@@ -198,6 +204,7 @@ type StoreForAnArrayOfPrimitives<C extends DeepReadonlyArray<any>, Trackability>
   replaceAll: (replacement: C, tag: Tag<Trackability>) => void,
   /**
    * Substitute elements which match a specific condition
+   * @example
    * ```
    * get(s => s.todos)
    *   .replaceWhere(t => t.id === 5)
@@ -208,6 +215,7 @@ type StoreForAnArrayOfPrimitives<C extends DeepReadonlyArray<any>, Trackability>
   /**
    * Substitutes or appends an element depending on whether or not it can be found.
    * Note that if more than one element is found which matches the criteria specified in the 'where' clause, an error will be thrown
+   * @example
    * ```
    * get(s => s.todos)
    *   .upsertWhere(t => t.id === 5)
@@ -218,6 +226,7 @@ type StoreForAnArrayOfPrimitives<C extends DeepReadonlyArray<any>, Trackability>
   /**
    * Merges the supplied array into the existing array.  
    * Any supplied elements will either replace their corresponding element in the store (if a match could be found) or else they will be appended to the store array.  
+   * @example
    * ```
    * get(s => s.todos)
    *   .mergeWhere((existingElement, newElement) => existingElement.id === newElement.id)
@@ -233,6 +242,7 @@ type StoreForAnArrayOfPrimitives<C extends DeepReadonlyArray<any>, Trackability>
 export type StoreForAnArray<C extends DeepReadonlyArray<any>, Trackability> = {
   /**
    * Partially updates zero or more elements which match a specific condition
+   * @example
    * ```
    * get(s => s.todos)
    *   .patchWhere(t => t.status === 'done')
@@ -248,9 +258,9 @@ export type StoreForAnArray<C extends DeepReadonlyArray<any>, Trackability> = {
 export type StoreForAPrimitive<C extends any, Trackability> = {
   /**
    * Substitutes the primitive value
+   * @example
    * ```
-   * get(s => s.user.age)
-   *   .replace(33)
+   * get(s => s.user.age).replace(33)
    * ```
    */
   replace: (replacement: C, tag: Tag<Trackability>) => void,
@@ -262,9 +272,9 @@ export type StoreForAPrimitive<C extends any, Trackability> = {
 export type StoreForAnObject<C extends any, Trackability> = {
   /**
    * Partially updates the object
+   * @example
    * ```
-   * get(s => s.user)
-   *   .patch({ firstName: 'James', age: 33 })
+   * get(s => s.user).patch({ firstName: 'James', age: 33 })
    * ```
    */
   patch: (partial: Partial<C>, tag: Tag<Trackability>) => void,
@@ -278,8 +288,7 @@ export type StoreWhichIsReadable<C> = {
    * Listens to any updates on this node
    * @returns a subscription which will need to be unsubscribed from to prevent a memory leak
    * ```
-   * get(s => s.todos)
-   *   .onChange(todos => console.log(todos)) ;
+   * get(s => s.todos).onChange(todos => console.log(todos)) ;
    * ```
    */
   onChange: (performAction: (selection: C) => any) => Unsubscribable,
@@ -312,9 +321,10 @@ export type StoreWhichMayContainNestedStores<S, C, Trackability> = StoreForAnObj
  * An object which is capable of managing states of various shapes
  */
 export type Store<C, Trackability> = ([C] extends undefined ? any :
-    [C] extends DeepReadonlyArray<object[]> ? StoreForAnArray<[C][0], Trackability> :
-    [C] extends DeepReadonlyArray<any[]> ? StoreForAnArrayOfPrimitives<[C][0], Trackability> :
-    [C] extends [object] ? StoreForAnObject<C, Trackability> : StoreForAPrimitive<C, Trackability>) & StoreWhichIsResettable<C, Trackability>;
+  [C] extends DeepReadonlyArray<object[]> ? StoreForAnArray<[C][0], Trackability> :
+  [C] extends DeepReadonlyArray<any[]> ? StoreForAnArrayOfPrimitives<[C][0], Trackability> :
+  [C] extends [object] ? StoreForAnObject<C, Trackability> : StoreForAPrimitive<C, Trackability>)
+  & StoreWhichIsResettable<C, Trackability>;
 
 /**
  * An object which support state updates which do not require tags
@@ -329,7 +339,7 @@ export type StoreWhichEnforcesTags<C> = Store<C, 'tagged'>;
 /**
  * An object which is capable of managing state, but which can also be nested within another store
  */
-export type StoreWhichIsNested<C> = Store<C, false> & {
+export type StoreWhichIsNested<C> = Store<C, 'untagged'> & {
   /**
    * Removes this nested store from the store which was marked as a `containerForNestedStores`.
    */
@@ -339,7 +349,7 @@ export type StoreWhichIsNested<C> = Store<C, false> & {
 /**
  * For internal use only.
  */
-export type StoreWhichIsNestedInternal<S, C> = Store<C, false> & {
+export type StoreWhichIsNestedInternal<S, C> = Store<C, 'untagged'> & {
   defineReset: (initState: S) => () => any;
   defineRemoveFromContainingStore: (name: string, key: string) => () => any;
   defineRemoveNestedStore: (name: string, key: string) => () => any;
@@ -457,7 +467,7 @@ export type Derivation<R> = {
    * @returns a subscription which will need to be unsubscribed from to prevent a memory leak
    * ```
    * deriveFrom(...)
-   *   .onChange(result => console.log(result)) ;
+   *   .onChange(derivation => console.log(derivation)) ;
    * ```
    */
   onChange: (listener: (value: R) => any) => Unsubscribable,
