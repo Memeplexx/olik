@@ -47,7 +47,7 @@ export function makeEnforceTags<S>(state: S, options: OptionsForMakingAStoreEnfo
  * 
  * FOR EXAMPLE:
  * ```
- * const get = make({ todos: Array<{ id: number, text: string }>() });
+ * const select = make({ todos: Array<{ id: number, text: string }>() });
  * ```
  */
 export function make<S>(state: S, options: OptionsForMakingAStore = {}): SelectorFromAStore<S> {
