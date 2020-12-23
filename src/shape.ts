@@ -147,7 +147,7 @@ export type FetchFunction<C, P, Trackability> = P extends void ? FetchFunctionTa
  */
 type StoreForAnArrayOfPrimitives<C extends DeepReadonlyArray<any>, Trackability> = {
   /**
-   * Appends an element, or an array of elements, onto the end of the array
+   * Appends any number of elements onto the end of the array
    * @example
    * ```
    * get(s => s.todos).addAfter(newTodos);
@@ -155,7 +155,7 @@ type StoreForAnArrayOfPrimitives<C extends DeepReadonlyArray<any>, Trackability>
    */
   addAfter: (elements: C[0] | C[0][], tag: Tag<Trackability>) => void,
   /**
-   * Prepends an element, or an array of elements, into the beginning of the array
+   * Prepends  any number of elements onto the beginning of the array
    * @example
    * ```
    * get(s => s.todos).addBefore(newTodos);
