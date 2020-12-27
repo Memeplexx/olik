@@ -30,7 +30,7 @@ import { deepCopy, deepFreeze } from './utils';
 export const createFetcher = <C, Trackability, X extends (params: any) => Promise<C>, P extends Parameters<X>[0]>(
   specs: OptionsForCreatingAFetcher<C, Trackability, X>,
 ): FetchFunction<C, Parameters<X>[0], Trackability> => {
-  const responseCache = new Map<any, {
+  const responseCache = new Map<string, {
     data: C,
     error: any,
     lastFetch: number,
@@ -44,24 +44,32 @@ export const createFetcher = <C, Trackability, X extends (params: any) => Promis
   const result = (paramsOrTag: P | string | void, tag: string | void): FetchState<C, P, Trackability> => {
     const supportsTags = (specs.onStore as any).supportsTags;
     const actualTag = supportsTags ? (tag || paramsOrTag) as string : undefined;
-    const actualParams = (((supportsTags && tag) || (!supportsTags && paramsOrTag)) ? paramsOrTag : undefined) as FetchArgument<P>;
-    const cacheItem = responseCache.get(actualParams) || responseCache.set(actualParams,
-      { data: undefined as any as C, error: undefined, lastFetch: 0, status: 'pristine', fetches: [], changeListeners: [], changeOnceListeners: [], cacheExpiredListeners: [], cacheExpiredOnceListeners: [] }).get(actualParams)!;
-    const cacheHasExpiredOrPromiseNotYetCalled = (cacheItem.lastFetch + (specs.cacheFor || 0)) < Date.now();
+    const actualParamsRaw = (((supportsTags && tag) || (!supportsTags && paramsOrTag)) ? paramsOrTag : undefined) as FetchArgument<P>;
+    const actualParamsString = JSON.stringify(actualParamsRaw);
+    const actualKey = actualParamsString === undefined ? 'undefined' : actualParamsString;
+    const keyFromCache = Array.from(responseCache.keys()).find(key => key === actualKey);
+    const cacheItem = keyFromCache !== undefined ? responseCache.get(actualKey)! : responseCache.set(actualKey,
+      { data: undefined as any as C, error: undefined, lastFetch: 0, status: 'pristine', fetches: [], changeListeners: [], changeOnceListeners: [], cacheExpiredListeners: [], cacheExpiredOnceListeners: [] }).get(actualKey)!;
+    const cacheHasExpiredOrPromiseNotYetCalled = (cacheItem.lastFetch + (specs.cacheFor || 0)) <= Date.now();
     const invalidateCache = () => {
       cacheItem.data = null as any as C;
       cacheItem.lastFetch = 0;
     }
     const createFetch = () => ({
       data: cacheItem.data,
-      fetchArg: actualParams,
+      fetchArg: actualParamsRaw,
       store: specs.onStore,
       error: cacheItem.error,
       status: cacheItem.status,
       invalidateCache,
-      refetch: (paramsOrTag: P | string | void, tag: string | void) => {
-        invalidateCache();
-        return result(paramsOrTag, tag);
+      fetch: (paramsOrTag: P | string | void, tag: string | void) => {
+        const newFetch = result(paramsOrTag, tag);
+        // cacheItem.changeListeners.forEach(l => l(newFetch));
+        // newFetch.onChange(state => {
+        //   Object.assign(fetch, state);
+        //   cacheItem.changeListeners.forEach(l => l(state));
+        // });
+        return newFetch;
       },
       onChange: (listener: () => Unsubscribable) => {
         cacheItem.changeListeners.push(listener);
@@ -80,13 +88,12 @@ export const createFetcher = <C, Trackability, X extends (params: any) => Promis
     }) as FetchState<C, P, Trackability>;
     if (cacheItem.status === 'resolving') {
       return cacheItem.fetches[cacheItem.fetches.length - 1];
-    } else
-    if (cacheHasExpiredOrPromiseNotYetCalled) {
+    } else if (cacheHasExpiredOrPromiseNotYetCalled) {
       cacheItem.status = 'resolving';
       cacheItem.fetches.forEach(fetch => Object.assign<FetchState<C, P, Trackability>, Partial<FetchState<C, P, Trackability>>>(fetch, { status: cacheItem.status }));
       cacheItem.changeListeners.forEach(changeListener => changeListener(createFetch()));
       let errorThatWasCaughtInPromise: any = null;
-      specs.getData(actualParams)
+      specs.getData(actualParamsRaw)
         .then(value => {
           try {
             cacheItem.lastFetch = Date.now();
@@ -94,7 +101,7 @@ export const createFetcher = <C, Trackability, X extends (params: any) => Promis
               specs.setData({
                 data: value,
                 tag: actualTag,
-                param: actualParams,
+                param: actualParamsString,
                 store: specs.onStore,
               });
             } else {

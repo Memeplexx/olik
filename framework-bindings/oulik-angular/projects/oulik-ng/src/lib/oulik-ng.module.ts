@@ -1,5 +1,5 @@
 import { NgModule, NgZone } from '@angular/core';
-import { FetchState, listenToDevtoolsDispatch, Store, Unsubscribable } from 'oulik';
+import { DeepReadonly, FetchState, listenToDevtoolsDispatch, Store, Trackability, Unsubscribable } from 'oulik';
 import { Observable } from 'rxjs';
 import { shareReplay } from 'rxjs/operators';
 
@@ -18,10 +18,10 @@ export * from 'oulik';
  * }
  * ```
  */
-export function observe<C, B extends boolean>(
+export function observe<C, B extends Trackability>(
   store: Store<C, B>,
 ) {
-  return new Observable<C>((observer) => {
+  return new Observable<DeepReadonly<C>>((observer) => {
     observer.next(store.read());
     const subscription = store.onChange(v => observer.next(v));
     return () => subscription.unsubscribe();
@@ -41,46 +41,49 @@ export function observe<C, B extends boolean>(
  *   fetchTodos = createFetcher({
  *     onStore: get(s => s.todos),
  *     getData: () => this.http.get<Todo>('https://www.example.com/todos'),
- *     cacheFor: 10
+ *     cacheFor: 1000 * 60
  *   });
  *   // Here is the important bit
  *   todos$ = observeFetch(() => this.fetchTodos());
  * }
  * ```
  */
-export function observeFetch<S, C, P, B extends boolean>(
-  getFetch: () => FetchState<S, C, P, B>,
+export function observeFetch<C, P, B extends Trackability>(
+  getFetch: () => FetchState<C, P, B>,
 ) {
-  return new Observable<
-    { isLoading: boolean, data: C | null, hasError: boolean, error?: any, storeData: C | null, refetch: ReturnType<typeof getFetch>['refetch'] }
+  const observable = new Observable<
+    { isLoading: boolean, data: C | null, hasError: boolean, error?: any, storeData: DeepReadonly<C> | null }
   >(observer => {
     const fetchState = getFetch();
-    const emitCurrentState = () => observer.next(({
-      /**
-       * Whether or not the fetch is currently resolving
-       */
-      isLoading: fetchState.status === 'resolving',
-      /**
-       * Whether or not the latest fetch was rejected
-       */
-      hasError: fetchState.status === 'rejected',
-      /**
-       * The current resolved data, if any.
-       */
-      data: fetchState.data,
-      /**
-       * The current rejection, if any.
-       */
-      error: fetchState.error,
-      /**
-       * The current store data associated with this fetcher
-       */
-      storeData: fetchState.store.read(),
+    result.currentState = fetchState;
+    const emitCurrentState = () => {
+      observer.next(({
+        /**
+         * Whether or not the fetch is currently resolving
+         */
+        isLoading: fetchState.status === 'resolving',
+        /**
+         * Whether or not the latest fetch was rejected
+         */
+        hasError: fetchState.status === 'rejected',
+        /**
+         * The current resolved data, if any.
+         */
+        data: fetchState.data,
+        /**
+         * The current rejection, if any.
+         */
+        error: fetchState.error,
+        /**
+         * The current store data associated with this fetcher
+         */
+        storeData: fetchState.store.read(),
+      }));
       /**
        * Invalidates the cache and re-fetches
        */
-      refetch: fetchState.refetch,
-    }));
+      result.currentState = fetchState;
+    };
     emitCurrentState();
     let storeChangeSubscription: Unsubscribable | undefined;
     const fetchChangeSubscription = fetchState.onChange(() => {
@@ -96,6 +99,11 @@ export function observeFetch<S, C, P, B extends boolean>(
   }).pipe(
     shareReplay({ bufferSize: 1, refCount: true }),
   );
+  const result = {
+    observable,
+    currentState: null as unknown as FetchState<C, P, B>,
+  };
+  return result;
 }
 
 /**
@@ -109,7 +117,7 @@ export function observeFetch<S, C, P, B extends boolean>(
  *   fetchTodos = createFetcher({
  *     onStore: get(s => s.todos),
  *     getData: () => this.http.get<Todo>('https://www.example.com/todos'),
- *     cacheFor: 10
+ *     cacheFor: 1000 * 60
  *   });
  *   // Here is the important bit
  *   resolve(route: ActivatedRouteSnapshot, state: RouterStateSnapshot) {
@@ -118,8 +126,8 @@ export function observeFetch<S, C, P, B extends boolean>(
  * }
  * ```
  */
-export function resolve<S, C, P, B extends boolean>(
-  getFetch: () => FetchState<S, C, P, B>,
+export function resolve<C, P, B extends Trackability>(
+  getFetch: () => FetchState<C, P, B>,
 ) {
   return new Observable<C>(observer => {
     const fetchState = getFetch();

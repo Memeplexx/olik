@@ -186,7 +186,7 @@ describe('Fetcher', () => {
     fetchProp('test').onChangeOnce().then(fetchArg => {
       expect(fetchArg.data).toEqual('test');
       expect(get(s => s.object.property).read()).toEqual('test');
-      fetchArg.refetch('another').onChangeOnce().then(() => {
+      fetchArg.fetch('another').onChangeOnce().then(() => {
         expect(get(s => s.object.property).read()).toEqual('another');
         done();
       });
@@ -218,11 +218,11 @@ describe('Fetcher', () => {
       getData: () => new Promise<string[]>(resolve => setTimeout(() => resolve(['three', 'four']), 10)),
     });
     const fetch = fetchArray();
-    fetch.onChangeOnce().then(() => {
-      fetch.refetch().onChangeOnce().then(() => {
+    fetch.onChangeOnce()
+      .then(() => fetch.fetch().onChangeOnce())
+      .then(() => {
         done();
-      })
-    })
+      });
   });
 
   it('should unsubcribe from change listeners', done => {
@@ -239,7 +239,7 @@ describe('Fetcher', () => {
       changeCount++;
       subscription.unsubscribe();
     });
-    fetch.refetch().onChangeOnce().then(() => {
+    fetch.fetch().onChangeOnce().then(() => {
       expect(changeCount).toEqual(1);
       done();
     })
@@ -259,7 +259,7 @@ describe('Fetcher', () => {
     const subscription = fetch.onCacheExpired(() => {
       cacheExpiredCount++;
       subscription.unsubscribe();
-      fetch.refetch().onChangeOnce().then(() => {
+      fetch.fetch().onChangeOnce().then(() => {
         expect(cacheExpiredCount).toEqual(1);
         done();
       })
@@ -339,5 +339,55 @@ describe('Fetcher', () => {
       done();
     });
   })
+
+  // it('should be able to re-fetch on the same fetcher', done => {
+  //   const get = make(0);
+  //   const fetchThings = createFetcher({
+  //     onStore: get(),
+  //     getData: (arg: { index: number }) => new Promise<number>(resolve => setTimeout(() => resolve(arg.index))),
+  //   });
+  //   const result = fetchThings({ index: 0 });
+  //   let changeCount = 0;
+  //   result.onChange(listener => {
+  //     if (listener.status !== 'resolved') {
+  //       return;
+  //     }
+  //     changeCount++;
+  //   });
+  //   result.fetch({ index: 1 }).onChangeOnce().then(() => {
+  //     expect(changeCount).toEqual(2);
+  //     done();
+  //   });
+  // })
+
+  // it('should be able to paginate', async done => {
+  //   const get = make({ arr: new Array<string>() });
+  //   const total = 50;
+  //   const data = new Array(total).fill(null).map((e, i) => i.toString());
+  //   let index = 0;
+  //   const count = 10;
+  //   const fetchThings = createFetcher({
+  //     onStore: get(s => s.arr),
+  //     getData: (arg: { index: number, count: number }) => new Promise<string[]>(resolve => {
+  //       setTimeout(() => resolve(data.slice(arg.index * arg.count, (arg.index + 1) * arg.count)), 5);
+  //     }),
+  //   });
+  //   const result = fetchThings({ index, count });
+  //   result.onChange(listener => {
+  //     console.log(listener.status, listener.data);
+  //     if (listener.status !== 'resolved') {
+  //       return;
+  //     }
+  //     if (((listener.fetchArg.index + 1) * listener.fetchArg.count) === total) {
+  //       done();
+  //     }
+  //     const expectedData = data.slice(listener.fetchArg.index * listener.fetchArg.count, (listener.fetchArg.index + 1) * listener.fetchArg.count);
+  //     expect(result.data).toEqual(expectedData);
+  //     expect(listener.data).toEqual(expectedData);
+  //   });
+  //   for (let i = 0; i < (total / count); i++) {
+  //     await result.fetch({ index: ++index, count }).onChangeOnce();
+  //   }
+  // });
 
 });

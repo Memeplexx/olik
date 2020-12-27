@@ -93,9 +93,9 @@ export interface FetchState<C, P, Trackability> {
    */
   onCacheExpiredOnce: () => Promise<FetchState<C, P, Trackability>>;
   /**
-   * Invalidates the cache (if any data is cached) and re-fetches
+   * A convenience function for re-fetching data
    */
-  refetch: FetchFunction<C, P, Trackability>;
+  fetch: FetchFunction<C, P, Trackability>;
 };
 
 /**
@@ -291,7 +291,7 @@ export type StoreWhichIsReadable<C> = {
    * get(s => s.todos).onChange(todos => console.log(todos)) ;
    * ```
    */
-  onChange: (performAction: (selection: C) => any) => Unsubscribable,
+  onChange: (performAction: (selection: DeepReadonly<C>) => any) => Unsubscribable,
   /**
    * @returns the current state
    */
@@ -470,7 +470,7 @@ export type Derivation<R> = {
    *   .onChange(derivation => console.log(derivation)) ;
    * ```
    */
-  onChange: (listener: (value: R) => any) => Unsubscribable,
+  onChange: (listener: (value: DeepReadonly<R>) => any) => Unsubscribable,
 };
 
 export type WindowAugmentedWithReduxDevtools = {
