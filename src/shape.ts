@@ -51,7 +51,7 @@ export type DeepReadonlyObject<T> = {
 /**
  * The state of a current fetch
  */
-export interface FetchState<C, P, Trackability> {
+export interface FetchState<C, P, T extends Trackability> {
   /**
    * The current resolved data, if any.
    */
@@ -67,7 +67,7 @@ export interface FetchState<C, P, Trackability> {
   /**
    * The store associated with this fetch
    */
-  store: Store<C, Trackability>;
+  store: Store<C, T>;
   /**
    * The argument that was used in the request (if any)
    */
@@ -79,33 +79,33 @@ export interface FetchState<C, P, Trackability> {
   /**
    * Takes a function that will be invoked whenever the status changes
    */
-  onChange: (listener: (fetch: FetchState<C, P, Trackability>) => any) => Unsubscribable;
+  onChange: (listener: (fetch: FetchState<C, P, T>) => any) => Unsubscribable;
   /**
    * Returns the underlying promise associated with this fetch
    */
-  onChangeOnce: () => Promise<FetchState<C, P, Trackability>>;
+  onChangeOnce: () => Promise<FetchState<C, P, T>>;
   /**
    * Takes a function that will be invoked whenever the cache expires
    */
-  onCacheExpired: (listener: (fetch: FetchState<C, P, Trackability>) => any) => Unsubscribable;
+  onCacheExpired: (listener: (fetch: FetchState<C, P, T>) => any) => Unsubscribable;
   /**
    * Returns a promise which will resolve when the cache next expires
    */
-  onCacheExpiredOnce: () => Promise<FetchState<C, P, Trackability>>;
+  onCacheExpiredOnce: () => Promise<FetchState<C, P, T>>;
   /**
    * A convenience function for re-fetching data
    */
-  fetch: FetchFunction<C, P, Trackability>;
+  fetch: FetchFunction<C, P, T>;
 };
 
 /**
  * An object which can be passed in when creating a fetcher
  */
-export type OptionsForCreatingAFetcher<C, Trackability, X extends (params: any) => Promise<C>> = {
+export type OptionsForCreatingAFetcher<C, T extends Trackability, X extends (params: any) => Promise<C>> = {
   /**
    * The store that you want this fetcher to read to and write from
    */
-  onStore: Store<C, Trackability>,
+  onStore: Store<C, T>,
   /**
    * A function returning a promise to fetch asynchronous data, for example:
    * ```
@@ -120,7 +120,7 @@ export type OptionsForCreatingAFetcher<C, Trackability, X extends (params: any) 
    * setData: arg => arg.store.addAfter(arg.data)
    * ```
    */
-  setData?: (args: { store: Store<C, Trackability>, data: C, param: Parameters<X>[0], tag?: string }) => any,
+  setData?: (args: { store: Store<C, T>, data: C, param: Parameters<X>[0], tag?: string }) => any,
   /**
    * How long, in milliseconds, you want the library to cache fetch responses.
    */
@@ -130,22 +130,53 @@ export type OptionsForCreatingAFetcher<C, Trackability, X extends (params: any) 
 /**
  * A function which fetches data, but takes no argument
  */
-export type FetchFunctionTakingNoArg<C, P, Trackability> = (tag: Tag<Trackability>) => FetchState<C, P, Trackability>;
+export type FetchFunctionTakingNoArg<C, P, T extends Trackability> = (tag: Tag<Trackability>) => FetchState<C, P, T>;
 
 /**
  * A function which fetches data and takes an argument
  */
-export type FetchFunctionTakingAnArg<C, P, Trackability> = (params: FetchArgument<P>, tag: Tag<Trackability>) => FetchState<C, P, Trackability>;
+export type FetchFunctionTakingAnArg<C, P, T extends Trackability> = (params: FetchArgument<P>, tag: Tag<Trackability>) => FetchState<C, P, T>;
 
 /**
  * A function returned when a fetcher is first created. This function can then be invoked when a fetch is needed.
  */
-export type FetchFunction<C, P, Trackability> = P extends void ? FetchFunctionTakingNoArg<C, P, Trackability> : FetchFunctionTakingAnArg<C, P, Trackability>;
+export type FetchFunction<C, P, T extends Trackability> = P extends void ? FetchFunctionTakingNoArg<C, P, T> : FetchFunctionTakingAnArg<C, P, T>;
+
+/**
+ * A container for a promise as well as its cache duration
+ */
+export type CachedPromise<C> = {
+  /**
+   * A function accepting zero or more arguments, and returning a promise
+   */
+  promise: (...args: any[]) => Promise<C>,
+  /**
+   * An array of arguments
+   */
+  args?: any[],
+  /**
+   * How long, in milliseconds the cached data should be retained
+   */
+  ttl: number,
+};
+export type CachedPromiseDescriptor<C, X extends (...args: any[]) => Promise<C>> = Parameters<X>[0] extends undefined ?
+  { ttl: (num: number) => { promise: X, ttl: number } } :
+  { args: (...params: Parameters<X>) => { ttl: (num: number) => { promise: X, ttl: number, args: Parameters<X> } } };
+
+/**
+ * Represents an action payload which may either be a primitive, a. object, a function returning a promise, or a CachedPromise
+ */
+export type LiteralOrPromiseReturning<C> = C | (() => Promise<C>) | CachedPromise<C>;
+
+/**
+ * The result of an update action where the argument was a PayloadOrPrimitive
+ */
+export type LiteralOrPromiseReturningResult<R, C> = R extends (CachedPromise<C> | (() => Promise<C>)) ? Promise<DeepReadonly<C>> : void;
 
 /**
  * An object which is capable of storing and updating state which is in the shape of an array of primitives
  */
-type StoreForAnArrayOfPrimitives<C extends DeepReadonlyArray<any>, Trackability> = {
+export type StoreForAnArray<C extends DeepReadonlyArray<any>, T extends Trackability> = {
   /**
    * Appends any number of elements onto the end of the array
    * @example
@@ -153,7 +184,7 @@ type StoreForAnArrayOfPrimitives<C extends DeepReadonlyArray<any>, Trackability>
    * get(s => s.todos).addAfter(newTodos);
    * ```
    */
-  addAfter: (elements: C[0] | C[0][], tag: Tag<Trackability>) => void,
+  addAfter: <R extends LiteralOrPromiseReturning<C[0] | C>>(payload: R, tag: Tag<T>) => LiteralOrPromiseReturningResult<R, C[0] | C>,
   /**
    * Prepends  any number of elements onto the beginning of the array
    * @example
@@ -161,7 +192,7 @@ type StoreForAnArrayOfPrimitives<C extends DeepReadonlyArray<any>, Trackability>
    * get(s => s.todos).addBefore(newTodos);
    * ```
    */
-  addBefore: (elements: C[0] | C[0][], tag: Tag<Trackability>) => void,
+  addBefore: <R extends LiteralOrPromiseReturning<C[0] | C>>(payload: R, tag: Tag<T>) => LiteralOrPromiseReturningResult<R, C[0] | C>,
   /**
    * Removes all elements from the array
    * @example
@@ -169,7 +200,7 @@ type StoreForAnArrayOfPrimitives<C extends DeepReadonlyArray<any>, Trackability>
    * get(s => s.todos).removeAll();
    * ```
    */
-  removeAll: (tag: Tag<Trackability>) => void,
+  removeAll: (tag: Tag<T>) => void,
   /**
    * Deletes the first element from the array
    * @example
@@ -177,7 +208,7 @@ type StoreForAnArrayOfPrimitives<C extends DeepReadonlyArray<any>, Trackability>
    * get(s => s.todos).removeFirst();
    * ```
    */
-  removeFirst: (tag: Tag<Trackability>) => void,
+  removeFirst: (tag: Tag<T>) => void,
   /**
    * Deletes the last element from the array
    * @example
@@ -185,7 +216,7 @@ type StoreForAnArrayOfPrimitives<C extends DeepReadonlyArray<any>, Trackability>
    * get(s => s.todos).removeLast();
    * ```
    */
-  removeLast: (tag: Tag<Trackability>) => void,
+  removeLast: (tag: Tag<T>) => void,
   /**
    * Delete elements which match a specific condition
    * @example
@@ -193,7 +224,7 @@ type StoreForAnArrayOfPrimitives<C extends DeepReadonlyArray<any>, Trackability>
    * get(s => s.todos).removeWhere(t => t.status === 'done')
    * ```
    */
-  removeWhere: (where: (arrayElement: C[0]) => boolean, tag: Tag<Trackability>) => void,
+  removeWhere: (where: (arrayElement: C[0]) => boolean, tag: Tag<T>) => void,
   /**
    * Substitutes all elements with a new array of elements
    * @example
@@ -201,7 +232,7 @@ type StoreForAnArrayOfPrimitives<C extends DeepReadonlyArray<any>, Trackability>
    * get(s => s.todos).replaceAll(newTodos);
    * ```
    */
-  replaceAll: (replacement: C, tag: Tag<Trackability>) => void,
+  replaceAll: <R extends LiteralOrPromiseReturning<C>>(replacement: R, tag: Tag<T>) => LiteralOrPromiseReturningResult<R, C>,
   /**
    * Substitute elements which match a specific condition
    * @example
@@ -211,7 +242,7 @@ type StoreForAnArrayOfPrimitives<C extends DeepReadonlyArray<any>, Trackability>
    *   .with({ id: 5, text: 'bake cookies' });
    * ```
    */
-  replaceWhere: (where: (arrayElement: C[0]) => boolean) => { with: (element: C[0], tag: Tag<Trackability>) => void },
+  replaceWhere: (where: (arrayElement: C[0]) => boolean) => { with: <R extends LiteralOrPromiseReturning<C[0]>>(element: R, tag: Tag<T>) => LiteralOrPromiseReturningResult<R, C[0]> },
   /**
    * Substitutes or appends an element depending on whether or not it can be found.
    * Note that if more than one element is found which matches the criteria specified in the 'where' clause, an error will be thrown
@@ -222,24 +253,24 @@ type StoreForAnArrayOfPrimitives<C extends DeepReadonlyArray<any>, Trackability>
    *   .with({ id: 5, text: 'bake cookies' });
    * ```
    */
-  upsertWhere: (where: (arrayElement: C[0]) => boolean) => { with: (element: C[0], tag: Tag<Trackability>) => void },
+  upsertWhere: (where: (arrayElement: C[0]) => boolean) => { with: <R extends LiteralOrPromiseReturning<C[0]>>(element: R, tag: Tag<T>) => LiteralOrPromiseReturningResult<R, C[0]> },
   /**
    * Merges the supplied array into the existing array.  
    * Any supplied elements will either replace their corresponding element in the store (if a match could be found) or else they will be appended to the store array.  
    * @example
    * ```
    * get(s => s.todos)
-   *   .mergeWhere((existingElement, newElement) => existingElement.id === newElement.id)
+   *   .mergeWhere((currEl, newEl) => currEl.id === newEl.id)
    *   .with(newTodosArray);
    * ```
    */
-  mergeWhere: (where: (existingArrayElement: C[0], newArrayElement: C[0]) => boolean) => { with: (elements: C, tag: Tag<Trackability>) => void },
+  mergeWhere: (where: (existingArrayElement: C[0], newArrayElement: C[0]) => boolean) => { with: <R extends LiteralOrPromiseReturning<C>>(elements: R, tag: Tag<T>) => LiteralOrPromiseReturningResult<R, C> },
 }
 
 /**
  * An object which is capable of storing and updating state which is in the shape of an array
  */
-export type StoreForAnArray<C extends DeepReadonlyArray<any>, Trackability> = {
+export type StoreForAnArrayOfObjects<C extends DeepReadonlyArray<any>, T extends Trackability> = {
   /**
    * Partially updates zero or more elements which match a specific condition
    * @example
@@ -249,36 +280,40 @@ export type StoreForAnArray<C extends DeepReadonlyArray<any>, Trackability> = {
    *   .with({ status: 'todo' });
    * ```
    */
-  patchWhere: (where: (arrayElement: C[0]) => boolean) => { with: (element: Partial<C[0]>, tag: Tag<Trackability>) => void },
-} & StoreForAnArrayOfPrimitives<C, Trackability>;
+  patchWhere: (where: (arrayElement: C[0]) => boolean) => { with: <R extends LiteralOrPromiseReturning<Partial<C[0]>>>(element: R, tag: Tag<T>) => LiteralOrPromiseReturningResult<R, Partial<C[0]>> },
+} & StoreForAnArray<C, T>;
 
 /**
  * An object which is capable of storing and updating state which is in the shape of a primitive
  */
-export type StoreForAPrimitive<C extends any, Trackability> = {
+export type StoreForAnObjectOrPrimitive<C extends any, T extends Trackability> = {
   /**
-   * Substitutes the primitive value
+   * Substitutes this primitive value
    * @example
    * ```
    * get(s => s.user.age).replace(33)
    * ```
+   * @example
+   * ```
+   * get(s => s.user.age).replace(() => fetchUserAgeAsPromise())
+   * ```
    */
-  replace: (replacement: C, tag: Tag<Trackability>) => void,
+  replace: <R extends LiteralOrPromiseReturning<C>>(replacement: R, tag: Tag<T>) => LiteralOrPromiseReturningResult<R, C>,
 }
 
 /**
  * An object which is capable of storing and updating state which is in the shape of an object
  */
-export type StoreForAnObject<C extends any, Trackability> = {
+export type StoreForAnObject<C extends any, T extends Trackability> = {
   /**
-   * Partially updates the object
+   * Partially updates this object
    * @example
    * ```
    * get(s => s.user).patch({ firstName: 'James', age: 33 })
    * ```
    */
-  patch: (partial: Partial<C>, tag: Tag<Trackability>) => void,
-} & StoreForAPrimitive<C, Trackability>;
+  patch: <R extends LiteralOrPromiseReturning<Partial<C>>>(partial: R, tag: Tag<T>) => LiteralOrPromiseReturningResult<R, Partial<C>>,
+} & StoreForAnObjectOrPrimitive<C, T>;
 
 /**
  * An object which is capable of reading from and listening to changes made to a certain piece of state
@@ -296,23 +331,36 @@ export type StoreWhichIsReadable<C> = {
    * @returns the current state
    */
   read: () => DeepReadonly<C>,
+  /**
+   * @returns the current state
+   */
+  readInitial: () => DeepReadonly<C>,
+  /**
+   * Invalidates all caches on this node and any descendants of this node.
+   */
+  invalidateCache: () => void,
+  /**
+   * If there is a cache associated with this node, then the function you supply here will be invoked whenever that cache expires.
+   * Note that this will not be triggered if invalidateCache() is manually called.
+   */
+  onCacheExpired: (listener: () => any) => Unsubscribable,
 }
 
 /**
  * An object which is capable of resetting its internal state
  */
-export type StoreWhichIsResettable<C extends any, Trackability> = {
+export type StoreWhichIsResettable<C extends any, T extends Trackability> = {
   /**
    * Reverts the current state to how it was when the store was initialized.
    * Beware that if this store is marked as a `containerForNestedStores`, then all nested stores will also be removed
    */
-  reset: (tag: Tag<Trackability>) => void,
+  reset: (tag: Tag<T>) => void,
 } & StoreWhichIsReadable<C>;
 
 /**
  * An object which is capable of storing nested stores
  */
-export type StoreWhichMayContainNestedStores<S, C, Trackability> = StoreForAnObject<C, Trackability> & StoreWhichIsReadable<C> & {
+export type StoreWhichMayContainNestedStores<S, C, T extends Trackability> = StoreForAnObject<C, T> & StoreWhichIsReadable<C> & {
   renew: (state: S) => void;
   reset: () => void;
 };
@@ -320,11 +368,11 @@ export type StoreWhichMayContainNestedStores<S, C, Trackability> = StoreForAnObj
 /**
  * An object which is capable of managing states of various shapes
  */
-export type Store<C, Trackability> = ([C] extends undefined ? any :
-  [C] extends DeepReadonlyArray<object[]> ? StoreForAnArray<[C][0], Trackability> :
-  [C] extends DeepReadonlyArray<any[]> ? StoreForAnArrayOfPrimitives<[C][0], Trackability> :
-  [C] extends [object] ? StoreForAnObject<C, Trackability> : StoreForAPrimitive<C, Trackability>)
-  & StoreWhichIsResettable<C, Trackability>;
+export type Store<C, T extends Trackability> = ([C] extends undefined ? any :
+  [C] extends DeepReadonlyArray<object[]> ? StoreForAnArrayOfObjects<[C][0], T> :
+  [C] extends DeepReadonlyArray<any[]> ? StoreForAnArray<[C][0], T> :
+  [C] extends [object] ? StoreForAnObject<C, T> : StoreForAnObjectOrPrimitive<C, T>)
+  & StoreWhichIsResettable<C, T>;
 
 /**
  * An object which support state updates which do not require tags

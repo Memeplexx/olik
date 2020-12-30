@@ -1,4 +1,5 @@
 import { errorMessages } from './consts';
+import { CachedPromise, CachedPromiseDescriptor, LiteralOrPromiseReturning } from './shape';
 
 export function deepFreeze<T extends Object>(o: T): T {
   Object.freeze(o);
@@ -40,7 +41,7 @@ export function validateState(state: any) {
     throw new Error(errorMessages.INVALID_STATE_INPUT);
   };
   if (
-    state !== null 
+    state !== null
     && !['boolean', 'number', 'string'].some(type => typeof state === type)
   ) {
     if (!Array.isArray(state)) {
@@ -59,7 +60,6 @@ export function validateState(state: any) {
 export function copyObject<T>(oldObj: T, newObj: T, segs: string[], action: (newNode: any) => any): any {
   const seg = (segs as (keyof T)[]).shift();
   if (seg) {
-    // if (!isNaN(seg as any)) { // must be an array key
     if (Array.isArray(oldObj)) {
       return (oldObj as any as any[]).map((e, i) => +seg === i
         ? { ...(oldObj as any)[i], ...copyObject((oldObj as any)[i], (newObj as any)[i], segs, action) }
@@ -113,3 +113,38 @@ export function createPathReader<S extends Object>(state: S) {
     return { readSelector, mutableStateCopy, pathSegments }
   })();
 }
+
+export function copyPayload<C>(payload: C) {
+  return {
+    payloadFrozen: deepFreeze(deepCopy(payload)),
+    payloadCopied: deepCopy(payload),
+  };
+}
+
+export function copyPayloadOrPromise<C>(payload: LiteralOrPromiseReturning<C>) {
+  let payloadFrozen: C | undefined;
+  let payloadCopied: C | undefined;
+  let promise: (() => Promise<C>) | undefined;
+  let cachedPromise: CachedPromise<C> | undefined;
+  if (typeof (payload) === 'function') {
+    promise = payload as () => Promise<C>;
+  } else if (typeof ((payload as CachedPromise<C>).promise) === 'function') {
+    cachedPromise = payload as CachedPromise<C>;
+  } else {
+    payloadFrozen = deepFreeze(deepCopy(payload as any));
+    payloadCopied = deepCopy(payload as any);
+  }
+  return { payloadFrozen, payloadCopied, promise, cachedPromise };
+}
+
+export const cachedPromise = <C, X extends (...args: any[]) => Promise<C>>(promise: X) => {
+  return {
+    ttl: (ttl: number) => ({ promise, ttl }),
+    args: (...args: Parameters<X>) => ({ ttl: (ttl: number) => ({ promise, ttl, args }) }),
+  } as unknown as CachedPromiseDescriptor<C, X>;
+};
+
+export const getCacheKey = (pathSegments: string[], action: string) => {
+  return `${pathSegments.join('.')}${pathSegments.length ? '.' : ''}${action}()`;
+}
+

@@ -54,4 +54,11 @@ describe('Root', () => {
     expect(get().read()).toEqual(['one', 'twoo', 'three']);
   })
 
+  it('should addAfter root array', () => {
+    const get = make(['one']);
+    get().addAfter('two');
+    expect(get().read()).toEqual(['one', 'two']);
+    expect(tests.currentAction.type).toEqual('addAfter()');
+  })
+
 });
