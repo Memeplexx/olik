@@ -1,9 +1,4 @@
 /**
- * The current status of a fetch
- */
-export type FetcherStatus = 'pristine' | 'rejected' | 'resolved' | 'resolving';
-
-/**
  * A tag which may need to be supplied when performing a state update
  */
 export type Tag<B> = B extends 'tagged' ? string : void;
@@ -49,100 +44,6 @@ export type DeepReadonlyObject<T> = {
 };
 
 /**
- * The state of a current fetch
- */
-export interface FetchState<C, P, T extends Trackability> {
-  /**
-   * The current resolved data, if any.
-   */
-  data: C;
-  /**
-   * The current rejection, if any.
-   */
-  error: any;
-  /**
-   * The current status. Changes to this value can be observed using onChange() and onChangeOnce().
-   */
-  status: FetcherStatus;
-  /**
-   * The store associated with this fetch
-   */
-  store: Store<C, T>;
-  /**
-   * The argument that was used in the request (if any)
-   */
-  fetchArg: FetchArgument<P>;
-  /**
-   * Clears data from the cache (not the store) so that the next time data it requested, it is also re-fetched
-   */
-  invalidateCache: () => any;
-  /**
-   * Takes a function that will be invoked whenever the status changes
-   */
-  onChange: (listener: (fetch: FetchState<C, P, T>) => any) => Unsubscribable;
-  /**
-   * Returns the underlying promise associated with this fetch
-   */
-  onChangeOnce: () => Promise<FetchState<C, P, T>>;
-  /**
-   * Takes a function that will be invoked whenever the cache expires
-   */
-  onCacheExpired: (listener: (fetch: FetchState<C, P, T>) => any) => Unsubscribable;
-  /**
-   * Returns a promise which will resolve when the cache next expires
-   */
-  onCacheExpiredOnce: () => Promise<FetchState<C, P, T>>;
-  /**
-   * A convenience function for re-fetching data
-   */
-  fetch: FetchFunction<C, P, T>;
-};
-
-/**
- * An object which can be passed in when creating a fetcher
- */
-export type OptionsForCreatingAFetcher<C, T extends Trackability, X extends (params: any) => Promise<C>> = {
-  /**
-   * The store that you want this fetcher to read to and write from
-   */
-  onStore: Store<C, T>,
-  /**
-   * A function returning a promise to fetch asynchronous data, for example:
-   * ```
-   * getData: () => fetchThingsFromApi(),
-   * ```
-   */
-  getData: X,
-  /**
-   * By default, fetchers will simply replace all data associated with a part of the store specified by the `getData` property.
-   * However, this behavior can be overridden here. The following example appends resolved data to existing array within the store:
-   * ```
-   * setData: arg => arg.store.addAfter(arg.data)
-   * ```
-   */
-  setData?: (args: { store: Store<C, T>, data: C, param: Parameters<X>[0], tag?: string }) => any,
-  /**
-   * How long, in milliseconds, you want the library to cache fetch responses.
-   */
-  cacheFor?: number,
-};
-
-/**
- * A function which fetches data, but takes no argument
- */
-export type FetchFunctionTakingNoArg<C, P, T extends Trackability> = (tag: Tag<Trackability>) => FetchState<C, P, T>;
-
-/**
- * A function which fetches data and takes an argument
- */
-export type FetchFunctionTakingAnArg<C, P, T extends Trackability> = (params: FetchArgument<P>, tag: Tag<Trackability>) => FetchState<C, P, T>;
-
-/**
- * A function returned when a fetcher is first created. This function can then be invoked when a fetch is needed.
- */
-export type FetchFunction<C, P, T extends Trackability> = P extends void ? FetchFunctionTakingNoArg<C, P, T> : FetchFunctionTakingAnArg<C, P, T>;
-
-/**
  * A container for a promise as well as its cache duration
  */
 export type CachedPromise<C> = {
@@ -160,8 +61,8 @@ export type CachedPromise<C> = {
   ttl: number,
 };
 export type CachedPromiseDescriptor<C, X extends (...args: any[]) => Promise<C>> = Parameters<X>[0] extends undefined ?
-  { ttl: (num: number) => { promise: X, ttl: number } } :
-  { args: (...params: Parameters<X>) => { ttl: (num: number) => { promise: X, ttl: number, args: Parameters<X> } } };
+  { ttl: (num: number) => CachedPromiseNoArgs<C, X> } :
+  { args: (...params: Parameters<X>) => { ttl: (num: number) => CachedPromiseWithArgs<C, X> } };
 
 /**
  * Represents an action payload which may either be a primitive, a. object, a function returning a promise, or a CachedPromise
@@ -347,6 +248,16 @@ export type StoreWhichIsReadable<C, T extends Trackability> = {
 }
 
 /**
+ * A container for a function returning promise and a ttl
+ */
+export type CachedPromiseNoArgs<C, X extends (...args: any[]) => Promise<C>> = { promise: X, ttl: number };
+
+/**
+ * A container for a function accepting 1 or more arguments returning promise and a ttl
+ */
+export type CachedPromiseWithArgs<C, X extends (...args: any[]) => Promise<C>> = { promise: X, ttl: number, args: Parameters<X> }
+
+/**
  * An object which is capable of resetting its internal state
  */
 export type StoreWhichIsResettable<C extends any, T extends Trackability> = {
@@ -482,11 +393,11 @@ export type OptionsForReduxDevtools = {
     /**
      * export history of actions in a file
      */
-    export?: boolean | "custom";
+    export?: boolean | 'custom';
     /**
      * import history of actions from a file
      */
-    import?: boolean | "custom";
+    import?: boolean | 'custom';
     /**
      * jump back and forth (time traveling
      */
