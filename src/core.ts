@@ -127,33 +127,58 @@ function makeInternal<S, T extends Trackability>(state: S, options: { supportsTa
   let initialState = currentState;
   let devtoolsDispatchListener: ((action: { type: string, payload?: any }) => any) | undefined;
   const setDevtoolsDispatchListener = (listener: (action: { type: string, payload?: any }) => any) => devtoolsDispatchListener = listener;
-  const cache = new Map<string, any>();
   const cacheExpiredListeners = new Map<(ar: any) => any, () => any>();
-  const doPromise = <C>(cacheKey: string, selector: Function, promise: () => Promise<C>, ttl: number, updateStateFn: (frozen: C, copied: C) => any) => new Promise<C>((resolve, reject) => {
-    if (cache.has(cacheKey)) {
-      resolve(cache.get(cacheKey));
+  const doPromise = <C>(cacheKey: string, selector: Function, promise: (...angs: any[]) => Promise<C>, ttl: number, args: any[], updateStateFn: (frozen: C, copied: C, cacheReplacer: (state: S) => S) => S) => new Promise<C>((resolve, reject) => {
+    const currentStateWithCache = currentState as unknown as { cache: SimpleObject };
+    const cacheKeyWithArgs = `${cacheKey.split(')')[0]}(${args}) => Promise)`;
+    if (currentStateWithCache.cache && currentStateWithCache.cache[cacheKeyWithArgs]) {
+      resolve(currentStateWithCache.cache[cacheKeyWithArgs]);
       return;
     }
-    promise().then(res => {
+    promise.apply(undefined, args).then(res => {
       const copiedRes = copyPayload(res);
-      cache.set(cacheKey, copiedRes);
-      setTimeout(() => {
-        cache.delete(cacheKey);
-        Array.from(cacheExpiredListeners.keys()).filter(l => l.toString() === selector.toString()).forEach(key => {
-          cacheExpiredListeners.get(key)!();
-          cacheExpiredListeners.delete(key);
-        });
-      }, ttl);
-      updateStateFn(copiedRes.payloadFrozen, copiedRes.payloadCopied);
+      if (ttl) {
+        setTimeout(() => {
+          updateState({
+            selector: (s: S) => (s as unknown as { cache: SimpleObject }).cache,
+            replacer: old => {
+              const { [cacheKeyWithArgs]: val, ...others } = old;
+              return others;
+            },
+            mutator: old => delete old[cacheKeyWithArgs],
+            pathSegments: ['cache'],
+            actionName: 'remove',
+            payload: selector.toString(),
+            tag: null as unknown as Tag<T>,
+          });
+          Array.from(cacheExpiredListeners.keys()).filter(l => l.toString() === selector.toString()).forEach(key => cacheExpiredListeners.get(key)!());
+        }, ttl);
+      }
+      const cacheReplacer = (state: S) => {
+        if (!ttl) { return state; }
+        const stateWithCache = state as unknown as { cache: SimpleObject };
+        if (currentStateWithCache.cache) {
+          return { ...stateWithCache, cache: { ...stateWithCache.cache, [cacheKeyWithArgs]: copiedRes.payloadFrozen } } as unknown as S;
+        } else {
+          const result = { ...stateWithCache, cache: { [cacheKeyWithArgs]: copiedRes.payloadFrozen } } as unknown as S;
+          pathReader = createPathReader(result);
+          return result;
+        }
+      }
+      updateStateFn(copiedRes.payloadFrozen, copiedRes.payloadCopied, cacheReplacer);
       resolve(copiedRes.payloadFrozen);
     }).catch(err => reject(err));
   });
-  const processPayloadOrPromise = <C>(specs: { cacheKey: string, selector: Function, payloadOrPromise: LiteralOrPromiseReturning<C>, updateStateFn: (frozen: C, copied: C) => any }) => {
+
+  const processPayloadOrPromise = <C>(specs: { cacheKey: string, selector: Function, payloadOrPromise: LiteralOrPromiseReturning<C>, updateStateFn: (frozen: C, copied: C, cacheReplacer?: (state: S) => S) => any }) => {
     const { payloadFrozen, payloadCopied, promise, cachedPromise } = copyPayloadOrPromise(specs.payloadOrPromise);
     if (promise) {
-      return doPromise(specs.cacheKey, specs.selector, promise, 0, specs.updateStateFn);
+      return doPromise(specs.cacheKey, specs.selector, promise, 0, [], specs.updateStateFn);
     } else if (cachedPromise) {
-      return doPromise(specs.cacheKey, specs.selector, cachedPromise.promise, cachedPromise.ttl, specs.updateStateFn);
+      if (Array.isArray(currentState) || ['number', 'string', 'boolean'].some(type => typeof(currentState) === type)) {
+        throw new Error(errorMessages.INVALID_CONTAINER_FOR_CACHES)
+      }
+      return doPromise(specs.cacheKey, specs.selector, cachedPromise.promise, cachedPromise.ttl, cachedPromise.args || [], specs.updateStateFn);
     } else if (payloadFrozen !== undefined && payloadCopied !== undefined) {
       specs.updateStateFn(payloadFrozen, payloadCopied);
     }
@@ -165,7 +190,7 @@ function makeInternal<S, T extends Trackability>(state: S, options: { supportsTa
         cacheKey: name,
         selector,
         payloadOrPromise,
-        updateStateFn: (frozen, copied) => updateState({
+        updateStateFn: (frozen, copied, cacheReplacer) => updateState({
           selector,
           replacer: old => frozen,
           mutator: old => {
@@ -181,6 +206,7 @@ function makeInternal<S, T extends Trackability>(state: S, options: { supportsTa
           pathSegments: [],
           payload: frozen,
           tag,
+          cacheReplacer,
         })
       })
     } else {
@@ -193,10 +219,10 @@ function makeInternal<S, T extends Trackability>(state: S, options: { supportsTa
       })) as Selector<S, C>;
       const cacheKey = getCacheKey(pathSegments, name);
       return processPayloadOrPromise({
-        cacheKey: getCacheKey(pathSegments, name),
+        cacheKey,
         selector,
         payloadOrPromise,
-        updateStateFn: (frozen, copied) => updateState({
+        updateStateFn: (frozen, copied, cacheReplacer) => updateState({
           selector: selectorRevised,
           replacer: old => Array.isArray(old) ? (old as Array<any>).map((o, i) => i === +lastSeg ? deepCopy(frozen) : o) : ({ ...old, [lastSeg]: deepCopy(frozen) }),
           mutator: (old: SimpleObject) => old[lastSeg] = copied,
@@ -205,6 +231,7 @@ function makeInternal<S, T extends Trackability>(state: S, options: { supportsTa
           pathSegments: segsCopy,
           payload: frozen,
           tag,
+          cacheReplacer,
         })
       })
     }
@@ -223,14 +250,15 @@ function makeInternal<S, T extends Trackability>(state: S, options: { supportsTa
           cacheKey: getCacheKey(pathSegments, 'patch'),
           selector,
           payloadOrPromise,
-          updateStateFn: (frozen, copied) => updateState({
+          updateStateFn: (frozen, copied, cacheReplacer) => updateState({
             selector,
             replacer: old => ({ ...old, ...frozen }),
-            mutator:  old => Object.assign(old, copied),
+            mutator: old => Object.assign(old, copied),
             actionName: 'patch',
             pathSegments,
             payload: frozen,
             tag,
+            cacheReplacer,
           })
         })
       }) as StoreForAnObject<C, T>['patch'],
@@ -242,7 +270,7 @@ function makeInternal<S, T extends Trackability>(state: S, options: { supportsTa
             cacheKey: getCacheKey(pathSegments, 'patchWhere'),
             selector,
             payloadOrPromise,
-            updateStateFn: (frozen, copied) => updateState({
+            updateStateFn: (frozen, copied, cacheReplacer) => updateState({
               selector,
               replacer: old => old.map((o, i) => indicesOfElementsToPatch.includes(i) ? { ...o, ...frozen } : o),
               mutator: old => indicesOfElementsToPatch.forEach(i => Object.assign(old[i], copied)),
@@ -250,6 +278,7 @@ function makeInternal<S, T extends Trackability>(state: S, options: { supportsTa
               pathSegments,
               payload: { patch: frozen, whereClause: where.toString() },
               tag,
+              cacheReplacer,
             })
           })
         }
@@ -260,7 +289,7 @@ function makeInternal<S, T extends Trackability>(state: S, options: { supportsTa
           cacheKey: getCacheKey(pathSegments, 'addAfter'),
           selector,
           payloadOrPromise,
-          updateStateFn: (frozen, copied) => updateState({
+          updateStateFn: (frozen, copied, cacheReplacer) => updateState({
             selector,
             replacer: old => [...old, ...(deepCopy(Array.isArray(frozen) ? frozen : [frozen]))],
             mutator: old => old.push(...(Array.isArray(copied) ? copied : [copied])),
@@ -268,6 +297,7 @@ function makeInternal<S, T extends Trackability>(state: S, options: { supportsTa
             pathSegments,
             payload: frozen,
             tag,
+            cacheReplacer,
           })
         });
       }) as StoreForAnArray<X, T>['addAfter'],
@@ -277,14 +307,15 @@ function makeInternal<S, T extends Trackability>(state: S, options: { supportsTa
           cacheKey: getCacheKey(pathSegments, 'addBefore'),
           selector,
           payloadOrPromise,
-          updateStateFn: (frozen, copied) => updateState({
+          updateStateFn: (frozen, copied, cacheReplacer) => updateState({
             selector,
-            replacer: old => [...(deepCopy(Array.isArray(frozen) ? frozen : [frozen])), ...old],
-            mutator:  old => old.unshift(...(Array.isArray(copied) ? copied : [copied])),
+            replacer: old => [...(Array.isArray(frozen) ? frozen : [frozen]), ...old],
+            mutator: old => old.unshift(...(Array.isArray(copied) ? copied : [copied])),
             actionName: 'addBefore',
             pathSegments,
             payload: frozen,
             tag,
+            cacheReplacer,
           })
         });
       }) as StoreForAnArray<X, T>['addBefore'],
@@ -353,7 +384,7 @@ function makeInternal<S, T extends Trackability>(state: S, options: { supportsTa
             cacheKey: getCacheKey(pathSegments, 'upsertWhere'),
             selector,
             payloadOrPromise,
-            updateStateFn: (frozen, copied) => updateState({
+            updateStateFn: (frozen, copied, cacheReplacer) => updateState({
               selector,
               replacer: old => indicesOfElementsToReplace.length ? old.map((o, i) => i === indice ? frozen : o) : [...old, frozen],
               mutator: old => indicesOfElementsToReplace.length ? old[indice as number] = copied : old.push(copied),
@@ -361,6 +392,7 @@ function makeInternal<S, T extends Trackability>(state: S, options: { supportsTa
               pathSegments,
               payload: frozen,
               tag,
+              cacheReplacer,
             })
           })
         }
@@ -372,7 +404,7 @@ function makeInternal<S, T extends Trackability>(state: S, options: { supportsTa
             cacheKey: getCacheKey(pathSegments, 'mergeWhere'),
             selector,
             payloadOrPromise,
-            updateStateFn: (frozen, copied) => updateState({
+            updateStateFn: (frozen, copied, cacheReplacer) => updateState({
               selector,
               replacer: old => [
                 ...old.map(oe => frozen.find(ne => criteria(oe, ne)) || oe),
@@ -386,6 +418,7 @@ function makeInternal<S, T extends Trackability>(state: S, options: { supportsTa
               pathSegments,
               payload: frozen,
               tag,
+              cacheReplacer,
             })
           })
         }
@@ -398,7 +431,7 @@ function makeInternal<S, T extends Trackability>(state: S, options: { supportsTa
             cacheKey: getCacheKey(pathSegments, 'replaceWhere'),
             selector,
             payloadOrPromise,
-            updateStateFn: (frozen, copied) => updateState<C, T, X>({
+            updateStateFn: (frozen, copied, cacheReplacer) => updateState<C, T, X>({
               selector,
               replacer: old => old.map((o, i) => indicesOfElementsToReplace.includes(i) ? deepCopy(frozen) : o),
               mutator: old => {
@@ -412,6 +445,7 @@ function makeInternal<S, T extends Trackability>(state: S, options: { supportsTa
               actionName: `${indicesOfElementsToReplace.join(',')}.replaceWhere`,
               payload: { replacement: frozen, whereClause: criteria.toString() },
               tag,
+              cacheReplacer,
             })
           })
         }
@@ -422,13 +456,13 @@ function makeInternal<S, T extends Trackability>(state: S, options: { supportsTa
       onChange: (performAction => {
         changeListeners.set(performAction, selector);
         return { unsubscribe: () => changeListeners.delete(performAction) };
-      }) as StoreWhichIsReadable<C>['onChange'],
+      }) as StoreWhichIsReadable<C, T>['onChange'],
       read: (
         () => deepFreeze(selector(currentState))
-      ) as StoreWhichIsReadable<C>['read'],
+      ) as StoreWhichIsReadable<C, T>['read'],
       readInitial: (
         () => selector(initialState)
-      ) as StoreWhichIsReadable<C>['readInitial'],
+      ) as StoreWhichIsReadable<C, T>['readInitial'],
       renew: (state => {
         pathReader = createPathReader(state);
         currentState = deepFreeze(state) as S;
@@ -444,7 +478,7 @@ function makeInternal<S, T extends Trackability>(state: S, options: { supportsTa
             },
             mutator: (s: SimpleObject) => delete s[name],
             pathSegments: ['nested'],
-            actionName: 'remove',
+            actionName: 'removeNested',
             payload: { name, key },
             tag: null as unknown as void,
           })
@@ -457,7 +491,7 @@ function makeInternal<S, T extends Trackability>(state: S, options: { supportsTa
             },
             mutator: (s: SimpleObject) => delete s[key],
             pathSegments: ['nested', name],
-            actionName: 'remove',
+            actionName: 'removeNested',
             payload: key,
             tag: null as unknown as void,
           })
@@ -466,14 +500,28 @@ function makeInternal<S, T extends Trackability>(state: S, options: { supportsTa
       defineReset: (
         (initState: C) => () => replace((e => selector(e)) as Selector<S, C>, 'reset')(initState, null as unknown as T)
       ) as StoreWhichIsNestedInternal<S, C>['defineReset'],
-      invalidateCache: (() => {
+      invalidateCache: (tag => {
         const segs = pathReader.readSelector(selector).join('.');
-        Array.from(cache.keys()).filter(key => key.startsWith(segs)).forEach(key => cache.delete(key));
-      }) as StoreWhichIsReadable<C>['invalidateCache'],
+        const keys = Object.keys((currentState as unknown as { cache: SimpleObject }).cache).filter(key => key.startsWith(segs))
+        updateState({
+          selector: (s: S) => (s as unknown as { cache: SimpleObject }).cache,
+          replacer: old => {
+            const newObj = {} as SimpleObject;
+            keys.filter(key => !key.startsWith(segs)).forEach(key => newObj[key] = old[key]);
+            return newObj;
+          },
+          mutator: old => keys.forEach(key => delete old[key]),
+          pathSegments: ['cache'],
+          actionName: 'invalidateCache',
+          payload: segs,
+          tag,
+        })
+
+      }) as StoreWhichIsReadable<C, T>['invalidateCache'],
       onCacheExpired: (performAction => {
         cacheExpiredListeners.set(selector, performAction);
         return { unsubscribe: () => cacheExpiredListeners.delete(selector) };
-      }) as StoreWhichIsReadable<C>['onCacheExpired'],
+      }) as StoreWhichIsReadable<C, T>['onCacheExpired'],
       supportsTags: options.supportsTags,
     } as unknown as Store<C, T>;
   };
@@ -505,9 +553,11 @@ function makeInternal<S, T extends Trackability>(state: S, options: { supportsTa
     payload: any,
     tag: Tag<T>,
     actionNameOverride?: boolean,
+    cacheReplacer?: (state: S) => S,
   }) {
     const previousState = currentState;
-    const result = Object.freeze(copyObject(currentState, { ...currentState }, specs.pathSegments.slice(), specs.replacer));
+    const result0 = Object.freeze(copyObject(currentState, { ...currentState }, specs.pathSegments.slice(), specs.replacer));
+    const result = specs.cacheReplacer ? specs.cacheReplacer(result0) : result0;
     specs.mutator(specs.selector(pathReader.mutableStateCopy) as X);
     currentState = result;
     notifySubscribers(previousState, result);

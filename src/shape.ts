@@ -318,7 +318,7 @@ export type StoreForAnObject<C extends any, T extends Trackability> = {
 /**
  * An object which is capable of reading from and listening to changes made to a certain piece of state
  */
-export type StoreWhichIsReadable<C> = {
+export type StoreWhichIsReadable<C, T extends Trackability> = {
   /**
    * Listens to any updates on this node
    * @returns a subscription which will need to be unsubscribed from to prevent a memory leak
@@ -338,7 +338,7 @@ export type StoreWhichIsReadable<C> = {
   /**
    * Invalidates all caches on this node and any descendants of this node.
    */
-  invalidateCache: () => void,
+  invalidateCache: (tag: Tag<T>) => void,
   /**
    * If there is a cache associated with this node, then the function you supply here will be invoked whenever that cache expires.
    * Note that this will not be triggered if invalidateCache() is manually called.
@@ -355,12 +355,12 @@ export type StoreWhichIsResettable<C extends any, T extends Trackability> = {
    * Beware that if this store is marked as a `containerForNestedStores`, then all nested stores will also be removed
    */
   reset: (tag: Tag<T>) => void,
-} & StoreWhichIsReadable<C>;
+} & StoreWhichIsReadable<C, T>;
 
 /**
  * An object which is capable of storing nested stores
  */
-export type StoreWhichMayContainNestedStores<S, C, T extends Trackability> = StoreForAnObject<C, T> & StoreWhichIsReadable<C> & {
+export type StoreWhichMayContainNestedStores<S, C, T extends Trackability> = StoreForAnObject<C, T> & StoreWhichIsReadable<C, T> & {
   renew: (state: S) => void;
   reset: () => void;
 };
@@ -425,13 +425,13 @@ export type SelectorFromAStoreEnforcingTags<S> = (<C = S>(selector?: (arg: DeepR
 /**
  * An input for a derivation
  */
-type DerivationCalculationInput<E> = E extends StoreWhichIsReadable<infer W> ? W : E extends StoreWhichIsReadable<infer W> ? W : never;
+type DerivationCalculationInput<E, T extends Trackability> = E extends StoreWhichIsReadable<infer W, T> ? W : E extends StoreWhichIsReadable<infer W, T> ? W : never;
 
 /**
  * All inputs for a particular derivation
  */
-export type DerivationCalculationInputs<T extends Array<StoreWhichIsReadable<any>>> = {
-  [K in keyof T]: DerivationCalculationInput<T[K]>;
+export type DerivationCalculationInputs<H extends Trackability, T extends Array<StoreWhichIsReadable<any, H>>> = {
+  [K in keyof T]: DerivationCalculationInput<T[K], H>;
 }
 
 export type OptionsForMakingAStore = {

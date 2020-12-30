@@ -1,6 +1,6 @@
 import { make, makeEnforceTags } from '../src';
-import { createFetcher } from '../src/fetcher';
 import { tests } from '../src/tests';
+import { cachedPromise } from '../src/utils';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
 
@@ -8,386 +8,270 @@ describe('Fetcher', () => {
 
   beforeAll(() => tests.windowObject = windowAugmentedWithReduxDevtoolsImpl);
 
-  it('should perform a basic fetch', done => {
-    const initialState = {
-      array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
-    };
-    const get = make(initialState);
-    const fetchArray = createFetcher({
-      onStore: get(s => s.array),
-      getData: () => new Promise<[{ id: number, value: string }]>(resolve => setTimeout(() => resolve([{ id: 2, value: 'dd' }]), 10))
+  it('should perform a basic fetch using replaceAll()', done => {
+    const get = make({ arr: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }] });
+    const payload = [{ id: 2, value: 'dd' }];
+    const fetchArray = () => new Promise<Array<{ id: number, value: string }>>(resolve => setTimeout(() => resolve(payload), 10));
+    get(s => s.arr).replaceAll(fetchArray).then(res => {
+      expect(res).toEqual(payload);
+      expect(get(s => s.arr).read()).toEqual(payload);
+      done();
     });
-    const fetchArrayState = fetchArray();
-    expect(fetchArrayState.status).toEqual('resolving');
-    fetchArrayState.onChangeOnce().then(() => {
-      expect(get(s => s.array).read()).toEqual([{ id: 2, value: 'dd' }]);
+  })
+
+  it('should catch an error thrown in a fetch', done => {
+    const get = make({ arr: new Array<string>() });
+    const fetchArray = () => new Promise<Array<string>>((resolve, reject) => setTimeout(() => reject('Oops'), 10));
+    get(s => s.arr).replaceAll(fetchArray).catch(err => {
+      expect(err).toEqual('Oops');
       done();
     })
   })
 
-  it('should cache fetches correctly', done => {
-    const initialState = {
-      array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
-    };
-    const get = make(initialState);
-    let numberOfTimesPromiseIsCalled = 0;
-    const fetchArray = createFetcher({
-      onStore: get(s => s.array),
-      getData: () => new Promise<[{ id: number, value: string }]>(resolve => setTimeout(() => { numberOfTimesPromiseIsCalled++; resolve([{ id: 2, value: 'dd' }]); }, 10)),
-      cacheFor: 30,
-    })
-    fetchArray().onChangeOnce().then(() => {
-      fetchArray();
-      expect(get(s => s.array).read()).toEqual([{ id: 2, value: 'dd' }]);
-      expect(numberOfTimesPromiseIsCalled).toEqual(1);
-      done();
-    })
-  })
-
-  it('should expire cache fetches correctly', done => {
-    const initialState = {
-      array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
-    };
-    const get = make(initialState);
-    let numberOfTimesPromiseIsCalled = 0;
-    const fetchArray = createFetcher({
-      onStore: get(s => s.array),
-      getData: () => { return new Promise<[{ id: number, value: string }]>(resolve => setTimeout(() => { numberOfTimesPromiseIsCalled++; resolve([{ id: 2, value: 'dd' }]); }, 10)) },
-      cacheFor: 10
-    });
-    fetchArray().onCacheExpiredOnce().then(() => {
-      fetchArray().onChangeOnce().then(() => {
-        expect(get(s => s.array).read()).toEqual([{ id: 2, value: 'dd' }]);
-        expect(numberOfTimesPromiseIsCalled).toEqual(2);
-        done();
-      })
-    })
-  })
-
-  it('should invalidate cache fetches correctly', done => {
-    const initialState = {
-      array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
-    };
-    const get = make(initialState);
-    let numberOfTimesPromiseIsCalled = 0;
-    const fetchArray = createFetcher({
-      onStore: get(s => s.array),
-      getData: () => new Promise<[{ id: number, value: string }]>(resolve => setTimeout(() => { numberOfTimesPromiseIsCalled++; resolve([{ id: 2, value: 'dd' }]); }, 10)),
-      cacheFor: 50,
-    })
-    fetchArray().onChangeOnce().then(arg => {
-      arg.invalidateCache();
-      fetchArray().onChangeOnce().then(() => {
-        expect(get(s => s.array).read()).toEqual([{ id: 2, value: 'dd' }]);
-        expect(numberOfTimesPromiseIsCalled).toEqual(2);
-        done();
-      })
-    })
-  });
-
-  it('should listen to status changes', done => {
-    const initialState = {
-      array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
-    };
-    const get = make(initialState);
-    const fetchArray = createFetcher({
-      onStore: get(s => s.array),
-      getData: () => new Promise<[{ id: number, value: string }]>(resolve => setTimeout(() => resolve([{ id: 2, value: 'dd' }]), 10)),
-    })
-    const fetchArrayState = fetchArray();
-    expect(fetchArrayState.status).toEqual('resolving');
-    fetchArrayState.onChangeOnce().then(() => {
-      expect(fetchArrayState.status).toEqual('resolved');
-      done();
-    })
-  })
-
-  it('should handle errors correctly', done => {
-    const initialState = {
-      array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
-    };
-    const get = make(initialState);
-    const fetchArray = createFetcher({
-      onStore: get(s => s.array),
-      getData: () => new Promise<[{ id: number, value: string }]>((_, reject) => setTimeout(() => reject('Woops'), 10)),
-      cacheFor: 20
-    });
-    const fetchArrayState = fetchArray();
-    fetchArrayState.onChangeOnce().catch(() => {
-      expect(fetchArrayState.status).toEqual('rejected');
-      done();
-    })
-  })
-
-  it('should work with tags correctly', done => {
-    const initialState = {
-      array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
-    };
-    const get = makeEnforceTags(initialState);
-    const fetchArray = createFetcher({
-      onStore: get(s => s.array),
-      getData: () => new Promise<[{ id: number, value: string }]>(resolve => setTimeout(() => resolve([{ id: 2, value: 'dd' }]), 10)),
-      cacheFor: 100,
-    });
-    const tag = 'mytag';
-    const fetchArrayState = fetchArray(tag);
-    fetchArrayState.onChangeOnce().then(() => {
-      expect(get(s => s.array).read()).toEqual([{ id: 2, value: 'dd' }]);
-      expect(tests.currentAction.type).toEqual(`array.replaceAll() [${tag}]`)
-      done();
-    })
-  })
-
-  it('should work with params', done => {
-    const get = make({
-      array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
-    });
-    const fetchArray = createFetcher({
-      onStore: get(s => s.array),
-      getData: (num: number) => new Promise<[{ id: number, value: string }]>(resolve => setTimeout(() => resolve([{ id: num, value: 'dd' }]), 10)),
-    });
-    const fetchArrayState = fetchArray(2);
-    fetchArrayState.onChangeOnce().then(() => {
-      expect(get(s => s.array).read()).toEqual([{ id: 2, value: 'dd' }]);
-      done();
-    })
-  })
-
-  it('should cache fetches correctly with params', done => {
-    const initialState = {
-      array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
-    };
-    const get = make(initialState);
-    let numberOfTimesPromiseIsCalled = 0;
-    const fetchArray = createFetcher({
-      onStore: get(s => s.array),
-      getData: (num: number) => new Promise<[{ id: number, value: string }]>(resolve => setTimeout(() => { numberOfTimesPromiseIsCalled++; resolve([{ id: num, value: 'dd' }]); }, 10)),
-      cacheFor: 10
-    });
-    fetchArray(2).onChangeOnce().then(arg => {
-      expect(arg.data).toEqual([{ id: 2, value: 'dd' }]);
-      expect(get(s => s.array).read()).toEqual([{ id: 2, value: 'dd' }]);
-      expect(numberOfTimesPromiseIsCalled).toEqual(1);
-      done();
-    })
-  })
-
-  it('should be able to refetch', done => {
-    const initialState = {
-      object: { property: 'hello', property2: 'two' },
-    };
-    const get = make(initialState);
-    get(s => s.object.property).replace('test');
-    const fetchProp = createFetcher({
-      onStore: get(s => s.object.property),
-      getData: (arg: string) => new Promise<string>(resolve => setTimeout(() => resolve(arg), 10)),
-      cacheFor: 1000,
-    });
-    fetchProp('test').onChangeOnce().then(fetchArg => {
-      expect(fetchArg.data).toEqual('test');
-      expect(get(s => s.object.property).read()).toEqual('test');
-      fetchArg.fetch('another').onChangeOnce().then(() => {
-        expect(get(s => s.object.property).read()).toEqual('another');
-        done();
-      });
-    })
-  })
-
-  it('should setData correctly', done => {
-    const initialState = {
-      array: ['one', 'two'],
-    };
-    const get = make(initialState);
-    const fetchArray = createFetcher({
-      onStore: get(s => s.array),
-      getData: () => new Promise<string[]>(resolve => setTimeout(() => resolve(['three', 'four']), 10)),
-      setData: arg => arg.store.addAfter([...arg.data]),
-    });
-    fetchArray().onChangeOnce().then(() => {
-      expect(get(s => s.array).read()).toEqual(['one', 'two', 'three', 'four']);
-      done();
-    })
-  })
-
-  it('should respond to change listeners', done => {
-    const get = make({
-      array: ['one', 'two'],
-    });
-    const fetchArray = createFetcher({
-      onStore: get(s => s.array),
-      getData: () => new Promise<string[]>(resolve => setTimeout(() => resolve(['three', 'four']), 10)),
-    });
-    const fetch = fetchArray();
-    fetch.onChangeOnce()
-      .then(() => fetch.fetch().onChangeOnce())
-      .then(() => {
-        done();
-      });
-  });
-
-  it('should unsubcribe from change listeners', done => {
-    const get = make({
-      array: ['one', 'two'],
-    });
-    const fetchArray = createFetcher({
-      onStore: get(s => s.array),
-      getData: () => new Promise<string[]>(resolve => setTimeout(() => resolve(['three', 'four']), 10)),
-    });
-    let changeCount = 0;
-    const fetch = fetchArray();
-    const subscription = fetch.onChange(() => {
-      changeCount++;
-      subscription.unsubscribe();
-    });
-    fetch.fetch().onChangeOnce().then(() => {
-      expect(changeCount).toEqual(1);
-      done();
-    })
-  });
-
-  it('should unsubcribe from cache expired listeners', done => {
-    const get = make({
-      array: ['one', 'two'],
-    });
-    let cacheExpiredCount = 0;
-    const fetchArray = createFetcher({
-      onStore: get(s => s.array),
-      getData: () => new Promise<string[]>(resolve => setTimeout(() => resolve(['three', 'four']), 10)),
-      cacheFor: 10
-    });
-    const fetch = fetchArray();
-    const subscription = fetch.onCacheExpired(() => {
-      cacheExpiredCount++;
-      subscription.unsubscribe();
-      fetch.fetch().onChangeOnce().then(() => {
-        expect(cacheExpiredCount).toEqual(1);
-        done();
-      })
-    });
-  });
-
-  it('should be able to modify a collection after it has been fetched', done => {
-    const get = make({ array: ['one', 'two'] });
-    const fetchArray = createFetcher({
-      onStore: get(s => s.array),
-      getData: () => new Promise<string[]>(resolve => setTimeout(() => resolve(['three', 'four']), 10)),
-    });
-    fetchArray().onChangeOnce().then(() => {
-      get(s => s.array).addAfter(['five', 'six']);
-      expect(get(s => s.array).read()).toEqual(['three', 'four', 'five', 'six']);
-      done();
-    })
-  })
-
-  it('should be able to unsubscribe from an already unsubscribed change listener', done => {
-    const get = make({ one: '' });
-    const fetchThings = createFetcher({
-      onStore: get(s => s.one),
-      getData: () => new Promise<string>(resolve => setTimeout(() => resolve('test'), 10)),
-    });
-    const sub = fetchThings().onChange(arg => {
-      sub.unsubscribe();
-      done();
-    })
-  })
-
-  it('should be able to de-duplicate simultaneous requests', () => {
-    const get = make({ value: '' });
+  it('should be able to cache', done => {
+    const get = make({ arr: new Array<string>() });
     let count = 0;
-    const fetchValue = createFetcher({
-      onStore: get(s => s.value),
-      getData: () => {
-        count++;
-        return new Promise<string>(resolve => {
-          setTimeout(() => resolve('val'), 10);
-        })
-      }
+    const fetchArray = () => new Promise<Array<string>>(resolve => {
+      count++;
+      setTimeout(() => resolve([count.toString()]), 10);
     });
-    fetchValue();
-    fetchValue();
-    expect(count).toEqual(1);
+    get(s => s.arr).replaceAll(cachedPromise(fetchArray).ttl(1000));
+    setTimeout(() => {
+      get(s => s.arr).replaceAll(cachedPromise(fetchArray).ttl(1000)).then(() => {
+        expect(get(s => s.arr).read()).toEqual(['1']);
+        done();
+      });
+    }, 50);
   })
 
-  it('should be able to handle promises resolving correctly', done => {
-    const get = make({ value: '' });
-    const fetchValue = createFetcher({
-      onStore: get(s => s.value),
-      getData: () => {
-        return new Promise<string>(resolve => {
-          setTimeout(() => resolve('val'), 10);
-        })
-      }
+  it('should auto-expire a cache correctly', done => {
+    const get = make({ arr: new Array<string>() });
+    let count = 0;
+    const fetchArray = () => new Promise<Array<string>>(resolve => {
+      count++;
+      setTimeout(() => {
+        resolve([count.toString()]);
+      }, 10);
     });
-    fetchValue().onChangeOnce().then(data => {
-      expect(data.data).toEqual('val');
+    get(s => s.arr).replaceAll(cachedPromise(fetchArray).ttl(5));
+    setTimeout(() => {
+      get(s => s.arr).replaceAll(cachedPromise(fetchArray).ttl(5)).then(() => {
+        expect(get(s => s.arr).read()).toEqual(['2']);
+        done();
+      });
+    }, 50);
+  })
+
+  it('should invalidate a cache correctly', done => {
+    const get = make({ arr: new Array<string>() });
+    let count = 0;
+    const fetchArray = () => {
+      count++;
+      return new Promise<Array<string>>(resolve => resolve([count.toString()]));
+    };
+    get(s => s.arr).replaceAll(cachedPromise(fetchArray).ttl(5000));
+    setTimeout(() => {
+      get(s => s.arr).invalidateCache();
+      get(s => s.arr).replaceAll(cachedPromise(fetchArray).ttl(5000));
+      setTimeout(() => {
+        expect(count).toEqual(2);
+        expect(get(s => s.arr).read()).toEqual(['2']);
+        done();
+      })
+    }, 10);
+  })
+
+  it('should perform a basic fetch using replace()', done => {
+    const get = make({ val: '' });
+    const payload = 'test';
+    const fetchString = () => new Promise<string>(resolve => setTimeout(() => resolve(payload), 10));
+    get(s => s.val).replace(fetchString).then(res => {
+      expect(res).toEqual(payload);
+      expect(get(s => s.val).read()).toEqual(payload);
+      done();
+    });
+  });
+
+  it('should perform a basic fetch using replace() on a primitive', done => {
+    const get = make(0);
+    const payload = 1;
+    const fetchNumber = () => new Promise<number>(resolve => setTimeout(() => resolve(payload), 10));
+    get().replace(fetchNumber).then(res => {
+      expect(res).toEqual(payload);
+      expect(get().read()).toEqual(payload);
+      done();
+    })
+  })
+
+  it('should perform a basic fetch using replace() on an array', done => {
+    const get = make(new Array<string>());
+    const payload = ['1'];
+    const fetchArray = () => new Promise<string[]>(resolve => setTimeout(() => resolve(payload), 10));
+    get().replaceAll(fetchArray).then(res => {
+      expect(res).toEqual(payload);
+      expect(get().read()).toEqual(payload);
+      done();
+    })
+  })
+
+  it('should perform a basic fetch using replace() on a primitive including caching', done => {
+    const get = make({ num: 0});
+    let count = 0;
+    const fetchArray = () => new Promise<number>(resolve => {
+      count++;
+      setTimeout(() => resolve(1), 10);
+    });
+    get(s => s.num).replace(cachedPromise(fetchArray).ttl(1000))
+    setTimeout(() => {
+      expect(get().read()).toEqual({ num: 1, cache: { 'num.replace(() => Promise)': 1 } });
+      expect(count).toEqual(1);
+      done();
+    }, 50);
+  })
+
+  it('should perform a basic fetch using addBefore()', done => {
+    const initialState = ['one'];
+    const get = make(initialState);
+    const payload = ['two'];
+    const fetchString = () => new Promise<string[]>(resolve => setTimeout(() => resolve(payload), 10));
+    get().addBefore(fetchString).then(res => {
+      expect(res).toEqual(payload);
+      expect(get().read()).toEqual([...payload, ...initialState]);
+      done();
+    });
+  });
+
+  it('should perform a basic fetch using addAfter()', done => {
+    const initialState = ['one'];
+    const get = make(initialState);
+    const payload = ['two'];
+    const fetchString = () => new Promise<string[]>(resolve => setTimeout(() => resolve(payload), 10));
+    get().addAfter(fetchString).then(res => {
+      expect(res).toEqual(payload);
+      expect(get().read()).toEqual([...initialState, ...payload]);
+      done();
+    });
+  });
+
+  it('should perform a basic fetch using upsertWhere()', done => {
+    const get = make(['one', 'two', 'three']);
+    const payload = 'threee';
+    const fetchString = () => new Promise<string>(resolve => setTimeout(() => resolve(payload), 10));
+    get().upsertWhere(e => e === 'three').with(fetchString).then(res => {
+      expect(res).toEqual(payload);
+      expect(get().read()).toEqual(['one', 'two', payload]);
       done();
     });
   })
 
-  it('should be able to handle promises rejecting correctly', done => {
-    const get = make({ value: '' });
-    const fetchValue = createFetcher({
-      onStore: get(s => s.value),
-      getData: () => {
-        return new Promise<string>((resolve, reject) => {
-          setTimeout(() => reject('val'), 10);
-        })
-      }
-    });
-    fetchValue().onChangeOnce().catch(error => {
-      expect(error).toEqual('val');
+  it('should perform a basic fetch using mergeWhere()', done => {
+    const get = make(['one', 'two', 'three']);
+    const payload = ['three', 'four'];
+    const fetchArray = () => new Promise<string[]>(resolve => resolve(payload));
+    get().mergeWhere((a, b) => a === b).with(fetchArray).then(res => {
+      expect(res).toEqual(payload);
+      expect(get().read()).toEqual(['one', 'two', 'three', 'four']);
       done();
     });
   })
 
-  // it('should be able to re-fetch on the same fetcher', done => {
-  //   const get = make(0);
-  //   const fetchThings = createFetcher({
-  //     onStore: get(),
-  //     getData: (arg: { index: number }) => new Promise<number>(resolve => setTimeout(() => resolve(arg.index))),
-  //   });
-  //   const result = fetchThings({ index: 0 });
-  //   let changeCount = 0;
-  //   result.onChange(listener => {
-  //     if (listener.status !== 'resolved') {
-  //       return;
-  //     }
-  //     changeCount++;
-  //   });
-  //   result.fetch({ index: 1 }).onChangeOnce().then(() => {
-  //     expect(changeCount).toEqual(2);
-  //     done();
-  //   });
+  it('should perform a basic fetch using replaceWhere()', done => {
+    const get = make(['one', 'two', 'three']);
+    const payload = 'twoo';
+    const fetchArray = () => new Promise<string>(resolve => resolve(payload));
+    get().replaceWhere(e => e === 'two').with(fetchArray).then(res => {
+      expect(res).toEqual(payload);
+      expect(get().read()).toEqual(['one', 'twoo', 'three']);
+      done();
+    });
+  })
+
+  it('should perform a basic fetch using patchWhere()', done => {
+    const get = make([{ a: 'one', b: 'two', c: 'three' }, { a: 'onee', b: 'twoo', c: 'threee' }]);
+    type storeType = Partial<{ a: string, b: string, c: string }>;
+    const payload = { b: 'twooo' } as storeType;
+    const fetchItem = () => new Promise<storeType>(resolve => resolve(payload));
+    get().patchWhere(e => e.a === 'onee').with(fetchItem).then(res => {
+      expect(res).toEqual(payload);
+      expect(get().read()).toEqual([{ a: 'one', b: 'two', c: 'three' }, { a: 'onee', b: 'twooo', c: 'threee' }]);
+      done();
+    });
+  })
+
+  it('should perform a basic fetch using patch()', done => {
+    const get = make({ one: 1, two: 2, three: 3 });
+    type storeType = Partial<{ one: number, two: number, three: number }>;
+    const payload = { two: 22, three: 33 } as storeType;
+    const fetchPartial = () => new Promise<storeType>(resolve => resolve(payload));
+    get().patch(fetchPartial).then(res => {
+      expect(res).toEqual(payload);
+      expect(get().read()).toEqual({ one: 1, two: 22, three: 33 });
+      done();
+    });
+  })
+
+  it('should respond to cache expired events', done => {
+    const get = make({ num: 0 });
+    const fetchNum = () => new Promise<number>(resolve => resolve(1));
+    get(s => s.num).replace(cachedPromise(fetchNum).ttl(10));
+    get(s => s.num).onCacheExpired(() => {
+      done();
+    })
+  })
+
+  it('should correctly unsubscribe a cache expired listener', done => {
+    const get = make({ num: 0 });
+    const fetchNum = () => new Promise<number>(resolve => resolve(1));
+    get(s => s.num).replace(cachedPromise(fetchNum).ttl(10));
+    let called = false;
+    get(s => s.num).onCacheExpired(() => {
+      called = true;
+    }).unsubscribe();
+    setTimeout(() => {
+      expect(called).toEqual(false);
+      done();
+    }, 20);
+  })
+
+  it('should be able to cache including arguments', done => {
+    const get = make({ arr: new Array<string>() });
+    const data = (new Array(30)).fill(null).map((e, i) => i.toString());
+    let callCount = 0;
+    const fetchString = (offset: number, count: number) => {
+      callCount++;
+      return new Promise<string[]>(resolve => setTimeout(() => resolve(data.slice(offset * count, (offset + 1) * count)), 5));
+    }
+    get(s => s.arr).replaceAll(cachedPromise(fetchString).args(0, 10).ttl(1000))
+      .then(res => get(s => s.arr).replaceAll(cachedPromise(fetchString).args(0, 10).ttl(1000)))
+      .then(res => {
+        expect(callCount).toEqual(1);
+        get().invalidateCache();
+        return get(s => s.arr).replaceAll(cachedPromise(fetchString).args(1, 10).ttl(1000))
+      })
+      .then(res => {
+        expect(res).toEqual(data.slice(10, 20));
+        done();
+      });
+  })
+
+
+
+
+
+  
+
+  // it('should correctly cache using a cache key', done => {
+  //   const get = make({ arr: new Array<string>() });
+  //   const data = (new Array(30)).fill(null).map((e, i) => i.toString());
+  //   const fetchData = (index: number, offset: number) => new Promise<string[]>(resolve => resolve(data.slice(index * offset, (index + 1) * offset)));
+  //   get(s => s.arr).addAfter(  cachedPromise(fetchData).args(1, 2).ttl(1000)  )
   // })
 
-  // it('should be able to paginate', async done => {
+  // it('should correctly cache using a cache key', done => {
   //   const get = make({ arr: new Array<string>() });
-  //   const total = 50;
-  //   const data = new Array(total).fill(null).map((e, i) => i.toString());
-  //   let index = 0;
-  //   const count = 10;
-  //   const fetchThings = createFetcher({
-  //     onStore: get(s => s.arr),
-  //     getData: (arg: { index: number, count: number }) => new Promise<string[]>(resolve => {
-  //       setTimeout(() => resolve(data.slice(arg.index * arg.count, (arg.index + 1) * arg.count)), 5);
-  //     }),
-  //   });
-  //   const result = fetchThings({ index, count });
-  //   result.onChange(listener => {
-  //     console.log(listener.status, listener.data);
-  //     if (listener.status !== 'resolved') {
-  //       return;
-  //     }
-  //     if (((listener.fetchArg.index + 1) * listener.fetchArg.count) === total) {
-  //       done();
-  //     }
-  //     const expectedData = data.slice(listener.fetchArg.index * listener.fetchArg.count, (listener.fetchArg.index + 1) * listener.fetchArg.count);
-  //     expect(result.data).toEqual(expectedData);
-  //     expect(listener.data).toEqual(expectedData);
-  //   });
-  //   for (let i = 0; i < (total / count); i++) {
-  //     await result.fetch({ index: ++index, count }).onChangeOnce();
-  //   }
-  // });
+  //   const data = (new Array(30)).fill(null).map((e, i) => i.toString());
+  //   const fetchData = () => new Promise<string[]>(resolve => resolve(data));
+  //   get(s => s.arr).addAfter(  cachedPromise(fetchData).ttl(100)  )
+  // })
 
 });
