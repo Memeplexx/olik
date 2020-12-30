@@ -14,13 +14,13 @@ import { Derivation, DerivationCalculationInputs, StoreWhichIsReadable, Unsubscr
  * const memoizedResult = memo.read();
  * ```
  */
-export function deriveFrom<X extends StoreWhichIsReadable<any>[]>(...args: X) {
+export function deriveFrom<X extends StoreWhichIsReadable<any, any>[]>(...args: X) {
   let previousParams = new Array<any>();
   let previousResult = null as any;
   return {
-    usingExpensiveCalc: <R>(calculation: (...inputs: DerivationCalculationInputs<X>) => R) => {
+    usingExpensiveCalc: <R>(calculation: (...inputs: DerivationCalculationInputs<any, X>) => R) => {
       const getValue = () => {
-        const params = (args as Array<StoreWhichIsReadable<any>>).map(arg => arg.read());
+        const params = (args as Array<StoreWhichIsReadable<any, any>>).map(arg => arg.read());
         if (previousParams.length && params.every((v, i) => v === previousParams[i])) {
           return previousResult;
         }
@@ -34,7 +34,7 @@ export function deriveFrom<X extends StoreWhichIsReadable<any>[]>(...args: X) {
         read: () => getValue(),
         onChange: (listener: (value: R) => any) => {
           changeListeners.add(listener);
-          const unsubscribables: Unsubscribable[] = (args as Array<StoreWhichIsReadable<any>>)
+          const unsubscribables: Unsubscribable[] = (args as Array<StoreWhichIsReadable<any, any>>)
             .map(ops => ops.onChange(() => listener(getValue())));
           return {
             unsubscribe: () => {
