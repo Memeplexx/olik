@@ -7,7 +7,7 @@ describe('Array', () => {
 
   beforeAll(() => tests.windowObject = windowAugmentedWithReduxDevtoolsImpl);
 
-  it('should addAfter() with an arraay as payload', () => {
+  it('should addAfter() with an array as payload', () => {
     const initialState = {
       array: [{ id: 1, value: 'one' }],
       object: { property: '' },
@@ -35,7 +35,7 @@ describe('Array', () => {
     expect(tests.currentMutableState).toEqual(get().read());
   })
 
-  it('should addBefore() with an arraay as payload', () => {
+  it('should addBefore() with an array as payload', () => {
     const initialState = {
       array: [{ id: 3, value: 'three' }],
       object: { property: '' },

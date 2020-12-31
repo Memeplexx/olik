@@ -16,13 +16,14 @@ import {
   StoreForAnArray,
   StoreWhichIsNested,
   StoreWhichIsNestedInternal,
-  StoreWhichIsReadable,
+  StoreWhichIsReadableAndCacheable,
   StoreWhichIsResettable,
   StoreWhichMayContainNestedStores,
   StoreForAnObject,
   StoreForAnObjectOrPrimitive,
   Trackability,
   Tag,
+  StoreOrDerivation,
 } from './shape';
 import { tests } from './tests';
 import { copyObject, copyPayload, copyPayloadOrPromise, createPathReader, deepCopy, deepFreeze, getCacheKey, validateState } from './utils';
@@ -456,13 +457,13 @@ function makeInternal<S, T extends Trackability>(state: S, options: { supportsTa
       onChange: (performAction => {
         changeListeners.set(performAction, selector);
         return { unsubscribe: () => changeListeners.delete(performAction) };
-      }) as StoreWhichIsReadable<C, T>['onChange'],
+      }) as StoreOrDerivation<C>['onChange'],
       read: (
         () => deepFreeze(selector(currentState))
-      ) as StoreWhichIsReadable<C, T>['read'],
+      ) as StoreOrDerivation<C>['read'],
       readInitial: (
         () => selector(initialState)
-      ) as StoreWhichIsReadable<C, T>['readInitial'],
+      ) as StoreWhichIsReadableAndCacheable<C>['readInitial'],
       renew: (state => {
         pathReader = createPathReader(state);
         currentState = deepFreeze(state) as S;
@@ -500,7 +501,7 @@ function makeInternal<S, T extends Trackability>(state: S, options: { supportsTa
       defineReset: (
         (initState: C) => () => replace((e => selector(e)) as Selector<S, C>, 'reset')(initState, null as unknown as T)
       ) as StoreWhichIsNestedInternal<S, C>['defineReset'],
-      invalidateCache: (tag => {
+      invalidateCache: (() => {
         const segs = pathReader.readSelector(selector).join('.');
         const keys = Object.keys((currentState as unknown as { cache: SimpleObject }).cache).filter(key => key.startsWith(segs))
         updateState({
@@ -514,14 +515,13 @@ function makeInternal<S, T extends Trackability>(state: S, options: { supportsTa
           pathSegments: ['cache'],
           actionName: 'invalidateCache',
           payload: segs,
-          tag,
+          tag: null as unknown as void,
         })
-
-      }) as StoreWhichIsReadable<C, T>['invalidateCache'],
+      }) as StoreWhichIsReadableAndCacheable<C>['invalidateCache'],
       onCacheExpired: (performAction => {
         cacheExpiredListeners.set(selector, performAction);
         return { unsubscribe: () => cacheExpiredListeners.delete(selector) };
-      }) as StoreWhichIsReadable<C, T>['onCacheExpired'],
+      }) as StoreWhichIsReadableAndCacheable<C>['onCacheExpired'],
       supportsTags: options.supportsTags,
     } as unknown as Store<C, T>;
   };

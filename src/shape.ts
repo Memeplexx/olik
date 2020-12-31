@@ -219,7 +219,23 @@ export type StoreForAnObject<C extends any, T extends Trackability> = {
 /**
  * An object which is capable of reading from and listening to changes made to a certain piece of state
  */
-export type StoreWhichIsReadable<C, T extends Trackability> = {
+export type StoreWhichIsReadableAndCacheable<C> = {
+  /**
+   * @returns the current state
+   */
+  readInitial: () => DeepReadonly<C>,
+  /**
+   * Invalidates all caches on this node and any descendants of this node.
+   */
+  invalidateCache: () => void,
+  /**
+   * If there is a cache associated with this node, then the function you supply here will be invoked whenever that cache expires.
+   * Note that this will not be triggered if invalidateCache() is manually called.
+   */
+  onCacheExpired: (listener: () => any) => Unsubscribable,
+} & StoreOrDerivation<C>;
+
+export type StoreOrDerivation<C> = {
   /**
    * Listens to any updates on this node
    * @returns a subscription which will need to be unsubscribed from to prevent a memory leak
@@ -232,19 +248,6 @@ export type StoreWhichIsReadable<C, T extends Trackability> = {
    * @returns the current state
    */
   read: () => DeepReadonly<C>,
-  /**
-   * @returns the current state
-   */
-  readInitial: () => DeepReadonly<C>,
-  /**
-   * Invalidates all caches on this node and any descendants of this node.
-   */
-  invalidateCache: (tag: Tag<T>) => void,
-  /**
-   * If there is a cache associated with this node, then the function you supply here will be invoked whenever that cache expires.
-   * Note that this will not be triggered if invalidateCache() is manually called.
-   */
-  onCacheExpired: (listener: () => any) => Unsubscribable,
 }
 
 /**
@@ -266,12 +269,12 @@ export type StoreWhichIsResettable<C extends any, T extends Trackability> = {
    * Beware that if this store is marked as a `containerForNestedStores`, then all nested stores will also be removed
    */
   reset: (tag: Tag<T>) => void,
-} & StoreWhichIsReadable<C, T>;
+} & StoreWhichIsReadableAndCacheable<C>;
 
 /**
  * An object which is capable of storing nested stores
  */
-export type StoreWhichMayContainNestedStores<S, C, T extends Trackability> = StoreForAnObject<C, T> & StoreWhichIsReadable<C, T> & {
+export type StoreWhichMayContainNestedStores<S, C, T extends Trackability> = StoreForAnObject<C, T> & StoreWhichIsReadableAndCacheable<C> & {
   renew: (state: S) => void;
   reset: () => void;
 };
@@ -336,13 +339,13 @@ export type SelectorFromAStoreEnforcingTags<S> = (<C = S>(selector?: (arg: DeepR
 /**
  * An input for a derivation
  */
-type DerivationCalculationInput<E, T extends Trackability> = E extends StoreWhichIsReadable<infer W, T> ? W : E extends StoreWhichIsReadable<infer W, T> ? W : never;
+type DerivationCalculationInput<E> = E extends StoreOrDerivation<infer W> ? W : never;
 
 /**
  * All inputs for a particular derivation
  */
-export type DerivationCalculationInputs<H extends Trackability, T extends Array<StoreWhichIsReadable<any, H>>> = {
-  [K in keyof T]: DerivationCalculationInput<T[K], H>;
+export type DerivationCalculationInputs<T extends Array<StoreOrDerivation<any>>> = {
+  [K in keyof T]: DerivationCalculationInput<T[K]>;
 }
 
 export type OptionsForMakingAStore = {
