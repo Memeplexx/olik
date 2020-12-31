@@ -128,7 +128,7 @@ export function copyPayloadOrPromise<C>(payload: LiteralOrPromiseReturning<C>) {
   let cachedPromise: CachedPromise<C> | undefined;
   if (typeof (payload) === 'function') {
     promise = payload as () => Promise<C>;
-  } else if (typeof ((payload as CachedPromise<C>).promise) === 'function') {
+  } else if ((payload as CachedPromise<C>).promise) { // better check???
     cachedPromise = payload as CachedPromise<C>;
   } else {
     payloadFrozen = deepFreeze(deepCopy(payload as any));
@@ -137,7 +137,19 @@ export function copyPayloadOrPromise<C>(payload: LiteralOrPromiseReturning<C>) {
   return { payloadFrozen, payloadCopied, promise, cachedPromise };
 }
 
-export const cachedPromise = <C, X extends (...args: any[]) => Promise<C>>(promise: X) => {
+
+
+// export const cachedPromise = <C, X extends (...args: any[]) => Promise<C>, T extends Record<string, any>>(promise: SingleKey<T>) => {
+//   return {
+//     ttl: (ttl: number) => ({ promise, ttl }),
+//     args: (...args: Parameters<X>) => ({ ttl: (ttl: number) => ({ promise, ttl, args }) }),
+//   } as unknown as CachedPromiseDescriptor<C, X>;
+// };
+
+
+
+
+export const cachedPromise = <C, X extends (...args: any[]) => Promise<C>>(promise: { [arg: string]: X }) => {
   return {
     ttl: (ttl: number) => ({ promise, ttl }),
     args: (...args: Parameters<X>) => ({ ttl: (ttl: number) => ({ promise, ttl, args }) }),

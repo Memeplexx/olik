@@ -129,13 +129,15 @@ function makeInternal<S, T extends Trackability>(state: S, options: { supportsTa
   let devtoolsDispatchListener: ((action: { type: string, payload?: any }) => any) | undefined;
   const setDevtoolsDispatchListener = (listener: (action: { type: string, payload?: any }) => any) => devtoolsDispatchListener = listener;
   const cacheExpiredListeners = new Map<(ar: any) => any, () => any>();
-  const doPromise = <C>(cacheKey: string, selector: Function, promise: (...angs: any[]) => Promise<C>, ttl: number, args: any[], updateStateFn: (frozen: C, copied: C, cacheReplacer: (state: S) => S) => S) => new Promise<C>((resolve, reject) => {
+  const doPromise = <C>(cacheKey: string, selector: Function, promiseKVP: { [name: string]: (...angs: any[]) => Promise<C> }, ttl: number, args: any[], updateStateFn: (frozen: C, copied: C, cacheReplacer: (state: S) => S) => S) => new Promise<C>((resolve, reject) => {
     const currentStateWithCache = currentState as unknown as { cache: SimpleObject };
-    const cacheKeyWithArgs = `${cacheKey.split(')')[0]}(${args}) => Promise)`;
+    const promiseName = Object.keys(promiseKVP)[0];
+    const cacheKeyWithArgs = `${cacheKey.split(')')[0]}${promiseName}(${args}))`;
     if (currentStateWithCache.cache && currentStateWithCache.cache[cacheKeyWithArgs]) {
       resolve(currentStateWithCache.cache[cacheKeyWithArgs]);
       return;
     }
+    const promise = promiseKVP[Object.keys(promiseKVP)[0]];
     promise.apply(undefined, args).then(res => {
       const copiedRes = copyPayload(res);
       if (ttl) {
@@ -174,9 +176,9 @@ function makeInternal<S, T extends Trackability>(state: S, options: { supportsTa
   const processPayloadOrPromise = <C>(specs: { cacheKey: string, selector: Function, payloadOrPromise: LiteralOrPromiseReturning<C>, updateStateFn: (frozen: C, copied: C, cacheReplacer?: (state: S) => S) => any }) => {
     const { payloadFrozen, payloadCopied, promise, cachedPromise } = copyPayloadOrPromise(specs.payloadOrPromise);
     if (promise) {
-      return doPromise(specs.cacheKey, specs.selector, promise, 0, [], specs.updateStateFn);
+      return doPromise(specs.cacheKey, specs.selector, { '': promise }, 0, [], specs.updateStateFn);
     } else if (cachedPromise) {
-      if (Array.isArray(currentState) || ['number', 'string', 'boolean'].some(type => typeof(currentState) === type)) {
+      if (Array.isArray(currentState) || ['number', 'string', 'boolean'].some(type => typeof (currentState) === type)) {
         throw new Error(errorMessages.INVALID_CONTAINER_FOR_CACHES)
       }
       return doPromise(specs.cacheKey, specs.selector, cachedPromise.promise, cachedPromise.ttl, cachedPromise.args || [], specs.updateStateFn);

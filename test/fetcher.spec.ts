@@ -1,4 +1,4 @@
-import { make, makeEnforceTags } from '../src';
+import { make } from '../src';
 import { tests } from '../src/tests';
 import { cachedPromise } from '../src/utils';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
@@ -35,9 +35,9 @@ describe('Fetcher', () => {
       count++;
       setTimeout(() => resolve([count.toString()]), 10);
     });
-    get(s => s.arr).replaceAll(cachedPromise(fetchArray).ttl(1000));
+    get(s => s.arr).replaceAll(cachedPromise({ fetchArray }).ttl(1000));
     setTimeout(() => {
-      get(s => s.arr).replaceAll(cachedPromise(fetchArray).ttl(1000)).then(() => {
+      get(s => s.arr).replaceAll(cachedPromise({ fetchArray }).ttl(1000)).then(() => {
         expect(get(s => s.arr).read()).toEqual(['1']);
         done();
       });
@@ -53,9 +53,9 @@ describe('Fetcher', () => {
         resolve([count.toString()]);
       }, 10);
     });
-    get(s => s.arr).replaceAll(cachedPromise(fetchArray).ttl(5));
+    get(s => s.arr).replaceAll(cachedPromise({ fetchArray }).ttl(5));
     setTimeout(() => {
-      get(s => s.arr).replaceAll(cachedPromise(fetchArray).ttl(5)).then(() => {
+      get(s => s.arr).replaceAll(cachedPromise({ fetchArray }).ttl(5)).then(() => {
         expect(get(s => s.arr).read()).toEqual(['2']);
         done();
       });
@@ -69,10 +69,10 @@ describe('Fetcher', () => {
       count++;
       return new Promise<Array<string>>(resolve => resolve([count.toString()]));
     };
-    get(s => s.arr).replaceAll(cachedPromise(fetchArray).ttl(5000));
+    get(s => s.arr).replaceAll(cachedPromise({ fetchArray }).ttl(5000));
     setTimeout(() => {
       get(s => s.arr).invalidateCache();
-      get(s => s.arr).replaceAll(cachedPromise(fetchArray).ttl(5000));
+      get(s => s.arr).replaceAll(cachedPromise(({ fetchArray })).ttl(5000));
       setTimeout(() => {
         expect(count).toEqual(2);
         expect(get(s => s.arr).read()).toEqual(['2']);
@@ -114,16 +114,16 @@ describe('Fetcher', () => {
     })
   })
 
-  it('should perform a basic fetch using replace() on a primitive including caching', done => {
-    const get = make({ num: 0});
+  it('should perform a basic fetch using replace() on a primitive including caching', async done => {
+    const get = make({ num: 0 });
     let count = 0;
     const fetchArray = () => new Promise<number>(resolve => {
       count++;
       setTimeout(() => resolve(1), 10);
     });
-    get(s => s.num).replace(cachedPromise(fetchArray).ttl(1000))
+    get(s => s.num).replace(cachedPromise(({ fetchArray })).ttl(1000))
     setTimeout(() => {
-      expect(get().read()).toEqual({ num: 1, cache: { 'num.replace(() => Promise)': 1 } });
+      expect(get().read()).toEqual({ num: 1, cache: { 'num.replace(fetchArray())': 1 } });
       expect(count).toEqual(1);
       done();
     }, 50);
@@ -213,7 +213,7 @@ describe('Fetcher', () => {
   it('should respond to cache expired events', done => {
     const get = make({ num: 0 });
     const fetchNum = () => new Promise<number>(resolve => resolve(1));
-    get(s => s.num).replace(cachedPromise(fetchNum).ttl(10));
+    get(s => s.num).replace(cachedPromise({ fetchNum }).ttl(10));
     get(s => s.num).onCacheExpired(() => {
       done();
     })
@@ -222,7 +222,7 @@ describe('Fetcher', () => {
   it('should correctly unsubscribe a cache expired listener', done => {
     const get = make({ num: 0 });
     const fetchNum = () => new Promise<number>(resolve => resolve(1));
-    get(s => s.num).replace(cachedPromise(fetchNum).ttl(10));
+    get(s => s.num).replace(cachedPromise({ fetchNum }).ttl(10));
     let called = false;
     get(s => s.num).onCacheExpired(() => {
       called = true;
@@ -241,12 +241,12 @@ describe('Fetcher', () => {
       callCount++;
       return new Promise<string[]>(resolve => setTimeout(() => resolve(data.slice(offset * count, (offset + 1) * count)), 5));
     }
-    get(s => s.arr).replaceAll(cachedPromise(fetchString).args(0, 10).ttl(1000))
-      .then(res => get(s => s.arr).replaceAll(cachedPromise(fetchString).args(0, 10).ttl(1000)))
+    get(s => s.arr).replaceAll(cachedPromise({ fetchString }).args(0, 10).ttl(1000))
+      .then(res => get(s => s.arr).replaceAll(cachedPromise({ fetchString }).args(0, 10).ttl(1000)))
       .then(res => {
         expect(callCount).toEqual(1);
         get().invalidateCache();
-        return get(s => s.arr).replaceAll(cachedPromise(fetchString).args(1, 10).ttl(1000))
+        return get(s => s.arr).replaceAll(cachedPromise({ fetchString }).args(1, 10).ttl(1000));
       })
       .then(res => {
         expect(res).toEqual(data.slice(10, 20));
@@ -258,7 +258,7 @@ describe('Fetcher', () => {
 
 
 
-  
+
 
   // it('should correctly cache using a cache key', done => {
   //   const get = make({ arr: new Array<string>() });

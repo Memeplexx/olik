@@ -50,7 +50,7 @@ export type CachedPromise<C> = {
   /**
    * A function accepting zero or more arguments, and returning a promise
    */
-  promise: (...args: any[]) => Promise<C>,
+  promise: {[name: string]: (...args: any[]) => Promise<C>},
   /**
    * An array of arguments
    */
@@ -253,12 +253,12 @@ export type StoreOrDerivation<C> = {
 /**
  * A container for a function returning promise and a ttl
  */
-export type CachedPromiseNoArgs<C, X extends (...args: any[]) => Promise<C>> = { promise: X, ttl: number };
+export type CachedPromiseNoArgs<C, X extends (...args: any[]) => Promise<C>> = { promise: { [name: string]: X }, ttl: number };
 
 /**
  * A container for a function accepting 1 or more arguments returning promise and a ttl
  */
-export type CachedPromiseWithArgs<C, X extends (...args: any[]) => Promise<C>> = { promise: X, ttl: number, args: Parameters<X> }
+export type CachedPromiseWithArgs<C, X extends (...args: any[]) => Promise<C>> = { promise: { [name: string]: X }, ttl: number, args: Parameters<X> }
 
 /**
  * An object which is capable of resetting its internal state
@@ -434,6 +434,19 @@ export type Derivation<R> = {
    */
   onChange: (listener: (value: DeepReadonly<R>) => any) => Unsubscribable,
 };
+
+
+
+// // From https://stackoverflow.com/a/50375286
+// type UnionToIntersection<U> = (U extends any ? (k: U) => void : never) extends ((k: infer I) => void) ? I : never;
+
+// // From: https://stackoverflow.com/a/53955431
+// type IsUnion<T> = [T] extends [UnionToIntersection<T>] ? false : true;
+
+// // Here we come!
+// export type SingleKey<T> = IsUnion<keyof T> extends true ? never : {} extends T ? never : T;
+
+
 
 export type WindowAugmentedWithReduxDevtools = {
   __REDUX_DEVTOOLS_EXTENSION__: {
