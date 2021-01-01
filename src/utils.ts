@@ -137,19 +137,7 @@ export function copyPayloadOrPromise<C>(payload: LiteralOrPromiseReturning<C>) {
   return { payloadFrozen, payloadCopied, promise, cachedPromise };
 }
 
-
-
-// export const cachedPromise = <C, X extends (...args: any[]) => Promise<C>, T extends Record<string, any>>(promise: SingleKey<T>) => {
-//   return {
-//     ttl: (ttl: number) => ({ promise, ttl }),
-//     args: (...args: Parameters<X>) => ({ ttl: (ttl: number) => ({ promise, ttl, args }) }),
-//   } as unknown as CachedPromiseDescriptor<C, X>;
-// };
-
-
-
-
-export const cachedPromise = <C, X extends (...args: any[]) => Promise<C>>(promise: { [arg: string]: X }) => {
+export const cached = <C, X extends (...args: any[]) => Promise<C>>(promise: { [arg: string]: X }) => {
   return {
     ttl: (ttl: number) => ({ promise, ttl }),
     args: (...args: Parameters<X>) => ({ ttl: (ttl: number) => ({ promise, ttl, args }) }),
