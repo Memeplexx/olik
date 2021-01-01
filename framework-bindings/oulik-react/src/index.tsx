@@ -1,4 +1,4 @@
-import { Store, FetchState, Unsubscribable, SelectorFromANestedStore, } from 'oulik';
+import { DeepReadonly, SelectorFromANestedStore, Store, Trackability, Unsubscribable } from 'oulik';
 import React, { DependencyList } from 'react';
 
 export * from 'oulik';
@@ -8,14 +8,14 @@ export * from 'oulik';
  * @param store either a normal store, or a derived store
  * @param deps an optional array of dependencies
  * 
- * EXAMPLE 1: NORMAL STORE SELECTION
- * ```typescript
+ * @example 1: NORMAL STORE SELECTION
+ * ```
  * const value = useSelector(
  *   get(s => s.some.property)
  * );
  * ```
  * 
- * EXAMPLE 2: DERIVED STORE SELECTION
+ * @example 2: DERIVED STORE SELECTION
  * ```typescript
  * const value = useSelector(
  *   deriveFrom(
@@ -47,42 +47,38 @@ export function useSelector<C>(
 /**
  * A hook to track the status of a request
  * 
- * @param fetcher A fetcher which you have previously defined
- * @param tag required only if you have defined your store using `makeEnforceTags()`
+ * @param fetchFn A no-args function returning a promise
  * 
- * EXAMPLE
- * ```typescript
- * // outside your functional component
- * const todosFetcher = createFetcher({
- *   onStore: select(s => s.todos),
- *   getData: () => fetchTodosFromApi(),
- *   cacheFor: 1000 * 60,
- * });
+ * @example
+ * ```
+ * const fetchTodosFromApi = (index: number, offset: number) => {
+ *   return fetch(`https://www.example.com/api/todos?index=${index}&offset=${offset}`)
+ * }
  * 
- * // inside your functional component
- * const { isLoading, hasError, error, data, storeData, refetch } = useFetcher(todosFetcher);
+ * const { isLoading, hasError, succeeded, error, data, refetch } = useFetcher(() => fetchTodosFromApi(index: number, offset: number));
+ * const todos = useSelector(get(s => s.todos));
  * ```
  */
-export function useFetcher<S, C, P, B extends boolean>(
-  getFetch: () => FetchState<S, C, P, B>,
-  deps?: DependencyList,
+export function useFetcher<C>(
+  fetchFn: () => Promise<C>
 ) {
-  const allDeps = [];
-  if (deps) { allDeps.push(...deps); }
-  const fetch = React.useMemo(() => getFetch(), allDeps);
-  const [result, setResult] = React.useState({ isLoading: fetch.status === 'resolving', hasError: fetch.status === 'rejected', error: fetch.error, data: fetch.data, storeData: fetch.store.read(), refetch: fetch.refetch });
+  const [result, setResult] = React.useState({
+    isLoading: true,
+    hasError: false,
+    succeeded: false,
+    error: null as any | null,
+    data: null as null | C,
+    refetch: (() => null) as unknown as ((fetcher: () => Promise<C>) => void),
+  });
   React.useEffect(() => {
-    setResult(result => ({ ...result, storeData: fetch.store.read() }));
-    let storeSubscription: Unsubscribable | undefined;
-    const subscription = fetch.onChange(() => {
-      setResult(result => ({ ...result, isLoading: status === 'resolving', hasError: fetch.status === 'rejected', error: fetch.error, data: fetch.data, storeData: fetch.store.read() }));
-      storeSubscription = fetch.store.onChange(state => setResult(r => ({ ...r, storeData: state })))
-    })
-    return () => {
-      subscription.unsubscribe();
-      if (storeSubscription) { storeSubscription.unsubscribe(); }
-    }
-  }, allDeps);
+    const refetch = (fetcher: () => Promise<C>) => {
+      setResult({ data: null, hasError: false, isLoading: true, error: null, succeeded: false, refetch });
+      fetcher()
+        .then(data => setResult({ data, hasError: false, isLoading: false, error: null, succeeded: true, refetch }))
+        .catch(error => setResult({ data: null, hasError: true, isLoading: false, error, succeeded: false, refetch }));
+    };
+    refetch(fetchFn);
+  });
   return result;
 }
 
@@ -130,9 +126,9 @@ export function useStore<C>(
  * }))(Todo);
  * ```
  */
-export function mapStateToProps<C, P extends {}, M extends {}, B extends boolean>(
+export function mapStateToProps<C, P extends {}, M extends {}, B extends Trackability>(
   store: Store<C, B>,
-  mapper: (state: C, ownProps: P) => M,
+  mapper: (state: DeepReadonly<C>, ownProps: P) => M,
 ) {
   return (Component: React.ComponentType<M>) => {
     return class TodoWrapper extends React.PureComponent<P, M> {

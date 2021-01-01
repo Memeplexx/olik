@@ -1,5 +1,5 @@
 import { NgModule, NgZone } from '@angular/core';
-import { DeepReadonly, FetchState, listenToDevtoolsDispatch, Store, Trackability, Unsubscribable } from 'oulik';
+import { DeepReadonly, listenToDevtoolsDispatch, Store, Trackability } from 'oulik';
 import { Observable } from 'rxjs';
 import { shareReplay } from 'rxjs/operators';
 
@@ -31,115 +31,42 @@ export function observe<C, B extends Trackability>(
 }
 
 /**
- * Wraps a Fetch inside an Observable which can be consumed by your component template
+ * Allows you to display the current status of a fetch (success / error / failure)
  * ```
+ * @Component({
+ *   template: `
+ *   <ng-container *ngIf="fetch$ | async; let fetch;">
+ *     <div *ngIf="fetch.loading">Loading...</div>
+ *     <div *ngIf="fetch.hasError">{{fetch.error}}</div>
+ *   </ng-container>
+ *   <div *ngFor="let todo of todos$ | async">{{todo}}</div>
+ *   <button (click)="onClickRefreshTodos()">Click to get latest todos from API</button>
+ * `,
+ * })
  * export class MyComponent {
- *   constructor(
- *     private http: HttpClient,
- *   ){}
- *   // This part should probably be in another class, eg. ApiService
- *   fetchTodos = createFetcher({
- *     onStore: get(s => s.todos),
- *     getData: () => this.http.get<Todo>('https://www.example.com/todos'),
- *     cacheFor: 1000 * 60
- *   });
- *   // Here is the important bit
- *   todos$ = observeFetch(() => this.fetchTodos());
- * }
- * ```
- */
-export function observeFetch<C, P, B extends Trackability>(
-  getFetch: () => FetchState<C, P, B>,
-) {
-  const observable = new Observable<
-    { isLoading: boolean, data: C | null, hasError: boolean, error?: any, storeData: DeepReadonly<C> | null }
-  >(observer => {
-    const fetchState = getFetch();
-    result.currentState = fetchState;
-    const emitCurrentState = () => {
-      observer.next(({
-        /**
-         * Whether or not the fetch is currently resolving
-         */
-        isLoading: fetchState.status === 'resolving',
-        /**
-         * Whether or not the latest fetch was rejected
-         */
-        hasError: fetchState.status === 'rejected',
-        /**
-         * The current resolved data, if any.
-         */
-        data: fetchState.data,
-        /**
-         * The current rejection, if any.
-         */
-        error: fetchState.error,
-        /**
-         * The current store data associated with this fetcher
-         */
-        storeData: fetchState.store.read(),
-      }));
-      /**
-       * Invalidates the cache and re-fetches
-       */
-      result.currentState = fetchState;
-    };
-    emitCurrentState();
-    let storeChangeSubscription: Unsubscribable | undefined;
-    const fetchChangeSubscription = fetchState.onChange(() => {
-      emitCurrentState();
-      storeChangeSubscription = fetchState.store.onChange(() => emitCurrentState());
-    });
-    return () => {
-      fetchChangeSubscription.unsubscribe();
-      if (storeChangeSubscription) {
-        storeChangeSubscription.unsubscribe();
-      }
-    };
-  }).pipe(
-    shareReplay({ bufferSize: 1, refCount: true }),
-  );
-  const result = {
-    observable,
-    currentState: null as unknown as FetchState<C, P, B>,
-  };
-  return result;
-}
-
-/**
- * To be used inside a Resolver to fetch data via a Fetcher
- * ```
- * export class MyResolver implements Resolver<any> {
- *   constructor(
- *     private http: HttpClient,
- *   ){}
- *   // This part should probably be in another class, eg. ApiService
- *   fetchTodos = createFetcher({
- *     onStore: get(s => s.todos),
- *     getData: () => this.http.get<Todo>('https://www.example.com/todos'),
- *     cacheFor: 1000 * 60
- *   });
- *   // Here is the important bit
- *   resolve(route: ActivatedRouteSnapshot, state: RouterStateSnapshot) {
- *     return resolve(() => this.fetchTodos());
+ *   fetch$ = observeFetch(() => this.apiService.fetchTodos()) 
+ *   todos$ = observe(get(s => s.todos));
+ *   onClickRefreshTodos() {
+ *     this.fetch$.pipe(take(1)).subscribe(r => r.refetch());
  *   }
  * }
  * ```
  */
-export function resolve<C, P, B extends Trackability>(
-  getFetch: () => FetchState<C, P, B>,
-) {
-  return new Observable<C>(observer => {
-    const fetchState = getFetch();
-    fetchState.onChangeOnce().then(() => {
-      if (fetchState.status === 'resolved') {
-        observer.next(fetchState.data);
-        observer.complete();
-      } else if (fetchState.status === 'rejected') {
-        throw new Error(fetchState.error);
-      }
-    });
-  });
+export function observeFetch<C>(fetchFn: () => Observable<C>) {
+  return new Observable<
+    { isLoading: boolean, resolved: C | null, hasError: boolean, rejected: any | null, refetch: (fetcher: () => Observable<C>) => void }
+  >(observer => {
+    const refetch = (fetcher: () => Observable<C>) => {
+      observer.next({ resolved: null, hasError: false, isLoading: true, rejected: null, refetch: () => null as any });
+      fetcher().toPromise()
+        .then(resolved => observer.next({ resolved, hasError: false, isLoading: false, rejected: null, refetch }))
+        .catch(rejected => observer.next({ resolved: null, hasError: true, isLoading: false, rejected, refetch }));
+    };
+    observer.next({ resolved: null, hasError: false, isLoading: true, rejected: null, refetch });
+    refetch(fetchFn);
+  }).pipe(
+    shareReplay({ bufferSize: 1, refCount: true }),
+  );
 }
 
 @NgModule()

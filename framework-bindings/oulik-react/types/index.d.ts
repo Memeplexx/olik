@@ -1,4 +1,4 @@
-import { Store, FetchState, Unsubscribable, SelectorFromANestedStore } from 'oulik';
+import { Store, Unsubscribable, SelectorFromANestedStore, Trackability, DeepReadonly } from 'oulik';
 import React, { DependencyList } from 'react';
 export * from 'oulik';
 /**
@@ -6,20 +6,22 @@ export * from 'oulik';
  * @param store either a normal store, or a derived store
  * @param deps an optional array of dependencies
  *
- * EXAMPLE 1: NORMAL STORE SELECTION
- * ```typescript
+ * @example 1: NORMAL STORE SELECTION
+ * ```
  * const value = useSelector(
- *   select(s => s.some.property)
+ *   get(s => s.some.property)
  * );
  * ```
  *
- * EXAMPLE 2: DERIVED STORE SELECTION
+ * @example 2: DERIVED STORE SELECTION
  * ```typescript
  * const value = useSelector(
  *   deriveFrom(
- *     select(s => s.some.property),
- *     select(s => s.some.other.property),
- *   ).usingExpensiveCalc((someProperty, someOtherProperty) => someProperty * someOtherProperty)
+ *     get(s => s.some.property),
+ *     get(s => s.some.other.property),
+ *   ).usingExpensiveCalc((someProperty, someOtherProperty) => {
+ *     return someProperty * someOtherProperty;
+ *   })
  * ));
  * ```
  */
@@ -30,38 +32,36 @@ export declare function useSelector<C>(store: {
 /**
  * A hook to track the status of a request
  *
- * @param fetcher A fetcher which you have previously defined
- * @param tag required only if you have defined your store using `makeEnforceTags()`
+ * @param fetchFn A no-args function returning a promise
  *
- * EXAMPLE
- * ```typescript
- * // outside your functional component
- * const todosFetcher = createFetcher({
- *   onStore: select(s => s.todos),
- *   getData: () => fetchTodosFromApi(),
- *   cacheFor: 1000 * 60,
- * });
- *
- * // inside your functional component
- * const { isLoading, hasError, error, data, storeData, refetch } = useFetcher(todosFetcher);
+ * @example
+ * ```
+ * const { isLoading, hasError, rejected, resolved, refetch } = useFetcher(fetchTodosFromApi());
+ * const todos = useSelector(get(s => s.todos));
  * ```
  */
-export declare function useFetcher<S, C, P, B extends boolean>(getFetch: () => FetchState<S, C, P, B>, deps?: DependencyList): {
+export declare function useFetcher<C>(fetchFn: () => Promise<C>): {
     isLoading: boolean;
     hasError: boolean;
-    error: any;
-    data: C;
-    storeData: C;
-    refetch: import("oulik").FetchFunction<S, C, P, B>;
+    rejected: any;
+    resolved: C | null;
+    refetch: (fetcher: () => Promise<C>) => void;
 };
 /**
  * A hook for creating a store which is capable of being nested inside your application store
  * @param getStore a no-args function which returns a new store
  *
- * EXAMPLE
- * ```typescript
- * const store = useStore(() => makeNested({ someString: '', someNumber: 0 }));
+ * Note that in order for your store to be nested in the application store, you will need to
+ * mark it as follows:
  * ```
+ * const get = make({...}, { containerForNestedStores: true });
+ * ```
+ * Then, in your component, you can use this function as follows:
+ * ```
+ * const get = useStore(() => makeNested({...}, { name: 'MyComponent' }));
+ * ```
+ * Finally, note that if your application store is not marked with `containerForNestedStores`,
+ * then your component will register a new store within the devtools with the name your provided,
  */
 export declare function useStore<C>(getStore: () => SelectorFromANestedStore<C>): SelectorFromANestedStore<C>;
 /**
@@ -69,20 +69,20 @@ export declare function useStore<C>(getStore: () => SelectorFromANestedStore<C>)
  * @param store The store that was previously defined using `make()` or `makeEnforceTags()`
  * @param mapper a function which takes in state from the store, and returns state which will be used
  *
- * EXAMPLE
- * ```typescript
+ * The following example component receives props from the store as well as from its parent component
+ * ```
  * class Todo extends React.Component<{ todos: Todo[], userName: string, someProp: number }> {
  *   // ...
  * }
  *
- * export default mapStateToProps(select(), (state, ownProps: { someProp: string }) => ({
+ * export default mapStateToProps(select(s => s.some.state), (state, ownProps: { someProp: string }) => ({
  *   todos: state.todos,
  *   userName: state.user.firstName,
  *   someProp: ownProps.someProp,
  * }))(Todo);
  * ```
  */
-export declare function mapStateToProps<C, P extends {}, M extends {}, B extends boolean>(store: Store<C, B>, mapper: (state: C, ownProps: P) => M): (Component: React.ComponentType<M>) => {
+export declare function mapStateToProps<C, P extends {}, M extends {}, B extends Trackability>(store: Store<C, B>, mapper: (state: DeepReadonly<C>, ownProps: P) => M): (Component: React.ComponentType<M>) => {
     new (props: any): {
         sub: Unsubscribable;
         render(): JSX.Element;

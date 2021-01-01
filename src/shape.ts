@@ -207,7 +207,7 @@ export type StoreOrDerivation<C> = {
   /**
    * @returns the current state
    */
-  read: () => DeepReadonly<C>,
+  read: () => C,
 }
 
 /**

@@ -6,9 +6,9 @@
 ![Package Size](https://badgen.net/bundlephobia/minzip/oulik)
 ![Dependency count](https://badgen.net/bundlephobia/dependency-count/oulik)
 
-## ***Effortless state-management with an incurable magic-string allergy*** ##  
+## ***Dead-simple state-management, free of confusing user-defined abstractions*** ##  
 
-Oulik **describes your state updates for you** so you don't have to (within the **[Redux Devtools extension](https://chrome.google.com/webstore/detail/redux-devtools/lmhkpmbekcpmknklioeibfkpmmfibljd?hl=en)**). It also supports various **opt-in**, **tree-shakable** features including **memoization**, **caching**, and the ability to **dynamically nest component-level stores** within your application-level store.
+Oulik leverages the shape of your state tree and standardizes your state-update primitives to provide a **lucid state-management experience**. It also supports the ability to **dynamically nest component-level stores** within your application-level store.
 
 > This rest of this guide covers the vanilla JS version. You may prefer to use ***[![](./docs/assets/react.png)&nbsp;OULIK-REACT](./docs/readme-react.md)***, or ***[![](./docs/assets/angular.png)&nbsp;OULIK-NG](./docs/readme-ng.md)***.  
 
@@ -36,8 +36,6 @@ get(s => s.favorite.hobbies).replaceWhere(h => h === 'Coding').with('Napping');
 ***[✍️ Writing state](./docs/readme-write.md)*** - update your state using a minimal but powerful set of state-update utilities
 
 ***[📖 Reading state](./docs/readme-read.md)*** - read synchronously, listen to updates, and memoise derived state
-
-***[🐕‍🦺 Fetching state](./docs/readme-fetch.md)*** - de-duplicate simulatenous requests, cache responses, and track loading / error / result states
 
 ***[🥚 Nesting stores](./docs/readme-fetch.md)*** - nest component-level stores inside your application-level store
 

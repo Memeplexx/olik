@@ -214,6 +214,11 @@ describe('Array', () => {
     expect(get(s => s.array).read()).toEqual([{ id: 1, value: 'one' }, { id: 2, value: 'twoo' }, { id: 3, value: 'threee' }, { id: 4, value: 'four' }, { id: 5, value: 'five' }]);
     expect(tests.currentAction.type).toEqual('array.mergeWhere()');
     expect(tests.currentMutableState).toEqual(get().read());
+
+
+    const eee = get().read();
+    const ee = get(s => s.array).read();
+
   })
 
 });

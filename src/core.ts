@@ -230,6 +230,8 @@ function makeInternal<S, T extends Trackability>(state: S, options: { supportsTa
         return payloadCopied;
       }) as StoreForAnArray<X, T>['addBefore'],
       removeFirst: (tag => {
+        const selection = selector(currentState) as X;
+        if (!selection.length) { throw new Error(errorMessages.NO_ARRAY_ELEMENTS_TO_REMOVE); }
         updateState<C, T, X>({
           selector,
           replacer: old => old.slice(1, old.length),
@@ -242,6 +244,7 @@ function makeInternal<S, T extends Trackability>(state: S, options: { supportsTa
       }) as StoreForAnArray<X, T>['removeFirst'],
       removeLast: (tag => {
         const selection = selector(currentState) as X;
+        if (!selection.length) { throw new Error(errorMessages.NO_ARRAY_ELEMENTS_TO_REMOVE); }
         updateState<C, T, X>({
           selector,
           replacer: old => old.slice(0, old.length - 1),
@@ -358,7 +361,7 @@ function makeInternal<S, T extends Trackability>(state: S, options: { supportsTa
       defineRemoveNestedStore: ((name, key) => () => {
         if (!nestedContainerStore) { return; }
         if (Object.keys((currentState as S & { nested: any }).nested[name]).length === 1) {
-          return updateState({
+          updateState({
             selector: ((s: S & { nested: any }) => s.nested) as Selector<S, C>,
             replacer: old => {
               const { [name]: toRemove, ...others } = old as SimpleObject;
@@ -371,7 +374,7 @@ function makeInternal<S, T extends Trackability>(state: S, options: { supportsTa
             tag: null as unknown as void,
           })
         } else {
-          return updateState({
+          updateState({
             selector: ((s: S & { nested: any }) => s.nested[name]) as Selector<S, C>,
             replacer: old => {
               const { [key]: toRemove, ...others } = old as SimpleObject;
