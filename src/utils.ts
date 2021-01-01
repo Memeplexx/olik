@@ -1,5 +1,4 @@
 import { errorMessages } from './consts';
-import { CachedPromise, CachedPromiseDescriptor, LiteralOrPromiseReturning } from './shape';
 
 export function deepFreeze<T extends Object>(o: T): T {
   Object.freeze(o);
@@ -120,31 +119,3 @@ export function copyPayload<C>(payload: C) {
     payloadCopied: deepCopy(payload),
   };
 }
-
-export function copyPayloadOrPromise<C>(payload: LiteralOrPromiseReturning<C>) {
-  let payloadFrozen: C | undefined;
-  let payloadCopied: C | undefined;
-  let promise: (() => Promise<C>) | undefined;
-  let cachedPromise: CachedPromise<C> | undefined;
-  if (typeof (payload) === 'function') {
-    promise = payload as () => Promise<C>;
-  } else if ((payload as CachedPromise<C>).promise) { // better check???
-    cachedPromise = payload as CachedPromise<C>;
-  } else {
-    payloadFrozen = deepFreeze(deepCopy(payload as any));
-    payloadCopied = deepCopy(payload as any);
-  }
-  return { payloadFrozen, payloadCopied, promise, cachedPromise };
-}
-
-export const cached = <C, X extends (...args: any[]) => Promise<C>>(promise: { [arg: string]: X }) => {
-  return {
-    ttl: (ttl: number) => ({ promise, ttl }),
-    args: (...args: Parameters<X>) => ({ ttl: (ttl: number) => ({ promise, ttl, args }) }),
-  } as unknown as CachedPromiseDescriptor<C, X>;
-};
-
-export const getCacheKey = (pathSegments: string[], action: string) => {
-  return `${pathSegments.join('.')}${pathSegments.length ? '.' : ''}${action}()`;
-}
-

@@ -1,5 +1,4 @@
 export { make, makeEnforceTags, makeNested } from './core';
 export { deriveFrom } from './memoization';
-export { cached as cachedPromise } from './utils';
 export * from './devtools';
 export * from './shape';

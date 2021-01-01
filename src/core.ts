@@ -5,7 +5,6 @@ import {
   OptionsForMakingAStore,
   OptionsForMakingAStoreEnforcingTags,
   OptionsForReduxDevtools,
-  LiteralOrPromiseReturning,
   Selector,
   SelectorFromANestedStore,
   SelectorFromAStore,
@@ -16,7 +15,7 @@ import {
   StoreForAnArray,
   StoreWhichIsNested,
   StoreWhichIsNestedInternal,
-  StoreWhichIsReadableAndCacheable,
+  StoreWhichIsReadable,
   StoreWhichIsResettable,
   StoreWhichMayContainNestedStores,
   StoreForAnObject,
@@ -26,7 +25,7 @@ import {
   StoreOrDerivation,
 } from './shape';
 import { tests } from './tests';
-import { copyObject, copyPayload, copyPayloadOrPromise, createPathReader, deepCopy, deepFreeze, getCacheKey, validateState } from './utils';
+import { copyObject, copyPayload, createPathReader, deepCopy, deepFreeze, validateState } from './utils';
 
 let nestedContainerStore: ((selector?: ((s: DeepReadonly<any>) => any) | undefined) => StoreWhichMayContainNestedStores<any, any, any>) | undefined;
 
@@ -128,90 +127,27 @@ function makeInternal<S, T extends Trackability>(state: S, options: { supportsTa
   let initialState = currentState;
   let devtoolsDispatchListener: ((action: { type: string, payload?: any }) => any) | undefined;
   const setDevtoolsDispatchListener = (listener: (action: { type: string, payload?: any }) => any) => devtoolsDispatchListener = listener;
-  const cacheExpiredListeners = new Map<(ar: any) => any, () => any>();
-  const doPromise = <C>(cacheKey: string, selector: Function, promiseKVP: { [name: string]: (...angs: any[]) => Promise<C> }, ttl: number, args: any[], updateStateFn: (frozen: C, copied: C, cacheReplacer: (state: S) => S) => S) => new Promise<C>((resolve, reject) => {
-    const currentStateWithCache = currentState as unknown as { cache: SimpleObject };
-    const promiseName = Object.keys(promiseKVP)[0];
-    const cacheKeyWithArgs = `${cacheKey.split(')')[0]}${promiseName}(${args}))`;
-    if (currentStateWithCache.cache && currentStateWithCache.cache[cacheKeyWithArgs]) {
-      resolve(currentStateWithCache.cache[cacheKeyWithArgs]);
-      return;
-    }
-    const promise = promiseKVP[Object.keys(promiseKVP)[0]];
-    promise.apply(undefined, args).then(res => {
-      const copiedRes = copyPayload(res);
-      if (ttl) {
-        setTimeout(() => {
-          updateState({
-            selector: (s: S) => (s as unknown as { cache: SimpleObject }).cache,
-            replacer: old => {
-              const { [cacheKeyWithArgs]: val, ...others } = old;
-              return others;
-            },
-            mutator: old => delete old[cacheKeyWithArgs],
-            pathSegments: ['cache'],
-            actionName: 'remove',
-            payload: selector.toString(),
-            tag: null as unknown as Tag<T>,
-          });
-          Array.from(cacheExpiredListeners.keys()).filter(l => l.toString() === selector.toString()).forEach(key => cacheExpiredListeners.get(key)!());
-        }, ttl);
-      }
-      const cacheReplacer = (state: S) => {
-        if (!ttl) { return state; }
-        const stateWithCache = state as unknown as { cache: SimpleObject };
-        if (currentStateWithCache.cache) {
-          return { ...stateWithCache, cache: { ...stateWithCache.cache, [cacheKeyWithArgs]: copiedRes.payloadFrozen } } as unknown as S;
-        } else {
-          const result = { ...stateWithCache, cache: { [cacheKeyWithArgs]: copiedRes.payloadFrozen } } as unknown as S;
-          pathReader = createPathReader(result);
-          return result;
-        }
-      }
-      updateStateFn(copiedRes.payloadFrozen, copiedRes.payloadCopied, cacheReplacer);
-      resolve(copiedRes.payloadFrozen);
-    }).catch(err => reject(err));
-  });
-
-  const processPayloadOrPromise = <C>(specs: { cacheKey: string, selector: Function, payloadOrPromise: LiteralOrPromiseReturning<C>, updateStateFn: (frozen: C, copied: C, cacheReplacer?: (state: S) => S) => any }) => {
-    const { payloadFrozen, payloadCopied, promise, cachedPromise } = copyPayloadOrPromise(specs.payloadOrPromise);
-    if (promise) {
-      return doPromise(specs.cacheKey, specs.selector, { '': promise }, 0, [], specs.updateStateFn);
-    } else if (cachedPromise) {
-      if (Array.isArray(currentState) || ['number', 'string', 'boolean'].some(type => typeof (currentState) === type)) {
-        throw new Error(errorMessages.INVALID_CONTAINER_FOR_CACHES)
-      }
-      return doPromise(specs.cacheKey, specs.selector, cachedPromise.promise, cachedPromise.ttl, cachedPromise.args || [], specs.updateStateFn);
-    } else if (payloadFrozen !== undefined && payloadCopied !== undefined) {
-      specs.updateStateFn(payloadFrozen, payloadCopied);
-    }
-  }
-  const replace = <C, T extends Trackability>(selector: Selector<S, C>, name: string) => (payloadOrPromise: LiteralOrPromiseReturning<C>, tag: Tag<T>) => {
+  const replace = <C, T extends Trackability>(selector: Selector<S, C>, name: string) => (payloadOrPromise: C, tag: Tag<T>) => {
     const pathSegments = pathReader.readSelector(selector);
+    const { payloadFrozen, payloadCopied } = copyPayload(payloadOrPromise);
     if (!pathSegments.length) {
-      return processPayloadOrPromise({
-        cacheKey: name,
+      updateState({
         selector,
-        payloadOrPromise,
-        updateStateFn: (frozen, copied, cacheReplacer) => updateState({
-          selector,
-          replacer: old => frozen,
-          mutator: old => {
-            if (Array.isArray(old)) {
-              (old as Array<any>).length = 0; Object.assign(old, copied);
-            } else if (typeof (old) === 'boolean' || typeof (old) === 'number') {
-              pathReader.mutableStateCopy = copied as any as S;
-            } else {
-              Object.assign(old, copied);
-            }
-          },
-          actionName: name,
-          pathSegments: [],
-          payload: frozen,
-          tag,
-          cacheReplacer,
-        })
-      })
+        replacer: old => payloadFrozen,
+        mutator: old => {
+          if (Array.isArray(old)) {
+            (old as Array<any>).length = 0; Object.assign(old, payloadCopied);
+          } else if (typeof (old) === 'boolean' || typeof (old) === 'number') {
+            pathReader.mutableStateCopy = payloadCopied as any as S;
+          } else {
+            Object.assign(old, payloadCopied);
+          }
+        },
+        actionName: name,
+        pathSegments: [],
+        payload: payloadFrozen,
+        tag,
+      });
     } else {
       const lastSeg = pathSegments[pathSegments.length - 1] || '';
       const segsCopy = pathSegments.slice(0, pathSegments.length - 1);
@@ -220,24 +156,19 @@ function makeInternal<S, T extends Trackability>(state: S, options: { supportsTa
         segsCopy.forEach(seg => res = res[seg]);
         return res;
       })) as Selector<S, C>;
-      const cacheKey = getCacheKey(pathSegments, name);
-      return processPayloadOrPromise({
-        cacheKey,
-        selector,
-        payloadOrPromise,
-        updateStateFn: (frozen, copied, cacheReplacer) => updateState({
-          selector: selectorRevised,
-          replacer: old => Array.isArray(old) ? (old as Array<any>).map((o, i) => i === +lastSeg ? deepCopy(frozen) : o) : ({ ...old, [lastSeg]: deepCopy(frozen) }),
-          mutator: (old: SimpleObject) => old[lastSeg] = copied,
-          actionName: cacheKey,
-          actionNameOverride: true,
-          pathSegments: segsCopy,
-          payload: frozen,
-          tag,
-          cacheReplacer,
-        })
+      const actionName = `${pathSegments.join('.')}${pathSegments.length ? '.' : ''}${name}()`;
+      updateState({
+        selector: selectorRevised,
+        replacer: old => Array.isArray(old) ? (old as Array<any>).map((o, i) => i === +lastSeg ? deepCopy(payloadFrozen) : o) : ({ ...old, [lastSeg]: deepCopy(payloadFrozen) }),
+        mutator: (old: SimpleObject) => old[lastSeg] = payloadCopied,
+        actionName,
+        actionNameOverride: true,
+        pathSegments: segsCopy,
+        payload: payloadFrozen,
+        tag,
       })
     }
+    return payloadCopied;
   };
 
   const action = <C, X extends C & Array<any>>(selector: Selector<S, C, X>) => {
@@ -247,80 +178,56 @@ function makeInternal<S, T extends Trackability>(state: S, options: { supportsTa
       replaceAll: replace(
         selector, 'replaceAll'
       ) as StoreForAnArray<any, Trackability>['replaceAll'],
-      patch: ((payloadOrPromise, tag) => {
-        const pathSegments = pathReader.readSelector(selector);
-        return processPayloadOrPromise({
-          cacheKey: getCacheKey(pathSegments, 'patch'),
+      patch: ((payload, tag) => {
+        const { payloadFrozen, payloadCopied } = copyPayload(payload);
+        updateState({
           selector,
-          payloadOrPromise,
-          updateStateFn: (frozen, copied, cacheReplacer) => updateState({
-            selector,
-            replacer: old => ({ ...old, ...frozen }),
-            mutator: old => Object.assign(old, copied),
-            actionName: 'patch',
-            pathSegments,
-            payload: frozen,
-            tag,
-            cacheReplacer,
-          })
-        })
+          replacer: old => ({ ...old, ...payloadFrozen }),
+          mutator: old => Object.assign(old, payloadCopied),
+          actionName: 'patch',
+          payload: payloadFrozen,
+          tag,
+        });
+        return payloadCopied;
       }) as StoreForAnObject<C, T>['patch'],
       patchWhere: (where => ({
-        with: (payloadOrPromise, tag) => {
+        with: (payload, tag) => {
           const indicesOfElementsToPatch = (selector(currentState) as X).map((e, i) => where(e) ? i : null).filter(i => i !== null) as number[];
-          const pathSegments = pathReader.readSelector(selector);
-          return processPayloadOrPromise({
-            cacheKey: getCacheKey(pathSegments, 'patchWhere'),
+          const { payloadFrozen, payloadCopied } = copyPayload(payload);
+          updateState({
             selector,
-            payloadOrPromise,
-            updateStateFn: (frozen, copied, cacheReplacer) => updateState({
-              selector,
-              replacer: old => old.map((o, i) => indicesOfElementsToPatch.includes(i) ? { ...o, ...frozen } : o),
-              mutator: old => indicesOfElementsToPatch.forEach(i => Object.assign(old[i], copied)),
-              actionName: `${indicesOfElementsToPatch.join(',')}.patchWhere`,
-              pathSegments,
-              payload: { patch: frozen, whereClause: where.toString() },
-              tag,
-              cacheReplacer,
-            })
-          })
+            replacer: old => old.map((o, i) => indicesOfElementsToPatch.includes(i) ? { ...o, ...payloadFrozen } : o),
+            mutator: old => indicesOfElementsToPatch.forEach(i => Object.assign(old[i], payloadCopied)),
+            actionName: `${indicesOfElementsToPatch.join(',')}.patchWhere`,
+            payload: { patch: payloadFrozen, whereClause: where.toString() },
+            tag,
+          });
+          return payloadCopied;
         }
       })) as StoreForAnArrayOfObjects<X, T>['patchWhere'],
-      addAfter: ((payloadOrPromise, tag) => {
-        const pathSegments = pathReader.readSelector(selector);
-        return processPayloadOrPromise({
-          cacheKey: getCacheKey(pathSegments, 'addAfter'),
+      addAfter: ((payload, tag) => {
+        const { payloadFrozen, payloadCopied } = copyPayload(payload);
+        updateState({
           selector,
-          payloadOrPromise,
-          updateStateFn: (frozen, copied, cacheReplacer) => updateState({
-            selector,
-            replacer: old => [...old, ...(deepCopy(Array.isArray(frozen) ? frozen : [frozen]))],
-            mutator: old => old.push(...(Array.isArray(copied) ? copied : [copied])),
-            actionName: 'addAfter',
-            pathSegments,
-            payload: frozen,
-            tag,
-            cacheReplacer,
-          })
+          replacer: old => [...old, ...(deepCopy(Array.isArray(payloadFrozen) ? payloadFrozen : [payloadFrozen]))],
+          mutator: old => old.push(...(Array.isArray(payloadCopied) ? payloadCopied : [payloadCopied])),
+          actionName: 'addAfter',
+          payload: payloadFrozen,
+          tag,
         });
+        return payloadCopied;
       }) as StoreForAnArray<X, T>['addAfter'],
-      addBefore: ((payloadOrPromise, tag) => {
-        const pathSegments = pathReader.readSelector(selector);
-        return processPayloadOrPromise({
-          cacheKey: getCacheKey(pathSegments, 'addBefore'),
+      addBefore: ((payload, tag) => {
+        const { payloadFrozen, payloadCopied } = copyPayload(payload);
+        updateState({
           selector,
-          payloadOrPromise,
-          updateStateFn: (frozen, copied, cacheReplacer) => updateState({
-            selector,
-            replacer: old => [...(Array.isArray(frozen) ? frozen : [frozen]), ...old],
-            mutator: old => old.unshift(...(Array.isArray(copied) ? copied : [copied])),
-            actionName: 'addBefore',
-            pathSegments,
-            payload: frozen,
-            tag,
-            cacheReplacer,
-          })
+          replacer: old => [...(Array.isArray(payloadFrozen) ? payloadFrozen : [payloadFrozen]), ...old],
+          mutator: old => old.unshift(...(Array.isArray(payloadCopied) ? payloadCopied : [payloadCopied])),
+          actionName: 'addBefore',
+          payload: payloadFrozen,
+          tag,
         });
+        return payloadCopied;
       }) as StoreForAnArray<X, T>['addBefore'],
       removeFirst: (tag => {
         updateState<C, T, X>({
@@ -340,10 +247,9 @@ function makeInternal<S, T extends Trackability>(state: S, options: { supportsTa
           replacer: old => old.slice(0, old.length - 1),
           mutator: old => old.pop(),
           actionName: 'removeLast',
-          pathSegments: pathReader.readSelector(selector),
           payload: selection.slice(0, selection.length - 1),
           tag
-        })
+        });
       }) as StoreForAnArray<X, T>['removeLast'],
       removeAll: (tag => {
         updateState<C, T, X>({
@@ -351,14 +257,12 @@ function makeInternal<S, T extends Trackability>(state: S, options: { supportsTa
           replacer: () => [],
           mutator: old => old.length = 0,
           actionName: 'removeAll',
-          pathSegments: pathReader.readSelector(selector),
           payload: null,
           tag,
-        })
+        });
       }) as StoreForAnArray<X, T>['removeAll'],
       removeWhere: ((predicate, tag) => {
         const indicesOfElementsToRemove = (selector(currentState) as X).map((e, i) => predicate(e) ? i : null).filter(i => i !== null);
-        const pathSegments = pathReader.readSelector(selector);
         updateState<C, T, X>({
           selector,
           replacer: old => old.filter(o => !predicate(o)),
@@ -372,85 +276,66 @@ function makeInternal<S, T extends Trackability>(state: S, options: { supportsTa
             }
           },
           actionName: `${indicesOfElementsToRemove.join(',')}.removeWhere`,
-          pathSegments,
           payload: { toRemove: (selector(currentState) as X).filter(predicate), whereClause: predicate.toString() },
           tag,
         });
       }) as StoreForAnArray<X, T>['removeWhere'],
       upsertWhere: (criteria => ({
-        with: (payloadOrPromise, tag) => {
+        with: (payload, tag) => {
           const indicesOfElementsToReplace = (selector(currentState) as X).map((e, i) => criteria(e) ? i : null).filter(i => i !== null);
           if (indicesOfElementsToReplace.length > 1) { throw new Error(errorMessages.UPSERT_MORE_THAN_ONE_MATCH); }
           const indice = indicesOfElementsToReplace[0];
-          const pathSegments = pathReader.readSelector(selector);
-          return processPayloadOrPromise({
-            cacheKey: getCacheKey(pathSegments, 'upsertWhere'),
+          const { payloadFrozen, payloadCopied } = copyPayload(payload);
+          updateState({
             selector,
-            payloadOrPromise,
-            updateStateFn: (frozen, copied, cacheReplacer) => updateState({
-              selector,
-              replacer: old => indicesOfElementsToReplace.length ? old.map((o, i) => i === indice ? frozen : o) : [...old, frozen],
-              mutator: old => indicesOfElementsToReplace.length ? old[indice as number] = copied : old.push(copied),
-              actionName: `${indice !== undefined ? indice + '.' : ''}upsertWhere`,
-              pathSegments,
-              payload: frozen,
-              tag,
-              cacheReplacer,
-            })
-          })
+            replacer: old => indicesOfElementsToReplace.length ? old.map((o, i) => i === indice ? payloadFrozen : o) : [...old, payloadFrozen],
+            mutator: old => indicesOfElementsToReplace.length ? old[indice as number] = payloadCopied : old.push(payloadCopied),
+            actionName: `${indice !== undefined ? indice + '.' : ''}upsertWhere`,
+            payload: payloadFrozen,
+            tag,
+          });
+          return payloadCopied;
         }
       })) as StoreForAnArray<X, T>['upsertWhere'],
       mergeWhere: (criteria => ({
-        with: (payloadOrPromise, tag) => {
-          const pathSegments = pathReader.readSelector(selector);
-          return processPayloadOrPromise({
-            cacheKey: getCacheKey(pathSegments, 'mergeWhere'),
+        with: (payload, tag) => {
+          const { payloadFrozen, payloadCopied } = copyPayload(payload);
+          updateState({
             selector,
-            payloadOrPromise,
-            updateStateFn: (frozen, copied, cacheReplacer) => updateState({
-              selector,
-              replacer: old => [
-                ...old.map(oe => frozen.find(ne => criteria(oe, ne)) || oe),
-                ...frozen.filter(ne => !old.some(oe => criteria(oe, ne)))
-              ],
-              mutator: old => {
-                old.forEach((oe, oi) => { const found = copied.find(ne => criteria(oe, ne)); if (found) { old[oi] = deepCopy(found); } });
-                copied.filter(ne => !old.some(oe => criteria(oe, ne))).forEach(ne => old.push(ne));
-              },
-              actionName: 'mergeWhere',
-              pathSegments,
-              payload: frozen,
-              tag,
-              cacheReplacer,
-            })
-          })
+            replacer: old => [
+              ...old.map(oe => payloadFrozen.find(ne => criteria(oe, ne)) || oe),
+              ...payloadFrozen.filter(ne => !old.some(oe => criteria(oe, ne)))
+            ],
+            mutator: old => {
+              old.forEach((oe, oi) => { const found = payloadCopied.find(ne => criteria(oe, ne)); if (found) { old[oi] = deepCopy(found); } });
+              payloadCopied.filter(ne => !old.some(oe => criteria(oe, ne))).forEach(ne => old.push(ne));
+            },
+            actionName: 'mergeWhere',
+            payload: payloadFrozen,
+            tag,
+          });
+          return payloadCopied;
         }
       })) as StoreForAnArray<X, T>['mergeWhere'],
       replaceWhere: (criteria => ({
-        with: (payloadOrPromise, tag) => {
+        with: (payload, tag) => {
           const indicesOfElementsToReplace = (selector(currentState) as X).map((e, i) => criteria(e) ? i : null).filter(i => i !== null);
-          const pathSegments = pathReader.readSelector(selector);
-          return processPayloadOrPromise({
-            cacheKey: getCacheKey(pathSegments, 'replaceWhere'),
+          const { payloadFrozen, payloadCopied } = copyPayload(payload);
+          updateState<C, T, X>({
             selector,
-            payloadOrPromise,
-            updateStateFn: (frozen, copied, cacheReplacer) => updateState<C, T, X>({
-              selector,
-              replacer: old => old.map((o, i) => indicesOfElementsToReplace.includes(i) ? deepCopy(frozen) : o),
-              mutator: old => {
-                old.forEach((el, idx) => {
-                  if (indicesOfElementsToReplace.includes(idx)) {
-                    old[idx] = copied;
-                  }
-                })
-              },
-              pathSegments,
-              actionName: `${indicesOfElementsToReplace.join(',')}.replaceWhere`,
-              payload: { replacement: frozen, whereClause: criteria.toString() },
-              tag,
-              cacheReplacer,
-            })
-          })
+            replacer: old => old.map((o, i) => indicesOfElementsToReplace.includes(i) ? deepCopy(payloadFrozen) : o),
+            mutator: old => {
+              old.forEach((el, idx) => {
+                if (indicesOfElementsToReplace.includes(idx)) {
+                  old[idx] = payloadCopied;
+                }
+              })
+            },
+            actionName: `${indicesOfElementsToReplace.join(',')}.replaceWhere`,
+            payload: { replacement: payloadFrozen, whereClause: criteria.toString() },
+            tag,
+          });
+          return payloadCopied;
         }
       })) as StoreForAnArray<X, T>['replaceWhere'],
       reset: (
@@ -465,7 +350,7 @@ function makeInternal<S, T extends Trackability>(state: S, options: { supportsTa
       ) as StoreOrDerivation<C>['read'],
       readInitial: (
         () => selector(initialState)
-      ) as StoreWhichIsReadableAndCacheable<C>['readInitial'],
+      ) as StoreWhichIsReadable<C>['readInitial'],
       renew: (state => {
         pathReader = createPathReader(state);
         currentState = deepFreeze(state) as S;
@@ -503,27 +388,6 @@ function makeInternal<S, T extends Trackability>(state: S, options: { supportsTa
       defineReset: (
         (initState: C) => () => replace((e => selector(e)) as Selector<S, C>, 'reset')(initState, null as unknown as T)
       ) as StoreWhichIsNestedInternal<S, C>['defineReset'],
-      invalidateCache: (() => {
-        const segs = pathReader.readSelector(selector).join('.');
-        const keys = Object.keys((currentState as unknown as { cache: SimpleObject }).cache).filter(key => key.startsWith(segs))
-        updateState({
-          selector: (s: S) => (s as unknown as { cache: SimpleObject }).cache,
-          replacer: old => {
-            const newObj = {} as SimpleObject;
-            keys.filter(key => !key.startsWith(segs)).forEach(key => newObj[key] = old[key]);
-            return newObj;
-          },
-          mutator: old => keys.forEach(key => delete old[key]),
-          pathSegments: ['cache'],
-          actionName: 'invalidateCache',
-          payload: segs,
-          tag: null as unknown as void,
-        })
-      }) as StoreWhichIsReadableAndCacheable<C>['invalidateCache'],
-      onCacheExpired: (performAction => {
-        cacheExpiredListeners.set(selector, performAction);
-        return { unsubscribe: () => cacheExpiredListeners.delete(selector) };
-      }) as StoreWhichIsReadableAndCacheable<C>['onCacheExpired'],
       supportsTags: options.supportsTags,
     } as unknown as Store<C, T>;
   };
@@ -550,21 +414,20 @@ function makeInternal<S, T extends Trackability>(state: S, options: { supportsTa
     selector: Selector<S, C, X>,
     replacer: (newNode: X) => any,
     mutator: (newNode: X) => any,
-    pathSegments: string[],
+    pathSegments?: string[],
     actionName: string,
     payload: any,
     tag: Tag<T>,
     actionNameOverride?: boolean,
-    cacheReplacer?: (state: S) => S,
   }) {
     const previousState = currentState;
-    const result0 = Object.freeze(copyObject(currentState, { ...currentState }, specs.pathSegments.slice(), specs.replacer));
-    const result = specs.cacheReplacer ? specs.cacheReplacer(result0) : result0;
+    const pathSegments = specs.pathSegments || pathReader.readSelector(specs.selector);
+    const result = Object.freeze(copyObject(currentState, { ...currentState }, pathSegments.slice(), specs.replacer));
     specs.mutator(specs.selector(pathReader.mutableStateCopy) as X);
     currentState = result;
     notifySubscribers(previousState, result);
     const actionToDispatch = {
-      type: (specs.actionNameOverride ? specs.actionName : (specs.pathSegments.join('.') + (specs.pathSegments.length ? '.' : '') + specs.actionName + '()')) +
+      type: (specs.actionNameOverride ? specs.actionName : (pathSegments.join('.') + (pathSegments.length ? '.' : '') + specs.actionName + '()')) +
         (specs.tag ? ` [${options.tagSanitizer ? options.tagSanitizer(specs.tag as string) : specs.tag}]` : ''),
       payload: specs.payload,
     };

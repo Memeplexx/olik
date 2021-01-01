@@ -44,37 +44,6 @@ export type DeepReadonlyObject<T> = {
 };
 
 /**
- * A container for a promise as well as its cache duration
- */
-export type CachedPromise<C> = {
-  /**
-   * A function accepting zero or more arguments, and returning a promise
-   */
-  promise: {[name: string]: (...args: any[]) => Promise<C>},
-  /**
-   * An array of arguments
-   */
-  args?: any[],
-  /**
-   * How long, in milliseconds the cached data should be retained
-   */
-  ttl: number,
-};
-export type CachedPromiseDescriptor<C, X extends (...args: any[]) => Promise<C>> = Parameters<X>[0] extends undefined ?
-  { ttl: (num: number) => CachedPromiseNoArgs<C, X> } :
-  { args: (...params: Parameters<X>) => { ttl: (num: number) => CachedPromiseWithArgs<C, X> } };
-
-/**
- * Represents an action payload which may either be a primitive, a. object, a function returning a promise, or a CachedPromise
- */
-export type LiteralOrPromiseReturning<C> = C | (() => Promise<C>) | CachedPromise<C>;
-
-/**
- * The result of an update action where the argument was a PayloadOrPrimitive
- */
-export type LiteralOrPromiseReturningResult<R, C> = R extends (CachedPromise<C> | (() => Promise<C>)) ? Promise<DeepReadonly<C>> : void;
-
-/**
  * An object which is capable of storing and updating state which is in the shape of an array of primitives
  */
 export type StoreForAnArray<C extends DeepReadonlyArray<any>, T extends Trackability> = {
@@ -85,7 +54,7 @@ export type StoreForAnArray<C extends DeepReadonlyArray<any>, T extends Trackabi
    * get(s => s.todos).addAfter(newTodos);
    * ```
    */
-  addAfter: <R extends LiteralOrPromiseReturning<C[0] | C>>(payload: R, tag: Tag<T>) => LiteralOrPromiseReturningResult<R, C[0] | C>,
+  addAfter: <R extends (C[0] | C)>(payload: R, tag: Tag<T>) => R,
   /**
    * Prepends  any number of elements onto the beginning of the array
    * @example
@@ -93,7 +62,7 @@ export type StoreForAnArray<C extends DeepReadonlyArray<any>, T extends Trackabi
    * get(s => s.todos).addBefore(newTodos);
    * ```
    */
-  addBefore: <R extends LiteralOrPromiseReturning<C[0] | C>>(payload: R, tag: Tag<T>) => LiteralOrPromiseReturningResult<R, C[0] | C>,
+  addBefore: <R extends (C[0] | C)>(payload: R, tag: Tag<T>) => R,
   /**
    * Removes all elements from the array
    * @example
@@ -133,7 +102,7 @@ export type StoreForAnArray<C extends DeepReadonlyArray<any>, T extends Trackabi
    * get(s => s.todos).replaceAll(newTodos);
    * ```
    */
-  replaceAll: <R extends LiteralOrPromiseReturning<C>>(replacement: R, tag: Tag<T>) => LiteralOrPromiseReturningResult<R, C>,
+  replaceAll: <C>(replacement: C, tag: Tag<T>) => C,
   /**
    * Substitute elements which match a specific condition
    * @example
@@ -143,7 +112,7 @@ export type StoreForAnArray<C extends DeepReadonlyArray<any>, T extends Trackabi
    *   .with({ id: 5, text: 'bake cookies' });
    * ```
    */
-  replaceWhere: (where: (arrayElement: C[0]) => boolean) => { with: <R extends LiteralOrPromiseReturning<C[0]>>(element: R, tag: Tag<T>) => LiteralOrPromiseReturningResult<R, C[0]> },
+  replaceWhere: (where: (arrayElement: C[0]) => boolean) => { with: (element: C[0], tag: Tag<T>) => C[0] },
   /**
    * Substitutes or appends an element depending on whether or not it can be found.
    * Note that if more than one element is found which matches the criteria specified in the 'where' clause, an error will be thrown
@@ -154,7 +123,7 @@ export type StoreForAnArray<C extends DeepReadonlyArray<any>, T extends Trackabi
    *   .with({ id: 5, text: 'bake cookies' });
    * ```
    */
-  upsertWhere: (where: (arrayElement: C[0]) => boolean) => { with: <R extends LiteralOrPromiseReturning<C[0]>>(element: R, tag: Tag<T>) => LiteralOrPromiseReturningResult<R, C[0]> },
+  upsertWhere: (where: (arrayElement: C[0]) => boolean) => { with: (element: C[0], tag: Tag<T>) => C[0] },
   /**
    * Merges the supplied array into the existing array.  
    * Any supplied elements will either replace their corresponding element in the store (if a match could be found) or else they will be appended to the store array.  
@@ -165,7 +134,7 @@ export type StoreForAnArray<C extends DeepReadonlyArray<any>, T extends Trackabi
    *   .with(newTodosArray);
    * ```
    */
-  mergeWhere: (where: (existingArrayElement: C[0], newArrayElement: C[0]) => boolean) => { with: <R extends LiteralOrPromiseReturning<C>>(elements: R, tag: Tag<T>) => LiteralOrPromiseReturningResult<R, C> },
+  mergeWhere: (where: (existingArrayElement: C[0], newArrayElement: C[0]) => boolean) => { with: (elements: C, tag: Tag<T>) => C },
 }
 
 /**
@@ -181,7 +150,7 @@ export type StoreForAnArrayOfObjects<C extends DeepReadonlyArray<any>, T extends
    *   .with({ status: 'todo' });
    * ```
    */
-  patchWhere: (where: (arrayElement: C[0]) => boolean) => { with: <R extends LiteralOrPromiseReturning<Partial<C[0]>>>(element: R, tag: Tag<T>) => LiteralOrPromiseReturningResult<R, Partial<C[0]>> },
+  patchWhere: (where: (arrayElement: C[0]) => boolean) => { with: <R extends Partial<C[0]>>(element: R, tag: Tag<T>) => R },
 } & StoreForAnArray<C, T>;
 
 /**
@@ -199,7 +168,7 @@ export type StoreForAnObjectOrPrimitive<C extends any, T extends Trackability> =
    * get(s => s.user.age).replace(() => fetchUserAgeAsPromise())
    * ```
    */
-  replace: <R extends LiteralOrPromiseReturning<C>>(replacement: R, tag: Tag<T>) => LiteralOrPromiseReturningResult<R, C>,
+  replace: (replacement: C, tag: Tag<T>) => C,
 }
 
 /**
@@ -213,26 +182,17 @@ export type StoreForAnObject<C extends any, T extends Trackability> = {
    * get(s => s.user).patch({ firstName: 'James', age: 33 })
    * ```
    */
-  patch: <R extends LiteralOrPromiseReturning<Partial<C>>>(partial: R, tag: Tag<T>) => LiteralOrPromiseReturningResult<R, Partial<C>>,
+  patch: <K extends Partial<C>>(partial: K, tag: Tag<T>) => K,
 } & StoreForAnObjectOrPrimitive<C, T>;
 
 /**
  * An object which is capable of reading from and listening to changes made to a certain piece of state
  */
-export type StoreWhichIsReadableAndCacheable<C> = {
+export type StoreWhichIsReadable<C> = {
   /**
    * @returns the current state
    */
   readInitial: () => DeepReadonly<C>,
-  /**
-   * Invalidates all caches on this node and any descendants of this node.
-   */
-  invalidateCache: () => void,
-  /**
-   * If there is a cache associated with this node, then the function you supply here will be invoked whenever that cache expires.
-   * Note that this will not be triggered if invalidateCache() is manually called.
-   */
-  onCacheExpired: (listener: () => any) => Unsubscribable,
 } & StoreOrDerivation<C>;
 
 export type StoreOrDerivation<C> = {
@@ -269,12 +229,12 @@ export type StoreWhichIsResettable<C extends any, T extends Trackability> = {
    * Beware that if this store is marked as a `containerForNestedStores`, then all nested stores will also be removed
    */
   reset: (tag: Tag<T>) => void,
-} & StoreWhichIsReadableAndCacheable<C>;
+} & StoreWhichIsReadable<C>;
 
 /**
  * An object which is capable of storing nested stores
  */
-export type StoreWhichMayContainNestedStores<S, C, T extends Trackability> = StoreForAnObject<C, T> & StoreWhichIsReadableAndCacheable<C> & {
+export type StoreWhichMayContainNestedStores<S, C, T extends Trackability> = StoreForAnObject<C, T> & StoreWhichIsReadable<C> & {
   renew: (state: S) => void;
   reset: () => void;
 };
