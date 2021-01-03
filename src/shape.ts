@@ -24,14 +24,6 @@ export interface Unsubscribable {
 }
 
 /**
- * An object or an array which cannot be mutated
- */
-export type DeepReadonly<T> =
-  T extends (infer R)[] ? DeepReadonlyArray<R> :
-  T extends object ? DeepReadonlyObject<T> :
-  T;
-
-/**
  * An array which cannot be mutated
  */
 export interface DeepReadonlyArray<T> extends ReadonlyArray<DeepReadonly<T>> { }
@@ -44,9 +36,26 @@ export type DeepReadonlyObject<T> = {
 };
 
 /**
+ * An object or an array which cannot be mutated
+ */
+export type DeepReadonly<T> =
+  T extends (infer R)[] ? DeepReadonlyArray<R> :
+  T extends object ? DeepReadonlyObject<T> :
+  T;
+
+/**
+ * Un-does the work done by the DeepReadonly type. In other words, this makes an object wrapped with DeepReadonly mutable.
+ */
+export type DeepWritable<E> =
+  E extends (string | number | boolean) ? E :
+  E extends DeepReadonlyArray<infer R> ? Array<R> :
+  E extends DeepReadonlyObject<infer R> ? R :
+  never;
+
+/**
  * An object which is capable of storing and updating state which is in the shape of an array of primitives
  */
-export type StoreForAnArray<C extends DeepReadonlyArray<any>, T extends Trackability> = {
+export type StoreForAnArray<C extends Array<any>, T extends Trackability> = {
   /**
    * Appends any number of elements onto the end of the array
    * @example
@@ -140,7 +149,7 @@ export type StoreForAnArray<C extends DeepReadonlyArray<any>, T extends Trackabi
 /**
  * An object which is capable of storing and updating state which is in the shape of an array
  */
-export type StoreForAnArrayOfObjects<C extends DeepReadonlyArray<any>, T extends Trackability> = {
+export type StoreForAnArrayOfObjects<C extends Array<any>, T extends Trackability> = {
   /**
    * Partially updates zero or more elements which match a specific condition
    * @example
@@ -207,7 +216,7 @@ export type StoreOrDerivation<C> = {
   /**
    * @returns the current state
    */
-  read: () => C,
+  read: () => DeepReadonly<C>,
 }
 
 /**
@@ -233,8 +242,8 @@ export type StoreWhichMayContainNestedStores<S, C, T extends Trackability> = Sto
  * An object which is capable of managing states of various shapes
  */
 export type Store<C, T extends Trackability> = ([C] extends undefined ? any :
-  [C] extends DeepReadonlyArray<object[]> ? StoreForAnArrayOfObjects<[C][0], T> :
-  [C] extends DeepReadonlyArray<any[]> ? StoreForAnArray<[C][0], T> :
+  [C] extends Array<object[]> ? StoreForAnArrayOfObjects<[C][0], T> :
+  [C] extends Array<any[]> ? StoreForAnArray<[C][0], T> :
   [C] extends [object] ? StoreForAnObject<C, T> : StoreForAnObjectOrPrimitive<C, T>)
   & StoreWhichIsResettable<C, T>;
 
@@ -267,24 +276,25 @@ export type StoreWhichIsNestedInternal<S, C> = Store<C, 'untagged'> & {
   defineRemoveNestedStore: (name: string, key: string) => () => any;
 } & StoreWhichIsNested<C>;
 
-export type SimpleObject = { [key: string]: any };
-
+/**
+ * A function which selects from the store
+ */
 export type Selector<S, C, X = C> = X extends C & ReadonlyArray<any> ? (s: S) => X : (s: S) => C;
 
 /**
  * A function which selects from a nested store
  */
-export type SelectorFromANestedStore<S> = (<C = DeepReadonly<S>>(selector?: (arg: DeepReadonly<S>) => C) => StoreWhichIsNested<C>);
+export type SelectorFromANestedStore<S> = (<C = S>(selector?: (arg: DeepReadonly<S>) => C) => StoreWhichIsNested<DeepWritable<C>>);
 
 /**
  * A function which selects from a store
  */
-export type SelectorFromAStore<S> = (<C = DeepReadonly<S>>(selector?: (arg: DeepReadonly<S>) => C) => StoreWhichDoesntEnforceTags<C>);
+export type SelectorFromAStore<S> = (<C = S>(selector?: (arg: DeepReadonly<S>) => C) => StoreWhichDoesntEnforceTags<DeepWritable<C>>);
 
 /**
  * A function which selects from a store which enforces the use of tags when performing a state update
  */
-export type SelectorFromAStoreEnforcingTags<S> = (<C = DeepReadonly<S>>(selector?: (arg: DeepReadonly<S>) => C) => StoreWhichEnforcesTags<C>);
+export type SelectorFromAStoreEnforcingTags<S> = (<C = S>(selector?: (arg: DeepReadonly<S>) => C) => StoreWhichEnforcesTags<DeepWritable<C>>);
 
 /**
  * An input for a derivation
@@ -382,7 +392,7 @@ export type Derivation<R> = {
    *   .onChange(derivation => console.log(derivation)) ;
    * ```
    */
-  onChange: (listener: (value: DeepReadonly<R>) => any) => Unsubscribable,
+  onChange: (listener: (value: R) => any) => Unsubscribable,
 };
 
 export type WindowAugmentedWithReduxDevtools = {

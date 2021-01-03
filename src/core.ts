@@ -1,7 +1,6 @@
 import { devtoolsDebounce, errorMessages } from './consts';
 import { integrateStoreWithReduxDevtools } from './devtools';
 import {
-  DeepReadonly,
   OptionsForMakingAStore,
   OptionsForMakingAStoreEnforcingTags,
   OptionsForReduxDevtools,
@@ -9,7 +8,6 @@ import {
   SelectorFromANestedStore,
   SelectorFromAStore,
   SelectorFromAStoreEnforcingTags,
-  SimpleObject,
   Store,
   StoreForAnArrayOfObjects,
   StoreForAnArray,
@@ -23,11 +21,12 @@ import {
   Trackability,
   Tag,
   StoreOrDerivation,
+  DeepReadonly,
 } from './shape';
 import { tests } from './tests';
 import { copyObject, copyPayload, createPathReader, deepCopy, deepFreeze, validateState } from './utils';
 
-let nestedContainerStore: ((selector?: ((s: DeepReadonly<any>) => any) | undefined) => StoreWhichMayContainNestedStores<any, any, any>) | undefined;
+let nestedContainerStore: ((selector?: ((s: any) => any) | undefined) => StoreWhichMayContainNestedStores<any, any, any>) | undefined;
 
 /**
  * Creates a new store which, for typescript users, requires that users supply an additional 'tag' when performing a state update.
@@ -35,7 +34,7 @@ let nestedContainerStore: ((selector?: ((s: DeepReadonly<any>) => any) | undefin
  * @param state the initial state  
  * @param options some additional configuration options
  * 
- * FOR EXAMPLE:
+ * @example
  * ```
  * const get = makeEnforceTags({ todos: Array<{ id: number, text: string }>() });
  * 
@@ -54,7 +53,7 @@ export function makeEnforceTags<S>(state: S, options: OptionsForMakingAStoreEnfo
  * @param state the initial state
  * @param options some additional configuration options
  * 
- * FOR EXAMPLE:
+ * @example
  * ```
  * const select = make({ todos: Array<{ id: number, text: string }>() });
  * ```
@@ -97,7 +96,7 @@ export function makeNested<L>(state: L, options: { name: string, storeKey?: stri
     nestedContainerStore(s => s.nested[name]).patch({ [key]: state });
     nestedContainerStore().renew({ ...wrapperState, nested: { ...wrapperState.nested, [name]: { ...wrapperState.nested[name], [key]: state } } });
   }
-  return (<C = L>(selector?: (arg: DeepReadonly<L>) => C) => {
+  return (<C = L>(selector?: (arg: L) => C) => {
     const lStore = nestedContainerStore!(s => {
       const libState = s.nested[name][key];
       return selector ? selector(libState) : libState;
@@ -105,7 +104,7 @@ export function makeNested<L>(state: L, options: { name: string, storeKey?: stri
     lStore.removeFromContainingStore = lStore.defineRemoveNestedStore(name, key);
     lStore.reset = lStore.defineReset(state);
     return lStore as StoreWhichIsNested<C>;
-  }) as SelectorFromANestedStore<L>;
+  }) as unknown as SelectorFromANestedStore<L>;
 }
 
 function makeInternalRootStore<S, T extends Trackability>(state: S, options: { containerForNestedStores?: boolean, supportsTags: boolean, devtools?: OptionsForReduxDevtools | false, tagSanitizer?: (tag: string) => string }) {
@@ -152,7 +151,7 @@ function makeInternal<S, T extends Trackability>(state: S, options: { supportsTa
       const lastSeg = pathSegments[pathSegments.length - 1] || '';
       const segsCopy = pathSegments.slice(0, pathSegments.length - 1);
       const selectorRevised = (((state: S) => {
-        let res = state as SimpleObject;
+        let res = state as Record<any, any>;
         segsCopy.forEach(seg => res = res[seg]);
         return res;
       })) as Selector<S, C>;
@@ -160,7 +159,7 @@ function makeInternal<S, T extends Trackability>(state: S, options: { supportsTa
       updateState({
         selector: selectorRevised,
         replacer: old => Array.isArray(old) ? (old as Array<any>).map((o, i) => i === +lastSeg ? deepCopy(payloadFrozen) : o) : ({ ...old, [lastSeg]: deepCopy(payloadFrozen) }),
-        mutator: (old: SimpleObject) => old[lastSeg] = payloadCopied,
+        mutator: (old: Record<any, any>) => old[lastSeg] = payloadCopied,
         actionName,
         actionNameOverride: true,
         pathSegments: segsCopy,
@@ -364,10 +363,10 @@ function makeInternal<S, T extends Trackability>(state: S, options: { supportsTa
           updateState({
             selector: ((s: S & { nested: any }) => s.nested) as Selector<S, C>,
             replacer: old => {
-              const { [name]: toRemove, ...others } = old as SimpleObject;
+              const { [name]: toRemove, ...others } = old as Record<any, any>;
               return others;
             },
-            mutator: (s: SimpleObject) => delete s[name],
+            mutator: (s: Record<any, any>) => delete s[name],
             pathSegments: ['nested'],
             actionName: 'removeNested',
             payload: { name, key },
@@ -377,10 +376,10 @@ function makeInternal<S, T extends Trackability>(state: S, options: { supportsTa
           updateState({
             selector: ((s: S & { nested: any }) => s.nested[name]) as Selector<S, C>,
             replacer: old => {
-              const { [key]: toRemove, ...others } = old as SimpleObject;
+              const { [key]: toRemove, ...others } = old as Record<any, any>;
               return others;
             },
-            mutator: (s: SimpleObject) => delete s[key],
+            mutator: (s: Record<any, any>) => delete s[key],
             pathSegments: ['nested', name],
             actionName: 'removeNested',
             payload: key,
@@ -398,7 +397,7 @@ function makeInternal<S, T extends Trackability>(state: S, options: { supportsTa
   const storeResult = <X extends C & Array<any>, C = S>(selector: ((s: DeepReadonly<S>) => C) = (s => s as any as C)) => {
     const selectorMod = selector as Selector<S, C, X>;
     selectorMod(currentState);
-    return action<C, X>(selectorMod);
+    return action<C, X>(selectorMod) as any;
   };
 
   const previousAction: {
