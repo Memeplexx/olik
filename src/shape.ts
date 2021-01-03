@@ -211,16 +211,6 @@ export type StoreOrDerivation<C> = {
 }
 
 /**
- * A container for a function returning promise and a ttl
- */
-export type CachedPromiseNoArgs<C, X extends (...args: any[]) => Promise<C>> = { promise: { [name: string]: X }, ttl: number };
-
-/**
- * A container for a function accepting 1 or more arguments returning promise and a ttl
- */
-export type CachedPromiseWithArgs<C, X extends (...args: any[]) => Promise<C>> = { promise: { [name: string]: X }, ttl: number, args: Parameters<X> }
-
-/**
  * An object which is capable of resetting its internal state
  */
 export type StoreWhichIsResettable<C extends any, T extends Trackability> = {
