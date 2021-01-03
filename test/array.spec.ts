@@ -1,5 +1,5 @@
 import { errorMessages } from '../src/consts';
-import { make } from '../src/core';
+import { make, makeEnforceTags } from '../src/core';
 import { tests } from '../src/tests';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
@@ -216,9 +216,8 @@ describe('Array', () => {
     expect(tests.currentMutableState).toEqual(get().read());
 
 
-    const eee = get().read();
-    const ee = get(s => s.array).read();
-
+    const thing = get();
+    const ee = thing.read();
   })
 
 });

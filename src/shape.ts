@@ -34,7 +34,7 @@ export type DeepReadonly<T> =
 /**
  * An array which cannot be mutated
  */
-interface DeepReadonlyArray<T> extends ReadonlyArray<DeepReadonly<T>> { }
+export interface DeepReadonlyArray<T> extends ReadonlyArray<DeepReadonly<T>> { }
 
 /**
  * An object which cannot be mutated
@@ -284,17 +284,17 @@ export type Selector<S, C, X = C> = X extends C & ReadonlyArray<any> ? (s: S) =>
 /**
  * A function which selects from a nested store
  */
-export type SelectorFromANestedStore<S> = (<C = S>(selector?: (arg: DeepReadonly<S>) => C) => StoreWhichIsNested<C>);
+export type SelectorFromANestedStore<S> = (<C = DeepReadonly<S>>(selector?: (arg: DeepReadonly<S>) => C) => StoreWhichIsNested<C>);
 
 /**
  * A function which selects from a store
  */
-export type SelectorFromAStore<S> = (<C = S>(selector?: (arg: DeepReadonly<S>) => C) => StoreWhichDoesntEnforceTags<C>);
+export type SelectorFromAStore<S> = (<C = DeepReadonly<S>>(selector?: (arg: DeepReadonly<S>) => C) => StoreWhichDoesntEnforceTags<C>);
 
 /**
  * A function which selects from a store which enforces the use of tags when performing a state update
  */
-export type SelectorFromAStoreEnforcingTags<S> = (<C = S>(selector?: (arg: DeepReadonly<S>) => C) => StoreWhichEnforcesTags<C>);
+export type SelectorFromAStoreEnforcingTags<S> = (<C = DeepReadonly<S>>(selector?: (arg: DeepReadonly<S>) => C) => StoreWhichEnforcesTags<C>);
 
 /**
  * An input for a derivation
