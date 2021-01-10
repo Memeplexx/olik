@@ -15,7 +15,7 @@ Oulik leverages the shape of your state tree and standardizes your state-update 
 ```console
 npm i oulik
 ```
-#### 🐤 SET UP
+### 🐤 SET UP
 ```ts
 const get = make({
   name: '',
@@ -25,7 +25,7 @@ const get = make({
   },
 });
 ```  
-##### ✍️ WRITE STATE  
+### ✍️ WRITE STATE  
 ```ts
 get(s => s.name)
   .replace('Terence');            // ({ type: 'name.replace()', payload: 'Terence' })
@@ -37,7 +37,7 @@ get(s => s.favorite.hobbies)
   .replaceWhere(eq(h => h.id, 1))
   .with('Napping');               // ({ type: 'favorite.hobbies.replaceWhere(id==1)', payload: 'Napping' })
 ```
-#### 📖 READ STATE
+### 📖 READ STATE
 ```ts
 get(s => s.favorite.hobbies)
   .read()
@@ -52,7 +52,7 @@ derive(
   return [...foods, hobbies];
 })
 ```
-#### 🥚 NEST STORES
+### 🥚 NEST STORES
 ```ts
-const get = makeNested({})
+const get = makeNested({ ... })
 ```
