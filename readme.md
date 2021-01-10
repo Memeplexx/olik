@@ -8,7 +8,7 @@
 
 ### *Declarative* state-management. *Free* of innacurate *actions* & convoluted reducers. *All* in-line.
 
-> 👉 Oulik currently supports ***[![](./docs/assets/react.png)&nbsp;Vanilla-JS](https://memeplexx.github.io/oulik/docs/vanilla-js)***, ***[![](./docs/assets/react.png)&nbsp;React](https://memeplexx.github.io/oulik/docs/read)***, and ***[![](./docs/assets/angular.png)&nbsp;Angular](https://memeplexx.github.io/oulik/docs/angular)***.  
+> Oulik currently supports ***[![](./docs/assets/javascript.png)&nbsp;Vanilla-JS](https://memeplexx.github.io/oulik/docs/vanilla-js)***, ***[![](./docs/assets/react.png)&nbsp;React](https://memeplexx.github.io/oulik/docs/read)***, and ***[![](./docs/assets/angular.png)&nbsp;Angular](https://memeplexx.github.io/oulik/docs/angular)***.  
 
 ```console
 npm i oulik
