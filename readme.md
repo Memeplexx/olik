@@ -13,7 +13,7 @@
 #### 🌈 **SET UP**
 ```ts
 const get = make({
-  name: '',
+  username: '',
   favorite: {
     foods: new Array<string>(),
     hobbies: new Array<{ id: number, name: string }>(),
@@ -22,8 +22,8 @@ const get = make({
 ```  
 #### ✍️ **WRITE STATE**  
 ```ts
-get(s => s.name).replace('Terence');
-// replaces state using: { type: 'name.replace()', payload: 'Terence' }
+get(s => s.username).replace('Terence');
+// replaces state using: { type: 'username.replace()', payload: 'Terence' }
 
 get(s => s.favorite.foods).addAfter(['Indian', 'Sushi']);
 // replaces state using: { type: 'favorite.foods.addAfter()', payload: ['Indian', 'Sushi'] }
@@ -44,7 +44,7 @@ derive(
 ```
 #### 🥚 **NEST STORES**
 ```ts
-class MyTodoComponent {
+class TodoComponent {
   get = makeNested({
     name: '',
     description: '',
