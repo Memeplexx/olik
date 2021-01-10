@@ -13,7 +13,7 @@
 ```console
 npm i oulik
 ```
-#### 🌈 **SET UP**
+### 🌈 **SET UP**
 ```ts
 const get = make({
   name: '',
@@ -23,7 +23,7 @@ const get = make({
   },
 });
 ```  
-#### ✍️ **WRITE STATE**  
+### ✍️ **WRITE STATE**  
 ```ts
 get(s => s.name).replace('Terence');
 // replaces state using: { type: 'name.replace()', payload: 'Terence' }
@@ -34,7 +34,7 @@ get(s => s.favorite.foods).addAfter(['Indian', 'Sushi']);
 get(s => s.favorite.hobbies).replaceWhere(eq(h => h.id, 1)).with('Napping');
 // replaces state using: { type: 'favorite.hobbies.replaceWhere(id==1)', payload: 'Napping' }
 ```
-#### 🔍 **READ STATE**
+### 🔍 **READ STATE**
 ```ts
 get(s => s.favorite.hobbies).read()
 
@@ -42,7 +42,7 @@ get(s => s.favorite.hobbies).onChange(console.log);
 
 derive(get(s => s.foods), get(s => s.hobbies)).usingExpensiveCalc((foods, hobbies) => /* some big calc */)
 ```
-#### 🥚 **NEST STORES**
+### 🥚 **NEST STORES**
 ```ts
 class MyTodoComponent {
   get = makeNested({
