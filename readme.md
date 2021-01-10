@@ -8,7 +8,7 @@
 
 ### *Declarative* state-management. *Free* of innacurate *actions* & convoluted reducers. *All* in-line.
 
-Oulik leverages the shape of your state tree and standardizes your state-update primitives to provide a **lucid state-management experience**. It also supports the ability to **dynamically nest component-level stores** within your application-level store.
+Oulik leverages the shape of your state tree and standardizes your state-update primitives to provide a **crystal clear state-management experience**. It also supports the ability to **dynamically nest component-level stores** within your application-level store.
 
 > This rest of this guide covers the vanilla JS version. You may prefer to use ***[![](./docs/assets/react.png)&nbsp;OULIK-REACT](./docs/readme-react.md)***, or ***[![](./docs/assets/angular.png)&nbsp;OULIK-NG](./docs/readme-ng.md)***.  
 
