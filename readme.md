@@ -45,7 +45,7 @@ derive(get(s => s.foods), get(s => s.hobbies)).usingExpensiveCalc((foods, hobbie
 ### 🥚 NEST STORES
 ```ts
 class MyTodoComponent {
-  const get = makeNested({
+  get = makeNested({
     name: '',
     description: '',
     done: false,
