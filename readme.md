@@ -8,12 +8,12 @@
 
 ### *Declarative* state-management. *Free* of innacurate *actions* & convoluted reducers. *All* in-line.
 
-> Oulik currently supports ***[![](./docs/assets/javascript.png)&nbsp;Vanilla-JS](https://memeplexx.github.io/oulik/docs/vanilla-js)***, ***[![](./docs/assets/react.png)&nbsp;React](https://memeplexx.github.io/oulik/docs/read)***, and ***[![](./docs/assets/angular.png)&nbsp;Angular](https://memeplexx.github.io/oulik/docs/angular)***.  
+> Oulik currently supports ***[![](./src/assets/javascript.png)&nbsp;Vanilla-JS](https://memeplexx.github.io/oulik/docs/vanilla-js)***, ***[![](./src/assets/react.png)&nbsp;React](https://memeplexx.github.io/oulik/docs/read)***, and ***[![](./src/assets/angular.png)&nbsp;Angular](https://memeplexx.github.io/oulik/docs/angular)***.  
 
 ```console
 npm i oulik
 ```
-### 🌈 SET UP
+#### 🌈 SET UP
 ```ts
 const get = make({
   name: '',
@@ -23,7 +23,7 @@ const get = make({
   },
 });
 ```  
-### ✍️ WRITE STATE  
+#### ✍️ WRITE STATE  
 ```ts
 get(s => s.name).replace('Terence');
 // dispatch({ type: 'name.replace()', payload: 'Terence' })
@@ -34,7 +34,7 @@ get(s => s.favorite.foods).addAfter(['Indian', 'Sushi']);
 get(s => s.favorite.hobbies).replaceWhere(eq(h => h.id, 1)).with('Napping');
 // dispatch({ type: 'favorite.hobbies.replaceWhere(id==1)', payload: 'Napping' })
 ```
-### 🔍 READ STATE
+#### 🔍 READ STATE
 ```ts
 get(s => s.favorite.hobbies).read()
 
@@ -42,7 +42,7 @@ get(s => s.favorite.hobbies).onChange(console.log);
 
 derive(get(s => s.foods), get(s => s.hobbies)).usingExpensiveCalc((foods, hobbies) => /* some big calc */)
 ```
-### 🥚 NEST STORES
+#### 🥚 NEST STORES
 ```ts
 class MyTodoComponent {
   get = makeNested({
