@@ -6,7 +6,7 @@
 ![Package Size](https://badgen.net/bundlephobia/minzip/oulik)
 ![Dependency count](https://badgen.net/bundlephobia/dependency-count/oulik)
 
-### *Declarative* state-management. *Free* of innacurate *actions* and convoluted reducers. *All* in-line.
+### *Declarative* state-management. *Free* of innacurate *actions* & convoluted reducers. *All* in-line.
 
 Oulik leverages the shape of your state tree and standardizes your state-update primitives to provide a **lucid state-management experience**. It also supports the ability to **dynamically nest component-level stores** within your application-level store.
 
