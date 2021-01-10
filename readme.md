@@ -38,7 +38,7 @@ get(s => s.favorite.foods)
 ```ts
 get(s => s.favorite.hobbies)
   .replaceWhere(eq(h => h.id, 1))
-  .with('Napping');               // ({ type: 'favorite.hobbies.replaceWhere(id==1)' }), payload: 'Napping' })
+  .with('Napping');               // ({ type: 'favorite.hobbies.replaceWhere(id==1)', payload: 'Napping' })
 ```
 ```ts
 get(s => s.favorite.hobbies)
