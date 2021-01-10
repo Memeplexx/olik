@@ -28,21 +28,21 @@ const get = make({
 });
 ```     
 ```ts
-get(s => s.name).replace('Terence');
+get(s => s.name)
+  .replace('Terence');            // ({ type: 'name.replace()', payload: 'Terence' })
 ```
-Dispatches `({ type: 'name.replace()', payload: 'Terence' })`
-
 ```ts
-get(s => s.favorite.foods).addAfter(['Indian', 'Sushi']);
+get(s => s.favorite.foods)
+  .addAfter(['Indian', 'Sushi']); // ({ type: 'favorite.foods.addAfter()', payload: ['Indian', 'Sushi'] })
 ```
-Dispatches `({ type: 'favorite.foods.addAfter()', payload: ['Indian', 'Sushi'] })`
-
 ```ts
-get(s => s.favorite.hobbies).replaceWhere(eq(h => h.id, 1)).with('Napping');
+get(s => s.favorite.hobbies)
+  .replaceWhere(eq(h => h.id, 1))
+  .with('Napping');               // ({ type: 'favorite.hobbies.replaceWhere(id==1)' }), payload: 'Napping' })
 ```
-Dispatches `({ type: 'favorite.hobbies.replaceWhere(id==1)' }), payload: 'Napping'`
 ```ts
-get(s => s.favorite.hobbies).onChange(hobbies => console.log('hobbies changed', hobbies));
+get(s => s.favorite.hobbies)
+  .onChange(console.log);
 ```
 ***[✍️ Writing state](./docs/readme-write.md)*** - update your state using a minimal but powerful set of state-update utilities
 
