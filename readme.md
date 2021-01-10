@@ -15,7 +15,7 @@ Oulik leverages the shape of your state tree and standardizes your state-update 
 ```console
 npm i oulik
 ```
-### 🐹 SET UP
+### 🌈 SET UP
 ```ts
 const get = make({
   name: '',
