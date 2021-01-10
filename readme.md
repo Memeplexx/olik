@@ -16,7 +16,7 @@ Oulik leverages the shape of your state tree and standardizes your state-update 
 npm i oulik
 ```
 
-```Typescript
+```ts
 import { make } from 'oulik';
 
 const get = make({
@@ -25,17 +25,23 @@ const get = make({
     foods: new Array<string>(),
     hobbies: new Array<{ id: number, name: string }>(),
   },
-});       
-
+});
+```     
+```ts
 get(s => s.name).replace('Terence');
-// { dispatch({ type: 'name.replace()', payload: 'Terence' }) }
+```
+Dispatches `({ type: 'name.replace()', payload: 'Terence' })`
 
+```ts
 get(s => s.favorite.foods).addAfter(['Indian', 'Sushi']);
-// { dispatch({ type: 'favorite.foods.addAfter()', payload: ['Indian', 'Sushi'] }) }
+```
+Dispatches `({ type: 'favorite.foods.addAfter()', payload: ['Indian', 'Sushi'] })`
 
+```ts
 get(s => s.favorite.hobbies).replaceWhere(eq(h => h.id, 1)).with('Napping');
-// { dispatch({ type: 'favorite.hobbies.replaceWhere(id==1)' }), payload: 'Napping' }
-
+```
+Dispatches `({ type: 'favorite.hobbies.replaceWhere(id==1)' }), payload: 'Napping'`
+```ts
 get(s => s.favorite.hobbies).onChange(hobbies => console.log('hobbies changed', hobbies));
 ```
 ***[✍️ Writing state](./docs/readme-write.md)*** - update your state using a minimal but powerful set of state-update utilities
