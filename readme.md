@@ -40,7 +40,7 @@ get(s => s.favorite.hobbies).read()
 
 get(s => s.favorite.hobbies).onChange(console.log);
 
-derive(get(s => s.foods), get(s => s.hobbies)).usingExpensiveCalc((foods, hobbies) => [...foods, hobbies])
+derive(get(s => s.foods), get(s => s.hobbies)).usingExpensiveCalc((foods, hobbies) => [...foods, ...hobbies])
 ```
 ### 🥚 NEST STORES
 ```ts
