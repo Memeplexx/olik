@@ -34,6 +34,13 @@ describe('Root', () => {
     expect(tests.currentMutableState).toEqual(get().read());
   })
 
+  it('should replace a top-level string', () => {
+    const get = make('');
+    get().replace('test');
+    expect(get().read()).toEqual('test');
+    expect(tests.currentMutableState).toEqual(get().read());
+  })
+
   it('should replace top-level object', () => {
     const get = make({ hello: 'world', another: new Array<string>() });
     get().replace({ hello: 'test', another: ['test'] });
@@ -60,5 +67,12 @@ describe('Root', () => {
     expect(get().read()).toEqual(['one', 'two']);
     expect(tests.currentAction.type).toEqual('addAfter()');
   })
+
+  it('should replace on a top-level string using a function', () => {
+    const get = make('a');
+    get().replace(e => e + 'b');
+    expect(get().read()).toEqual('ab');
+    expect(tests.currentAction.payload).toEqual('ab');
+  });
 
 });

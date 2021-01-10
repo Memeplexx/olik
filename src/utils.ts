@@ -1,4 +1,5 @@
 import { errorMessages } from './consts';
+import { FunctionReturning } from './shape';
 
 export function deepFreeze<T extends Object>(o: T): T {
   Object.freeze(o);
@@ -113,9 +114,11 @@ export function createPathReader<S extends Object>(state: S) {
   })();
 }
 
-export function copyPayload<C>(payload: C) {
+export function copyPayload<C>(payload: C | FunctionReturning<C>) {
+  const isFunction = typeof(payload) === 'function';
   return {
-    payloadFrozen: deepFreeze(deepCopy(payload)),
-    payloadCopied: deepCopy(payload),
+    payloadFrozen: (isFunction ? null : deepFreeze(deepCopy(payload))) as C,
+    payloadCopied: (isFunction ? null : deepCopy(payload)) as C,
+    payloadFunction: (isFunction ? payload as FunctionReturning<C> : null) as FunctionReturning<C>,
   };
 }

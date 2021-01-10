@@ -53,6 +53,14 @@ describe('Object', () => {
     expect(tests.currentMutableState).toEqual(get().read());
   })
 
+  it('should work with a function as the payload', () => {
+    const get = make({ prop: 'a' });
+    get(s => s.prop).replace(e => e + 'b');
+    expect(get().read()).toEqual({ prop: 'ab' });
+    expect(tests.currentMutableState).toEqual({ prop: 'ab' });
+    expect(tests.currentAction.payload).toEqual('ab');
+  });
+
   it('should work with tags correctly', () => {
     const get = makeEnforceTags({
       object: { property: 'hello', property2: 'two' },

@@ -6,7 +6,7 @@
 ![Package Size](https://badgen.net/bundlephobia/minzip/oulik)
 ![Dependency count](https://badgen.net/bundlephobia/dependency-count/oulik)
 
-## ***Dead-simple state-management, free of confusing user-defined abstractions*** ##  
+## ***Declarative*** state-management. ***Free*** of overly abstract ***actions***. ***Free*** of convoluted immutable state update logic. ***All*** in-line. ##  
 
 Oulik leverages the shape of your state tree and standardizes your state-update primitives to provide a **lucid state-management experience**. It also supports the ability to **dynamically nest component-level stores** within your application-level store.
 
@@ -23,15 +23,20 @@ const get = make({
   name: '',
   favorite: {
     foods: new Array<string>(),
-    hobbies: new Array<string>(),
+    hobbies: new Array<{ id: number, name: string }>(),
   },
 });       
 
 get(s => s.name).replace('Terence');
+// { dispatch({ type: 'name.replace()', payload: 'Terence' }) }
 
-get(s => s.favorite.foods).replaceAll(['Indian', 'Sushi']);
+get(s => s.favorite.foods).addAfter(['Indian', 'Sushi']);
+// { dispatch({ type: 'favorite.foods.addAfter()', payload: ['Indian', 'Sushi'] }) }
 
-get(s => s.favorite.hobbies).replaceWhere(h => h === 'Coding').with('Napping');
+get(s => s.favorite.hobbies).replaceWhere(eq(h => h.id, 1)).with('Napping');
+// { dispatch({ type: 'favorite.hobbies.replaceWhere(id==1)' }), payload: 'Napping' }
+
+get(s => s.favorite.hobbies).onChange(hobbies => console.log('hobbies changed', hobbies));
 ```
 ***[✍️ Writing state](./docs/readme-write.md)*** - update your state using a minimal but powerful set of state-update utilities
 

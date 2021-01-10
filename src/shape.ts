@@ -52,6 +52,8 @@ export type DeepWritable<E> =
   E extends DeepReadonlyObject<infer R> ? R :
   never;
 
+export type FunctionReturning<C> = (currentValue: DeepReadonly<C>) => C;
+
 /**
  * An object which is capable of storing and updating state which is in the shape of an array of primitives
  */
@@ -63,7 +65,7 @@ export type StoreForAnArray<C extends Array<any>, T extends Trackability> = {
    * get(s => s.todos).addAfter(newTodos);
    * ```
    */
-  addAfter: <R extends (C[0] | C)>(payload: R, tag: Tag<T>) => R,
+  addAfter: <R extends (C[0] | C)>(payload: R, tag: Tag<T>) => void,
   /**
    * Prepends  any number of elements onto the beginning of the array
    * @example
@@ -71,7 +73,7 @@ export type StoreForAnArray<C extends Array<any>, T extends Trackability> = {
    * get(s => s.todos).addBefore(newTodos);
    * ```
    */
-  addBefore: <R extends (C[0] | C)>(payload: R, tag: Tag<T>) => R,
+  addBefore: <R extends (C[0] | C)>(payload: R, tag: Tag<T>) => void,
   /**
    * Removes all elements from the array
    * @example
@@ -111,7 +113,7 @@ export type StoreForAnArray<C extends Array<any>, T extends Trackability> = {
    * get(s => s.todos).replaceAll(newTodos);
    * ```
    */
-  replaceAll: <C>(replacement: C, tag: Tag<T>) => C,
+  replaceAll: <C>(replacement: C, tag: Tag<T>) => void,
   /**
    * Substitute elements which match a specific condition
    * @example
@@ -121,7 +123,7 @@ export type StoreForAnArray<C extends Array<any>, T extends Trackability> = {
    *   .with({ id: 5, text: 'bake cookies' });
    * ```
    */
-  replaceWhere: (where: (arrayElement: C[0]) => boolean) => { with: (element: C[0], tag: Tag<T>) => C[0] },
+  replaceWhere: (where: (arrayElement: C[0]) => boolean) => { with: (element: C[0], tag: Tag<T>) => void },
   /**
    * Substitutes or appends an element depending on whether or not it can be found.
    * Note that if more than one element is found which matches the criteria specified in the 'where' clause, an error will be thrown
@@ -132,7 +134,7 @@ export type StoreForAnArray<C extends Array<any>, T extends Trackability> = {
    *   .with({ id: 5, text: 'bake cookies' });
    * ```
    */
-  upsertWhere: (where: (arrayElement: C[0]) => boolean) => { with: (element: C[0], tag: Tag<T>) => C[0] },
+  upsertWhere: (where: (arrayElement: C[0]) => boolean) => { with: (element: C[0], tag: Tag<T>) => void },
   /**
    * Merges the supplied array into the existing array.  
    * Any supplied elements will either replace their corresponding element in the store (if a match could be found) or else they will be appended to the store array.  
@@ -143,7 +145,7 @@ export type StoreForAnArray<C extends Array<any>, T extends Trackability> = {
    *   .with(newTodosArray);
    * ```
    */
-  mergeWhere: (where: (existingArrayElement: C[0], newArrayElement: C[0]) => boolean) => { with: (elements: C, tag: Tag<T>) => C },
+  mergeWhere: (where: (existingArrayElement: C[0], newArrayElement: C[0]) => boolean) => { with: (elements: C, tag: Tag<T>) => void },
 }
 
 /**
@@ -159,7 +161,7 @@ export type StoreForAnArrayOfObjects<C extends Array<any>, T extends Trackabilit
    *   .with({ status: 'todo' });
    * ```
    */
-  patchWhere: (where: (arrayElement: C[0]) => boolean) => { with: <R extends Partial<C[0]>>(element: R, tag: Tag<T>) => R },
+  patchWhere: (where: (arrayElement: C[0]) => boolean) => { with: <R extends Partial<C[0]>>(element: R, tag: Tag<T>) => void },
 } & StoreForAnArray<C, T>;
 
 /**
@@ -170,14 +172,14 @@ export type StoreForAnObjectOrPrimitive<C extends any, T extends Trackability> =
    * Substitutes this primitive value
    * @example
    * ```
-   * get(s => s.user.age).replace(33)
+   * get(s => s.user.age).replace(33);
    * ```
    * @example
    * ```
-   * get(s => s.user.age).replace(() => fetchUserAgeAsPromise())
+   * get(s => s.user.age).replace(age => age + 1);
    * ```
    */
-  replace: (replacement: C, tag: Tag<T>) => C,
+  replace: (replacement: C | FunctionReturning<C>, tag: Tag<T>) => void,
 }
 
 /**
@@ -191,7 +193,7 @@ export type StoreForAnObject<C extends any, T extends Trackability> = {
    * get(s => s.user).patch({ firstName: 'James', age: 33 })
    * ```
    */
-  patch: <K extends Partial<C>>(partial: K, tag: Tag<T>) => K,
+  patch: (partial: Partial<C>, tag: Tag<T>) => void,
 } & StoreForAnObjectOrPrimitive<C, T>;
 
 /**
@@ -199,7 +201,7 @@ export type StoreForAnObject<C extends any, T extends Trackability> = {
  */
 export type StoreWhichIsReadable<C> = {
   /**
-   * @returns the current state
+   * @returns the state as it was when the store was initialized
    */
   readInitial: () => DeepReadonly<C>,
 } & StoreOrDerivation<C>;

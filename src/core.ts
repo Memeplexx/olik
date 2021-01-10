@@ -22,6 +22,7 @@ import {
   Tag,
   StoreOrDerivation,
   DeepReadonly,
+  FunctionReturning,
 } from './shape';
 import { tests } from './tests';
 import { copyObject, copyPayload, createPathReader, deepCopy, deepFreeze, validateState } from './utils';
@@ -126,25 +127,37 @@ function makeInternal<S, T extends Trackability>(state: S, options: { supportsTa
   let initialState = currentState;
   let devtoolsDispatchListener: ((action: { type: string, payload?: any }) => any) | undefined;
   const setDevtoolsDispatchListener = (listener: (action: { type: string, payload?: any }) => any) => devtoolsDispatchListener = listener;
-  const replace = <C, T extends Trackability>(selector: Selector<S, C>, name: string) => (payloadOrPromise: C, tag: Tag<T>) => {
+  const replace = <C, T extends Trackability>(selector: Selector<S, C>, name: string) => (payload: C | FunctionReturning<C>, tag: Tag<T>) => {
     const pathSegments = pathReader.readSelector(selector);
-    const { payloadFrozen, payloadCopied } = copyPayload(payloadOrPromise);
+    const { payloadFrozen, payloadCopied, payloadFunction } = copyPayload(payload);
+    let payloadReturnedByFn: C;
+    let getPayloadFn = (() => payloadReturnedByFn) as unknown as () => C;
     if (!pathSegments.length) {
       updateState({
         selector,
-        replacer: old => payloadFrozen,
-        mutator: old => {
-          if (Array.isArray(old)) {
-            (old as Array<any>).length = 0; Object.assign(old, payloadCopied);
-          } else if (typeof (old) === 'boolean' || typeof (old) === 'number') {
-            pathReader.mutableStateCopy = payloadCopied as any as S;
+        replacer: old => {
+          if (payloadFunction) {
+            payloadReturnedByFn = payloadFunction(old);
+            return payloadReturnedByFn;
           } else {
-            Object.assign(old, payloadCopied);
+            return payloadFrozen;
+          }
+        },
+        mutator: old => {
+          const newValue = payloadFunction ? payloadFunction(old as any) : payloadCopied;
+          if (Array.isArray(old)) {
+            (old as Array<any>).length = 0;
+            Object.assign(old, newValue);
+          } else if (typeof (old) === 'boolean' || typeof (old) === 'number' || typeof (old) === 'string') {
+            pathReader.mutableStateCopy = newValue as any;
+          } else {
+            Object.assign(old, newValue);
           }
         },
         actionName: name,
         pathSegments: [],
         payload: payloadFrozen,
+        getPayloadFn,
         tag,
       });
     } else {
@@ -158,12 +171,17 @@ function makeInternal<S, T extends Trackability>(state: S, options: { supportsTa
       const actionName = `${pathSegments.join('.')}${pathSegments.length ? '.' : ''}${name}()`;
       updateState({
         selector: selectorRevised,
-        replacer: old => Array.isArray(old) ? (old as Array<any>).map((o, i) => i === +lastSeg ? deepCopy(payloadFrozen) : o) : ({ ...old, [lastSeg]: deepCopy(payloadFrozen) }),
-        mutator: (old: Record<any, any>) => old[lastSeg] = payloadCopied,
+        replacer: old => {
+          if (Array.isArray(old)) { return (old as Array<any>).map((o, i) => i === +lastSeg ? payloadCopied : o); }
+          if (payloadFunction) { payloadReturnedByFn = payloadFunction((old as any)[lastSeg]); }
+          return ({ ...old, [lastSeg]: payloadFunction ? payloadFunction((old as any)[lastSeg]) : payloadCopied })
+        },
+        mutator: (old: Record<any, any>) => old[lastSeg] = payloadReturnedByFn || payloadCopied,
         actionName,
         actionNameOverride: true,
         pathSegments: segsCopy,
         payload: payloadFrozen,
+        getPayloadFn,
         tag,
       })
     }
@@ -322,7 +340,7 @@ function makeInternal<S, T extends Trackability>(state: S, options: { supportsTa
       replaceWhere: (criteria => ({
         with: (payload, tag) => {
           const indicesOfElementsToReplace = (selector(currentState) as X).map((e, i) => criteria(e) ? i : null).filter(i => i !== null);
-          const { payloadFrozen, payloadCopied } = copyPayload(payload);
+          const { payloadFrozen, payloadCopied, payloadFunction } = copyPayload(payload);
           updateState<C, T, X>({
             selector,
             replacer: old => old.map((o, i) => indicesOfElementsToReplace.includes(i) ? deepCopy(payloadFrozen) : o),
@@ -348,7 +366,7 @@ function makeInternal<S, T extends Trackability>(state: S, options: { supportsTa
         return { unsubscribe: () => changeListeners.delete(performAction) };
       }) as StoreOrDerivation<C>['onChange'],
       read: (
-        () => deepFreeze(selector(currentState))
+        () => /*deepFreeze(*/selector(currentState)/*)*/
       ) as StoreOrDerivation<C>['read'],
       readInitial: (
         () => selector(initialState)
@@ -414,13 +432,14 @@ function makeInternal<S, T extends Trackability>(state: S, options: { supportsTa
 
   function updateState<C, T extends Trackability, X extends C = C>(specs: {
     selector: Selector<S, C, X>,
-    replacer: (newNode: X) => any,
+    replacer: (newNode: DeepReadonly<X>) => any,
     mutator: (newNode: X) => any,
     pathSegments?: string[],
     actionName: string,
     payload: any,
     tag: Tag<T>,
     actionNameOverride?: boolean,
+    getPayloadFn?: () => X,
   }) {
     const previousState = currentState;
     const pathSegments = specs.pathSegments || pathReader.readSelector(specs.selector);
@@ -431,7 +450,7 @@ function makeInternal<S, T extends Trackability>(state: S, options: { supportsTa
     const actionToDispatch = {
       type: (specs.actionNameOverride ? specs.actionName : (pathSegments.join('.') + (pathSegments.length ? '.' : '') + specs.actionName + '()')) +
         (specs.tag ? ` [${options.tagSanitizer ? options.tagSanitizer(specs.tag as string) : specs.tag}]` : ''),
-      payload: specs.payload,
+      payload: (specs.getPayloadFn && (specs.getPayloadFn() !== undefined)) ? specs.getPayloadFn() : specs.payload,
     };
     tests.currentAction = actionToDispatch;
     tests.currentMutableState = pathReader.mutableStateCopy as any;

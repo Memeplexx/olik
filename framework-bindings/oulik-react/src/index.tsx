@@ -1,4 +1,4 @@
-import { DeepReadonly, SelectorFromANestedStore, Store, Trackability, Unsubscribable } from 'oulik';
+import { SelectorFromANestedStore, Store, Trackability, Unsubscribable } from 'oulik';
 import React, { DependencyList } from 'react';
 
 export * from 'oulik';
@@ -8,14 +8,14 @@ export * from 'oulik';
  * @param store either a normal store, or a derived store
  * @param deps an optional array of dependencies
  * 
- * @example 1: NORMAL STORE SELECTION
+ * @example: NORMAL STORE SELECTION
  * ```
  * const value = useSelector(
  *   get(s => s.some.property)
  * );
  * ```
  * 
- * @example 2: DERIVED STORE SELECTION
+ * @example: DERIVED STORE SELECTION
  * ```typescript
  * const value = useSelector(
  *   deriveFrom(
@@ -55,7 +55,8 @@ export function useSelector<C>(
  *   return fetch(`https://www.example.com/api/todos?index=${index}&offset=${offset}`)
  * }
  * 
- * const { isLoading, hasError, succeeded, error, data, refetch } = useFetcher(() => fetchTodosFromApi(index: number, offset: number));
+ * const { isLoading, hasError, succeeded, error, data, refetch } =
+ *   useFetcher(() => fetchTodosFromApi(index: number, offset: number).then(res => get(s => s.todos).replaceAll(res)));
  * const todos = useSelector(get(s => s.todos));
  * ```
  */
@@ -115,11 +116,13 @@ export function useStore<C>(
  * 
  * The following example component receives props from the store as well as from its parent component
  * ```
- * class Todo extends React.Component<{ todos: Todo[], userName: string, someProp: number }> {
+ * const get = make({ some: { state: { todos: new Array<string>(), user: { firstName: '' } } } });
+ * 
+ * class Todo extends React.Component<{ todos: Array<string>, userName: string, someProp: number }> {
  *   // ...
  * }
  *
- * export default mapStateToProps(select(s => s.some.state), (state, ownProps: { someProp: string }) => ({
+ * export default mapStateToProps(get(s => s.some.state), (state, ownProps: { someProp: number }) => ({
  *   todos: state.todos,
  *   userName: state.user.firstName,
  *   someProp: ownProps.someProp,
@@ -128,14 +131,14 @@ export function useStore<C>(
  */
 export function mapStateToProps<C, P extends {}, M extends {}, B extends Trackability>(
   store: Store<C, B>,
-  mapper: (state: DeepReadonly<C>, ownProps: P) => M,
+  mapper: (state: C, ownProps: P) => M,
 ) {
   return (Component: React.ComponentType<M>) => {
     return class TodoWrapper extends React.PureComponent<P, M> {
-      sub = store.onChange(s => this.setState(mapper(s, this.props)));
+      sub = store.onChange(s => this.setState(mapper(s as C, this.props)));
       constructor(props: any) {
         super(props);
-        this.state = mapper(store.read(), this.props);
+        this.state = mapper(store.read() as any, this.props);
       }
       render() {
         return (
