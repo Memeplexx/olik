@@ -15,7 +15,7 @@ Oulik leverages the shape of your state tree and standardizes your state-update 
 ```console
 npm i oulik
 ```
-#### Set up
+#### 🐤 SET UP
 ```ts
 const get = make({
   name: '',
@@ -25,7 +25,7 @@ const get = make({
   },
 });
 ```  
-##### Update   
+##### ✍️ WRITE STATE  
 ```ts
 get(s => s.name)
   .replace('Terence');            // ({ type: 'name.replace()', payload: 'Terence' })
@@ -37,13 +37,14 @@ get(s => s.favorite.hobbies)
   .replaceWhere(eq(h => h.id, 1))
   .with('Napping');               // ({ type: 'favorite.hobbies.replaceWhere(id==1)', payload: 'Napping' })
 ```
-#### Listen
+#### 📖 READ STATE
 ```ts
 get(s => s.favorite.hobbies)
+  .read()
+
+get(s => s.favorite.hobbies)
   .onChange(console.log);
-```
-#### Derive
-```ts
+
 derive(
   get(s => s.foods),
   get(s => s.hobbies),
@@ -51,10 +52,7 @@ derive(
   return [...foods, hobbies];
 })
 ```
-***[✍️ Writing state](./docs/readme-write.md)*** - update your state using a minimal but powerful set of state-update utilities
-
-***[📖 Reading state](./docs/readme-read.md)*** - read synchronously, listen to updates, and memoise derived state
-
-***[🥚 Nesting stores](./docs/readme-fetch.md)*** - nest component-level stores inside your application-level store
-
-***[👩‍🎓 Best practices](./docs/best-practices.md)*** - if you don't already have some experience using Redux or NGRX
+#### 🥚 NEST STORES
+```ts
+const get = makeNested({})
+```
