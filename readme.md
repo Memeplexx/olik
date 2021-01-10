@@ -15,7 +15,7 @@ Oulik leverages the shape of your state tree and standardizes your state-update 
 ```console
 npm i oulik
 ```
-Set up
+#### Set up
 ```ts
 const get = make({
   name: '',
@@ -25,24 +25,24 @@ const get = make({
   },
 });
 ```  
-Update   
+##### Update   
 ```ts
 get(s => s.name)
   .replace('Terence');            // ({ type: 'name.replace()', payload: 'Terence' })
 
 get(s => s.favorite.foods)
   .addAfter(['Indian', 'Sushi']); // ({ type: 'favorite.foods.addAfter()', payload: ['Indian', 'Sushi'] })
-  
+
 get(s => s.favorite.hobbies)
   .replaceWhere(eq(h => h.id, 1))
   .with('Napping');               // ({ type: 'favorite.hobbies.replaceWhere(id==1)', payload: 'Napping' })
 ```
-Listen
+#### Listen
 ```ts
 get(s => s.favorite.hobbies)
   .onChange(console.log);
 ```
-Derive
+#### Derive
 ```ts
 derive(
   get(s => s.foods),
