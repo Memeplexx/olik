@@ -26,13 +26,13 @@ const get = make({
 #### ✍️ **WRITE STATE**  
 ```ts
 get(s => s.name).replace('Terence');
-// dispatch({ type: 'name.replace()', payload: 'Terence' })
+// replaces state using { type: 'name.replace()', payload: 'Terence' })
 
 get(s => s.favorite.foods).addAfter(['Indian', 'Sushi']);
-// dispatch({ type: 'favorite.foods.addAfter()', payload: ['Indian', 'Sushi'] })
+// replaces state using ({ type: 'favorite.foods.addAfter()', payload: ['Indian', 'Sushi'] })
 
 get(s => s.favorite.hobbies).replaceWhere(eq(h => h.id, 1)).with('Napping');
-// dispatch({ type: 'favorite.hobbies.replaceWhere(id==1)', payload: 'Napping' })
+// replaces state using ({ type: 'favorite.hobbies.replaceWhere(id==1)', payload: 'Napping' })
 ```
 #### 🔍 **READ STATE**
 ```ts
