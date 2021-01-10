@@ -27,30 +27,22 @@ const get = make({
 ```  
 ### ✍️ WRITE STATE  
 ```ts
-get(s => s.name)
-  .replace('Terence');            // ({ type: 'name.replace()', payload: 'Terence' })
+get(s => s.name).replace('Terence');
+// dispatch({ type: 'name.replace()', payload: 'Terence' })
 
-get(s => s.favorite.foods)
-  .addAfter(['Indian', 'Sushi']); // ({ type: 'favorite.foods.addAfter()', payload: ['Indian', 'Sushi'] })
+get(s => s.favorite.foods).addAfter(['Indian', 'Sushi']);
+// dispatch({ type: 'favorite.foods.addAfter()', payload: ['Indian', 'Sushi'] })
 
-get(s => s.favorite.hobbies)
-  .replaceWhere(eq(h => h.id, 1))
-  .with('Napping');               // ({ type: 'favorite.hobbies.replaceWhere(id==1)', payload: 'Napping' })
+get(s => s.favorite.hobbies).replaceWhere(eq(h => h.id, 1)).with('Napping');
+// dispatch({ type: 'favorite.hobbies.replaceWhere(id==1)', payload: 'Napping' })
 ```
 ### 📖 READ STATE
 ```ts
-get(s => s.favorite.hobbies)
-  .read()
+get(s => s.favorite.hobbies).read()
 
-get(s => s.favorite.hobbies)
-  .onChange(console.log);
+get(s => s.favorite.hobbies).onChange(console.log);
 
-derive(
-  get(s => s.foods),
-  get(s => s.hobbies),
-).usingExpensiveCalc((foods, hobbies) => {
-  return [...foods, hobbies];
-})
+derive(get(s => s.foods), get(s => s.hobbies)).usingExpensiveCalc((foods, hobbies) => [...foods, hobbies])
 ```
 ### 🥚 NEST STORES
 ```ts
