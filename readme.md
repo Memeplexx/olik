@@ -36,7 +36,7 @@ get(s => s.favorite.foods).addAfter(['Indian', 'Sushi']);
 get(s => s.favorite.hobbies).replaceWhere(eq(h => h.id, 1)).with('Napping');
 // dispatch({ type: 'favorite.hobbies.replaceWhere(id==1)', payload: 'Napping' })
 ```
-### 👀 READ STATE
+### 🔍 READ STATE
 ```ts
 get(s => s.favorite.hobbies).read()
 
