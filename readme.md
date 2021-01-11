@@ -12,7 +12,7 @@
 
 #### 🌈 **SET UP**
 ```ts
-const get = make({
+const get = set({
   username: '',
   favorite: {
     foods: new Array<string>(),
@@ -23,13 +23,13 @@ const get = make({
 #### ✍️ **WRITE STATE**  
 ```ts
 get(s => s.username).replace('Terence');
-// replaces state using: { type: 'username.replace()', payload: 'Terence' }
+// type: 'username.replace()', payload: 'Terence'
 
 get(s => s.favorite.foods).addAfter(['Indian', 'Sushi']);
-// replaces state using: { type: 'favorite.foods.addAfter()', payload: ['Indian', 'Sushi'] }
+// type: 'favorite.foods.addAfter()', payload: ['Indian', 'Sushi']
 
-get(s => s.favorite.hobbies).replaceWhere(eq(h => h.id, 1)).with('Napping');
-// replaces state using: { type: 'favorite.hobbies.replaceWhere(id==1)', payload: 'Napping' }
+get(s => s.favorite.hobbies).replaceWhere(eq(e => e.id, 3)).with({ id: 4, name: 'coding' });
+// type: 'favorite.hobbies.replaceWhere()', payload: { where: 'id === 3', with: { id: 4, name: 'coding' } }
 ```
 #### 🔍 **READ STATE**
 ```ts
@@ -40,15 +40,20 @@ get(s => s.favorite.hobbies).onChange(console.log);
 derive(
   get(s => s.foods),
   get(s => s.hobbies),
-).usingExpensiveCalc((foods, hobbies) => /* some calculation we don't want to repeat unnecessarily */)
+).usingExpensiveCalc(
+  (foods, hobbies) => {
+    // some calculation we don't want to repeat unnecessarily
+  }
+)
 ```
 #### 🥚 **NEST STORES**
 ```ts
 class TodoComponent {
-  get = makeNested({
+  get = setNested({
     name: '',
     description: '',
     done: false,
   });
+  onClickDone = (done: boolean) => get(s => s.done).replace(done);
 }
 ```
