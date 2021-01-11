@@ -22,14 +22,15 @@ const get = set({
 ```  
 #### ✍️ **WRITE STATE**  
 ```ts
-get(s => s.username).replace('Terence');
-// type: 'username.replace()', payload: 'Terence'
+get(s => s.username)                // type: 'username.replace()'
+  .replace('Terence');              // payload: 'Terence'
 
-get(s => s.favorite.foods).addAfter(['Indian', 'Sushi']);
-// type: 'favorite.foods.addAfter()', payload: ['Indian', 'Sushi']
+get(s => s.favorite.foods)          // type: 'favorite.foods.addAfter()'
+  .addAfter(['Indian', 'Sushi']);   // payload: ['Indian', 'Sushi']
 
-get(s => s.favorite.hobbies).replaceWhere(eq(e => e.id, 3)).with({ id: 4, name: 'coding' });
-// type: 'favorite.hobbies.replaceWhere()', payload: { where: 'id === 3', with: { id: 4, name: 'coding' } }
+get(s => s.favorite.hobbies)        // type: 'favorite.hobbies.replaceWhere()'
+  .replaceWhere(eq(e => e.id, 3))   // payload: { where: 'id === 3', with: { id: 4, name: 'coding' } }
+  .with({ id: 4, name: 'coding' });
 ```
 #### 🔍 **READ STATE**
 ```ts
