@@ -166,7 +166,7 @@ export type StoreForAnArray<C extends Array<any>, T extends Trackability> = {
    *   .with(newTodosArray);
    * ```
    */
-  mergeWhere: (where: (existingArrayElement: C[0], newArrayElement: C[0]) => boolean) => { with: (elements: C, tag: Tag<T>) => void },
+  mergeMatching: (where: (existingArrayElement: C[0]) => any) => { with: (elements: C, tag: Tag<T>) => void },
 }
 
 /**

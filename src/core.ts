@@ -316,26 +316,26 @@ function makeInternal<S, T extends Trackability>(state: S, options: { supportsTa
           return payloadCopied;
         }
       })) as StoreForAnArray<X, T>['upsertWhere'],
-      mergeWhere: (criteria => ({
+      mergeMatching: (criteria => ({
         with: (payload, tag) => {
           const { payloadFrozen, payloadCopied } = copyPayload(payload);
           updateState({
             selector,
             replacer: old => [
-              ...old.map(oe => payloadFrozen.find(ne => criteria(oe, ne)) || oe),
-              ...payloadFrozen.filter(ne => !old.some(oe => criteria(oe, ne)))
+              ...old.map(oe => payloadFrozen.find(ne => criteria(oe) === criteria(ne)) || oe),
+              ...payloadFrozen.filter(ne => !old.some(oe => criteria(oe) === criteria(ne)))
             ],
             mutator: old => {
-              old.forEach((oe, oi) => { const found = payloadCopied.find(ne => criteria(oe, ne)); if (found) { old[oi] = deepCopy(found); } });
-              payloadCopied.filter(ne => !old.some(oe => criteria(oe, ne))).forEach(ne => old.push(ne));
+              old.forEach((oe, oi) => { const found = payloadCopied.find(ne => criteria(oe) === criteria(ne)); if (found) { old[oi] = deepCopy(found); } });
+              payloadCopied.filter(ne => !old.some(oe => criteria(oe) === criteria(ne))).forEach(ne => old.push(ne));
             },
-            actionName: 'mergeWhere',
+            actionName: 'mergeMatching',
             payload: payloadFrozen,
             tag,
           });
           return payloadCopied;
         }
-      })) as StoreForAnArray<X, T>['mergeWhere'],
+      })) as StoreForAnArray<X, T>['mergeMatching'],
       replaceWhere: (criteria => ({
         with: (payload, tag) => {
           const indicesOfElementsToReplace = (selector(currentState) as X).map((e, i) => criteria(e) ? i : null).filter(i => i !== null);

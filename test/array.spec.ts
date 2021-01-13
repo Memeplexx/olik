@@ -205,14 +205,14 @@ describe('Array', () => {
     expect(tests.currentMutableState).toEqual(get().read());
   })
 
-  it('should be able to mergeWhere()', () => {
+  it('should be able to mergeMatching()', () => {
     const get = make({
       array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
       object: { hello: 'world' },
     });
-    get(s => s.array).mergeWhere((e0, e1) => e0.id === e1.id).with([{ id: 2, value: 'twoo' }, { id: 3, value: 'threee' }, { id: 4, value: 'four' }, { id: 5, value: 'five' }]);
+    get(s => s.array).mergeMatching(e => e.id).with([{ id: 2, value: 'twoo' }, { id: 3, value: 'threee' }, { id: 4, value: 'four' }, { id: 5, value: 'five' }]);
     expect(get(s => s.array).read()).toEqual([{ id: 1, value: 'one' }, { id: 2, value: 'twoo' }, { id: 3, value: 'threee' }, { id: 4, value: 'four' }, { id: 5, value: 'five' }]);
-    expect(tests.currentAction.type).toEqual('array.mergeWhere()');
+    expect(tests.currentAction.type).toEqual('array.mergeMatching()');
     expect(tests.currentMutableState).toEqual(get().read());
   })
 

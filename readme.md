@@ -8,7 +8,11 @@
 
 ### *Declarative* state-management. *Free* of innacurate *actions* & convoluted reducers. *All* in-line.
 
-> Oulik currently supports ***[![](./src/assets/javascript.png)&nbsp;Vanilla-JS](https://memeplexx.github.io/oulik/docs/vanilla-js)***, ***[![](./src/assets/react.png)&nbsp;React](https://memeplexx.github.io/oulik/docs/read)***, and ***[![](./src/assets/angular.png)&nbsp;Angular](https://memeplexx.github.io/oulik/docs/angular)***.  
+---
+
+#### 🖐️ **WHY CHOOSE OULIK?**
+Oulik is designed to make your state management as transparent and semantically consistent as possible.  
+Oulik currently supports ***[![](./src/assets/javascript.png)&nbsp;Vanilla-JS](https://memeplexx.github.io/oulik/docs/vanilla-js)***, ***[![](./src/assets/react.png)&nbsp;React](https://memeplexx.github.io/oulik/docs/read)***, and ***[![](./src/assets/angular.png)&nbsp;Angular](https://memeplexx.github.io/oulik/docs/angular)***.  
 
 #### 🌈 **SET UP**
 ```ts
@@ -29,8 +33,8 @@ get(s => s.favorite.foods)               // type: 'favorite.foods.addAfter()'
   .addAfter(['Indian', 'Sushi']);        // payload: ['Indian', 'Sushi']
 
 get(s => s.favorite.hobbies)             // type: 'favorite.hobbies.replaceWhere()'
-  .replaceWhere(eq(e => e.id, 3))        // payload: { where: 'id === 3', with: { id: 4, name: 'coding' } }
-  .with({ id: 4, name: 'coding' });
+  .filter(s => s.id.$eq(3))              // payload: { where: 'id === 3',
+  .replace({ id: 4, name: 'coding' });   //   with: { id: 4, name: 'coding' } }
 ```
 #### 🔍 **READ STATE**
 ```ts
