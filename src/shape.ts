@@ -54,6 +54,26 @@ export type DeepWritable<E> =
 
 export type FunctionReturning<C> = (currentValue: DeepReadonly<C>) => C;
 
+export type PredicateSpec = { hello: '' };
+
+export type Predicate<T> = {
+  $eq: (arg: T) => PredicateSpec,
+  $ne: (arg: T) => PredicateSpec,
+  $in: (arg: T[]) => PredicateSpec,
+  $ni: (arg: T[]) => PredicateSpec,
+}
+
+export type RecursivePredicateObject<T> = {
+  readonly [P in keyof T]: RecursivePredicate<T[P]>;
+} & Predicate<T>;
+
+export type RecursivePredicate<T> =
+  T extends any[] ? T :
+  T extends object ? RecursivePredicateObject<T> :
+  T & Predicate<T>;
+
+export type FilterFunction<T> = (arrayElement: RecursivePredicate<T>) => PredicateSpec | boolean;
+
 /**
  * An object which is capable of storing and updating state which is in the shape of an array of primitives
  */
@@ -123,7 +143,8 @@ export type StoreForAnArray<C extends Array<any>, T extends Trackability> = {
    *   .with({ id: 5, text: 'bake cookies' });
    * ```
    */
-  replaceWhere: (where: (arrayElement: C[0]) => boolean) => { with: (element: C[0], tag: Tag<T>) => void },
+  // replaceWhere: (where: (arrayElement: C[0]) => boolean) => { with: (element: C[0], tag: Tag<T>) => void },
+  replaceWhere: (where: FilterFunction<C[0]>) => { with: (element: C[0], tag: Tag<T>) => void },
   /**
    * Substitutes or appends an element depending on whether or not it can be found.
    * Note that if more than one element is found which matches the criteria specified in the 'where' clause, an error will be thrown
@@ -196,16 +217,6 @@ export type StoreForAnObject<C extends any, T extends Trackability> = {
   patch: (partial: Partial<C>, tag: Tag<T>) => void,
 } & StoreForAnObjectOrPrimitive<C, T>;
 
-/**
- * An object which is capable of reading from and listening to changes made to a certain piece of state
- */
-export type StoreWhichIsReadable<C> = {
-  /**
-   * @returns the state as it was when the store was initialized
-   */
-  readInitial: () => DeepReadonly<C>,
-} & StoreOrDerivation<C>;
-
 export type StoreOrDerivation<C> = {
   /**
    * Listens to any updates on this node
@@ -230,12 +241,12 @@ export type StoreWhichIsResettable<C extends any, T extends Trackability> = {
    * Beware that if this store is marked as a `containerForNestedStores`, then all nested stores will also be removed
    */
   reset: (tag: Tag<T>) => void,
-} & StoreWhichIsReadable<C>;
+} & StoreOrDerivation<C>;
 
 /**
  * An object which is capable of storing nested stores
  */
-export type StoreWhichMayContainNestedStores<S, C, T extends Trackability> = StoreForAnObject<C, T> & StoreWhichIsReadable<C> & {
+export type StoreWhichMayContainNestedStores<S, C, T extends Trackability> = StoreForAnObject<C, T> & StoreOrDerivation<C> & {
   renew: (state: S) => void;
   reset: () => void;
 };

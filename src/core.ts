@@ -13,7 +13,6 @@ import {
   StoreForAnArray,
   StoreWhichIsNested,
   StoreWhichIsNestedInternal,
-  StoreWhichIsReadable,
   StoreWhichIsResettable,
   StoreWhichMayContainNestedStores,
   StoreForAnObject,
@@ -340,7 +339,7 @@ function makeInternal<S, T extends Trackability>(state: S, options: { supportsTa
       replaceWhere: (criteria => ({
         with: (payload, tag) => {
           const indicesOfElementsToReplace = (selector(currentState) as X).map((e, i) => criteria(e) ? i : null).filter(i => i !== null);
-          const { payloadFrozen, payloadCopied, payloadFunction } = copyPayload(payload);
+          const { payloadFrozen, payloadCopied } = copyPayload(payload);
           updateState<C, T, X>({
             selector,
             replacer: old => old.map((o, i) => indicesOfElementsToReplace.includes(i) ? deepCopy(payloadFrozen) : o),
@@ -366,11 +365,11 @@ function makeInternal<S, T extends Trackability>(state: S, options: { supportsTa
         return { unsubscribe: () => changeListeners.delete(performAction) };
       }) as StoreOrDerivation<C>['onChange'],
       read: (
-        () => /*deepFreeze(*/selector(currentState)/*)*/
+        () => deepFreeze(selector(currentState))
       ) as StoreOrDerivation<C>['read'],
       readInitial: (
         () => selector(initialState)
-      ) as StoreWhichIsReadable<C>['readInitial'],
+      ),
       renew: (state => {
         pathReader = createPathReader(state);
         currentState = deepFreeze(state) as S;
