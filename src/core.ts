@@ -44,7 +44,7 @@ let nestedContainerStore: ((selector?: ((s: any) => any) | undefined) => StoreWh
  *   .with({ text: 'bake cookies' }, 'TodoDetailComponent')
  * ```
  */
-export function makeEnforceTags<S>(state: S, options: OptionsForMakingAStoreEnforcingTags = {}): SelectorFromAStoreEnforcingTags<S> {
+export function setEnforceTags<S>(state: S, options: OptionsForMakingAStoreEnforcingTags = {}): SelectorFromAStoreEnforcingTags<S> {
   return makeInternalRootStore<S, 'tagged'>(state, { ...options, supportsTags: true });
 }
 
@@ -58,7 +58,7 @@ export function makeEnforceTags<S>(state: S, options: OptionsForMakingAStoreEnfo
  * const select = make({ todos: Array<{ id: number, text: string }>() });
  * ```
  */
-export function make<S>(state: S, options: OptionsForMakingAStore = {}): SelectorFromAStore<S> {
+export function set<S>(state: S, options: OptionsForMakingAStore = {}): SelectorFromAStore<S> {
   return makeInternalRootStore<S, 'untagged'>(state, { ...options, supportsTags: false });
 }
 
@@ -70,7 +70,7 @@ export function make<S>(state: S, options: OptionsForMakingAStore = {}): Selecto
  * @param state The initial state
  * @param options A configuration object which, at minimum, must contain the `name` of the nested store
  */
-export function makeNested<L>(state: L, options: { name: string, storeKey?: string | ((previousKey?: string) => string) }): SelectorFromANestedStore<L> {
+export function setNested<L>(state: L, options: { name: string, storeKey?: string | ((previousKey?: string) => string) }): SelectorFromANestedStore<L> {
   const name = options.name;
   if (!nestedContainerStore) {
     return (<C = L>(selector?: (arg: DeepReadonly<L>) => C) => (selector

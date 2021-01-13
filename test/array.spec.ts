@@ -1,5 +1,5 @@
 import { errorMessages } from '../src/consts';
-import { make } from '../src/core';
+import { set } from '../src/core';
 import { tests } from '../src/tests';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
@@ -12,7 +12,7 @@ describe('Array', () => {
       array: [{ id: 1, value: 'one' }],
       object: { property: '' },
     };
-    const get = make(initialState);
+    const get = set(initialState);
     const payload = [{ id: 2, value: 'two' }, { id: 3, value: 'three' }];
     get(s => s.array).addAfter(payload);
     expect(get(s => s.array).read()).toEqual([...initialState.array, ...payload]);
@@ -26,7 +26,7 @@ describe('Array', () => {
       array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }],
       object: { property: '' },
     };
-    const get = make(initialState);
+    const get = set(initialState);
     const payload = { id: 3, value: 'three' };
     get(s => s.array).addAfter(payload);
     expect(get(s => s.array).read()).toEqual([...initialState.array, payload]);
@@ -40,7 +40,7 @@ describe('Array', () => {
       array: [{ id: 3, value: 'three' }],
       object: { property: '' },
     };
-    const get = make(initialState);
+    const get = set(initialState);
     const payload = [{ id: 1, value: 'one' }, { id: 2, value: 'two' }];
     get(s => s.array).addBefore(payload);
     expect(get(s => s.array).read()).toEqual([...payload, ...initialState.array]);
@@ -54,7 +54,7 @@ describe('Array', () => {
       array: [{ id: 2, value: 'two' }, { id: 3, value: 'three' }],
       object: { property: '' },
     };
-    const get = make(initialState);
+    const get = set(initialState);
     const payload = { id: 1, value: 'one' };
     get(s => s.array).addBefore(payload);
     expect(get(s => s.array).read()).toEqual([payload, ...initialState.array]);
@@ -68,7 +68,7 @@ describe('Array', () => {
       object: { property: '' },
       array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
     };
-    const get = make(initialState);
+    const get = set(initialState);
     const payload = { value: 'test' };
     get(s => s.array).patchWhere(e => e.value.startsWith('t')).with(payload);
     expect(get(s => s.array).read()).toEqual([{ id: 1, value: 'one' }, { id: 2, value: 'test' }, { id: 3, value: 'test' }]);
@@ -82,7 +82,7 @@ describe('Array', () => {
       object: { property: '' },
       array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
     };
-    const get = make(initialState);
+    const get = set(initialState);
     get(s => s.array).removeWhere(a => a.id === 2);
     expect(get(s => s.array).read()).toEqual([{ id: 1, value: 'one' }, { id: 3, value: 'three' }]);
     expect(tests.currentAction.type).toEqual('array.1.removeWhere()');
@@ -96,7 +96,7 @@ describe('Array', () => {
       object: { property: '' },
       array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
     };
-    const get = make(initialState);
+    const get = set(initialState);
     const payload = { id: 5, value: 'hey' };
     get(s => s.array).replaceWhere(a => a.id === 2).with(payload);
     expect(get(s => s.array).read()).toEqual([{ id: 1, value: 'one' }, payload, { id: 3, value: 'three' }]);
@@ -110,7 +110,7 @@ describe('Array', () => {
       object: { property: '' },
       array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
     };
-    const get = make(initialState);
+    const get = set(initialState);
     const payload = { id: 1, value: 'one updated' };
     get(s => s.array).upsertWhere(e => e.id === 1).with(payload);
     expect(get(s => s.array).read()).toEqual([payload, { id: 2, value: 'two' }, { id: 3, value: 'three' }]);
@@ -129,7 +129,7 @@ describe('Array', () => {
       object: { property: '' },
       array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
     };
-    const get = make(initialState);
+    const get = set(initialState);
     expect(() => get(s => s.array).upsertWhere(e => e.value.startsWith('t')).with({ id: 0, value: 'x' })).toThrowError(errorMessages.UPSERT_MORE_THAN_ONE_MATCH);
   })
 
@@ -138,7 +138,7 @@ describe('Array', () => {
       object: { property: '' },
       array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }]
     };
-    const get = make(initialState);
+    const get = set(initialState);
     get(s => s.array).removeAll();
     expect(get(s => s.array).read()).toEqual([]);
     expect(tests.currentAction.type).toEqual('array.removeAll()');
@@ -150,7 +150,7 @@ describe('Array', () => {
       object: { property: '' },
       array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
     };
-    const get = make(initialState);
+    const get = set(initialState);
     get(s => s.array).removeFirst();
     expect(get(s => s.array).read()).toEqual([{ id: 2, value: 'two' }, { id: 3, value: 'three' }]);
     expect(tests.currentAction.type).toEqual('array.removeFirst()');
@@ -162,7 +162,7 @@ describe('Array', () => {
       object: { property: '' },
       array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
     };
-    const get = make(initialState);
+    const get = set(initialState);
     get(s => s.array).removeLast();
     expect(get(s => s.array).read()).toEqual([{ id: 1, value: 'one' }, { id: 2, value: 'two' }]);
     expect(tests.currentAction.type).toEqual('array.removeLast()');
@@ -174,7 +174,7 @@ describe('Array', () => {
       array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
       object: { property: '' },
     };
-    const get = make(initialState);
+    const get = set(initialState);
     const payload = [{ id: 4, value: 'four' }, { id: 5, value: 'five' }];
     get(s => s.array).replaceAll(payload);
     expect(get(s => s.array).read()).toEqual([{ id: 4, value: 'four' }, { id: 5, value: 'five' }]);
@@ -184,7 +184,7 @@ describe('Array', () => {
   })
 
   it('should be able to find() an array element and replace one of its properties', () => {
-    const get = make({
+    const get = set({
       array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
       object: { hello: 'world' },
     });
@@ -195,7 +195,7 @@ describe('Array', () => {
   })
 
   it('should be able to find() an array element and patch one of its properties', () => {
-    const get = make({
+    const get = set({
       array: [{ id: 1, value: { a: 'one', b: 'one' } }, { id: 2, value: { a: 'two', b: 'two' } }, { id: 3, value: { a: 'three', b: 'three' } }],
       object: { hello: 'world' },
     });
@@ -206,7 +206,7 @@ describe('Array', () => {
   })
 
   it('should be able to mergeMatching()', () => {
-    const get = make({
+    const get = set({
       array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
       object: { hello: 'world' },
     });

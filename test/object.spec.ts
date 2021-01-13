@@ -1,4 +1,4 @@
-import { make, makeEnforceTags } from '../src/core';
+import { set, setEnforceTags } from '../src/core';
 import { tests } from '../src/tests';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
@@ -10,7 +10,7 @@ describe('Object', () => {
     const initialState = {
       object: { property: 'hello', property2: 'two' },
     };
-    const get = make(initialState);
+    const get = set(initialState);
     const payload = 'hey';
     get(s => s.object.property).replace(payload);
     expect(get(s => s.object.property).read()).toEqual('hey');
@@ -24,7 +24,7 @@ describe('Object', () => {
     const initialState = {
       object: { property: 'hello', property2: 'two' },
     };
-    const get = make(initialState);
+    const get = set(initialState);
     const payload = { property: 'xxx' };
     get(s => s.object).patch(payload);
     expect(get(s => s.object.property).read()).toEqual(payload.property);
@@ -38,7 +38,7 @@ describe('Object', () => {
     const initialState = {
       object: { property: 'hello', property2: 'two' },
     };
-    const get = make(initialState);
+    const get = set(initialState);
     get(s => s.object.property).replace('hey');
     expect(get(s => s.object.property).read()).toEqual('hey');
     expect(tests.currentMutableState).toEqual(get().read());
@@ -54,7 +54,7 @@ describe('Object', () => {
   })
 
   it('should work with a function as the payload', () => {
-    const get = make({ prop: 'a' });
+    const get = set({ prop: 'a' });
     get(s => s.prop).replace(e => e + 'b');
     expect(get().read()).toEqual({ prop: 'ab' });
     expect(tests.currentMutableState).toEqual({ prop: 'ab' });
@@ -62,7 +62,7 @@ describe('Object', () => {
   });
 
   it('should work with tags correctly', () => {
-    const get = makeEnforceTags({
+    const get = setEnforceTags({
       object: { property: 'hello', property2: 'two' },
     });
     const payload = 'hey';
@@ -74,7 +74,7 @@ describe('Object', () => {
   })
 
   it('should sanitize tags correctly', () => {
-    const get = makeEnforceTags({
+    const get = setEnforceTags({
       test: '',
     }, {
       tagSanitizer: (tag) => tag + 'x',
@@ -86,7 +86,7 @@ describe('Object', () => {
   })
 
   it('should be able to add a new property onto an object', () => {
-    const get = make({} as { [key: string]: string });
+    const get = set({} as { [key: string]: string });
     get().patch({ hello: 'world' });
     expect(get().read()).toEqual({ hello: 'world' });
     expect(tests.currentMutableState).toEqual(get().read());

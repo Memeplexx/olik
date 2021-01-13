@@ -1,4 +1,4 @@
-import { make } from '../src/core';
+import { set } from '../src/core';
 import { tests } from '../src/tests';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
@@ -7,69 +7,69 @@ describe('Root', () => {
   beforeAll(() => tests.windowObject = windowAugmentedWithReduxDevtoolsImpl);
 
   it('should update a top-level object', () => {
-    const get = make({ x: 0, y: 0 });
+    const get = set({ x: 0, y: 0 });
     get(s => s.x).replace(3);
     expect(get().read()).toEqual({ x: 3, y: 0 });
     expect(tests.currentMutableState).toEqual(get().read());
   })
 
   it('should update a top-level array', () => {
-    const get = make(new Array<{ id: number, text: string }>());
+    const get = set(new Array<{ id: number, text: string }>());
     get().addAfter([{ id: 1, text: 'hello' }]);
     expect(get().read()).toEqual([{ id: 1, text: 'hello' }]);
     expect(tests.currentMutableState).toEqual(get().read());
   })
 
   it('should replace a top-level number', () => {
-    const get = make(0);
+    const get = set(0);
     get().replace(3);
     expect(get().read()).toEqual(3);
     expect(tests.currentMutableState).toEqual(get().read());
   })
 
   it('should replace a top-level boolean', () => {
-    const get = make(false);
+    const get = set(false);
     get().replace(true);
     expect(get().read()).toEqual(true);
     expect(tests.currentMutableState).toEqual(get().read());
   })
 
   it('should replace a top-level string', () => {
-    const get = make('');
+    const get = set('');
     get().replace('test');
     expect(get().read()).toEqual('test');
     expect(tests.currentMutableState).toEqual(get().read());
   })
 
   it('should replace top-level object', () => {
-    const get = make({ hello: 'world', another: new Array<string>() });
+    const get = set({ hello: 'world', another: new Array<string>() });
     get().replace({ hello: 'test', another: ['test'] });
     expect(get().read()).toEqual({ hello: 'test', another: ['test'] });
     expect(tests.currentMutableState).toEqual(get().read());
   })
 
   it('should replace root array', () => {
-    const get = make(['one', 'two', 'three']);
+    const get = set(['one', 'two', 'three']);
     get().replaceAll(['four', 'five', 'six', 'seven']);
     expect(get().read()).toEqual(['four', 'five', 'six', 'seven']);
     expect(tests.currentMutableState).toEqual(get().read());
   })
 
   it('should replaceWhere root array', () => {
-    const get = make(['one', 'two', 'three']);
+    const get = set(['one', 'two', 'three']);
     get().replaceWhere(e => e === 'two').with('twoo');
     expect(get().read()).toEqual(['one', 'twoo', 'three']);
   })
 
   it('should addAfter root array', () => {
-    const get = make(['one']);
+    const get = set(['one']);
     get().addAfter('two');
     expect(get().read()).toEqual(['one', 'two']);
     expect(tests.currentAction.type).toEqual('addAfter()');
   })
 
   it('should replace on a top-level string using a function', () => {
-    const get = make('a');
+    const get = set('a');
     get().replace(e => e + 'b');
     expect(get().read()).toEqual('ab');
     expect(tests.currentAction.payload).toEqual('ab');

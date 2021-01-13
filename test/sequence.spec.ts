@@ -1,4 +1,4 @@
-import { make } from '../src/core';
+import { set } from '../src/core';
 import { tests } from '../src/tests';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
@@ -13,7 +13,7 @@ describe('Sequence', () => {
       },
       propTwo: new Array<{ id: number, value: string }>(),
     };
-    const get = make(initialState);
+    const get = set(initialState);
     get(s => s.propOne.subPropOne).replace('hey');
     expect(tests.currentMutableState).toEqual(get().read());
     get(s => s.propOne).patch({ subPropOne: 'xxx' });
@@ -34,7 +34,7 @@ describe('Sequence', () => {
 
   it('should maintain sequence on root array', () => {
     const initialState = new Array<{ id: number, value: string }>();
-    const get = make(initialState);
+    const get = set(initialState);
     get().addAfter([{ id: 2, value: 'two' }]);
     expect(tests.currentMutableState).toEqual(get().read());
     get().addBefore([{ id: 0, value: 'zero' }]);

@@ -1,7 +1,7 @@
 import { produce } from 'immer';
 import { fromJS } from 'immutable';
 
-import { make } from '../src/core';
+import { set } from '../src/core';
 import { tests } from '../src/tests';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
@@ -29,7 +29,7 @@ describe.skip('Perf', () => {
   })
 
   it('should test outlik perf', () => {
-    const get = make({
+    const get = set({
       anotherProp: {
         some: {
           deeply: {
@@ -83,7 +83,7 @@ describe.skip('Perf', () => {
 
   it('should test oulik perf', () => {
     const initialState = { height: 0, width: 0 };
-    const get = make(initialState)
+    const get = set(initialState)
     const before = performance.now();
     for (let i = 0; i < 100; i++) {
       get(s => s.width).replace(
@@ -205,7 +205,7 @@ describe.skip('Perf', () => {
   });
 
   it('should test Oulik array push perf', () => {
-    const get = make(['one', 'two']);
+    const get = set(['one', 'two']);
     const before = performance.now();
     for (let i = 0; i < 100; i++) {
       get().addAfter(['three']);

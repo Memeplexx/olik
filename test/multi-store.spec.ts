@@ -1,4 +1,4 @@
-import { deriveFrom, make } from '../src';
+import { deriveFrom, set } from '../src';
 import { tests } from '../src/tests';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
@@ -7,8 +7,8 @@ describe('Multi-store', () => {
   beforeAll(() => tests.windowObject = windowAugmentedWithReduxDevtoolsImpl);
 
   it('should support multiple stores', () => {
-    const get1 = make(new Array<string>());
-    const get2 = make(0);
+    const get1 = set(new Array<string>());
+    const get2 = set(0);
     get1().replaceAll(['one']);
     get2().replace(2);
     expect(get1().read()).toEqual(['one']);
@@ -16,8 +16,8 @@ describe('Multi-store', () => {
   })
 
   it('should memoise using multiple stores', () => {
-    const get1 = make({ array: new Array<number>(), string: '' });
-    const get2 = make({ number: 0 });
+    const get1 = set({ array: new Array<number>(), string: '' });
+    const get2 = set({ number: 0 });
     const mem = deriveFrom(
       get1(s => s.array),
       get2(s => s.number),

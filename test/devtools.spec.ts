@@ -1,6 +1,5 @@
-import { listenToDevtoolsDispatch } from '../src';
 import { errorMessages } from '../src/consts';
-import { make } from '../src/core';
+import { set } from '../src/core';
 import { tests } from '../src/tests';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
@@ -13,7 +12,7 @@ describe('Devtools', () => {
   beforeEach( () => spyWarn.mockReset());
 
   it('should correctly respond to devtools dispatches where the state is an object', () => {
-    const get = make({ x: 0, y: 0 });
+    const get = set({ x: 0, y: 0 });
     get(s => s.x).replace(3);
     expect(get().read()).toEqual({ x: 3, y: 0 });
     const state = { x: 1, y: 0 };
@@ -22,7 +21,7 @@ describe('Devtools', () => {
   });
 
   it('should correctly respond to devtools dispatches where the state is an array', () => {
-    const get = make(['a', 'b', 'c']);
+    const get = set(['a', 'b', 'c']);
     get().replaceAll(['d', 'e', 'f']);
     expect(get().read()).toEqual(['d', 'e', 'f']);
     const state = ['g', 'h'];
@@ -32,12 +31,12 @@ describe('Devtools', () => {
   });
 
   it('should handle a COMMIT without throwing an error', () => {
-    make({ hello: '' });
+    set({ hello: '' });
     tests.windowObject?.__REDUX_DEVTOOLS_EXTENSION__._mockInvokeSubscription({ type: 'DISPATCH', payload: { type: 'COMMIT' }, source: '@devtools-extension' });
   });
 
   it('should handle a RESET correctly', () => {
-    const get = make({ hello: '' });
+    const get = set({ hello: '' });
     get(s => s.hello).replace('world');
     expect(get(s => s.hello).read()).toEqual('world');
     tests.windowObject?.__REDUX_DEVTOOLS_EXTENSION__._mockInvokeSubscription({ type: 'DISPATCH', payload: { type: 'RESET' }, source: '@devtools-extension' });
@@ -45,7 +44,7 @@ describe('Devtools', () => {
   });
 
   it('should handle a ROLLBACK correctly', () => {
-    const get = make({ num: 0 });
+    const get = set({ num: 0 });
     get(s => s.num).replace(1);
     expect(get(s => s.num).read()).toEqual(1);
     get(s => s.num).replace(2);
@@ -55,35 +54,35 @@ describe('Devtools', () => {
   });
 
   it('should throw an error should a devtools dispatch contain invalid JSON', () => {
-    make({ hello: 0 });
+    set({ hello: 0 });
     expect(() => tests.windowObject?.__REDUX_DEVTOOLS_EXTENSION__
       ._mockInvokeSubscription({ type: 'ACTION', source: '@devtools-extension', payload: "{'type': 'hello.replace', 'payload': 2}" }))
       .toThrow(errorMessages.DEVTOOL_DISPATCHED_INVALID_JSON);
   });
 
   it('should throw an error should a devtools dispatch not contain parenthesis', () => {
-    make({ hello: 0 });
+    set({ hello: 0 });
     expect(() => tests.windowObject?.__REDUX_DEVTOOLS_EXTENSION__
       ._mockInvokeSubscription({ type: 'ACTION', source: '@devtools-extension', payload: '{"type": "hello.replace", "payload": 2}' }))
       .toThrow(errorMessages.DEVTOOL_DISPATCHED_WITH_NO_ACTION('hello.replace'));
   });
 
   it('should throw an error should a devtools dispatch not contain parenthesis', () => {
-    make({ hello: 0 });
+    set({ hello: 0 });
     expect(() => tests.windowObject?.__REDUX_DEVTOOLS_EXTENSION__
       ._mockInvokeSubscription({ type: 'ACTION', source: '@devtools-extension', payload: '{"type": "hello.replace", "payload": 2}' }))
       .toThrow(errorMessages.DEVTOOL_DISPATCHED_WITH_NO_ACTION('hello.replace'));
   });
 
   it('should correctly devtools dispatch made by user', () => {
-    const get = make({ hello: 0 });
+    const get = set({ hello: 0 });
     tests.windowObject?.__REDUX_DEVTOOLS_EXTENSION__
       ._mockInvokeSubscription({ type: 'ACTION', source: '@devtools-extension', payload: '{"type": "hello.replace()", "payload": 2}' });
     expect(get(s => s.hello).read()).toEqual(2);
   })
 
   it('should throttle tightly packed updates', done => {
-    const get = make({ test: 0 });
+    const get = set({ test: 0 });
     const payload: number[] = [];
     for (let i = 0; i < 100; i++) {
       get(s => s.test).replace(i);
@@ -100,7 +99,7 @@ describe('Devtools', () => {
 
   it('should log an error if no devtools extension could be found', () => {
     tests.windowObject = null;
-    make(new Array<string>());
+    set(new Array<string>());
     expect( spyWarn ).toHaveBeenCalledWith(errorMessages.DEVTOOL_CANNOT_FIND_EXTENSION); 
   })
 
