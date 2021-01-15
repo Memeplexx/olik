@@ -54,25 +54,138 @@ export type DeepWritable<E> =
 
 export type FunctionReturning<C> = (currentValue: DeepReadonly<C>) => C;
 
-export type PredicateSpec = { hello: '' };
+export type ArrayAction<X extends Array<any>, T extends Trackability> = X[0] extends object ? ArrayOfObjectsAction<X, T> : ArrayOfElementsAction<X, T>;
 
-export type Predicate<T> = {
-  $eq: (arg: T) => PredicateSpec,
-  $ne: (arg: T) => PredicateSpec,
-  $in: (arg: T[]) => PredicateSpec,
-  $ni: (arg: T[]) => PredicateSpec,
+export type ArrayFnAction<X extends Array<any>, T extends Trackability> = X[0] extends object ? ArrayOfObjectsFnAction<X, T> : ArrayOfElementsFnAction<X, T>;
+
+export type Predicate<X extends Array<any>, E, T extends Trackability> = {
+  /**
+   * Checks whether the previously selected property **equals** the supplied value
+   * @example
+   * get(s => s.todos)
+   *   .updateWhere(e => e.id).eq(1)
+   *   .patch({ done: true })
+   */
+  eq: (value: E) => ArrayAction<X, T>,
+  /**
+   * Checks whether the previously selected property does **not equal** the supplied value
+   * @example
+   * get(s => s.todos)
+   *   .updateWhere(e => e.id).ne(1)
+   *   .patch({ done: true })
+   */
+  ne: (value: E) => ArrayAction<X, T>,
+  /**
+   * Checks whether the previously selected property **is in** the supplied array
+   * @example
+   * get(s => s.todos)
+   *   .updateWhere(e => e.id).in([1, 2])
+   *   .patch({ done: true })
+   */
+  in: (value: E[]) => ArrayAction<X, T>,
+  /**
+   * Checks whether the previously selected property **is not in** the supplied array
+   * @example
+   * get(s => s.todos)
+   *   .updateWhere(e => e.id).ni([1, 2])
+   *   .patch({ done: true })
+   */
+  ni: (value: E[]) => ArrayAction<X, T>,
 }
 
-export type RecursivePredicateObject<T> = {
-  readonly [P in keyof T]: RecursivePredicate<T[P]>;
-} & Predicate<T>;
+export type ArrayOfElementsAction<X extends Array<any>, T extends Trackability> = {
+  /**
+   * Replaces any elements that were found in the `updateWhere()` clause
+   * @example
+   * get(s => s.todos)
+   *   .updateWhere(e => e.id).eq(1)
+   *   .replace({ id: 1, text: 'bake cookies' })
+   */
+  replace: (replacement: DeepReadonly<X[0]>, tag: Tag<T>) => void;
+  /**
+   * Substitutes or appends an element depending on whether or not it could be found in the `updateWhere()` clause.  
+   * Note that if more than one element is found in the `updateWhere()` clause, an error will be thrown.  
+   * @example
+   * get(s => s.todos)
+   *   .updateWhere(e => e.id).eq(1)
+   *   .upsert({ id: 1, text: 'bake cookies' })
+   */
+  upsert: (replacement: Partial<DeepReadonly<X[0]>>, tag: Tag<T>) => void;
+  /**
+   * Removes any elements that were found in the `updateWhere()` clause
+   * @example
+   * get(s => s.todos)
+   *   .updateWhere(e => e.id).eq(1)
+   *   .remove()
+   */
+  remove: (tag: Tag<T>) => void;
+  /**
+   * Allows you to append more criteria with which to filter your array
+   * @example
+   * get(s => s.todos)
+   *   .updateWhere(e => e.id).eq(1).and(e => e.done).eq(false)
+   *   .patch({ done: true })
+   */
+  and: <P>(prop: (element: DeepReadonly<X[0]>) => P) => Predicate<X, P, T>,
+  /**
+   * Allows you to append more criteria with which to filter your array
+   * @example
+   * get(s => s.todos)
+   *   .updateWhere(e => e.id).eq(1).or(e => e.done).eq(false)
+   *   .patch({ done: true })
+   */
+  or: <P>(prop: (element: DeepReadonly<X[0]>) => P) => Predicate<X, P, T>,
+}
 
-export type RecursivePredicate<T> =
-  T extends any[] ? T :
-  T extends object ? RecursivePredicateObject<T> :
-  T & Predicate<T>;
+export type ArrayOfObjectsAction<X extends Array<any>, T extends Trackability> = {
+  /**
+   * Partially updates array elements allowing you to omit those properties which should not change
+   * @example
+   * get(s => s.todos)
+   *   .updateWhere(e => e.id).eq(1)
+   *   .patch({ done: true })
+   */
+  patch: (replacement: Partial<X[0]>, tag: Tag<T>) => void;
+} & ArrayOfElementsAction<X, T>;
 
-export type FilterFunction<T> = (arrayElement: RecursivePredicate<T>) => PredicateSpec | boolean;
+export type ArrayOfElementsFnAction<X extends Array<any>, T extends Trackability> = {
+  /**
+   * Replaces any elements that were found in the `updateWhere()` clause
+   * @example
+   * get(s => s.todos)
+   *   .updateWhere(e => e.id === 1)
+   *   .replace({ id: 1, text: 'bake cookies' })
+   */
+  replace: (replacement: X[0], tag: Tag<T>) => void;
+  /**
+   * Substitutes or appends an element depending on whether or not it could be found in the `updateWhere()` clause.  
+   * Note that if more than one element is found in the `updateWhere()` clause, an error will be thrown.  
+   * @example
+   * get(s => s.todos)
+   *   .updateWhere(e => e.id === 1)
+   *   .upsert({ id: 1, text: 'bake cookies' })
+   */
+  upsert: (patch: Partial<X[0]>, tag: Tag<T>) => void;
+  /**
+   * Removes any elements that were found in the `updateWhere()` clause
+   * @example
+   * get(s => s.todos)
+   *   .updateWhere(e => e.id === 1)
+   *   .remove()
+   */
+  remove: (tag: Tag<T>) => void;
+}
+
+export type ArrayOfObjectsFnAction<X extends Array<any>, T extends Trackability> = {
+  /**
+   * Partially updates array elements allowing you to omit those properties which should not change
+   * @example
+   * get(s => s.todos)
+   *   .updateWhere(e => e.id === 1)
+   *   .patch({ done: true })
+   */
+  patch: (replacement: Partial<X[0]>, tag: Tag<T>) => void;
+} & ArrayOfElementsFnAction<X, T>;
 
 /**
  * An object which is capable of storing and updating state which is in the shape of an array of primitives
@@ -85,7 +198,7 @@ export type StoreForAnArray<C extends Array<any>, T extends Trackability> = {
    * get(s => s.todos).addAfter(newTodos);
    * ```
    */
-  addAfter: <R extends (C[0] | C)>(payload: R, tag: Tag<T>) => void,
+  addAfter: <R extends (C[0] | C) >(payload: R, tag: Tag<T>) => void,
   /**
    * Prepends  any number of elements onto the beginning of the array
    * @example
@@ -93,7 +206,7 @@ export type StoreForAnArray<C extends Array<any>, T extends Trackability> = {
    * get(s => s.todos).addBefore(newTodos);
    * ```
    */
-  addBefore: <R extends (C[0] | C)>(payload: R, tag: Tag<T>) => void,
+  addBefore: <R extends (C[0] | C) >(payload: R, tag: Tag<T>) => void,
   /**
    * Removes all elements from the array
    * @example
@@ -119,71 +232,52 @@ export type StoreForAnArray<C extends Array<any>, T extends Trackability> = {
    */
   removeLast: (tag: Tag<T>) => void,
   /**
-   * Delete elements which match a specific condition
-   * @example
-   * ```
-   * get(s => s.todos).removeWhere(t => t.status === 'done')
-   * ```
-   */
-  removeWhere: (where: (arrayElement: C[0]) => boolean, tag: Tag<T>) => void,
-  /**
    * Substitutes all elements with a new array of elements
    * @example
    * ```
    * get(s => s.todos).replaceAll(newTodos);
    * ```
    */
-  replaceAll: <C>(replacement: C, tag: Tag<T>) => void,
-  /**
-   * Substitute elements which match a specific condition
-   * @example
-   * ```
-   * get(s => s.todos)
-   *   .replaceWhere(t => t.id === 5)
-   *   .with({ id: 5, text: 'bake cookies' });
-   * ```
-   */
-  // replaceWhere: (where: (arrayElement: C[0]) => boolean) => { with: (element: C[0], tag: Tag<T>) => void },
-  replaceWhere: (where: FilterFunction<C[0]>) => { with: (element: C[0], tag: Tag<T>) => void },
-  /**
-   * Substitutes or appends an element depending on whether or not it can be found.
-   * Note that if more than one element is found which matches the criteria specified in the 'where' clause, an error will be thrown
-   * @example
-   * ```
-   * get(s => s.todos)
-   *   .upsertWhere(t => t.id === 5)
-   *   .with({ id: 5, text: 'bake cookies' });
-   * ```
-   */
-  upsertWhere: (where: (arrayElement: C[0]) => boolean) => { with: (element: C[0], tag: Tag<T>) => void },
+  replaceAll: (replacement: C, tag: Tag<T>) => void,
   /**
    * Merges the supplied array into the existing array.  
    * Any supplied elements will either replace their corresponding element in the store (if a match could be found) or else they will be appended to the store array.  
    * @example
    * ```
    * get(s => s.todos)
-   *   .mergeWhere((currEl, newEl) => currEl.id === newEl.id)
+   *   .mergeWhere(e => e.id)
    *   .with(newTodosArray);
    * ```
    */
-  mergeMatching: (where: (existingArrayElement: C[0]) => any) => { with: (elements: C, tag: Tag<T>) => void },
-}
-
-/**
- * An object which is capable of storing and updating state which is in the shape of an array
- */
-export type StoreForAnArrayOfObjects<C extends Array<any>, T extends Trackability> = {
+  merge: (matchingProp: (element: C[0]) => any) => { with: (elements: C, tag: Tag<T>) => void },
   /**
-   * Partially updates zero or more elements which match a specific condition
+   * Specify a where clause in order to filter elements to be updated.
+   * Note that it is advisable to choose this over the `updateWhereFn` function because this will allow the library to describe your actions in more detail
    * @example
    * ```
    * get(s => s.todos)
-   *   .patchWhere(t => t.status === 'done')
-   *   .with({ status: 'todo' });
+   *   .updateWhere(t => t.id).eq(1)
+   *   .patch({ done: true })
    * ```
    */
-  patchWhere: (where: (arrayElement: C[0]) => boolean) => { with: <R extends Partial<C[0]>>(element: R, tag: Tag<T>) => void },
-} & StoreForAnArray<C, T>;
+  updateWhere: PredicateFunction<C, T>,
+  /**
+   * Specify a where clause in order to filter elements to be updated.
+   * Note that it is advisable to choose the `updateWhere` function over this one because that function will allow the library to describe your actions in more detail.
+   * Only use `updateWhereFn()` when your where clause is very complicated.
+   * @example
+   * ```
+   * get(s => s.todos)
+   *   .updateWhere(t => t.id).eq(1)
+   *   .patch({ done: true })
+   * ```
+   */
+  updateWhereFn: FilterFunction<C, T>,
+}
+
+export type PredicateFunction<C extends Array<any>, T extends Trackability> = <X = C[0]>(getProp?: (element: DeepReadonly<C[0]>) => X) => Predicate<C, X, T>
+
+export type FilterFunction<C extends Array<any>, T extends Trackability> = (fn: (element: C[0]) => boolean) => ArrayFnAction<C, T>;
 
 /**
  * An object which is capable of storing and updating state which is in the shape of a primitive
@@ -255,7 +349,6 @@ export type StoreWhichMayContainNestedStores<S, C, T extends Trackability> = Sto
  * An object which is capable of managing states of various shapes
  */
 export type Store<C, T extends Trackability> = ([C] extends undefined ? any :
-  [C] extends Array<object[]> ? StoreForAnArrayOfObjects<[C][0], T> :
   [C] extends Array<any[]> ? StoreForAnArray<[C][0], T> :
   [C] extends [object] ? StoreForAnObject<C, T> : StoreForAnObjectOrPrimitive<C, T>)
   & StoreWhichIsResettable<C, T>;

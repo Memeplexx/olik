@@ -8,9 +8,10 @@
 
 ### *Declarative* state-management. *Free* of innacurate *actions* & convoluted reducers. *All* in-line.
 
-#### 🖐️ **WHY CHOOSE OULIK?**
+#### 🎨 **WHY CHOOSE OULIK?**
 Oulik is designed to make your state management as transparent and semantically consistent as possible.  
-Oulik currently supports ***[![](./src/assets/javascript.png)&nbsp;Vanilla-JS](https://memeplexx.github.io/oulik/docs/vanilla-js)***, ***[![](./src/assets/react.png)&nbsp;React](https://memeplexx.github.io/oulik/docs/read)***, and ***[![](./src/assets/angular.png)&nbsp;Angular](https://memeplexx.github.io/oulik/docs/angular)***.  
+It's fluent API is 100% typesafe, and it uses that API to auto-generate your actions and perform immutable updates.  
+This library can be used with ***[![](./src/assets/javascript.png)&nbsp;Vanilla-JS](https://memeplexx.github.io/oulik/docs/vanilla-js)***, and has minimal bindings for ***[![](./src/assets/react.png)&nbsp;React](https://memeplexx.github.io/oulik/docs/read)***, and ***[![](./src/assets/angular.png)&nbsp;Angular](https://memeplexx.github.io/oulik/docs/angular)***.  
 
 #### 🌈 **SET UP**
 ```ts
@@ -30,9 +31,9 @@ get(s => s.username)                     // type: 'username.replace()'
 get(s => s.favorite.foods)               // type: 'favorite.foods.addAfter()'
   .addAfter(['Indian', 'Sushi']);        // payload: ['Indian', 'Sushi']
 
-get(s => s.favorite.hobbies)             // type: 'favorite.hobbies.replaceWhere()'
-  .replaceWhere(s => s.id.$eq(3))        // payload: { where: 'id === 3',
-  .with({ id: 4, name: 'coding' });      //   with: { id: 4, name: 'coding' } }
+get(s => s.favorite.hobbies)             // type: 'favorite.hobbies.patchWhere()'
+  .updateWhere(s => s.id).eq(3)          // payload: { whereClause: 'id === 3',
+  .patch({ name: 'coding' });            // patch: { name: 'coding' } }
 ```
 #### 🔍 **READ STATE**
 ```ts

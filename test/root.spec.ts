@@ -55,11 +55,11 @@ describe('Root', () => {
     expect(tests.currentMutableState).toEqual(get().read());
   })
 
-  it('should replaceWhere root array', () => {
-    const get = set(['one', 'two', 'three']);
-    get().replaceWhere(e => e === 'two').with('twoo');
-    expect(get().read()).toEqual(['one', 'twoo', 'three']);
-  })
+  // it('should replaceWhere root array', () => {
+  //   const get = set(['one', 'two', 'three']);
+  //   get().replaceWhere(e => e === 'two').with('twoo');
+  //   expect(get().read()).toEqual(['one', 'twoo', 'three']);
+  // })
 
   it('should addAfter root array', () => {
     const get = set(['one']);

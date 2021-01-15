@@ -1,5 +1,6 @@
 import { errorMessages } from './consts';
 import { FunctionReturning } from './shape';
+import { tests } from './tests';
 
 export function deepFreeze<T extends Object>(o: T): T {
   Object.freeze(o);
@@ -76,11 +77,15 @@ export function createPathReader<S extends Object>(state: S) {
     const mutableStateCopy = deepCopy(state);
     const pathSegments = new Array<string>();
     const initialize = (state: S): S => {
+
       if (typeof (state) !== 'object') { // may happen if we have a top-level primitive
         return null as any as S;
       }
       return new Proxy(state, {
         get: function (target, prop: any) {
+          if (!(target as any)[prop]) { // to support queries on empty array elements
+            (target as any)[prop] = {};
+          }
           const val = (target as any)[prop];
           if (val !== null && typeof (val) === 'object') {
             pathSegments.push(prop);
@@ -115,7 +120,7 @@ export function createPathReader<S extends Object>(state: S) {
 }
 
 export function copyPayload<C>(payload: C | FunctionReturning<C>) {
-  const isFunction = typeof(payload) === 'function';
+  const isFunction = typeof (payload) === 'function';
   return {
     payloadFrozen: (isFunction ? null : deepFreeze(deepCopy(payload))) as C,
     payloadCopied: (isFunction ? null : deepCopy(payload)) as C,
