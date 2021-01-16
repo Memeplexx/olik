@@ -7,6 +7,7 @@ import {
   OptionsForMakingAStore,
   OptionsForMakingAStoreEnforcingTags,
   OptionsForReduxDevtools,
+  Predicate,
   Selector,
   SelectorFromANestedStore,
   SelectorFromAStore,
@@ -300,15 +301,7 @@ function makeInternal<S, T extends Trackability>(state: S, options: { supportsTa
             updateState<C, T, X>({
               selector,
               replacer: old => old.filter(o => !predicate(o)),
-              mutator: old => {
-                const toRemove = old.filter(predicate);
-                for (var i = 0; i < old.length; i++) {
-                  if (toRemove.includes(old[i])) {
-                    old.splice(i, 1);
-                    i--;
-                  }
-                }
-              },
+              mutator: old => { const toRemove = old.filter(predicate); for (var i = 0; i < old.length; i++) { if (toRemove.includes(old[i])) { old.splice(i, 1); i--; } } },
               actionName: 'removeWhere',
               payload: { toRemove: (selector(currentState) as X).filter(predicate), whereClause: predicate.toString() },
               tag,
@@ -457,7 +450,7 @@ function makeInternal<S, T extends Trackability>(state: S, options: { supportsTa
               updateState<C, T, X>({
                 selector,
                 replacer: old => old.filter((o, i) => !elementIndices.includes(i)),
-                mutator: old => { for (var i = 0; i < old.length; i++) { if (elementIndices.includes(i)) { old.splice(i, 1); i--; } } },
+                mutator: old => { const toRemove = old.filter(bundleCriteria); for (var i = 0; i < old.length; i++) { if (toRemove.includes(old[i])) { old.splice(i, 1); i--; } } },
                 actionName: 'removeWhere',
                 payload: {
                   whereClause: whereClauseStrings.join(' '),
@@ -468,27 +461,13 @@ function makeInternal<S, T extends Trackability>(state: S, options: { supportsTa
             }
           } as ArrayOfObjectsAction<X, T>);
           return {
-            eq: val => {
-              const fn = (e: X[0]) => e === val;
-              const whereClauseString = `${segs.join('.')} === ${val}`;
-              return constructActions(whereClauseString, fn);
-            },
-            ne: val => {
-              const fn = (e: X[0]) => e !== val;
-              const whereClauseString = `${segs.join('.')} !== ${val}`;
-              return constructActions(whereClauseString, fn);
-            },
-            in: val => {
-              const fn = (e: X[0]) => val.includes(e);
-              const whereClauseString = `[${val.join(', ')}].includes(${segs.join('.')})`;
-              return constructActions(whereClauseString, fn);
-            },
-            ni: val => {
-              const fn = (e: X[0]) => !val.includes(e);
-              const whereClauseString = `![${val.join(', ')}].includes(${segs.join('.')})`;
-              return constructActions(whereClauseString, fn);
-            },
-          }
+            eq: val => constructActions(`${segs.join('.')} === ${JSON.stringify(val)}`, (e: X[0]) => e === val),
+            ne: val => constructActions(`${segs.join('.')} !== ${JSON.stringify(val)}`, (e: X[0]) => e !== val),
+            in: val => constructActions(`[${val.join(', ')}].includes(${segs.join('.')})`, (e: X[0]) => val.includes(e)),
+            ni: val => constructActions(`![${val.join(', ')}].includes(${segs.join('.')})`, (e: X[0]) => !val.includes(e)),
+            gt: val => constructActions(`${segs.join('.')} > ${val}`, (e: X[0]) => e > val),
+            lt: val => constructActions(`${segs.join('.')} < ${val}`, (e: X[0]) => e < val),
+          } as Predicate<X, any, T>
         }) as StoreForAnArray<X, T>['updateWhere'];
         return recurseWhere;
       })(),

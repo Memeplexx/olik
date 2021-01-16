@@ -155,4 +155,25 @@ describe('Memoize', () => {
     expect(originalMemoCalcCount).toEqual(1);
   })
 
+  // it('should deriveFrom() including a filter()', () => {
+  //   const get = set({
+  //     array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
+  //   });
+  //   const mem = deriveFrom(
+  //     get(s => s.array/*.filter(e => e.id === 2)*/).updateWhere(e => e.id).eq(3)
+  //   ).usingExpensiveCalc(thing => {
+  //     console.log('!!!');
+  //   });
+  //   mem.read();
+  //   // get(s => s.array)
+  //   //   .updateWhere(e => e.id).eq(2)
+  //   //   .patch({ id: 22 });
+
+  //   mem.read();
+
+  //   get(s => s.array)
+  //     .filter(e => e.id).eq(3)
+  //     .onChange();
+  // })
+
 });

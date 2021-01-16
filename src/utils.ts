@@ -1,6 +1,5 @@
 import { errorMessages } from './consts';
 import { FunctionReturning } from './shape';
-import { tests } from './tests';
 
 export function deepFreeze<T extends Object>(o: T): T {
   Object.freeze(o);
@@ -77,7 +76,6 @@ export function createPathReader<S extends Object>(state: S) {
     const mutableStateCopy = deepCopy(state);
     const pathSegments = new Array<string>();
     const initialize = (state: S): S => {
-
       if (typeof (state) !== 'object') { // may happen if we have a top-level primitive
         return null as any as S;
       }

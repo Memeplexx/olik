@@ -58,7 +58,7 @@ export type ArrayAction<X extends Array<any>, T extends Trackability> = X[0] ext
 
 export type ArrayFnAction<X extends Array<any>, T extends Trackability> = X[0] extends object ? ArrayOfObjectsFnAction<X, T> : ArrayOfElementsFnAction<X, T>;
 
-export type Predicate<X extends Array<any>, E, T extends Trackability> = {
+export type BasicPredicate<X extends Array<any>, E, T extends Trackability> = {
   /**
    * Checks whether the previously selected property **equals** the supplied value
    * @example
@@ -93,6 +93,29 @@ export type Predicate<X extends Array<any>, E, T extends Trackability> = {
   ni: (value: E[]) => ArrayAction<X, T>,
 }
 
+export type NumberPredicate<X extends Array<any>, E, T extends Trackability> = {
+  /**
+   * Checks whether the previously selected number property **is greater than** the supplied number
+   * @example
+   * get(s => s.todos)
+   *   .updateWhere(e => e.id).gt(2)
+   *   .patch({ done: true })
+   */
+  gt: (value: number) => ArrayAction<X, T>,
+  /**
+   * Checks whether the previously selected number property **is less than** the supplied number
+   * @example
+   * get(s => s.todos)
+   *   .updateWhere(e => e.id).lt(2)
+   *   .patch({ done: true })
+   */
+  lt: (value: number) => ArrayAction<X, T>,
+} & BasicPredicate<X, E, T>;
+
+export type Predicate<X extends Array<any>, E, T extends Trackability> =
+  E extends number ? NumberPredicate<X, E, T>
+  : BasicPredicate<X, E, T>;
+
 export type ArrayOfElementsAction<X extends Array<any>, T extends Trackability> = {
   /**
    * Replaces any elements that were found in the `updateWhere()` clause
@@ -126,7 +149,7 @@ export type ArrayOfElementsAction<X extends Array<any>, T extends Trackability> 
    *   .updateWhere(e => e.id).eq(1).and(e => e.done).eq(false)
    *   .patch({ done: true })
    */
-  and: <P>(prop: (element: DeepReadonly<X[0]>) => P) => Predicate<X, P, T>,
+  and: <P>(getProp: (element: DeepReadonly<X[0]>) => P) => Predicate<X, P, T>,
   /**
    * Allows you to append more criteria with which to filter your array
    * @example
@@ -134,7 +157,9 @@ export type ArrayOfElementsAction<X extends Array<any>, T extends Trackability> 
    *   .updateWhere(e => e.id).eq(1).or(e => e.done).eq(false)
    *   .patch({ done: true })
    */
-  or: <P>(prop: (element: DeepReadonly<X[0]>) => P) => Predicate<X, P, T>,
+  or: <P>(getProp: (element: DeepReadonly<X[0]>) => P) => Predicate<X, P, T>,
+
+  // onChange: (listener: (arg: X[0]) => void) => Unsubscribable;
 }
 
 export type ArrayOfObjectsAction<X extends Array<any>, T extends Trackability> = {

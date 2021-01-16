@@ -258,7 +258,7 @@ describe('Array', () => {
     get(s => s.array)
       .updateWhere(e => e.id).ni([2, 3])
       .replace({ id: 4, value: 'four' });
-    expect(get(s => s.array).read()).toEqual([{ id: 4, value: 'four'}, { id: 2, value: 'two' }, { id: 3, value: 'three' }]);
+    expect(get(s => s.array).read()).toEqual([{ id: 4, value: 'four' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }]);
     expect(tests.currentAction.payload).toEqual({ whereClause: '![2, 3].includes(id)', replacement: { id: 4, value: 'four' } });
   });
 
@@ -320,5 +320,30 @@ describe('Array', () => {
     expect(tests.currentAction.payload).toEqual({ whereClause: 'id === 3', toRemove: [{ id: 3, value: 'three' }] });
     expect(tests.currentMutableState).toEqual(get().read());
   });
+
+  it('should be able to removeWhere() using a lt predicate', () => {
+    const get = set({
+      array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
+    });
+    get(s => s.array)
+      .updateWhere(e => e.id).lt(3)
+      .remove();
+    expect(get(s => s.array).read()).toEqual([{ id: 3, value: 'three' }]);
+    expect(tests.currentAction.payload).toEqual({ whereClause: 'id < 3', toRemove: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }] });
+    expect(tests.currentMutableState).toEqual(get().read());
+
+
+    // get(s => s.array)
+    //   .updateWhere(e => e.id).eq(3).and(e => e.value).eq('dd')
+    //   .patch({ value: 'dd' });
+    // console.log(tests.currentAction.payload)
+    // type: 'array.patchWhere()'
+    // payload: { where: 'id === 3 && value === 'dd', patch: { value: 'dd' } }
+
+    // get(s => s.array)
+    //   .find(e => e.id).eq(3)
+    //   .filter(e => e.some.deep.prop).eq(3)
+    //   .patch({ val: 'dd' })
+  })
 
 });
