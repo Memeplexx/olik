@@ -2,8 +2,10 @@ import { devtoolsDebounce, errorMessages } from './consts';
 import { integrateStoreWithReduxDevtools } from './devtools';
 import {
   ArrayOfObjectsAction,
+  BasicPredicate,
   DeepReadonly,
   FunctionReturning,
+  NumberPredicate,
   OptionsForMakingAStore,
   OptionsForMakingAStoreEnforcingTags,
   OptionsForReduxDevtools,
@@ -21,6 +23,7 @@ import {
   StoreWhichIsNestedInternal,
   StoreWhichIsResettable,
   StoreWhichMayContainNestedStores,
+  StringPredicate,
   Tag,
   Trackability,
 } from './shape';
@@ -154,7 +157,7 @@ function makeInternal<S, T extends Trackability>(state: S, options: { supportsTa
             Object.assign(old, newValue);
           }
         },
-        actionName: name,
+        actionName: `${name}()`,
         pathSegments: [],
         payload: payloadFrozen,
         getPayloadFn,
@@ -210,118 +213,81 @@ function makeInternal<S, T extends Trackability>(state: S, options: { supportsTa
           selector,
           replacer: old => ({ ...old, ...payloadFrozen }),
           mutator: old => Object.assign(old, payloadCopied),
-          actionName: 'patch',
+          actionName: 'patch()',
           payload: payloadFrozen,
           tag,
         });
         return payloadCopied;
       }) as StoreForAnObject<C, T>['patch'],
-      addAfter: ((payload, tag) => {
+      insert: ((payload, tag) => {
         const { payloadFrozen, payloadCopied } = copyPayload(payload);
         updateState({
           selector,
           replacer: old => [...old, ...(deepCopy(Array.isArray(payloadFrozen) ? payloadFrozen : [payloadFrozen]))],
           mutator: old => old.push(...(Array.isArray(payloadCopied) ? payloadCopied : [payloadCopied])),
-          actionName: 'addAfter',
+          actionName: 'insertAfter()',
           payload: payloadFrozen,
           tag,
         });
         return payloadCopied;
-      }) as StoreForAnArray<X, T>['addAfter'],
-      addBefore: ((payload, tag) => {
-        const { payloadFrozen, payloadCopied } = copyPayload(payload);
-        updateState({
-          selector,
-          replacer: old => [...(Array.isArray(payloadFrozen) ? payloadFrozen : [payloadFrozen]), ...old],
-          mutator: old => old.unshift(...(Array.isArray(payloadCopied) ? payloadCopied : [payloadCopied])),
-          actionName: 'addBefore',
-          payload: payloadFrozen,
-          tag,
-        });
-        return payloadCopied;
-      }) as StoreForAnArray<X, T>['addBefore'],
-      removeFirst: (tag => {
-        const selection = selector(currentState) as X;
-        if (!selection.length) { throw new Error(errorMessages.NO_ARRAY_ELEMENTS_TO_REMOVE); }
-        updateState<C, T, X>({
-          selector,
-          replacer: old => old.slice(1, old.length),
-          mutator: old => old.shift(),
-          actionName: 'removeFirst',
-          pathSegments: pathReader.readSelector(selector),
-          payload: (selector(currentState) as X).slice(1),
-          tag,
-        });
-      }) as StoreForAnArray<X, T>['removeFirst'],
-      removeLast: (tag => {
-        const selection = selector(currentState) as X;
-        if (!selection.length) { throw new Error(errorMessages.NO_ARRAY_ELEMENTS_TO_REMOVE); }
-        updateState<C, T, X>({
-          selector,
-          replacer: old => old.slice(0, old.length - 1),
-          mutator: old => old.pop(),
-          actionName: 'removeLast',
-          payload: selection.slice(0, selection.length - 1),
-          tag
-        });
-      }) as StoreForAnArray<X, T>['removeLast'],
+      }) as StoreForAnArray<X, T>['insert'],
       removeAll: (tag => {
         updateState<C, T, X>({
           selector,
           replacer: () => [],
           mutator: old => old.length = 0,
-          actionName: 'removeAll',
+          actionName: 'removeAll()',
           payload: null,
           tag,
         });
       }) as StoreForAnArray<X, T>['removeAll'],
-      merge: (criteria => ({
-        with: (payload, tag) => {
+      merge: (payload => ({
+        match: (getProp, tag) => {
+          const segs = !getProp ? [] : createPathReader((selector(currentState) as X)[0] || {}).readSelector(getProp);
           const { payloadFrozen, payloadCopied } = copyPayload(payload);
+          const payloadFrozenArray: X[0][] = Array.isArray(payloadFrozen) ? payloadFrozen : [payloadFrozen];
+          const payloadCopiedArray: X[0][] = Array.isArray(payloadCopied) ? payloadCopied : [payloadCopied];
+          let replacementCount = 0;
+          let insertionCount = 0;
           updateState({
             selector,
-            replacer: old => [
-              ...old.map(oe => payloadFrozen.find(ne => criteria(oe) === criteria(ne)) || oe),
-              ...payloadFrozen.filter(ne => !old.some(oe => criteria(oe) === criteria(ne)))
-            ],
-            mutator: old => {
-              old.forEach((oe, oi) => { const found = payloadCopied.find(ne => criteria(oe) === criteria(ne)); if (found) { old[oi] = deepCopy(found); } });
-              payloadCopied.filter(ne => !old.some(oe => criteria(oe) === criteria(ne))).forEach(ne => old.push(ne));
+            replacer: old => {
+              const replacements = old.map(oe => {
+                const found = payloadFrozenArray.find(ne => getProp(oe) === getProp(ne));
+                if (found !== null && found !== undefined) { replacementCount++; }
+                return found || oe;
+              });
+              const insertions = payloadFrozenArray.filter(ne => !old.some(oe => getProp(oe) === getProp(ne)));
+              insertionCount = insertions.length;
+              return [
+                ...replacements,
+                ...insertions
+              ];
             },
-            actionName: 'merge',
-            payload: payloadFrozen,
+            mutator: old => {
+              old.forEach((oe, oi) => { const found = payloadCopiedArray.find(ne => getProp(oe) === getProp(ne)); if (found) { old[oi] = deepCopy(found); } });
+              payloadCopiedArray.filter(ne => !old.some(oe => getProp(oe) === getProp(ne))).forEach(ne => old.push(ne));
+            },
+            actionName: `merge().match(${segs.join('.')})`,
+            payload: null,
+            getPayloadFn: () => ({
+              argument: payloadFrozen,
+              replacementCount,
+              insertionCount,
+            }),
             tag,
           });
-          return payloadCopied;
         }
       })) as StoreForAnArray<X, T>['merge'],
-      updateWhereFn: (predicate => {
+      whereFn: (predicate => {
         return {
           remove: tag => {
-            updateState<C, T, X>({
+            updateState({
               selector,
               replacer: old => old.filter(o => !predicate(o)),
               mutator: old => { const toRemove = old.filter(predicate); for (var i = 0; i < old.length; i++) { if (toRemove.includes(old[i])) { old.splice(i, 1); i--; } } },
-              actionName: 'removeWhere',
-              payload: { toRemove: (selector(currentState) as X).filter(predicate), whereClause: predicate.toString() },
-              tag,
-            });
-          },
-          upsert: (payload, tag) => {
-            const elementIndices = (selector(currentState) as X).map((e, i) => predicate(e) ? i : null).filter(i => i !== null);
-            if (elementIndices.length > 1) { throw new Error(errorMessages.UPSERT_MORE_THAN_ONE_MATCH); }
-            const indice = elementIndices[0];
-            const { payloadFrozen, payloadCopied } = copyPayload(payload);
-            updateState({
-              selector,
-              replacer: old => elementIndices.length ? old.map((o, i) => i === indice ? payloadFrozen : o) : [...old, payloadFrozen],
-              mutator: old => elementIndices.length ? old[indice as number] = payloadCopied : old.push(payloadCopied),
-              actionName: 'upsertWhere',
-              payload: {
-                whereClause: predicate.toString(),
-                element: payloadFrozen,
-                elementFound: !!elementIndices.length,
-              },
+              actionName: 'removeWhere()',
+              payload: { toRemove: (selector(currentState) as X).filter(predicate), where: predicate.toString() },
               tag,
             });
           },
@@ -332,9 +298,9 @@ function makeInternal<S, T extends Trackability>(state: S, options: { supportsTa
               selector,
               replacer: old => old.map((o, i) => elementIndices.includes(i) ? payloadFrozen : o),
               mutator: old => { old.forEach((o, i) => { if (elementIndices.includes(i)) { old[i] = payloadCopied; } }) },
-              actionName: 'replaceWhere',
+              actionName: 'replaceWhere()',
               payload: {
-                whereClause: predicate.toString(),
+                where: predicate.toString(),
                 replacement: payloadFrozen,
               },
               tag,
@@ -347,17 +313,28 @@ function makeInternal<S, T extends Trackability>(state: S, options: { supportsTa
               selector,
               replacer: old => old.map((o, i) => elementIndices.includes(i) ? { ...o, ...payloadFrozen } : o),
               mutator: old => elementIndices.forEach(i => Object.assign(old[i], payloadCopied)),
-              actionName: 'patchWhere',
-              payload: { patch: payloadFrozen, whereClause: predicate.toString() },
+              actionName: 'patchWhere()',
+              payload: { patch: payloadFrozen, where: predicate.toString() },
               tag,
             });
           },
+          onChange: (performAction => {
+            changeListeners.set(performAction, nextState => (selector(nextState) as X).map(e => predicate(e) ? e : null).filter(e => e !== null));
+            return { unsubscribe: () => changeListeners.delete(performAction) };
+          }),
+          read: () => deepFreeze((selector(currentState) as X).map(e => predicate(e) ? e : null).filter(e => e != null)),
         }
-      }) as StoreForAnArray<X, T>['updateWhereFn'],
-      updateWhere: (() => {
+      }) as StoreForAnArray<X, T>['whereFn'],
+      where: (() => {
         const whereClauseSpecs = new Array<{ filter: (arg: X[0]) => boolean, type: 'and' | 'or' | '' }>();
         const whereClauseStrings = new Array<string>();
         const recurseWhere = (getProp => {
+          const allIllegalChars = ['=', '<,', '>', '&', '|'];
+          const fnToString = (getProp || '').toString();
+          const illegalChars = allIllegalChars.filter(c => fnToString.includes(c));
+          if (illegalChars.length) {
+            throw new Error(errorMessages.ILLEGAL_CHARACTERS_WITHIN_SELECTOR(illegalChars));
+          }
           const segs = !getProp ? [] : createPathReader((selector(currentState) as X)[0] || {}).readSelector(getProp);
           const criteria = (arg: X[0], fn: (arg: X[0]) => boolean) => {
             segs.forEach(seg => arg = arg[seg]);
@@ -404,31 +381,13 @@ function makeInternal<S, T extends Trackability>(state: S, options: { supportsTa
                 selector,
                 replacer: old => old.map((o, i) => elementIndices.includes(i) ? payloadFrozen : o),
                 mutator: old => { old.forEach((o, i) => { if (elementIndices.includes(i)) { old[i] = payloadCopied; } }) },
-                actionName: 'replaceWhere',
+                actionName: 'replaceWhere()',
                 payload: {
-                  whereClause: whereClauseStrings.join(' '),
+                  where: whereClauseStrings.join(' '),
                   replacement: payloadFrozen,
                 },
                 tag,
               })
-            },
-            upsert: (payload, tag) => {
-              const { payloadFrozen, payloadCopied } = copyPayload(payload);
-              const elementIndices = completeWhereClause(whereClauseString, fn);
-              if (elementIndices.length > 1) { throw new Error(errorMessages.UPSERT_MORE_THAN_ONE_MATCH); }
-              const indice = elementIndices[0];
-              updateState({
-                selector,
-                replacer: old => elementIndices.length ? old.map((o, i) => i === indice ? payloadFrozen : o) : [...old, payloadFrozen],
-                mutator: old => elementIndices.length ? old[indice as number] = payloadCopied : old.push(payloadCopied),
-                actionName: 'upsertWhere',
-                payload: {
-                  whereClause: whereClauseStrings.join(' '),
-                  element: payloadFrozen,
-                  elementFound: !!elementIndices.length,
-                },
-                tag,
-              });
             },
             patch: (payload, tag) => {
               const { payloadFrozen, payloadCopied } = copyPayload(payload);
@@ -437,9 +396,9 @@ function makeInternal<S, T extends Trackability>(state: S, options: { supportsTa
                 selector,
                 replacer: old => old.map((o, i) => elementIndices.includes(i) ? { ...o, ...payloadFrozen } : o),
                 mutator: old => elementIndices.forEach(i => Object.assign(old[i], payloadCopied)),
-                actionName: 'patchWhere',
+                actionName: 'patchWhere()',
                 payload: {
-                  whereClause: whereClauseStrings.join(' '),
+                  where: whereClauseStrings.join(' '),
                   patch: payloadFrozen,
                 },
                 tag,
@@ -451,24 +410,40 @@ function makeInternal<S, T extends Trackability>(state: S, options: { supportsTa
                 selector,
                 replacer: old => old.filter((o, i) => !elementIndices.includes(i)),
                 mutator: old => { const toRemove = old.filter(bundleCriteria); for (var i = 0; i < old.length; i++) { if (toRemove.includes(old[i])) { old.splice(i, 1); i--; } } },
-                actionName: 'removeWhere',
+                actionName: 'removeWhere()',
                 payload: {
-                  whereClause: whereClauseStrings.join(' '),
+                  where: whereClauseStrings.join(' '),
                   toRemove: (selector(currentState) as X).filter((e, i) => elementIndices.includes(i)),
                 },
                 tag,
               });
-            }
+            },
+            onChange: performAction => {
+              whereClauseSpecs.push({ filter: o => criteria(o, fn), type: '' });
+              changeListeners.set(performAction, nextState => (selector(nextState) as X).map(e => bundleCriteria(e) ? e : null).filter(e => e !== null));
+              return { unsubscribe: () => changeListeners.delete(performAction) };
+            },
+            read: () => {
+              whereClauseSpecs.push({ filter: o => criteria(o, fn), type: '' });
+              return deepFreeze((selector(currentState) as X).map(e => bundleCriteria(e) ? e : null).filter(e => e != null));
+            },
           } as ArrayOfObjectsAction<X, T>);
           return {
-            eq: val => constructActions(`${segs.join('.')} === ${JSON.stringify(val)}`, (e: X[0]) => e === val),
-            ne: val => constructActions(`${segs.join('.')} !== ${JSON.stringify(val)}`, (e: X[0]) => e !== val),
-            in: val => constructActions(`[${val.join(', ')}].includes(${segs.join('.')})`, (e: X[0]) => val.includes(e)),
-            ni: val => constructActions(`![${val.join(', ')}].includes(${segs.join('.')})`, (e: X[0]) => !val.includes(e)),
-            gt: val => constructActions(`${segs.join('.')} > ${val}`, (e: X[0]) => e > val),
-            lt: val => constructActions(`${segs.join('.')} < ${val}`, (e: X[0]) => e < val),
-          } as Predicate<X, any, T>
-        }) as StoreForAnArray<X, T>['updateWhere'];
+            ...{
+              eq: val => constructActions(`${segs.join('.')} === ${JSON.stringify(val)}`, (e: X[0]) => e === val),
+              ne: val => constructActions(`${segs.join('.')} !== ${JSON.stringify(val)}`, (e: X[0]) => e !== val),
+              in: val => constructActions(`[${val.join(', ')}].includes(${segs.join('.')})`, (e: X[0]) => val.includes(e)),
+              ni: val => constructActions(`![${val.join(', ')}].includes(${segs.join('.')})`, (e: X[0]) => !val.includes(e)),
+            } as BasicPredicate<X, any, T>,
+            ...{
+              gt: val => constructActions(`${segs.join('.')} > ${val}`, (e: X[0]) => e > val),
+              lt: val => constructActions(`${segs.join('.')} < ${val}`, (e: X[0]) => e < val),
+            } as NumberPredicate<X, any, T>,
+            ...{
+              matches: val => constructActions(`${segs.join('.')}.matches(${val})`, (e: X[0]) => e.matches(val)),
+            } as StringPredicate<X, any, T>,
+          };
+        }) as StoreForAnArray<X, T>['where'];
         return recurseWhere;
       })(),
       readInitial: (
@@ -542,7 +517,7 @@ function makeInternal<S, T extends Trackability>(state: S, options: { supportsTa
     payload: any,
     tag: Tag<T>,
     actionNameOverride?: boolean,
-    getPayloadFn?: () => X,
+    getPayloadFn?: () => any,
   }) {
     const previousState = currentState;
     const pathSegments = specs.pathSegments || pathReader.readSelector(specs.selector);
@@ -551,7 +526,7 @@ function makeInternal<S, T extends Trackability>(state: S, options: { supportsTa
     currentState = result;
     notifySubscribers(previousState, result);
     const actionToDispatch = {
-      type: (specs.actionNameOverride ? specs.actionName : (pathSegments.join('.') + (pathSegments.length ? '.' : '') + specs.actionName + '()')) +
+      type: (specs.actionNameOverride ? specs.actionName : (pathSegments.join('.') + (pathSegments.length ? '.' : '') + specs.actionName)) +
         (specs.tag ? ` [${options.tagSanitizer ? options.tagSanitizer(specs.tag as string) : specs.tag}]` : ''),
       payload: (specs.getPayloadFn && (specs.getPayloadFn() !== undefined)) ? specs.getPayloadFn() : specs.payload,
     };
