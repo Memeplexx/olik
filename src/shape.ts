@@ -130,22 +130,6 @@ export type Predicate<X extends Array<any>, E, T extends Trackability> =
 
 export type ArrayOfElementsAction<X extends Array<any>, T extends Trackability> = {
   /**
-   * Replaces any elements that were found in the `filter()` clause
-   * @example
-   * get(s => s.todos)
-   *   .filter(e => e.id).eq(1)
-   *   .replace({ id: 1, text: 'bake cookies' })
-   */
-  replace: (replacement: X[0], tag: Tag<T>) => void;
-  /**
-   * Removes any elements that were found in the `filter()` clause
-   * @example
-   * get(s => s.todos)
-   *   .filter(e => e.id).eq(1)
-   *   .remove()
-   */
-  remove: (tag: Tag<T>) => void;
-  /**
    * Allows you to append more criteria with which to filter your array
    * @example
    * get(s => s.todos)
@@ -161,11 +145,7 @@ export type ArrayOfElementsAction<X extends Array<any>, T extends Trackability> 
    *   .patch({ done: true })
    */
   or: <P>(getProp: (element: DeepReadonly<X[0]>) => P) => Predicate<X, P, T>,
-
-  onChange: (listener: (arg: X[0]) => void) => Unsubscribable;
-
-  read: () => DeepReadonly<X>;
-}
+} & ArrayOfElementsFnAction<X, T>;
 
 export type ArrayOfObjectsAction<X extends Array<any>, T extends Trackability> = {
   /**
@@ -261,7 +241,8 @@ export type StoreForAnArray<C extends Array<any>, T extends Trackability> = {
    *   .patch({ done: true })
    * ```
    */
-  where: PredicateFunction<C, T>,
+  filter: PredicateFunction<C, T>,
+  find: PredicateFunction<C, T>,
   /**
    * Specify a where clause in order to filter elements.
    * Note that it is advisable to choose the `filter` function over this one because that function will allow the library to describe your actions in more detail.
@@ -273,7 +254,8 @@ export type StoreForAnArray<C extends Array<any>, T extends Trackability> = {
    *   .patch({ done: true })
    * ```
    */
-  whereFn: FilterFunction<C, T>,
+  filterCustom: FilterFunction<C, T>,
+  findCustom: FilterFunction<C, T>,
 }
 
 export type PredicateFunction<C extends Array<any>, T extends Trackability> = <X = C[0]>(getProp?: (element: DeepReadonly<C[0]>) => X) => Predicate<C, X, T>

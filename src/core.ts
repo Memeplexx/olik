@@ -279,7 +279,7 @@ function makeInternal<S, T extends Trackability>(state: S, options: { supportsTa
           });
         }
       })) as StoreForAnArray<X, T>['merge'],
-      whereFn: (predicate => {
+      filterCustom: (predicate => {
         return {
           remove: tag => {
             updateState({
@@ -324,8 +324,8 @@ function makeInternal<S, T extends Trackability>(state: S, options: { supportsTa
           }),
           read: () => deepFreeze((selector(currentState) as X).map(e => predicate(e) ? e : null).filter(e => e != null)),
         }
-      }) as StoreForAnArray<X, T>['whereFn'],
-      where: (() => {
+      }) as StoreForAnArray<X, T>['filterCustom'],
+      filter: (() => {
         const whereClauseSpecs = new Array<{ filter: (arg: X[0]) => boolean, type: 'and' | 'or' | '' }>();
         const whereClauseStrings = new Array<string>();
         const recurseWhere = (getProp => {
@@ -443,7 +443,7 @@ function makeInternal<S, T extends Trackability>(state: S, options: { supportsTa
               matches: val => constructActions(`${segs.join('.')}.matches(${val})`, (e: X[0]) => e.matches(val)),
             } as StringPredicate<X, any, T>,
           };
-        }) as StoreForAnArray<X, T>['where'];
+        }) as StoreForAnArray<X, T>['filter'];
         return recurseWhere;
       })(),
       readInitial: (

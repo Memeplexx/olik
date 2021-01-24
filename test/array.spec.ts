@@ -14,7 +14,7 @@ describe('Array', () => {
     };
     const get = set(initialState);
     const payload = { value: 'test' };
-    get(s => s.array).whereFn(e => e.value.startsWith('t')).patch(payload);
+    get(s => s.array).filterCustom(e => e.value.startsWith('t')).patch(payload);
     expect(get(s => s.array).read()).toEqual([{ id: 1, value: 'one' }, { id: 2, value: 'test' }, { id: 3, value: 'test' }]);
     expect(tests.currentAction.type).toEqual('array.patchWhere()');
     expect(tests.currentAction.payload.patch).toEqual(payload);
@@ -27,7 +27,7 @@ describe('Array', () => {
       array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
     };
     const get = set(initialState);
-    get(s => s.array).whereFn(a => a.id === 2).remove();
+    get(s => s.array).filterCustom(a => a.id === 2).remove();
     expect(get(s => s.array).read()).toEqual([{ id: 1, value: 'one' }, { id: 3, value: 'three' }]);
     expect(tests.currentAction.type).toEqual('array.removeWhere()');
     expect(tests.currentAction.payload.toRemove).toEqual([{ id: 2, value: 'two' }]);
@@ -42,7 +42,7 @@ describe('Array', () => {
     };
     const get = set(initialState);
     const payload = { id: 5, value: 'hey' };
-    get(s => s.array).whereFn(a => a.id === 2).replace(payload);
+    get(s => s.array).filterCustom(a => a.id === 2).replace(payload);
     expect(get(s => s.array).read()).toEqual([{ id: 1, value: 'one' }, payload, { id: 3, value: 'three' }]);
     expect(tests.currentAction.type).toEqual('array.replaceWhere()');
     expect(tests.currentAction.payload.replacement).toEqual(payload);
@@ -147,7 +147,7 @@ describe('Array', () => {
       array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
     });
     get(s => s.array)
-      .where(e => e.id).eq(3)
+      .filter(e => e.id).eq(3)
       .replace({ id: 4, value: 'four' });
     expect(get(s => s.array).read()).toEqual([{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 4, value: 'four' }]);
     expect(tests.currentAction.payload).toEqual({ where: 'id === 3', replacement: { id: 4, value: 'four' } });
@@ -158,7 +158,7 @@ describe('Array', () => {
       array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
     });
     get(s => s.array)
-      .where(e => e.id).ne(3)
+      .filter(e => e.id).ne(3)
       .replace({ id: 4, value: 'four' });
     expect(get(s => s.array).read()).toEqual([{ id: 4, value: 'four' }, { id: 4, value: 'four' }, { id: 3, value: 'three' }]);
     expect(tests.currentAction.payload).toEqual({ where: 'id !== 3', replacement: { id: 4, value: 'four' } });
@@ -169,7 +169,7 @@ describe('Array', () => {
       array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
     });
     get(s => s.array)
-      .where(e => e.id).in([2, 3])
+      .filter(e => e.id).in([2, 3])
       .replace({ id: 4, value: 'four' });
     expect(get(s => s.array).read()).toEqual([{ id: 1, value: 'one' }, { id: 4, value: 'four' }, { id: 4, value: 'four' }]);
     expect(tests.currentAction.payload).toEqual({ where: '[2, 3].includes(id)', replacement: { id: 4, value: 'four' } });
@@ -180,7 +180,7 @@ describe('Array', () => {
       array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
     });
     get(s => s.array)
-      .where(e => e.id).ni([2, 3])
+      .filter(e => e.id).ni([2, 3])
       .replace({ id: 4, value: 'four' });
     expect(get(s => s.array).read()).toEqual([{ id: 4, value: 'four' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }]);
     expect(tests.currentAction.payload).toEqual({ where: '![2, 3].includes(id)', replacement: { id: 4, value: 'four' } });
@@ -191,7 +191,7 @@ describe('Array', () => {
       array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
     });
     get(s => s.array)
-      .where(e => e.id).eq(1).or(e => e.id).eq(3)
+      .filter(e => e.id).eq(1).or(e => e.id).eq(3)
       .replace({ id: 4, value: 'four' });
     expect(get(s => s.array).read()).toEqual([{ id: 4, value: 'four' }, { id: 2, value: 'two' }, { id: 4, value: 'four' }]);
     expect(tests.currentAction.payload).toEqual({ where: 'id === 1 || id === 3', replacement: { id: 4, value: 'four' } });
@@ -203,7 +203,7 @@ describe('Array', () => {
       array: new Array<{ prop: { thing: number } }>(),
     });
     get(s => s.array)
-      .where(e => e.prop.thing).eq(1)
+      .filter(e => e.prop.thing).eq(1)
       .replace({ prop: { thing: 0 } });
     expect(tests.currentAction.payload).toEqual({ where: 'prop.thing === 1', replacement: { prop: { thing: 0 } } });
     expect(tests.currentMutableState).toEqual(get().read());
@@ -226,7 +226,7 @@ describe('Array', () => {
       array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
     });
     get(s => s.array)
-      .where(e => e.id).eq(3)
+      .filter(e => e.id).eq(3)
       .patch({ value: 'four' });
     expect(get(s => s.array).read()).toEqual([{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'four' }]);
     expect(tests.currentAction.payload).toEqual({ where: 'id === 3', patch: { value: 'four' } });
@@ -238,7 +238,7 @@ describe('Array', () => {
       array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
     });
     get(s => s.array)
-      .where(e => e.id).eq(3)
+      .filter(e => e.id).eq(3)
       .remove();
     expect(get(s => s.array).read()).toEqual([{ id: 1, value: 'one' }, { id: 2, value: 'two' }]);
     expect(tests.currentAction.payload).toEqual({ where: 'id === 3', toRemove: [{ id: 3, value: 'three' }] });
@@ -250,7 +250,7 @@ describe('Array', () => {
       array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
     });
     get(s => s.array)
-      .where(e => e.id).lt(3)
+      .filter(e => e.id).lt(3)
       .remove();
     expect(get(s => s.array).read()).toEqual([{ id: 3, value: 'three' }]);
     expect(tests.currentAction.payload).toEqual({ where: 'id < 3', toRemove: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }] });
@@ -262,11 +262,11 @@ describe('Array', () => {
       array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
     });
     get(s => s.array)
-      .where(e => e.id).eq(3)
+      .filter(e => e.id).eq(3)
       .onChange(e => console.log('!', e));
 
     get(s => s.array)
-      .where(e => e.id).eq(3)
+      .filter(e => e.id).eq(3)
       .patch({ value: 'threeee' });
 
     // get(s => s.array)
@@ -279,11 +279,11 @@ describe('Array', () => {
       array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
     });
     get(s => s.array)
-      .whereFn(e => e.id === 3)
+      .filterCustom(e => e.id === 3)
       .onChange(e => console.log('on change', e));
 
     get(s => s.array)
-      .whereFn(e => e.id === 3)
+      .filterCustom(e => e.id === 3)
       .patch({ value: 'xx' })
 
     // get(s => s.array)
@@ -300,19 +300,15 @@ describe('Array', () => {
       array: [{ id: 1, value: 'one', status: 'done' }, { id: 2, value: 'two', status: 'done' }, { id: 3, value: 'three', status: 'todo' }] as Array<{ id: number, value: string, status: 'done' | 'todo' }>,
     });
     get(s => s.array)
-      .where(e => e.status).eq('todo')
-      .patch({ status: 'done' })
+      .filter(e => e.status).eq('todo')
+      .patch({ status: 'done' });
 
     // get(s => s.array)
-    //   .filter(e => e.value).matches(/s/)
-    //   .and(e => e.status).eq('done')
-    //   .remove();
+    //   .filter(s => s.status).eq('done')
+    //   .get(s => s.some.deep.prop)
+    //   .replace(something)
 
-    // type: 'array.where(id.eq()).get(some.deep.prop)'
-
-    // get(s => s.array)
-    //   .where(e => e.status).eq('todo')
-    //   .onChange(e => e.);
+    // type: array.filter().some.deep.prop.replace()
 
 
   })

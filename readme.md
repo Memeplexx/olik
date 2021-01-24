@@ -28,11 +28,11 @@ const get = set({
 get(s => s.username)                     // type: 'username.replace()'
   .replace('Terence');                   // payload: 'Terence'
 
-get(s => s.favorite.foods)               // type: 'favorite.foods.addAfter()'
-  .addAfter(['Indian', 'Sushi']);        // payload: ['Indian', 'Sushi']
+get(s => s.favorite.foods)               // type: 'favorite.foods.insert()'
+  .insert(['Indian', 'Sushi']);          // payload: ['Indian', 'Sushi']
 
-get(s => s.favorite.hobbies)             // type: 'favorite.hobbies.where(id.eq()).patch()'
-  .where(s => s.id).eq(3)                // payload: { where: 'id === 3',
+get(s => s.favorite.hobbies)             // type: 'favorite.hobbies.find().patch()'
+  .find(s => s.id).eq(3)                 // payload: { query: 'id === 3',
   .patch({ name: 'coding' });            // patch: { name: 'coding' } }
 ```
 #### 🔍 **READ STATE**
