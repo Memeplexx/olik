@@ -9,6 +9,11 @@ export type Tag<B> = B extends 'tagged' ? string : void;
 export type Trackability = 'tagged' | 'untagged';
 
 /**
+ * Whether this predicate is for a filter() or a find()
+ */
+export type FindOrFilter = 'find' | 'filter';
+
+/**
  * An argument which can be supplied when fetching data
  */
 export type FetchArgument<T> = T extends infer T ? T : void;
@@ -54,153 +59,164 @@ export type DeepWritable<E> =
 
 export type FunctionReturning<C> = (currentValue: DeepReadonly<C>) => C;
 
-export type ArrayAction<X extends Array<any>, T extends Trackability> = X[0] extends object ? ArrayOfObjectsAction<X, T> : ArrayOfElementsAction<X, T>;
+export type ArrayAction<X extends Array<any>, F extends FindOrFilter, T extends Trackability> = X[0] extends object ? ArrayOfObjectsAction<X, F, T> : ArrayOfElementsAction<X, F, T>;
 
-export type ArrayFnAction<X extends Array<any>, T extends Trackability> = X[0] extends object ? ArrayOfObjectsFnAction<X, T> : ArrayOfElementsFnAction<X, T>;
+export type ArrayFnAction<X extends Array<any>, F extends FindOrFilter, T extends Trackability> = X[0] extends object ? ArrayOfObjectsFnAction<X, F, T> : ArrayOfElementsFnAction<X, F, T>;
 
-export type BasicPredicate<X extends Array<any>, E, T extends Trackability> = {
+export type BasicPredicate<X extends Array<any>, E, F extends FindOrFilter, T extends Trackability> = {
   /**
    * Checks whether the previously selected property **equals** the supplied value
    * @example
-   * get(s => s.todos)
-   *   .filter(e => e.id).eq(1)
-   *   .patch({ done: true })
+   * ...
+   * .eq(1)
+   * ...
    */
-  eq: (value: E) => ArrayAction<X, T>,
+  eq: (value: E) => ArrayAction<X, F, T>,
   /**
    * Checks whether the previously selected property does **not equal** the supplied value
    * @example
-   * get(s => s.todos)
-   *   .filter(e => e.id).ne(1)
-   *   .patch({ done: true })
+   * ...
+   * .ne(1)
+   * ...
    */
-  ne: (value: E) => ArrayAction<X, T>,
+  ne: (value: E) => ArrayAction<X, F, T>,
   /**
    * Checks whether the previously selected property **is in** the supplied array
    * @example
-   * get(s => s.todos)
-   *   .filter(e => e.id).in([1, 2])
-   *   .patch({ done: true })
+   * ...
+   * .filter(e => e.id).in([1, 2])
+   * ...
    */
-  in: (value: E[]) => ArrayAction<X, T>,
+  in: (value: E[]) => ArrayAction<X, F, T>,
   /**
    * Checks whether the previously selected property **is not in** the supplied array
    * @example
-   * get(s => s.todos)
-   *   .filter(e => e.id).ni([1, 2])
-   *   .patch({ done: true })
+   * ...
+   * .ni([1, 2])
+   * ...
    */
-  ni: (value: E[]) => ArrayAction<X, T>,
+  ni: (value: E[]) => ArrayAction<X, F, T>,
 }
 
-export type NumberPredicate<X extends Array<any>, E, T extends Trackability> = {
+export type NumberPredicate<X extends Array<any>, E, F extends FindOrFilter, T extends Trackability> = {
   /**
    * Checks whether the previously selected number property **is greater than** the supplied number
    * @example
-   * get(s => s.todos)
-   *   .filter(e => e.id).gt(2)
-   *   .patch({ done: true })
+   * ...
+   * .gt(2)
+   * ...
    */
-  gt: (value: number) => ArrayAction<X, T>,
+  gt: (value: number) => ArrayAction<X, F, T>,
   /**
    * Checks whether the previously selected number property **is less than** the supplied number
    * @example
-   * get(s => s.todos)
-   *   .filter(e => e.id).lt(2)
-   *   .patch({ done: true })
+   * ...
+   * .lt(2)
+   * ...
    */
-  lt: (value: number) => ArrayAction<X, T>,
-} & BasicPredicate<X, E, T>;
+  lt: (value: number) => ArrayAction<X, F, T>,
+} & BasicPredicate<X, E, F, T>;
 
-export type StringPredicate<X extends Array<any>, E, T extends Trackability> = {
+export type StringPredicate<X extends Array<any>, E, F extends FindOrFilter, T extends Trackability> = {
   /**
    * Checks whether the previously selected string property **matches** the supplied regular expression
    * @example
-   * get(s => s.todos)
-   *   .filter(e => e.text).matches(/^(test)/)
-   *   .patch({ done: true })
+   * ...
+   * .matches(/^hello/)
+   * ...
    */
-  matches: (pattern: RegExp) => ArrayAction<X, T>,
-} & BasicPredicate<X, E, T>;
+  match: (pattern: RegExp) => ArrayAction<X, F, T>,
+} & BasicPredicate<X, E, F, T>;
 
-export type Predicate<X extends Array<any>, E, T extends Trackability> =
-  [E] extends [number] ? NumberPredicate<X, E, T>
-  : [E] extends [string] ? StringPredicate<X, E, T>
-  : BasicPredicate<X, E, T>;
+export type Predicate<X extends Array<any>, E, F extends FindOrFilter, T extends Trackability> =
+  [E] extends [number] ? NumberPredicate<X, E, F, T>
+  : [E] extends [string] ? StringPredicate<X, E, F, T>
+  : BasicPredicate<X, E, F, T>;
 
-export type ArrayOfElementsAction<X extends Array<any>, T extends Trackability> = {
+export type ArrayOfElementsAction<X extends Array<any>, F extends FindOrFilter, T extends Trackability> = {
   /**
-   * Allows you to append more criteria with which to filter your array
+   * Append more criteria with which to filter your array
    * @example
-   * get(s => s.todos)
-   *   .filter(e => e.id).eq(1).and(e => e.done).eq(false)
-   *   .patch({ done: true })
+   * ...
+   * .and(e => e.status).eq('todo')
+   * ...
    */
-  and: <P>(getProp: (element: DeepReadonly<X[0]>) => P) => Predicate<X, P, T>,
+  and: <P>(getProp: (element: DeepReadonly<X[0]>) => P) => Predicate<X, P, F, T>,
   /**
-   * Allows you to append more criteria with which to filter your array
+   * Append more criteria with which to filter your array
    * @example
-   * get(s => s.todos)
-   *   .filter(e => e.id).eq(1).or(e => e.done).eq(false)
-   *   .patch({ done: true })
+   * ...
+   * .or(t => t.status).eq('todo')
+   * ...
    */
-  or: <P>(getProp: (element: DeepReadonly<X[0]>) => P) => Predicate<X, P, T>,
-} & ArrayOfElementsFnAction<X, T>;
+  or: <P>(getProp: (element: DeepReadonly<X[0]>) => P) => Predicate<X, P, F, T>,
+} & ArrayOfElementsFnAction<X, F, T>;
 
-export type ArrayOfObjectsAction<X extends Array<any>, T extends Trackability> = {
+export type ArrayOfObjectsAction<X extends Array<any>, F extends FindOrFilter, T extends Trackability> = {
   /**
    * Partially updates array elements allowing you to omit those properties which should not change
    * @example
-   * get(s => s.todos)
-   *   .filter(e => e.id).eq(1)
-   *   .patch({ done: true })
+   * ...
+   * .patch({ done: true })
    */
   patch: (replacement: Partial<X[0]>, tag: Tag<T>) => void;
-} & ArrayOfElementsAction<X, T>;
+} & ArrayOfElementsAction<X, F, T>;
 
-export type ArrayOfElementsFnAction<X extends Array<any>, T extends Trackability> = {
+export type ArrayOfElementsFnAction<X extends Array<any>, F extends FindOrFilter, T extends Trackability> = {
   /**
    * Replaces any elements that were found in the `filter()` clause
    * @example
-   * get(s => s.todos)
-   *   .filter(e => e.id === 1)
-   *   .replace({ id: 1, text: 'bake cookies' })
+   * ...
+   * .replace({ id: 1, text: 'bake cookies' })
    */
   replace: (replacement: X[0], tag: Tag<T>) => void;
   /**
    * Removes any elements that were found in the `filter()` clause
    * @example
-   * get(s => s.todos)
-   *   .filter(e => e.id === 1)
-   *   .remove()
+   * ...
+   * .remove()
    */
   remove: (tag: Tag<T>) => void;
-  
-  onChange: (listener: (arg: X[0]) => void) => Unsubscribable;
+  /**
+   * Will be called any time this node changes.
+   * @example
+   * const subscription = 
+   * ...
+   * onChange(value => console.log(value));
+   * 
+   * // don't forget to unsubscribe to avoid a memory leak
+   * subscription.unsubscribe(); 
+   */
+  onChange: (listener: (arg: DeepReadonly<X[0]>) => void) => Unsubscribable;
 
-  read: () => DeepReadonly<X>;
+  read: () => DeepReadonly<F extends 'find' ? X[0] : X>;
 }
 
-export type ArrayOfObjectsFnAction<X extends Array<any>, T extends Trackability> = {
+export type ArrayOfObjectsFnAction<X extends Array<any>, F extends FindOrFilter, T extends Trackability> = {
   /**
    * Partially updates array elements allowing you to omit those properties which should not change
    * @example
-   * get(s => s.todos)
-   *   .filter(e => e.id === 1)
-   *   .patch({ done: true })
+   * ...
+   * .patch({ done: true })
    */
   patch: (replacement: Partial<X[0]>, tag: Tag<T>) => void;
-} & ArrayOfElementsFnAction<X, T>;
+} & ArrayOfElementsFnAction<X, F, T>;
 
 /**
  * An object which is capable of storing and updating state which is in the shape of an array of primitives
  */
 export type StoreForAnArray<C extends Array<any>, T extends Trackability> = {
   /**
-   * Appends any number of elements onto the end of the array
+   * Appends one or more elements onto the end of the array
    * @example
    * ```
-   * get(s => s.todos).insert(newTodos);
+   * ...
+   * .insert(newTodo);
+   * ```
+   * @example
+   * ```
+   * ...
+   * .insert(newArrayOfTodos);
    * ```
    */
   insert: <R extends (C[0] | C) >(payload: R, tag: Tag<T>) => void,
@@ -208,7 +224,8 @@ export type StoreForAnArray<C extends Array<any>, T extends Trackability> = {
    * Removes all elements from the array
    * @example
    * ```
-   * get(s => s.todos).removeAll();
+   * ...
+   * .removeAll();
    * ```
    */
   removeAll: (tag: Tag<T>) => void,
@@ -216,51 +233,73 @@ export type StoreForAnArray<C extends Array<any>, T extends Trackability> = {
    * Substitutes all elements with a new array of elements
    * @example
    * ```
-   * get(s => s.todos).replaceAll(newTodos);
+   * ...
+   * .replaceAll(newTodos);
    * ```
    */
   replaceAll: (replacement: C, tag: Tag<T>) => void,
   /**
-   * Merges the supplied array into the existing array.  
-   * Any supplied elements will either replace their corresponding element in the store (if a match could be found) or else they will be appended to the store array.  
+   * Merges the supplied array into the existing store array.  
+   * The `match` function allows you to select a property which will be used to determine whether each incoming element should replace an existing element, or be inserted.
    * @example
    * ```
-   * get(s => s.todos)
-   *   .merge(newTodosArray)
-   *   .match(e => e.id);
+   * ...
+   * .merge(newTodosArray)
+   * .match(e => e.id);
    * ```
    */
   merge: (elementOrArray: C | C[0]) => { match: <P>(getProp: (element: DeepReadonly<C[0]>) => P, tag: Tag<T>) => void }
   /**
-   * Specify a where clause in order to filter elements.
-   * Note that it is advisable to choose this over the `filterUsingFn` function because this will allow the library to describe your actions in more detail
+   * Specify which array element property to filter by
+   * Note that it is advisable to choose this over the `filterCustom` function because using `filter()` will allow the library to describe your actions in more detail
    * @example
    * ```
-   * get(s => s.todos)
-   *   .where(t => t.id).eq(1)
-   *   .patch({ done: true })
+   * ...
+   * .filter(t => t.status).eq('done')
+   * ...
    * ```
    */
-  filter: PredicateFunction<C, T>,
-  find: PredicateFunction<C, T>,
+  filter: PredicateFunction<C, 'filter', T>,
   /**
-   * Specify a where clause in order to filter elements.
-   * Note that it is advisable to choose the `filter` function over this one because that function will allow the library to describe your actions in more detail.
-   * Only use `filterUsingFn()` when your where clause is very complicated.
+   * Specify which array element property to find by
+   * Note that it is advisable to choose this over the `findCustom` function because using `find()` will allow the library to describe your actions in more detail
    * @example
    * ```
-   * get(s => s.todos)
-   *   .filter(t => t.id).eq(1)
-   *   .patch({ done: true })
+   * ...
+   * .filter(t => t.id).eq(3)
+   * ...
    * ```
    */
-  filterCustom: FilterFunction<C, T>,
-  findCustom: FilterFunction<C, T>,
+  find: PredicateFunction<C, 'find', T>,
+  /**
+   * Specify a function in order to filter elements.
+   * Note that it is advisable to choose the `filter` function over this one because that function will allow the library to describe your actions in more detail.
+   * Only use `filterCustom()` when your filter criteria is very complicated.
+   * @example
+   * ```
+   * ...
+   * .filter(t => t.id).eq(1)
+   * ...
+   * ```
+   */
+  filterCustom: FilterFunction<C, 'filter', T>,
+  /**
+   * Specify a function in order to filter elements.
+   * Note that it is advisable to choose the `filter` function over this one because that function will allow the library to describe your actions in more detail.
+   * Only use `filterCustom()` when your filter criteria is very complicated.
+   * @example
+   * ```
+   * ...
+   * .filter(t => t.id).eq(1)
+   * ...
+   * ```
+   */
+  findCustom: FilterFunction<C, 'find', T>,
 }
 
-export type PredicateFunction<C extends Array<any>, T extends Trackability> = <X = C[0]>(getProp?: (element: DeepReadonly<C[0]>) => X) => Predicate<C, X, T>
+export type PredicateFunction<C extends Array<any>, F extends FindOrFilter, T extends Trackability> = <X = C[0]>(getProp?: (element: DeepReadonly<C[0]>) => X) => Predicate<C, X, F, T>
 
-export type FilterFunction<C extends Array<any>, T extends Trackability> = (fn: (element: C[0]) => boolean) => ArrayFnAction<C, T>;
+export type FilterFunction<C extends Array<any>, F extends FindOrFilter, T extends Trackability> = (fn: (element: C[0]) => boolean) => ArrayFnAction<C, F, T>;
 
 /**
  * An object which is capable of storing and updating state which is in the shape of a primitive
@@ -299,8 +338,8 @@ export type StoreOrDerivation<C> = {
    * Listens to any updates on this node
    * @returns a subscription which will need to be unsubscribed from to prevent a memory leak
    * ```
-   * get(s => s.todos)
-   *   .onChange(todos => console.log(todos));
+   * ...
+   * .onChange(todos => console.log(todos));
    * ```
    */
   onChange: (performAction: (selection: DeepReadonly<C>) => any) => Unsubscribable,

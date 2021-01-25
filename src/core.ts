@@ -4,6 +4,7 @@ import {
   ArrayOfObjectsAction,
   BasicPredicate,
   DeepReadonly,
+  FindOrFilter,
   FunctionReturning,
   NumberPredicate,
   OptionsForMakingAStore,
@@ -40,7 +41,7 @@ let nestedContainerStore: ((selector?: ((s: any) => any) | undefined) => StoreWh
  * 
  * @example
  * ```
- * const get = makeEnforceTags({ todos: Array<{ id: number, text: string }>() });
+ * const get = setEnforceTags({ todos: Array<{ id: number, text: string }>() });
  * 
  * // Note that when updating state, we are now required to supply a string as the last argument (in this case 'TodoDetailComponent')
  * get(s => s.todos)
@@ -59,7 +60,7 @@ export function setEnforceTags<S>(state: S, options: OptionsForMakingAStoreEnfor
  * 
  * @example
  * ```
- * const select = make({ todos: Array<{ id: number, text: string }>() });
+ * const select = set({ todos: Array<{ id: number, text: string }>() });
  * ```
  */
 export function set<S>(state: S, options: OptionsForMakingAStore = {}): SelectorFromAStore<S> {
@@ -191,6 +192,191 @@ function makeInternal<S, T extends Trackability>(state: S, options: { supportsTa
     return payloadCopied;
   };
   const action = <C, X extends C & Array<any>>(selector: Selector<S, C, X>) => {
+    const findOrFilter = (type: FindOrFilter) => {
+      const whereClauseSpecs = new Array<{ filter: (arg: X[0]) => boolean, type: 'and' | 'or' | '' }>();
+      const whereClauseStrings = new Array<string>();
+      const recurseWhere = (getProp => {
+        const allIllegalChars = ['=', '<,', '>', '&', '|'];
+        const fnToString = (getProp || '').toString();
+        const illegalChars = allIllegalChars.filter(c => fnToString.includes(c));
+        if (illegalChars.length) {
+          throw new Error(errorMessages.ILLEGAL_CHARACTERS_WITHIN_SELECTOR(illegalChars));
+        }
+        const segs = !getProp ? [] : createPathReader((selector(currentState) as X)[0] || {}).readSelector(getProp);
+        const criteria = (arg: X[0], fn: (arg: X[0]) => boolean) => {
+          segs.forEach(seg => arg = arg[seg]);
+          return fn(arg);
+        };
+        const bundleCriteria = (arrayElement: X[0]) => {
+          const ors = new Array<(arg: X[0]) => boolean>();
+          for (let i = 0; i < whereClauseSpecs.length; i++) {
+            if (whereClauseSpecs[i].type === 'and') {
+              let andsPassed = true;
+              while (andsPassed && whereClauseSpecs[i].type === 'and') {
+                andsPassed = whereClauseSpecs[i].filter(arrayElement);
+                i++;
+              }
+              ors.push(() => andsPassed);
+            } else {
+              if ((whereClauseSpecs[i].type === 'or') || (whereClauseSpecs[i].type === '')) {
+                ors.push(whereClauseSpecs[i].filter);
+              }
+            }
+          }
+          return ors.some(fn => fn(arrayElement));
+        }
+        const completeWhereClause = (whereClauseString: string, fn: (e: X[0]) => boolean) => {
+          whereClauseStrings.push(whereClauseString);
+          whereClauseSpecs.push({ filter: o => criteria(o, fn), type: '' });
+          return type === 'find'
+            ? [(selector(currentState) as X).findIndex(e => bundleCriteria(e))]
+            : (selector(currentState) as X).map((e, i) => bundleCriteria(e) ? i : null).filter(i => i !== null) as number[];
+        }
+        const constructActions = (whereClauseString: string, fn: (e: X[0]) => boolean) => ({
+          and: prop => {
+            whereClauseStrings.push(`${whereClauseString} &&`);
+            whereClauseSpecs.push({ filter: o => criteria(o, fn), type: 'and' });
+            return recurseWhere(prop);
+          },
+          or: prop => {
+            whereClauseStrings.push(`${whereClauseString} ||`);
+            whereClauseSpecs.push({ filter: o => criteria(o, fn), type: 'or' });
+            return recurseWhere(prop);
+          },
+          replace: (replacement, tag) => {
+            const { payloadFrozen, payloadCopied } = copyPayload(replacement);
+            const elementIndices = completeWhereClause(whereClauseString, fn);
+            updateState({
+              selector,
+              replacer: old => old.map((o, i) => elementIndices.includes(i) ? payloadFrozen : o),
+              mutator: old => { old.forEach((o, i) => { if (elementIndices.includes(i)) { old[i] = payloadCopied; } }) },
+              actionName: 'replaceWhere()',
+              payload: {
+                where: whereClauseStrings.join(' '),
+                replacement: payloadFrozen,
+              },
+              tag,
+            })
+          },
+          patch: (payload, tag) => {
+            const { payloadFrozen, payloadCopied } = copyPayload(payload);
+            const elementIndices = completeWhereClause(whereClauseString, fn);
+            updateState({
+              selector,
+              replacer: old => old.map((o, i) => elementIndices.includes(i) ? { ...o, ...payloadFrozen } : o),
+              mutator: old => elementIndices.forEach(i => Object.assign(old[i], payloadCopied)),
+              actionName: 'patchWhere()',
+              payload: {
+                where: whereClauseStrings.join(' '),
+                patch: payloadFrozen,
+              },
+              tag,
+            });
+          },
+          remove: tag => {
+            const elementIndices = completeWhereClause(whereClauseString, fn);
+            updateState<C, T, X>({
+              selector,
+              replacer: old => old.filter((o, i) => !elementIndices.includes(i)),
+              mutator: old => { const toRemove = old.filter(bundleCriteria); for (var i = 0; i < old.length; i++) { if (toRemove.includes(old[i])) { old.splice(i, 1); i--; } } },
+              actionName: 'removeWhere()',
+              payload: {
+                where: whereClauseStrings.join(' '),
+                toRemove: (selector(currentState) as X).filter((e, i) => elementIndices.includes(i)),
+              },
+              tag,
+            });
+          },
+          onChange: performAction => {
+            whereClauseSpecs.push({ filter: o => criteria(o, fn), type: '' });
+            changeListeners.set(performAction, nextState => deepFreeze(type === 'find'
+              ? (selector(nextState) as X).find(e => bundleCriteria(e))
+              : (selector(nextState) as X).map(e => bundleCriteria(e) ? e : null).filter(e => e !== null)));
+            return { unsubscribe: () => changeListeners.delete(performAction) };
+          },
+          read: () => {
+            whereClauseSpecs.push({ filter: o => criteria(o, fn), type: '' });
+            return deepFreeze(type === 'find'
+              ? (selector(currentState) as X).find(e => bundleCriteria(e))
+              : (selector(currentState) as X).map(e => bundleCriteria(e) ? e : null).filter(e => e != null));
+          },
+        } as ArrayOfObjectsAction<X, any, T>);
+        return {
+          ...{
+            eq: val => constructActions(`${segs.join('.')} === ${JSON.stringify(val)}`, (e: X[0]) => e === val),
+            ne: val => constructActions(`${segs.join('.')} !== ${JSON.stringify(val)}`, (e: X[0]) => e !== val),
+            in: val => constructActions(`[${val.join(', ')}].includes(${segs.join('.')})`, (e: X[0]) => val.includes(e)),
+            ni: val => constructActions(`![${val.join(', ')}].includes(${segs.join('.')})`, (e: X[0]) => !val.includes(e)),
+          } as BasicPredicate<X, any, any, T>,
+          ...{
+            gt: val => constructActions(`${segs.join('.')} > ${val}`, (e: X[0]) => e > val),
+            lt: val => constructActions(`${segs.join('.')} < ${val}`, (e: X[0]) => e < val),
+          } as NumberPredicate<X, any, any, T>,
+          ...{
+            match: val => constructActions(`${segs.join('.')}.match(${val})`, (e: X[0]) => e.match(val)),
+          } as StringPredicate<X, any, any, T>,
+        };
+      }) as StoreForAnArray<X, T>['filter'];
+      return recurseWhere;
+    };
+    const findOrFilterCustom = (type: FindOrFilter) => (predicate => {
+      // const filterOrFind = (elements: X, predicate: (element: X[0]) => boolean) => type === 'find'
+      //   ? [elements.find(e => predicate(e))]
+      //   : elements.filter(e => predicate(e));
+      // const filterOrFindIndices = (elements: X, predicate: (element: X[0]) => boolean) => type === 'find'
+      //   ? [elements.findIndex(e => predicate(e))]
+      //   : elements.map((e, i) => predicate(e) ? i : null).filter(i => i !== null) as number[]
+
+      // TODO: find a way to support FIND and not just FILTER
+      return {
+        remove: tag => {
+          updateState({
+            selector,
+            replacer: old => old.filter(o => !predicate(o)),
+            mutator: old => { const toRemove = old.filter(predicate); for (var i = 0; i < old.length; i++) { if (toRemove.includes(old[i])) { old.splice(i, 1); i--; } } },
+            actionName: 'removeWhere()',
+            payload: { toRemove: (selector(currentState) as X).filter(predicate), where: predicate.toString() },
+            tag,
+          });
+        },
+        replace: (payload, tag) => {
+          const { payloadFrozen, payloadCopied } = copyPayload(payload);
+          const elementIndices = (selector(currentState) as X).map((e, i) => predicate(e) ? i : null).filter(i => i !== null) as number[];
+          updateState({
+            selector,
+            replacer: old => old.map((o, i) => elementIndices.includes(i) ? payloadFrozen : o),
+            mutator: old => { old.forEach((o, i) => { if (elementIndices.includes(i)) { old[i] = payloadCopied; } }) },
+            actionName: 'replaceWhere()',
+            payload: {
+              where: predicate.toString(),
+              replacement: payloadFrozen,
+            },
+            tag,
+          });
+        },
+        patch: (payload, tag) => {
+          const { payloadFrozen, payloadCopied } = copyPayload(payload);
+          const elementIndices = (selector(currentState) as X).map((e, i) => predicate(e) ? i : null).filter(i => i !== null) as number[];
+          updateState({
+            selector,
+            replacer: old => old.map((o, i) => elementIndices.includes(i) ? { ...o, ...payloadFrozen } : o),
+            mutator: old => elementIndices.forEach(i => Object.assign(old[i], payloadCopied)),
+            actionName: 'patchWhere()',
+            payload: { patch: payloadFrozen, where: predicate.toString() },
+            tag,
+          });
+        },
+        onChange: (performAction => {
+          changeListeners.set(performAction, nextState => deepFreeze(type === 'find'
+            ? (selector(nextState) as X).find(e => predicate(e))
+            : (selector(nextState) as X).map(e => predicate(e) ? e : null).filter(e => e != null)));
+          return { unsubscribe: () => changeListeners.delete(performAction) };
+        }),
+        read: () => deepFreeze(type === 'find'
+          ? (selector(currentState) as X).find(e => predicate(e))
+          : (selector(currentState) as X).map(e => predicate(e) ? e : null).filter(e => e != null)),
+      }
+    }) as StoreForAnArray<X, T>['filterCustom']
     return {
       replace: replace(selector, 'replace'
       ) as StoreForAnObjectOrPrimitive<C, Trackability>['replace'],
@@ -279,173 +465,10 @@ function makeInternal<S, T extends Trackability>(state: S, options: { supportsTa
           });
         }
       })) as StoreForAnArray<X, T>['merge'],
-      filterCustom: (predicate => {
-        return {
-          remove: tag => {
-            updateState({
-              selector,
-              replacer: old => old.filter(o => !predicate(o)),
-              mutator: old => { const toRemove = old.filter(predicate); for (var i = 0; i < old.length; i++) { if (toRemove.includes(old[i])) { old.splice(i, 1); i--; } } },
-              actionName: 'removeWhere()',
-              payload: { toRemove: (selector(currentState) as X).filter(predicate), where: predicate.toString() },
-              tag,
-            });
-          },
-          replace: (payload, tag) => {
-            const { payloadFrozen, payloadCopied } = copyPayload(payload);
-            const elementIndices = (selector(currentState) as X).map((e, i) => predicate(e) ? i : null).filter(i => i !== null) as number[];
-            updateState({
-              selector,
-              replacer: old => old.map((o, i) => elementIndices.includes(i) ? payloadFrozen : o),
-              mutator: old => { old.forEach((o, i) => { if (elementIndices.includes(i)) { old[i] = payloadCopied; } }) },
-              actionName: 'replaceWhere()',
-              payload: {
-                where: predicate.toString(),
-                replacement: payloadFrozen,
-              },
-              tag,
-            });
-          },
-          patch: (payload, tag) => {
-            const { payloadFrozen, payloadCopied } = copyPayload(payload);
-            const elementIndices = (selector(currentState) as X).map((e, i) => predicate(e) ? i : null).filter(i => i !== null) as number[];
-            updateState({
-              selector,
-              replacer: old => old.map((o, i) => elementIndices.includes(i) ? { ...o, ...payloadFrozen } : o),
-              mutator: old => elementIndices.forEach(i => Object.assign(old[i], payloadCopied)),
-              actionName: 'patchWhere()',
-              payload: { patch: payloadFrozen, where: predicate.toString() },
-              tag,
-            });
-          },
-          onChange: (performAction => {
-            changeListeners.set(performAction, nextState => (selector(nextState) as X).map(e => predicate(e) ? e : null).filter(e => e !== null));
-            return { unsubscribe: () => changeListeners.delete(performAction) };
-          }),
-          read: () => deepFreeze((selector(currentState) as X).map(e => predicate(e) ? e : null).filter(e => e != null)),
-        }
-      }) as StoreForAnArray<X, T>['filterCustom'],
-      filter: (() => {
-        const whereClauseSpecs = new Array<{ filter: (arg: X[0]) => boolean, type: 'and' | 'or' | '' }>();
-        const whereClauseStrings = new Array<string>();
-        const recurseWhere = (getProp => {
-          const allIllegalChars = ['=', '<,', '>', '&', '|'];
-          const fnToString = (getProp || '').toString();
-          const illegalChars = allIllegalChars.filter(c => fnToString.includes(c));
-          if (illegalChars.length) {
-            throw new Error(errorMessages.ILLEGAL_CHARACTERS_WITHIN_SELECTOR(illegalChars));
-          }
-          const segs = !getProp ? [] : createPathReader((selector(currentState) as X)[0] || {}).readSelector(getProp);
-          const criteria = (arg: X[0], fn: (arg: X[0]) => boolean) => {
-            segs.forEach(seg => arg = arg[seg]);
-            return fn(arg);
-          };
-          const bundleCriteria = (arrayElement: X[0]) => {
-            const ors = new Array<(arg: X[0]) => boolean>();
-            for (let i = 0; i < whereClauseSpecs.length; i++) {
-              if (whereClauseSpecs[i].type === 'and') {
-                let andsPassed = true;
-                while (andsPassed && whereClauseSpecs[i].type === 'and') {
-                  andsPassed = whereClauseSpecs[i].filter(arrayElement);
-                  i++;
-                }
-                ors.push(() => andsPassed);
-              } else {
-                if ((whereClauseSpecs[i].type === 'or') || (whereClauseSpecs[i].type === '')) {
-                  ors.push(whereClauseSpecs[i].filter);
-                }
-              }
-            }
-            return ors.some(fn => fn(arrayElement));
-          }
-          const completeWhereClause = (whereClauseString: string, fn: (e: X[0]) => boolean) => {
-            whereClauseStrings.push(whereClauseString);
-            whereClauseSpecs.push({ filter: o => criteria(o, fn), type: '' });
-            return (selector(currentState) as X).map((e, i) => bundleCriteria(e) ? i : null).filter(i => i !== null) as number[];
-          }
-          const constructActions = (whereClauseString: string, fn: (e: X[0]) => boolean) => ({
-            and: prop => {
-              whereClauseStrings.push(`${whereClauseString} &&`);
-              whereClauseSpecs.push({ filter: o => criteria(o, fn), type: 'and' });
-              return recurseWhere(prop);
-            },
-            or: prop => {
-              whereClauseStrings.push(`${whereClauseString} ||`);
-              whereClauseSpecs.push({ filter: o => criteria(o, fn), type: 'or' });
-              return recurseWhere(prop);
-            },
-            replace: (replacement, tag) => {
-              const { payloadFrozen, payloadCopied } = copyPayload(replacement);
-              const elementIndices = completeWhereClause(whereClauseString, fn);
-              updateState({
-                selector,
-                replacer: old => old.map((o, i) => elementIndices.includes(i) ? payloadFrozen : o),
-                mutator: old => { old.forEach((o, i) => { if (elementIndices.includes(i)) { old[i] = payloadCopied; } }) },
-                actionName: 'replaceWhere()',
-                payload: {
-                  where: whereClauseStrings.join(' '),
-                  replacement: payloadFrozen,
-                },
-                tag,
-              })
-            },
-            patch: (payload, tag) => {
-              const { payloadFrozen, payloadCopied } = copyPayload(payload);
-              const elementIndices = completeWhereClause(whereClauseString, fn);
-              updateState({
-                selector,
-                replacer: old => old.map((o, i) => elementIndices.includes(i) ? { ...o, ...payloadFrozen } : o),
-                mutator: old => elementIndices.forEach(i => Object.assign(old[i], payloadCopied)),
-                actionName: 'patchWhere()',
-                payload: {
-                  where: whereClauseStrings.join(' '),
-                  patch: payloadFrozen,
-                },
-                tag,
-              });
-            },
-            remove: tag => {
-              const elementIndices = completeWhereClause(whereClauseString, fn);
-              updateState<C, T, X>({
-                selector,
-                replacer: old => old.filter((o, i) => !elementIndices.includes(i)),
-                mutator: old => { const toRemove = old.filter(bundleCriteria); for (var i = 0; i < old.length; i++) { if (toRemove.includes(old[i])) { old.splice(i, 1); i--; } } },
-                actionName: 'removeWhere()',
-                payload: {
-                  where: whereClauseStrings.join(' '),
-                  toRemove: (selector(currentState) as X).filter((e, i) => elementIndices.includes(i)),
-                },
-                tag,
-              });
-            },
-            onChange: performAction => {
-              whereClauseSpecs.push({ filter: o => criteria(o, fn), type: '' });
-              changeListeners.set(performAction, nextState => (selector(nextState) as X).map(e => bundleCriteria(e) ? e : null).filter(e => e !== null));
-              return { unsubscribe: () => changeListeners.delete(performAction) };
-            },
-            read: () => {
-              whereClauseSpecs.push({ filter: o => criteria(o, fn), type: '' });
-              return deepFreeze((selector(currentState) as X).map(e => bundleCriteria(e) ? e : null).filter(e => e != null));
-            },
-          } as ArrayOfObjectsAction<X, T>);
-          return {
-            ...{
-              eq: val => constructActions(`${segs.join('.')} === ${JSON.stringify(val)}`, (e: X[0]) => e === val),
-              ne: val => constructActions(`${segs.join('.')} !== ${JSON.stringify(val)}`, (e: X[0]) => e !== val),
-              in: val => constructActions(`[${val.join(', ')}].includes(${segs.join('.')})`, (e: X[0]) => val.includes(e)),
-              ni: val => constructActions(`![${val.join(', ')}].includes(${segs.join('.')})`, (e: X[0]) => !val.includes(e)),
-            } as BasicPredicate<X, any, T>,
-            ...{
-              gt: val => constructActions(`${segs.join('.')} > ${val}`, (e: X[0]) => e > val),
-              lt: val => constructActions(`${segs.join('.')} < ${val}`, (e: X[0]) => e < val),
-            } as NumberPredicate<X, any, T>,
-            ...{
-              matches: val => constructActions(`${segs.join('.')}.matches(${val})`, (e: X[0]) => e.matches(val)),
-            } as StringPredicate<X, any, T>,
-          };
-        }) as StoreForAnArray<X, T>['filter'];
-        return recurseWhere;
-      })(),
+      filterCustom: findOrFilterCustom('filter'),
+      findCustom: findOrFilterCustom('find'),
+      filter: findOrFilter('filter'),
+      find: findOrFilter('find'),
       readInitial: (
         () => selector(initialState)
       ),

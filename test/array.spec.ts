@@ -313,4 +313,65 @@ describe('Array', () => {
 
   })
 
+  it('', () => {
+    const get = set({
+      array: [{ id: 1, value: 'one', status: 'done' }, { id: 2, value: 'two', status: 'done' }, { id: 3, value: 'three', status: 'todo' }] as Array<{ id: number, value: string, status: 'done' | 'todo' }>,
+    });
+    get(s => s.array)
+      .find(e => e.id).eq(3)
+      .patch({ status: 'done' });
+    expect(get(s => s.array).find(e => e.id).eq(3).read()).toEqual({ id: 3, value: 'three', status: 'done' });
+  })
+
+  it('', () => {
+    const get = set({
+      array: [{ id: 1, value: 'one', status: 'done' }, { id: 2, value: 'two', status: 'done' }, { id: 3, value: 'three', status: 'todo' }] as Array<{ id: number, value: string, status: 'done' | 'todo' }>,
+    });
+    get(s => s.array)
+      .find(e => e.id).eq(3)
+      .onChange(e => expect(e).toEqual({ id: 3, value: 'three', status: 'done' }));
+    get(s => s.array)
+      .find(e => e.id).eq(3)
+      .patch({ status: 'done' });
+  })
+
+  it('', () => {
+    const get = set({
+      array: [{ id: 1, value: 'one', status: 'done' }, { id: 2, value: 'two', status: 'done' }, { id: 3, value: 'three', status: 'todo' }] as Array<{ id: number, value: string, status: 'done' | 'todo' }>,
+    });
+    get(s => s.array)
+      .findCustom(e => e.id === 3)
+      .patch({ status: 'done' });
+    expect(get(s => s.array).find(e => e.id).eq(3).read()).toEqual({ id: 3, value: 'three', status: 'done' });
+  })
+
+  it('', () => {
+    const get = set({
+      array: [{ id: 1, value: 'one', status: 'done' }, { id: 2, value: 'two', status: 'done' }, { id: 3, value: 'three', status: 'todo' }] as Array<{ id: number, value: string, status: 'done' | 'todo' }>,
+    });
+    get(s => s.array)
+      .findCustom(e => e.id === 3)
+      .onChange(e => expect(e).toEqual({ id: 3, value: 'three', status: 'done' }));
+    get(s => s.array)
+      .find(e => e.id).eq(3)
+      .patch({ status: 'done' });
+  })
+
+  it('should only update up to one element when using find()', () => {
+    const get = set({
+      array: [{ id: 1, value: 'one', status: 'done' }, { id: 2, value: 'two', status: 'done' }, { id: 3, value: 'three', status: 'todo' }] as Array<{ id: number, value: string, status: 'done' | 'todo' }>,
+    });
+    get(s => s.array)
+      .find(e => e.value).match(/^t/)
+      .patch({ value: 'new' });
+    expect(get(s => s.array).read()).toEqual([{ id: 1, value: 'one', status: 'done' }, { id: 2, value: 'new', status: 'done' }, { id: 3, value: 'three', status: 'todo' }]);
+
+
+
+    // get(s => s.array)
+    //   .filter(e => e.id).eq(3)
+    //   .get(s => s.some.number)
+    //   .replace(3);
+  })
+
 });
