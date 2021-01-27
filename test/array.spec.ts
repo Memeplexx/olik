@@ -7,7 +7,7 @@ describe('Array', () => {
 
   beforeAll(() => tests.windowObject = windowAugmentedWithReduxDevtoolsImpl);
 
-  it('should patchWhere()', () => {
+  it('should filterCustom().patch()', () => {
     const initialState = {
       object: { property: '' },
       array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
@@ -16,12 +16,12 @@ describe('Array', () => {
     const payload = { value: 'test' };
     get(s => s.array).filterCustom(e => e.value.startsWith('t')).patch(payload);
     expect(get(s => s.array).read()).toEqual([{ id: 1, value: 'one' }, { id: 2, value: 'test' }, { id: 3, value: 'test' }]);
-    expect(tests.currentAction.type).toEqual('array.patchWhere()');
+    expect(tests.currentAction.type).toEqual('array.filterCustom().patch()');
     expect(tests.currentAction.payload.patch).toEqual(payload);
     expect(tests.currentMutableState).toEqual(get().read());
   });
 
-  it('should removeWhere()', () => {
+  it('should filterCustom().remove()', () => {
     const initialState = {
       object: { property: '' },
       array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
@@ -29,13 +29,13 @@ describe('Array', () => {
     const get = set(initialState);
     get(s => s.array).filterCustom(a => a.id === 2).remove();
     expect(get(s => s.array).read()).toEqual([{ id: 1, value: 'one' }, { id: 3, value: 'three' }]);
-    expect(tests.currentAction.type).toEqual('array.removeWhere()');
+    expect(tests.currentAction.type).toEqual('array.filterCustom().remove()');
     expect(tests.currentAction.payload.toRemove).toEqual([{ id: 2, value: 'two' }]);
     expect(tests.currentMutableState).toEqual(get().read());
     expect(initialState.array === get(s => s.array).read()).toBeFalsy();
   });
 
-  it('should replaceWhere()', () => {
+  it('should filterCustom().replace()', () => {
     const initialState = {
       object: { property: '' },
       array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
@@ -44,42 +44,41 @@ describe('Array', () => {
     const payload = { id: 5, value: 'hey' };
     get(s => s.array).filterCustom(a => a.id === 2).replace(payload);
     expect(get(s => s.array).read()).toEqual([{ id: 1, value: 'one' }, payload, { id: 3, value: 'three' }]);
-    expect(tests.currentAction.type).toEqual('array.replaceWhere()');
+    expect(tests.currentAction.type).toEqual('array.filterCustom().replace()');
     expect(tests.currentAction.payload.replacement).toEqual(payload);
     expect(tests.currentMutableState).toEqual(get().read());
   });
 
-  it('should merge()', () => {
+  it('should upsert().match()', () => {
     const initialState = {
       object: { property: '' },
       array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
     };
     const get = set(initialState);
     const payload = { id: 1, value: 'one updated' };
-    get(s => s.array).merge(payload).match(s => s.id);
+    get(s => s.array).upsert(payload).match(s => s.id);
     expect(get(s => s.array).read()).toEqual([payload, { id: 2, value: 'two' }, { id: 3, value: 'three' }]);
-    expect(tests.currentAction.type).toEqual('array.merge().match(id)');
+    expect(tests.currentAction.type).toEqual('array.upsert().match(id)');
     expect(tests.currentAction.payload.argument).toEqual(payload);
-    expect(tests.currentAction.payload.replacementCount).toEqual(1);
-    expect(tests.currentAction.payload.insertionCount).toEqual(0);
+    expect(tests.currentAction.payload.found).toEqual(true);
     expect(tests.currentMutableState).toEqual(get().read());
     const payload2 = { id: 4, value: 'four inserted' };
-    get(s => s.array).merge(payload2).match(s => s.id);
+    get(s => s.array).upsert(payload2).match(s => s.id);
     expect(get(s => s.array).read()).toEqual([payload, { id: 2, value: 'two' }, { id: 3, value: 'three' }, payload2]);
-    expect(tests.currentAction.type).toEqual('array.merge().match(id)');
-    expect(tests.currentAction.payload.replacementCount).toEqual(0);
-    expect(tests.currentAction.payload.insertionCount).toEqual(1);
+    expect(tests.currentAction.type).toEqual('array.upsert().match(id)');
+    expect(tests.currentAction.payload.found).toEqual(false);
+    expect(tests.currentAction.payload.argument).toEqual(payload2);
     expect(tests.currentMutableState).toEqual(get().read());
   });
 
-  // it('should fail to upsertWhere() should more than one element match the where clause', () => {
-  //   const initialState = {
-  //     object: { property: '' },
-  //     array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
-  //   };
-  //   const get = set(initialState);
-  //   expect(() => get(s => s.array).whereFn(e => e.value.startsWith('t')).replaceElseInsert({ id: 0, value: 'x' })).toThrowError(errorMessages.UPSERT_MORE_THAN_ONE_MATCH);
-  // });
+  it('should upsert().match(), but fail due to more than one match being found', () => {
+    const initialState = {
+      object: { property: '' },
+      array: [{ id: 1, value: 'one' }, { id: 1, value: 'two' }, { id: 3, value: 'three' }],
+    };
+    const get = set(initialState);
+    expect(() => get(s => s.array).upsert({ id: 1, value: 'x' }).match(e => e.id)).toThrowError(errorMessages.UPSERT_MORE_THAN_ONE_MATCH);
+  });
 
   it('should removeAll()', () => {
     const initialState = {
@@ -209,18 +208,6 @@ describe('Array', () => {
     expect(tests.currentMutableState).toEqual(get().read());
   });
 
-  // it('should be able to upsertWhere() using a predicate', () => {
-  //   const get = set({
-  //     array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
-  //   });
-  //   get(s => s.array)
-  //     .where(e => e.id).eq(3)
-  //     .replaceElseInsert({ id: 4, value: 'four' });
-  //   expect(get(s => s.array).read()).toEqual([{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 4, value: 'four' }]);
-  //   expect(tests.currentAction.payload).toEqual({ where: 'id === 3', argument: { id: 4, value: 'four' }, elementFound: true });
-  //   expect(tests.currentMutableState).toEqual(get().read());
-  // });
-
   it('should be able to patchWhere() using a predicate', () => {
     const get = set({
       array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
@@ -257,104 +244,28 @@ describe('Array', () => {
     expect(tests.currentMutableState).toEqual(get().read());
   })
 
-  it('', () => {
+  it('should combine find() with onChange()', () => {
     const get = set({
       array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
     });
     get(s => s.array)
-      .filter(e => e.id).eq(3)
-      .onChange(e => console.log('!', e));
-
+      .find(e => e.id).eq(3)
+      .onChange(e => expect(e.value).toEqual('threee'));
     get(s => s.array)
       .filter(e => e.id).eq(3)
-      .patch({ value: 'threeee' });
-
-    // get(s => s.array)
-    //   .filterUsingFn(e => e.id === 3)
-    //   .
+      .patch({ value: 'threee' });
   })
 
-  it('', () => {
+  it('should combine findCustom() with onChange()', () => {
     const get = set({
       array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
     });
     get(s => s.array)
-      .filterCustom(e => e.id === 3)
-      .onChange(e => console.log('on change', e));
-
+      .findCustom(e => e.id === 3)
+      .onChange(e => expect(e.value).toEqual('xx'));
     get(s => s.array)
       .filterCustom(e => e.id === 3)
       .patch({ value: 'xx' })
-
-    // get(s => s.array)
-    //   .filter(e => e.id).eq(3)
-    //   .
-
-    // get(s => s.array)
-    //   .where(e => e.id).eq(3).and(e => e.id).gt(3)
-    //   .replaceElseInsert({ value: '', id: 3 })
-  })
-
-  it('', () => {
-    const get = set({
-      array: [{ id: 1, value: 'one', status: 'done' }, { id: 2, value: 'two', status: 'done' }, { id: 3, value: 'three', status: 'todo' }] as Array<{ id: number, value: string, status: 'done' | 'todo' }>,
-    });
-    get(s => s.array)
-      .filter(e => e.status).eq('todo')
-      .patch({ status: 'done' });
-
-    // get(s => s.array)
-    //   .filter(s => s.status).eq('done')
-    //   .get(s => s.some.deep.prop)
-    //   .replace(something)
-
-    // type: array.filter().some.deep.prop.replace()
-
-
-  })
-
-  it('', () => {
-    const get = set({
-      array: [{ id: 1, value: 'one', status: 'done' }, { id: 2, value: 'two', status: 'done' }, { id: 3, value: 'three', status: 'todo' }] as Array<{ id: number, value: string, status: 'done' | 'todo' }>,
-    });
-    get(s => s.array)
-      .find(e => e.id).eq(3)
-      .patch({ status: 'done' });
-    expect(get(s => s.array).find(e => e.id).eq(3).read()).toEqual({ id: 3, value: 'three', status: 'done' });
-  })
-
-  it('', () => {
-    const get = set({
-      array: [{ id: 1, value: 'one', status: 'done' }, { id: 2, value: 'two', status: 'done' }, { id: 3, value: 'three', status: 'todo' }] as Array<{ id: number, value: string, status: 'done' | 'todo' }>,
-    });
-    get(s => s.array)
-      .find(e => e.id).eq(3)
-      .onChange(e => expect(e).toEqual({ id: 3, value: 'three', status: 'done' }));
-    get(s => s.array)
-      .find(e => e.id).eq(3)
-      .patch({ status: 'done' });
-  })
-
-  it('', () => {
-    const get = set({
-      array: [{ id: 1, value: 'one', status: 'done' }, { id: 2, value: 'two', status: 'done' }, { id: 3, value: 'three', status: 'todo' }] as Array<{ id: number, value: string, status: 'done' | 'todo' }>,
-    });
-    get(s => s.array)
-      .findCustom(e => e.id === 3)
-      .patch({ status: 'done' });
-    expect(get(s => s.array).find(e => e.id).eq(3).read()).toEqual({ id: 3, value: 'three', status: 'done' });
-  })
-
-  it('', () => {
-    const get = set({
-      array: [{ id: 1, value: 'one', status: 'done' }, { id: 2, value: 'two', status: 'done' }, { id: 3, value: 'three', status: 'todo' }] as Array<{ id: number, value: string, status: 'done' | 'todo' }>,
-    });
-    get(s => s.array)
-      .findCustom(e => e.id === 3)
-      .onChange(e => expect(e).toEqual({ id: 3, value: 'three', status: 'done' }));
-    get(s => s.array)
-      .find(e => e.id).eq(3)
-      .patch({ status: 'done' });
   })
 
   it('should only update up to one element when using find()', () => {
@@ -365,13 +276,37 @@ describe('Array', () => {
       .find(e => e.value).match(/^t/)
       .patch({ value: 'new' });
     expect(get(s => s.array).read()).toEqual([{ id: 1, value: 'one', status: 'done' }, { id: 2, value: 'new', status: 'done' }, { id: 3, value: 'three', status: 'todo' }]);
+  })
 
+  it('should only patch() the first element in an array using findCustom()', () => {
+    const get = set({
+      array: [{ id: 1, value: 'one', status: 'done' }, { id: 2, value: 'two', status: 'done' }, { id: 3, value: 'three', status: 'todo' }] as Array<{ id: number, value: string, status: 'done' | 'todo' }>,
+    });
+    get(s => s.array)
+      .findCustom(e => e.value.startsWith('t'))
+      .patch({ value: 'test' });
+    expect(get(s => s.array).read()).toEqual([{ id: 1, value: 'one', status: 'done' }, { id: 2, value: 'test', status: 'done' }, { id: 3, value: 'three', status: 'todo' }]);
+  })
 
+  it('should only replace() the first element in an array using findCustom()', () => {
+    const get = set({
+      array: [{ id: 1, value: 'one', status: 'done' }, { id: 2, value: 'two', status: 'done' }, { id: 3, value: 'three', status: 'todo' }] as Array<{ id: number, value: string, status: 'done' | 'todo' }>,
+    });
+    get(s => s.array)
+      .findCustom(e => e.value.startsWith('t'))
+      .replace({ id: 2, value: 'test', status: 'done' });
+    expect(get(s => s.array).read()).toEqual([{ id: 1, value: 'one', status: 'done' }, { id: 2, value: 'test', status: 'done' }, { id: 3, value: 'three', status: 'todo' }]);
+  })
 
-    // get(s => s.array)
-    //   .filter(e => e.id).eq(3)
-    //   .get(s => s.some.number)
-    //   .replace(3);
+  it('should only remove() the first element in an array using findCustom()', () => {
+    const get = set({
+      array: [{ id: 1, value: 'one', status: 'done' }, { id: 2, value: 'two', status: 'done' }, { id: 3, value: 'three', status: 'todo' }] as Array<{ id: number, value: string, status: 'done' | 'todo' }>,
+    });
+    get(s => s.array)
+      .findCustom(e => e.value.startsWith('t'))
+      .remove();
+    expect(get().read()).toEqual({ array: [{ id: 1, value: 'one', status: 'done' }, { id: 3, value: 'three', status: 'todo' }] });
+    expect(tests.currentMutableState).toEqual({ array: [{ id: 1, value: 'one', status: 'done' }, { id: 3, value: 'three', status: 'todo' }] });
   })
 
 });

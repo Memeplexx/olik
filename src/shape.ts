@@ -187,7 +187,7 @@ export type ArrayOfElementsFnAction<X extends Array<any>, F extends FindOrFilter
    * // don't forget to unsubscribe to avoid a memory leak
    * subscription.unsubscribe(); 
    */
-  onChange: (listener: (arg: DeepReadonly<X[0]>) => void) => Unsubscribable;
+  onChange: (listener: (arg: DeepReadonly<F extends 'find' ? X[0] : X>) => void) => Unsubscribable;
 
   read: () => DeepReadonly<F extends 'find' ? X[0] : X>;
 }
@@ -240,7 +240,7 @@ export type StoreForAnArray<C extends Array<any>, T extends Trackability> = {
   replaceAll: (replacement: C, tag: Tag<T>) => void,
   /**
    * Merges the supplied array into the existing store array.  
-   * The `match` function allows you to select a property which will be used to determine whether each incoming element should replace an existing element, or be inserted.
+   * Each incoming element either replaces an existing element (if a match is found) or is inserted onto the end of the existing array (if a match is not found)
    * @example
    * ```
    * ...
@@ -248,7 +248,18 @@ export type StoreForAnArray<C extends Array<any>, T extends Trackability> = {
    * .match(e => e.id);
    * ```
    */
-  merge: (elementOrArray: C | C[0]) => { match: <P>(getProp: (element: DeepReadonly<C[0]>) => P, tag: Tag<T>) => void }
+  merge: (array: C) => { match: <P>(getProp: (element: DeepReadonly<C[0]>) => P, tag: Tag<T>) => void }
+  /**
+   * Replaces or inserts the supplied array element into the existing store array.  
+   * The incoming element either replaces an existing element (if a match is found) or is inserted onto the end of the existing array (if a match is not found)
+   * @example
+   * ```
+   * ...
+   * .upsert(newTodosArray)
+   * .match(e => e.id);
+   * ```
+   */
+  upsert: (element: C[0]) => { match: <P>(getProp: (element: DeepReadonly<C[0]>) => P, tag: Tag<T>) => void }
   /**
    * Specify which array element property to filter by
    * Note that it is advisable to choose this over the `filterCustom` function because using `filter()` will allow the library to describe your actions in more detail
@@ -285,8 +296,8 @@ export type StoreForAnArray<C extends Array<any>, T extends Trackability> = {
   filterCustom: FilterFunction<C, 'filter', T>,
   /**
    * Specify a function in order to filter elements.
-   * Note that it is advisable to choose the `filter` function over this one because that function will allow the library to describe your actions in more detail.
-   * Only use `filterCustom()` when your filter criteria is very complicated.
+   * Note that it is advisable to choose the `find` function over this one because that function will allow the library to describe your actions in more detail.
+   * Only use `findCustom()` when your find criteria is very complicated.
    * @example
    * ```
    * ...
@@ -296,6 +307,7 @@ export type StoreForAnArray<C extends Array<any>, T extends Trackability> = {
    */
   findCustom: FilterFunction<C, 'find', T>,
 }
+
 
 export type PredicateFunction<C extends Array<any>, F extends FindOrFilter, T extends Trackability> = <X = C[0]>(getProp?: (element: DeepReadonly<C[0]>) => X) => Predicate<C, X, F, T>
 
