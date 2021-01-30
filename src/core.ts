@@ -2,11 +2,11 @@ import { devtoolsDebounce, errorMessages } from './consts';
 import { integrateStoreWithReduxDevtools } from './devtools';
 import {
   ArrayOfObjectsAction,
-  BasicPredicate,
+  PredicateOptionsCommon,
   DeepReadonly,
   FindOrFilter,
   FunctionReturning,
-  NumberPredicate,
+  PredicateOptionsForNumber,
   OptionsForMakingAStore,
   OptionsForMakingAStoreEnforcingTags,
   OptionsForReduxDevtools,
@@ -24,7 +24,7 @@ import {
   StoreWhichIsNestedInternal,
   StoreWhichIsResettable,
   StoreWhichMayContainNestedStores,
-  StringPredicate,
+  PredicateOptionsForString,
   Tag,
   Trackability,
 } from './shape';
@@ -135,7 +135,7 @@ function makeInternal<S, T extends Trackability>(state: S, options: { supportsTa
     const pathSegments = pathReader.readSelector(selector);
     const { payloadFrozen, payloadCopied, payloadFunction } = copyPayload(payload);
     let payloadReturnedByFn: C;
-    let getPayloadFn = (() => payloadReturnedByFn) as unknown as () => C;
+    let getPayloadFn = (() => payloadReturnedByFn ? { replacement: payloadReturnedByFn } : payloadReturnedByFn) as unknown as () => C;
     if (!pathSegments.length) {
       updateState({
         selector,
@@ -160,7 +160,9 @@ function makeInternal<S, T extends Trackability>(state: S, options: { supportsTa
         },
         actionName: `${name}()`,
         pathSegments: [],
-        payload: payloadFrozen,
+        payload: {
+          replacement: payloadFrozen,
+        },
         getPayloadFn,
         tag,
       });
@@ -184,7 +186,10 @@ function makeInternal<S, T extends Trackability>(state: S, options: { supportsTa
         actionName,
         actionNameOverride: true,
         pathSegments: segsCopy,
-        payload: payloadFrozen,
+        // payload: payloadFrozen,
+        payload: {
+          replacement: payloadFrozen,
+        },
         getPayloadFn,
         tag,
       })
@@ -251,7 +256,7 @@ function makeInternal<S, T extends Trackability>(state: S, options: { supportsTa
               selector,
               replacer: old => old.map((o, i) => elementIndices.includes(i) ? payloadFrozen : o),
               mutator: old => { old.forEach((o, i) => { if (elementIndices.includes(i)) { old[i] = payloadCopied; } }) },
-              actionName: 'replace()',
+              actionName: `${type}().replace()`,
               payload: {
                 where: whereClauseStrings.join(' '),
                 replacement: payloadFrozen,
@@ -266,7 +271,7 @@ function makeInternal<S, T extends Trackability>(state: S, options: { supportsTa
               selector,
               replacer: old => old.map((o, i) => elementIndices.includes(i) ? { ...o, ...payloadFrozen } : o),
               mutator: old => elementIndices.forEach(i => Object.assign(old[i], payloadCopied)),
-              actionName: 'patch()',
+              actionName: `${type}().patch()`,
               payload: {
                 where: whereClauseStrings.join(' '),
                 patch: payloadFrozen,
@@ -279,8 +284,15 @@ function makeInternal<S, T extends Trackability>(state: S, options: { supportsTa
             updateState<C, T, X>({
               selector,
               replacer: old => old.filter((o, i) => !elementIndices.includes(i)),
-              mutator: old => { const toRemove = old.filter(bundleCriteria); for (var i = 0; i < old.length; i++) { if (toRemove.includes(old[i])) { old.splice(i, 1); i--; } } },
-              actionName: 'remove()',
+              mutator: old => {
+                const toRemove = type === 'find' ? [old.find(bundleCriteria)] : old.filter(bundleCriteria);
+                for (var i = 0; i < old.length; i++) {
+                  if (toRemove.includes(old[i])) {
+                    old.splice(i, 1); i--;
+                  }
+                }
+              },
+              actionName: `${type}().remove()`,
               payload: {
                 where: whereClauseStrings.join(' '),
                 toRemove: (selector(currentState) as X).filter((e, i) => elementIndices.includes(i)),
@@ -308,14 +320,14 @@ function makeInternal<S, T extends Trackability>(state: S, options: { supportsTa
             ne: val => constructActions(`${segs.join('.')} !== ${JSON.stringify(val)}`, (e: X[0]) => e !== val),
             in: val => constructActions(`[${val.join(', ')}].includes(${segs.join('.')})`, (e: X[0]) => val.includes(e)),
             ni: val => constructActions(`![${val.join(', ')}].includes(${segs.join('.')})`, (e: X[0]) => !val.includes(e)),
-          } as BasicPredicate<X, any, any, T>,
+          } as PredicateOptionsCommon<X, any, any, T>,
           ...{
             gt: val => constructActions(`${segs.join('.')} > ${val}`, (e: X[0]) => e > val),
             lt: val => constructActions(`${segs.join('.')} < ${val}`, (e: X[0]) => e < val),
-          } as NumberPredicate<X, any, any, T>,
+          } as PredicateOptionsForNumber<X, any, any, T>,
           ...{
             match: val => constructActions(`${segs.join('.')}.match(${val})`, (e: X[0]) => e.match(val)),
-          } as StringPredicate<X, any, any, T>,
+          } as PredicateOptionsForString<X, any, any, T>,
         };
       }) as StoreForAnArray<X, T>['filter'];
       return recurseWhere;
@@ -381,7 +393,7 @@ function makeInternal<S, T extends Trackability>(state: S, options: { supportsTa
         onChange: (performAction => {
           changeListeners.set(performAction, nextState => deepFreeze(type === 'find'
             ? (selector(nextState) as X).find(e => predicate(e))
-            : (selector(nextState) as X).map(e => predicate(e) ? e : null).filter(e => e != null)));
+            : { $filtered: (selector(nextState) as X).filter(e => predicate(e)) }));
           return { unsubscribe: () => changeListeners.delete(performAction) };
         }),
         read: () => deepFreeze(type === 'find'
@@ -412,7 +424,9 @@ function makeInternal<S, T extends Trackability>(state: S, options: { supportsTa
           replacer: old => ({ ...old, ...payloadFrozen }),
           mutator: old => Object.assign(old, payloadCopied),
           actionName: 'patch()',
-          payload: payloadFrozen,
+          payload: {
+            patch: payloadFrozen,
+          },
           tag,
         });
       }) as StoreForAnObject<C, T>['patch'],
@@ -422,8 +436,10 @@ function makeInternal<S, T extends Trackability>(state: S, options: { supportsTa
           selector,
           replacer: old => [...old, ...(deepCopy(Array.isArray(payloadFrozen) ? payloadFrozen : [payloadFrozen]))],
           mutator: old => old.push(...(Array.isArray(payloadCopied) ? payloadCopied : [payloadCopied])),
-          actionName: 'insertAfter()',
-          payload: payloadFrozen,
+          actionName: 'insert()',
+          payload: {
+            insertion: payloadFrozen,
+          },
           tag,
         });
       }) as StoreForAnArray<X, T>['insert'],
@@ -433,7 +449,6 @@ function makeInternal<S, T extends Trackability>(state: S, options: { supportsTa
           replacer: () => [],
           mutator: old => old.length = 0,
           actionName: 'removeAll()',
-          payload: null,
           tag,
         });
       }) as StoreForAnArray<X, T>['removeAll'],
@@ -478,14 +493,13 @@ function makeInternal<S, T extends Trackability>(state: S, options: { supportsTa
           const segs = !getProp ? [] : createPathReader((selector(currentState) as X)[0] || {}).readSelector(getProp);
           const { payloadFrozen, payloadCopied } = copyPayload(payload);
           const indices = (selector(currentState) as X).map((e, i) => getProp(e) === getProp(payloadFrozen) ? i : null).filter(i => i !== null) as number[];
-          if (indices.length > 1) { throw new Error(errorMessages.UPSERT_MORE_THAN_ONE_MATCH); }
           updateState({
             selector,
-            replacer: old => !indices.length ? [...old, payloadFrozen] : Object.assign([], old, {[indices[0]]: payloadFrozen}),
+            replacer: old => !indices.length ? [...old, payloadFrozen] : Object.assign([], old, { [indices[0]]: payloadFrozen }),
             mutator: old => { if (!indices.length) { old.push(payloadCopied) } else { old[indices[0]] = payloadCopied; } },
             actionName: `upsert().match(${segs.join('.')})`,
             payload: {
-              found: !!indices.length,
+              matchFound: !!indices.length,
               argument: payloadFrozen,
             },
             tag,
@@ -564,7 +578,7 @@ function makeInternal<S, T extends Trackability>(state: S, options: { supportsTa
     mutator: (newNode: X) => any,
     pathSegments?: string[],
     actionName: string,
-    payload: any,
+    payload?: any,
     tag: Tag<T>,
     actionNameOverride?: boolean,
     getPayloadFn?: () => any,
@@ -579,6 +593,7 @@ function makeInternal<S, T extends Trackability>(state: S, options: { supportsTa
       type: (specs.actionNameOverride ? specs.actionName : (pathSegments.join('.') + (pathSegments.length ? '.' : '') + specs.actionName)) +
         (specs.tag ? ` [${options.tagSanitizer ? options.tagSanitizer(specs.tag as string) : specs.tag}]` : ''),
       payload: (specs.getPayloadFn && (specs.getPayloadFn() !== undefined)) ? specs.getPayloadFn() : specs.payload,
+      // ...((specs.getPayloadFn && (specs.getPayloadFn() !== undefined)) ? specs.getPayloadFn() : specs.payload),
     };
     tests.currentAction = actionToDispatch;
     tests.currentMutableState = pathReader.mutableStateCopy as any;
@@ -619,7 +634,13 @@ function makeInternal<S, T extends Trackability>(state: S, options: { supportsTa
   function notifySubscribers(oldState: S, newState: S) {
     changeListeners.forEach((selector, subscriber) => {
       const selectedNewState = selector(newState);
-      if (selector(oldState) !== selectedNewState) {
+      const selectedOldState = selector(oldState);
+      if (selectedOldState && selectedOldState.$filtered && selectedNewState && selectedNewState.$filtered) {
+        if ((selectedOldState.$filtered.length !== selectedNewState.$filtered.length)
+          || !(selectedOldState.$filtered as Array<any>).every(element => selectedNewState.$filtered.includes(element))) {
+          subscriber(selectedNewState.$filtered);
+        }
+      } else if (selectedOldState !== selectedNewState) {
         subscriber(selectedNewState);
       }
     })

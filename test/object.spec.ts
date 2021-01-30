@@ -6,44 +6,47 @@ describe('Object', () => {
 
   beforeAll(() => tests.windowObject = windowAugmentedWithReduxDevtoolsImpl);
 
-  it('should REPLACE a node', () => {
-    const initialState = {
-      object: { property: 'hello', property2: 'two' },
-    };
+  const initialState = {
+    object: { property: 'one', property2: 'two' },
+  };
+
+  it('should replace()', () => {
     const get = set(initialState);
     const payload = 'hey';
     get(s => s.object.property).replace(payload);
     expect(get(s => s.object.property).read()).toEqual('hey');
     expect(get(s => s.object.property2).read() === initialState.object.property2).toBeTruthy();
-    expect(tests.currentAction.type).toEqual('object.property.replace()');
-    expect(tests.currentAction.payload).toEqual(payload);
+    expect(tests.currentAction).toEqual({
+      type: 'object.property.replace()',
+      payload: {
+        replacement: payload,
+      }
+    })
     expect(tests.currentMutableState).toEqual(get().read());
   })
 
-  it('should PATCH an node', () => {
-    const initialState = {
-      object: { property: 'hello', property2: 'two' },
-    };
+  it('should patch()', () => {
     const get = set(initialState);
     const payload = { property: 'xxx' };
     get(s => s.object).patch(payload);
     expect(get(s => s.object.property).read()).toEqual(payload.property);
     expect(get(s => s.object.property2).read() === initialState.object.property2).toBeTruthy();
-    expect(tests.currentAction.type).toEqual('object.patch()');
-    expect(tests.currentAction.payload).toEqual(payload);
+    expect(tests.currentAction).toEqual({
+      type: 'object.patch()',
+      payload: {
+        patch: payload,
+      }
+    })
     expect(tests.currentMutableState).toEqual(get().read());
   })
 
-  it('should RESET a node', () => {
-    const initialState = {
-      object: { property: 'hello', property2: 'two' },
-    };
+  it('should reset()', () => {
     const get = set(initialState);
     get(s => s.object.property).replace('hey');
     expect(get(s => s.object.property).read()).toEqual('hey');
     expect(tests.currentMutableState).toEqual(get().read());
     get(s => s.object.property).reset();
-    expect(get(s => s.object.property).read()).toEqual('hello');
+    expect(get(s => s.object.property).read()).toEqual('one');
     expect(tests.currentMutableState).toEqual(get().read());
     get().replace({ object: { property: 'xx', property2: 'yy' } });
     expect(get().read()).toEqual({ object: { property: 'xx', property2: 'yy' } });
@@ -53,22 +56,30 @@ describe('Object', () => {
     expect(tests.currentMutableState).toEqual(get().read());
   })
 
-  it('should work with a function as the payload', () => {
+  it('should replace() with a function', () => {
     const get = set({ prop: 'a' });
     get(s => s.prop).replace(e => e + 'b');
     expect(get().read()).toEqual({ prop: 'ab' });
     expect(tests.currentMutableState).toEqual({ prop: 'ab' });
-    expect(tests.currentAction.payload).toEqual('ab');
+    expect(tests.currentAction).toEqual({
+      type: 'prop.replace()',
+      payload: {
+        replacement: 'ab',
+      },
+    });
   });
 
   it('should work with tags correctly', () => {
-    const get = setEnforceTags({
-      object: { property: 'hello', property2: 'two' },
-    });
     const payload = 'hey';
     const tag = 'mytag';
+    const get = setEnforceTags(initialState);
     get(s => s.object.property).replace(payload, tag);
-    expect(tests.currentAction.type).toEqual(`object.property.replace() [${tag}]`);
+    expect(tests.currentAction).toEqual({
+      type: `object.property.replace() [${tag}]`,
+      payload: {
+        replacement: payload,
+      }
+    });
     expect(get(s => s.object.property).read()).toEqual(payload);
     expect(tests.currentMutableState).toEqual(get().read());
   })
@@ -80,16 +91,28 @@ describe('Object', () => {
       tagSanitizer: (tag) => tag + 'x',
     });
     const tag = 'mytag';
-    get(s => s.test).replace('test', tag);
-    expect(tests.currentAction.type).toEqual(`test.replace() [${tag}x]`);
+    const payload = 'test' ;
+    get(s => s.test).replace(payload, tag);
+    expect(tests.currentAction).toEqual({
+      type: `test.replace() [${tag}x]`,
+      payload: {
+        replacement: payload,
+      }
+    });
     expect(tests.currentMutableState).toEqual(get().read());
   })
 
   it('should be able to add a new property onto an object', () => {
     const get = set({} as { [key: string]: string });
-    get().patch({ hello: 'world' });
+    const payload = { hello: 'world' };
+    get().patch(payload);
     expect(get().read()).toEqual({ hello: 'world' });
-    expect(tests.currentMutableState).toEqual(get().read());
+    expect(tests.currentAction).toEqual({
+      type: 'patch()',
+      payload: {
+        patch: payload,
+      }
+    });
   })
 
 });

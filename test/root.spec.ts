@@ -13,12 +13,12 @@ describe('Root', () => {
     expect(tests.currentMutableState).toEqual(get().read());
   })
 
-  // it('should update a top-level array', () => {
-  //   const get = set(new Array<{ id: number, text: string }>());
-  //   get().insertAfter([{ id: 1, text: 'hello' }]);
-  //   expect(get().read()).toEqual([{ id: 1, text: 'hello' }]);
-  //   expect(tests.currentMutableState).toEqual(get().read());
-  // })
+  it('should update a top-level array', () => {
+    const get = set(new Array<{ id: number, text: string }>());
+    get().insert([{ id: 1, text: 'hello' }]);
+    expect(get().read()).toEqual([{ id: 1, text: 'hello' }]);
+    expect(tests.currentMutableState).toEqual(get().read());
+  })
 
   it('should replace a top-level number', () => {
     const get = set(0);
@@ -72,7 +72,13 @@ describe('Root', () => {
     const get = set('a');
     get().replace(e => e + 'b');
     expect(get().read()).toEqual('ab');
-    expect(tests.currentAction.payload).toEqual('ab');
+    // expect(tests.currentAction.payload).toEqual('ab');
+    expect(tests.currentAction).toEqual({
+      type: 'replace()',
+      payload: {
+        replacement: 'ab',
+      },
+    });
   });
 
 });

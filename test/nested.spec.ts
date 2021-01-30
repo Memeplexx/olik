@@ -96,16 +96,16 @@ describe('Nested', () => {
     expect(get().read()).toEqual({ test: '', nested: { [name]: { 0: { one: 'test1' }, 1: { one: 'test2' } } } });
   })
 
-  // it('should be able to support nested store which is a top-level array', () => {
-  //   const initialState = {
-  //     test: '',
-  //   };
-  //   const get = set(initialState, { containerForNestedStores: true });
-  //   const name = 'myComp';
-  //   const nestedStore = setNested(new Array<string>(), { name });
-  //   nestedStore().insertAfter('test');
-  //   expect(get().read()).toEqual({ test: '', nested: { [name]: { 0: ['test'] } } });
-  // })
+  it('should be able to support nested store which is a top-level array', () => {
+    const initialState = {
+      test: '',
+    };
+    const get = set(initialState, { containerForNestedStores: true });
+    const name = 'myComp';
+    const nestedStore = setNested(new Array<string>(), { name });
+    nestedStore().insert('test');
+    expect(get().read()).toEqual({ test: '', nested: { [name]: { 0: ['test'] } } });
+  })
 
   it('should be able to support nested store which is a top-level number', () => {
     const initialState = {

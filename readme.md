@@ -11,7 +11,7 @@
 #### 🎨 **WHY CHOOSE OULIK?**
 Oulik is designed to make your state management as transparent and semantically consistent as possible.  
 It's fluent API is 100% typesafe, and it uses that API to auto-generate your actions and perform immutable updates.  
-This library can be used with ***[![](./src/assets/javascript.png)&nbsp;Vanilla-JS](https://memeplexx.github.io/oulik/docs/vanilla-js)***, and has minimal bindings for ***[![](./src/assets/react.png)&nbsp;React](https://memeplexx.github.io/oulik/docs/read)***, and ***[![](./src/assets/angular.png)&nbsp;Angular](https://memeplexx.github.io/oulik/docs/angular)***.  
+This library can be used with ***[![](./src/assets/javascript.png)&nbsp;Vanilla-JS](https://memeplexx.github.io/oulik/docs/vanilla-js)***, with minimal bindings for ***[![](./src/assets/react.png)&nbsp;React](https://memeplexx.github.io/oulik/docs/read)***, and ***[![](./src/assets/angular.png)&nbsp;Angular](https://memeplexx.github.io/oulik/docs/angular)***.  
 
 #### 🌈 **SET UP**
 ```ts
@@ -26,10 +26,10 @@ const get = set({
 #### ✍️ **WRITE STATE**  
 ```ts
 get(s => s.username)                     // type: 'username.replace()'
-  .replace('Terence');                   // payload: 'Terence'
+  .replace('Terence');                   // replacement: 'Terence'
 
 get(s => s.favorite.foods)               // type: 'favorite.foods.insert()'
-  .insert(['Indian', 'Sushi']);          // payload: ['Indian', 'Sushi']
+  .insert(['Indian', 'Sushi']);          // insertion: ['Indian', 'Sushi']
 
 get(s => s.favorite.hobbies)             // type: 'favorite.hobbies.find().patch()'
   .find(s => s.id).eq(3)                 // query: 'id === 3',

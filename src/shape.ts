@@ -57,13 +57,23 @@ export type DeepWritable<E> =
   E extends DeepReadonlyObject<infer R> ? R :
   never;
 
+/**
+ * A function passing in the current value and returning a new value
+ */
 export type FunctionReturning<C> = (currentValue: DeepReadonly<C>) => C;
 
-export type ArrayAction<X extends Array<any>, F extends FindOrFilter, T extends Trackability> = X[0] extends object ? ArrayOfObjectsAction<X, F, T> : ArrayOfElementsAction<X, F, T>;
+export type PredicateAction<X extends Array<any>, F extends FindOrFilter, T extends Trackability> = X[0] extends object
+  ? ArrayOfObjectsAction<X, F, T>
+  : ArrayOfElementsAction<X, F, T>;
 
-export type ArrayFnAction<X extends Array<any>, F extends FindOrFilter, T extends Trackability> = X[0] extends object ? ArrayOfObjectsFnAction<X, F, T> : ArrayOfElementsFnAction<X, F, T>;
+export type PredicateCustom<X extends Array<any>, F extends FindOrFilter, T extends Trackability> = X[0] extends object
+  ? ArrayOfObjectsCommonAction<X, F, T>
+  : ArrayOfElementsCommonAction<X, F, T>;
 
-export type BasicPredicate<X extends Array<any>, E, F extends FindOrFilter, T extends Trackability> = {
+/**
+ * Query options common to all datatypes
+ */
+export type PredicateOptionsCommon<X extends Array<any>, E, F extends FindOrFilter, T extends Trackability> = {
   /**
    * Checks whether the previously selected property **equals** the supplied value
    * @example
@@ -71,7 +81,7 @@ export type BasicPredicate<X extends Array<any>, E, F extends FindOrFilter, T ex
    * .eq(1)
    * ...
    */
-  eq: (value: E) => ArrayAction<X, F, T>,
+  eq: (value: E) => PredicateAction<X, F, T>,
   /**
    * Checks whether the previously selected property does **not equal** the supplied value
    * @example
@@ -79,7 +89,7 @@ export type BasicPredicate<X extends Array<any>, E, F extends FindOrFilter, T ex
    * .ne(1)
    * ...
    */
-  ne: (value: E) => ArrayAction<X, F, T>,
+  ne: (value: E) => PredicateAction<X, F, T>,
   /**
    * Checks whether the previously selected property **is in** the supplied array
    * @example
@@ -87,7 +97,7 @@ export type BasicPredicate<X extends Array<any>, E, F extends FindOrFilter, T ex
    * .filter(e => e.id).in([1, 2])
    * ...
    */
-  in: (value: E[]) => ArrayAction<X, F, T>,
+  in: (value: E[]) => PredicateAction<X, F, T>,
   /**
    * Checks whether the previously selected property **is not in** the supplied array
    * @example
@@ -95,10 +105,13 @@ export type BasicPredicate<X extends Array<any>, E, F extends FindOrFilter, T ex
    * .ni([1, 2])
    * ...
    */
-  ni: (value: E[]) => ArrayAction<X, F, T>,
+  ni: (value: E[]) => PredicateAction<X, F, T>,
 }
 
-export type NumberPredicate<X extends Array<any>, E, F extends FindOrFilter, T extends Trackability> = {
+/**
+ * Query options for number
+ */
+export type PredicateOptionsForNumber<X extends Array<any>, E, F extends FindOrFilter, T extends Trackability> = {
   /**
    * Checks whether the previously selected number property **is greater than** the supplied number
    * @example
@@ -106,7 +119,7 @@ export type NumberPredicate<X extends Array<any>, E, F extends FindOrFilter, T e
    * .gt(2)
    * ...
    */
-  gt: (value: number) => ArrayAction<X, F, T>,
+  gt: (value: number) => PredicateAction<X, F, T>,
   /**
    * Checks whether the previously selected number property **is less than** the supplied number
    * @example
@@ -114,10 +127,13 @@ export type NumberPredicate<X extends Array<any>, E, F extends FindOrFilter, T e
    * .lt(2)
    * ...
    */
-  lt: (value: number) => ArrayAction<X, F, T>,
-} & BasicPredicate<X, E, F, T>;
+  lt: (value: number) => PredicateAction<X, F, T>,
+} & PredicateOptionsCommon<X, E, F, T>;
 
-export type StringPredicate<X extends Array<any>, E, F extends FindOrFilter, T extends Trackability> = {
+/**
+ * Query options for a string
+ */
+export type PredicateOptionsForString<X extends Array<any>, E, F extends FindOrFilter, T extends Trackability> = {
   /**
    * Checks whether the previously selected string property **matches** the supplied regular expression
    * @example
@@ -125,14 +141,20 @@ export type StringPredicate<X extends Array<any>, E, F extends FindOrFilter, T e
    * .matches(/^hello/)
    * ...
    */
-  match: (pattern: RegExp) => ArrayAction<X, F, T>,
-} & BasicPredicate<X, E, F, T>;
+  match: (pattern: RegExp) => PredicateAction<X, F, T>,
+} & PredicateOptionsCommon<X, E, F, T>;
 
+/**
+ * Query options
+ */
 export type Predicate<X extends Array<any>, E, F extends FindOrFilter, T extends Trackability> =
-  [E] extends [number] ? NumberPredicate<X, E, F, T>
-  : [E] extends [string] ? StringPredicate<X, E, F, T>
-  : BasicPredicate<X, E, F, T>;
+  [E] extends [number] ? PredicateOptionsForNumber<X, E, F, T>
+  : [E] extends [string] ? PredicateOptionsForString<X, E, F, T>
+  : PredicateOptionsCommon<X, E, F, T>;
 
+/**
+ * Actions which can be applied to any array
+ */
 export type ArrayOfElementsAction<X extends Array<any>, F extends FindOrFilter, T extends Trackability> = {
   /**
    * Append more criteria with which to filter your array
@@ -150,8 +172,11 @@ export type ArrayOfElementsAction<X extends Array<any>, F extends FindOrFilter, 
    * ...
    */
   or: <P>(getProp: (element: DeepReadonly<X[0]>) => P) => Predicate<X, P, F, T>,
-} & ArrayOfElementsFnAction<X, F, T>;
+} & ArrayOfElementsCommonAction<X, F, T>;
 
+/**
+ * Actions which can be applied to an array of objects
+ */
 export type ArrayOfObjectsAction<X extends Array<any>, F extends FindOrFilter, T extends Trackability> = {
   /**
    * Partially updates array elements allowing you to omit those properties which should not change
@@ -162,16 +187,16 @@ export type ArrayOfObjectsAction<X extends Array<any>, F extends FindOrFilter, T
   patch: (replacement: Partial<X[0]>, tag: Tag<T>) => void;
 } & ArrayOfElementsAction<X, F, T>;
 
-export type ArrayOfElementsFnAction<X extends Array<any>, F extends FindOrFilter, T extends Trackability> = {
+export type ArrayOfElementsCommonAction<X extends Array<any>, F extends FindOrFilter, T extends Trackability> = {
   /**
-   * Replaces any elements that were found in the `filter()` clause
+   * Replaces the selected element(s)
    * @example
    * ...
    * .replace({ id: 1, text: 'bake cookies' })
    */
   replace: (replacement: X[0], tag: Tag<T>) => void;
   /**
-   * Removes any elements that were found in the `filter()` clause
+   * Removes any elements that were found in the search clause
    * @example
    * ...
    * .remove()
@@ -188,11 +213,13 @@ export type ArrayOfElementsFnAction<X extends Array<any>, F extends FindOrFilter
    * subscription.unsubscribe(); 
    */
   onChange: (listener: (arg: DeepReadonly<F extends 'find' ? X[0] : X>) => void) => Unsubscribable;
-
+  /**
+   * Returns the current value of the selected node.
+   */
   read: () => DeepReadonly<F extends 'find' ? X[0] : X>;
 }
 
-export type ArrayOfObjectsFnAction<X extends Array<any>, F extends FindOrFilter, T extends Trackability> = {
+export type ArrayOfObjectsCommonAction<X extends Array<any>, F extends FindOrFilter, T extends Trackability> = {
   /**
    * Partially updates array elements allowing you to omit those properties which should not change
    * @example
@@ -200,7 +227,7 @@ export type ArrayOfObjectsFnAction<X extends Array<any>, F extends FindOrFilter,
    * .patch({ done: true })
    */
   patch: (replacement: Partial<X[0]>, tag: Tag<T>) => void;
-} & ArrayOfElementsFnAction<X, F, T>;
+} & ArrayOfElementsCommonAction<X, F, T>;
 
 /**
  * An object which is capable of storing and updating state which is in the shape of an array of primitives
@@ -261,8 +288,8 @@ export type StoreForAnArray<C extends Array<any>, T extends Trackability> = {
    */
   upsert: (element: C[0]) => { match: <P>(getProp: (element: DeepReadonly<C[0]>) => P, tag: Tag<T>) => void }
   /**
-   * Specify which array element property to filter by
-   * Note that it is advisable to choose this over the `filterCustom` function because using `filter()` will allow the library to describe your actions in more detail
+   * Specify which array element property to filter by.  
+   * Note that it is advisable to choose this over the `filterCustom()` function because using `filter()` will allow the library to describe your actions in more detail
    * @example
    * ```
    * ...
@@ -272,8 +299,8 @@ export type StoreForAnArray<C extends Array<any>, T extends Trackability> = {
    */
   filter: PredicateFunction<C, 'filter', T>,
   /**
-   * Specify which array element property to find by
-   * Note that it is advisable to choose this over the `findCustom` function because using `find()` will allow the library to describe your actions in more detail
+   * Specify which array element property to find by.  
+   * Note that it is advisable to choose this over the `findCustom()` function because using `find()` will allow the library to describe your actions in more detail
    * @example
    * ```
    * ...
@@ -283,9 +310,9 @@ export type StoreForAnArray<C extends Array<any>, T extends Trackability> = {
    */
   find: PredicateFunction<C, 'find', T>,
   /**
-   * Specify a function in order to filter elements.
-   * Note that it is advisable to choose the `filter` function over this one because that function will allow the library to describe your actions in more detail.
-   * Only use `filterCustom()` when your filter criteria is very complicated.
+   * Specify a function in order to filter elements.  
+   * Note that it is advisable to choose the `filter()` function over this one because that function will allow the library to describe your actions in more detail.
+   * Only use `filterCustom()` when your search criteria is very complicated.
    * @example
    * ```
    * ...
@@ -293,11 +320,11 @@ export type StoreForAnArray<C extends Array<any>, T extends Trackability> = {
    * ...
    * ```
    */
-  filterCustom: FilterFunction<C, 'filter', T>,
+  filterCustom: PredicateFunctionCustom<C, 'filter', T>,
   /**
-   * Specify a function in order to filter elements.
-   * Note that it is advisable to choose the `find` function over this one because that function will allow the library to describe your actions in more detail.
-   * Only use `findCustom()` when your find criteria is very complicated.
+   * Specify a function in order to filter elements.  
+   * Note that it is advisable to choose the `find()` function over this one because that function will allow the library to describe your actions in more detail.
+   * Only use `findCustom()` when your search criteria is very complicated.
    * @example
    * ```
    * ...
@@ -305,13 +332,18 @@ export type StoreForAnArray<C extends Array<any>, T extends Trackability> = {
    * ...
    * ```
    */
-  findCustom: FilterFunction<C, 'find', T>,
+  findCustom: PredicateFunctionCustom<C, 'find', T>,
 }
 
-
+/**
+ * A function which accepts another function to select a property from an array element
+ */
 export type PredicateFunction<C extends Array<any>, F extends FindOrFilter, T extends Trackability> = <X = C[0]>(getProp?: (element: DeepReadonly<C[0]>) => X) => Predicate<C, X, F, T>
 
-export type FilterFunction<C extends Array<any>, F extends FindOrFilter, T extends Trackability> = (fn: (element: C[0]) => boolean) => ArrayFnAction<C, F, T>;
+/**
+ * A function which accepts another function to test an array element based on some condition
+ */
+export type PredicateFunctionCustom<C extends Array<any>, F extends FindOrFilter, T extends Trackability> = (fn: (element: DeepReadonly<C[0]>) => boolean) => PredicateCustom<C, F, T>;
 
 /**
  * An object which is capable of storing and updating state which is in the shape of a primitive
@@ -354,7 +386,7 @@ export type StoreOrDerivation<C> = {
    * .onChange(todos => console.log(todos));
    * ```
    */
-  onChange: (performAction: (selection: DeepReadonly<C>) => any) => Unsubscribable,
+  onChange: (callbackFn: (node: DeepReadonly<C>) => any) => Unsubscribable,
   /**
    * @returns the current state
    */
