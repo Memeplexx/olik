@@ -1,5 +1,6 @@
 import { errorMessages } from './consts';
 import { FunctionReturning } from './shape';
+import { tests } from './tests';
 
 export function deepFreeze<T extends Object>(o: T): T {
   Object.freeze(o);
@@ -90,14 +91,7 @@ export function createPathReader<S extends Object>(state: S) {
             return initialize(val);
           } else if (typeof (val) === 'function') {
             return function (...args: any[]) {
-              if (prop === 'find' && Array.isArray(target)) {
-                const found = val.apply(target, args);
-                if (found) {
-                  const indice = (target as unknown as any[]).findIndex(e => e === found);
-                  pathSegments.push(indice.toString());
-                }
-                return initialize(found);
-              } else {
+              if (!tests.bypassArrayFunctionCheck) {
                 throw new Error(errorMessages.ILLEGAL_FUNCTION_INVOKED_WITHIN_SELECTOR(prop));
               }
             };

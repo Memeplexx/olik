@@ -2,15 +2,15 @@ import { devtoolsDebounce, errorMessages } from './consts';
 import { integrateStoreWithReduxDevtools } from './devtools';
 import {
   ArrayOfObjectsAction,
-  PredicateOptionsCommon,
   DeepReadonly,
   FindOrFilter,
   FunctionReturning,
-  PredicateOptionsForNumber,
   OptionsForMakingAStore,
   OptionsForMakingAStoreEnforcingTags,
   OptionsForReduxDevtools,
-  Predicate,
+  PredicateOptionsCommon,
+  PredicateOptionsForNumber,
+  PredicateOptionsForString,
   Selector,
   SelectorFromANestedStore,
   SelectorFromAStore,
@@ -24,7 +24,6 @@ import {
   StoreWhichIsNestedInternal,
   StoreWhichIsResettable,
   StoreWhichMayContainNestedStores,
-  PredicateOptionsForString,
   Tag,
   Trackability,
 } from './shape';
@@ -40,14 +39,11 @@ let nestedContainerStore: ((selector?: ((s: any) => any) | undefined) => StoreWh
  * @param options some additional configuration options
  * 
  * @example
- * ```
- * const get = setEnforceTags({ todos: Array<{ id: number, text: string }>() });
+ * const get = setEnforceTags({ prop: '' });
  * 
  * // Note that when updating state, we are now required to supply a string as the last argument (in this case 'TodoDetailComponent')
- * get(s => s.todos)
- *   .patchWhere(t => t.id === 1)
- *   .with({ text: 'bake cookies' }, 'TodoDetailComponent')
- * ```
+ * get(s => s.test)
+ *   .replace('value', 'TodoDetailComponent')
  */
 export function setEnforceTags<S>(state: S, options: OptionsForMakingAStoreEnforcingTags = {}): SelectorFromAStoreEnforcingTags<S> {
   return makeInternalRootStore<S, 'tagged'>(state, { ...options, supportsTags: true });
@@ -59,9 +55,7 @@ export function setEnforceTags<S>(state: S, options: OptionsForMakingAStoreEnfor
  * @param options some additional configuration options
  * 
  * @example
- * ```
- * const select = set({ todos: Array<{ id: number, text: string }>() });
- * ```
+ * const get = set({ todos: Array<{ id: number, text: string }>() });
  */
 export function set<S>(state: S, options: OptionsForMakingAStore = {}): SelectorFromAStore<S> {
   return makeInternalRootStore<S, 'untagged'>(state, { ...options, supportsTags: false });
@@ -337,9 +331,11 @@ function makeInternal<S, T extends Trackability>(state: S, options: { supportsTa
     };
     const findOrFilterCustom = (type: FindOrFilter) => (predicate => {
       const getElementIndices = () => {
+        tests.bypassArrayFunctionCheck = true;
         const elementIndices = type === 'find'
           ? [(selector(currentState) as X).findIndex(e => predicate(e))]
           : (selector(currentState) as X).map((e, i) => predicate(e) ? i : null).filter(i => i !== null) as number[];
+        tests.bypassArrayFunctionCheck = false;
         if (type === 'find' && elementIndices[0] === -1) { throw new Error(errorMessages.NO_ARRAY_ELEMENT_FOUND); }
         return elementIndices;
       }

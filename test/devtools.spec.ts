@@ -13,7 +13,8 @@ describe('Devtools', () => {
 
   it('should correctly respond to devtools dispatches where the state is an object', () => {
     const get = set({ x: 0, y: 0 });
-    get(s => s.x).replace(3);
+    get(s => s.x)
+      .replace(3);
     expect(get().read()).toEqual({ x: 3, y: 0 });
     const state = { x: 1, y: 0 };
     tests.windowObject?.__REDUX_DEVTOOLS_EXTENSION__._mockInvokeSubscription({ type: 'DISPATCH', state: JSON.stringify(state), payload: { type: 'JUMP_TO_ACTION' }, source: '@devtools-extension' });
@@ -22,7 +23,8 @@ describe('Devtools', () => {
 
   it('should correctly respond to devtools dispatches where the state is an array', () => {
     const get = set(['a', 'b', 'c']);
-    get().replaceAll(['d', 'e', 'f']);
+    get()
+      .replaceAll(['d', 'e', 'f']);
     expect(get().read()).toEqual(['d', 'e', 'f']);
     const state = ['g', 'h'];
     tests.windowObject?.__REDUX_DEVTOOLS_EXTENSION__._mockInvokeSubscription({ type: 'DISPATCH', state: JSON.stringify(state), payload: { type: 'JUMP_TO_ACTION' }, source: '@devtools-extension' });
@@ -37,7 +39,8 @@ describe('Devtools', () => {
 
   it('should handle a RESET correctly', () => {
     const get = set({ hello: '' });
-    get(s => s.hello).replace('world');
+    get(s => s.hello)
+      .replace('world');
     expect(get(s => s.hello).read()).toEqual('world');
     tests.windowObject?.__REDUX_DEVTOOLS_EXTENSION__._mockInvokeSubscription({ type: 'DISPATCH', payload: { type: 'RESET' }, source: '@devtools-extension' });
     expect(get(s => s.hello).read()).toEqual('');
@@ -45,9 +48,11 @@ describe('Devtools', () => {
 
   it('should handle a ROLLBACK correctly', () => {
     const get = set({ num: 0 });
-    get(s => s.num).replace(1);
+    get(s => s.num)
+      .replace(1);
     expect(get(s => s.num).read()).toEqual(1);
-    get(s => s.num).replace(2);
+    get(s => s.num)
+      .replace(2);
     expect(get(s => s.num).read()).toEqual(2);
     tests.windowObject?.__REDUX_DEVTOOLS_EXTENSION__._mockInvokeSubscription({ type: 'DISPATCH', payload: { type: 'ROLLBACK' }, source: '@devtools-extension', state: '{ "num": 1 }' });
     expect(get(s => s.num).read()).toEqual(1);

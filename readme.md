@@ -41,7 +41,7 @@ get(s => s.favorite.hobbies)
   .read()
 
 get(s => s.favorite.hobbies)
-  .onChange(console.log);
+  .onChange(e => console.log(e));
 
 derive(
   get(s => s.foods),

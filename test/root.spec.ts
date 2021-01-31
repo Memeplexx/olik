@@ -6,7 +6,20 @@ describe('Root', () => {
 
   beforeAll(() => tests.windowObject = windowAugmentedWithReduxDevtoolsImpl);
 
-  it('should update a top-level object', () => {
+  it('object replace()', () => {
+    const get = set({ hello: 'world', another: new Array<string>() });
+    const payload = { hello: 'test', another: ['test'] };
+    get()
+      .replace(payload);
+    expect(tests.currentAction).toEqual({
+      type: 'replace()',
+      replacement: payload,
+    })
+    expect(get().read()).toEqual({ hello: 'test', another: ['test'] });
+    expect(tests.currentMutableState).toEqual(get().read());
+  })
+
+  it('object property update()', () => {
     const get = set({ x: 0, y: 0 });
     const payload = 3;
     get(s => s.x)
@@ -19,7 +32,7 @@ describe('Root', () => {
     expect(tests.currentMutableState).toEqual(get().read());
   })
 
-  it('should update a top-level array', () => {
+  it('array insert()', () => {
     const get = set(new Array<{ id: number, text: string }>());
     const payload = [{ id: 1, text: 'hello' }];
     get()
@@ -32,7 +45,7 @@ describe('Root', () => {
     expect(tests.currentMutableState).toEqual(get().read());
   })
 
-  it('should replace a top-level number', () => {
+  it('number replace()', () => {
     const get = set(0);
     const payload = 3;
     get()
@@ -45,7 +58,7 @@ describe('Root', () => {
     expect(tests.currentMutableState).toEqual(get().read());
   })
 
-  it('should replace a top-level boolean', () => {
+  it('boolean replace()', () => {
     const get = set(false);
     const payload = true;
     get()
@@ -58,7 +71,7 @@ describe('Root', () => {
     expect(tests.currentMutableState).toEqual(get().read());
   })
 
-  it('should replace a top-level string', () => {
+  it('string replace()', () => {
     const get = set('');
     const payload = 'test';
     get()
@@ -68,19 +81,6 @@ describe('Root', () => {
       replacement: payload,
     })
     expect(get().read()).toEqual('test');
-    expect(tests.currentMutableState).toEqual(get().read());
-  })
-
-  it('should replace top-level object', () => {
-    const get = set({ hello: 'world', another: new Array<string>() });
-    const payload = { hello: 'test', another: ['test'] };
-    get()
-      .replace(payload);
-    expect(tests.currentAction).toEqual({
-      type: 'replace()',
-      replacement: payload,
-    })
-    expect(get().read()).toEqual({ hello: 'test', another: ['test'] });
     expect(tests.currentMutableState).toEqual(get().read());
   })
 
@@ -112,7 +112,7 @@ describe('Root', () => {
     expect(tests.currentMutableState).toEqual(get().read());
   })
 
-  it('should insert()', () => {
+  it('array insert()', () => {
     const get = set(['one']);
     get()
       .insert('two');
@@ -124,7 +124,7 @@ describe('Root', () => {
     expect(tests.currentMutableState).toEqual(get().read());
   })
 
-  it('should replace on a top-level string using a function', () => {
+  it('string replace() using a function', () => {
     const get = set('a');
     get()
       .replace(e => e + 'b');
@@ -136,7 +136,7 @@ describe('Root', () => {
     expect(tests.currentMutableState).toEqual(get().read());
   });
 
-  it('should be able to perform an replaceElseInsert', () => {
+  it('array replaceElseInsert()', () => {
     const initialState = ['one', 'two', 'three'];
     const get = set(initialState);
     const payload = 'four';

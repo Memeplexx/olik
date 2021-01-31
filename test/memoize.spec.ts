@@ -113,9 +113,13 @@ describe('Memoize', () => {
     ).usingExpensiveCalc(val => {
       recalculating++;
     });
-    get(s => s.array.find(e => e.id === 2)!).patch({ value: 'twoo' });
+    get(s => s.array)
+      .findCustom(s => s.id === 2)
+      .patch({ value: 'twoo' });
     mem.read();
-    get(s => s.array.find(e => e.id === 1)!).patch({ value: 'onee' });
+    get(s => s.array)
+      .findCustom(s => s.id === 1)
+      .patch({ value: 'onee' });
     mem.read();
     expect(recalculating).toEqual(1);
   })
