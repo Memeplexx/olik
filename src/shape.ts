@@ -1,7 +1,7 @@
 /**
  * A tag which may need to be supplied when performing a state update
  */
-export type Tag<B> = B extends 'tagged' ? string : void;
+export type Tag<B> = B extends 'tagged' ? string : (string | void);
 
 /**
  * Whether updates to the store requires tags or not
@@ -291,11 +291,9 @@ export type StoreForAnArray<C extends Array<any>, T extends Trackability> = {
    * Specify which array element property to find by.  
    * Note that it is advisable to choose this over the `findCustom()` function because using `find()` will allow the library to describe your actions in more detail
    * @example
-   * ```
    * ...
    * .filter(t => t.id).eq(3)
    * ...
-   * ```
    */
   find: PredicateFunction<C, 'find', T>,
   /**
@@ -303,11 +301,9 @@ export type StoreForAnArray<C extends Array<any>, T extends Trackability> = {
    * Note that it is advisable to choose the `filter()` function over this one because that function will allow the library to describe your actions in more detail.
    * Only use `filterCustom()` when your search criteria is very complicated.
    * @example
-   * ```
    * ...
    * .filter(t => t.id).eq(1)
    * ...
-   * ```
    */
   filterCustom: PredicateFunctionCustom<C, 'filter', T>,
   /**
@@ -315,11 +311,9 @@ export type StoreForAnArray<C extends Array<any>, T extends Trackability> = {
    * Note that it is advisable to choose the `find()` function over this one because that function will allow the library to describe your actions in more detail.
    * Only use `findCustom()` when your search criteria is very complicated.
    * @example
-   * ```
    * ...
    * .filter(t => t.id).eq(1)
    * ...
-   * ```
    */
   findCustom: PredicateFunctionCustom<C, 'find', T>,
 }
@@ -341,13 +335,9 @@ export type StoreForAnObjectOrPrimitive<C extends any, T extends Trackability> =
   /**
    * Substitutes this primitive value
    * @example
-   * ```
    * get(s => s.user.age).replace(33);
-   * ```
    * @example
-   * ```
    * get(s => s.user.age).replace(age => age + 1);
-   * ```
    */
   replace: (replacement: C | FunctionReturning<C>, tag: Tag<T>) => void,
 }
@@ -359,9 +349,8 @@ export type StoreForAnObject<C extends any, T extends Trackability> = {
   /**
    * Partially updates this object
    * @example
-   * ```
-   * get(s => s.user).patch({ firstName: 'James', age: 33 })
-   * ```
+   * ...
+   *  .patch({ firstName: 'James', age: 33 })
    */
   patch: (partial: Partial<C>, tag: Tag<T>) => void,
 } & StoreForAnObjectOrPrimitive<C, T>;
@@ -370,10 +359,8 @@ export type StoreOrDerivation<C> = {
   /**
    * Listens to any updates on this node
    * @returns a subscription which will need to be unsubscribed from to prevent a memory leak
-   * ```
    * ...
    * .onChange(todos => console.log(todos));
-   * ```
    */
   onChange: (callbackFn: (node: DeepReadonly<C>) => any) => Unsubscribable,
   /**
@@ -549,10 +536,9 @@ export type Derivation<R> = {
   /**
    * Listens to any updates on this derivation
    * @returns a subscription which will need to be unsubscribed from to prevent a memory leak
-   * ```
+   * @example
    * deriveFrom(...)
    *   .onChange(derivation => console.log(derivation)) ;
-   * ```
    */
   onChange: (listener: (value: R) => any) => Unsubscribable,
 };

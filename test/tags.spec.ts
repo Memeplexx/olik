@@ -1,4 +1,4 @@
-import { setEnforceTags } from '../src/core';
+import { set, setEnforceTags } from '../src/core';
 import { tests } from '../src/tests';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
@@ -37,6 +37,18 @@ describe('tags', () => {
       replacement: payload,
     });
     expect(tests.currentMutableState).toEqual(get().read());
+  })
+
+  it('should accept optional tags', () => {
+    const get = set({ prop: '' });
+    const tag = 'mytag';
+    const payload = 'test';
+    get(s => s.prop)
+      .replace(payload, tag);
+    expect(tests.currentAction).toEqual({
+      type: `prop.replace() [${tag}]`,
+      replacement: payload,
+    });
   })
 
 });
