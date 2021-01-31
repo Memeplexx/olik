@@ -18,12 +18,12 @@ describe('array.findCustom()', () => {
     get(s => s.array)
       .findCustom(query)
       .replace(payload);
-    expect(get(s => s.array).read()).toEqual([initialState.array[0], payload, initialState.array[2]]);
     expect(tests.currentAction).toEqual({
       type: 'array.findCustom().replace()',
       query: query.toString(),
       replacement: payload,
-    })
+    });
+    expect(get(s => s.array).read()).toEqual([initialState.array[0], payload, initialState.array[2]]);
     expect(tests.currentMutableState).toEqual(get().read());
   });
 
@@ -34,12 +34,12 @@ describe('array.findCustom()', () => {
     get(s => s.array)
       .findCustom(query)
       .patch(payload);
-    expect(get(s => s.array).read()).toEqual([initialState.array[0], { ...initialState.array[1], ...payload }, initialState.array[2]]);
     expect(tests.currentAction).toEqual({
       type: 'array.findCustom().patch()',
       query: query.toString(),
       patch: payload,
-    })
+    });
+    expect(get(s => s.array).read()).toEqual([initialState.array[0], { ...initialState.array[1], ...payload }, initialState.array[2]]);
     expect(tests.currentMutableState).toEqual(get().read());
   });
 
@@ -49,12 +49,12 @@ describe('array.findCustom()', () => {
     get(s => s.array)
       .findCustom(query)
       .remove();
-    expect(get(s => s.array).read()).toEqual([initialState.array[0], initialState.array[2]]);
     expect(tests.currentAction).toEqual({
       type: 'array.findCustom().remove()',
       toRemove: [{ id: 2, value: 'two' }],
       query: query.toString(),
-    })
+    });
+    expect(get(s => s.array).read()).toEqual([initialState.array[0], initialState.array[2]]);
     expect(tests.currentMutableState).toEqual(get().read());
   });
 
@@ -76,8 +76,12 @@ describe('array.findCustom()', () => {
         expect(value).toEqual({ id: 2, value: 'twoo' })
       });
     get(s => s.object.property).replace('xx');
-    get(s => s.array).find(s => s.id).eq(1).patch({ value: 'test' })
-    get(s => s.array).find(s => s.id).eq(2).patch({ value: 'twoo' })
+    get(s => s.array)
+      .find(s => s.id).eq(1)
+      .patch({ value: 'test' })
+    get(s => s.array)
+      .find(s => s.id).eq(2)
+      .patch({ value: 'twoo' })
     expect(changeCount).toEqual(1);
   })
 

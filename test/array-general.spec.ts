@@ -15,10 +15,10 @@ describe('array', () => {
     const get = set(initialState);
     get(s => s.array)
       .removeAll();
-    expect(get(s => s.array).read()).toEqual([]);
     expect(tests.currentAction).toEqual({
       type: 'array.removeAll()',
     });
+    expect(get(s => s.array).read()).toEqual([]);
     expect(tests.currentMutableState).toEqual(get().read());
   });
 
@@ -27,11 +27,11 @@ describe('array', () => {
     const payload = [{ id: 4, value: 'four' }, { id: 5, value: 'five' }];
     get(s => s.array)
       .replaceAll(payload);
-    expect(get(s => s.array).read()).toEqual(payload);
     expect(tests.currentAction).toEqual({
       type: 'array.replaceAll()',
       replacement: payload,
-    })
+    });
+    expect(get(s => s.array).read()).toEqual(payload);
     expect(tests.currentMutableState).toEqual(get().read());
   });
 
@@ -39,11 +39,11 @@ describe('array', () => {
     const get = set(initialState);
     get(s => s.array)
       .reset();
-    expect(get(s => s.array).read()).toEqual(initialState.array);
     expect(tests.currentAction).toEqual({
       type: 'array.reset()',
       replacement: initialState.array,
-    })
+    });
+    expect(get(s => s.array).read()).toEqual(initialState.array);
     expect(tests.currentMutableState).toEqual(get().read());
   });
 
@@ -73,45 +73,51 @@ describe('array', () => {
     expect(tests.currentMutableState).toEqual(get().read());
   })
 
-  it('should be able to merge() with some replacements and some insertions', () => {
+  it('should be able to replaceElseInsert() with multiple elements, replacing and inserting', () => {
     const get = set(initialState);
     const payload = [{ id: 2, value: 'twoo' }, { id: 3, value: 'threee' }, { id: 4, value: 'four' }];
     get(s => s.array)
-      .merge(payload)
-      .match(e => e.id);
-    expect(get(s => s.array).read()).toEqual([{ id: 1, value: 'one' }, { id: 2, value: 'twoo' }, { id: 3, value: 'threee' }, { id: 4, value: 'four' }]);
+      .match(e => e.id)
+      .replaceElseInsert(payload);
     expect(tests.currentAction).toEqual({
-      type: 'array.merge().match(id)',
+      type: 'array.match(id).replaceElseInsert()',
       argument: payload,
       replacementCount: 2,
       insertionCount: 1,
-    })
+    });
+    expect(get(s => s.array).read()).toEqual([{ id: 1, value: 'one' }, { id: 2, value: 'twoo' }, { id: 3, value: 'threee' }, { id: 4, value: 'four' }]);
     expect(tests.currentMutableState).toEqual(get().read());
   });
 
-  it('should upsert() and replace', () => {
+  it('should replaceElseInsert() with one element replacing', () => {
     const get = set(initialState);
     const payload = { id: 2, value: 'two updated' };
-    get(s => s.array).upsert(payload).match(s => s.id);
-    expect(get(s => s.array).read()).toEqual([initialState.array[0], payload, initialState.array[2]]);
+    get(s => s.array)
+      .match(s => s.id)
+      .replaceElseInsert(payload);
     expect(tests.currentAction).toEqual({
-      type: 'array.upsert().match(id)',
+      type: 'array.match(id).replaceElseInsert()',
       argument: payload,
-      matchFound: true,
+      insertionCount: 0,
+      replacementCount: 1,
     });
+    expect(get(s => s.array).read()).toEqual([initialState.array[0], payload, initialState.array[2]]);
     expect(tests.currentMutableState).toEqual(get().read());
   });
 
-  it('should upsert() and insert', () => {
+  it('should replaceElseInsert() with one element inserting', () => {
     const get = set(initialState);
     const payload = { id: 4, value: 'four inserted' };
-    get(s => s.array).upsert(payload).match(s => s.id);
-    expect(get(s => s.array).read()).toEqual([...initialState.array, payload]);
+    get(s => s.array)
+      .match(s => s.id)
+      .replaceElseInsert(payload);
     expect(tests.currentAction).toEqual({
-      type: 'array.upsert().match(id)',
-      matchFound: false,
+      type: 'array.match(id).replaceElseInsert()',
       argument: payload,
-    })
+      insertionCount: 1,
+      replacementCount: 0,
+    });
+    expect(get(s => s.array).read()).toEqual([...initialState.array, payload]);
     expect(tests.currentMutableState).toEqual(get().read());
   });
 

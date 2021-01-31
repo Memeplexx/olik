@@ -236,10 +236,11 @@ function makeInternal<S, T extends Trackability>(state: S, options: { supportsTa
         const completeWhereClause = (whereClauseString: string, fn: (e: X[0]) => boolean) => {
           whereClauseStrings.push(whereClauseString);
           whereClauseSpecs.push({ filter: o => criteria(o, fn), type: 'last' });
-          const result = type === 'find'
+          const elementIndices = type === 'find'
             ? [(selector(currentState) as X).findIndex(e => bundleCriteria(e))]
             : (selector(currentState) as X).map((e, i) => bundleCriteria(e) ? i : null).filter(i => i !== null) as number[];
-          return result;
+          if (type === 'find' && elementIndices[0] === -1) { throw new Error(errorMessages.NO_ARRAY_ELEMENT_FOUND); }
+          return elementIndices;
         }
         const constructActions = (whereClauseString: string, fn: (e: X[0]) => boolean) => ({
           and: prop => {
@@ -306,7 +307,7 @@ function makeInternal<S, T extends Trackability>(state: S, options: { supportsTa
             whereClauseSpecs.push({ filter: o => criteria(o, fn), type: 'last' });
             changeListeners.set(performAction, nextState => deepFreeze(type === 'find'
               ? (selector(nextState) as X).find(e => bundleCriteria(e))
-              : (selector(nextState) as X).map(e => bundleCriteria(e) ? e : null).filter(e => e !== null)));
+              : { $filtered: (selector(nextState) as X).map(e => bundleCriteria(e) ? e : null).filter(e => e !== null) }));
             return { unsubscribe: () => changeListeners.delete(performAction) };
           },
           read: () => {
@@ -335,16 +336,16 @@ function makeInternal<S, T extends Trackability>(state: S, options: { supportsTa
       return recurseWhere;
     };
     const findOrFilterCustom = (type: FindOrFilter) => (predicate => {
-      const getElementIndices = (action: string) => {
+      const getElementIndices = () => {
         const elementIndices = type === 'find'
           ? [(selector(currentState) as X).findIndex(e => predicate(e))]
           : (selector(currentState) as X).map((e, i) => predicate(e) ? i : null).filter(i => i !== null) as number[];
-        if (type === 'find' && elementIndices[0] === -1) { throw new Error(errorMessages.NO_ARRAY_ELEMENT_FOUND(action)); }
+        if (type === 'find' && elementIndices[0] === -1) { throw new Error(errorMessages.NO_ARRAY_ELEMENT_FOUND); }
         return elementIndices;
       }
       return {
         remove: tag => {
-          const elementIndices = getElementIndices('remove');
+          const elementIndices = getElementIndices();
           updateState({
             selector,
             replacer: old => old.filter((o, i) => !elementIndices.includes(i)),
@@ -367,7 +368,7 @@ function makeInternal<S, T extends Trackability>(state: S, options: { supportsTa
         },
         replace: (payload, tag) => {
           const { payloadFrozen, payloadCopied } = copyPayload(payload);
-          const elementIndices = getElementIndices('replace');
+          const elementIndices = getElementIndices();
           updateState({
             selector,
             replacer: old => old.map((o, i) => elementIndices.includes(i) ? payloadFrozen : o),
@@ -382,7 +383,7 @@ function makeInternal<S, T extends Trackability>(state: S, options: { supportsTa
         },
         patch: (payload, tag) => {
           const { payloadFrozen, payloadCopied } = copyPayload(payload);
-          const elementIndices = getElementIndices('patch');
+          const elementIndices = getElementIndices();
           updateState({
             selector,
             replacer: old => old.map((o, i) => elementIndices.includes(i) ? { ...o, ...payloadFrozen } : o),
@@ -454,21 +455,23 @@ function makeInternal<S, T extends Trackability>(state: S, options: { supportsTa
           tag,
         });
       }) as StoreForAnArray<X, T>['removeAll'],
-      merge: (payload => ({
-        match: (getProp, tag) => {
+      match: (getProp => ({
+        replaceElseInsert: (payload, tag) => {
           const segs = !getProp ? [] : createPathReader((selector(currentState) as X)[0] || {}).readSelector(getProp);
           const { payloadFrozen, payloadCopied } = copyPayload(payload);
+          const payloadFrozenArray: X[0][] = Array.isArray(payloadFrozen) ? payloadFrozen : [payloadFrozen];
+          const payloadCopiedArray: X[0][] = Array.isArray(payloadCopied) ? payloadCopied : [payloadCopied];
           let replacementCount = 0;
           let insertionCount = 0;
           updateState({
             selector,
             replacer: old => {
               const replacements = old.map(oe => {
-                const found = payloadFrozen.find(ne => getProp(oe) === getProp(ne));
+                const found = payloadFrozenArray.find(ne => !getProp ? oe === ne : getProp(oe) === getProp(ne));
                 if (found !== null && found !== undefined) { replacementCount++; }
                 return found || oe;
               });
-              const insertions = payloadFrozen.filter(ne => !old.some(oe => getProp(oe) === getProp(ne)));
+              const insertions = payloadFrozenArray.filter(ne => !old.some(oe => !getProp ? oe === ne : getProp(oe) === getProp(ne)));
               insertionCount = insertions.length;
               return [
                 ...replacements,
@@ -476,10 +479,10 @@ function makeInternal<S, T extends Trackability>(state: S, options: { supportsTa
               ];
             },
             mutator: old => {
-              old.forEach((oe, oi) => { const found = payloadCopied.find(ne => getProp(oe) === getProp(ne)); if (found) { old[oi] = deepCopy(found); } });
-              payloadCopied.filter(ne => !old.some(oe => getProp(oe) === getProp(ne))).forEach(ne => old.push(ne));
+              old.forEach((oe, oi) => { const found = payloadCopiedArray.find(ne => !getProp ? oe === ne : getProp(oe) === getProp(ne)); if (found) { old[oi] = deepCopy(found); } });
+              payloadCopiedArray.filter(ne => !old.some(oe => !getProp ? oe === ne : getProp(oe) === getProp(ne))).forEach(ne => old.push(ne));
             },
-            actionName: `merge().match(${segs.join('.')})`,
+            actionName: `match(${segs.join('.')}).replaceElseInsert()`,
             payload: null,
             getPayloadFn: () => ({
               argument: payloadFrozen,
@@ -489,25 +492,7 @@ function makeInternal<S, T extends Trackability>(state: S, options: { supportsTa
             tag,
           });
         }
-      })) as StoreForAnArray<X, T>['merge'],
-      upsert: (payload => ({
-        match: (getProp, tag) => {
-          const segs = !getProp ? [] : createPathReader((selector(currentState) as X)[0] || {}).readSelector(getProp);
-          const { payloadFrozen, payloadCopied } = copyPayload(payload);
-          const indices = (selector(currentState) as X).map((e, i) => getProp(e) === getProp(payloadFrozen) ? i : null).filter(i => i !== null) as number[];
-          updateState({
-            selector,
-            replacer: old => !indices.length ? [...old, payloadFrozen] : Object.assign([], old, { [indices[0]]: payloadFrozen }),
-            mutator: old => { if (!indices.length) { old.push(payloadCopied) } else { old[indices[0]] = payloadCopied; } },
-            actionName: `upsert().match(${segs.join('.')})`,
-            payload: {
-              matchFound: !!indices.length,
-              argument: payloadFrozen,
-            },
-            tag,
-          });
-        }
-      })) as StoreForAnArray<X, T>['upsert'],
+      })) as StoreForAnArray<X, T>['match'],
       filterCustom: findOrFilterCustom('filter'),
       findCustom: findOrFilterCustom('find'),
       filter: findOrFilter('filter'),

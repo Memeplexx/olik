@@ -18,12 +18,12 @@ describe('array.filterCustom()', () => {
     get(s => s.array)
       .filterCustom(query)
       .replace(payload);
-    expect(get(s => s.array).read()).toEqual([initialState.array[0], payload, payload]);
     expect(tests.currentAction).toEqual({
       type: 'array.filterCustom().replace()',
       replacement: payload,
       query: query.toString(),
-    })
+    });
+    expect(get(s => s.array).read()).toEqual([initialState.array[0], payload, payload]);
     expect(tests.currentMutableState).toEqual(get().read());
   });
 
@@ -34,12 +34,12 @@ describe('array.filterCustom()', () => {
     get(s => s.array)
       .filterCustom(query)
       .patch(payload);
-    expect(get(s => s.array).read()).toEqual([initialState.array[0], { ...initialState.array[1], ...payload }, { ...initialState.array[2], ...payload }]);
     expect(tests.currentAction).toEqual({
       type: 'array.filterCustom().patch()',
       patch: payload,
       query: query.toString(),
-    })
+    });
+    expect(get(s => s.array).read()).toEqual([initialState.array[0], { ...initialState.array[1], ...payload }, { ...initialState.array[2], ...payload }]);
     expect(tests.currentMutableState).toEqual(get().read());
   });
 
@@ -49,12 +49,12 @@ describe('array.filterCustom()', () => {
     get(s => s.array)
       .filterCustom(query)
       .remove();
-    expect(get(s => s.array).read()).toEqual([{ id: 1, value: 'one' }, { id: 3, value: 'three' }]);
     expect(tests.currentAction).toEqual({
       type: 'array.filterCustom().remove()',
       toRemove: [{ id: 2, value: 'two' }],
       query: query.toString(),
-    })
+    });
+    expect(get(s => s.array).read()).toEqual([{ id: 1, value: 'one' }, { id: 3, value: 'three' }]);
     expect(tests.currentMutableState).toEqual(get().read());
   });
 

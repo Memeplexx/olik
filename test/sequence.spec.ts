@@ -22,7 +22,7 @@ describe('Sequence', () => {
     expect(tests.currentMutableState).toEqual(get().read());
     get(s => s.propTwo).findCustom(e => e.id === 1).patch({ value: 'test' });
     expect(tests.currentMutableState).toEqual(get().read());
-    get(s => s.propTwo).upsert({ id: 1, value: 'xxx' }).match(s => s.id)
+    get(s => s.propTwo).match(s => s.id).replaceElseInsert({ id: 1, value: 'xxx' })
     expect(tests.currentMutableState).toEqual(get().read());
     get(s => s.propTwo).findCustom(s => s.id === 1).remove();
     expect(tests.currentMutableState).toEqual(get().read());
@@ -37,7 +37,7 @@ describe('Sequence', () => {
     expect(tests.currentMutableState).toEqual(get().read());
     get().findCustom(e => e.id === 1).patch({ value: 'test' });
     expect(tests.currentMutableState).toEqual(get().read());
-    get().upsert({ id: 1, value: 'test' }).match(s => s.id)
+    get().match(s => s.id).replaceElseInsert({ id: 1, value: 'test' })
     expect(tests.currentMutableState).toEqual(get().read());
     get().findCustom(s => s.id === 1).remove();
     expect(tests.currentMutableState).toEqual(get().read());

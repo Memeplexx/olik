@@ -2,7 +2,7 @@ import { set } from '../src/core';
 import { tests } from '../src/tests';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
-describe('array.filter().and().or()', () => {
+describe('array.filter().remove()', () => {
 
   beforeAll(() => tests.windowObject = windowAugmentedWithReduxDevtoolsImpl);
 
@@ -11,87 +11,101 @@ describe('array.filter().and().or()', () => {
     array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
   };
 
-  it('should eq().and().eq()', () => {
+  it('should eq()', () => {
     const get = set(initialState);
     get(s => s.array)
-      .filter(s => s.id).eq(2).and(s => s.value).eq('two')
+      .filter(e => e.id).eq(2)
       .remove();
     expect(tests.currentAction).toEqual({
       type: 'array.filter().remove()',
-      toRemove: [ initialState.array[1] ],
-      query: 'id === 2 && value === two',
+      toRemove: [initialState.array[1]],
+      query: 'id === 2',
     });
     expect(get(s => s.array).read()).toEqual([initialState.array[0], initialState.array[2]]);
     expect(tests.currentMutableState).toEqual(get().read());
   })
 
-  it('should eq().or().eq()', () => {
+  it('should ne()', () => {
     const get = set(initialState);
     get(s => s.array)
-      .filter(s => s.id).eq(1).or(s => s.value).eq('two')
+      .filter(e => e.id).ne(2)
+      .remove();
+    expect(tests.currentAction).toEqual({
+      type: 'array.filter().remove()',
+      toRemove: [initialState.array[0], initialState.array[2]],
+      query: 'id !== 2',
+    });
+    expect(get(s => s.array).read()).toEqual([initialState.array[1]]);
+    expect(tests.currentMutableState).toEqual(get().read());
+  })
+
+  it('should gt()', () => {
+    const get = set(initialState);
+    get(s => s.array)
+      .filter(e => e.id).gt(1)
+      .remove();
+    expect(tests.currentAction).toEqual({
+      type: 'array.filter().remove()',
+      toRemove: [initialState.array[1], initialState.array[2]],
+      query: 'id > 1',
+    });
+    expect(get(s => s.array).read()).toEqual([initialState.array[0]]);
+    expect(tests.currentMutableState).toEqual(get().read());
+  })
+
+  it('should lt()', () => {
+    const get = set(initialState);
+    get(s => s.array)
+      .filter(e => e.id).lt(2)
+      .remove();
+    expect(tests.currentAction).toEqual({
+      type: 'array.filter().remove()',
+      toRemove: [initialState.array[0]],
+      query: 'id < 2',
+    });
+    expect(get(s => s.array).read()).toEqual([initialState.array[1], initialState.array[2]]);
+    expect(tests.currentMutableState).toEqual(get().read());
+  })
+
+  it('should in()', () => {
+    const get = set(initialState);
+    get(s => s.array)
+      .filter(e => e.id).in([1, 2])
       .remove();
     expect(tests.currentAction).toEqual({
       type: 'array.filter().remove()',
       toRemove: [initialState.array[0], initialState.array[1]],
-      query: 'id === 1 || value === two',
+      query: '[1, 2].includes(id)',
     });
     expect(get(s => s.array).read()).toEqual([initialState.array[2]]);
     expect(tests.currentMutableState).toEqual(get().read());
   })
 
-  it('should eq().and().eq() not matching', () => {
+  it('should ni()', () => {
     const get = set(initialState);
     get(s => s.array)
-      .filter(s => s.id).eq(1).and(s => s.id).eq(2)
-      .remove();
-    expect(tests.currentAction).toEqual({
-      type: 'array.filter().remove()',
-      toRemove: [],
-      query: 'id === 1 && id === 2',
-    });
-    expect(get(s => s.array).read()).toEqual(initialState.array);
-    expect(tests.currentMutableState).toEqual(get().read());
-  })
-
-  it('should eq().and().eq().or().eq()', () => {
-    const get = set(initialState);
-    get(s => s.array)
-      .filter(e => e.id).eq(1).and(e => e.id).eq(2).or(e => e.id).eq(3)
+      .filter(e => e.id).ni([1, 2])
       .remove();
     expect(tests.currentAction).toEqual({
       type: 'array.filter().remove()',
       toRemove: [initialState.array[2]],
-      query: 'id === 1 && id === 2 || id === 3',
+      query: '![1, 2].includes(id)',
     });
     expect(get(s => s.array).read()).toEqual([initialState.array[0], initialState.array[1]]);
     expect(tests.currentMutableState).toEqual(get().read());
   })
 
-  it('should eq().or().eq().and().eq()', () => {
+  it('should match()', () => {
     const get = set(initialState);
     get(s => s.array)
-      .filter(e => e.id).eq(4).or(e => e.id).eq(3).and(e => e.value).eq('three')
+      .filter(e => e.value).match(/^t/)
       .remove();
     expect(tests.currentAction).toEqual({
       type: 'array.filter().remove()',
-      toRemove: [initialState.array[2]],
-      query: 'id === 4 || id === 3 && value === three',
+      toRemove: [initialState.array[1], initialState.array[2]],
+      query: 'value.match(/^t/)',
     });
-    expect(get(s => s.array).read()).toEqual([initialState.array[0], initialState.array[1]]);
-    expect(tests.currentMutableState).toEqual(get().read());
-  })
-
-  it('should eq().and().eq().or().eq().and().eq()', () => {
-    const get = set(initialState);
-    get(s => s.array)
-      .filter(e => e.id).eq(1).and(e => e.value).eq('one').or(e => e.id).eq(3).and(e => e.value).eq('three')
-      .remove();
-    expect(tests.currentAction).toEqual({
-      type: 'array.filter().remove()',
-      toRemove: [initialState.array[0], initialState.array[2]],
-      query: 'id === 1 && value === one || id === 3 && value === three',
-    });
-    expect(get(s => s.array).read()).toEqual([initialState.array[1]]);
+    expect(get(s => s.array).read()).toEqual([initialState.array[0]]);
     expect(tests.currentMutableState).toEqual(get().read());
   })
 

@@ -236,57 +236,46 @@ export type StoreForAnArray<C extends Array<any>, T extends Trackability> = {
   /**
    * Appends one or more elements onto the end of the array
    * @example
-   * ```
    * ...
    * .insert(newTodo);
-   * ```
    * @example
-   * ```
    * ...
    * .insert(newArrayOfTodos);
-   * ```
    */
   insert: <R extends (C[0] | C) >(payload: R, tag: Tag<T>) => void,
   /**
    * Removes all elements from the array
    * @example
-   * ```
    * ...
    * .removeAll();
-   * ```
    */
   removeAll: (tag: Tag<T>) => void,
   /**
    * Substitutes all elements with a new array of elements
    * @example
-   * ```
    * ...
    * .replaceAll(newTodos);
-   * ```
    */
   replaceAll: (replacement: C, tag: Tag<T>) => void,
   /**
-   * Merges the supplied array into the existing store array.  
-   * Each incoming element either replaces an existing element (if a match is found) or is inserted onto the end of the existing array (if a match is not found)
+   * Match up an array element property so that we can perform a `replacementElseInsert()` (AKA upsert / merge)
    * @example
-   * ```
    * ...
-   * .merge(newTodosArray)
-   * .match(e => e.id);
-   * ```
-   */
-  merge: (array: C) => { match: <P>(getProp: (element: DeepReadonly<C[0]>) => P, tag: Tag<T>) => void }
-  /**
-   * Replaces or inserts the supplied array element into the existing store array.  
-   * The incoming element either replaces an existing element (if a match is found) or is inserted onto the end of the existing array (if a match is not found)
-   * @example
-   * ```
+   * .match(s => s.id)
    * ...
-   * .upsert(newTodosArray)
-   * .match(e => e.id);
-   * ```
    */
-  upsert: (element: C[0]) => { match: <P>(getProp: (element: DeepReadonly<C[0]>) => P, tag: Tag<T>) => void }
+  match: <P>(getProp?: (element: DeepReadonly<C[0]>) => P) => {
+    /**
+     * Uses the `match()` function you just defined in order to update or insert array element(s) depending on whether they could or could not be found in the store.
+     * @example
+     * ...
+     * replaceElseInsert(todo)
+     * @example
+     * ...
+     * replaceElseInsert(todos)
+     */
+    replaceElseInsert: (elementOrArray: C[0] | C, tag: Tag<T>) => void
+  }
   /**
    * Specify which array element property to filter by.  
    * Note that it is advisable to choose this over the `filterCustom()` function because using `filter()` will allow the library to describe your actions in more detail

@@ -2,7 +2,7 @@ import { set } from '../src/core';
 import { tests } from '../src/tests';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
-describe('array.find().patch()', () => {
+describe('array.filter().patch()', () => {
 
   beforeAll(() => tests.windowObject = windowAugmentedWithReduxDevtoolsImpl);
 
@@ -15,10 +15,10 @@ describe('array.find().patch()', () => {
     const get = set(initialState);
     const payload = { value: 'new' };
     get(s => s.array)
-      .find(e => e.id).eq(2)
+      .filter(e => e.id).eq(2)
       .patch(payload);
     expect(tests.currentAction).toEqual({
-      type: 'array.find().patch()',
+      type: 'array.filter().patch()',
       patch: payload,
       query: 'id === 2',
     });
@@ -30,14 +30,14 @@ describe('array.find().patch()', () => {
     const get = set(initialState);
     const payload = { value: 'four' };
     get(s => s.array)
-      .find(e => e.id).ne(2)
+      .filter(e => e.id).ne(2)
       .patch(payload);
     expect(tests.currentAction).toEqual({
-      type: 'array.find().patch()',
+      type: 'array.filter().patch()',
       patch: payload,
       query: 'id !== 2',
     });
-    expect(get(s => s.array).read()).toEqual([{ ...initialState.array[0], ...payload }, initialState.array[1], initialState.array[2]]);
+    expect(get(s => s.array).read()).toEqual([{ ...initialState.array[0], ...payload }, initialState.array[1], { ...initialState.array[2], ...payload }]);
     expect(tests.currentMutableState).toEqual(get().read());
   })
 
@@ -45,14 +45,14 @@ describe('array.find().patch()', () => {
     const get = set(initialState);
     const payload = { value: 'four' };
     get(s => s.array)
-      .find(e => e.id).gt(1)
+      .filter(e => e.id).gt(1)
       .patch(payload);
     expect(tests.currentAction).toEqual({
-      type: 'array.find().patch()',
+      type: 'array.filter().patch()',
       patch: payload,
       query: 'id > 1',
     });
-    expect(get(s => s.array).read()).toEqual([initialState.array[0], { ...initialState.array[1], ...payload }, initialState.array[2]]);
+    expect(get(s => s.array).read()).toEqual([initialState.array[0], { ...initialState.array[1], ...payload }, { ...initialState.array[2], ...payload }]);
     expect(tests.currentMutableState).toEqual(get().read());
   })
 
@@ -60,10 +60,10 @@ describe('array.find().patch()', () => {
     const get = set(initialState);
     const payload = { value: 'four' };
     get(s => s.array)
-      .find(e => e.id).lt(2)
+      .filter(e => e.id).lt(2)
       .patch(payload);
     expect(tests.currentAction).toEqual({
-      type: 'array.find().patch()',
+      type: 'array.filter().patch()',
       patch: payload,
       query: 'id < 2',
     });
@@ -75,14 +75,14 @@ describe('array.find().patch()', () => {
     const get = set(initialState);
     const payload = { id: 4, value: 'four' };
     get(s => s.array)
-      .find(e => e.id).in([1, 2])
+      .filter(e => e.id).in([1, 2])
       .patch(payload);
     expect(tests.currentAction).toEqual({
-      type: 'array.find().patch()',
+      type: 'array.filter().patch()',
       patch: payload,
       query: '[1, 2].includes(id)',
     });
-    expect(get(s => s.array).read()).toEqual([{ ...initialState.array[0], ...payload }, initialState.array[1], initialState.array[2]]);
+    expect(get(s => s.array).read()).toEqual([{ ...initialState.array[0], ...payload }, { ...initialState.array[1], ...payload }, initialState.array[2]]);
     expect(tests.currentMutableState).toEqual(get().read());
   })
 
@@ -90,10 +90,10 @@ describe('array.find().patch()', () => {
     const get = set(initialState);
     const payload = { value: 'four' };
     get(s => s.array)
-      .find(e => e.id).ni([1, 2])
+      .filter(e => e.id).ni([1, 2])
       .patch(payload);
     expect(tests.currentAction).toEqual({
-      type: 'array.find().patch()',
+      type: 'array.filter().patch()',
       patch: payload,
       query: '![1, 2].includes(id)',
     });
@@ -105,14 +105,14 @@ describe('array.find().patch()', () => {
     const get = set(initialState);
     const payload = { value: 'four' };
     get(s => s.array)
-      .find(e => e.value).match(/^t/)
+      .filter(e => e.value).match(/^t/)
       .patch(payload);
     expect(tests.currentAction).toEqual({
-      type: 'array.find().patch()',
+      type: 'array.filter().patch()',
       patch: payload,
       query: 'value.match(/^t/)',
     });
-    expect(get(s => s.array).read()).toEqual([initialState.array[0], { ...initialState.array[1], ...payload }, initialState.array[2]]);
+    expect(get(s => s.array).read()).toEqual([initialState.array[0], { ...initialState.array[1], ...payload }, { ...initialState.array[2], ...payload }]);
     expect(tests.currentMutableState).toEqual(get().read());
   })
 

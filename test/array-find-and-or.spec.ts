@@ -1,3 +1,4 @@
+import { errorMessages } from '../src/consts';
 import { set } from '../src/core';
 import { tests } from '../src/tests';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
@@ -13,15 +14,17 @@ describe('array.find().and().or()', () => {
 
   it('should eq().and().eq()', () => {
     const get = set(initialState);
+    tests.logLevel = 'DEBUG';
     get(s => s.array)
       .find(s => s.id).eq(2).and(s => s.value).eq('two')
       .remove();
-    expect(get(s => s.array).read()).toEqual([initialState.array[0], initialState.array[2]]);
+    tests.logLevel = 'NONE';
     expect(tests.currentAction).toEqual({
       type: 'array.find().remove()',
       toRemove: initialState.array[1],
       query: 'id === 2 && value === two',
-    })
+    });
+    expect(get(s => s.array).read()).toEqual([initialState.array[0], initialState.array[2]]);
     expect(tests.currentMutableState).toEqual(get().read());
   })
 
@@ -30,27 +33,20 @@ describe('array.find().and().or()', () => {
     get(s => s.array)
       .find(s => s.id).eq(1).or(s => s.value).eq('two')
       .remove();
-    expect(get(s => s.array).read()).toEqual([initialState.array[1], initialState.array[2]]);
     expect(tests.currentAction).toEqual({
       type: 'array.find().remove()',
       toRemove: initialState.array[0],
       query: 'id === 1 || value === two',
-    })
+    });
+    expect(get(s => s.array).read()).toEqual([initialState.array[1], initialState.array[2]]);
     expect(tests.currentMutableState).toEqual(get().read());
   })
 
-  it('should eq().and().eq() not matching', () => {
+  it('should eq().and().eq() not matching throw', () => {
     const get = set(initialState);
-    get(s => s.array)
+    expect(() => get(s => s.array)
       .find(s => s.id).eq(1).and(s => s.id).eq(2)
-      .remove();
-    expect(get(s => s.array).read()).toEqual(initialState.array);
-    expect(tests.currentAction).toEqual({
-      type: 'array.find().remove()',
-      toRemove: undefined,
-      query: 'id === 1 && id === 2',
-    })
-    expect(tests.currentMutableState).toEqual(get().read());
+      .remove()).toThrowError(errorMessages.NO_ARRAY_ELEMENT_FOUND);
   })
 
   it('should eq().and().eq().or().eq()', () => {
@@ -58,12 +54,12 @@ describe('array.find().and().or()', () => {
     get(s => s.array)
       .find(e => e.id).eq(1).and(e => e.id).eq(2).or(e => e.id).eq(3)
       .remove();
-    expect(get(s => s.array).read()).toEqual([initialState.array[0], initialState.array[1]]);
     expect(tests.currentAction).toEqual({
       type: 'array.find().remove()',
       toRemove: initialState.array[2],
       query: 'id === 1 && id === 2 || id === 3',
-    })
+    });
+    expect(get(s => s.array).read()).toEqual([initialState.array[0], initialState.array[1]]);
     expect(tests.currentMutableState).toEqual(get().read());
   })
 
@@ -72,12 +68,12 @@ describe('array.find().and().or()', () => {
     get(s => s.array)
       .find(e => e.id).eq(4).or(e => e.id).eq(3).and(e => e.value).eq('three')
       .remove();
-    expect(get(s => s.array).read()).toEqual([initialState.array[0], initialState.array[1]]);
     expect(tests.currentAction).toEqual({
       type: 'array.find().remove()',
       toRemove: initialState.array[2],
       query: 'id === 4 || id === 3 && value === three',
-    })
+    });
+    expect(get(s => s.array).read()).toEqual([initialState.array[0], initialState.array[1]]);
     expect(tests.currentMutableState).toEqual(get().read());
   })
 
@@ -86,12 +82,12 @@ describe('array.find().and().or()', () => {
     get(s => s.array)
       .find(e => e.id).eq(1).and(e => e.value).eq('one').or(e => e.id).eq(3).and(e => e.value).eq('three')
       .remove();
-    expect(get(s => s.array).read()).toEqual([initialState.array[1], initialState.array[2]]);
     expect(tests.currentAction).toEqual({
       type: 'array.find().remove()',
       toRemove: initialState.array[0],
       query: 'id === 1 && value === one || id === 3 && value === three',
     });
+    expect(get(s => s.array).read()).toEqual([initialState.array[1], initialState.array[2]]);
     expect(tests.currentMutableState).toEqual(get().read());
   })
 
