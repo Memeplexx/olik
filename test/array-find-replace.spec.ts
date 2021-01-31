@@ -18,8 +18,11 @@ describe('Array.find().replace()', () => {
       .find(e => e.id).eq(2)
       .replace(payload);
     expect(get(s => s.array).read()).toEqual([initialState.array[0], payload, initialState.array[2]]);
-    expect(tests.currentAction.type).toEqual('array.find().replace()');
-    // console.log(tests.currentAction.payload)
+    expect(tests.currentAction).toEqual({
+      type: 'array.find().replace()',
+      replacement: payload,
+      query: 'id === 2',
+    })
     expect(tests.currentMutableState).toEqual(get().read());
   })
 
@@ -30,7 +33,11 @@ describe('Array.find().replace()', () => {
       .find(e => e.id).ne(2)
       .replace(payload);
     expect(get(s => s.array).read()).toEqual([payload, initialState.array[1], initialState.array[2]]);
-    expect(tests.currentAction.type).toEqual('array.find().replace()');
+    expect(tests.currentAction).toEqual({
+      type: 'array.find().replace()',
+      replacement: payload,
+      query: 'id !== 2',
+    })
     expect(tests.currentMutableState).toEqual(get().read());
   })
 
@@ -41,7 +48,11 @@ describe('Array.find().replace()', () => {
       .find(e => e.id).gt(1)
       .replace(payload);
     expect(get(s => s.array).read()).toEqual([initialState.array[0], payload, initialState.array[2]]);
-    expect(tests.currentAction.type).toEqual('array.find().replace()');
+    expect(tests.currentAction).toEqual({
+      type: 'array.find().replace()',
+      replacement: payload,
+      query: 'id > 1',
+    })
     expect(tests.currentMutableState).toEqual(get().read());
   })
 
@@ -52,7 +63,11 @@ describe('Array.find().replace()', () => {
       .find(e => e.id).lt(2)
       .replace(payload);
     expect(get(s => s.array).read()).toEqual([payload, initialState.array[1], initialState.array[2]]);
-    expect(tests.currentAction.type).toEqual('array.find().replace()');
+    expect(tests.currentAction).toEqual({
+      type: 'array.find().replace()',
+      replacement: payload,
+      query: 'id < 2',
+    })
     expect(tests.currentMutableState).toEqual(get().read());
   })
 
@@ -63,7 +78,11 @@ describe('Array.find().replace()', () => {
       .find(e => e.id).in([1, 2])
       .replace(payload);
     expect(get(s => s.array).read()).toEqual([payload, initialState.array[1], initialState.array[2]]);
-    expect(tests.currentAction.type).toEqual('array.find().replace()');
+    expect(tests.currentAction).toEqual({
+      type: 'array.find().replace()',
+      replacement: payload,
+      query: '[1, 2].includes(id)',
+    });
     expect(tests.currentMutableState).toEqual(get().read());
   })
 
@@ -74,7 +93,11 @@ describe('Array.find().replace()', () => {
       .find(e => e.id).ni([1, 2])
       .replace(payload);
     expect(get(s => s.array).read()).toEqual([initialState.array[0], initialState.array[1], payload]);
-    expect(tests.currentAction.type).toEqual('array.find().replace()');
+    expect(tests.currentAction).toEqual({
+      type: 'array.find().replace()',
+      replacement: payload,
+      query: '![1, 2].includes(id)',
+    })
     expect(tests.currentMutableState).toEqual(get().read());
   })
 
@@ -85,7 +108,11 @@ describe('Array.find().replace()', () => {
       .find(e => e.value).match(/^t/)
       .replace(payload);
     expect(get(s => s.array).read()).toEqual([initialState.array[0], payload, initialState.array[2]]);
-    expect(tests.currentAction.type).toEqual('array.find().replace()');
+    expect(tests.currentAction).toEqual({
+      type: 'array.find().replace()',
+      replacement: payload,
+      query: 'value.match(/^t/)',
+    })
     expect(tests.currentMutableState).toEqual(get().read());
   })
 

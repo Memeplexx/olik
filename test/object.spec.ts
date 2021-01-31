@@ -18,9 +18,7 @@ describe('Object', () => {
     expect(get(s => s.object.property2).read() === initialState.object.property2).toBeTruthy();
     expect(tests.currentAction).toEqual({
       type: 'object.property.replace()',
-      payload: {
-        replacement: payload,
-      }
+      replacement: payload,
     })
     expect(tests.currentMutableState).toEqual(get().read());
   })
@@ -33,9 +31,7 @@ describe('Object', () => {
     expect(get(s => s.object.property2).read() === initialState.object.property2).toBeTruthy();
     expect(tests.currentAction).toEqual({
       type: 'object.patch()',
-      payload: {
-        patch: payload,
-      }
+      patch: payload,
     })
     expect(tests.currentMutableState).toEqual(get().read());
   })
@@ -63,9 +59,7 @@ describe('Object', () => {
     expect(tests.currentMutableState).toEqual({ prop: 'ab' });
     expect(tests.currentAction).toEqual({
       type: 'prop.replace()',
-      payload: {
-        replacement: 'ab',
-      },
+      replacement: 'ab',
     });
   });
 
@@ -76,9 +70,7 @@ describe('Object', () => {
     get(s => s.object.property).replace(payload, tag);
     expect(tests.currentAction).toEqual({
       type: `object.property.replace() [${tag}]`,
-      payload: {
-        replacement: payload,
-      }
+      replacement: payload,
     });
     expect(get(s => s.object.property).read()).toEqual(payload);
     expect(tests.currentMutableState).toEqual(get().read());
@@ -95,9 +87,7 @@ describe('Object', () => {
     get(s => s.test).replace(payload, tag);
     expect(tests.currentAction).toEqual({
       type: `test.replace() [${tag}x]`,
-      payload: {
-        replacement: payload,
-      }
+      replacement: payload,
     });
     expect(tests.currentMutableState).toEqual(get().read());
   })
@@ -109,9 +99,7 @@ describe('Object', () => {
     expect(get().read()).toEqual({ hello: 'world' });
     expect(tests.currentAction).toEqual({
       type: 'patch()',
-      payload: {
-        patch: payload,
-      }
+      patch: payload,
     });
   })
 

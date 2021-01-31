@@ -2,7 +2,7 @@ import { set } from '../src/core';
 import { tests } from '../src/tests';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
-describe('Array findCustom()', () => {
+describe('array.findCustom()', () => {
 
   beforeAll(() => tests.windowObject = windowAugmentedWithReduxDevtoolsImpl);
 
@@ -14,35 +14,47 @@ describe('Array findCustom()', () => {
   it('should replace()', () => {
     const get = set(initialState);
     const payload = { id: 5, value: 'hey' };
+    const query = (a: typeof initialState['array'][0]) => a.id === 2;
     get(s => s.array)
-      .findCustom(a => a.id === 2)
+      .findCustom(query)
       .replace(payload);
     expect(get(s => s.array).read()).toEqual([initialState.array[0], payload, initialState.array[2]]);
-    expect(tests.currentAction.type).toEqual('array.findCustom().replace()');
-    expect(tests.currentAction.payload.replacement).toEqual(payload);
+    expect(tests.currentAction).toEqual({
+      type: 'array.findCustom().replace()',
+      query: query.toString(),
+      replacement: payload,
+    })
     expect(tests.currentMutableState).toEqual(get().read());
   });
 
   it('should patch()', () => {
     const get = set(initialState);
     const payload = { value: 'test' };
+    const query = (a: typeof initialState['array'][0]) => a.id === 2;
     get(s => s.array)
-      .findCustom(a => a.id === 2)
+      .findCustom(query)
       .patch(payload);
     expect(get(s => s.array).read()).toEqual([initialState.array[0], { ...initialState.array[1], ...payload }, initialState.array[2]]);
-    expect(tests.currentAction.type).toEqual('array.findCustom().patch()');
-    expect(tests.currentAction.payload.patch).toEqual(payload);
+    expect(tests.currentAction).toEqual({
+      type: 'array.findCustom().patch()',
+      query: query.toString(),
+      patch: payload,
+    })
     expect(tests.currentMutableState).toEqual(get().read());
   });
 
   it('should remove()', () => {
     const get = set(initialState);
+    const query = (s: typeof initialState['array'][0]) => s.id === 2;
     get(s => s.array)
-      .findCustom(a => a.id === 2)
+      .findCustom(query)
       .remove();
     expect(get(s => s.array).read()).toEqual([initialState.array[0], initialState.array[2]]);
-    expect(tests.currentAction.type).toEqual('array.findCustom().remove()');
-    expect(tests.currentAction.payload.toRemove).toEqual([{ id: 2, value: 'two' }]);
+    expect(tests.currentAction).toEqual({
+      type: 'array.findCustom().remove()',
+      toRemove: [{ id: 2, value: 'two' }],
+      query: query.toString(),
+    })
     expect(tests.currentMutableState).toEqual(get().read());
   });
 

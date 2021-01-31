@@ -2,7 +2,7 @@ import { set } from '../src/core';
 import { tests } from '../src/tests';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
-describe('Array filterCustom()', () => {
+describe('array.filterCustom()', () => {
 
   beforeAll(() => tests.windowObject = windowAugmentedWithReduxDevtoolsImpl);
 
@@ -14,35 +14,47 @@ describe('Array filterCustom()', () => {
   it('should replace()', () => {
     const get = set(initialState);
     const payload = { id: 5, value: 'hey' };
+    const query = (a: typeof initialState['array'][0]) => a.id > 1;
     get(s => s.array)
-      .filterCustom(a => a.id > 1)
+      .filterCustom(query)
       .replace(payload);
     expect(get(s => s.array).read()).toEqual([initialState.array[0], payload, payload]);
-    expect(tests.currentAction.type).toEqual('array.filterCustom().replace()');
-    expect(tests.currentAction.payload.replacement).toEqual(payload);
+    expect(tests.currentAction).toEqual({
+      type: 'array.filterCustom().replace()',
+      replacement: payload,
+      query: query.toString(),
+    })
     expect(tests.currentMutableState).toEqual(get().read());
   });
 
   it('should patch()', () => {
     const get = set(initialState);
     const payload = { value: 'test' };
+    const query = (a: typeof initialState['array'][0]) => a.id > 1;
     get(s => s.array)
-      .filterCustom(a => a.id > 1)
+      .filterCustom(query)
       .patch(payload);
     expect(get(s => s.array).read()).toEqual([initialState.array[0], { ...initialState.array[1], ...payload }, { ...initialState.array[2], ...payload }]);
-    expect(tests.currentAction.type).toEqual('array.filterCustom().patch()');
-    expect(tests.currentAction.payload.patch).toEqual(payload);
+    expect(tests.currentAction).toEqual({
+      type: 'array.filterCustom().patch()',
+      patch: payload,
+      query: query.toString(),
+    })
     expect(tests.currentMutableState).toEqual(get().read());
   });
 
   it('should remove()', () => {
     const get = set(initialState);
+    const query = (a: typeof initialState['array'][0]) => a.id === 2;
     get(s => s.array)
-      .filterCustom(a => a.id === 2)
+      .filterCustom(query)
       .remove();
     expect(get(s => s.array).read()).toEqual([{ id: 1, value: 'one' }, { id: 3, value: 'three' }]);
-    expect(tests.currentAction.type).toEqual('array.filterCustom().remove()');
-    expect(tests.currentAction.payload.toRemove).toEqual([{ id: 2, value: 'two' }]);
+    expect(tests.currentAction).toEqual({
+      type: 'array.filterCustom().remove()',
+      toRemove: [{ id: 2, value: 'two' }],
+      query: query.toString(),
+    })
     expect(tests.currentMutableState).toEqual(get().read());
   });
 

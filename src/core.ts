@@ -186,7 +186,6 @@ function makeInternal<S, T extends Trackability>(state: S, options: { supportsTa
         actionName,
         actionNameOverride: true,
         pathSegments: segsCopy,
-        // payload: payloadFrozen,
         payload: {
           replacement: payloadFrozen,
         },
@@ -198,7 +197,7 @@ function makeInternal<S, T extends Trackability>(state: S, options: { supportsTa
   };
   const action = <C, X extends C & Array<any>>(selector: Selector<S, C, X>) => {
     const findOrFilter = (type: FindOrFilter) => {
-      const whereClauseSpecs = new Array<{ filter: (arg: X[0]) => boolean, type: 'and' | 'or' | '' }>();
+      const whereClauseSpecs = new Array<{ filter: (arg: X[0]) => boolean, type: 'and' | 'or' | 'last' }>();
       const whereClauseStrings = new Array<string>();
       const recurseWhere = (getProp => {
         const allIllegalChars = ['=', '<,', '>', '&', '|'];
@@ -214,25 +213,29 @@ function makeInternal<S, T extends Trackability>(state: S, options: { supportsTa
         };
         const bundleCriteria = (arrayElement: X[0]) => {
           const ors = new Array<(arg: X[0]) => boolean>();
+          const ands = new Array<(arg: X[0]) => boolean>();
           for (let i = 0; i < whereClauseSpecs.length; i++) {
-            if (whereClauseSpecs[i].type === 'and') {
-              let andsPassed = true;
-              while (andsPassed && whereClauseSpecs[i].type === 'and') {
-                andsPassed = whereClauseSpecs[i].filter(arrayElement);
-                i++;
-              }
-              ors.push(() => andsPassed);
-            } else {
-              if ((whereClauseSpecs[i].type === 'or') || (whereClauseSpecs[i].type === '')) {
-                ors.push(whereClauseSpecs[i].filter);
-              }
+            const isLastClause = whereClauseSpecs[i].type === 'last';
+            const isAndClause = whereClauseSpecs[i].type === 'and';
+            const isOrClause = whereClauseSpecs[i].type === 'or';
+            const previousClauseWasAnAnd = whereClauseSpecs[i - 1] && whereClauseSpecs[i - 1].type === 'and';
+            if (isAndClause || previousClauseWasAnAnd) {
+              ands.push(whereClauseSpecs[i].filter);
+            }
+            if ((isOrClause || isLastClause) && ands.length) {
+              const andsCopy = ands.slice();
+              ors.push(el => andsCopy.every(and => and(el)));
+              ands.length = 0;
+            }
+            if (!isAndClause && !previousClauseWasAnAnd) {
+              ors.push(whereClauseSpecs[i].filter);
             }
           }
           return ors.some(fn => fn(arrayElement));
         }
         const completeWhereClause = (whereClauseString: string, fn: (e: X[0]) => boolean) => {
           whereClauseStrings.push(whereClauseString);
-          whereClauseSpecs.push({ filter: o => criteria(o, fn), type: '' });
+          whereClauseSpecs.push({ filter: o => criteria(o, fn), type: 'last' });
           const result = type === 'find'
             ? [(selector(currentState) as X).findIndex(e => bundleCriteria(e))]
             : (selector(currentState) as X).map((e, i) => bundleCriteria(e) ? i : null).filter(i => i !== null) as number[];
@@ -258,7 +261,7 @@ function makeInternal<S, T extends Trackability>(state: S, options: { supportsTa
               mutator: old => { old.forEach((o, i) => { if (elementIndices.includes(i)) { old[i] = payloadCopied; } }) },
               actionName: `${type}().replace()`,
               payload: {
-                where: whereClauseStrings.join(' '),
+                query: whereClauseStrings.join(' '),
                 replacement: payloadFrozen,
               },
               tag,
@@ -273,7 +276,7 @@ function makeInternal<S, T extends Trackability>(state: S, options: { supportsTa
               mutator: old => elementIndices.forEach(i => Object.assign(old[i], payloadCopied)),
               actionName: `${type}().patch()`,
               payload: {
-                where: whereClauseStrings.join(' '),
+                query: whereClauseStrings.join(' '),
                 patch: payloadFrozen,
               },
               tag,
@@ -285,30 +288,29 @@ function makeInternal<S, T extends Trackability>(state: S, options: { supportsTa
               selector,
               replacer: old => old.filter((o, i) => !elementIndices.includes(i)),
               mutator: old => {
-                const toRemove = type === 'find' ? [old.find(bundleCriteria)] : old.filter(bundleCriteria);
-                for (var i = 0; i < old.length; i++) {
-                  if (toRemove.includes(old[i])) {
+                for (var i = 0, j = 0; i < old.length; i++, j++) {
+                  if (elementIndices.includes(j)) {
                     old.splice(i, 1); i--;
                   }
                 }
               },
               actionName: `${type}().remove()`,
               payload: {
-                where: whereClauseStrings.join(' '),
-                toRemove: (selector(currentState) as X).filter((e, i) => elementIndices.includes(i)),
+                query: whereClauseStrings.join(' '),
+                toRemove: (selector(currentState) as X)[type]((e, i) => elementIndices.includes(i)),
               },
               tag,
             });
           },
           onChange: performAction => {
-            whereClauseSpecs.push({ filter: o => criteria(o, fn), type: '' });
+            whereClauseSpecs.push({ filter: o => criteria(o, fn), type: 'last' });
             changeListeners.set(performAction, nextState => deepFreeze(type === 'find'
               ? (selector(nextState) as X).find(e => bundleCriteria(e))
               : (selector(nextState) as X).map(e => bundleCriteria(e) ? e : null).filter(e => e !== null)));
             return { unsubscribe: () => changeListeners.delete(performAction) };
           },
           read: () => {
-            whereClauseSpecs.push({ filter: o => criteria(o, fn), type: '' });
+            whereClauseSpecs.push({ filter: o => criteria(o, fn), type: 'last' });
             return deepFreeze(type === 'find'
               ? (selector(currentState) as X).find(e => bundleCriteria(e))
               : (selector(currentState) as X).map(e => bundleCriteria(e) ? e : null).filter(e => e != null));
@@ -316,10 +318,10 @@ function makeInternal<S, T extends Trackability>(state: S, options: { supportsTa
         } as ArrayOfObjectsAction<X, any, T>);
         return {
           ...{
-            eq: val => constructActions(`${segs.join('.')} === ${JSON.stringify(val)}`, (e: X[0]) => e === val),
-            ne: val => constructActions(`${segs.join('.')} !== ${JSON.stringify(val)}`, (e: X[0]) => e !== val),
-            in: val => constructActions(`[${val.join(', ')}].includes(${segs.join('.')})`, (e: X[0]) => val.includes(e)),
-            ni: val => constructActions(`![${val.join(', ')}].includes(${segs.join('.')})`, (e: X[0]) => !val.includes(e)),
+            eq: val => constructActions(`${segs.join('.') || 'element'} === ${val}`, (e: X[0]) => e === val),
+            ne: val => constructActions(`${segs.join('.') || 'element'} !== ${val}`, (e: X[0]) => e !== val),
+            in: val => constructActions(`[${val.join(', ')}].includes(${segs.join('.') || 'element'})`, (e: X[0]) => val.includes(e)),
+            ni: val => constructActions(`![${val.join(', ')}].includes(${segs.join('.') || 'element'})`, (e: X[0]) => !val.includes(e)),
           } as PredicateOptionsCommon<X, any, any, T>,
           ...{
             gt: val => constructActions(`${segs.join('.')} > ${val}`, (e: X[0]) => e > val),
@@ -359,7 +361,7 @@ function makeInternal<S, T extends Trackability>(state: S, options: { supportsTa
               }
             },
             actionName: `${type}Custom().remove()`,
-            payload: { toRemove: (selector(currentState) as X).filter(predicate), where: predicate.toString() },
+            payload: { toRemove: (selector(currentState) as X).filter(predicate), query: predicate.toString() },
             tag,
           });
         },
@@ -372,7 +374,7 @@ function makeInternal<S, T extends Trackability>(state: S, options: { supportsTa
             mutator: old => { old.forEach((o, i) => { if (elementIndices.includes(i)) { old[i] = payloadCopied; } }) },
             actionName: `${type}Custom().replace()`,
             payload: {
-              where: predicate.toString(),
+              query: predicate.toString(),
               replacement: payloadFrozen,
             },
             tag,
@@ -386,7 +388,7 @@ function makeInternal<S, T extends Trackability>(state: S, options: { supportsTa
             replacer: old => old.map((o, i) => elementIndices.includes(i) ? { ...o, ...payloadFrozen } : o),
             mutator: old => elementIndices.forEach(i => Object.assign(old[i], payloadCopied)),
             actionName: `${type}Custom().patch()`,
-            payload: { patch: payloadFrozen, where: predicate.toString() },
+            payload: { patch: payloadFrozen, query: predicate.toString() },
             tag,
           });
         },
@@ -592,14 +594,14 @@ function makeInternal<S, T extends Trackability>(state: S, options: { supportsTa
     const actionToDispatch = {
       type: (specs.actionNameOverride ? specs.actionName : (pathSegments.join('.') + (pathSegments.length ? '.' : '') + specs.actionName)) +
         (specs.tag ? ` [${options.tagSanitizer ? options.tagSanitizer(specs.tag as string) : specs.tag}]` : ''),
-      payload: (specs.getPayloadFn && (specs.getPayloadFn() !== undefined)) ? specs.getPayloadFn() : specs.payload,
-      // ...((specs.getPayloadFn && (specs.getPayloadFn() !== undefined)) ? specs.getPayloadFn() : specs.payload),
+      ...((specs.getPayloadFn && (specs.getPayloadFn() !== undefined)) ? specs.getPayloadFn() : specs.payload),
     };
+    const { type, ...actionPayload } = actionToDispatch;
     tests.currentAction = actionToDispatch;
     tests.currentMutableState = pathReader.mutableStateCopy as any;
     if (devtoolsDispatchListener && (!specs.tag || (specs.tag !== 'dontTrackWithDevtools'))) {
       const dispatchToDevtools = (payload?: any[]) => {
-        const action = payload ? { ...actionToDispatch, payload } : actionToDispatch;
+        const action = payload ? { ...actionToDispatch, batched: payload } : actionToDispatch;
         tests.currentActionForDevtools = action;
         devtoolsDispatchListener!(action);
       }
@@ -607,9 +609,9 @@ function makeInternal<S, T extends Trackability>(state: S, options: { supportsTa
         window.clearTimeout(previousAction.debounceTimeout);
         previousAction.debounceTimeout = 0;
       }
-      if (previousAction.type !== actionToDispatch.type) {
-        previousAction.type = actionToDispatch.type;
-        previousAction.payloads = [actionToDispatch.payload];
+      if (previousAction.type !== type) {
+        previousAction.type = type;
+        previousAction.payloads = [actionPayload];
         dispatchToDevtools();
         previousAction.debounceTimeout = window.setTimeout(() => {
           previousAction.type = '';
@@ -617,13 +619,13 @@ function makeInternal<S, T extends Trackability>(state: S, options: { supportsTa
         }, devtoolsDebounce);
       } else {
         if (previousAction.timestamp < (Date.now() - devtoolsDebounce)) {
-          previousAction.payloads = [actionToDispatch.payload];
+          previousAction.payloads = [actionPayload];
         } else {
-          previousAction.payloads.push(actionToDispatch.payload);
+          previousAction.payloads.push(actionPayload);
         }
         previousAction.timestamp = Date.now();
         previousAction.debounceTimeout = window.setTimeout(() => {
-          dispatchToDevtools(previousAction.payloads);
+          dispatchToDevtools(previousAction.payloads.slice(0, previousAction.payloads.length - 1));
           previousAction.type = '';
           previousAction.payloads = [];
         }, devtoolsDebounce);

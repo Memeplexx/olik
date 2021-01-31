@@ -208,7 +208,7 @@ describe.skip('Perf', () => {
     const get = set(['one', 'two']);
     const before = performance.now();
     for (let i = 0; i < 100; i++) {
-      get().addAfter(['three']);
+      get().insert(['three']);
     }
     console.log(`Oulik array push: ${performance.now() - before}`);
   });

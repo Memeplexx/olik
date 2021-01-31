@@ -212,7 +212,7 @@ export type ArrayOfElementsCommonAction<X extends Array<any>, F extends FindOrFi
    * // don't forget to unsubscribe to avoid a memory leak
    * subscription.unsubscribe(); 
    */
-  onChange: (listener: (arg: DeepReadonly<F extends 'find' ? X[0] : X>) => void) => Unsubscribable;
+  onChange: (listener: (state: DeepReadonly<F extends 'find' ? X[0] : X>) => void) => Unsubscribable;
   /**
    * Returns the current value of the selected node.
    */

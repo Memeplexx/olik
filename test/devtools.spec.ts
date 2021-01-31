@@ -86,13 +86,17 @@ describe('Devtools', () => {
     const payload: number[] = [];
     for (let i = 0; i < 100; i++) {
       get(s => s.test).replace(i);
-      expect(tests.currentActionForDevtools.payload).toEqual({ replacement: 0 });
+      expect(tests.currentActionForDevtools).toEqual({ type: 'test.replace()', replacement: 0 });
       if (i > 0) {
         payload.push(i);
       }
     }
     setTimeout(() => {
-      expect(tests.currentActionForDevtools.payload).toEqual(payload.map(replacement => ({ replacement })));
+      expect(tests.currentActionForDevtools).toEqual({
+        type: 'test.replace()',
+        replacement: 99,
+        batched: payload.slice(0, payload.length - 1).map(replacement => ({ replacement })),
+      })
       done();
     }, 300);
   })
