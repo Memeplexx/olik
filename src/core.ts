@@ -362,7 +362,7 @@ function makeInternal<S, T extends Trackability>(state: S, options: { supportsTa
               }
             },
             actionName: `${type}Custom().remove()`,
-            payload: { toRemove: (selector(currentState) as X).filter(predicate), query: predicate.toString() },
+            payload: { toRemove: (selector(currentState) as X)[type]((e, i) => elementIndices.includes(i)), query: predicate.toString() },
             tag,
           });
         },

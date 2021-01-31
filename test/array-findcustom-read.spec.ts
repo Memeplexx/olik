@@ -1,0 +1,40 @@
+import { set } from '../src/core';
+import { tests } from '../src/tests';
+import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
+
+describe('array.findCustom().read()', () => {
+
+  beforeAll(() => tests.windowObject = windowAugmentedWithReduxDevtoolsImpl);
+
+  const initialState = {
+    object: { property: '' },
+    array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
+  };
+
+  it('should read()', () => {
+    const get = set(initialState);
+    const read = get(s => s.array)
+      .findCustom(e => e.id === 2)
+      .read();
+    expect(read).toEqual(initialState.array[1]);
+  })
+
+  it('should onChange()', () => {
+    const get = set(initialState);
+    let changeCount = 0;
+    get(s => s.array)
+      .findCustom(e => e.id === 3)
+      .onChange(e => {
+        changeCount++;
+        expect(e.value).toEqual('three x');
+      });
+    get(s => s.array)
+      .filterCustom(e => e.id === 3)
+      .patch({ value: 'three x' });
+    get(s => s.array)
+      .filterCustom(e => e.id === 1)
+      .patch({ value: 'one x' });
+    expect(changeCount).toEqual(1);
+  })
+
+});

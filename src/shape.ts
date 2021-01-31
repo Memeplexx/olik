@@ -138,7 +138,7 @@ export type PredicateOptionsForString<X extends Array<any>, E, F extends FindOrF
    * Checks whether the previously selected string property **matches** the supplied regular expression
    * @example
    * ...
-   * .matches(/^hello/)
+   * .match(/^hello/)
    * ...
    */
   match: (pattern: RegExp) => PredicateAction<X, F, T>,
