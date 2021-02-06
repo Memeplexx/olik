@@ -1,4 +1,4 @@
-import { Derivation, DerivationCalculationInputs, StoreOrDerivation, Unsubscribable } from './shape';
+import { Derivation, DerivationCalculationInputs, StoreOrDerivation, Unsubscribable } from './shapes-external';
 
 /**
  * Takes an arbitrary number of state selections as input, and performs an expensive calculation only when one of those inputs change value.  

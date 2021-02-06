@@ -1,11 +1,11 @@
-import { set } from '../src';
-import { errorMessages } from '../src/consts';
-import { tests } from '../src/tests';
+import { set } from '../src/store-creators';
+import { errorMessages } from '../src/shared-consts';
+import { libState } from '../src/shared-state';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
 describe('Error', () => {
 
-  beforeAll(() => tests.windowObject = windowAugmentedWithReduxDevtoolsImpl);
+  beforeAll(() => libState.windowObject = windowAugmentedWithReduxDevtoolsImpl);
 
   it('should throw an error when a method is invoked within a selector', () => {
     const get = set(new Array<string>());

@@ -147,10 +147,10 @@ export type PredicateOptionsForString<X extends Array<any>, E, F extends FindOrF
 /**
  * Query options
  */
-export type Predicate<X extends Array<any>, E, F extends FindOrFilter, T extends Trackability> =
-  [E] extends [number] ? PredicateOptionsForNumber<X, E, F, T>
-  : [E] extends [string] ? PredicateOptionsForString<X, E, F, T>
-  : PredicateOptionsCommon<X, E, F, T>;
+export type Predicate<X extends Array<any>, P, F extends FindOrFilter, T extends Trackability> =
+  [P] extends [number] ? PredicateOptionsForNumber<X, P, F, T>
+  : [P] extends [string] ? PredicateOptionsForString<X, P, F, T>
+  : PredicateOptionsCommon<X, P, F, T>;
 
 /**
  * Actions which can be applied to any array
@@ -232,7 +232,7 @@ export type ArrayOfObjectsCommonAction<X extends Array<any>, F extends FindOrFil
 /**
  * An object which is capable of storing and updating state which is in the shape of an array of primitives
  */
-export type StoreForAnArray<C extends Array<any>, T extends Trackability> = {
+export type StoreForAnArray<X extends Array<any>, T extends Trackability> = {
   /**
    * Appends one or more elements onto the end of the array
    * @example
@@ -242,7 +242,7 @@ export type StoreForAnArray<C extends Array<any>, T extends Trackability> = {
    * ...
    * .insert(newArrayOfTodos);
    */
-  insert: <R extends (C[0] | C) >(payload: R, tag: Tag<T>) => void,
+  insert: <R extends (X[0] | X) >(payload: R, tag: Tag<T>) => void,
   /**
    * Removes all elements from the array
    * @example
@@ -256,7 +256,7 @@ export type StoreForAnArray<C extends Array<any>, T extends Trackability> = {
    * ...
    * .replaceAll(newTodos);
    */
-  replaceAll: (replacement: C, tag: Tag<T>) => void,
+  replaceAll: (replacement: X, tag: Tag<T>) => void,
   /**
    * Match up an array element property so that we can perform a `replacementElseInsert()` (AKA upsert / merge)
    * @example
@@ -264,7 +264,7 @@ export type StoreForAnArray<C extends Array<any>, T extends Trackability> = {
    * .match(s => s.id)
    * ...
    */
-  match: <P>(getProp?: (element: DeepReadonly<C[0]>) => P) => {
+  match: <P>(getProp?: (element: DeepReadonly<X[0]>) => P) => {
     /**
      * Uses the `match()` function you just defined in order to update or insert array element(s) depending on whether they could or could not be found in the store.
      * @example
@@ -274,7 +274,7 @@ export type StoreForAnArray<C extends Array<any>, T extends Trackability> = {
      * ...
      * replaceElseInsert(todos)
      */
-    replaceElseInsert: (elementOrArray: C[0] | C, tag: Tag<T>) => void
+    replaceElseInsert: (elementOrArray: X[0] | X, tag: Tag<T>) => void
   }
   /**
    * Specify which array element property to filter by.  
@@ -286,7 +286,7 @@ export type StoreForAnArray<C extends Array<any>, T extends Trackability> = {
    * ...
    * ```
    */
-  filter: PredicateFunction<C, 'filter', T>,
+  filter: PredicateFunction<X, 'filter', T>,
   /**
    * Specify which array element property to find by.  
    * Note that it is advisable to choose this over the `findCustom()` function because using `find()` will allow the library to describe your actions in more detail
@@ -295,7 +295,7 @@ export type StoreForAnArray<C extends Array<any>, T extends Trackability> = {
    * .filter(t => t.id).eq(3)
    * ...
    */
-  find: PredicateFunction<C, 'find', T>,
+  find: PredicateFunction<X, 'find', T>,
   /**
    * Specify a function in order to filter elements.  
    * Note that it is advisable to choose the `filter()` function over this one because that function will allow the library to describe your actions in more detail.
@@ -305,7 +305,7 @@ export type StoreForAnArray<C extends Array<any>, T extends Trackability> = {
    * .filter(t => t.id).eq(1)
    * ...
    */
-  filterCustom: PredicateFunctionCustom<C, 'filter', T>,
+  filterCustom: PredicateFunctionCustom<X, 'filter', T>,
   /**
    * Specify a function in order to filter elements.  
    * Note that it is advisable to choose the `find()` function over this one because that function will allow the library to describe your actions in more detail.
@@ -315,18 +315,18 @@ export type StoreForAnArray<C extends Array<any>, T extends Trackability> = {
    * .filter(t => t.id).eq(1)
    * ...
    */
-  findCustom: PredicateFunctionCustom<C, 'find', T>,
+  findCustom: PredicateFunctionCustom<X, 'find', T>,
 }
 
 /**
  * A function which accepts another function to select a property from an array element
  */
-export type PredicateFunction<C extends Array<any>, F extends FindOrFilter, T extends Trackability> = <X = C[0]>(getProp?: (element: DeepReadonly<C[0]>) => X) => Predicate<C, X, F, T>
+export type PredicateFunction<X extends Array<any>, F extends FindOrFilter, T extends Trackability> = <P>(getProp?: (element: DeepReadonly<X[0]>) => P) => Predicate<X, P, F, T>
 
 /**
  * A function which accepts another function to test an array element based on some condition
  */
-export type PredicateFunctionCustom<C extends Array<any>, F extends FindOrFilter, T extends Trackability> = (fn: (element: DeepReadonly<C[0]>) => boolean) => PredicateCustom<C, F, T>;
+export type PredicateFunctionCustom<X extends Array<any>, F extends FindOrFilter, T extends Trackability> = (fn: (element: DeepReadonly<X[0]>) => boolean) => PredicateCustom<X, F, T>;
 
 /**
  * An object which is capable of storing and updating state which is in the shape of a primitive
@@ -417,15 +417,6 @@ export type StoreWhichIsNested<C> = Store<C, 'untagged'> & {
 };
 
 /**
- * For internal use only.
- */
-export type StoreWhichIsNestedInternal<S, C> = Store<C, 'untagged'> & {
-  defineReset: (initState: S) => () => any;
-  defineRemoveFromContainingStore: (name: string, key: string) => () => any;
-  defineRemoveNestedStore: (name: string, key: string) => () => any;
-} & StoreWhichIsNested<C>;
-
-/**
  * A function which selects from the store
  */
 export type Selector<S, C, X = C> = X extends C & ReadonlyArray<any> ? (s: S) => X : (s: S) => C;
@@ -443,7 +434,7 @@ export type SelectorFromAStore<S> = (<C = S>(selector?: (arg: DeepReadonly<S>) =
 /**
  * A function which selects from a store which enforces the use of tags when performing a state update
  */
-export type SelectorFromAStoreEnforcingTags<S> = (<C = S>(selector?: (arg: DeepReadonly<S>) => C) => StoreWhichEnforcesTags<DeepWritable<C>>);
+export type SelectorFromAStoreEnforcingTags<S, P> = (<C = S>(selector?: (arg: DeepReadonly<S>) => C) => StoreWhichEnforcesTags<DeepWritable<C>>);
 
 /**
  * An input for a derivation
@@ -543,18 +534,4 @@ export type Derivation<R> = {
   onChange: (listener: (value: R) => any) => Unsubscribable,
 };
 
-export type WindowAugmentedWithReduxDevtools = {
-  __REDUX_DEVTOOLS_EXTENSION__: {
-    connect: (options: OptionsForReduxDevtools) => {
-      init: (state: any) => any,
-      subscribe: (listener: (message: { type: string, payload: any, state?: any, source: string }) => any) => any,
-      unsubscribe: () => any,
-      send: (action: { type: string }, state: any) => any
-    };
-    disconnect: () => any;
-    send: (action: { type: string, payload?: any }, state: any, options: OptionsForReduxDevtools) => any;
-    _mockInvokeSubscription: (message: { type: string, payload: any, state?: any, source: any }) => any,
-    _subscribers: Array<(message: { type: string, payload: any, state?: any, source: any }) => any>,
-  }
-}
 

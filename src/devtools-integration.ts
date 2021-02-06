@@ -1,6 +1,7 @@
-import { errorMessages } from './consts';
-import { Store, OptionsForReduxDevtools, WindowAugmentedWithReduxDevtools } from './shape';
-import { tests } from './tests';
+import { errorMessages } from './shared-consts';
+import { Store, OptionsForReduxDevtools } from './shapes-external';
+import { WindowAugmentedWithReduxDevtools } from './shapes-internal';
+import { libState } from './shared-state';
 
 export function integrateStoreWithReduxDevtools<S, C = S>(
   store: (selector?: (state: S) => C) => Store<C, any>,
@@ -8,8 +9,8 @@ export function integrateStoreWithReduxDevtools<S, C = S>(
   setDevtoolsDispatchListener: (listener: (action: { type: string, payload?: any }) => any) => any
 ) {
   let windowObj = window as any as WindowAugmentedWithReduxDevtools;
-  if (tests.windowObject) {
-    windowObj = tests.windowObject as WindowAugmentedWithReduxDevtools;
+  if (libState.windowObject) {
+    windowObj = libState.windowObject as WindowAugmentedWithReduxDevtools;
   }
   if (!windowObj.__REDUX_DEVTOOLS_EXTENSION__) {
     console.warn(errorMessages.DEVTOOL_CANNOT_FIND_EXTENSION);
@@ -20,7 +21,7 @@ export function integrateStoreWithReduxDevtools<S, C = S>(
   setDevtoolsDispatchListener(action => {
     devTools.send(action, store().read());
   });
-  devTools.subscribe(message => {
+  devTools.subscribe((message: any) => {
     if (message.type === 'ACTION' && message.source === '@devtools-extension') {
       let messagePayload: { type: string, payload: any };
       try {
@@ -74,7 +75,7 @@ export function integrateStoreWithReduxDevtools<S, C = S>(
       }
     }
   });
-  tests.devTools = devTools;
+  libState.devTools = devTools;
   return devTools;
 }
 

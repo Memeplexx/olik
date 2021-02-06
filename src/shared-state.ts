@@ -1,6 +1,6 @@
-import { WindowAugmentedWithReduxDevtools } from './shape';
+import { WindowAugmentedWithReduxDevtools } from './shapes-internal';
 
-export const tests = {
+export const libState = {
   currentAction: { type: '', payload: null as any },
   currentActionForDevtools: { type: '', payload: null as any },
   currentMutableState: null,

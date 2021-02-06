@@ -1,11 +1,11 @@
-import { errorMessages } from '../src/consts';
-import { set, setNested } from '../src/core';
-import { tests } from '../src/tests';
+import { errorMessages } from '../src/shared-consts';
+import { set, setNested } from '../src/store-creators';
+import { libState } from '../src/shared-state';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
 describe('Nested', () => {
 
-  beforeAll(() => tests.windowObject = windowAugmentedWithReduxDevtoolsImpl);
+  beforeAll(() => libState.windowObject = windowAugmentedWithReduxDevtoolsImpl);
 
   it('should attach a lib store correctly', () => {
     const initialState = {
@@ -39,7 +39,7 @@ describe('Nested', () => {
     const nestedStore = setNested({ one: '' }, { name });
     expect(nestedStore(s => s.one).read()).toEqual('');
     nestedStore(s => s.one).replace('test');
-    expect(tests.currentAction.type).toEqual(`nested.${name}.0.one.replace()`);
+    expect(libState.currentAction.type).toEqual(`nested.${name}.0.one.replace()`);
     expect(nestedStore(s => s.one).read()).toEqual('test');
   })
 

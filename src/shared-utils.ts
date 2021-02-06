@@ -1,6 +1,6 @@
-import { errorMessages } from './consts';
-import { FunctionReturning } from './shape';
-import { tests } from './tests';
+import { errorMessages } from './shared-consts';
+import { FunctionReturning } from './shapes-external';
+import { libState } from './shared-state';
 
 export function deepFreeze<T extends Object>(o: T): T {
   Object.freeze(o);
@@ -91,7 +91,7 @@ export function createPathReader<S extends Object>(state: S) {
             return initialize(val);
           } else if (typeof (val) === 'function') {
             return function (...args: any[]) {
-              if (!tests.bypassArrayFunctionCheck) {
+              if (!libState.bypassArrayFunctionCheck) {
                 throw new Error(errorMessages.ILLEGAL_FUNCTION_INVOKED_WITHIN_SELECTOR(prop));
               }
             };

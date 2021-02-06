@@ -1,10 +1,10 @@
-import { set } from '../src/core';
-import { tests } from '../src/tests';
+import { set } from '../src/store-creators';
+import { libState } from '../src/shared-state';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
 describe('array.find().remove()', () => {
 
-  beforeAll(() => tests.windowObject = windowAugmentedWithReduxDevtoolsImpl);
+  beforeAll(() => libState.windowObject = windowAugmentedWithReduxDevtoolsImpl);
 
   const initialState = {
     object: { property: '' },
@@ -16,13 +16,13 @@ describe('array.find().remove()', () => {
     get(s => s.array)
       .find(e => e.id).eq(2)
       .remove();
-    expect(tests.currentAction).toEqual({
+    expect(libState.currentAction).toEqual({
       type: 'array.find().remove()',
       toRemove: initialState.array[1],
       query: 'id === 2',
     });
     expect(get(s => s.array).read()).toEqual([initialState.array[0], initialState.array[2]]);
-    expect(tests.currentMutableState).toEqual(get().read());
+    expect(libState.currentMutableState).toEqual(get().read());
   })
 
   it('should ne()', () => {
@@ -30,13 +30,13 @@ describe('array.find().remove()', () => {
     get(s => s.array)
       .find(e => e.id).ne(2)
       .remove();
-    expect(tests.currentAction).toEqual({
+    expect(libState.currentAction).toEqual({
       type: 'array.find().remove()',
       toRemove: initialState.array[0],
       query: 'id !== 2',
     });
     expect(get(s => s.array).read()).toEqual([initialState.array[1], initialState.array[2]]);
-    expect(tests.currentMutableState).toEqual(get().read());
+    expect(libState.currentMutableState).toEqual(get().read());
   })
 
   it('should gt()', () => {
@@ -44,13 +44,13 @@ describe('array.find().remove()', () => {
     get(s => s.array)
       .find(e => e.id).gt(1)
       .remove();
-    expect(tests.currentAction).toEqual({
+    expect(libState.currentAction).toEqual({
       type: 'array.find().remove()',
       toRemove: initialState.array[1],
       query: 'id > 1',
     });
     expect(get(s => s.array).read()).toEqual([initialState.array[0], initialState.array[2]]);
-    expect(tests.currentMutableState).toEqual(get().read());
+    expect(libState.currentMutableState).toEqual(get().read());
   })
 
   it('should lt()', () => {
@@ -58,13 +58,13 @@ describe('array.find().remove()', () => {
     get(s => s.array)
       .find(e => e.id).lt(2)
       .remove();
-    expect(tests.currentAction).toEqual({
+    expect(libState.currentAction).toEqual({
       type: 'array.find().remove()',
       toRemove: initialState.array[0],
       query: 'id < 2',
     });
     expect(get(s => s.array).read()).toEqual([initialState.array[1], initialState.array[2]]);
-    expect(tests.currentMutableState).toEqual(get().read());
+    expect(libState.currentMutableState).toEqual(get().read());
   })
 
   it('should in()', () => {
@@ -72,13 +72,13 @@ describe('array.find().remove()', () => {
     get(s => s.array)
       .find(e => e.id).in([1, 2])
       .remove();
-    expect(tests.currentAction).toEqual({
+    expect(libState.currentAction).toEqual({
       type: 'array.find().remove()',
       toRemove: initialState.array[0],
       query: '[1, 2].includes(id)',
     });
     expect(get(s => s.array).read()).toEqual([initialState.array[1], initialState.array[2]]);
-    expect(tests.currentMutableState).toEqual(get().read());
+    expect(libState.currentMutableState).toEqual(get().read());
   })
 
   it('should ni()', () => {
@@ -86,13 +86,13 @@ describe('array.find().remove()', () => {
     get(s => s.array)
       .find(e => e.id).ni([1, 2])
       .remove();
-    expect(tests.currentAction).toEqual({
+    expect(libState.currentAction).toEqual({
       type: 'array.find().remove()',
       toRemove: initialState.array[2],
       query: '![1, 2].includes(id)',
     });
     expect(get(s => s.array).read()).toEqual([initialState.array[0], initialState.array[1]]);
-    expect(tests.currentMutableState).toEqual(get().read());
+    expect(libState.currentMutableState).toEqual(get().read());
   })
 
   it('should match()', () => {
@@ -100,13 +100,13 @@ describe('array.find().remove()', () => {
     get(s => s.array)
       .find(e => e.value).match(/^t/)
       .remove();
-    expect(tests.currentAction).toEqual({
+    expect(libState.currentAction).toEqual({
       type: 'array.find().remove()',
       toRemove: initialState.array[1],
       query: 'value.match(/^t/)',
     });
     expect(get(s => s.array).read()).toEqual([initialState.array[0], initialState.array[2]]);
-    expect(tests.currentMutableState).toEqual(get().read());
+    expect(libState.currentMutableState).toEqual(get().read());
   })
 
 });

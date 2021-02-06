@@ -1,10 +1,10 @@
-import { set } from '../src/core';
-import { tests } from '../src/tests';
+import { set } from '../src/store-creators';
+import { libState } from '../src/shared-state';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
 describe('array.filter().replace()', () => {
 
-  beforeAll(() => tests.windowObject = windowAugmentedWithReduxDevtoolsImpl);
+  beforeAll(() => libState.windowObject = windowAugmentedWithReduxDevtoolsImpl);
 
   const initialState = {
     object: { property: '' },
@@ -17,13 +17,13 @@ describe('array.filter().replace()', () => {
     get(s => s.array)
       .filter(e => e.id).eq(2)
       .replace(payload);
-    expect(tests.currentAction).toEqual({
+    expect(libState.currentAction).toEqual({
       type: 'array.filter().replace()',
       replacement: payload,
       query: 'id === 2',
     });
     expect(get(s => s.array).read()).toEqual([initialState.array[0], payload, initialState.array[2]]);
-    expect(tests.currentMutableState).toEqual(get().read());
+    expect(libState.currentMutableState).toEqual(get().read());
   })
 
   it('should ne()', () => {
@@ -32,13 +32,13 @@ describe('array.filter().replace()', () => {
     get(s => s.array)
       .filter(e => e.id).ne(2)
       .replace(payload);
-    expect(tests.currentAction).toEqual({
+    expect(libState.currentAction).toEqual({
       type: 'array.filter().replace()',
       replacement: payload,
       query: 'id !== 2',
     });
     expect(get(s => s.array).read()).toEqual([payload, initialState.array[1], payload]);
-    expect(tests.currentMutableState).toEqual(get().read());
+    expect(libState.currentMutableState).toEqual(get().read());
   })
 
   it('should gt()', () => {
@@ -47,13 +47,13 @@ describe('array.filter().replace()', () => {
     get(s => s.array)
       .filter(e => e.id).gt(1)
       .replace(payload);
-    expect(tests.currentAction).toEqual({
+    expect(libState.currentAction).toEqual({
       type: 'array.filter().replace()',
       replacement: payload,
       query: 'id > 1',
     });
     expect(get(s => s.array).read()).toEqual([initialState.array[0], payload, payload]);
-    expect(tests.currentMutableState).toEqual(get().read());
+    expect(libState.currentMutableState).toEqual(get().read());
   })
 
   it('should lt()', () => {
@@ -62,13 +62,13 @@ describe('array.filter().replace()', () => {
     get(s => s.array)
       .filter(e => e.id).lt(2)
       .replace(payload);
-    expect(tests.currentAction).toEqual({
+    expect(libState.currentAction).toEqual({
       type: 'array.filter().replace()',
       replacement: payload,
       query: 'id < 2',
     });
     expect(get(s => s.array).read()).toEqual([payload, initialState.array[1], initialState.array[2]]);
-    expect(tests.currentMutableState).toEqual(get().read());
+    expect(libState.currentMutableState).toEqual(get().read());
   })
 
   it('should in()', () => {
@@ -77,13 +77,13 @@ describe('array.filter().replace()', () => {
     get(s => s.array)
       .filter(e => e.id).in([1, 2])
       .replace(payload);
-    expect(tests.currentAction).toEqual({
+    expect(libState.currentAction).toEqual({
       type: 'array.filter().replace()',
       replacement: payload,
       query: '[1, 2].includes(id)',
     });
     expect(get(s => s.array).read()).toEqual([payload, payload, initialState.array[2]]);
-    expect(tests.currentMutableState).toEqual(get().read());
+    expect(libState.currentMutableState).toEqual(get().read());
   })
 
   it('should ni()', () => {
@@ -92,13 +92,13 @@ describe('array.filter().replace()', () => {
     get(s => s.array)
       .filter(e => e.id).ni([1, 2])
       .replace(payload);
-    expect(tests.currentAction).toEqual({
+    expect(libState.currentAction).toEqual({
       type: 'array.filter().replace()',
       replacement: payload,
       query: '![1, 2].includes(id)',
     });
     expect(get(s => s.array).read()).toEqual([initialState.array[0], initialState.array[1], payload]);
-    expect(tests.currentMutableState).toEqual(get().read());
+    expect(libState.currentMutableState).toEqual(get().read());
   })
 
   it('should match()', () => {
@@ -107,13 +107,13 @@ describe('array.filter().replace()', () => {
     get(s => s.array)
       .filter(e => e.value).match(/^t/)
       .replace(payload);
-    expect(tests.currentAction).toEqual({
+    expect(libState.currentAction).toEqual({
       type: 'array.filter().replace()',
       replacement: payload,
       query: 'value.match(/^t/)',
     });
     expect(get(s => s.array).read()).toEqual([initialState.array[0], payload, payload]);
-    expect(tests.currentMutableState).toEqual(get().read());
+    expect(libState.currentMutableState).toEqual(get().read());
   })
 
 });

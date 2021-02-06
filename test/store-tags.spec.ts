@@ -1,10 +1,10 @@
-import { set, setEnforceTags } from '../src/core';
-import { tests } from '../src/tests';
+import { set, setEnforceTags } from '../src/store-creators';
+import { libState } from '../src/shared-state';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
 describe('tags', () => {
 
-  beforeAll(() => tests.windowObject = windowAugmentedWithReduxDevtoolsImpl);
+  beforeAll(() => libState.windowObject = windowAugmentedWithReduxDevtoolsImpl);
 
   it('should work with tags correctly', () => {
     const payload = 'hey';
@@ -14,12 +14,12 @@ describe('tags', () => {
     });
     get(s => s.object.property)
       .replace(payload, tag);
-    expect(tests.currentAction).toEqual({
+    expect(libState.currentAction).toEqual({
       type: `object.property.replace() [${tag}]`,
       replacement: payload,
     });
     expect(get(s => s.object.property).read()).toEqual(payload);
-    expect(tests.currentMutableState).toEqual(get().read());
+    expect(libState.currentMutableState).toEqual(get().read());
   })
 
   it('should sanitize tags correctly', () => {
@@ -32,11 +32,11 @@ describe('tags', () => {
     const payload = 'test';
     get(s => s.test)
       .replace(payload, tag);
-    expect(tests.currentAction).toEqual({
+    expect(libState.currentAction).toEqual({
       type: `test.replace() [${tag}x]`,
       replacement: payload,
     });
-    expect(tests.currentMutableState).toEqual(get().read());
+    expect(libState.currentMutableState).toEqual(get().read());
   })
 
   it('should accept optional tags', () => {
@@ -45,7 +45,7 @@ describe('tags', () => {
     const payload = 'test';
     get(s => s.prop)
       .replace(payload, tag);
-    expect(tests.currentAction).toEqual({
+    expect(libState.currentAction).toEqual({
       type: `prop.replace() [${tag}]`,
       replacement: payload,
     });

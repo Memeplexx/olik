@@ -1,4 +1,4 @@
-export { set, setEnforceTags, setNested } from './core';
-export { deriveFrom } from './memoization';
-export * from './devtools';
-export * from './shape';
+export * from './store-creators';
+export * from './derive-from';
+export * from './devtools-integration';
+export * from './shapes-external';

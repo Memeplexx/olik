@@ -1,11 +1,11 @@
-import { set, setEnforceTags } from '../src/core';
-import { deriveFrom } from '../src/memoization';
-import { tests } from '../src/tests';
+import { set, setEnforceTags } from '../src/store-creators';
+import { deriveFrom } from '../src/derive-from';
+import { libState } from '../src/shared-state';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
 describe('Memoize', () => {
 
-  beforeAll(() => tests.windowObject = windowAugmentedWithReduxDevtoolsImpl);
+  beforeAll(() => libState.windowObject = windowAugmentedWithReduxDevtoolsImpl);
 
   it('should deriveFrom() corrrectly', () => {
     const get = set({

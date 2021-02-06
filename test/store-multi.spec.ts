@@ -1,10 +1,11 @@
-import { deriveFrom, set } from '../src';
-import { tests } from '../src/tests';
+import { deriveFrom } from '../src/derive-from';
+import { set } from '../src/store-creators';
+import { libState } from '../src/shared-state';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
 describe('Multi-store', () => {
 
-  beforeAll(() => tests.windowObject = windowAugmentedWithReduxDevtoolsImpl);
+  beforeAll(() => libState.windowObject = windowAugmentedWithReduxDevtoolsImpl);
 
   it('should support multiple stores', () => {
     const get1 = set(new Array<string>());

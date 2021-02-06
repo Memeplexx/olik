@@ -1,10 +1,10 @@
-import { set } from '../src/core';
-import { tests } from '../src/tests';
+import { set } from '../src/store-creators';
+import { libState } from '../src/shared-state';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
 describe('array.filterCustom().remove()', () => {
 
-  beforeAll(() => tests.windowObject = windowAugmentedWithReduxDevtoolsImpl);
+  beforeAll(() => libState.windowObject = windowAugmentedWithReduxDevtoolsImpl);
 
   const initialState = {
     object: { property: '' },
@@ -17,13 +17,13 @@ describe('array.filterCustom().remove()', () => {
     get(s => s.array)
       .filterCustom(query)
       .remove();
-    expect(tests.currentAction).toEqual({
+    expect(libState.currentAction).toEqual({
       type: 'array.filterCustom().remove()',
       toRemove: [initialState.array[1]],
       query: query.toString(),
     });
     expect(get(s => s.array).read()).toEqual([initialState.array[0], initialState.array[2]]);
-    expect(tests.currentMutableState).toEqual(get().read());
+    expect(libState.currentMutableState).toEqual(get().read());
   })
 
   it('should ne()', () => {
@@ -32,13 +32,13 @@ describe('array.filterCustom().remove()', () => {
     get(s => s.array)
       .filterCustom(query)
       .remove();
-    expect(tests.currentAction).toEqual({
+    expect(libState.currentAction).toEqual({
       type: 'array.filterCustom().remove()',
       toRemove: [initialState.array[0], initialState.array[2]],
       query: query.toString(),
     });
     expect(get(s => s.array).read()).toEqual([initialState.array[1]]);
-    expect(tests.currentMutableState).toEqual(get().read());
+    expect(libState.currentMutableState).toEqual(get().read());
   })
 
   it('should gt()', () => {
@@ -47,13 +47,13 @@ describe('array.filterCustom().remove()', () => {
     get(s => s.array)
       .filterCustom(query)
       .remove();
-    expect(tests.currentAction).toEqual({
+    expect(libState.currentAction).toEqual({
       type: 'array.filterCustom().remove()',
       toRemove: [initialState.array[1], initialState.array[2]],
       query: query.toString(),
     });
     expect(get(s => s.array).read()).toEqual([initialState.array[0]]);
-    expect(tests.currentMutableState).toEqual(get().read());
+    expect(libState.currentMutableState).toEqual(get().read());
   })
 
   it('should lt()', () => {
@@ -62,13 +62,13 @@ describe('array.filterCustom().remove()', () => {
     get(s => s.array)
       .filterCustom(query)
       .remove();
-    expect(tests.currentAction).toEqual({
+    expect(libState.currentAction).toEqual({
       type: 'array.filterCustom().remove()',
       toRemove: [initialState.array[0]],
       query: query.toString(),
     });
     expect(get(s => s.array).read()).toEqual([initialState.array[1], initialState.array[2]]);
-    expect(tests.currentMutableState).toEqual(get().read());
+    expect(libState.currentMutableState).toEqual(get().read());
   })
 
   it('should in()', () => {
@@ -77,13 +77,13 @@ describe('array.filterCustom().remove()', () => {
     get(s => s.array)
       .filterCustom(query)
       .remove();
-    expect(tests.currentAction).toEqual({
+    expect(libState.currentAction).toEqual({
       type: 'array.filterCustom().remove()',
       toRemove: [initialState.array[0], initialState.array[1]],
       query: query.toString(),
     });
     expect(get(s => s.array).read()).toEqual([initialState.array[2]]);
-    expect(tests.currentMutableState).toEqual(get().read());
+    expect(libState.currentMutableState).toEqual(get().read());
   })
 
   it('should ni()', () => {
@@ -92,13 +92,13 @@ describe('array.filterCustom().remove()', () => {
     get(s => s.array)
       .filterCustom(query)
       .remove();
-    expect(tests.currentAction).toEqual({
+    expect(libState.currentAction).toEqual({
       type: 'array.filterCustom().remove()',
       toRemove: [initialState.array[2]],
       query: query.toString(),
     });
     expect(get(s => s.array).read()).toEqual([initialState.array[0], initialState.array[1]]);
-    expect(tests.currentMutableState).toEqual(get().read());
+    expect(libState.currentMutableState).toEqual(get().read());
   })
 
   it('should match()', () => {
@@ -107,13 +107,13 @@ describe('array.filterCustom().remove()', () => {
     get(s => s.array)
       .filterCustom(query)
       .remove();
-    expect(tests.currentAction).toEqual({
+    expect(libState.currentAction).toEqual({
       type: 'array.filterCustom().remove()',
       toRemove: [initialState.array[1], initialState.array[2]],
       query: query.toString(),
     });
     expect(get(s => s.array).read()).toEqual([initialState.array[0]]);
-    expect(tests.currentMutableState).toEqual(get().read());
+    expect(libState.currentMutableState).toEqual(get().read());
   })
 
 });
