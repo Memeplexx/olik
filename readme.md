@@ -6,7 +6,9 @@
 ![Package Size](https://badgen.net/bundlephobia/minzip/oulik)
 ![Dependency count](https://badgen.net/bundlephobia/dependency-count/oulik)
 
-### *Declarative*, *self-documenting* state-management. *Free* of innacurate *actions* & convoluted reducers. *All* in-line.
+### *Declarative*, *self-documenting* state-management.  
+### *Free* of innacurate *actions* & convoluted reducers. 
+### *All* in-line.
 
 #### 🎨 **WHY CHOOSE OULIK?**
 Oulik is designed to make your state management as transparent and semantically consistent as possible.  
