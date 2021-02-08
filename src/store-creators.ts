@@ -1,9 +1,8 @@
 import { errorMessages } from './shared-consts';
-import { setInternal } from './core';
+import { createStore } from './core';
 import {
   DeepReadonly,
   OptionsForMakingAStore,
-  OptionsForMakingAStoreEnforcingTags,
   OptionsForReduxDevtools,
   SelectorFromANestedStore,
   SelectorFromAStore,
@@ -16,19 +15,20 @@ import { NestedContainerStore, StoreWhichIsNestedInternal } from './shapes-inter
 let nestedContainerStore: NestedContainerStore;
 
 /**
- * Creates a new store which, for typescript users, requires that users supply an additional 'tag' when performing a state update.
- * These tags can improve the debugging experience by describing the source of an update event, for example the name of the component an update was trigger from.
+ * Creates a new store which requires a 'tag' to be included with all updates.
+ * These tags can improve the debugging experience by describing the source of an update event.
+ * This tag could, for example, be the name of the component that an update was trigger from.
  * @param state the initial state  
  * @param options some additional configuration options
  * 
  * @example
  * const get = setEnforceTags({ prop: '' });
  * 
- * // Note that when updating state, we are now required to supply a string as the last argument (in this case 'TodoDetailComponent')
- * get(s => s.test)
- *   .replace('value', 'TodoDetailComponent')
+ * // Note that when updating state, we are now required to supply a string as the last argument (in this case 'MyComponent')
+ * get(s => s.prop)                   // type: 'prop.replace()'
+ *   .replace('test', 'MyComponent')  // replacement: 'test'
  */
-export function setEnforceTags<S>(state: S, options: OptionsForMakingAStoreEnforcingTags = {}): SelectorFromAStoreEnforcingTags<S, any> {
+export function setEnforceTags<S>(state: S, options: OptionsForMakingAStore = {}): SelectorFromAStoreEnforcingTags<S> {
   return setInternalRootStore<S, 'tagged'>(state, { ...options, supportsTags: true });
 }
 
@@ -46,7 +46,7 @@ export function set<S>(state: S, options: OptionsForMakingAStore = {}): Selector
 
 /**
  * Creates a new store which can be (but doesn't have to be) nested inside your application store.
- * If an existing store is already defined as `make({...}, { containerForNestedStores: true });`
+ * If an existing store is already defined as `make({...}, { isContainerForNestedStores: true });`
  * then this store will be automatically nested within that store, under the property `nested`.
  * If the opposite is true, then a new top-level store will be registered within the devtools
  * @param state The initial state
@@ -56,7 +56,7 @@ export function setNested<L>(state: L, options: { name: string, storeKey?: strin
   const name = options.name;
   if (!nestedContainerStore) {
     return (<C = L>(selector?: (arg: DeepReadonly<L>) => C) => (selector
-      ? setInternal({ state, devtools: { name }, supportsTags: false, nestedContainerStore })(selector)
+      ? createStore({ state, devtools: { name }, supportsTags: false, nestedContainerStore })(selector)
       : null)) as SelectorFromANestedStore<L>;
   }
   const generateKey = (arg?: string) => (!arg && !options.storeKey) ? '0' :
@@ -89,9 +89,9 @@ export function setNested<L>(state: L, options: { name: string, storeKey?: strin
   }) as unknown as SelectorFromANestedStore<L>;
 }
 
-function setInternalRootStore<S, T extends Trackability>(state: S, options: { containerForNestedStores?: boolean, supportsTags: boolean, devtools?: OptionsForReduxDevtools | false, tagSanitizer?: (tag: string) => string }) {
-  const store = setInternal<S, T>({ state, devtools: options.devtools === undefined ? {} : options.devtools, supportsTags: options.supportsTags, nestedContainerStore, tagSanitizer: options.tagSanitizer });
-  if (options.containerForNestedStores) {
+function setInternalRootStore<S, T extends Trackability>(state: S, options: { isContainerForNestedStores?: boolean, supportsTags: boolean, devtools?: OptionsForReduxDevtools | false, tagSanitizer?: (tag: string) => string }) {
+  const store = createStore<S, T>({ state, devtools: options.devtools === undefined ? {} : options.devtools, supportsTags: options.supportsTags, nestedContainerStore, tagSanitizer: options.tagSanitizer });
+  if (options.isContainerForNestedStores) {
     if ((typeof (state) !== 'object') || Array.isArray(state)) {
       throw new Error(errorMessages.INVALID_CONTAINER_FOR_NESTED_STORES);
     }

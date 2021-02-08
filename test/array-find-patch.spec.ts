@@ -56,6 +56,21 @@ describe('array.find().patch()', () => {
     expect(libState.currentMutableState).toEqual(get().read());
   })
 
+  it('should gte()', () => {
+    const get = set(initialState);
+    const payload = { value: 'four' };
+    get(s => s.array)
+      .find(e => e.id).gte(1)
+      .patch(payload);
+    expect(libState.currentAction).toEqual({
+      type: 'array.find().patch()',
+      patch: payload,
+      query: 'id >= 1',
+    });
+    expect(get(s => s.array).read()).toEqual([{ ...initialState.array[0], ...payload }, initialState.array[1], initialState.array[2]]);
+    expect(libState.currentMutableState).toEqual(get().read());
+  })
+
   it('should lt()', () => {
     const get = set(initialState);
     const payload = { value: 'four' };
@@ -66,6 +81,21 @@ describe('array.find().patch()', () => {
       type: 'array.find().patch()',
       patch: payload,
       query: 'id < 2',
+    });
+    expect(get(s => s.array).read()).toEqual([{ ...initialState.array[0], ...payload }, initialState.array[1], initialState.array[2]]);
+    expect(libState.currentMutableState).toEqual(get().read());
+  })
+
+  it('should lte()', () => {
+    const get = set(initialState);
+    const payload = { value: 'four' };
+    get(s => s.array)
+      .find(e => e.id).lte(2)
+      .patch(payload);
+    expect(libState.currentAction).toEqual({
+      type: 'array.find().patch()',
+      patch: payload,
+      query: 'id <= 2',
     });
     expect(get(s => s.array).read()).toEqual([{ ...initialState.array[0], ...payload }, initialState.array[1], initialState.array[2]]);
     expect(libState.currentMutableState).toEqual(get().read());

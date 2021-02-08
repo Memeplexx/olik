@@ -4,6 +4,7 @@ import { libState } from './shared-state';
 
 export function deepFreeze<T extends Object>(o: T): T {
   Object.freeze(o);
+  if (isEmpty(o)) { return o; }
   (Object.getOwnPropertyNames(o) as Array<keyof T>).forEach(prop => {
     if (o.hasOwnProperty(prop)
       && o[prop] !== null
@@ -13,6 +14,10 @@ export function deepFreeze<T extends Object>(o: T): T {
     }
   });
   return o;
+}
+
+export function isEmpty(arg: any) {
+  return arg === null || arg === undefined;
 }
 
 export function deepCopy<T>(o: T): T;

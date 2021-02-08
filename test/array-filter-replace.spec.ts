@@ -56,6 +56,21 @@ describe('array.filter().replace()', () => {
     expect(libState.currentMutableState).toEqual(get().read());
   })
 
+  it('should gte()', () => {
+    const get = set(initialState);
+    const payload = { id: 4, value: 'four' };
+    get(s => s.array)
+      .filter(e => e.id).gte(1)
+      .replace(payload);
+    expect(libState.currentAction).toEqual({
+      type: 'array.filter().replace()',
+      replacement: payload,
+      query: 'id >= 1',
+    });
+    expect(get(s => s.array).read()).toEqual([payload, payload, payload]);
+    expect(libState.currentMutableState).toEqual(get().read());
+  })
+
   it('should lt()', () => {
     const get = set(initialState);
     const payload = { id: 4, value: 'four' };
@@ -68,6 +83,21 @@ describe('array.filter().replace()', () => {
       query: 'id < 2',
     });
     expect(get(s => s.array).read()).toEqual([payload, initialState.array[1], initialState.array[2]]);
+    expect(libState.currentMutableState).toEqual(get().read());
+  })
+
+  it('should lte()', () => {
+    const get = set(initialState);
+    const payload = { id: 4, value: 'four' };
+    get(s => s.array)
+      .filter(e => e.id).lte(2)
+      .replace(payload);
+    expect(libState.currentAction).toEqual({
+      type: 'array.filter().replace()',
+      replacement: payload,
+      query: 'id <= 2',
+    });
+    expect(get(s => s.array).read()).toEqual([payload, payload, initialState.array[2]]);
     expect(libState.currentMutableState).toEqual(get().read());
   })
 

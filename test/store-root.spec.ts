@@ -141,15 +141,27 @@ describe('Root', () => {
     const get = set(initialState);
     const payload = 'four';
     get()
-      .match()
-      .replaceElseInsert(payload);
+      .replaceElseInsert(payload)
+      .match();
     expect(libState.currentAction).toEqual({
-      type: 'match().replaceElseInsert()',
+      type: 'replaceElseInsert().match()',
       argument: payload,
       insertionCount: 1,
       replacementCount: 0,
     })
     expect(get().read()).toEqual([...initialState, payload]);
+    expect(libState.currentMutableState).toEqual(get().read());
+  })
+
+  it('find().replace()', () => {
+    const get = set(['hello']);
+    get().find().match(/^h/).replace('another')
+    expect(libState.currentAction).toEqual({
+      type: 'find().replace()',
+      replacement: 'another',
+      query: 'element.match(/^h/)',
+    });
+    expect(get().read()).toEqual(['another']);
     expect(libState.currentMutableState).toEqual(get().read());
   })
 

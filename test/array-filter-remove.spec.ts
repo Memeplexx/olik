@@ -53,6 +53,20 @@ describe('array.filter().remove()', () => {
     expect(libState.currentMutableState).toEqual(get().read());
   })
 
+  it('should gte()', () => {
+    const get = set(initialState);
+    get(s => s.array)
+      .filter(e => e.id).gte(1)
+      .remove();
+    expect(libState.currentAction).toEqual({
+      type: 'array.filter().remove()',
+      toRemove: [initialState.array[0], initialState.array[1], initialState.array[2]],
+      query: 'id >= 1',
+    });
+    expect(get(s => s.array).read()).toEqual([]);
+    expect(libState.currentMutableState).toEqual(get().read());
+  })
+
   it('should lt()', () => {
     const get = set(initialState);
     get(s => s.array)
@@ -64,6 +78,20 @@ describe('array.filter().remove()', () => {
       query: 'id < 2',
     });
     expect(get(s => s.array).read()).toEqual([initialState.array[1], initialState.array[2]]);
+    expect(libState.currentMutableState).toEqual(get().read());
+  })
+
+  it('should lte()', () => {
+    const get = set(initialState);
+    get(s => s.array)
+      .filter(e => e.id).lte(2)
+      .remove();
+    expect(libState.currentAction).toEqual({
+      type: 'array.filter().remove()',
+      toRemove: [initialState.array[0], initialState.array[1]],
+      query: 'id <= 2',
+    });
+    expect(get(s => s.array).read()).toEqual([initialState.array[2]]);
     expect(libState.currentMutableState).toEqual(get().read());
   })
 

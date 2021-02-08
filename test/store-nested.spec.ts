@@ -15,7 +15,7 @@ describe('Nested', () => {
     const initialStateComp = {
       one: ''
     };
-    const get = set(initialState, { containerForNestedStores: true });
+    const get = set(initialState, { isContainerForNestedStores: true });
     const name = 'myComp';
     setNested(initialStateComp, { name });
     expect(get().read()).toEqual({ ...initialState, nested: { [name]: { 0: initialStateComp } } });
@@ -34,12 +34,15 @@ describe('Nested', () => {
       test: '',
       nested: {},
     };
-    set(initialState, { containerForNestedStores: true });
+    set(initialState, { isContainerForNestedStores: true });
     const name = 'myComp';
     const nestedStore = setNested({ one: '' }, { name });
     expect(nestedStore(s => s.one).read()).toEqual('');
     nestedStore(s => s.one).replace('test');
-    expect(libState.currentAction.type).toEqual(`nested.${name}.0.one.replace()`);
+    expect(libState.currentAction).toEqual({
+      type: `nested.${name}.0.one.replace()`,
+      replacement: 'test',
+    })
     expect(nestedStore(s => s.one).read()).toEqual('test');
   })
 
@@ -48,7 +51,7 @@ describe('Nested', () => {
       test: '',
       nested: {} as { myComp: { [key: string]: { one: string } } },
     };
-    const get = set(initialState, { containerForNestedStores: true });
+    const get = set(initialState, { isContainerForNestedStores: true });
     const name = 'myComp';
     const nestedStore = setNested({ one: '' }, { name });
     expect(nestedStore(s => s.one).read()).toEqual('');
@@ -60,7 +63,7 @@ describe('Nested', () => {
     const initialState = {
       test: '',
     };
-    const get = set(initialState, { containerForNestedStores: true });
+    const get = set(initialState, { isContainerForNestedStores: true });
     const name = 'myComp';
     const nestedStore = setNested({ one: '' }, { name });
     expect(get().read()).toEqual({ test: '', nested: { [name]: { 0: { one: '' } } } });
@@ -72,7 +75,7 @@ describe('Nested', () => {
     const initialState = {
       test: '',
     };
-    const get = set(initialState, { containerForNestedStores: true });
+    const get = set(initialState, { isContainerForNestedStores: true });
     const name = 'myComp';
     const nestedStore1 = setNested({ one: '' }, { name });
     const nestedStore2 = setNested({ one: '' }, { name });
@@ -87,7 +90,7 @@ describe('Nested', () => {
     const initialState = {
       test: '',
     };
-    const get = set(initialState, { containerForNestedStores: true });
+    const get = set(initialState, { isContainerForNestedStores: true });
     const name = 'myComp';
     const nestedStore = setNested({ one: '' }, { name });
     nestedStore(s => s.one).replace('test1');
@@ -100,7 +103,7 @@ describe('Nested', () => {
     const initialState = {
       test: '',
     };
-    const get = set(initialState, { containerForNestedStores: true });
+    const get = set(initialState, { isContainerForNestedStores: true });
     const name = 'myComp';
     const nestedStore = setNested(new Array<string>(), { name });
     nestedStore().insert('test');
@@ -111,7 +114,7 @@ describe('Nested', () => {
     const initialState = {
       test: '',
     };
-    const get = set(initialState, { containerForNestedStores: true });
+    const get = set(initialState, { isContainerForNestedStores: true });
     const name = 'myComp';
     const nestedStore = setNested(0, { name });
     nestedStore().replace(1);
@@ -122,7 +125,7 @@ describe('Nested', () => {
     const initialState = {
       test: '',
     };
-    const get = set(initialState, { containerForNestedStores: true });
+    const get = set(initialState, { isContainerForNestedStores: true });
     const name = 'myComp';
     setNested(0, { name });
     const name2 = 'myComp2';
@@ -131,18 +134,18 @@ describe('Nested', () => {
   })
 
   it('should throw an error if the containing stores state is a primitive', () => {
-    expect(() => set(0, { containerForNestedStores: true })).toThrowError(errorMessages.INVALID_CONTAINER_FOR_NESTED_STORES);
+    expect(() => set(0, { isContainerForNestedStores: true })).toThrowError(errorMessages.INVALID_CONTAINER_FOR_NESTED_STORES);
   })
 
   it('should throw an error if the containing stores state is an array', () => {
-    expect(() => set(new Array<string>(), { containerForNestedStores: true })).toThrowError(errorMessages.INVALID_CONTAINER_FOR_NESTED_STORES);
+    expect(() => set(new Array<string>(), { isContainerForNestedStores: true })).toThrowError(errorMessages.INVALID_CONTAINER_FOR_NESTED_STORES);
   })
 
   it('should be able to generate custom keys using a function', () => {
     const initialState = {
       test: '',
     };
-    const get = set(initialState, { containerForNestedStores: true });
+    const get = set(initialState, { isContainerForNestedStores: true });
     const name = 'myComp';
     const storeKey = (arg?: string): string => !arg ? 'x' : arg + 'x';
     setNested(0, { name, storeKey });
@@ -155,7 +158,7 @@ describe('Nested', () => {
     const initialState = {
       test: '',
     };
-    const get = set(initialState, { containerForNestedStores: true });
+    const get = set(initialState, { isContainerForNestedStores: true });
     const name = 'myComp';
     setNested(0, { name });
     const name2 = 'myComp2';
@@ -171,7 +174,7 @@ describe('Nested', () => {
     interface X {
       test: string
     }
-    const get = set<X>(initialState, { containerForNestedStores: true });
+    const get = set<X>(initialState, { isContainerForNestedStores: true });
     const name = 'myComp';
     const nested = setNested(0, { name });
     nested().replace(1);

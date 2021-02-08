@@ -121,6 +121,14 @@ export type PredicateOptionsForNumber<X extends Array<any>, E, F extends FindOrF
    */
   gt: (value: number) => PredicateAction<X, F, T>,
   /**
+   * Checks whether the previously selected number property **is greater than or equal to** the supplied number
+   * @example
+   * ...
+   * .gte(2)
+   * ...
+   */
+  gte: (value: number) => PredicateAction<X, F, T>,
+  /**
    * Checks whether the previously selected number property **is less than** the supplied number
    * @example
    * ...
@@ -128,6 +136,14 @@ export type PredicateOptionsForNumber<X extends Array<any>, E, F extends FindOrF
    * ...
    */
   lt: (value: number) => PredicateAction<X, F, T>,
+  /**
+   * Checks whether the previously selected number property **is less than or equal to** the supplied number
+   * @example
+   * ...
+   * .lte(2)
+   * ...
+   */
+  lte: (value: number) => PredicateAction<X, F, T>,
 } & PredicateOptionsCommon<X, E, F, T>;
 
 /**
@@ -258,23 +274,15 @@ export type StoreForAnArray<X extends Array<any>, T extends Trackability> = {
    */
   replaceAll: (replacement: X, tag: Tag<T>) => void,
   /**
-   * Match up an array element property so that we can perform a `replacementElseInsert()` (AKA upsert / merge)
+   * Replace or insert one or more elements depending on whether the element has a 'match' in the existing array
    * @example
    * ...
+   * .replaceElseInsert(elementOrArray)
    * .match(s => s.id)
    * ...
    */
-  match: <P>(getProp?: (element: DeepReadonly<X[0]>) => P) => {
-    /**
-     * Uses the `match()` function you just defined in order to update or insert array element(s) depending on whether they could or could not be found in the store.
-     * @example
-     * ...
-     * replaceElseInsert(todo)
-     * @example
-     * ...
-     * replaceElseInsert(todos)
-     */
-    replaceElseInsert: (elementOrArray: X[0] | X, tag: Tag<T>) => void
+  replaceElseInsert: (elementOrArray: X[0] | X, tag: Tag<T>) => {
+    match: <P>(getProp?: (element: DeepReadonly<X[0]>) => P) => void,
   }
   /**
    * Specify which array element property to filter by.  
@@ -321,7 +329,7 @@ export type StoreForAnArray<X extends Array<any>, T extends Trackability> = {
 /**
  * A function which accepts another function to select a property from an array element
  */
-export type PredicateFunction<X extends Array<any>, F extends FindOrFilter, T extends Trackability> = <P>(getProp?: (element: DeepReadonly<X[0]>) => P) => Predicate<X, P, F, T>
+export type PredicateFunction<X extends Array<any>, F extends FindOrFilter, T extends Trackability> = <P = X[0]>(getProp?: (element: DeepReadonly<X[0]>) => P) => Predicate<X, P, F, T>
 
 /**
  * A function which accepts another function to test an array element based on some condition
@@ -375,7 +383,7 @@ export type StoreOrDerivation<C> = {
 export type StoreWhichIsResettable<C extends any, T extends Trackability> = {
   /**
    * Reverts the current state to how it was when the store was initialized.
-   * Beware that if this store is marked as a `containerForNestedStores`, then all nested stores will also be removed
+   * Beware that if this store is marked with `isContainerForNestedStores: true`, then all nested stores will also be removed
    */
   reset: (tag: Tag<T>) => void,
 } & StoreOrDerivation<C>;
@@ -411,7 +419,7 @@ export type StoreWhichEnforcesTags<C> = Store<C, 'tagged'>;
  */
 export type StoreWhichIsNested<C> = Store<C, 'untagged'> & {
   /**
-   * Removes this nested store from the store which was marked as a `containerForNestedStores`.
+   * Removes this nested store from the store which was marked with `isContainerForNestedStores = true`.
    */
   removeFromContainingStore: () => void;
 };
@@ -434,7 +442,7 @@ export type SelectorFromAStore<S> = (<C = S>(selector?: (arg: DeepReadonly<S>) =
 /**
  * A function which selects from a store which enforces the use of tags when performing a state update
  */
-export type SelectorFromAStoreEnforcingTags<S, P> = (<C = S>(selector?: (arg: DeepReadonly<S>) => C) => StoreWhichEnforcesTags<DeepWritable<C>>);
+export type SelectorFromAStoreEnforcingTags<S> = (<C = S>(selector?: (arg: DeepReadonly<S>) => C) => StoreWhichEnforcesTags<DeepWritable<C>>);
 
 /**
  * An input for a derivation
@@ -458,16 +466,13 @@ export type OptionsForMakingAStore = {
    * Setting this to true will mean that any stores which are subsequently created using `makeNested()` will automatically be nested within this store.
    * Those nested stores will then be visible within the Redux Devtools extension.
    */
-  containerForNestedStores?: boolean;
-}
-
-export type OptionsForMakingAStoreEnforcingTags = {
+  isContainerForNestedStores?: boolean;
   /**
    * If supplied, this function can transform all tags passed in when updating state.
    * This is of use if, for example, you are using the __filename node variable as a tag, and you would like the abbreviate the file path to something more readable.
    */
   tagSanitizer?: (tag: string) => string;
-} & OptionsForMakingAStore;
+}
 
 /**
  * An object representing options which the Redux Ddevtools extension accepts

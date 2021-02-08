@@ -18,7 +18,7 @@ import {
   arrayCustomRemove,
   arrayCustomReplace,
 } from './operators-arraycustom';
-import { insert, match, onChange, patch, read, removeAll, replace, replaceAll, reset } from './operators-general';
+import { insert, replaceElseInsert, onChange, patch, read, removeAll, replace, replaceAll, reset } from './operators-general';
 import { defineRemoveNestedStore } from './operators-internal';
 import {
   ArrayOfObjectsAction,
@@ -46,7 +46,7 @@ import {
 import { libState } from './shared-state';
 import { copyObject, createPathReader, deepFreeze, validateState } from './shared-utils';
 
-export function setInternal<S, T extends Trackability>(context: {
+export function createStore<S, T extends Trackability>(context: {
   state: S,
   supportsTags: boolean,
   devtools: OptionsForReduxDevtools | false,
@@ -95,11 +95,13 @@ export function setInternal<S, T extends Trackability>(context: {
             ni: val => constructActions(`![${val.join(', ')}].includes(${segs.join('.') || 'element'})`, e => !val.includes(e)),
           } as PredicateOptionsCommon<X, any, FindOrFilter, T>,
           ...{
-            gt: val => constructActions(`${segs.join('.')} > ${val}`, e => e > val),
-            lt: val => constructActions(`${segs.join('.')} < ${val}`, e => e < val),
+            gt: val => constructActions(`${segs.join('.') || 'element'} > ${val}`, e => e > val),
+            lt: val => constructActions(`${segs.join('.') || 'element'} < ${val}`, e => e < val),
+            gte: val => constructActions(`${segs.join('.') || 'element'} >= ${val}`, e => e >= val),
+            lte: val => constructActions(`${segs.join('.') || 'element'} <= ${val}`, e => e <= val),
           } as PredicateOptionsForNumber<X, any, FindOrFilter, T>,
           ...{
-            match: val => constructActions(`${segs.join('.')}.match(${val})`, e => e.match(val)),
+            match: val => constructActions(`${segs.join('.') || 'element'}.match(${val})`, e => e.match(val)),
           } as PredicateOptionsForString<X, any, FindOrFilter, T>,
         };
       }) as StoreForAnArray<X, T>['filter'];
@@ -124,7 +126,7 @@ export function setInternal<S, T extends Trackability>(context: {
       patch: patch(selector, updateState),
       insert: insert(selector, updateState),
       removeAll: removeAll(selector, updateState),
-      match: match(selector, () => currentState, updateState),
+      replaceElseInsert: replaceElseInsert(selector, () => currentState, updateState),
       filterCustom: findOrFilterCustom('filter'),
       findCustom: findOrFilterCustom('find'),
       filter: findOrFilter('filter'),

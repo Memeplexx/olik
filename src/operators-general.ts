@@ -9,6 +9,7 @@ import {
   Trackability,
 } from './shapes-external';
 import { PathReader, UpdateStateFn } from './shapes-internal';
+import { errorMessages } from './shared-consts';
 import { copyPayload, createPathReader, deepCopy, deepFreeze } from './shared-utils';
 
 export const onChange = <S, C, X extends C & Array<any>>(
@@ -40,7 +41,7 @@ export const replaceAll = <S, C, X extends C & Array<any>, T extends Trackabilit
   updateState: UpdateStateFn<S, C, T, X>,
   selector: Selector<S, C, X>,
 ) => (
-  (replacment, tag) => replace(pathReader, updateState, selector, 'replaceAll')(replacment, tag)
+  (replacement, tag) => replace(pathReader, updateState, selector, 'replaceAll')(replacement, tag)
 ) as StoreForAnArray<any, T>['replaceAll'];
 
 export const removeAll = <S, C, X extends C & Array<any>, T extends Trackability>(
@@ -90,53 +91,59 @@ export const patch = <S, C, X extends C & Array<any>, T extends Trackability>(
   });
 }) as StoreForAnObject<C, T>['patch'];
 
-export const match = <S, C, X extends C & Array<any>, T extends Trackability>(
+export const replaceElseInsert = <S, C, X extends C & Array<any>, T extends Trackability>(
   selector: Selector<S, C, X>,
   currentState: () => S,
   updateState: UpdateStateFn<S, C, T, X>,
-) => (getProp => ({
-  replaceElseInsert: (payload, tag) => {
-    const segs = !getProp ? [] : createPathReader((selector(currentState()) as X)[0] || {}).readSelector(getProp);
-    const { payloadFrozen, payloadCopied } = copyPayload(payload);
-    const payloadFrozenArray: X[0][] = Array.isArray(payloadFrozen) ? payloadFrozen : [payloadFrozen];
-    const payloadCopiedArray: X[0][] = Array.isArray(payloadCopied) ? payloadCopied : [payloadCopied];
-    let replacementCount = 0;
-    let insertionCount = 0;
-    updateState({
-      selector,
-      replacer: old => {
-        const replacements = old.map(oe => {
-          const found = payloadFrozenArray.find(ne => !getProp ? oe === ne : getProp(oe) === getProp(ne));
-          if (found !== null && found !== undefined) { replacementCount++; }
-          return found || oe;
-        });
-        const insertions = payloadFrozenArray.filter(ne => !old.some(oe => !getProp ? oe === ne : getProp(oe) === getProp(ne)));
-        insertionCount = insertions.length;
-        return [
-          ...replacements,
-          ...insertions
-        ];
-      },
-      mutator: old => {
-        old.forEach((oe, oi) => { const found = payloadCopiedArray.find(ne => !getProp ? oe === ne : getProp(oe) === getProp(ne)); if (found) { old[oi] = deepCopy(found); } });
-        payloadCopiedArray.filter(ne => !old.some(oe => !getProp ? oe === ne : getProp(oe) === getProp(ne))).forEach(ne => old.push(ne));
-      },
-      actionName: `match(${segs.join('.')}).replaceElseInsert()`,
-      payload: null,
-      getPayloadFn: () => ({
-        argument: payloadFrozen,
-        replacementCount,
-        insertionCount,
-      }),
-      tag,
-    });
-  }
-})) as StoreForAnArray<X, T>['match'];
+) => ((payload, tag) => {
+  let matchCalled = false;
+  setTimeout(() => { if (!matchCalled) { throw new Error(errorMessages.REPLACE_ELSE_INSERT_WITHOUT_MATCH); } })
+  return {
+    match: getProp => {
+      matchCalled = true;
+      const segs = !getProp ? [] : createPathReader((selector(currentState()) as X)[0] || {}).readSelector(getProp);
+      const { payloadFrozen, payloadCopied } = copyPayload(payload);
+      const payloadFrozenArray: X[0][] = Array.isArray(payloadFrozen) ? payloadFrozen : [payloadFrozen];
+      const payloadCopiedArray: X[0][] = Array.isArray(payloadCopied) ? payloadCopied : [payloadCopied];
+      let replacementCount = 0;
+      let insertionCount = 0;
+      updateState({
+        selector,
+        replacer: old => {
+          const replacements = old.map(oe => {
+            const found = payloadFrozenArray.find(ne => !getProp ? oe === ne : getProp(oe) === getProp(ne));
+            if (found !== null && found !== undefined) { replacementCount++; }
+            return found || oe;
+          });
+          const insertions = payloadFrozenArray.filter(ne => !old.some(oe => !getProp ? oe === ne : getProp(oe) === getProp(ne)));
+          insertionCount = insertions.length;
+          return [
+            ...replacements,
+            ...insertions
+          ];
+        },
+        mutator: old => {
+          old.forEach((oe, oi) => { const found = payloadCopiedArray.find(ne => !getProp ? oe === ne : getProp(oe) === getProp(ne)); if (found) { old[oi] = deepCopy(found); } });
+          payloadCopiedArray.filter(ne => !old.some(oe => !getProp ? oe === ne : getProp(oe) === getProp(ne))).forEach(ne => old.push(ne));
+        },
+        actionName: `replaceElseInsert().match(${segs.join('.')})`,
+        payload: null,
+        getPayloadFn: () => ({
+          argument: payloadFrozen,
+          replacementCount,
+          insertionCount,
+        }),
+        tag,
+      });
+    }
+  };
+}) as StoreForAnArray<X, T>['replaceElseInsert'];
 
 export const replace = <S, C, X extends C & Array<any>, T extends Trackability>(
   pathReader: PathReader<S>,
   updateState: UpdateStateFn<S, C, T, X>,
-  selector: Selector<S, C, X>, name: string,
+  selector: Selector<S, C, X>,
+  name: string,
 ) => (payload: C | FunctionReturning<C>, tag: Tag<T>) => {
   const pathSegments = pathReader.readSelector(selector);
   const { payloadFrozen, payloadCopied, payloadFunction } = copyPayload(payload);
@@ -184,9 +191,9 @@ export const replace = <S, C, X extends C & Array<any>, T extends Trackability>(
     updateState({
       selector: selectorRevised,
       replacer: old => {
-        if (Array.isArray(old)) { return (old as Array<any>).map((o, i) => i === +lastSeg ? payloadCopied : o); }
+        if (Array.isArray(old)) { return (old as Array<any>).map((o, i) => i === +lastSeg ? payloadFrozen : o); }
         if (payloadFunction) { payloadReturnedByFn = payloadFunction((old as any)[lastSeg]); }
-        return ({ ...old, [lastSeg]: payloadFunction ? payloadFunction((old as any)[lastSeg]) : payloadCopied })
+        return ({ ...old, [lastSeg]: payloadFunction ? payloadFunction((old as any)[lastSeg]) : payloadFrozen })
       },
       mutator: (old: Record<any, any>) => old[lastSeg] = payloadReturnedByFn || payloadCopied,
       actionName,
@@ -199,5 +206,4 @@ export const replace = <S, C, X extends C & Array<any>, T extends Trackability>(
       tag,
     })
   }
-  return payloadCopied;
 };

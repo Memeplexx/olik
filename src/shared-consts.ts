@@ -7,6 +7,7 @@ export const errorMessages = {
   ILLEGAL_FUNCTION_INVOKED_WITHIN_SELECTOR: (prop: string) => `'${prop}()' is not allowed within the selector function. If you're trying to find or filter elements, rather use a library function. For example: 'get(s => s.todos).filter(e => e.status).eq('done')'`,
   ILLEGAL_CHARACTERS_WITHIN_SELECTOR: (characters: string[]) => `The following illegal characters were supplied in your getProp() function: ${characters.map(c => `'${c}'`).join(', ')}. This function should only select a property. No other expressions are permitted`,
   NO_ARRAY_ELEMENT_FOUND: `Could not find array element`,
+  REPLACE_ELSE_INSERT_WITHOUT_MATCH: 'replaceElseInsert() must be followed by match(), for example: ...replaceElseInsert().match(s => s.id);',
 };
 
 export const devtoolsDebounce = 200;
