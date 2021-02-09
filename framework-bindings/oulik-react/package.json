@@ -18,7 +18,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "oulik": "0.0.59"
+    "oulik": "0.0.61"
   },
   "devDependencies": {
     "@types/jest": "^26.0.7",
