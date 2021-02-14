@@ -561,5 +561,3 @@ export type Derivation<R> = {
    */
   onChange: (listener: (value: R) => any) => Unsubscribable,
 };
-
-
