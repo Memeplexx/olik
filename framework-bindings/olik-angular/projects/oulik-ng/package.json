@@ -1,5 +1,5 @@
 {
-  "name": "oulik-ng",
+  "name": "olik-ng",
   "version": "0.0.52",
   "peerDependencies": {
     "@angular/common": "^10.0.0",

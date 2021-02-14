@@ -1,10 +1,10 @@
 {
-  "name": "oulik",
-  "version": "0.0.61",
+  "name": "olik",
+  "version": "0.0.1",
   "description": "",
-  "main": "dist/cjs/oulik.js",
-  "module": "dist/esm/oulik.js",
-  "unpkg": "dist/umd/oulik.js",
+  "main": "dist/cjs/olik.js",
+  "module": "dist/esm/olik.js",
+  "unpkg": "dist/umd/olik.js",
   "types": "types/index.d.ts",
   "sideEffects": false,
   "scripts": {

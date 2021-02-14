@@ -78,10 +78,10 @@ describe.skip('Perf', () => {
         get(s => s.anotherProp.some.deeply.nested.number).read() + 1
       );
     }
-    console.log(`Oulik: ${performance.now() - before}`);
+    console.log(`Olik: ${performance.now() - before}`);
   })
 
-  it('should test oulik perf', () => {
+  it('should test olik perf', () => {
     const initialState = { height: 0, width: 0 };
     const get = set(initialState)
     const before = performance.now();
@@ -90,7 +90,7 @@ describe.skip('Perf', () => {
         get(s => s.width).read() + 1
       );
     }
-    console.log(`Oulik simple: ${performance.now() - before}`);
+    console.log(`Olik simple: ${performance.now() - before}`);
   })
 
   it('should test immutable perf', () => {
@@ -204,13 +204,13 @@ describe.skip('Perf', () => {
     console.log(`native array push: ${performance.now() - before}`);
   });
 
-  it('should test Oulik array push perf', () => {
+  it('should test Olik array push perf', () => {
     const get = set(['one', 'two']);
     const before = performance.now();
     for (let i = 0; i < 100; i++) {
       get().insert(['three']);
     }
-    console.log(`Oulik array push: ${performance.now() - before}`);
+    console.log(`Olik array push: ${performance.now() - before}`);
   });
 
   it('should test Immutable array push perf', () => {

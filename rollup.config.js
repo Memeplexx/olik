@@ -19,7 +19,7 @@ export default {
     {
       file: pkg.unpkg,
       format: 'iife',
-      name: 'oulik', // the global which can be used in a browser
+      name: 'olik', // the global which can be used in a browser
     }
   ].map(e => ({ ...e, sourcemap: true })),
   plugins: [
