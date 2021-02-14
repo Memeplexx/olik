@@ -6189,6 +6189,11 @@ obuf@^1.0.0, obuf@^1.1.2:
   resolved "https://registry.yarnpkg.com/obuf/-/obuf-1.1.2.tgz#09bea3343d41859ebd446292d11c9d4db619084e"
   integrity sha512-PX1wu0AmAdPqOL1mWhqmlOd8kOIZQwGZw6rh7uby9fTc5lhaOWFLX3I6R1hrF9k3zUY40e6igsLGkDXK92LJNg==
 
+olik@0.0.1:
+  version "0.0.1"
+  resolved "https://registry.yarnpkg.com/olik/-/olik-0.0.1.tgz#18ced6a6bf8ac6b1ad8a023721e5233b6bb6a5ee"
+  integrity sha512-FuAAd1dZCqnqZvBRR+EZB5u83O1McV4MLpxN2P07sDlnethdBporSquDgBtxgckLTj2QJk+pGwi3BMzOB4F4qw==
+
 on-finished@~2.3.0:
   version "2.3.0"
   resolved "https://registry.yarnpkg.com/on-finished/-/on-finished-2.3.0.tgz#20f1336481b083cd75337992a16971aa2d906947"
@@ -6287,11 +6292,6 @@ osenv@^0.1.5:
   dependencies:
     os-homedir "^1.0.0"
     os-tmpdir "^1.0.0"
-
-oulik@^0.0.61:
-  version "0.0.61"
-  resolved "https://registry.yarnpkg.com/oulik/-/oulik-0.0.61.tgz#dbc54d563ee8c513e3ef351fcf16bf8a05590666"
-  integrity sha512-ZM3ykOVUDrdEmotOO/RiZCDKdDfIcA5v8NciW1lw1Sc58denvZhJZpibSXGtutOEoeVQEKa+I/Y6W5KZw5Ux+w==
 
 p-finally@^1.0.0:
   version "1.0.0"

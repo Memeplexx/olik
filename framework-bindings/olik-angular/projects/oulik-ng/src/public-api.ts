@@ -3,4 +3,4 @@
  */
 
 
-export * from './lib/oulik-ng.module';
+export * from './lib/olik-ng.module';

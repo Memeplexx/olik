@@ -1,6 +1,6 @@
 {
   "name": "olik-react",
-  "version": "0.0.39",
+  "version": "0.0.1",
   "description": "",
   "main": "dist/cjs/index.js",
   "module": "dist/esm/index.js",
@@ -18,7 +18,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "oulik": "0.0.61"
+    "olik": "0.0.1"
   },
   "devDependencies": {
     "@types/jest": "^26.0.7",

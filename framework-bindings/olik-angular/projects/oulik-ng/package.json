@@ -1,12 +1,12 @@
 {
   "name": "olik-ng",
-  "version": "0.0.52",
+  "version": "0.0.1",
   "peerDependencies": {
     "@angular/common": "^10.0.0",
     "@angular/core": "^10.0.0"
   },
   "dependencies": {
-    "oulik": "^0.0.55",
+    "olik": "^0.0.1",
     "tslib": "^2.0.0"
   }
 }

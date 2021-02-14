@@ -1,7 +1,7 @@
-import { SelectorFromANestedStore, Store, Trackability, Unsubscribable } from 'oulik';
+import { SelectorFromANestedStore, Store, Trackability, Unsubscribable } from 'olik';
 import React, { DependencyList } from 'react';
 
-export * from 'oulik';
+export * from 'olik';
 
 /**
  * A hook to select a specific part of the state

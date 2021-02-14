@@ -1,9 +1,9 @@
 import { NgModule, NgZone } from '@angular/core';
-import { DeepReadonly, listenToDevtoolsDispatch, Store, Trackability } from 'oulik';
+import { DeepReadonly, listenToDevtoolsDispatch, Store, Trackability } from 'olik';
 import { Observable } from 'rxjs';
 import { shareReplay } from 'rxjs/operators';
 
-export * from 'oulik';
+export * from 'olik';
 
 /**
  * Allows you to observe a specific part of your store
