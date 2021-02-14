@@ -71,6 +71,20 @@ describe('Root', () => {
     expect(libState.currentMutableState).toEqual(get().read());
   })
 
+  it('union.replace()', () => {
+    type union = 'one' | 'two';
+    const get = set('one' as union);
+    const payload = 'two' as union;
+    get()
+      .replace(payload);
+    expect(libState.currentAction).toEqual({
+      type: 'replace()',
+      replacement: payload,
+    })
+    expect(get().read()).toEqual(payload);
+    expect(libState.currentMutableState).toEqual(get().read());
+  })
+
   it('string.replace()', () => {
     const get = set('');
     const payload = 'test';

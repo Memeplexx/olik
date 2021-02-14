@@ -367,8 +367,15 @@ export type StoreOrDerivation<C> = {
   /**
    * Listens to any updates on this node
    * @returns a subscription which will need to be unsubscribed from to prevent a memory leak
+   * 
+   * @example
+   * const subscription =
    * ...
    * .onChange(todos => console.log(todos));
+   * 
+   * onComponentDestroyed() {
+   *   subscription.unSubscribe();
+   * }
    */
   onChange: (callbackFn: (node: DeepReadonly<C>) => any) => Unsubscribable,
   /**
@@ -387,14 +394,6 @@ export type StoreWhichIsResettable<C extends any, T extends Trackability> = {
    */
   reset: (tag: Tag<T>) => void,
 } & StoreOrDerivation<C>;
-
-/**
- * An object which is capable of storing nested stores
- */
-export type StoreWhichMayContainNestedStores<S, C, T extends Trackability> = StoreForAnObject<C, T> & StoreOrDerivation<C> & {
-  renew: (state: S) => void;
-  reset: () => void;
-};
 
 /**
  * An object which is capable of managing states of various shapes
@@ -432,17 +431,23 @@ export type Selector<S, C, X = C> = X extends C & ReadonlyArray<any> ? (s: S) =>
 /**
  * A function which selects from a nested store
  */
-export type SelectorFromANestedStore<S> = (<C = S>(selector?: (arg: DeepReadonly<S>) => C) => StoreWhichIsNested<DeepWritable<C>>);
+export type SelectorFromANestedStore<S> = [S] extends [Array<any>] | [number] | [string] | [boolean]
+  ? () => StoreWhichIsNested<DeepWritable<S>>
+  : <C = S>(selector?: (arg: DeepReadonly<S>) => C) => StoreWhichIsNested<DeepWritable<C>>;
 
 /**
  * A function which selects from a store
  */
-export type SelectorFromAStore<S> = (<C = S>(selector?: (arg: DeepReadonly<S>) => C) => StoreWhichDoesntEnforceTags<DeepWritable<C>>);
+export type SelectorFromAStore<S> = [S] extends [Array<any>] | [number] | [string] | [boolean]
+  ? () => StoreWhichDoesntEnforceTags<DeepWritable<S>>
+  : <C = S>(selector?: (arg: DeepReadonly<S>) => C) => StoreWhichDoesntEnforceTags<DeepWritable<C>>;
 
 /**
  * A function which selects from a store which enforces the use of tags when performing a state update
  */
-export type SelectorFromAStoreEnforcingTags<S> = (<C = S>(selector?: (arg: DeepReadonly<S>) => C) => StoreWhichEnforcesTags<DeepWritable<C>>);
+export type SelectorFromAStoreEnforcingTags<S> = [S] extends [Array<any>] | [number] | [string] | [boolean]
+  ? () => StoreWhichEnforcesTags<DeepWritable<S>>
+  : <C = S>(selector?: (arg: DeepReadonly<S>) => C) => StoreWhichEnforcesTags<DeepWritable<C>>;
 
 /**
  * An input for a derivation
@@ -456,6 +461,9 @@ export type DerivationCalculationInputs<T extends Array<StoreOrDerivation<any>>>
   [K in keyof T]: DerivationCalculationInput<T[K]>;
 }
 
+/**
+ * An object representing options which are supplied when creating a standard store
+ */
 export type OptionsForMakingAStore = {
   /**
    * Specifications for the Redux Devtools Extension. Pass 'false' if you do not want your store to be tracked within the Redux Devtools extension.
@@ -472,6 +480,21 @@ export type OptionsForMakingAStore = {
    * This is of use if, for example, you are using the __filename node variable as a tag, and you would like the abbreviate the file path to something more readable.
    */
   tagSanitizer?: (tag: string) => string;
+}
+
+/**
+ * An object representing options which are supplied when creating a nested store
+ */
+export type OptionsForMakingANestedStore = {
+  /**
+   * The name that will distinguish this nested store from others within the state tree
+   */
+  name: string;
+  /**
+   * The string (or a function returning a string) that will distinguish different instances of the same nested store.
+   * If this value isn't supplied, the library will use an auto-incrementing integer as the storeKey
+   */
+  storeKey?: string | ((previousKey?: string) => string);
 }
 
 /**

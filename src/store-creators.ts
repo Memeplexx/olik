@@ -1,16 +1,16 @@
-import { errorMessages } from './shared-consts';
 import { createStore } from './core';
 import {
   DeepReadonly,
+  OptionsForMakingANestedStore,
   OptionsForMakingAStore,
-  OptionsForReduxDevtools,
   SelectorFromANestedStore,
   SelectorFromAStore,
   SelectorFromAStoreEnforcingTags,
   StoreWhichIsNested,
   Trackability,
 } from './shapes-external';
-import { NestedContainerStore, StoreWhichIsNestedInternal } from './shapes-internal';
+import { NestedContainerStore, OptionsForCreatingInternalRootStore, StoreWhichIsNestedInternal } from './shapes-internal';
+import { errorMessages } from './shared-consts';
 
 let nestedContainerStore: NestedContainerStore;
 
@@ -25,11 +25,14 @@ let nestedContainerStore: NestedContainerStore;
  * const get = setEnforceTags({ prop: '' });
  * 
  * // Note that when updating state, we are now required to supply a string as the last argument (in this case 'MyComponent')
- * get(s => s.prop)                   // type: 'prop.replace()'
+ * get(s => s.prop)                   // type: 'prop.replace() [MyComponent]'
  *   .replace('test', 'MyComponent')  // replacement: 'test'
  */
-export function setEnforceTags<S>(state: S, options: OptionsForMakingAStore = {}): SelectorFromAStoreEnforcingTags<S> {
-  return setInternalRootStore<S, 'tagged'>(state, { ...options, supportsTags: true });
+export function setEnforceTags<S>(
+  state: S,
+  options: OptionsForMakingAStore = {},
+) {
+  return setInternalRootStore<S, 'tagged'>(state, { ...options, supportsTags: true }) as SelectorFromAStoreEnforcingTags<S>;
 }
 
 /**
@@ -40,8 +43,11 @@ export function setEnforceTags<S>(state: S, options: OptionsForMakingAStore = {}
  * @example
  * const get = set({ todos: Array<{ id: number, text: string }>() });
  */
-export function set<S>(state: S, options: OptionsForMakingAStore = {}): SelectorFromAStore<S> {
-  return setInternalRootStore<S, 'untagged'>(state, { ...options, supportsTags: false });
+export function set<S>(
+  state: S,
+  options: OptionsForMakingAStore = {},
+) {
+  return setInternalRootStore<S, 'untagged'>(state, { ...options, supportsTags: false }) as SelectorFromAStore<S>;
 }
 
 /**
@@ -52,44 +58,50 @@ export function set<S>(state: S, options: OptionsForMakingAStore = {}): Selector
  * @param state The initial state
  * @param options A configuration object which, at minimum, must contain the `name` of the nested store
  */
-export function setNested<L>(state: L, options: { name: string, storeKey?: string | ((previousKey?: string) => string) }): SelectorFromANestedStore<L> {
-  const name = options.name;
+export function setNested<L>(
+  state: L,
+  { name, storeKey }: OptionsForMakingANestedStore,
+) {
   if (!nestedContainerStore) {
     return (<C = L>(selector?: (arg: DeepReadonly<L>) => C) => (selector
       ? createStore({ state, devtools: { name }, supportsTags: false, nestedContainerStore })(selector)
       : null)) as SelectorFromANestedStore<L>;
   }
-  const generateKey = (arg?: string) => (!arg && !options.storeKey) ? '0' :
-    !options.storeKey ? (+arg! + 1).toString() : typeof (options.storeKey) === 'function' ? options.storeKey(arg) : options.storeKey;
-  const wrapperState = nestedContainerStore().read();
+  const containerStore = nestedContainerStore();
+  const generateKey = (arg?: string) => (!arg && !storeKey) ? '0' :
+    !storeKey ? (+arg! + 1).toString() : typeof (storeKey) === 'function' ? storeKey(arg) : storeKey;
+  const wrapperState = containerStore.read();
   let key: string;
-  if (!nestedContainerStore().read().nested) {
+  if (!containerStore.read().nested) {
     key = generateKey();
-    nestedContainerStore().patch({ nested: { [name]: { [key]: state } } });
-    nestedContainerStore().renew({ ...wrapperState, nested: { [name]: { [key]: state } } });
-  } else if (!nestedContainerStore().read().nested[name]) {
+    containerStore.patch({ nested: { [name]: { [key]: state } } });
+    containerStore.renew({ ...wrapperState, nested: { [name]: { [key]: state } } });
+  } else if (!containerStore.read().nested[name]) {
     key = generateKey();
     nestedContainerStore(s => s.nested).patch({ [name]: { [key]: state } });
-    nestedContainerStore().renew({ ...wrapperState, nested: { ...wrapperState.nested, [name]: { [key]: state } } });
+    containerStore.renew({ ...wrapperState, nested: { ...wrapperState.nested, [name]: { [key]: state } } });
   } else {
     const values = nestedContainerStore(s => s.nested[name]).read();
     const keys = Object.keys(values);
     key = generateKey(keys[keys.length - 1]);
     nestedContainerStore(s => s.nested[name]).patch({ [key]: state });
-    nestedContainerStore().renew({ ...wrapperState, nested: { ...wrapperState.nested, [name]: { ...wrapperState.nested[name], [key]: state } } });
+    containerStore.renew({ ...wrapperState, nested: { ...wrapperState.nested, [name]: { ...wrapperState.nested[name], [key]: state } } });
   }
   return (<C = L>(selector?: (arg: L) => C) => {
-    const lStore = nestedContainerStore!(s => {
-      const libState = s.nested[name][key];
-      return selector ? selector(libState) : libState;
+    const cStore = nestedContainerStore!(s => {
+      const nState = s.nested[name][key];
+      return selector ? selector(nState) : nState;
     }) as any as StoreWhichIsNestedInternal<L, C>;
-    lStore.removeFromContainingStore = lStore.defineRemoveNestedStore(name, key);
-    lStore.reset = lStore.defineReset(state);
-    return lStore as StoreWhichIsNested<C>;
-  }) as unknown as SelectorFromANestedStore<L>;
+    cStore.removeFromContainingStore = cStore.defineRemoveNestedStore(name, key);
+    cStore.reset = cStore.defineReset(state);
+    return cStore as StoreWhichIsNested<C>;
+  }) as SelectorFromANestedStore<L>;
 }
 
-function setInternalRootStore<S, T extends Trackability>(state: S, options: { isContainerForNestedStores?: boolean, supportsTags: boolean, devtools?: OptionsForReduxDevtools | false, tagSanitizer?: (tag: string) => string }) {
+function setInternalRootStore<S, T extends Trackability>(
+  state: S,
+  options: OptionsForCreatingInternalRootStore,
+) {
   const store = createStore<S, T>({ state, devtools: options.devtools === undefined ? {} : options.devtools, supportsTags: options.supportsTags, nestedContainerStore, tagSanitizer: options.tagSanitizer });
   if (options.isContainerForNestedStores) {
     if ((typeof (state) !== 'object') || Array.isArray(state)) {

@@ -12,28 +12,32 @@ describe('Read', () => {
     expect(value).toEqual('test');
   })
 
-  it('should read an array find', () => {
-    const get = set([{ prop: 'hello' }, { prop: 'world' }]);
-    const value = get(s => s.find(e => e.prop === 'hello')).read();
-    expect(value).toEqual({ prop: 'hello' });
-  })
+  it('should listen to onChange events', () => {
+    const get = set({ prop: { value: '', another: '' } });
+    let changeCount = 0;
+    get(s => s.prop.value)
+      .onChange(val => {
+        changeCount++;
+        expect(val).toEqual('test');
+      });
+    get(s => s.prop.another).replace('test');
+    expect(changeCount).toEqual(0);
+    get(s => s.prop.value).replace('test');
+    expect(changeCount).toEqual(1);
+  });
 
-  it('should read an array filtered', () => {
-    const get = set([{ prop: 'hello' }, { prop: 'world' }]);
-    const value = get(s => s.filter(e => e.prop === 'hello')).read();
-    expect(value).toEqual([{ prop: 'hello' }]);
-  })
-
-  it('should read an array length', () => {
-    const get = set([{ prop: 'hello' }, { prop: 'world' }]);
-    const value = get(s => s.filter(e => e.prop === 'hello').length).read();
-    expect(value).toEqual(1);
-  })
-
-  it('should read an array index', () => {
-    const get = set([{ prop: 'hello' }, { prop: 'world' }]);
-    const value = get(s => s.findIndex(e => e.prop === 'hello')).read();
-    expect(value).toEqual(0);
+  it('should listen to onChange events when a find() is included in the selector', () => {
+    const get = set({ arr: [{ id: 1, val: '' }, { id: 2, val: '' }] });
+    let changeCount = 0;
+    get(s => s.arr.find(e => e.id === 2))
+      .onChange(val => {
+        changeCount++;
+        expect(val).toEqual({ id: 2, val: 'test' });
+      });
+    get(s => s.arr).find(s => s.id).eq(1).patch({ val: 'test' });
+    expect(changeCount).toEqual(0);
+    get(s => s.arr).find(s => s.id).eq(2).patch({ val: 'test' });
+    expect(changeCount).toEqual(1);
   })
 
 });

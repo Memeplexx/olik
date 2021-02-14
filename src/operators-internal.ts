@@ -1,5 +1,5 @@
-import { Selector, StoreWhichMayContainNestedStores, Tag, Trackability } from "./shapes-external";
-import { StoreWhichIsNestedInternal, UpdateStateFn } from "./shapes-internal";
+import { Selector, Tag, Trackability } from './shapes-external';
+import { StoreWhichIsNestedInternal, StoreWhichMayContainNestedStores, UpdateStateFn } from './shapes-internal';
 
 export const defineRemoveNestedStore = <S, C, X extends C & Array<any>, T extends Trackability>(
   currentState: () => S,

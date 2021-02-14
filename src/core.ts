@@ -1,24 +1,17 @@
-import { devtoolsDebounce } from './shared-consts';
 import { integrateStoreWithReduxDevtools } from './devtools-integration';
+import * as array from './operators-array';
+import * as arrayCustom from './operators-arraycustom';
 import {
-  arrayAnd,
-  arrayGetSegments,
-  arrayOnChange,
-  arrayOr,
-  arrayPatch,
-  arrayRead,
-  arrayRemove,
-  arrayReplace,
-  arrayValidateGetPropFn,
-} from './operators-array';
-import {
-  arrayCustomOnChange,
-  arrayCustomPatch,
-  arrayCustomRead,
-  arrayCustomRemove,
-  arrayCustomReplace,
-} from './operators-arraycustom';
-import { insert, replaceElseInsert, onChange, patch, read, removeAll, replace, replaceAll, reset } from './operators-general';
+  insert,
+  onChange,
+  patch,
+  read,
+  removeAll,
+  replace,
+  replaceAll,
+  replaceElseInsert,
+  reset,
+} from './operators-general';
 import { defineRemoveNestedStore } from './operators-internal';
 import {
   ArrayOfObjectsAction,
@@ -31,7 +24,7 @@ import {
   Selector,
   Store,
   StoreForAnArray,
-  StoreWhichMayContainNestedStores,
+  StoreWhichIsNested,
   Tag,
   Trackability,
 } from './shapes-external';
@@ -41,10 +34,12 @@ import {
   NestedContainerStore,
   PreviousAction,
   StoreWhichIsNestedInternal,
+  StoreWhichMayContainNestedStores,
   UpdateStateArgs,
 } from './shapes-internal';
+import { devtoolsDebounce } from './shared-consts';
 import { libState } from './shared-state';
-import { copyObject, createPathReader, deepFreeze, validateState } from './shared-utils';
+import { copyObject, createPathReader, deepFreeze, validateSelectorFn, validateState } from './shared-utils';
 
 export function createStore<S, T extends Trackability>(context: {
   state: S,
@@ -52,8 +47,7 @@ export function createStore<S, T extends Trackability>(context: {
   devtools: OptionsForReduxDevtools | false,
   nestedContainerStore: NestedContainerStore,
   tagSanitizer?: (tag: string) => string,
-},
-) {
+}) {
   const { state, devtools, nestedContainerStore, supportsTags, tagSanitizer } = context;
   validateState(state);
   const changeListeners = new Map<(ar: any) => any, (arg: S) => any>();
@@ -67,8 +61,8 @@ export function createStore<S, T extends Trackability>(context: {
       const whereClauseSpecs = Array<{ filter: (arg: X[0]) => boolean, type: 'and' | 'or' | 'last' }>();
       const whereClauseStrings = Array<string>();
       const recurseWhere = (getProp => {
-        arrayValidateGetPropFn(getProp);
-        const segs = arrayGetSegments(selector, () => currentState, getProp);
+        validateSelectorFn('getProp', getProp);
+        const segs = array.getSegments(selector, () => currentState, getProp);
         const criteria = (arg: X[0], fn: (arg: X[0]) => boolean) => {
           segs.forEach(seg => arg = arg[seg]);
           return fn(arg);
@@ -78,13 +72,13 @@ export function createStore<S, T extends Trackability>(context: {
             whereClauseSpecs, whereClauseStrings, getCurrentState: () => currentState, criteria, recurseWhere, fn, whereClauseString, selector, updateState, type, changeListeners
           } as ArrayOperatorState<S, C, X, FindOrFilter, T>;
           return {
-            and: arrayAnd(context),
-            or: arrayOr(context),
-            replace: arrayReplace(context),
-            patch: arrayPatch(context),
-            remove: arrayRemove(context),
-            onChange: arrayOnChange(context),
-            read: arrayRead(context),
+            and: array.and(context),
+            or: array.or(context),
+            replace: array.replace(context),
+            patch: array.patch(context),
+            remove: array.remove(context),
+            onChange: array.onChange(context),
+            read: array.read(context),
           } as ArrayOfObjectsAction<X, FindOrFilter, T>
         };
         return {
@@ -110,38 +104,39 @@ export function createStore<S, T extends Trackability>(context: {
     const findOrFilterCustom = (type: FindOrFilter) => (predicate => {
       const context = { type, updateState, selector, predicate, changeListeners, getCurrentState: () => currentState } as ArrayCustomState<S, C, X, T>;
       return {
-        remove: arrayCustomRemove(context),
-        replace: arrayCustomReplace(context),
-        patch: arrayCustomPatch(context),
-        onChange: arrayCustomOnChange(context),
-        read: arrayCustomRead(context),
+        remove: arrayCustom.remove(context),
+        replace: arrayCustom.replace(context),
+        patch: arrayCustom.patch(context),
+        onChange: arrayCustom.onChange(context),
+        read: arrayCustom.read(context),
       };
     }) as StoreForAnArray<X, T>['filterCustom'];
-    return {
-      replace: replace(pathReader, updateState, selector, 'replace'),
-      replaceAll: replaceAll(pathReader, updateState, selector),
-      reset: reset(pathReader, updateState, selector, initialState),
-      onChange: onChange(selector, changeListeners),
-      read: read(selector, () => currentState),
-      patch: patch(selector, updateState),
-      insert: insert(selector, updateState),
-      removeAll: removeAll(selector, updateState),
-      replaceElseInsert: replaceElseInsert(selector, () => currentState, updateState),
+    const coreActions = {
+      patch: patch(selector, updateState, () => !!coreActions.removeFromContainingStore),
+      insert: insert(selector, updateState, () => !!coreActions.removeFromContainingStore),
+      removeAll: removeAll(selector, updateState, () => !!coreActions.removeFromContainingStore),
+      replaceAll: replaceAll(pathReader, updateState, selector, () => !!coreActions.removeFromContainingStore),
+      reset: reset(pathReader, updateState, selector, initialState, () => !!coreActions.removeFromContainingStore),
+      replace: replace(pathReader, updateState, selector, 'replace', () => !!coreActions.removeFromContainingStore),
+      replaceElseInsert: replaceElseInsert(selector, () => currentState, updateState, () => !!coreActions.removeFromContainingStore),
       filterCustom: findOrFilterCustom('filter'),
       findCustom: findOrFilterCustom('find'),
       filter: findOrFilter('filter'),
       find: findOrFilter('find'),
+      onChange: onChange(selector, changeListeners),
+      read: read(selector, () => currentState),
       readInitial: () => selector(initialState),
+      defineRemoveNestedStore: defineRemoveNestedStore(() => currentState, updateState, nestedContainerStore),
+      defineReset: (
+        (initState: C) => () => replace(pathReader, updateState, (e => selector(e)) as Selector<S, C, X>, 'reset', () => !!coreActions.removeFromContainingStore)(initState, undefined as Tag<T>)
+      ) as StoreWhichIsNestedInternal<S, C>['defineReset'],
       renew: (state => {
         pathReader = createPathReader(state);
         currentState = deepFreeze(state) as S;
       }) as StoreWhichMayContainNestedStores<S, C, T>['renew'],
-      defineRemoveNestedStore: defineRemoveNestedStore(() => currentState, updateState, nestedContainerStore),
-      defineReset: (
-        (initState: C) => () => replace(pathReader, updateState, (e => selector(e)) as Selector<S, C, X>, 'reset')(initState, undefined as Tag<T>)
-      ) as StoreWhichIsNestedInternal<S, C>['defineReset'],
       supportsTags: supportsTags,
-    } as unknown as Store<C, T>;
+    } as unknown as StoreWhichIsNested<C>;
+    return coreActions;
   };
 
   const storeResult = <X extends C & Array<any>, C = S>(selector: ((s: DeepReadonly<S>) => C) = (s => s as any as C)) => {

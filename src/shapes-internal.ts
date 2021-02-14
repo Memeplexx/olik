@@ -1,4 +1,16 @@
-import { DeepReadonly, FindOrFilter, OptionsForReduxDevtools, PredicateFunction, Selector, Store, StoreWhichIsNested, StoreWhichMayContainNestedStores, Tag, Trackability } from "./shapes-external";
+import {
+  DeepReadonly,
+  FindOrFilter,
+  OptionsForReduxDevtools,
+  PredicateFunction,
+  Selector,
+  Store,
+  StoreForAnObject,
+  StoreOrDerivation,
+  StoreWhichIsNested,
+  Tag,
+  Trackability,
+} from './shapes-external';
 
 export type UpdateStateArgs<S, C, T extends Trackability, X extends C = C> = {
   selector: Selector<S, C, X>,
@@ -64,11 +76,25 @@ export type ArrayCustomState<S, C, X extends C & Array<any>, T extends Trackabil
   changeListeners: Map<(ar: any) => any, (arg: S) => any>,
 }
 
-export interface PreviousAction {
+export type PreviousAction = {
   timestamp: number,
   type: string,
   payloads: any[],
   debounceTimeout: number,
 };
+
+export type OptionsForCreatingInternalRootStore = {
+  isContainerForNestedStores?: boolean,
+  supportsTags: boolean,
+  devtools?: OptionsForReduxDevtools | false,
+  tagSanitizer?: (tag: string) => string,
+};
+
+/**
+ * An object which is capable of storing nested stores
+ */
+export type StoreWhichMayContainNestedStores<S, C, T extends Trackability> = {
+  renew: (state: S) => void;
+} & StoreForAnObject<C, T> & StoreOrDerivation<C>;
 
 export type NestedContainerStore = ((selector?: ((s: any) => any) | undefined) => StoreWhichMayContainNestedStores<any, any, any>) | undefined

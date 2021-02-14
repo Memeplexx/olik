@@ -8,13 +8,17 @@ describe('Error', () => {
   beforeAll(() => libState.windowObject = windowAugmentedWithReduxDevtoolsImpl);
 
   it('should throw an error when a method is invoked within a selector', () => {
-    const get = set(new Array<string>());
-    expect(() => get(s => s.some(e => true)).replace(false)).toThrowError(errorMessages.ILLEGAL_FUNCTION_INVOKED_WITHIN_SELECTOR('some'));
+    const get = set({ arr: new Array<string>() });
+    expect(() => {
+      get(s => s.arr.some(e => true)).replace(false);
+    }).toThrowError(errorMessages.ILLEGAL_CHARACTERS_WITHIN_SELECTOR('selector'));
   })
 
   it('should throw an error when filter() is invoked within a selector', () => {
-    const get = set(new Array<string>());
-    expect(() => get(s => s.filter(e => true)).replaceAll([])).toThrowError(errorMessages.ILLEGAL_FUNCTION_INVOKED_WITHIN_SELECTOR('filter'));
+    const get = set({ arr: new Array<string>() });
+    expect(() => {
+      get(s => s.arr.filter(e => true)).replaceAll([]);
+    }).toThrowError(errorMessages.ILLEGAL_CHARACTERS_WITHIN_SELECTOR('selector'));
   })
 
   it('should throw an error if the initial state has functions in it', () => {
@@ -27,6 +31,13 @@ describe('Error', () => {
     expect(() => set({
       test: new Set(),
     })).toThrowError(errorMessages.INVALID_STATE_INPUT);
+  })
+
+  it('should throw an error if a function is invoked within a selector where the property is not an object', () => {
+    const get = set({ prop: 'a' });
+    expect(() => {
+      get(s => s.prop.replace('', '')).replace('ss');
+    }).toThrowError(errorMessages.ILLEGAL_CHARACTERS_WITHIN_SELECTOR('selector'));
   })
 
 });

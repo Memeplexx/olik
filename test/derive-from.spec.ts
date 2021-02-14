@@ -179,4 +179,24 @@ describe('Memoize', () => {
     expect(memoCalcCount).toEqual(2);
   })
 
+  it('should deriveFrom() including an ordinary filter()', () => {
+    const get = set({
+      array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
+    });
+    let memoCalcCount = 0;
+    const mem = deriveFrom(
+      get(s => s.array.find(e => e.id === 2)),
+    ).usingExpensiveCalc(thing => {
+      memoCalcCount++;
+      return thing;
+    });
+    mem.read();
+    mem.read();
+    get(s => s.array).find(e => e.id).eq(1).patch({ value: 'xxx' });
+    expect(memoCalcCount).toEqual(1);
+    get(s => s.array).find(e => e.id).eq(2).patch({ value: 'xxx' });
+    mem.read();
+    expect(memoCalcCount).toEqual(2);
+  })
+
 });

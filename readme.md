@@ -9,7 +9,7 @@
 ### *Declarative*, *self-documenting* state-management.<br> *Free* of innacurate *actions* & convoluted reducers. *All* in-line.
 
 #### 🎨 **WHY CHOOSE OULIK?**
-Oulik is designed to make your state management as transparent and semantically consistent as possible.  
+Oulik is designed to make your state management as **transparent** and semantically **consistent** as possible.  
 It's fluent API is 100% typesafe, and it uses that API to auto-generate your actions and perform immutable updates.  
 This library can be used with ***[![](./src/assets/javascript.png)&nbsp;Vanilla-JS](https://memeplexx.github.io/oulik/docs/vanilla-js)***, with minimal bindings for ***[![](./src/assets/react.png)&nbsp;React](https://memeplexx.github.io/oulik/docs/read)***, and ***[![](./src/assets/angular.png)&nbsp;Angular](https://memeplexx.github.io/oulik/docs/angular)***.  
 
@@ -56,7 +56,7 @@ derive(
 ```ts
 class TodoComponent {
   get = setNested({
-    name: '',
+    title: '',
     description: '',
     done: false,
   });

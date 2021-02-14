@@ -1,10 +1,9 @@
-import { errorMessages } from './shared-consts';
 import { ArrayOfElementsCommonAction, ArrayOfObjectsCommonAction, FindOrFilter, Trackability } from './shapes-external';
 import { ArrayCustomState } from './shapes-internal';
-import { libState } from './shared-state';
+import { errorMessages } from './shared-consts';
 import { copyPayload, deepFreeze } from './shared-utils';
 
-export const arrayCustomReplace = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
+export const replace = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
   context: ArrayCustomState<S, C, X, T>,
 ) => ((payload, tag) => {
   const { type, updateState, selector, predicate } = context;
@@ -23,7 +22,7 @@ export const arrayCustomReplace = <S, C, X extends C & Array<any>, F extends Fin
   });
 }) as ArrayOfElementsCommonAction<X, F, T>['replace'];
 
-export const arrayCustomRemove = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
+export const remove = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
   context: ArrayCustomState<S, C, X, T>,
 ) => (tag => {
   const { type, updateState, selector, predicate, getCurrentState } = context;
@@ -49,7 +48,7 @@ export const arrayCustomRemove = <S, C, X extends C & Array<any>, F extends Find
   });
 }) as ArrayOfElementsCommonAction<X, F, T>['remove'];
 
-export const arrayCustomPatch = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
+export const patch = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
   context: ArrayCustomState<S, C, X, T>,
 ) => ((payload, tag) => {
   const { type, updateState, selector, predicate } = context;
@@ -65,7 +64,7 @@ export const arrayCustomPatch = <S, C, X extends C & Array<any>, F extends FindO
   });
 }) as ArrayOfObjectsCommonAction<X, F, T>['patch'];
 
-export const arrayCustomOnChange = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
+export const onChange = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
   context: ArrayCustomState<S, C, X, T>,
 ) => (performAction => {
   const { type, selector, predicate, changeListeners } = context;
@@ -75,7 +74,7 @@ export const arrayCustomOnChange = <S, C, X extends C & Array<any>, F extends Fi
   return { unsubscribe: () => changeListeners.delete(performAction) };
 }) as ArrayOfElementsCommonAction<X, F, T>['onChange'];
 
-export const arrayCustomRead = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
+export const read = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
   context: ArrayCustomState<S, C, X, T>,
 ) => (() => {
   const { type, selector, predicate, getCurrentState } = context;
@@ -88,11 +87,9 @@ const getElementIndices = <S, C, X extends C & Array<any>, T extends Trackabilit
   context: ArrayCustomState<S, C, X, T>,
 ) => {
   const { type, selector, predicate, getCurrentState } = context;
-  libState.bypassArrayFunctionCheck = true;
   const elementIndices = type === 'find'
     ? [(selector(getCurrentState()) as X).findIndex(e => predicate(e))]
     : (selector(getCurrentState()) as X).map((e, i) => predicate(e) ? i : null).filter(i => i !== null) as number[];
-  libState.bypassArrayFunctionCheck = false;
   if (type === 'find' && elementIndices[0] === -1) { throw new Error(errorMessages.NO_ARRAY_ELEMENT_FOUND); }
   return elementIndices;
 }

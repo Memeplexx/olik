@@ -1,5 +1,5 @@
-import { errorMessages } from './shared-consts';
 import { FunctionReturning } from './shapes-external';
+import { errorMessages, expressionsNotAllowedInSelectorFunction } from './shared-consts';
 import { libState } from './shared-state';
 
 export function deepFreeze<T extends Object>(o: T): T {
@@ -96,9 +96,6 @@ export function createPathReader<S extends Object>(state: S) {
             return initialize(val);
           } else if (typeof (val) === 'function') {
             return function (...args: any[]) {
-              if (!libState.bypassArrayFunctionCheck) {
-                throw new Error(errorMessages.ILLEGAL_FUNCTION_INVOKED_WITHIN_SELECTOR(prop));
-              }
             };
           }
           pathSegments.push(prop);
@@ -123,4 +120,17 @@ export function copyPayload<C>(payload: C | FunctionReturning<C>) {
     payloadCopied: (isFunction ? null : deepCopy(payload)) as C,
     payloadFunction: (isFunction ? payload as FunctionReturning<C> : null) as FunctionReturning<C>,
   };
+}
+
+export const validateSelectorFn = (
+  functionName: 'selector' | 'getProp',
+  selector?: (element: any) => any,
+) => {
+  if (libState.bypassSelectorFunctionCheck) { return; }
+  const fnToString = (selector || '').toString();
+  const illegalChars = expressionsNotAllowedInSelectorFunction
+    .filter(c => c.test(fnToString));
+  if (illegalChars.length) {
+    throw new Error(errorMessages.ILLEGAL_CHARACTERS_WITHIN_SELECTOR(functionName));
+  }
 }

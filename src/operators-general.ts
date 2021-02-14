@@ -10,7 +10,8 @@ import {
 } from './shapes-external';
 import { PathReader, UpdateStateFn } from './shapes-internal';
 import { errorMessages } from './shared-consts';
-import { copyPayload, createPathReader, deepCopy, deepFreeze } from './shared-utils';
+import { libState } from './shared-state';
+import { copyPayload, createPathReader, deepCopy, deepFreeze, validateSelectorFn } from './shared-utils';
 
 export const onChange = <S, C, X extends C & Array<any>>(
   selector: Selector<S, C, X>,
@@ -32,22 +33,26 @@ export const reset = <S, C, X extends C & Array<any>, T extends Trackability>(
   updateState: UpdateStateFn<S, C, T, X>,
   selector: Selector<S, C, X>,
   initialState: S,
+  isNested: () => boolean,
 ) => (
-  tag => replace(pathReader, updateState, selector, 'reset')(selector(initialState), tag)
+  tag => replace(pathReader, updateState, selector, 'reset', isNested)(selector(initialState), tag)
 ) as StoreWhichIsResettable<C, T>['reset'];
 
 export const replaceAll = <S, C, X extends C & Array<any>, T extends Trackability>(
   pathReader: PathReader<S>,
   updateState: UpdateStateFn<S, C, T, X>,
   selector: Selector<S, C, X>,
+  isNested: () => boolean,
 ) => (
-  (replacement, tag) => replace(pathReader, updateState, selector, 'replaceAll')(replacement, tag)
-) as StoreForAnArray<any, T>['replaceAll'];
+  (replacement, tag) => replace(pathReader, updateState, selector, 'replaceAll', isNested)(replacement, tag)
+) as StoreForAnArray<X, T>['replaceAll'];
 
 export const removeAll = <S, C, X extends C & Array<any>, T extends Trackability>(
   selector: Selector<S, C, X>,
   updateState: UpdateStateFn<S, C, T, X>,
+  isNested: () => boolean,
 ) => (tag => {
+  validateSelector(selector, isNested);
   updateState({
     selector,
     replacer: () => [],
@@ -60,7 +65,9 @@ export const removeAll = <S, C, X extends C & Array<any>, T extends Trackability
 export const insert = <S, C, X extends C & Array<any>, T extends Trackability>(
   selector: Selector<S, C, X>,
   updateState: UpdateStateFn<S, C, T, X>,
+  isNested: () => boolean,
 ) => ((payload, tag) => {
+  validateSelector(selector, isNested);
   const { payloadFrozen, payloadCopied } = copyPayload(payload);
   updateState({
     selector,
@@ -77,7 +84,9 @@ export const insert = <S, C, X extends C & Array<any>, T extends Trackability>(
 export const patch = <S, C, X extends C & Array<any>, T extends Trackability>(
   selector: Selector<S, C, X>,
   updateState: UpdateStateFn<S, C, T, X>,
+  isNested: () => boolean,
 ) => ((payload, tag) => {
+  validateSelector(selector, isNested);
   const { payloadFrozen, payloadCopied } = copyPayload(payload);
   updateState({
     selector,
@@ -95,11 +104,14 @@ export const replaceElseInsert = <S, C, X extends C & Array<any>, T extends Trac
   selector: Selector<S, C, X>,
   currentState: () => S,
   updateState: UpdateStateFn<S, C, T, X>,
+  isNested: () => boolean,
 ) => ((payload, tag) => {
+  validateSelector(selector, isNested);
   let matchCalled = false;
   setTimeout(() => { if (!matchCalled) { throw new Error(errorMessages.REPLACE_ELSE_INSERT_WITHOUT_MATCH); } })
   return {
     match: getProp => {
+      validateSelector(selector, isNested);
       matchCalled = true;
       const segs = !getProp ? [] : createPathReader((selector(currentState()) as X)[0] || {}).readSelector(getProp);
       const { payloadFrozen, payloadCopied } = copyPayload(payload);
@@ -144,7 +156,9 @@ export const replace = <S, C, X extends C & Array<any>, T extends Trackability>(
   updateState: UpdateStateFn<S, C, T, X>,
   selector: Selector<S, C, X>,
   name: string,
+  isNested: () => boolean,
 ) => (payload: C | FunctionReturning<C>, tag: Tag<T>) => {
+  validateSelector(selector, isNested);
   const pathSegments = pathReader.readSelector(selector);
   const { payloadFrozen, payloadCopied, payloadFunction } = copyPayload(payload);
   let payloadReturnedByFn: C;
@@ -207,3 +221,12 @@ export const replace = <S, C, X extends C & Array<any>, T extends Trackability>(
     })
   }
 };
+
+const validateSelector = <S, C, X extends C & Array<any>>(
+  selector: Selector<S, C, X>,
+  isNested: () => boolean,
+) => {
+  if (isNested()) { libState.bypassSelectorFunctionCheck = true; }
+  validateSelectorFn('selector', selector);
+  if (isNested()) { libState.bypassSelectorFunctionCheck = false; }
+}
