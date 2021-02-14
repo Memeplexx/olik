@@ -6,10 +6,10 @@
 ![Package Size](https://badgen.net/bundlephobia/minzip/oulik)
 ![Dependency count](https://badgen.net/bundlephobia/dependency-count/oulik)
 
-### *Declarative*, *self-documenting* state-management.<br> *Free* of innacurate *actions* & convoluted reducers. *All* in-line.
+### *Declarative* state-management. *Free* of innacurate *actions* & convoluted reducers. *All* in-line.
 
 #### 🎨 **WHY CHOOSE OLIK?**
-Oulik is designed to make your state management as **transparent** and semantically **consistent** as possible.  
+Olik is designed to make your state management as **transparent** and semantically **consistent** as possible.  
 It's fluent API is 100% typesafe, and it uses that API to auto-generate your actions and perform immutable updates.  
 This library can be used with ***[![](./src/assets/javascript.png)&nbsp;Vanilla-JS](https://memeplexx.github.io/oulik/docs/vanilla-js)***, with minimal bindings for ***[![](./src/assets/react.png)&nbsp;React](https://memeplexx.github.io/oulik/docs/read)***, and ***[![](./src/assets/angular.png)&nbsp;Angular](https://memeplexx.github.io/oulik/docs/angular)***.  
 
