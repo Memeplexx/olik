@@ -20,9 +20,9 @@
       "dom"
     ],
     "paths": {
-      "oulik-ng": [
-        "dist/oulik-ng/oulik-ng",
-        "dist/oulik-ng"
+      "olik-ng": [
+        "dist/olik-ng/olik-ng",
+        "dist/olik-ng"
       ]
     }
   },

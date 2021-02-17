@@ -22,7 +22,6 @@ import {
   PredicateOptionsForNumber,
   PredicateOptionsForString,
   Selector,
-  Store,
   StoreForAnArray,
   StoreWhichIsNested,
   Tag,

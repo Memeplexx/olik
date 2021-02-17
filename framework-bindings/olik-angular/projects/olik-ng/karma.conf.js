@@ -19,7 +19,7 @@ module.exports = function (config) {
       suppressAll: true // removes the duplicated traces
     },
     coverageReporter: {
-      dir: require('path').join(__dirname, '../../coverage/oulik-ng'),
+      dir: require('path').join(__dirname, '../../coverage/olik-ng'),
       subdir: '.',
       reporters: [
         { type: 'html' },

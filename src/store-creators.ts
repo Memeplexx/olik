@@ -60,7 +60,7 @@ export function set<S>(
  */
 export function setNested<L>(
   state: L,
-  { name, storeKey }: OptionsForMakingANestedStore,
+  { storeName: name, instanceName: storeKey }: OptionsForMakingANestedStore,
 ) {
   if (!nestedContainerStore) {
     return (<C = L>(selector?: (arg: DeepReadonly<L>) => C) => (selector

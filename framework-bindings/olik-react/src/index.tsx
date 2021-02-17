@@ -1,4 +1,4 @@
-import { SelectorFromANestedStore, Store, Trackability, Unsubscribable } from 'olik';
+import { SelectorFromANestedStore, set, Store, Trackability, Unsubscribable } from 'olik';
 import React, { DependencyList } from 'react';
 
 export * from 'olik';

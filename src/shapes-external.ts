@@ -489,12 +489,12 @@ export type OptionsForMakingANestedStore = {
   /**
    * The name that will distinguish this nested store from others within the state tree
    */
-  name: string;
+  storeName: string;
   /**
    * The string (or a function returning a string) that will distinguish different instances of the same nested store.
    * If this value isn't supplied, the library will use an auto-incrementing integer as the storeKey
    */
-  storeKey?: string | ((previousKey?: string) => string);
+  instanceName?: string | ((previousName?: string) => string);
 }
 
 /**

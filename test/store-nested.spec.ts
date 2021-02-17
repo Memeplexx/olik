@@ -16,14 +16,14 @@ describe('Nested', () => {
       one: ''
     };
     const get = set(initialState, { isContainerForNestedStores: true });
-    const name = 'myComp';
-    setNested(initialStateComp, { name });
-    expect(get().read()).toEqual({ ...initialState, nested: { [name]: { 0: initialStateComp } } });
+    const storeName = 'myComp';
+    setNested(initialStateComp, { storeName });
+    expect(get().read()).toEqual({ ...initialState, nested: { [storeName]: { 0: initialStateComp } } });
   })
 
   it('should revert to a top-level store correctly', () => {
     const get = set({ test: '' });
-    const nested = setNested({ test: '' }, { name: 'nested' });
+    const nested = setNested({ test: '' }, { storeName: 'nested' });
     nested(s => s.test).replace('test');
     expect(get().read()).toEqual({ test: '' });
     expect(nested().read()).toEqual({ test: 'test' });
@@ -35,12 +35,12 @@ describe('Nested', () => {
       nested: {},
     };
     set(initialState, { isContainerForNestedStores: true });
-    const name = 'myComp';
-    const nestedStore = setNested({ one: '' }, { name });
+    const storeName = 'myComp';
+    const nestedStore = setNested({ one: '' }, { storeName });
     expect(nestedStore(s => s.one).read()).toEqual('');
     nestedStore(s => s.one).replace('test');
     expect(libState.currentAction).toEqual({
-      type: `nested.${name}.0.one.replace()`,
+      type: `nested.${storeName}.0.one.replace()`,
       replacement: 'test',
     })
     expect(nestedStore(s => s.one).read()).toEqual('test');
@@ -52,8 +52,8 @@ describe('Nested', () => {
       nested: {} as { myComp: { [key: string]: { one: string } } },
     };
     const get = set(initialState, { isContainerForNestedStores: true });
-    const name = 'myComp';
-    const nestedStore = setNested({ one: '' }, { name });
+    const storeName = 'myComp';
+    const nestedStore = setNested({ one: '' }, { storeName });
     expect(nestedStore(s => s.one).read()).toEqual('');
     get(s => s.nested.myComp['0'].one).replace('test');
     expect(nestedStore(s => s.one).read()).toEqual('test');
@@ -64,9 +64,9 @@ describe('Nested', () => {
       test: '',
     };
     const get = set(initialState, { isContainerForNestedStores: true });
-    const name = 'myComp';
-    const nestedStore = setNested({ one: '' }, { name });
-    expect(get().read()).toEqual({ test: '', nested: { [name]: { 0: { one: '' } } } });
+    const storeName = 'myComp';
+    const nestedStore = setNested({ one: '' }, { storeName });
+    expect(get().read()).toEqual({ test: '', nested: { [storeName]: { 0: { one: '' } } } });
     nestedStore().removeFromContainingStore();
     expect(get().read()).toEqual({ test: '', nested: {} });
   })
@@ -76,12 +76,12 @@ describe('Nested', () => {
       test: '',
     };
     const get = set(initialState, { isContainerForNestedStores: true });
-    const name = 'myComp';
-    const nestedStore1 = setNested({ one: '' }, { name });
-    const nestedStore2 = setNested({ one: '' }, { name });
-    expect(get().read()).toEqual({ test: '', nested: { [name]: { '0': { one: '' }, '1': { one: '' } } } });
+    const storeName = 'myComp';
+    const nestedStore1 = setNested({ one: '' }, { storeName });
+    const nestedStore2 = setNested({ one: '' }, { storeName });
+    expect(get().read()).toEqual({ test: '', nested: { [storeName]: { '0': { one: '' }, '1': { one: '' } } } });
     nestedStore1().removeFromContainingStore();
-    expect(get().read()).toEqual({ test: '', nested: { [name]: { '1': { one: '' } } } });
+    expect(get().read()).toEqual({ test: '', nested: { [storeName]: { '1': { one: '' } } } });
     nestedStore2().removeFromContainingStore();
     expect(get().read()).toEqual({ test: '', nested: { } });
   })
@@ -91,12 +91,12 @@ describe('Nested', () => {
       test: '',
     };
     const get = set(initialState, { isContainerForNestedStores: true });
-    const name = 'myComp';
-    const nestedStore = setNested({ one: '' }, { name });
+    const storeName = 'myComp';
+    const nestedStore = setNested({ one: '' }, { storeName });
     nestedStore(s => s.one).replace('test1');
-    const nestedStore2 = setNested({ one: '' }, { name });
+    const nestedStore2 = setNested({ one: '' }, { storeName });
     nestedStore2(s => s.one).replace('test2');
-    expect(get().read()).toEqual({ test: '', nested: { [name]: { 0: { one: 'test1' }, 1: { one: 'test2' } } } });
+    expect(get().read()).toEqual({ test: '', nested: { [storeName]: { 0: { one: 'test1' }, 1: { one: 'test2' } } } });
   })
 
   it('should be able to support nested store which is a top-level array', () => {
@@ -104,10 +104,10 @@ describe('Nested', () => {
       test: '',
     };
     const get = set(initialState, { isContainerForNestedStores: true });
-    const name = 'myComp';
-    const nestedStore = setNested(new Array<string>(), { name });
+    const storeName = 'myComp';
+    const nestedStore = setNested(new Array<string>(), { storeName });
     nestedStore().insert('test');
-    expect(get().read()).toEqual({ test: '', nested: { [name]: { 0: ['test'] } } });
+    expect(get().read()).toEqual({ test: '', nested: { [storeName]: { 0: ['test'] } } });
   })
 
   it('should be able to support nested store which is a top-level number', () => {
@@ -115,10 +115,10 @@ describe('Nested', () => {
       test: '',
     };
     const get = set(initialState, { isContainerForNestedStores: true });
-    const name = 'myComp';
-    const nestedStore = setNested(0, { name });
+    const storeName = 'myComp';
+    const nestedStore = setNested(0, { storeName });
     nestedStore().replace(1);
-    expect(get().read()).toEqual({ test: '', nested: { [name]: { 0: 1 } } });
+    expect(get().read()).toEqual({ test: '', nested: { [storeName]: { 0: 1 } } });
   })
 
   it('should be able to support more than one nested store type', () => {
@@ -126,11 +126,11 @@ describe('Nested', () => {
       test: '',
     };
     const get = set(initialState, { isContainerForNestedStores: true });
-    const name = 'myComp';
-    setNested(0, { name });
-    const name2 = 'myComp2';
-    setNested(0, { name: name2 });
-    expect(get().read()).toEqual({ test: '', nested: { [name]: { 0: 0 }, [name2]: { 0: 0 } } });
+    const storeName = 'myComp';
+    setNested(0, { storeName });
+    const storeName2 = 'myComp2';
+    setNested(0, { storeName: storeName2 });
+    expect(get().read()).toEqual({ test: '', nested: { [storeName]: { 0: 0 }, [storeName2]: { 0: 0 } } });
   })
 
   it('should throw an error if the containing stores state is a primitive', () => {
@@ -146,12 +146,12 @@ describe('Nested', () => {
       test: '',
     };
     const get = set(initialState, { isContainerForNestedStores: true });
-    const name = 'myComp';
-    const storeKey = (arg?: string): string => !arg ? 'x' : arg + 'x';
-    setNested(0, { name, storeKey });
-    setNested(0, { name, storeKey });
-    setNested(0, { name, storeKey });
-    expect(get().read()).toEqual({ test: '', nested: { [name]: { x: 0, xx: 0, xxx: 0 } } });
+    const storeName = 'myComp';
+    const instanceName = (arg?: string): string => !arg ? 'x' : arg + 'x';
+    setNested(0, { storeName, instanceName });
+    setNested(0, { storeName, instanceName });
+    setNested(0, { storeName, instanceName });
+    expect(get().read()).toEqual({ test: '', nested: { [storeName]: { x: 0, xx: 0, xxx: 0 } } });
   })
 
   it('should reset the container store correctly after nested stores have been added', () => {
@@ -159,10 +159,10 @@ describe('Nested', () => {
       test: '',
     };
     const get = set(initialState, { isContainerForNestedStores: true });
-    const name = 'myComp';
-    setNested(0, { name });
-    const name2 = 'myComp2';
-    setNested(0, { name: name2 });
+    const storeName = 'myComp';
+    setNested(0, { storeName });
+    const storeName2 = 'myComp2';
+    setNested(0, { storeName: storeName2 });
     get().reset();
     expect(get().read()).toEqual(initialState);
   })
@@ -175,8 +175,8 @@ describe('Nested', () => {
       test: string
     }
     const get = set<X>(initialState, { isContainerForNestedStores: true });
-    const name = 'myComp';
-    const nested = setNested(0, { name });
+    const storeName = 'myComp';
+    const nested = setNested(0, { storeName });
     nested().replace(1);
     expect(get().read()).toEqual({ test: '', nested: { myComp: { '0': 1 } } });
     nested().reset();

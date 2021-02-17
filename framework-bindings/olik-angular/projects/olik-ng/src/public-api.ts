@@ -1,5 +1,5 @@
 /*
- * Public API Surface of oulik-ng
+ * Public API Surface of olik-ng
  */
 
 

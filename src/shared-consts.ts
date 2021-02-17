@@ -10,4 +10,4 @@ export const errorMessages = {
 };
 
 export const devtoolsDebounce = 200;
-export const expressionsNotAllowedInSelectorFunction = [/\=/, /</, />/, /&/, /\|/, /\.[A-z0-9]+\(.*\)/];
+export const expressionsNotAllowedInSelectorFunction = [/\=[^>]/, /</, /[^\=]>/, /&/, /\|/, /\.[A-z0-9]+\(.*\)/];

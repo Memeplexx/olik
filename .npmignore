@@ -1,3 +1,4 @@
 framework-bindings/
 .jekyll-cache
 _site/
+.idea/
