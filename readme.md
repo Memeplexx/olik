@@ -6,7 +6,7 @@
 ![Package Size](https://badgen.net/bundlephobia/minzip/olik)
 ![Dependency count](https://badgen.net/bundlephobia/dependency-count/olik)
 
-### *Declarative* state-management. *Free* of misleading *actions* & convoluted reducers. *All* in-line.
+### *Declarative* state-management. *Free* of innacurate *actions* & convoluted reducers. <br>*All* in-line.
 
 #### 🎨 **WHY CHOOSE OLIK?**
 Olik is designed to make your state management as **transparent** and semantically **consistent** as possible. Its fluent, typesafe API allows it to describe your actions in perfect detail (within the Redux Devtools) and perform efficient immutable updates. It can be used with ***[![](./src/assets/javascript.png)&nbsp;Vanilla-JS](https://memeplexx.github.io/olik/docs/vanilla-js)***, and has minimal bindings for ***[![](./src/assets/react.png)&nbsp;React](https://memeplexx.github.io/olik/docs/read)***, and ***[![](./src/assets/angular.png)&nbsp;Angular](https://memeplexx.github.io/olik/docs/angular)***.  
