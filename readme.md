@@ -10,8 +10,8 @@
 
 #### 🎨 **WHY CHOOSE OLIK?**
 Olik is designed to make your state management as **transparent** and semantically **consistent** as possible.  
-It's fluent API is 100% typesafe, and it uses that API to auto-generate your actions and perform immutable updates.  
-This library can be used with ***[![](./src/assets/javascript.png)&nbsp;Vanilla-JS](https://memeplexx.github.io/olik/docs/vanilla-js)***, with minimal bindings for ***[![](./src/assets/react.png)&nbsp;React](https://memeplexx.github.io/olik/docs/read)***, and ***[![](./src/assets/angular.png)&nbsp;Angular](https://memeplexx.github.io/olik/docs/angular)***.  
+Its fluent, typesafe, API allows it to describe your actions (within the Redux Devtools) and perform immutable updates.  
+This library can be used with ***[![](./src/assets/javascript.png)&nbsp;Vanilla-JS](https://memeplexx.github.io/olik/docs/vanilla-js)***, and has minimal bindings for ***[![](./src/assets/react.png)&nbsp;React](https://memeplexx.github.io/olik/docs/read)***, and ***[![](./src/assets/angular.png)&nbsp;Angular](https://memeplexx.github.io/olik/docs/angular)***.  
 
 #### 🌈 **SET UP**
 ```ts
@@ -61,7 +61,7 @@ class TodoComponent {
     done: false,
   });
   onClickDone(done: boolean) {
-    get(s => s.done)
+    this.get(s => s.done)
       .replace(done);
   }
 }
