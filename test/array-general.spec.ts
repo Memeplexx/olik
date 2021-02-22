@@ -77,10 +77,10 @@ describe('array', () => {
     const get = set(initialState);
     const payload = [{ id: 2, value: 'twoo' }, { id: 3, value: 'threee' }, { id: 4, value: 'four' }];
     get(s => s.array)
-      .replaceElseInsert(payload)
-      .match(s => s.id);
+      .match(s => s.id)
+      .replaceElseInsert(payload);
     expect(libState.currentAction).toEqual({
-      type: 'array.replaceElseInsert().match(id)',
+      type: 'array.match(id).replaceElseInsert()',
       argument: payload,
       replacementCount: 2,
       insertionCount: 1,
@@ -93,10 +93,10 @@ describe('array', () => {
     const get = set(initialState);
     const payload = { id: 2, value: 'two updated' };
     get(s => s.array)
-      .replaceElseInsert(payload)
-      .match(s => s.id);
+      .match(s => s.id)
+      .replaceElseInsert(payload);
     expect(libState.currentAction).toEqual({
-      type: 'array.replaceElseInsert().match(id)',
+      type: 'array.match(id).replaceElseInsert()',
       argument: payload,
       insertionCount: 0,
       replacementCount: 1,
@@ -109,10 +109,10 @@ describe('array', () => {
     const get = set(initialState);
     const payload = { id: 4, value: 'four inserted' };
     get(s => s.array)
-      .replaceElseInsert(payload)
-      .match(s => s.id);
+      .match(s => s.id)
+      .replaceElseInsert(payload);
     expect(libState.currentAction).toEqual({
-      type: 'array.replaceElseInsert().match(id)',
+      type: 'array.match(id).replaceElseInsert()',
       argument: payload,
       insertionCount: 1,
       replacementCount: 0,

@@ -277,12 +277,11 @@ export type StoreForAnArray<X extends Array<any>, T extends Trackability> = {
    * Replace or insert one or more elements depending on whether the element has a 'match' in the existing array
    * @example
    * ...
-   * .replaceElseInsert(elementOrArray)
    * .match(s => s.id)
-   * ...
+   * .replaceElseInsert(elementOrArray)
    */
-  replaceElseInsert: (elementOrArray: X[0] | X, tag: Tag<T>) => {
-    match: <P>(getProp?: (element: DeepReadonly<X[0]>) => P) => void,
+  match: <P>(getProp?: (element: DeepReadonly<X[0]>) => P) => {
+    replaceElseInsert: (elementOrArray: X[0] | X, tag: Tag<T>) => void,
   }
   /**
    * Specify which array element property to filter by.  

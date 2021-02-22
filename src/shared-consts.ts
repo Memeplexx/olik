@@ -6,7 +6,6 @@ export const errorMessages = {
   INVALID_STATE_INPUT: 'State can only be primitive or a POJO. It may not contain any functions, Sets, Maps etc',
   ILLEGAL_CHARACTERS_WITHIN_SELECTOR: (functionName: 'selector' | 'getProp') => `Illegal characters detected in your ${functionName}() function. This function may only select a property, for example: 's => s.some.property', and no additional function invocations are allowed within the function.`,
   NO_ARRAY_ELEMENT_FOUND: `Could not find array element`,
-  REPLACE_ELSE_INSERT_WITHOUT_MATCH: 'replaceElseInsert() must be followed by match(), for example: ...replaceElseInsert().match(s => s.id);',
 };
 
 export const devtoolsDebounce = 200;

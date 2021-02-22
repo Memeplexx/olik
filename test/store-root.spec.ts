@@ -155,10 +155,10 @@ describe('Root', () => {
     const get = set(initialState);
     const payload = 'four';
     get()
-      .replaceElseInsert(payload)
-      .match();
+      .match()
+      .replaceElseInsert(payload);
     expect(libState.currentAction).toEqual({
-      type: 'replaceElseInsert().match()',
+      type: 'match().replaceElseInsert()',
       argument: payload,
       insertionCount: 1,
       replacementCount: 0,

@@ -9,7 +9,7 @@ import {
   removeAll,
   replace,
   replaceAll,
-  replaceElseInsert,
+  match,
   reset,
 } from './operators-general';
 import { defineRemoveNestedStore } from './operators-internal';
@@ -117,7 +117,7 @@ export function createStore<S, T extends Trackability>(context: {
       replaceAll: replaceAll(pathReader, updateState, selector, () => !!coreActions.removeFromContainingStore),
       reset: reset(pathReader, updateState, selector, initialState, () => !!coreActions.removeFromContainingStore),
       replace: replace(pathReader, updateState, selector, 'replace', () => !!coreActions.removeFromContainingStore),
-      replaceElseInsert: replaceElseInsert(selector, () => currentState, updateState, () => !!coreActions.removeFromContainingStore),
+      match: match(selector, () => currentState, updateState, () => !!coreActions.removeFromContainingStore),
       filterCustom: findOrFilterCustom('filter'),
       findCustom: findOrFilterCustom('find'),
       filter: findOrFilter('filter'),

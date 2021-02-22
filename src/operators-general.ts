@@ -100,19 +100,16 @@ export const patch = <S, C, X extends C & Array<any>, T extends Trackability>(
   });
 }) as StoreForAnObject<C, T>['patch'];
 
-export const replaceElseInsert = <S, C, X extends C & Array<any>, T extends Trackability>(
+export const match = <S, C, X extends C & Array<any>, T extends Trackability>(
   selector: Selector<S, C, X>,
   currentState: () => S,
   updateState: UpdateStateFn<S, C, T, X>,
   isNested: () => boolean,
-) => ((payload, tag) => {
+) => (getProp => {
   validateSelector(selector, isNested);
-  let matchCalled = false;
-  setTimeout(() => { if (!matchCalled) { throw new Error(errorMessages.REPLACE_ELSE_INSERT_WITHOUT_MATCH); } })
   return {
-    match: getProp => {
+    replaceElseInsert: (payload, tag) => {
       validateSelector(selector, isNested);
-      matchCalled = true;
       const segs = !getProp ? [] : createPathReader((selector(currentState()) as X)[0] || {}).readSelector(getProp);
       const { payloadFrozen, payloadCopied } = copyPayload(payload);
       const payloadFrozenArray: X[0][] = Array.isArray(payloadFrozen) ? payloadFrozen : [payloadFrozen];
@@ -138,7 +135,7 @@ export const replaceElseInsert = <S, C, X extends C & Array<any>, T extends Trac
           old.forEach((oe, oi) => { const found = payloadCopiedArray.find(ne => !getProp ? oe === ne : getProp(oe) === getProp(ne)); if (found) { old[oi] = deepCopy(found); } });
           payloadCopiedArray.filter(ne => !old.some(oe => !getProp ? oe === ne : getProp(oe) === getProp(ne))).forEach(ne => old.push(ne));
         },
-        actionName: `replaceElseInsert().match(${segs.join('.')})`,
+        actionName: `match(${segs.join('.')}).replaceElseInsert()`,
         payload: null,
         getPayloadFn: () => ({
           argument: payloadFrozen,
@@ -149,7 +146,7 @@ export const replaceElseInsert = <S, C, X extends C & Array<any>, T extends Trac
       });
     }
   };
-}) as StoreForAnArray<X, T>['replaceElseInsert'];
+}) as StoreForAnArray<X, T>['match'];
 
 export const replace = <S, C, X extends C & Array<any>, T extends Trackability>(
   pathReader: PathReader<S>,
