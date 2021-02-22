@@ -2,6 +2,7 @@ import { NgModule, NgZone } from '@angular/core';
 import {
   listenToDevtoolsDispatch,
   OptionsForMakingANestedStore,
+  OptionsForMakingAStore,
   SelectorFromAStore,
   set as libSet,
   setEnforceTags as libSetEnforceTags,
@@ -44,8 +45,8 @@ const observeInternal = <S>(
     shareReplay({ bufferSize: 1, refCount: true }),
   );
 
-export const set = <S>(initialState: S) => {
-  const get = libSet(initialState);
+export const set = <S>(initialState: S, options?: OptionsForMakingAStore) => {
+  const get = libSet(initialState, options);
   return {
     get,
     /**
@@ -59,8 +60,8 @@ export const set = <S>(initialState: S) => {
   };
 }
 
-export const setEnforceTags = <S>(initialState: S) => {
-  const get = libSetEnforceTags(initialState);
+export const setEnforceTags = <S>(initialState: S, options?: OptionsForMakingAStore) => {
+  const get = libSetEnforceTags(initialState, options);
   return {
     get,
     /**
