@@ -274,13 +274,21 @@ export type StoreForAnArray<X extends Array<any>, T extends Trackability> = {
    */
   replaceAll: (replacement: X, tag: Tag<T>) => void,
   /**
-   * Replace or insert one or more elements depending on whether the element has a 'match' in the existing array
+   * Get a property which will be used to compare existing array elements wth incoming array elements.
+   * We can then chain `replaceElseInsert()` to either replace existing array element(s) or insert new element(s) if they cannot be matched
    * @example
    * ...
    * .match(s => s.id)
    * .replaceElseInsert(elementOrArray)
+   * ...
    */
   match: <P>(getProp?: (element: DeepReadonly<X[0]>) => P) => {
+    /**
+     * Use the previous `match()` function to either replace existing array element(s) or insert new element(s) if they cannot be matched
+     * @example
+     * ...
+     * .replaceElseInsert(elementOrArray)
+     */
     replaceElseInsert: (elementOrArray: X[0] | X, tag: Tag<T>) => void,
   }
   /**
@@ -309,7 +317,7 @@ export type StoreForAnArray<X extends Array<any>, T extends Trackability> = {
    * Only use `filterCustom()` when your search criteria is very complicated.
    * @example
    * ...
-   * .filter(t => t.id).eq(1)
+   * .filterCustom(t => ...some complex criteria returning a boolean...).eq(1)
    * ...
    */
   filterCustom: PredicateFunctionCustom<X, 'filter', T>,
@@ -319,7 +327,7 @@ export type StoreForAnArray<X extends Array<any>, T extends Trackability> = {
    * Only use `findCustom()` when your search criteria is very complicated.
    * @example
    * ...
-   * .filter(t => t.id).eq(1)
+   * .findCustom(t => ...some complex criteria returning a boolean...).eq(1)
    * ...
    */
   findCustom: PredicateFunctionCustom<X, 'find', T>,
