@@ -1,7 +1,19 @@
 {
   "name": "olik",
   "version": "0.0.2",
-  "description": "",
+  "description": "Declarative state-management. Free of inaccurate actions & convoluted reducers. All in-line.",
+  "license": "MIT",
+  "homepage": "https://memeplexx.github.io/Olik/",
+  "bugs": "https://github.com/Memeplexx/Olik/issues",
+  "keywords": [
+    "state",
+    "predictable",
+    "immutable",
+    "fluent",
+    "react",
+    "amgular"
+  ],
+  "author": "Stephen Paul (https://github.com/memeplexx)",
   "main": "dist/cjs/olik.js",
   "module": "dist/esm/olik.js",
   "unpkg": "dist/umd/olik.js",
@@ -16,8 +28,6 @@
     "test:cov": "cross-env NODE_ENV=test npm test --coverage --collectCoverageFrom=src/**/*.{ts}",
     "test:watch": "cross-env NODE_ENV=test jest --watchAll --verbose false"
   },
-  "author": "",
-  "license": "ISC",
   "dependencies": {},
   "devDependencies": {
     "@types/immutable": "^3.8.7",
