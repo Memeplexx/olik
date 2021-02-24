@@ -13,7 +13,7 @@ Olik is designed to make your state management as **transparent** and semantical
 
 #### 🌈 **SET UP**
 ```ts
-const get = set({
+const select = set({
   username: '',
   favorite: {
     foods: new Array<string>(),
@@ -23,27 +23,27 @@ const get = set({
 ```  
 #### ✍️ **WRITE STATE**  
 ```ts
-get(s => s.username)               // type: 'username.replace()'
+select(s => s.username)            // type: 'username.replace()'
   .replace('Terence');             // replacement: 'Terence'
 
-get(s => s.favorite.foods)         // type: 'favorite.foods.insert()'
+select(s => s.favorite.foods)      // type: 'favorite.foods.insert()'
   .insert(['Indian', 'Sushi']);    // insertion: ['Indian', 'Sushi']
 
-get(s => s.favorite.hobbies)       // type: 'favorite.hobbies.find().patch()'
-  .find(s => s.id).eq(3)           // query: 'id === 3',
+select(s => s.favorite.hobbies)    // type: 'favorite.hobbies.whereOne().patch()'
+  .whereOne(s => s.id).eq(3)       // query: 'id === 3',
   .patch({ name: 'coding' });      // patch: { name: 'coding' }
 ```
 #### 🔍 **READ STATE**
 ```ts
-get(s => s.favorite.hobbies)
+select(s => s.favorite.hobbies)
   .read()
 
-get(s => s.favorite.hobbies)
+select(s => s.favorite.hobbies)
   .onChange(e => console.log(e));
 
 derive(
-  get(s => s.foods),
-  get(s => s.hobbies),
+  select(s => s.foods),
+  select(s => s.hobbies),
 ).usingExpensiveCalc(
   (foods, hobbies) => {
     // some calculation we don't want to repeat unnecessarily
@@ -53,13 +53,13 @@ derive(
 #### 🥚 **NEST STORES**
 ```ts
 class TodoComponent {
-  get = setNested({
+  select = setNested({
     title: '',
     description: '',
     done: false,
   });
   onClickDone(done: boolean) {
-    this.get(s => s.done)
+    this.select(s => s.done)
       .replace(done);
   }
 }

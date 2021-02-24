@@ -8,16 +8,16 @@ describe('Error', () => {
   beforeAll(() => libState.windowObject = windowAugmentedWithReduxDevtoolsImpl);
 
   it('should throw an error when a method is invoked within a selector', () => {
-    const get = set({ arr: new Array<string>() });
+    const select = set({ arr: new Array<string>() });
     expect(() => {
-      get(s => s.arr.some(e => true)).replace(false);
+      select(s => s.arr.some(e => true)).replace(false);
     }).toThrowError(errorMessages.ILLEGAL_CHARACTERS_WITHIN_SELECTOR('selector'));
   })
 
   it('should throw an error when filter() is invoked within a selector', () => {
-    const get = set({ arr: new Array<string>() });
+    const select = set({ arr: new Array<string>() });
     expect(() => {
-      get(s => s.arr.filter(e => true)).replaceAll([]);
+      select(s => s.arr.filter(e => true)).replaceAll([]);
     }).toThrowError(errorMessages.ILLEGAL_CHARACTERS_WITHIN_SELECTOR('selector'));
   })
 
@@ -34,9 +34,9 @@ describe('Error', () => {
   })
 
   it('should throw an error if a function is invoked within a selector where the property is not an object', () => {
-    const get = set({ prop: 'a' });
+    const select = set({ prop: 'a' });
     expect(() => {
-      get(s => s.prop.replace('', '')).replace('ss');
+      select(s => s.prop.replace('', '')).replace('ss');
     }).toThrowError(errorMessages.ILLEGAL_CHARACTERS_WITHIN_SELECTOR('selector'));
   })
 

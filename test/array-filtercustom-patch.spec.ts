@@ -12,115 +12,115 @@ describe('array.filterCustom().patch()', () => {
   };
 
   it('should eq()', () => {
-    const get = set(initialState);
+    const select = set(initialState);
     const payload = { value: 'new' };
     const query = (e: typeof initialState['array'][0]) => e.id === 2;
-    get(s => s.array)
+    select(s => s.array)
       .filter(query)
       .patch(payload);
     expect(libState.currentAction).toEqual({
-      type: 'array.filterCustom().patch()',
+      type: 'array.filter().patch()',
       patch: payload,
       query: query.toString(),
     });
-    expect(get(s => s.array).read()).toEqual([initialState.array[0], { ...initialState.array[1], ...payload }, initialState.array[2]]);
-    expect(libState.currentMutableState).toEqual(get().read());
+    expect(select(s => s.array).read()).toEqual([initialState.array[0], { ...initialState.array[1], ...payload }, initialState.array[2]]);
+    expect(libState.currentMutableState).toEqual(select().read());
   })
 
   it('should ne()', () => {
-    const get = set(initialState);
+    const select = set(initialState);
     const payload = { value: 'four' };
     const query = (e: typeof initialState['array'][0]) => e.id !== 2;
-    get(s => s.array)
+    select(s => s.array)
       .filter(query)
       .patch(payload);
     expect(libState.currentAction).toEqual({
-      type: 'array.filterCustom().patch()',
+      type: 'array.filter().patch()',
       patch: payload,
       query: query.toString(),
     });
-    expect(get(s => s.array).read()).toEqual([{ ...initialState.array[0], ...payload }, initialState.array[1], { ...initialState.array[2], ...payload }]);
-    expect(libState.currentMutableState).toEqual(get().read());
+    expect(select(s => s.array).read()).toEqual([{ ...initialState.array[0], ...payload }, initialState.array[1], { ...initialState.array[2], ...payload }]);
+    expect(libState.currentMutableState).toEqual(select().read());
   })
 
   it('should gt()', () => {
-    const get = set(initialState);
+    const select = set(initialState);
     const payload = { value: 'four' };
     const query = (e: typeof initialState['array'][0]) => e.id > 1;
-    get(s => s.array)
+    select(s => s.array)
       .filter(query)
       .patch(payload);
     expect(libState.currentAction).toEqual({
-      type: 'array.filterCustom().patch()',
+      type: 'array.filter().patch()',
       patch: payload,
       query: query.toString(),
     });
-    expect(get(s => s.array).read()).toEqual([initialState.array[0], { ...initialState.array[1], ...payload }, { ...initialState.array[2], ...payload }]);
-    expect(libState.currentMutableState).toEqual(get().read());
+    expect(select(s => s.array).read()).toEqual([initialState.array[0], { ...initialState.array[1], ...payload }, { ...initialState.array[2], ...payload }]);
+    expect(libState.currentMutableState).toEqual(select().read());
   })
 
   it('should lt()', () => {
-    const get = set(initialState);
+    const select = set(initialState);
     const payload = { value: 'four' };
     const query = (e: typeof initialState['array'][0]) => e.id < 2;
-    get(s => s.array)
+    select(s => s.array)
       .filter(query)
       .patch(payload);
     expect(libState.currentAction).toEqual({
-      type: 'array.filterCustom().patch()',
+      type: 'array.filter().patch()',
       patch: payload,
       query: query.toString(),
     });
-    expect(get(s => s.array).read()).toEqual([{ ...initialState.array[0], ...payload }, initialState.array[1], initialState.array[2]]);
-    expect(libState.currentMutableState).toEqual(get().read());
+    expect(select(s => s.array).read()).toEqual([{ ...initialState.array[0], ...payload }, initialState.array[1], initialState.array[2]]);
+    expect(libState.currentMutableState).toEqual(select().read());
   })
 
   it('should in()', () => {
-    const get = set(initialState);
+    const select = set(initialState);
     const payload = { id: 4, value: 'four' };
     const query = (e: typeof initialState['array'][0]) => [1, 2].includes(e.id);
-    get(s => s.array)
+    select(s => s.array)
       .filter(query)
       .patch(payload);
     expect(libState.currentAction).toEqual({
-      type: 'array.filterCustom().patch()',
+      type: 'array.filter().patch()',
       patch: payload,
       query: query.toString(),
     });
-    expect(get(s => s.array).read()).toEqual([{ ...initialState.array[0], ...payload }, { ...initialState.array[1], ...payload }, initialState.array[2]]);
-    expect(libState.currentMutableState).toEqual(get().read());
+    expect(select(s => s.array).read()).toEqual([{ ...initialState.array[0], ...payload }, { ...initialState.array[1], ...payload }, initialState.array[2]]);
+    expect(libState.currentMutableState).toEqual(select().read());
   })
 
   it('should ni()', () => {
-    const get = set(initialState);
+    const select = set(initialState);
     const payload = { value: 'four' };
     const query = (e: typeof initialState['array'][0]) => ![1, 2].includes(e.id);
-    get(s => s.array)
+    select(s => s.array)
       .filter(query)
       .patch(payload);
     expect(libState.currentAction).toEqual({
-      type: 'array.filterCustom().patch()',
+      type: 'array.filter().patch()',
       patch: payload,
       query: query.toString(),
     });
-    expect(get(s => s.array).read()).toEqual([initialState.array[0], initialState.array[1], { ...initialState.array[2], ...payload }]);
-    expect(libState.currentMutableState).toEqual(get().read());
+    expect(select(s => s.array).read()).toEqual([initialState.array[0], initialState.array[1], { ...initialState.array[2], ...payload }]);
+    expect(libState.currentMutableState).toEqual(select().read());
   })
 
   it('should match()', () => {
-    const get = set(initialState);
+    const select = set(initialState);
     const payload = { value: 'four' };
     const query = (e: typeof initialState['array'][0]) => /^t/.test(e.value);
-    get(s => s.array)
+    select(s => s.array)
       .filter(query)
       .patch(payload);
     expect(libState.currentAction).toEqual({
-      type: 'array.filterCustom().patch()',
+      type: 'array.filter().patch()',
       patch: payload,
       query: query.toString(),
     });
-    expect(get(s => s.array).read()).toEqual([initialState.array[0], { ...initialState.array[1], ...payload }, { ...initialState.array[2], ...payload }]);
-    expect(libState.currentMutableState).toEqual(get().read());
+    expect(select(s => s.array).read()).toEqual([initialState.array[0], { ...initialState.array[1], ...payload }, { ...initialState.array[2], ...payload }]);
+    expect(libState.currentMutableState).toEqual(select().read());
   })
 
 });

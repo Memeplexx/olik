@@ -348,9 +348,9 @@ export type StoreForAnObjectOrPrimitive<C extends any, T extends Trackability> =
   /**
    * Substitutes this primitive value
    * @example
-   * get(s => s.user.age).replace(33);
+   * select(s => s.user.age).replace(33);
    * @example
-   * get(s => s.user.age).replace(age => age + 1);
+   * select(s => s.user.age).replace(age => age + 1);
    */
   replace: (replacement: C | FunctionReturning<C>, tag: Tag<T>) => void,
 }

@@ -9,41 +9,41 @@ describe('tags', () => {
   it('should work with tags correctly', () => {
     const payload = 'hey';
     const tag = 'mytag';
-    const get = setEnforceTags({
+    const select = setEnforceTags({
       object: { property: 'one', property2: 'two' },
     });
-    get(s => s.object.property)
+    select(s => s.object.property)
       .replace(payload, tag);
     expect(libState.currentAction).toEqual({
       type: `object.property.replace() [${tag}]`,
       replacement: payload,
     });
-    expect(get(s => s.object.property).read()).toEqual(payload);
-    expect(libState.currentMutableState).toEqual(get().read());
+    expect(select(s => s.object.property).read()).toEqual(payload);
+    expect(libState.currentMutableState).toEqual(select().read());
   })
 
   it('should sanitize tags correctly', () => {
-    const get = setEnforceTags({
+    const select = setEnforceTags({
       test: '',
     }, {
       tagSanitizer: (tag) => tag + 'x',
     });
     const tag = 'mytag';
     const payload = 'test';
-    get(s => s.test)
+    select(s => s.test)
       .replace(payload, tag);
     expect(libState.currentAction).toEqual({
       type: `test.replace() [${tag}x]`,
       replacement: payload,
     });
-    expect(libState.currentMutableState).toEqual(get().read());
+    expect(libState.currentMutableState).toEqual(select().read());
   })
 
   it('should accept optional tags', () => {
-    const get = set({ prop: '' });
+    const select = set({ prop: '' });
     const tag = 'mytag';
     const payload = 'test';
-    get(s => s.prop)
+    select(s => s.prop)
       .replace(payload, tag);
     expect(libState.currentAction).toEqual({
       type: `prop.replace() [${tag}]`,

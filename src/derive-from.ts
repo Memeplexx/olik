@@ -5,8 +5,8 @@ import { Derivation, DerivationCalculationInputs, StoreOrDerivation, Unsubscriba
  * FOR EXAMPLE:
  * ```Typescript
  * const memo = deriveFrom(
- *   get(s => s.some.property),
- *   get(s => s.some.other.property),
+ *   select(s => s.some.property),
+ *   select(s => s.some.other.property),
  * ).usingExpensiveCalc((someProperty, someOtherProperty) => {
  *   // perform some expensive calculation and return the result
  * });

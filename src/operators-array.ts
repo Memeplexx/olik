@@ -52,7 +52,7 @@ export const remove = <S, C, X extends C & Array<any>, F extends FindOrFilter, T
         }
       }
     },
-    actionName: `${type}().remove()`,
+    actionName: `${deriveType(type)}().remove()`,
     payload: {
       query: whereClauseStrings.join(' '),
       toRemove: (selector(getCurrentState()) as X)[type]((e, i) => elementIndices.includes(i)),
@@ -71,7 +71,7 @@ export const patch = <S, C, X extends C & Array<any>, F extends FindOrFilter, T 
     selector,
     replacer: old => old.map((o, i) => elementIndices.includes(i) ? { ...o, ...payloadFrozen } : o),
     mutator: old => elementIndices.forEach(i => Object.assign(old[i], payloadCopied)),
-    actionName: `${type}().patch()`,
+    actionName: `${deriveType(type)}().patch()`,
     payload: {
       query: whereClauseStrings.join(' '),
       patch: payloadFrozen,
@@ -90,7 +90,7 @@ export const replace = <S, C, X extends C & Array<any>, F extends FindOrFilter, 
     selector,
     replacer: old => old.map((o, i) => elementIndices.includes(i) ? payloadFrozen : o),
     mutator: old => { old.forEach((o, i) => { if (elementIndices.includes(i)) { old[i] = payloadCopied; } }) },
-    actionName: `${type}().replace()`,
+    actionName: `${deriveType(type)}().replace()`,
     payload: {
       query: whereClauseStrings.join(' '),
       replacement: payloadFrozen,
@@ -119,6 +119,10 @@ export const read = <S, C, X extends C & Array<any>, F extends FindOrFilter, T e
     ? (selector(getCurrentState()) as X).find(e => bundleCriteria(e, whereClauseSpecs))
     : (selector(getCurrentState()) as X).map(e => bundleCriteria(e, whereClauseSpecs) ? e : null).filter(e => e != null));
 }) as ArrayOfElementsCommonAction<X, F, T>['read'];
+
+const deriveType = (type: FindOrFilter) => {
+  return type === 'find' ? 'whereOne' : 'whereMany';
+}
 
 const completeWhereClause = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
   context: ArrayOperatorState<S, C, X, F, T>,

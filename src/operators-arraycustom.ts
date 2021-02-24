@@ -13,7 +13,7 @@ export const replace = <S, C, X extends C & Array<any>, F extends FindOrFilter, 
     selector,
     replacer: old => old.map((o, i) => elementIndices.includes(i) ? payloadFrozen : o),
     mutator: old => { old.forEach((o, i) => { if (elementIndices.includes(i)) { old[i] = payloadCopied; } }) },
-    actionName: `${type}Custom().replace()`,
+    actionName: `${type}().replace()`,
     payload: {
       query: predicate.toString(),
       replacement: payloadFrozen,
@@ -42,7 +42,7 @@ export const remove = <S, C, X extends C & Array<any>, F extends FindOrFilter, T
         }
       }
     },
-    actionName: `${type}Custom().remove()`,
+    actionName: `${type}().remove()`,
     payload: { toRemove: (selector(getCurrentState()) as X)[type]((e, i) => elementIndices.includes(i)), query: predicate.toString() },
     tag,
   });
@@ -58,7 +58,7 @@ export const patch = <S, C, X extends C & Array<any>, F extends FindOrFilter, T 
     selector,
     replacer: old => old.map((o, i) => elementIndices.includes(i) ? { ...o, ...payloadFrozen } : o),
     mutator: old => elementIndices.forEach(i => Object.assign(old[i], payloadCopied)),
-    actionName: `${type}Custom().patch()`,
+    actionName: `${type}().patch()`,
     payload: { patch: payloadFrozen, query: predicate.toString() },
     tag,
   });
