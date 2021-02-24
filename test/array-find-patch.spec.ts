@@ -15,7 +15,7 @@ describe('array.find().patch()', () => {
     const get = set(initialState);
     const payload = { value: 'new' };
     get(s => s.array)
-      .find(e => e.id).eq(2)
+      .whereOne(e => e.id).eq(2)
       .patch(payload);
     expect(libState.currentAction).toEqual({
       type: 'array.find().patch()',
@@ -30,7 +30,7 @@ describe('array.find().patch()', () => {
     const get = set(initialState);
     const payload = { value: 'four' };
     get(s => s.array)
-      .find(e => e.id).ne(2)
+      .whereOne(e => e.id).ne(2)
       .patch(payload);
     expect(libState.currentAction).toEqual({
       type: 'array.find().patch()',
@@ -45,7 +45,7 @@ describe('array.find().patch()', () => {
     const get = set(initialState);
     const payload = { value: 'four' };
     get(s => s.array)
-      .find(e => e.id).gt(1)
+      .whereOne(e => e.id).gt(1)
       .patch(payload);
     expect(libState.currentAction).toEqual({
       type: 'array.find().patch()',
@@ -60,7 +60,7 @@ describe('array.find().patch()', () => {
     const get = set(initialState);
     const payload = { value: 'four' };
     get(s => s.array)
-      .find(e => e.id).gte(1)
+      .whereOne(e => e.id).gte(1)
       .patch(payload);
     expect(libState.currentAction).toEqual({
       type: 'array.find().patch()',
@@ -75,7 +75,7 @@ describe('array.find().patch()', () => {
     const get = set(initialState);
     const payload = { value: 'four' };
     get(s => s.array)
-      .find(e => e.id).lt(2)
+      .whereOne(e => e.id).lt(2)
       .patch(payload);
     expect(libState.currentAction).toEqual({
       type: 'array.find().patch()',
@@ -90,7 +90,7 @@ describe('array.find().patch()', () => {
     const get = set(initialState);
     const payload = { value: 'four' };
     get(s => s.array)
-      .find(e => e.id).lte(2)
+      .whereOne(e => e.id).lte(2)
       .patch(payload);
     expect(libState.currentAction).toEqual({
       type: 'array.find().patch()',
@@ -105,7 +105,7 @@ describe('array.find().patch()', () => {
     const get = set(initialState);
     const payload = { id: 4, value: 'four' };
     get(s => s.array)
-      .find(e => e.id).in([1, 2])
+      .whereOne(e => e.id).in([1, 2])
       .patch(payload);
     expect(libState.currentAction).toEqual({
       type: 'array.find().patch()',
@@ -120,7 +120,7 @@ describe('array.find().patch()', () => {
     const get = set(initialState);
     const payload = { value: 'four' };
     get(s => s.array)
-      .find(e => e.id).ni([1, 2])
+      .whereOne(e => e.id).ni([1, 2])
       .patch(payload);
     expect(libState.currentAction).toEqual({
       type: 'array.find().patch()',
@@ -135,7 +135,7 @@ describe('array.find().patch()', () => {
     const get = set(initialState);
     const payload = { value: 'four' };
     get(s => s.array)
-      .find(e => e.value).match(/^t/)
+      .whereOne(e => e.value).match(/^t/)
       .patch(payload);
     expect(libState.currentAction).toEqual({
       type: 'array.find().patch()',

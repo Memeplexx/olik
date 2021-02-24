@@ -14,7 +14,7 @@ describe('array.find().remove()', () => {
   it('should eq()', () => {
     const get = set(initialState);
     get(s => s.array)
-      .find(e => e.id).eq(2)
+      .whereOne(e => e.id).eq(2)
       .remove();
     expect(libState.currentAction).toEqual({
       type: 'array.find().remove()',
@@ -28,7 +28,7 @@ describe('array.find().remove()', () => {
   it('should ne()', () => {
     const get = set(initialState);
     get(s => s.array)
-      .find(e => e.id).ne(2)
+      .whereOne(e => e.id).ne(2)
       .remove();
     expect(libState.currentAction).toEqual({
       type: 'array.find().remove()',
@@ -42,7 +42,7 @@ describe('array.find().remove()', () => {
   it('should gt()', () => {
     const get = set(initialState);
     get(s => s.array)
-      .find(e => e.id).gt(1)
+      .whereOne(e => e.id).gt(1)
       .remove();
     expect(libState.currentAction).toEqual({
       type: 'array.find().remove()',
@@ -56,7 +56,7 @@ describe('array.find().remove()', () => {
   it('should gte()', () => {
     const get = set(initialState);
     get(s => s.array)
-      .find(e => e.id).gte(1)
+      .whereOne(e => e.id).gte(1)
       .remove();
     expect(libState.currentAction).toEqual({
       type: 'array.find().remove()',
@@ -70,7 +70,7 @@ describe('array.find().remove()', () => {
   it('should lt()', () => {
     const get = set(initialState);
     get(s => s.array)
-      .find(e => e.id).lt(2)
+      .whereOne(e => e.id).lt(2)
       .remove();
     expect(libState.currentAction).toEqual({
       type: 'array.find().remove()',
@@ -84,7 +84,7 @@ describe('array.find().remove()', () => {
   it('should lte()', () => {
     const get = set(initialState);
     get(s => s.array)
-      .find(e => e.id).lte(2)
+      .whereOne(e => e.id).lte(2)
       .remove();
     expect(libState.currentAction).toEqual({
       type: 'array.find().remove()',
@@ -98,7 +98,7 @@ describe('array.find().remove()', () => {
   it('should in()', () => {
     const get = set(initialState);
     get(s => s.array)
-      .find(e => e.id).in([1, 2])
+      .whereOne(e => e.id).in([1, 2])
       .remove();
     expect(libState.currentAction).toEqual({
       type: 'array.find().remove()',
@@ -112,7 +112,7 @@ describe('array.find().remove()', () => {
   it('should ni()', () => {
     const get = set(initialState);
     get(s => s.array)
-      .find(e => e.id).ni([1, 2])
+      .whereOne(e => e.id).ni([1, 2])
       .remove();
     expect(libState.currentAction).toEqual({
       type: 'array.find().remove()',
@@ -126,7 +126,7 @@ describe('array.find().remove()', () => {
   it('should match()', () => {
     const get = set(initialState);
     get(s => s.array)
-      .find(e => e.value).match(/^t/)
+      .whereOne(e => e.value).match(/^t/)
       .remove();
     expect(libState.currentAction).toEqual({
       type: 'array.find().remove()',

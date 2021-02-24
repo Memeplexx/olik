@@ -20,11 +20,11 @@ describe('Sequence', () => {
     expect(libState.currentMutableState).toEqual(get().read());
     get(s => s.propTwo).insert([{ id: 1, value: 'one' }]);
     expect(libState.currentMutableState).toEqual(get().read());
-    get(s => s.propTwo).findCustom(e => e.id === 1).patch({ value: 'test' });
+    get(s => s.propTwo).find(e => e.id === 1).patch({ value: 'test' });
     expect(libState.currentMutableState).toEqual(get().read());
     get(s => s.propTwo).match(s => s.id).replaceElseInsert({ id: 1, value: 'xxx' });
     expect(libState.currentMutableState).toEqual(get().read());
-    get(s => s.propTwo).findCustom(s => s.id === 1).remove();
+    get(s => s.propTwo).find(s => s.id === 1).remove();
     expect(libState.currentMutableState).toEqual(get().read());
     get(s => s.propTwo).removeAll();
     expect(libState.currentMutableState).toEqual(get().read());
@@ -35,11 +35,11 @@ describe('Sequence', () => {
     const get = set(initialState);
     get().insert([{ id: 1, value: 'one' }]);
     expect(libState.currentMutableState).toEqual(get().read());
-    get().findCustom(e => e.id === 1).patch({ value: 'test' });
+    get().find(e => e.id === 1).patch({ value: 'test' });
     expect(libState.currentMutableState).toEqual(get().read());
     get().match(s => s.id).replaceElseInsert({ id: 1, value: 'test' });
     expect(libState.currentMutableState).toEqual(get().read());
-    get().findCustom(s => s.id === 1).remove();
+    get().find(s => s.id === 1).remove();
     expect(libState.currentMutableState).toEqual(get().read());
     get().removeAll();
     expect(libState.currentMutableState).toEqual(get().read());

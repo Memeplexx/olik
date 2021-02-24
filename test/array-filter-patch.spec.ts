@@ -15,7 +15,7 @@ describe('array.filter().patch()', () => {
     const get = set(initialState);
     const payload = { value: 'new' };
     get(s => s.array)
-      .filter(e => e.id).eq(2)
+      .whereMany(e => e.id).eq(2)
       .patch(payload);
     expect(libState.currentAction).toEqual({
       type: 'array.filter().patch()',
@@ -30,7 +30,7 @@ describe('array.filter().patch()', () => {
     const get = set(initialState);
     const payload = { value: 'four' };
     get(s => s.array)
-      .filter(e => e.id).ne(2)
+      .whereMany(e => e.id).ne(2)
       .patch(payload);
     expect(libState.currentAction).toEqual({
       type: 'array.filter().patch()',
@@ -45,7 +45,7 @@ describe('array.filter().patch()', () => {
     const get = set(initialState);
     const payload = { value: 'four' };
     get(s => s.array)
-      .filter(e => e.id).gt(1)
+      .whereMany(e => e.id).gt(1)
       .patch(payload);
     expect(libState.currentAction).toEqual({
       type: 'array.filter().patch()',
@@ -60,7 +60,7 @@ describe('array.filter().patch()', () => {
     const get = set(initialState);
     const payload = { value: 'four' };
     get(s => s.array)
-      .filter(e => e.id).gte(1)
+      .whereMany(e => e.id).gte(1)
       .patch(payload);
     expect(libState.currentAction).toEqual({
       type: 'array.filter().patch()',
@@ -75,7 +75,7 @@ describe('array.filter().patch()', () => {
     const get = set(initialState);
     const payload = { value: 'four' };
     get(s => s.array)
-      .filter(e => e.id).lt(2)
+      .whereMany(e => e.id).lt(2)
       .patch(payload);
     expect(libState.currentAction).toEqual({
       type: 'array.filter().patch()',
@@ -90,7 +90,7 @@ describe('array.filter().patch()', () => {
     const get = set(initialState);
     const payload = { value: 'four' };
     get(s => s.array)
-      .filter(e => e.id).lte(2)
+      .whereMany(e => e.id).lte(2)
       .patch(payload);
     expect(libState.currentAction).toEqual({
       type: 'array.filter().patch()',
@@ -105,7 +105,7 @@ describe('array.filter().patch()', () => {
     const get = set(initialState);
     const payload = { id: 4, value: 'four' };
     get(s => s.array)
-      .filter(e => e.id).in([1, 2])
+      .whereMany(e => e.id).in([1, 2])
       .patch(payload);
     expect(libState.currentAction).toEqual({
       type: 'array.filter().patch()',
@@ -120,7 +120,7 @@ describe('array.filter().patch()', () => {
     const get = set(initialState);
     const payload = { value: 'four' };
     get(s => s.array)
-      .filter(e => e.id).ni([1, 2])
+      .whereMany(e => e.id).ni([1, 2])
       .patch(payload);
     expect(libState.currentAction).toEqual({
       type: 'array.filter().patch()',
@@ -135,7 +135,7 @@ describe('array.filter().patch()', () => {
     const get = set(initialState);
     const payload = { value: 'four' };
     get(s => s.array)
-      .filter(e => e.value).match(/^t/)
+      .whereMany(e => e.value).match(/^t/)
       .patch(payload);
     expect(libState.currentAction).toEqual({
       type: 'array.filter().patch()',

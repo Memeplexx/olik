@@ -14,25 +14,25 @@ describe('array.filterCustom().read()', () => {
   it('should read()', () => {
     const get = set(initialState);
     const read = get(s => s.array)
-      .findCustom(e => e.id === 2)
+      .filter(e => e.id === 2)
       .read();
-    expect(read).toEqual(initialState.array[1]);
+    expect(read).toEqual([initialState.array[1]]);
   })
 
   it('should onChange()', () => {
     const get = set(initialState);
     let changeCount = 0;
     get(s => s.array)
-      .filter(e => e.id).eq(3)
+      .filter(e => e.id === 3)
       .onChange(e => {
         changeCount++;
         expect(e).toEqual([{ id: 3, value: 'three x' }]);
       });
     get(s => s.array)
-      .filter(e => e.id).eq(3)
+      .filter(e => e.id === 3)
       .patch({ value: 'three x' });
     get(s => s.array)
-      .filter(e => e.id).eq(1)
+      .filter(e => e.id === 1)
       .patch({ value: 'one x' });
     expect(changeCount).toEqual(1);
   })

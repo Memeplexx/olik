@@ -14,7 +14,7 @@ describe('array.filter().and().or()', () => {
   it('should eq().and().eq()', () => {
     const get = set(initialState);
     get(s => s.array)
-      .filter(s => s.id).eq(2).and(s => s.value).eq('two')
+      .whereMany(s => s.id).eq(2).and(s => s.value).eq('two')
       .remove();
     expect(libState.currentAction).toEqual({
       type: 'array.filter().remove()',
@@ -28,7 +28,7 @@ describe('array.filter().and().or()', () => {
   it('should eq().or().eq()', () => {
     const get = set(initialState);
     get(s => s.array)
-      .filter(s => s.id).eq(1).or(s => s.value).eq('two')
+      .whereMany(s => s.id).eq(1).or(s => s.value).eq('two')
       .remove();
     expect(libState.currentAction).toEqual({
       type: 'array.filter().remove()',
@@ -42,7 +42,7 @@ describe('array.filter().and().or()', () => {
   it('should eq().and().eq() not matching', () => {
     const get = set(initialState);
     get(s => s.array)
-      .filter(s => s.id).eq(1).and(s => s.id).eq(2)
+      .whereMany(s => s.id).eq(1).and(s => s.id).eq(2)
       .remove();
     expect(libState.currentAction).toEqual({
       type: 'array.filter().remove()',
@@ -56,7 +56,7 @@ describe('array.filter().and().or()', () => {
   it('should eq().and().eq().or().eq()', () => {
     const get = set(initialState);
     get(s => s.array)
-      .filter(e => e.id).eq(1).and(e => e.id).eq(2).or(e => e.id).eq(3)
+      .whereMany(e => e.id).eq(1).and(e => e.id).eq(2).or(e => e.id).eq(3)
       .remove();
     expect(libState.currentAction).toEqual({
       type: 'array.filter().remove()',
@@ -70,7 +70,7 @@ describe('array.filter().and().or()', () => {
   it('should eq().or().eq().and().eq()', () => {
     const get = set(initialState);
     get(s => s.array)
-      .filter(e => e.id).eq(4).or(e => e.id).eq(3).and(e => e.value).eq('three')
+      .whereMany(e => e.id).eq(4).or(e => e.id).eq(3).and(e => e.value).eq('three')
       .remove();
     expect(libState.currentAction).toEqual({
       type: 'array.filter().remove()',
@@ -84,7 +84,7 @@ describe('array.filter().and().or()', () => {
   it('should eq().and().eq().or().eq().and().eq()', () => {
     const get = set(initialState);
     get(s => s.array)
-      .filter(e => e.id).eq(1).and(e => e.value).eq('one').or(e => e.id).eq(3).and(e => e.value).eq('three')
+      .whereMany(e => e.id).eq(1).and(e => e.value).eq('one').or(e => e.id).eq(3).and(e => e.value).eq('three')
       .remove();
     expect(libState.currentAction).toEqual({
       type: 'array.filter().remove()',

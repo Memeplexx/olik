@@ -109,16 +109,16 @@ describe('Memoize', () => {
     });
     let recalculating = 0;
     const mem = deriveFrom(
-      get(s => s.array).findCustom(e => e.id === 2)
+      get(s => s.array).find(e => e.id === 2)
     ).usingExpensiveCalc(val => {
       recalculating++;
     });
     get(s => s.array)
-      .findCustom(s => s.id === 2)
+      .find(s => s.id === 2)
       .patch({ value: 'twoo' });
     mem.read();
     get(s => s.array)
-      .findCustom(s => s.id === 1)
+      .find(s => s.id === 1)
       .patch({ value: 'onee' });
     mem.read();
     expect(recalculating).toEqual(1);
@@ -165,16 +165,16 @@ describe('Memoize', () => {
     });
     let memoCalcCount = 0;
     const mem = deriveFrom(
-      get(s => s.array).find(e => e.id).eq(2),
+      get(s => s.array).whereOne(e => e.id).eq(2),
     ).usingExpensiveCalc(thing => {
       memoCalcCount++;
       return thing;
     });
     mem.read();
     mem.read();
-    get(s => s.array).find(e => e.id).eq(1).patch({ value: 'xxx' });
+    get(s => s.array).whereOne(e => e.id).eq(1).patch({ value: 'xxx' });
     expect(memoCalcCount).toEqual(1);
-    get(s => s.array).find(e => e.id).eq(2).patch({ value: 'xxx' });
+    get(s => s.array).whereOne(e => e.id).eq(2).patch({ value: 'xxx' });
     mem.read();
     expect(memoCalcCount).toEqual(2);
   })
@@ -192,9 +192,9 @@ describe('Memoize', () => {
     });
     mem.read();
     mem.read();
-    get(s => s.array).find(e => e.id).eq(1).patch({ value: 'xxx' });
+    get(s => s.array).whereOne(e => e.id).eq(1).patch({ value: 'xxx' });
     expect(memoCalcCount).toEqual(1);
-    get(s => s.array).find(e => e.id).eq(2).patch({ value: 'xxx' });
+    get(s => s.array).whereOne(e => e.id).eq(2).patch({ value: 'xxx' });
     mem.read();
     expect(memoCalcCount).toEqual(2);
   })

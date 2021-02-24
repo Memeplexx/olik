@@ -115,7 +115,7 @@ describe('Root', () => {
     const get = set(['one', 'two', 'three']);
     const payload = 'twoo';
     get()
-      .find().eq('two')
+      .whereOne().eq('two')
       .replace(payload);
     expect(libState.currentAction).toEqual({
       type: 'find().replace()',
@@ -169,7 +169,7 @@ describe('Root', () => {
 
   it('find().replace()', () => {
     const get = set(['hello']);
-    get().find().match(/^h/).replace('another')
+    get().whereOne().match(/^h/).replace('another')
     expect(libState.currentAction).toEqual({
       type: 'find().replace()',
       replacement: 'another',

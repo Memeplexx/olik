@@ -16,7 +16,7 @@ describe('array.filterCustom().replace()', () => {
     const payload = { id: 4, value: 'four' };
     const query = (e: typeof initialState['array'][0]) => e.id === 2;
     get(s => s.array)
-      .filterCustom(query)
+      .filter(query)
       .replace(payload);
     expect(libState.currentAction).toEqual({
       type: 'array.filterCustom().replace()',
@@ -32,7 +32,7 @@ describe('array.filterCustom().replace()', () => {
     const payload = { id: 4, value: 'four' };
     const query = (e: typeof initialState['array'][0]) => e.id !== 2;
     get(s => s.array)
-      .filterCustom(query)
+      .filter(query)
       .replace(payload);
     expect(libState.currentAction).toEqual({
       type: 'array.filterCustom().replace()',
@@ -48,7 +48,7 @@ describe('array.filterCustom().replace()', () => {
     const payload = { id: 4, value: 'four' };
     const query = (e: typeof initialState['array'][0]) => e.id > 1;
     get(s => s.array)
-      .filterCustom(query)
+      .filter(query)
       .replace(payload);
     expect(libState.currentAction).toEqual({
       type: 'array.filterCustom().replace()',
@@ -64,7 +64,7 @@ describe('array.filterCustom().replace()', () => {
     const payload = { id: 4, value: 'four' };
     const query = (e: typeof initialState['array'][0]) => e.id < 2;
     get(s => s.array)
-      .filterCustom(e => e.id < 2)
+      .filter(e => e.id < 2)
       .replace(payload);
     expect(libState.currentAction).toEqual({
       type: 'array.filterCustom().replace()',
@@ -80,7 +80,7 @@ describe('array.filterCustom().replace()', () => {
     const payload = { id: 4, value: 'four' };
     const query = (e: typeof initialState['array'][0]) => [1, 2].includes(e.id);
     get(s => s.array)
-      .filterCustom(query)
+      .filter(query)
       .replace(payload);
     expect(libState.currentAction).toEqual({
       type: 'array.filterCustom().replace()',
@@ -96,7 +96,7 @@ describe('array.filterCustom().replace()', () => {
     const payload = { id: 4, value: 'four' };
     const query = (e: typeof initialState['array'][0]) => ![1, 2].includes(e.id);
     get(s => s.array)
-      .filterCustom(e => ![1, 2].includes(e.id))
+      .filter(e => ![1, 2].includes(e.id))
       .replace(payload);
     expect(libState.currentAction).toEqual({
       type: 'array.filterCustom().replace()',
@@ -112,7 +112,7 @@ describe('array.filterCustom().replace()', () => {
     const payload = { id: 4, value: 'four' };
     const query = (e: typeof initialState['array'][0]) => /^t/.test(e.value);
     get(s => s.array)
-      .filterCustom(query)
+      .filter(query)
       .replace(payload);
     expect(libState.currentAction).toEqual({
       type: 'array.filterCustom().replace()',

@@ -16,7 +16,7 @@ describe('array.find().and().or()', () => {
     const get = set(initialState);
     libState.logLevel = 'DEBUG';
     get(s => s.array)
-      .find(s => s.id).eq(2).and(s => s.value).eq('two')
+      .whereOne(s => s.id).eq(2).and(s => s.value).eq('two')
       .remove();
     libState.logLevel = 'NONE';
     expect(libState.currentAction).toEqual({
@@ -31,7 +31,7 @@ describe('array.find().and().or()', () => {
   it('should eq().or().eq()', () => {
     const get = set(initialState);
     get(s => s.array)
-      .find(s => s.id).eq(1).or(s => s.value).eq('two')
+      .whereOne(s => s.id).eq(1).or(s => s.value).eq('two')
       .remove();
     expect(libState.currentAction).toEqual({
       type: 'array.find().remove()',
@@ -45,14 +45,14 @@ describe('array.find().and().or()', () => {
   it('should eq().and().eq() not matching throw', () => {
     const get = set(initialState);
     expect(() => get(s => s.array)
-      .find(s => s.id).eq(1).and(s => s.id).eq(2)
+      .whereOne(s => s.id).eq(1).and(s => s.id).eq(2)
       .remove()).toThrowError(errorMessages.NO_ARRAY_ELEMENT_FOUND);
   })
 
   it('should eq().and().eq().or().eq()', () => {
     const get = set(initialState);
     get(s => s.array)
-      .find(e => e.id).eq(1).and(e => e.id).eq(2).or(e => e.id).eq(3)
+      .whereOne(e => e.id).eq(1).and(e => e.id).eq(2).or(e => e.id).eq(3)
       .remove();
     expect(libState.currentAction).toEqual({
       type: 'array.find().remove()',
@@ -66,7 +66,7 @@ describe('array.find().and().or()', () => {
   it('should eq().or().eq().and().eq()', () => {
     const get = set(initialState);
     get(s => s.array)
-      .find(e => e.id).eq(4).or(e => e.id).eq(3).and(e => e.value).eq('three')
+      .whereOne(e => e.id).eq(4).or(e => e.id).eq(3).and(e => e.value).eq('three')
       .remove();
     expect(libState.currentAction).toEqual({
       type: 'array.find().remove()',
@@ -80,7 +80,7 @@ describe('array.find().and().or()', () => {
   it('should eq().and().eq().or().eq().and().eq()', () => {
     const get = set(initialState);
     get(s => s.array)
-      .find(e => e.id).eq(1).and(e => e.value).eq('one').or(e => e.id).eq(3).and(e => e.value).eq('three')
+      .whereOne(e => e.id).eq(1).and(e => e.value).eq('one').or(e => e.id).eq(3).and(e => e.value).eq('three')
       .remove();
     expect(libState.currentAction).toEqual({
       type: 'array.find().remove()',

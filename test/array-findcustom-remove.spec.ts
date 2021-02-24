@@ -15,7 +15,7 @@ describe('array.findCustom().remove()', () => {
     const get = set(initialState);
     const query = (e: typeof initialState['array'][0]) => e.id === 2;
     get(s => s.array)
-      .findCustom(query)
+      .find(query)
       .remove();
     expect(libState.currentAction).toEqual({
       type: 'array.findCustom().remove()',
@@ -30,7 +30,7 @@ describe('array.findCustom().remove()', () => {
     const get = set(initialState);
     const query = (e: typeof initialState['array'][0]) => e.id !== 2;
     get(s => s.array)
-      .findCustom(query)
+      .find(query)
       .remove();
     expect(libState.currentAction).toEqual({
       type: 'array.findCustom().remove()',
@@ -45,7 +45,7 @@ describe('array.findCustom().remove()', () => {
     const get = set(initialState);
     const query = (e: typeof initialState['array'][0]) => e.id > 1;
     get(s => s.array)
-      .findCustom(query)
+      .find(query)
       .remove();
     expect(libState.currentAction).toEqual({
       type: 'array.findCustom().remove()',
@@ -60,7 +60,7 @@ describe('array.findCustom().remove()', () => {
     const get = set(initialState);
     const query = (e: typeof initialState['array'][0]) => e.id < 2;
     get(s => s.array)
-      .findCustom(query)
+      .find(query)
       .remove();
     expect(libState.currentAction).toEqual({
       type: 'array.findCustom().remove()',
@@ -75,7 +75,7 @@ describe('array.findCustom().remove()', () => {
     const get = set(initialState);
     const query = (e: typeof initialState['array'][0]) => [1, 2].includes(e.id);
     get(s => s.array)
-      .findCustom(query)
+      .find(query)
       .remove();
     expect(libState.currentAction).toEqual({
       type: 'array.findCustom().remove()',
@@ -90,7 +90,7 @@ describe('array.findCustom().remove()', () => {
     const get = set(initialState);
     const query = (e: typeof initialState['array'][0]) => ![1, 2].includes(e.id);
     get(s => s.array)
-      .findCustom(query)
+      .find(query)
       .remove();
     expect(libState.currentAction).toEqual({
       type: 'array.findCustom().remove()',
@@ -105,7 +105,7 @@ describe('array.findCustom().remove()', () => {
     const get = set(initialState);
     const query = (e: typeof initialState['array'][0]) => /^t/.test(e.value);
     get(s => s.array)
-      .findCustom(query)
+      .find(query)
       .remove();
     expect(libState.currentAction).toEqual({
       type: 'array.findCustom().remove()',

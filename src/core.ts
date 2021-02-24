@@ -56,7 +56,7 @@ export function createStore<S, T extends Trackability>(context: {
   let devtoolsDispatchListener: ((action: { type: string, payload?: any }) => any) | undefined;
   const setDevtoolsDispatchListener = (listener: (action: { type: string, payload?: any }) => any) => devtoolsDispatchListener = listener;
   const action = <C, X extends C & Array<any>>(selector: Selector<S, C, X>) => {
-    const findOrFilter = (type: FindOrFilter) => {
+    const where = (type: FindOrFilter) => {
       const whereClauseSpecs = Array<{ filter: (arg: X[0]) => boolean, type: 'and' | 'or' | 'last' }>();
       const whereClauseStrings = Array<string>();
       const recurseWhere = (getProp => {
@@ -97,10 +97,10 @@ export function createStore<S, T extends Trackability>(context: {
             match: val => constructActions(`${segs.join('.') || 'element'}.match(${val})`, e => e.match(val)),
           } as PredicateOptionsForString<X, any, FindOrFilter, T>,
         };
-      }) as StoreForAnArray<X, T>['filter'];
+      }) as StoreForAnArray<X, T>['whereMany'];
       return recurseWhere;
     };
-    const findOrFilterCustom = (type: FindOrFilter) => (predicate => {
+    const findOrFilter = (type: FindOrFilter) => (predicate => {
       const context = { type, updateState, selector, predicate, changeListeners, getCurrentState: () => currentState } as ArrayCustomState<S, C, X, T>;
       return {
         remove: arrayCustom.remove(context),
@@ -109,7 +109,7 @@ export function createStore<S, T extends Trackability>(context: {
         onChange: arrayCustom.onChange(context),
         read: arrayCustom.read(context),
       };
-    }) as StoreForAnArray<X, T>['filterCustom'];
+    }) as StoreForAnArray<X, T>['filter'];
     const coreActions = {
       patch: patch(selector, updateState, () => !!coreActions.removeFromContainingStore),
       insert: insert(selector, updateState, () => !!coreActions.removeFromContainingStore),
@@ -118,10 +118,10 @@ export function createStore<S, T extends Trackability>(context: {
       reset: reset(pathReader, updateState, selector, initialState, () => !!coreActions.removeFromContainingStore),
       replace: replace(pathReader, updateState, selector, 'replace', () => !!coreActions.removeFromContainingStore),
       match: match(selector, () => currentState, updateState, () => !!coreActions.removeFromContainingStore),
-      filterCustom: findOrFilterCustom('filter'),
-      findCustom: findOrFilterCustom('find'),
       filter: findOrFilter('filter'),
       find: findOrFilter('find'),
+      whereMany: where('filter'),
+      whereOne: where('find'),
       onChange: onChange(selector, changeListeners),
       read: read(selector, () => currentState),
       readInitial: () => selector(initialState),

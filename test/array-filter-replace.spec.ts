@@ -15,7 +15,7 @@ describe('array.filter().replace()', () => {
     const get = set(initialState);
     const payload = { id: 4, value: 'four' };
     get(s => s.array)
-      .filter(e => e.id).eq(2)
+      .whereMany(e => e.id).eq(2)
       .replace(payload);
     expect(libState.currentAction).toEqual({
       type: 'array.filter().replace()',
@@ -30,7 +30,7 @@ describe('array.filter().replace()', () => {
     const get = set(initialState);
     const payload = { id: 4, value: 'four' };
     get(s => s.array)
-      .filter(e => e.id).ne(2)
+      .whereMany(e => e.id).ne(2)
       .replace(payload);
     expect(libState.currentAction).toEqual({
       type: 'array.filter().replace()',
@@ -45,7 +45,7 @@ describe('array.filter().replace()', () => {
     const get = set(initialState);
     const payload = { id: 4, value: 'four' };
     get(s => s.array)
-      .filter(e => e.id).gt(1)
+      .whereMany(e => e.id).gt(1)
       .replace(payload);
     expect(libState.currentAction).toEqual({
       type: 'array.filter().replace()',
@@ -60,7 +60,7 @@ describe('array.filter().replace()', () => {
     const get = set(initialState);
     const payload = { id: 4, value: 'four' };
     get(s => s.array)
-      .filter(e => e.id).gte(1)
+      .whereMany(e => e.id).gte(1)
       .replace(payload);
     expect(libState.currentAction).toEqual({
       type: 'array.filter().replace()',
@@ -75,7 +75,7 @@ describe('array.filter().replace()', () => {
     const get = set(initialState);
     const payload = { id: 4, value: 'four' };
     get(s => s.array)
-      .filter(e => e.id).lt(2)
+      .whereMany(e => e.id).lt(2)
       .replace(payload);
     expect(libState.currentAction).toEqual({
       type: 'array.filter().replace()',
@@ -90,7 +90,7 @@ describe('array.filter().replace()', () => {
     const get = set(initialState);
     const payload = { id: 4, value: 'four' };
     get(s => s.array)
-      .filter(e => e.id).lte(2)
+      .whereMany(e => e.id).lte(2)
       .replace(payload);
     expect(libState.currentAction).toEqual({
       type: 'array.filter().replace()',
@@ -105,7 +105,7 @@ describe('array.filter().replace()', () => {
     const get = set(initialState);
     const payload = { id: 4, value: 'four' };
     get(s => s.array)
-      .filter(e => e.id).in([1, 2])
+      .whereMany(e => e.id).in([1, 2])
       .replace(payload);
     expect(libState.currentAction).toEqual({
       type: 'array.filter().replace()',
@@ -120,7 +120,7 @@ describe('array.filter().replace()', () => {
     const get = set(initialState);
     const payload = { id: 4, value: 'four' };
     get(s => s.array)
-      .filter(e => e.id).ni([1, 2])
+      .whereMany(e => e.id).ni([1, 2])
       .replace(payload);
     expect(libState.currentAction).toEqual({
       type: 'array.filter().replace()',
@@ -135,7 +135,7 @@ describe('array.filter().replace()', () => {
     const get = set(initialState);
     const payload = { id: 4, value: 'four' };
     get(s => s.array)
-      .filter(e => e.value).match(/^t/)
+      .whereMany(e => e.value).match(/^t/)
       .replace(payload);
     expect(libState.currentAction).toEqual({
       type: 'array.filter().replace()',

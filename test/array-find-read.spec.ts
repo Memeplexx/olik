@@ -14,7 +14,7 @@ describe('array.find().read()', () => {
   it('should read()', () => {
     const get = set(initialState);
     const read = get(s => s.array)
-      .find(e => e.id).eq(2)
+      .whereOne(e => e.id).eq(2)
       .read();
     expect(read).toEqual(initialState.array[1]);
   })
@@ -23,16 +23,16 @@ describe('array.find().read()', () => {
     const get = set(initialState);
     let changeCount = 0;
     get(s => s.array)
-      .find(e => e.id).eq(3)
+      .whereOne(e => e.id).eq(3)
       .onChange(e => {
         changeCount++;
         expect(e.value).toEqual('three x');
       });
     get(s => s.array)
-      .filter(e => e.id).eq(3)
+      .whereOne(e => e.id).eq(3)
       .patch({ value: 'three x' });
     get(s => s.array)
-      .filter(e => e.id).eq(1)
+      .whereOne(e => e.id).eq(1)
       .patch({ value: 'one x' });
     expect(changeCount).toEqual(1);
   })

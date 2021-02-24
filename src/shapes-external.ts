@@ -292,45 +292,43 @@ export type StoreForAnArray<X extends Array<any>, T extends Trackability> = {
     replaceElseInsert: (elementOrArray: X[0] | X, tag: Tag<T>) => void,
   }
   /**
-   * Specify which array element property to filter by.  
-   * Note that it is advisable to choose this over the `filterCustom()` function because using `filter()` will allow the library to describe your actions in more detail
+   * Specify a where clause to find many elements.
    * @example
    * ```
    * ...
-   * .filter(t => t.status).eq('done')
+   * .whereMany(t => t.status).eq('done')
    * ...
    * ```
    */
-  filter: PredicateFunction<X, 'filter', T>,
+  whereMany: PredicateFunction<X, 'filter', T>,
   /**
-   * Specify which array element property to find by.  
-   * Note that it is advisable to choose this over the `findCustom()` function because using `find()` will allow the library to describe your actions in more detail
+   * Specify a where clause to find one element.  
    * @example
    * ...
-   * .filter(t => t.id).eq(3)
+   * .whereOne(t => t.id).eq(3)
    * ...
    */
-  find: PredicateFunction<X, 'find', T>,
+  whereOne: PredicateFunction<X, 'find', T>,
+  /**
+   * Specify a function in order to filter elements. 
+   * NOTE: It is advisable to choose the `whereMany()` function over this one because that function will allow the library to describe your actions in more detail.
+   * Only use `filter()` when your search criteria is very complicated.
+   * @example
+   * ...
+   * .filter(t => ...some complex criteria returning a boolean...).eq(1)
+   * ...
+   */
+  filter: PredicateFunctionCustom<X, 'filter', T>,
   /**
    * Specify a function in order to filter elements.  
-   * Note that it is advisable to choose the `filter()` function over this one because that function will allow the library to describe your actions in more detail.
-   * Only use `filterCustom()` when your search criteria is very complicated.
+   * NOTE: It is advisable to choose the `whereOne()` function over this one because that function will allow the library to describe your actions in more detail.
+   * Only use `find()` when your search criteria is very complicated.
    * @example
    * ...
-   * .filterCustom(t => ...some complex criteria returning a boolean...).eq(1)
+   * .find(t => ...some complex criteria returning a boolean...).eq(1)
    * ...
    */
-  filterCustom: PredicateFunctionCustom<X, 'filter', T>,
-  /**
-   * Specify a function in order to filter elements.  
-   * Note that it is advisable to choose the `find()` function over this one because that function will allow the library to describe your actions in more detail.
-   * Only use `findCustom()` when your search criteria is very complicated.
-   * @example
-   * ...
-   * .findCustom(t => ...some complex criteria returning a boolean...).eq(1)
-   * ...
-   */
-  findCustom: PredicateFunctionCustom<X, 'find', T>,
+  find: PredicateFunctionCustom<X, 'find', T>,
 }
 
 /**
