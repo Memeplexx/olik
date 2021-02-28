@@ -62,18 +62,18 @@ export type DeepWritable<E> =
  */
 export type FunctionReturning<C> = (currentValue: DeepReadonly<C>) => C;
 
-export type PredicateAction<X extends Array<any>, F extends FindOrFilter, T extends Trackability> = X[0] extends object
+export type PredicateAction<X extends DeepReadonlyArray<any>, F extends FindOrFilter, T extends Trackability> = X[0] extends object
   ? ArrayOfObjectsAction<X, F, T>
   : ArrayOfElementsAction<X, F, T>;
 
-export type PredicateCustom<X extends Array<any>, F extends FindOrFilter, T extends Trackability> = X[0] extends object
+export type PredicateCustom<X extends DeepReadonlyArray<any>, F extends FindOrFilter, T extends Trackability> = X[0] extends object
   ? ArrayOfObjectsCommonAction<X, F, T>
   : ArrayOfElementsCommonAction<X, F, T>;
 
 /**
  * Query options common to all datatypes
  */
-export type PredicateOptionsCommon<X extends Array<any>, E, F extends FindOrFilter, T extends Trackability> = {
+export type PredicateOptionsCommon<X extends DeepReadonlyArray<any>, E, F extends FindOrFilter, T extends Trackability> = {
   /**
    * Checks whether the previously selected property **equals** the supplied value
    * @example
@@ -111,7 +111,7 @@ export type PredicateOptionsCommon<X extends Array<any>, E, F extends FindOrFilt
 /**
  * Query options for number
  */
-export type PredicateOptionsForNumber<X extends Array<any>, E, F extends FindOrFilter, T extends Trackability> = {
+export type PredicateOptionsForNumber<X extends DeepReadonlyArray<any>, E, F extends FindOrFilter, T extends Trackability> = {
   /**
    * Checks whether the previously selected number property **is greater than** the supplied number
    * @example
@@ -149,7 +149,7 @@ export type PredicateOptionsForNumber<X extends Array<any>, E, F extends FindOrF
 /**
  * Query options for a string
  */
-export type PredicateOptionsForString<X extends Array<any>, E, F extends FindOrFilter, T extends Trackability> = {
+export type PredicateOptionsForString<X extends DeepReadonlyArray<any>, E, F extends FindOrFilter, T extends Trackability> = {
   /**
    * Checks whether the previously selected string property **matches** the supplied regular expression
    * @example
@@ -163,7 +163,7 @@ export type PredicateOptionsForString<X extends Array<any>, E, F extends FindOrF
 /**
  * Query options
  */
-export type Predicate<X extends Array<any>, P, F extends FindOrFilter, T extends Trackability> =
+export type Predicate<X extends DeepReadonlyArray<any>, P, F extends FindOrFilter, T extends Trackability> =
   [P] extends [number] ? PredicateOptionsForNumber<X, P, F, T>
   : [P] extends [string] ? PredicateOptionsForString<X, P, F, T>
   : PredicateOptionsCommon<X, P, F, T>;
@@ -171,7 +171,7 @@ export type Predicate<X extends Array<any>, P, F extends FindOrFilter, T extends
 /**
  * Actions which can be applied to any array
  */
-export type ArrayOfElementsAction<X extends Array<any>, F extends FindOrFilter, T extends Trackability> = {
+export type ArrayOfElementsAction<X extends DeepReadonlyArray<any>, F extends FindOrFilter, T extends Trackability> = {
   /**
    * Append more criteria with which to filter your array
    * @example
@@ -193,7 +193,7 @@ export type ArrayOfElementsAction<X extends Array<any>, F extends FindOrFilter, 
 /**
  * Actions which can be applied to an array of objects
  */
-export type ArrayOfObjectsAction<X extends Array<any>, F extends FindOrFilter, T extends Trackability> = {
+export type ArrayOfObjectsAction<X extends DeepReadonlyArray<any>, F extends FindOrFilter, T extends Trackability> = {
   /**
    * Partially updates array elements allowing you to omit those properties which should not change
    * @example
@@ -203,7 +203,7 @@ export type ArrayOfObjectsAction<X extends Array<any>, F extends FindOrFilter, T
   patch: (replacement: Partial<X[0]>, tag: Tag<T>) => void;
 } & ArrayOfElementsAction<X, F, T>;
 
-export type ArrayOfElementsCommonAction<X extends Array<any>, F extends FindOrFilter, T extends Trackability> = {
+export type ArrayOfElementsCommonAction<X extends DeepReadonlyArray<any>, F extends FindOrFilter, T extends Trackability> = {
   /**
    * Replaces the selected element(s)
    * @example
@@ -235,7 +235,7 @@ export type ArrayOfElementsCommonAction<X extends Array<any>, F extends FindOrFi
   read: () => DeepReadonly<F extends 'find' ? X[0] : X>;
 }
 
-export type ArrayOfObjectsCommonAction<X extends Array<any>, F extends FindOrFilter, T extends Trackability> = {
+export type ArrayOfObjectsCommonAction<X extends DeepReadonlyArray<any>, F extends FindOrFilter, T extends Trackability> = {
   /**
    * Partially updates array elements allowing you to omit those properties which should not change
    * @example
@@ -248,7 +248,7 @@ export type ArrayOfObjectsCommonAction<X extends Array<any>, F extends FindOrFil
 /**
  * An object which is capable of storing and updating state which is in the shape of an array of primitives
  */
-export type StoreForAnArray<X extends Array<any>, T extends Trackability> = {
+export type StoreForAnArray<X extends DeepReadonlyArray<any>, T extends Trackability> = {
   /**
    * Appends one or more elements onto the end of the array
    * @example
@@ -334,12 +334,12 @@ export type StoreForAnArray<X extends Array<any>, T extends Trackability> = {
 /**
  * A function which accepts another function to select a property from an array element
  */
-export type PredicateFunction<X extends Array<any>, F extends FindOrFilter, T extends Trackability> = <P = X[0]>(getProp?: (element: DeepReadonly<X[0]>) => P) => Predicate<X, P, F, T>
+export type PredicateFunction<X extends DeepReadonlyArray<any>, F extends FindOrFilter, T extends Trackability> = <P = X[0]>(getProp?: (element: DeepReadonly<X[0]>) => P) => Predicate<X, P, F, T>
 
 /**
  * A function which accepts another function to test an array element based on some condition
  */
-export type PredicateFunctionCustom<X extends Array<any>, F extends FindOrFilter, T extends Trackability> = (fn: (element: DeepReadonly<X[0]>) => boolean) => PredicateCustom<X, F, T>;
+export type PredicateFunctionCustom<X extends DeepReadonlyArray<any>, F extends FindOrFilter, T extends Trackability> = (fn: (element: DeepReadonly<X[0]>) => boolean) => PredicateCustom<X, F, T>;
 
 /**
  * An object which is capable of storing and updating state which is in the shape of a primitive
@@ -404,7 +404,7 @@ export type StoreWhichIsResettable<C extends any, T extends Trackability> = {
  * An object which is capable of managing states of various shapes
  */
 export type Store<C, T extends Trackability> = ([C] extends undefined ? any :
-  [C] extends Array<any[]> ? StoreForAnArray<[C][0], T> :
+  [C] extends DeepReadonlyArray<any[]> ? StoreForAnArray<[C][0], T> :
   [C] extends [object] ? StoreForAnObject<C, T> : StoreForAnObjectOrPrimitive<C, T>)
   & StoreWhichIsResettable<C, T>;
 
@@ -437,22 +437,22 @@ export type Selector<S, C, X = C> = X extends C & ReadonlyArray<any> ? (s: S) =>
  * A function which selects from a nested store
  */
 export type SelectorFromANestedStore<S> = [S] extends [Array<any>] | [number] | [string] | [boolean]
-  ? () => StoreWhichIsNested<DeepWritable<S>>
-  : <C = S>(selector?: (arg: DeepReadonly<S>) => C) => StoreWhichIsNested<DeepWritable<C>>;
+  ? () => StoreWhichIsNested<S>
+  : <C = S>(selector?: (arg: DeepReadonly<S>) => C) => StoreWhichIsNested<C>;
 
 /**
  * A function which selects from a store
  */
 export type SelectorFromAStore<S> = [S] extends [Array<any>] | [number] | [string] | [boolean]
-  ? () => StoreWhichDoesntEnforceTags<DeepWritable<S>>
-  : <C = S>(selector?: (arg: DeepReadonly<S>) => C) => StoreWhichDoesntEnforceTags<DeepWritable<C>>;
+  ? () => StoreWhichDoesntEnforceTags<S>
+  : <C = S>(selector?: (arg: DeepReadonly<S>) => C) => StoreWhichDoesntEnforceTags<C>;
 
 /**
  * A function which selects from a store which enforces the use of tags when performing a state update
  */
 export type SelectorFromAStoreEnforcingTags<S> = [S] extends [Array<any>] | [number] | [string] | [boolean]
-  ? () => StoreWhichEnforcesTags<DeepWritable<S>>
-  : <C = S>(selector?: (arg: DeepReadonly<S>) => C) => StoreWhichEnforcesTags<DeepWritable<C>>;
+  ? () => StoreWhichEnforcesTags<S>
+  : <C = S>(selector?: (arg: DeepReadonly<S>) => C) => StoreWhichEnforcesTags<C>;
 
 /**
  * An input for a derivation
@@ -482,7 +482,12 @@ export type OptionsForMakingAStore = {
   isContainerForNestedStores?: boolean;
   /**
    * If supplied, this function can transform all tags passed in when updating state.
-   * This is of use if, for example, you are using the __filename node variable as a tag, and you would like the abbreviate the file path to something more readable.
+   * This is of use if, for example, you are using the `__filename` node variable as a tag, and you would like the abbreviate the file path to something more readable.
+   * The following example does just that:
+   * @example
+   * tagSanitizer: tag
+   *  .replace(/^.*[\\\/]/, '')   // convert full path to file name
+   *  .replace(/.ts/, '')         // remove extension
    */
   tagSanitizer?: (tag: string) => string;
 }

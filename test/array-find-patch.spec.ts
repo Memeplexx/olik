@@ -18,7 +18,7 @@ describe('array.find().patch()', () => {
       .whereOne(e => e.id).eq(2)
       .patch(payload);
     expect(libState.currentAction).toEqual({
-      type: 'array.whereOne().patch()',
+      type: 'select(array).whereOne().patch()',
       patch: payload,
       query: 'id === 2',
     });
@@ -33,7 +33,7 @@ describe('array.find().patch()', () => {
       .whereOne(e => e.id).ne(2)
       .patch(payload);
     expect(libState.currentAction).toEqual({
-      type: 'array.whereOne().patch()',
+      type: 'select(array).whereOne().patch()',
       patch: payload,
       query: 'id !== 2',
     });
@@ -48,7 +48,7 @@ describe('array.find().patch()', () => {
       .whereOne(e => e.id).gt(1)
       .patch(payload);
     expect(libState.currentAction).toEqual({
-      type: 'array.whereOne().patch()',
+      type: 'select(array).whereOne().patch()',
       patch: payload,
       query: 'id > 1',
     });
@@ -63,7 +63,7 @@ describe('array.find().patch()', () => {
       .whereOne(e => e.id).gte(1)
       .patch(payload);
     expect(libState.currentAction).toEqual({
-      type: 'array.whereOne().patch()',
+      type: 'select(array).whereOne().patch()',
       patch: payload,
       query: 'id >= 1',
     });
@@ -78,7 +78,7 @@ describe('array.find().patch()', () => {
       .whereOne(e => e.id).lt(2)
       .patch(payload);
     expect(libState.currentAction).toEqual({
-      type: 'array.whereOne().patch()',
+      type: 'select(array).whereOne().patch()',
       patch: payload,
       query: 'id < 2',
     });
@@ -93,7 +93,7 @@ describe('array.find().patch()', () => {
       .whereOne(e => e.id).lte(2)
       .patch(payload);
     expect(libState.currentAction).toEqual({
-      type: 'array.whereOne().patch()',
+      type: 'select(array).whereOne().patch()',
       patch: payload,
       query: 'id <= 2',
     });
@@ -108,7 +108,7 @@ describe('array.find().patch()', () => {
       .whereOne(e => e.id).in([1, 2])
       .patch(payload);
     expect(libState.currentAction).toEqual({
-      type: 'array.whereOne().patch()',
+      type: 'select(array).whereOne().patch()',
       patch: payload,
       query: '[1, 2].includes(id)',
     });
@@ -123,7 +123,7 @@ describe('array.find().patch()', () => {
       .whereOne(e => e.id).ni([1, 2])
       .patch(payload);
     expect(libState.currentAction).toEqual({
-      type: 'array.whereOne().patch()',
+      type: 'select(array).whereOne().patch()',
       patch: payload,
       query: '![1, 2].includes(id)',
     });
@@ -138,7 +138,7 @@ describe('array.find().patch()', () => {
       .whereOne(e => e.value).match(/^t/)
       .patch(payload);
     expect(libState.currentAction).toEqual({
-      type: 'array.whereOne().patch()',
+      type: 'select(array).whereOne().patch()',
       patch: payload,
       query: 'value.match(/^t/)',
     });

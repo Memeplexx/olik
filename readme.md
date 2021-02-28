@@ -23,13 +23,13 @@ const select = set({
 ```  
 #### ✍️ **WRITE STATE**  
 ```ts
-select(s => s.username)            // type: 'username.replace()'
+select(s => s.username)            // type: 'select(username).replace()'
   .replace('Terence');             // replacement: 'Terence'
 
-select(s => s.favorite.foods)      // type: 'favorite.foods.insert()'
+select(s => s.favorite.foods)      // type: 'select(favorite.foods).insert()'
   .insert(['Indian', 'Sushi']);    // insertion: ['Indian', 'Sushi']
 
-select(s => s.favorite.hobbies)    // type: 'favorite.hobbies.whereOne().patch()'
+select(s => s.favorite.hobbies)    // type: 'select(favorite.hobbies).whereOne(id).eq(3).patch()'
   .whereOne(s => s.id).eq(3)       // query: 'id === 3',
   .patch({ name: 'coding' });      // patch: { name: 'coding' }
 ```

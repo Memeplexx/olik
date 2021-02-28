@@ -12,7 +12,7 @@ describe('Root', () => {
     select()
       .replace(payload);
     expect(libState.currentAction).toEqual({
-      type: 'replace()',
+      type: 'select().replace()',
       replacement: payload,
     })
     expect(select().read()).toEqual({ hello: 'test', another: ['test'] });
@@ -26,7 +26,7 @@ describe('Root', () => {
       .replace(payload);
     expect(select().read()).toEqual({ x: 3, y: 0 });
     expect(libState.currentAction).toEqual({
-      type: 'x.replace()',
+      type: 'select(x).replace()',
       replacement: payload,
     })
     expect(libState.currentMutableState).toEqual(select().read());
@@ -38,7 +38,7 @@ describe('Root', () => {
     select()
       .insert(payload);
     expect(libState.currentAction).toEqual({
-      type: 'insert()',
+      type: 'select().insert()',
       insertion: payload,
     })
     expect(select().read()).toEqual([{ id: 1, text: 'hello' }]);
@@ -51,7 +51,7 @@ describe('Root', () => {
     select()
       .replace(payload);
     expect(libState.currentAction).toEqual({
-      type: 'replace()',
+      type: 'select().replace()',
       replacement: payload,
     })
     expect(select().read()).toEqual(3);
@@ -64,7 +64,7 @@ describe('Root', () => {
     select()
       .replace(payload);
     expect(libState.currentAction).toEqual({
-      type: 'replace()',
+      type: 'select().replace()',
       replacement: payload,
     })
     expect(select().read()).toEqual(payload);
@@ -78,7 +78,7 @@ describe('Root', () => {
     select()
       .replace(payload);
     expect(libState.currentAction).toEqual({
-      type: 'replace()',
+      type: 'select().replace()',
       replacement: payload,
     })
     expect(select().read()).toEqual(payload);
@@ -91,7 +91,7 @@ describe('Root', () => {
     select()
       .replace(payload);
     expect(libState.currentAction).toEqual({
-      type: 'replace()',
+      type: 'select().replace()',
       replacement: payload,
     })
     expect(select().read()).toEqual('test');
@@ -104,7 +104,7 @@ describe('Root', () => {
     select()
       .replaceAll(payload);
     expect(libState.currentAction).toEqual({
-      type: 'replaceAll()',
+      type: 'select().replaceAll()',
       replacement: payload,
     })
     expect(select().read()).toEqual(['four', 'five', 'six', 'seven']);
@@ -118,7 +118,7 @@ describe('Root', () => {
       .whereOne().eq('two')
       .replace(payload);
     expect(libState.currentAction).toEqual({
-      type: 'whereOne().replace()',
+      type: 'select().whereOne().replace()',
       replacement: payload,
       query: `element === two`,
     })
@@ -131,7 +131,7 @@ describe('Root', () => {
     select()
       .insert('two');
     expect(libState.currentAction).toEqual({
-      type: 'insert()',
+      type: 'select().insert()',
       insertion: 'two'
     });
     expect(select().read()).toEqual(['one', 'two']);
@@ -143,7 +143,7 @@ describe('Root', () => {
     select()
       .replace(e => e + 'b');
     expect(libState.currentAction).toEqual({
-      type: 'replace()',
+      type: 'select().replace()',
       replacement: 'ab',
     });
     expect(select().read()).toEqual('ab');
@@ -158,7 +158,7 @@ describe('Root', () => {
       .match()
       .replaceElseInsert(payload);
     expect(libState.currentAction).toEqual({
-      type: 'match().replaceElseInsert()',
+      type: 'select().match().replaceElseInsert()',
       argument: payload,
       insertionCount: 1,
       replacementCount: 0,
@@ -171,7 +171,7 @@ describe('Root', () => {
     const select = set(['hello']);
     select().whereOne().match(/^h/).replace('another')
     expect(libState.currentAction).toEqual({
-      type: 'whereOne().replace()',
+      type: 'select().whereOne().replace()',
       replacement: 'another',
       query: 'element.match(/^h/)',
     });

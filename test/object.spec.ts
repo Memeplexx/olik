@@ -16,7 +16,7 @@ describe('Object', () => {
     select(s => s.object.property)
       .replace(payload);
     expect(libState.currentAction).toEqual({
-      type: 'object.property.replace()',
+      type: 'select(object.property).replace()',
       replacement: payload,
     });
     expect(select(s => s.object.property).read()).toEqual('hey');
@@ -30,7 +30,7 @@ describe('Object', () => {
     select(s => s.object)
       .patch(payload);
     expect(libState.currentAction).toEqual({
-      type: 'object.patch()',
+      type: 'select(object).patch()',
       patch: payload,
     });
     expect(select(s => s.object.property).read()).toEqual(payload.property);
@@ -55,7 +55,7 @@ describe('Object', () => {
     select()
       .reset();
     expect(libState.currentAction).toEqual({
-      type: 'reset()',
+      type: 'select().reset()',
       replacement: initialState,
     })
     expect(select().read()).toEqual(initialState);
@@ -67,7 +67,7 @@ describe('Object', () => {
     select(s => s.prop)
       .replace(e => e + 'b');
     expect(libState.currentAction).toEqual({
-      type: 'prop.replace()',
+      type: 'select(prop).replace()',
       replacement: 'ab',
     });
     expect(select().read()).toEqual({ prop: 'ab' });
@@ -79,7 +79,7 @@ describe('Object', () => {
     const payload = { hello: 'world' };
     select().patch(payload);
     expect(libState.currentAction).toEqual({
-      type: 'patch()',
+      type: 'select().patch()',
       patch: payload,
     });
     expect(select().read()).toEqual({ hello: 'world' });

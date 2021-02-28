@@ -18,7 +18,7 @@ describe('array.findCustom().remove()', () => {
       .find(query)
       .remove();
     expect(libState.currentAction).toEqual({
-      type: 'array.find().remove()',
+      type: 'select(array).find().remove()',
       toRemove: initialState.array[1],
       query: query.toString(),
     });
@@ -33,7 +33,7 @@ describe('array.findCustom().remove()', () => {
       .find(query)
       .remove();
     expect(libState.currentAction).toEqual({
-      type: 'array.find().remove()',
+      type: 'select(array).find().remove()',
       toRemove: initialState.array[0],
       query: query.toString(),
     });
@@ -48,7 +48,7 @@ describe('array.findCustom().remove()', () => {
       .find(query)
       .remove();
     expect(libState.currentAction).toEqual({
-      type: 'array.find().remove()',
+      type: 'select(array).find().remove()',
       toRemove: initialState.array[1],
       query: query.toString(),
     });
@@ -63,7 +63,7 @@ describe('array.findCustom().remove()', () => {
       .find(query)
       .remove();
     expect(libState.currentAction).toEqual({
-      type: 'array.find().remove()',
+      type: 'select(array).find().remove()',
       toRemove: initialState.array[0],
       query: query.toString(),
     });
@@ -78,7 +78,7 @@ describe('array.findCustom().remove()', () => {
       .find(query)
       .remove();
     expect(libState.currentAction).toEqual({
-      type: 'array.find().remove()',
+      type: 'select(array).find().remove()',
       toRemove: initialState.array[0],
       query: query.toString(),
     });
@@ -93,7 +93,7 @@ describe('array.findCustom().remove()', () => {
       .find(query)
       .remove();
     expect(libState.currentAction).toEqual({
-      type: 'array.find().remove()',
+      type: 'select(array).find().remove()',
       toRemove: initialState.array[2],
       query: query.toString(),
     });
@@ -108,7 +108,7 @@ describe('array.findCustom().remove()', () => {
       .find(query)
       .remove();
     expect(libState.currentAction).toEqual({
-      type: 'array.find().remove()',
+      type: 'select(array).find().remove()',
       toRemove: initialState.array[1],
       query: query.toString(),
     });

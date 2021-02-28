@@ -34,25 +34,25 @@ function observeFetchInternal<C>(
 
 type MyType<X> = X extends (...args: any[]) => infer R ? R : never;
 const observeInternal = <S>(
-  get: SelectorFromAStore<S>,
-) => <L extends Parameters<typeof get>[0], C extends MyType<L>>(
+  select: SelectorFromAStore<S>,
+) => <L extends Parameters<typeof select>[0], C extends MyType<L>>(
   selector: L,
   ) => new Observable<C>(observer => {
-    observer.next(get(selector).read() as C);
-    const subscription = get(selector).onChange(v => observer.next(v as C));
+    observer.next(select(selector).read() as C);
+    const subscription = select(selector).onChange(v => observer.next(v as C));
     return () => subscription.unsubscribe();
   }).pipe(
     shareReplay({ bufferSize: 1, refCount: true }),
   );
 
 export const set = <S>(initialState: S, options?: OptionsForMakingAStore) => {
-  const get = libSet(initialState, options);
+  const select = libSet(initialState, options);
   return {
-    get,
+    select,
     /**
      * Converts the state you select into an observable.
      */
-    observe: <L extends Parameters<typeof get>[0]>(selector: L) => observeInternal(get)(selector),
+    observe: <L extends Parameters<typeof select>[0]>(selector: L) => observeInternal(select)(selector),
     /**
      * Takes a function returning an Observable, and returns a new Observable which reports the status of the first observable.
      */
@@ -61,13 +61,13 @@ export const set = <S>(initialState: S, options?: OptionsForMakingAStore) => {
 }
 
 export const setEnforceTags = <S>(initialState: S, options?: OptionsForMakingAStore) => {
-  const get = libSetEnforceTags(initialState, options);
+  const select = libSetEnforceTags(initialState, options);
   return {
-    get,
+    select,
     /**
      * Converts the state you select into an observable
      */
-    observe: <L extends Parameters<typeof get>[0]>(selector: L) => observeInternal(get as SelectorFromAStore<S>)(selector),
+    observe: <L extends Parameters<typeof select>[0]>(selector: L) => observeInternal(select as SelectorFromAStore<S>)(selector),
     /**
      * Takes a function returning an Observable, and returns a new Observable which reports the status of the first observable.
      */
@@ -76,13 +76,13 @@ export const setEnforceTags = <S>(initialState: S, options?: OptionsForMakingASt
 }
 
 export const setNested = <S>(initialState: S, options: OptionsForMakingANestedStore) => {
-  const get = libSetNested(initialState, options);
+  const select = libSetNested(initialState, options);
   return {
-    get,
+    select,
     /**
      * Converts the state you select into an observable
      */
-    observe: <L extends Parameters<typeof get>[0]>(selector: L) => observeInternal(get)(selector),
+    observe: <L extends Parameters<typeof select>[0]>(selector: L) => observeInternal(select)(selector),
     /**
      * Takes a function returning an Observable, and returns a new Observable which reports the status of the first observable.
      */

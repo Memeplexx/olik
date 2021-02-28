@@ -198,7 +198,7 @@ export const replace = <S, C, X extends C & Array<any>, T extends Trackability>(
       segsCopy.forEach(seg => res = res[seg]);
       return res;
     })) as Selector<S, C, X>;
-    const actionName = `${pathSegments.join('.')}${pathSegments.length ? '.' : ''}${name}()`;
+    const actionName = `select(${pathSegments.join('.')}).${name}()`;
     updateState({
       selector: selectorRevised,
       replacer: old => {

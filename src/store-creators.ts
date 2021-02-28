@@ -25,7 +25,7 @@ let nestedContainerStore: NestedContainerStore;
  * const select = setEnforceTags({ prop: '' });
  * 
  * // Note that when updating state, we are now required to supply a string as the last argument (in this case 'MyComponent')
- * select(s => s.prop)                   // type: 'prop.replace() [MyComponent]'
+ * select(s => s.prop)                // type: 'prop.replace() [MyComponent]'
  *   .replace('test', 'MyComponent')  // replacement: 'test'
  */
 export function setEnforceTags<S>(

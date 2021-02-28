@@ -20,7 +20,7 @@ describe('array.find().and().or()', () => {
       .remove();
     libState.logLevel = 'NONE';
     expect(libState.currentAction).toEqual({
-      type: 'array.whereOne().remove()',
+      type: 'select(array).whereOne().remove()',
       toRemove: initialState.array[1],
       query: 'id === 2 && value === two',
     });
@@ -34,7 +34,7 @@ describe('array.find().and().or()', () => {
       .whereOne(s => s.id).eq(1).or(s => s.value).eq('two')
       .remove();
     expect(libState.currentAction).toEqual({
-      type: 'array.whereOne().remove()',
+      type: 'select(array).whereOne().remove()',
       toRemove: initialState.array[0],
       query: 'id === 1 || value === two',
     });
@@ -55,7 +55,7 @@ describe('array.find().and().or()', () => {
       .whereOne(e => e.id).eq(1).and(e => e.id).eq(2).or(e => e.id).eq(3)
       .remove();
     expect(libState.currentAction).toEqual({
-      type: 'array.whereOne().remove()',
+      type: 'select(array).whereOne().remove()',
       toRemove: initialState.array[2],
       query: 'id === 1 && id === 2 || id === 3',
     });
@@ -69,7 +69,7 @@ describe('array.find().and().or()', () => {
       .whereOne(e => e.id).eq(4).or(e => e.id).eq(3).and(e => e.value).eq('three')
       .remove();
     expect(libState.currentAction).toEqual({
-      type: 'array.whereOne().remove()',
+      type: 'select(array).whereOne().remove()',
       toRemove: initialState.array[2],
       query: 'id === 4 || id === 3 && value === three',
     });
@@ -83,7 +83,7 @@ describe('array.find().and().or()', () => {
       .whereOne(e => e.id).eq(1).and(e => e.value).eq('one').or(e => e.id).eq(3).and(e => e.value).eq('three')
       .remove();
     expect(libState.currentAction).toEqual({
-      type: 'array.whereOne().remove()',
+      type: 'select(array).whereOne().remove()',
       toRemove: initialState.array[0],
       query: 'id === 1 && value === one || id === 3 && value === three',
     });

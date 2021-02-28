@@ -1,6 +1,6 @@
 import { errorMessages } from '../src/shared-consts';
-import { set } from '../src/store-creators';
 import { libState } from '../src/shared-state';
+import { set } from '../src/store-creators';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
 describe('Devtools', () => {
@@ -18,7 +18,8 @@ describe('Devtools', () => {
     expect(select().read()).toEqual({ x: 3, y: 0 });
     const state = { x: 1, y: 0 };
     libState.windowObject?.__REDUX_DEVTOOLS_EXTENSION__._mockInvokeSubscription({ type: 'DISPATCH', state: JSON.stringify(state), payload: { type: 'JUMP_TO_ACTION' }, source: '@devtools-extension' });
-    expect(select().read()).toEqual(state);    expect(libState.currentAction.type).toEqual('replace() [dontTrackWithDevtools]');
+    expect(select().read()).toEqual(state);
+    expect(libState.currentAction.type).toEqual('select().replace() [dontTrackWithDevtools]');
   });
 
   it('should correctly respond to devtools dispatches where the state is an array', () => {
@@ -29,7 +30,7 @@ describe('Devtools', () => {
     const state = ['g', 'h'];
     libState.windowObject?.__REDUX_DEVTOOLS_EXTENSION__._mockInvokeSubscription({ type: 'DISPATCH', state: JSON.stringify(state), payload: { type: 'JUMP_TO_ACTION' }, source: '@devtools-extension' });
     expect(select().read()).toEqual(state);
-    expect(libState.currentAction.type).toEqual('replaceAll() [dontTrackWithDevtools]');
+    expect(libState.currentAction.type).toEqual('select().replaceAll() [dontTrackWithDevtools]');
   });
 
   it('should handle a COMMIT without throwing an error', () => {
@@ -91,14 +92,14 @@ describe('Devtools', () => {
     const payload: number[] = [];
     for (let i = 0; i < 100; i++) {
       select(s => s.test).replace(i);
-      expect(libState.currentActionForDevtools).toEqual({ type: 'test.replace()', replacement: 0 });
+      expect(libState.currentActionForDevtools).toEqual({ type: 'select(test).replace()', replacement: 0 });
       if (i > 0) {
         payload.push(i);
       }
     }
     setTimeout(() => {
       expect(libState.currentActionForDevtools).toEqual({
-        type: 'test.replace()',
+        type: 'select(test).replace()',
         replacement: 99,
         batched: payload.slice(0, payload.length - 1).map(replacement => ({ replacement })),
       })

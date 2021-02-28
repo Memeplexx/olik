@@ -19,7 +19,7 @@ describe('array.filterCustom().patch()', () => {
       .filter(query)
       .patch(payload);
     expect(libState.currentAction).toEqual({
-      type: 'array.filter().patch()',
+      type: 'select(array).filter().patch()',
       patch: payload,
       query: query.toString(),
     });
@@ -35,7 +35,7 @@ describe('array.filterCustom().patch()', () => {
       .filter(query)
       .patch(payload);
     expect(libState.currentAction).toEqual({
-      type: 'array.filter().patch()',
+      type: 'select(array).filter().patch()',
       patch: payload,
       query: query.toString(),
     });
@@ -51,7 +51,7 @@ describe('array.filterCustom().patch()', () => {
       .filter(query)
       .patch(payload);
     expect(libState.currentAction).toEqual({
-      type: 'array.filter().patch()',
+      type: 'select(array).filter().patch()',
       patch: payload,
       query: query.toString(),
     });
@@ -67,7 +67,7 @@ describe('array.filterCustom().patch()', () => {
       .filter(query)
       .patch(payload);
     expect(libState.currentAction).toEqual({
-      type: 'array.filter().patch()',
+      type: 'select(array).filter().patch()',
       patch: payload,
       query: query.toString(),
     });
@@ -83,7 +83,7 @@ describe('array.filterCustom().patch()', () => {
       .filter(query)
       .patch(payload);
     expect(libState.currentAction).toEqual({
-      type: 'array.filter().patch()',
+      type: 'select(array).filter().patch()',
       patch: payload,
       query: query.toString(),
     });
@@ -99,7 +99,7 @@ describe('array.filterCustom().patch()', () => {
       .filter(query)
       .patch(payload);
     expect(libState.currentAction).toEqual({
-      type: 'array.filter().patch()',
+      type: 'select(array).filter().patch()',
       patch: payload,
       query: query.toString(),
     });
@@ -115,7 +115,7 @@ describe('array.filterCustom().patch()', () => {
       .filter(query)
       .patch(payload);
     expect(libState.currentAction).toEqual({
-      type: 'array.filter().patch()',
+      type: 'select(array).filter().patch()',
       patch: payload,
       query: query.toString(),
     });
