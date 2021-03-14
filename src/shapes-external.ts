@@ -471,7 +471,7 @@ export type DerivationCalculationInputs<T extends Array<StoreOrDerivation<any>>>
  */
 export type OptionsForMakingAStore = {
   /**
-   * Specifications for the Redux Devtools Extension. Pass 'false' if you do not want your store to be tracked within the Redux Devtools extension.
+   * Specifications for the Redux Devtools Extension. Pass `false` if you do not want your store to be tracked within the Redux Devtools extension.
    * See https://github.com/zalmoxisus/redux-devtools-extension/blob/master/docs/API/Arguments.md for more info
    */
   devtools?: OptionsForReduxDevtools | false;
@@ -497,14 +497,18 @@ export type OptionsForMakingAStore = {
  */
 export type OptionsForMakingANestedStore = {
   /**
+   * Pass `true` if you do not want your store to be tracked inside the devtools. Default is false.
+   */
+  dontTrackWithDevtools?: boolean,
+  /**
    * The name that will distinguish this nested store from others within the state tree
    */
   storeName: string;
   /**
-   * The string (or a function returning a string) that will distinguish different instances of the same nested store.
+   * The string that will distinguish different instances of the same nested store.
    * If this value isn't supplied, the library will use an auto-incrementing integer as the storeKey
    */
-  instanceName?: string | ((previousName?: string) => string);
+  instanceName?: string;
 }
 
 /**

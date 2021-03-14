@@ -18,7 +18,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "olik": "0.0.1"
+    "olik": "0.0.5"
   },
   "devDependencies": {
     "@types/enzyme-adapter-react-16": "^1.0.6",

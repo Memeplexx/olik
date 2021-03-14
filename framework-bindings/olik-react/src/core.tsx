@@ -10,8 +10,6 @@ import {
 } from 'olik';
 import React from 'react';
 
-import { mapStateToProps } from './class-components';
-
 /**
  * A hook to track the status of a request
  * 
@@ -53,28 +51,30 @@ export function useFetcher<C>(
  * @param options additional options for creating a nested store, which at minimum, must specify the `name` of the store
  * @param deps optional list of dependencies under which a store should be re-created
  */
-export const useNestedStore = <C>(
+export function useNestedStore<C>(
   initialState: C,
   options: OptionsForMakingANestedStore,
   deps: React.DependencyList = [],
-) => {
-  const select = React.useMemo(() => libSetNested(initialState, options), deps);
+) {
+  const select = React.useMemo(() => {
+    return libSetNested(initialState, options);
+  }, deps);
   React.useEffect(() => {
     return () => { 
       setTimeout(() => select().removeFromContainingStore());
     }
   }, deps);
-  const result = {
+  return {
     select,
-    ...getCommonProperties(select as SelectorFromAStore<C>),
+    ...getUseSelector(select),
+    ...getUseDerivation(select),
   };
-  return result as Omit<typeof result, 'mapStateToProps'>;
 }
 
 type Function<S, R> = (arg: DeepReadonly<S>) => R;
 type MappedSelectorsToResults<S, X> = { [K in keyof X]: X[K] extends Function<S, infer E> ? E : never };
 
-export const set = <S>(initialState: S, options?: OptionsForMakingAStore) => {
+export function set<S>(initialState: S, options?: OptionsForMakingAStore) {
   const select = libSet(initialState, options);
   return {
     /**
@@ -83,12 +83,14 @@ export const set = <S>(initialState: S, options?: OptionsForMakingAStore) => {
      * select(s => s.some.state).replace('test')
      */
     select,
-    ...getCommonProperties(select),
+    ...getUseSelector(select),
+    ...getUseDerivation(select),
+    ...getMapStateToProps(select),
   }
 }
 
-export const setEnforceTags = <S>(initialState: S, options?: OptionsForMakingAStore) => {
-  const select = libSetEnforceTags(initialState, options);
+export function setEnforceTags<S>(initialState: S, options?: OptionsForMakingAStore) {
+  const select = libSetEnforceTags(initialState, options) as SelectorFromAStore<S>;
   return {
     /**
      * Takes a function which selects from the store
@@ -98,55 +100,21 @@ export const setEnforceTags = <S>(initialState: S, options?: OptionsForMakingASt
      * select(s => s.some.state).replace('test', __filename);
      */
     select,
-    ...getCommonProperties(select as SelectorFromAStore<S>),
+    ...getUseSelector(select),
+    ...getUseDerivation(select),
+    ...getMapStateToProps(select),
   };
 }
 
-const getCommonProperties = <S>(select: SelectorFromAStore<S>) => {
+function getMapStateToProps<S>(select: SelectorFromAStore<S>) {
   return {
     /**
-     * A hook to select a specific part of the state tree
-     * @param selector a selection from the store
-     * @param deps an optional array of values upon which the calculation depends
-     * @example
-     * const str = useSelector(s => s.some.state);
-     * @example
-     * const [id, setId] = React.useState(0);
-     * const todo = useSelector(s => s.some.todos.find(t => t.id === id), [id]);
-     */
-    useSelector: <R>(selector: Function<S, R>, deps: React.DependencyList = []) => useSelector(select, selector, deps),
-    /**
-     * A hook to derive state and memoise the result of a complex calculation
-     * @param inputs an array of functions which select from the store
-     * @param deps an optional array of values upon which the calculation depends
-     * @example
-     * const derivation = useDerivation([
-     *   s => s.some.number,
-     *   s => s.some.string,
-     * ]).usingExpensiveCalc(([num, str]) => ...some complex calc we dont want to repeat unnecessarily... );
-     * @example
-     * const [id, setId] = React.useState(0);
-     * const derivation = useDerivation([
-     *   s => s.some.number,
-     *   s => s.some.todos.find(t => t.id === id)
-     * ], [id]).usingExpensiveCalc(([num, todo]) => ...some complex calc we dont want to repeat unnecessarily... )
-     */
-    useDerivation: <X extends [Function<S, any>] | Function<S, any>[]>(inputs: X, deps?: React.DependencyList) => ({
-      usingExpensiveCalc: <R>(calculation: (inputs: MappedSelectorsToResults<S, X>) => R) => {
-        const selectors = inputs.map(input => useSelector(select, input));
-        const allDeps = [...selectors];
-        if (deps) { allDeps.push(...deps); }
-        return React.useMemo(() => calculation(selectors as any), allDeps);
-      }
-    }),
-    /**
-     * Similar, in principal to React-Redux's `mapStateToProps()`
-     * @param store The store that was previously defined using `make()` or `makeEnforceTags()`
-     * @param mapper a function which takes in state from the store, and returns state which will be used
+     * Similar, in principal, to React-Redux's `mapStateToProps()`
+     * @param mapper a function which takes in state from the store (as 1st arg) and own props (as 2nd arg), and returns state which will be used
      * 
      * The following example component receives props from the store as well as from its parent component
      * ```
-     * const select = make({ some: { state: { todos: new Array<string>() } } });
+     * const { mapStateToProps } = set({ some: { state: { todos: new Array<string>() } } });
      * 
      * class TodosComponent extends React.Component<{ todos: Array<{ id: number, text: string }>, title: string }> {
      *   render() {
@@ -165,11 +133,81 @@ const getCommonProperties = <S>(select: SelectorFromAStore<S>) => {
      * }))(TodosComponent);
      * ```
      */
-    mapStateToProps: <P extends {}, M extends {}>(mapper: (state: DeepReadonly<S>, ownProps: P) => M) => mapStateToProps(select, mapper)
+    mapStateToProps: function<P extends {}, M extends {}>(mapper: (state: DeepReadonly<S>, ownProps: P) => M) {
+      return (Component: React.ComponentType<M>) => {
+        return class TodoWrapper extends React.PureComponent<P, M> {
+          sub = select().onChange(s => this.setState(mapper(s, this.props)));
+          constructor(props: any) {
+            super(props);
+            this.state = mapper(select().read(), this.props);
+          }
+          static getDerivedStateFromProps(props: P) {
+            return mapper(select().read(), props);
+          }
+          render() {
+            return (
+              <Component {...this.state} />
+            )
+          }
+          componentWillUnmount() {
+            this.sub.unsubscribe();
+          }
+        }
+      }
+    }
   };
 }
 
-const useSelector = <S, R>(select: SelectorFromAStore<S>, selector: Function<S, R>, deps?: React.DependencyList) => {
+function getUseSelector<S>(select: SelectorFromAStore<S>) {
+  return {
+    /**
+     * A hook to select a specific part of the state tree
+     * @param selector a selection from the store
+     * @param deps an optional array of values upon which the calculation depends
+     * @example
+     * const str = useSelector(s => s.some.state);
+     * @example
+     * const [id, setId] = React.useState(0);
+     * const todo = useSelector(s => s.some.todos.find(t => t.id === id), [id]);
+     */
+    useSelector: function<R>(selector: Function<S, R>, deps: React.DependencyList = []) {
+      return useSelector(select, selector, deps);
+    },
+  };
+}
+
+function getUseDerivation<S>(select: SelectorFromAStore<S>) {
+  return {
+    /**
+     * A hook to derive state and memoise the result of a complex calculation
+     * @param inputs an array of functions which select from the store
+     * @param deps an optional array of values upon which the calculation depends
+     * @example
+     * const derivation = useDerivation([
+     *   s => s.some.number,
+     *   s => s.some.string,
+     * ]).usingExpensiveCalc(([num, str]) => ...some complex calc we dont want to repeat unnecessarily... );
+     * @example
+     * const [id, setId] = React.useState(0);
+     * const derivation = useDerivation([
+     *   s => s.some.number,
+     *   s => s.some.todos.find(t => t.id === id)
+     * ], [id]).usingExpensiveCalc(([num, todo]) => ...some complex calc we dont want to repeat unnecessarily... )
+     */
+    useDerivation: function<X extends [Function<S, any>] | Function<S, any>[]>(inputs: X, deps?: React.DependencyList) {
+      return {
+        usingExpensiveCalc: function<R>(calculation: (inputs: MappedSelectorsToResults<S, X>) => R) {
+          const selectors = inputs.map(input => useSelector(select, input));
+          const allDeps = [...selectors];
+          if (deps) { allDeps.push(...deps); }
+          return React.useMemo(() => calculation(selectors as any), allDeps);
+        }
+      }
+    },
+  };
+}
+
+function useSelector<S, R>(select: SelectorFromAStore<S>, selector: Function<S, R>, deps?: React.DependencyList) {
   const storeOrDerivation = select(selector) as StoreOrDerivation<R>;
   const [selection, setSelection] = React.useState(storeOrDerivation.read());
   const allDeps = [storeOrDerivation.read()];
@@ -182,3 +220,4 @@ const useSelector = <S, R>(select: SelectorFromAStore<S>, selector: Function<S, 
   }, allDeps);
   return selection as R;
 }
+

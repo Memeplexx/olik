@@ -2,7 +2,7 @@ import { configure, mount } from 'enzyme';
 import Adapter from 'enzyme-adapter-react-16';
 import React from 'react';
 
-import { mapStateToProps, set } from '../src';
+import { set, useNestedStore } from '../src';
 
 
 configure({ adapter: new Adapter() });
@@ -22,7 +22,7 @@ describe('React', () => {
     expect(select().read().object.property).toEqual('test');
   })
 
-  describe("useSelector", () => {
+  it('useSelector', () => {
     const { select, useSelector } = set(initialState, { devtools: false });
     const App = () => {
       const result = useSelector(s => s.object.property);
@@ -33,15 +33,13 @@ describe('React', () => {
         </>
       );
     };
-    it('renders correctly', () => {
-      const wrapper = mount(<App />);
-      expect(wrapper.find('div').text()).toEqual(initialState.object.property);
-      wrapper.find('button').simulate('click');
-      expect(wrapper.find('div').text()).toEqual('test');
-    });
+    const wrapper = mount(<App />);
+    expect(wrapper.find('div').text()).toEqual(initialState.object.property);
+    wrapper.find('button').simulate('click');
+    expect(wrapper.find('div').text()).toEqual('test');
   });
 
-  describe("useDerivation with no deps", () => {
+  it('useDerivation with no deps', () => {
     const { select, useDerivation } = set(initialState, { devtools: false });
     let calcCount = 0;
     const App = () => {
@@ -59,17 +57,15 @@ describe('React', () => {
         </>
       );
     };
-    it('renders correctly', () => {
-      const wrapper = mount(<App />);
-      expect(wrapper.find('div').text()).toEqual(initialState.string + initialState.object.property);
-      expect(calcCount).toEqual(1);
-      wrapper.find('button').simulate('click');
-      expect(wrapper.find('div').text()).toEqual(initialState.string + 'test');
-      expect(calcCount).toEqual(2);
-    });
+    const wrapper = mount(<App />);
+    expect(wrapper.find('div').text()).toEqual(initialState.string + initialState.object.property);
+    expect(calcCount).toEqual(1);
+    wrapper.find('button').simulate('click');
+    expect(wrapper.find('div').text()).toEqual(initialState.string + 'test');
+    expect(calcCount).toEqual(2);
   });
 
-  describe("useDerivation with deps", () => {
+  it('useDerivation with deps', () => {
     const { useDerivation } = set(initialState, { devtools: false });
     let calcCount = 0;
     const App = () => {
@@ -90,18 +86,16 @@ describe('React', () => {
         </>
       );
     };
-    it('renders correctly', () => {
-      const wrapper = mount(<App />);
-      expect(wrapper.find('div').text()).toEqual(initialState.string + initialState.object.property);
-      expect(calcCount).toEqual(1);
-      wrapper.find('button').first().simulate('click');
-      expect(calcCount).toEqual(1);
-      wrapper.find('button').last().simulate('click');
-      expect(calcCount).toEqual(2);
-    });
+    const wrapper = mount(<App />);
+    expect(wrapper.find('div').text()).toEqual(initialState.string + initialState.object.property);
+    expect(calcCount).toEqual(1);
+    wrapper.find('button').first().simulate('click');
+    expect(calcCount).toEqual(1);
+    wrapper.find('button').last().simulate('click');
+    expect(calcCount).toEqual(2);
   });
 
-  describe('should support classes', () => {
+  it('should support classes', () => {
     const { select, mapStateToProps } = set(initialState, { devtools: false });
     let renderCount = 0;
     class Child extends React.Component<{ str: string, num: number }> {
@@ -140,6 +134,89 @@ describe('React', () => {
     expect(wrapper.find(Parent).find(Child).find('div').at(1).text()).toEqual('0');
     wrapper.find('button').at(2).simulate('click');
     expect(wrapper.find(Parent).find(Child).find('div').at(1).text()).toEqual('1');
-  })
+  });
+
+  it('should create a nested store without a parent', () => {
+    let renderCount = 0;
+    const App = () => {
+      const { select, useSelector } = useNestedStore(initialState, { storeName: 'unhosted', dontTrackWithDevtools: true });
+      const result = useSelector(s => s.object.property);
+      renderCount++;
+      return (
+        <>
+          <button onClick={() => select(s => s.object.property).replace('test')}>Click</button>
+          <button onClick={() => select(s => s.string).replace('test')}>Click</button>
+          <div>{result}</div>
+        </>
+      );
+    };
+    const wrapper = mount(<App />);
+    expect(renderCount).toEqual(1);
+    wrapper.find('button').at(0).simulate('click');
+    expect(wrapper.find('div').text()).toEqual('test');
+    expect(renderCount).toEqual(2);
+    wrapper.find('button').at(1).simulate('click');
+    expect(renderCount).toEqual(2);
+  });
+
+  it('should create a nested store without a parent', () => {
+    let renderCount = 0;
+    const App = () => {
+      const { select, useSelector } = useNestedStore(initialState, { storeName: 'unhosted', dontTrackWithDevtools: true });
+      const result = useSelector(s => s.object.property);
+      renderCount++;
+      return (
+        <>
+          <button onClick={() => select(s => s.object.property).replace('test')}>Click</button>
+          <button onClick={() => select(s => s.string).replace('test')}>Click</button>
+          <div>{result}</div>
+        </>
+      );
+    };
+
+    const wrapper = mount(<App />);
+    expect(renderCount).toEqual(1);
+    wrapper.find('button').at(0).simulate('click');
+    expect(wrapper.find('div').text()).toEqual('test');
+    expect(renderCount).toEqual(2);
+    wrapper.find('button').at(1).simulate('click');
+    expect(renderCount).toEqual(2);
+  });
+
+  it('should create a nested store with a parent', () => {
+    const store = set({
+      ...initialState,
+      nested: {
+        component: {} as { [key: string]: { prop: string } }
+      }
+    }, { devtools: false, isContainerForNestedStores: true });
+    let renderCount = 0;
+    const Child = () => {
+      const { select, useSelector } = useNestedStore({ prop: '' }, { storeName: 'component', dontTrackWithDevtools: true });
+      const result = useSelector(s => s.prop);
+      renderCount++;
+      return (
+        <>
+          <button onClick={() => select(s => s.prop).replace('test')}>Click</button>
+          <div>{result}</div>
+        </>
+      );
+    };
+    const Parent = () => {
+      const value = store.useSelector(s => s.object.property);
+      return (
+        <>
+          <Child />
+          <button onClick={() => store.select(s => s.object.property).replace('test')}>Click</button>
+          {value}
+        </>
+      );
+    }
+    const wrapper = mount(<Parent />);
+    expect(renderCount).toEqual(1);
+    wrapper.find(Child).at(0).find('button').at(0).simulate('click');
+    expect(renderCount).toEqual(2);
+    expect(store.select(s => s.nested.component).read()).toEqual({'0': { prop: 'test' } });
+  });
 
 });

@@ -44,7 +44,7 @@ export function createStore<S, T extends Trackability>(context: {
   state: S,
   supportsTags: boolean,
   devtools: OptionsForReduxDevtools | false,
-  nestedContainerStore: NestedContainerStore,
+  nestedContainerStore?: NestedContainerStore,
   tagSanitizer?: (tag: string) => string,
 }) {
   const { state, devtools, nestedContainerStore, supportsTags, tagSanitizer } = context;

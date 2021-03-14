@@ -141,19 +141,6 @@ describe('Nested', () => {
     expect(() => set(new Array<string>(), { isContainerForNestedStores: true })).toThrowError(errorMessages.INVALID_CONTAINER_FOR_NESTED_STORES);
   })
 
-  it('should be able to generate custom keys using a function', () => {
-    const initialState = {
-      test: '',
-    };
-    const select = set(initialState, { isContainerForNestedStores: true });
-    const storeName = 'myComp';
-    const instanceName = (arg?: string): string => !arg ? 'x' : arg + 'x';
-    setNested(0, { storeName, instanceName });
-    setNested(0, { storeName, instanceName });
-    setNested(0, { storeName, instanceName });
-    expect(select().read()).toEqual({ test: '', nested: { [storeName]: { x: 0, xx: 0, xxx: 0 } } });
-  })
-
   it('should reset the container store correctly after nested stores have been added', () => {
     const initialState = {
       test: '',
@@ -171,10 +158,7 @@ describe('Nested', () => {
     const initialState = {
       test: '',
     };
-    interface X {
-      test: string
-    }
-    const select = set<X>(initialState, { isContainerForNestedStores: true });
+    const select = set(initialState, { isContainerForNestedStores: true });
     const storeName = 'myComp';
     const nested = setNested(0, { storeName });
     nested().replace(1);
@@ -184,5 +168,16 @@ describe('Nested', () => {
     expect(nested().read()).toEqual(0);
     select().reset();
   })
+
+  it('should work without a container store', () => {
+    libState.nestedContainerStore = null;
+    const select = setNested({
+      object: { property: 'a' },
+      array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
+      string: 'b',
+    }, { storeName: 'dd', dontTrackWithDevtools: true });
+    select(s => s.object.property).replace('test');
+    expect(select(s => s.object.property).read()).toEqual('test');
+  });
 
 });

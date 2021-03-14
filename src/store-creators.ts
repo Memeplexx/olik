@@ -1,6 +1,5 @@
 import { createStore } from './core';
 import {
-  DeepReadonly,
   OptionsForMakingANestedStore,
   OptionsForMakingAStore,
   SelectorFromANestedStore,
@@ -9,10 +8,9 @@ import {
   StoreWhichIsNested,
   Trackability,
 } from './shapes-external';
-import { NestedContainerStore, OptionsForCreatingInternalRootStore, StoreWhichIsNestedInternal } from './shapes-internal';
+import { OptionsForCreatingInternalRootStore, StoreWhichIsNestedInternal } from './shapes-internal';
 import { errorMessages } from './shared-consts';
-
-let nestedContainerStore: NestedContainerStore;
+import { libState } from './shared-state';
 
 /**
  * Creates a new store which requires a 'tag' to be included with all updates.
@@ -60,39 +58,37 @@ export function set<S>(
  */
 export function setNested<L>(
   state: L,
-  { storeName: name, instanceName: storeKey }: OptionsForMakingANestedStore,
+  { storeName, instanceName, dontTrackWithDevtools }: OptionsForMakingANestedStore,
 ) {
-  if (!nestedContainerStore) {
-    return (<C = L>(selector?: (arg: DeepReadonly<L>) => C) => (selector
-      ? createStore({ state, devtools: { name }, supportsTags: false, nestedContainerStore })(selector)
-      : null)) as SelectorFromANestedStore<L>;
+  const generateKey = (arg?: string) => (!arg && !instanceName) ? '0' :
+    !instanceName ? (+arg! + 1).toString() : instanceName;
+  if (!libState.nestedContainerStore) {
+    return createStore<L, 'untagged'>({ state, devtools: dontTrackWithDevtools ? false : { name: storeName + ' : ' + generateKey() }, supportsTags: false }) as SelectorFromANestedStore<L>;
   }
-  const containerStore = nestedContainerStore();
-  const generateKey = (arg?: string) => (!arg && !storeKey) ? '0' :
-    !storeKey ? (+arg! + 1).toString() : typeof (storeKey) === 'function' ? storeKey(arg) : storeKey;
+  const containerStore = libState.nestedContainerStore();
   const wrapperState = containerStore.read();
   let key: string;
   if (!containerStore.read().nested) {
     key = generateKey();
-    containerStore.patch({ nested: { [name]: { [key]: state } } });
-    containerStore.renew({ ...wrapperState, nested: { [name]: { [key]: state } } });
-  } else if (!containerStore.read().nested[name]) {
+    containerStore.patch({ nested: { [storeName]: { [key]: state } } });
+    containerStore.renew({ ...wrapperState, nested: { [storeName]: { [key]: state } } });
+  } else if (!containerStore.read().nested[storeName]) {
     key = generateKey();
-    nestedContainerStore(s => s.nested).patch({ [name]: { [key]: state } });
-    containerStore.renew({ ...wrapperState, nested: { ...wrapperState.nested, [name]: { [key]: state } } });
+    libState.nestedContainerStore(s => s.nested).patch({ [storeName]: { [key]: state } });
+    containerStore.renew({ ...wrapperState, nested: { ...wrapperState.nested, [storeName]: { [key]: state } } });
   } else {
-    const values = nestedContainerStore(s => s.nested[name]).read();
+    const values = libState.nestedContainerStore(s => s.nested[storeName]).read();
     const keys = Object.keys(values);
     key = generateKey(keys[keys.length - 1]);
-    nestedContainerStore(s => s.nested[name]).patch({ [key]: state });
-    containerStore.renew({ ...wrapperState, nested: { ...wrapperState.nested, [name]: { ...wrapperState.nested[name], [key]: state } } });
+    libState.nestedContainerStore(s => s.nested[storeName]).patch({ [key]: state });
+    containerStore.renew({ ...wrapperState, nested: { ...wrapperState.nested, [storeName]: { ...wrapperState.nested[storeName], [key]: state } } });
   }
   return (<C = L>(selector?: (arg: L) => C) => {
-    const cStore = nestedContainerStore!(s => {
-      const nState = s.nested[name][key];
+    const cStore = libState.nestedContainerStore!(s => {
+      const nState = s.nested[storeName][key];
       return selector ? selector(nState) : nState;
     }) as any as StoreWhichIsNestedInternal<L, C>;
-    cStore.removeFromContainingStore = cStore.defineRemoveNestedStore(name, key);
+    cStore.removeFromContainingStore = cStore.defineRemoveNestedStore(storeName, key);
     cStore.reset = cStore.defineReset(state);
     return cStore as StoreWhichIsNested<C>;
   }) as SelectorFromANestedStore<L>;
@@ -102,12 +98,12 @@ function setInternalRootStore<S, T extends Trackability>(
   state: S,
   options: OptionsForCreatingInternalRootStore,
 ) {
-  const store = createStore<S, T>({ state, devtools: options.devtools === undefined ? {} : options.devtools, supportsTags: options.supportsTags, nestedContainerStore, tagSanitizer: options.tagSanitizer });
+  const store = createStore<S, T>({ state, devtools: options.devtools === undefined ? {} : options.devtools, supportsTags: options.supportsTags, nestedContainerStore: libState.nestedContainerStore!, tagSanitizer: options.tagSanitizer });
   if (options.isContainerForNestedStores) {
     if ((typeof (state) !== 'object') || Array.isArray(state)) {
       throw new Error(errorMessages.INVALID_CONTAINER_FOR_NESTED_STORES);
     }
-    nestedContainerStore = store as any;
+    libState.nestedContainerStore = store as any;
   }
   return store;
 }
