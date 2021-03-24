@@ -25,20 +25,20 @@ function observeFetchInternal<C>(
         .then(resolved => observer.next({ resolved, hasError: false, isLoading: false, rejected: null, refetch }))
         .catch(rejected => observer.next({ resolved: null, hasError: true, isLoading: false, rejected, refetch }));
     };
-    observer.next({ resolved: null, hasError: false, isLoading: true, rejected: null, refetch });
+    // observer.next({ resolved: null, hasError: false, isLoading: true, rejected: null, refetch });
     refetch(fetchFn);
   }).pipe(
     shareReplay({ bufferSize: 1, refCount: true }),
   );
 }
 
-type MyType<X> = X extends (...args: any[]) => infer R ? R : never;
+type FnReturnType<X> = X extends (...args: any[]) => infer R ? R : never;
 const observeInternal = <S>(
   select: SelectorFromAStore<S>,
-) => <L extends Parameters<typeof select>[0], C extends MyType<L>>(
+) => <L extends Parameters<typeof select>[0], C extends FnReturnType<L>>(
   selector: L,
   ) => new Observable<C>(observer => {
-    observer.next(select(selector).read() as C);
+    // observer.next(select(selector).read() as C);
     const subscription = select(selector).onChange(v => observer.next(v as C));
     return () => subscription.unsubscribe();
   }).pipe(

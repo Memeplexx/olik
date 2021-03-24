@@ -6,10 +6,11 @@
 ![Package Size](https://badgen.net/bundlephobia/minzip/olik)
 ![Dependency count](https://badgen.net/bundlephobia/dependency-count/olik)
 
-### *Declarative* state-management. *Free* of inaccurate *actions* & convoluted reducers. *All* in-line.
+Manage your state **in-line** using a **curated**, **consistent** set of state-update APIs.  
+Currently supports: ***[Vanilla](https://memeplexx.github.io/olik/docs/vanilla-js)***,
+***[React](https://memeplexx.github.io/olik/docs/read)***, and
+***[Angular](https://memeplexx.github.io/olik/docs/angular)***
 
-#### 🎨 **WHY CHOOSE OLIK?**
-Olik is designed to make your state management as **transparent** and semantically **consistent** as possible. Its fluent, typesafe API allows it to describe your actions in perfect detail (within the Redux Devtools) and perform efficient immutable updates. It can be used with ***[![](./src/assets/javascript.png)&nbsp;Vanilla-JS](https://memeplexx.github.io/olik/docs/vanilla-js)***, and has minimal bindings for ***[![](./src/assets/react.png)&nbsp;React](https://memeplexx.github.io/olik/docs/read)***, and ***[![](./src/assets/angular.png)&nbsp;Angular](https://memeplexx.github.io/olik/docs/angular)***.  
 
 #### 🌈 **SET UP**
 ```ts
@@ -57,7 +58,7 @@ class TodoComponent {
     title: '',
     description: '',
     done: false,
-  });
+  }, { storeName: 'TodoComponent' });
   onClickDone(done: boolean) {
     this.select(s => s.done)
       .replace(done);
