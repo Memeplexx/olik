@@ -11,8 +11,10 @@ With binding for ***[Vanilla](https://memeplexx.github.io/olik/docs/vanilla-js)*
 ***[React](https://memeplexx.github.io/olik/docs/read)***, and
 ***[Angular](https://memeplexx.github.io/olik/docs/angular)***
 
+---
 
 #### 🌈 **SET UP**
+Initializing your store couldn't be simpler and integration with the Redux Devtools extension is automatic.
 ```ts
 const select = set({
   username: '',
@@ -22,7 +24,8 @@ const select = set({
   },
 });
 ```  
-#### ✍️ **WRITE STATE**  
+#### ✍️ **WRITE STATE** 
+All writes consist of a selection from the store, followed by an action allowing Olik to describe your state-updates for you. 
 ```ts
 select(s => s.username)            // type: 'select(username).replace()'
   .replace('Terence');             // replacement: 'Terence'
@@ -35,6 +38,7 @@ select(s => s.favorite.hobbies)    // type: 'select(favorite.hobbies).whereOne(i
   .patch({ name: 'coding' });      // patch: { name: 'coding' }
 ```
 #### 🔍 **READ STATE**
+State can be read, listened to, or memoised.
 ```ts
 select(s => s.favorite.hobbies)
   .read()
@@ -52,6 +56,7 @@ derive(
 )
 ```
 #### 🥚 **NEST STORES**
+Manage your component state and debug with or without your application store.
 ```ts
 class TodoComponent {
   select = setNested({
