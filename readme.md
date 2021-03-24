@@ -58,15 +58,12 @@ const derivation = derive(
 #### 🥚 **NEST STORES**
 Each component's state can be managed and debugged with or without your application store.
 ```ts
-class TodoComponent {
-  select = setNested({
-    title: '',
-    description: '',
-    done: false,
-  }, { storeName: 'TodoComponent' });
-  onClickDone(done: boolean) {
-    this.select(s => s.done)
-      .replace(done);
-  }
+select = setNested({
+  title: '',
+  description: '',
+  done: false,
+}, { storeName: 'TodoComponent' });
+onClickDone(done: boolean) {
+  select(s => s.done).replace(done);
 }
 ```
