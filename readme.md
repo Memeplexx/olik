@@ -20,22 +20,25 @@ const select = set({
   username: '',
   favorite: {
     foods: new Array<string>(),
-    hobbies: new Array<{ id: number, name: string }>(),
+    hobbies: new Array<{
+      id: number,
+      name: string,
+    }>(),
   },
 });
 ```  
 #### ✍️ **WRITE STATE** 
 Writes consist of a **selection** from the store followed by an **action** and state-updates are **described** for you. 
 ```ts
-select(s => s.username)            // type: 'select(username).replace()'
-  .replace('Terence');             // replacement: 'Terence'
+select(s => s.username)              // type: 'select(username).replace()'
+  .replace('Terence');               // replacement: 'Terence'
 
-select(s => s.favorite.foods)      // type: 'select(favorite.foods).insert()'
-  .insert(['Indian', 'Sushi']);    // insertion: ['Indian', 'Sushi']
+select(s => s.favorite.foods)        // type: 'select(favorite.foods).insert()'
+  .insert(['Indian', 'Sushi']);      // insertion: ['Indian', 'Sushi']
 
-select(s => s.favorite.hobbies)    // type: 'select(favorite.hobbies).whereOne(id).eq(3).patch()'
-  .whereOne(s => s.id).eq(3)       // query: 'id === 3',
-  .patch({ name: 'coding' });      // patch: { name: 'coding' }
+select(s => s.favorite.hobbies)      // type: 'select(favorite.hobbies).whereOne(id).eq(3).patch()'
+  .whereOne(s => s.id).eq(3)         // query: 'id === 3',
+  .patch({ name: 'coding' });        // patch: { name: 'coding' }
 ```
 #### 🔍 **READ STATE**
 State can be **read** from, **listened** to, and expensive derivations can be **memoised**.
@@ -58,12 +61,15 @@ const derivation = derive(
 #### 🥚 **NEST STORES**
 Each component's state can be managed and debugged with or without your application store.
 ```ts
-select = setNested({
-  title: '',
-  description: '',
-  done: false,
-}, { storeName: 'TodoComponent' });
-onClickDone(done: boolean) {
-  select(s => s.done).replace(done);
-}
+select = setNested({                  // state = {
+  title: '',                          //    /* ... root store state ... */
+  description: '',                    //    nested {
+  done: false,                        //      TodoComponent: {
+}, {                                  //        '0': {
+  storeName: 'TodoComponent'          //          title: '',
+}                                     //          description: '',
+                                      //          done: false,
+onClickDone(done: boolean) {          //        },
+  select(s => s.done).replace(done);  //     }
+}                                     // }
 ```
