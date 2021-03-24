@@ -56,7 +56,7 @@ const derivation = derive(
 )
 ```
 #### 🥚 **NEST STORES**
-Manage each component's state and debug with or without your application store.
+Each component's state can be managed and debugged with or without your application store.
 ```ts
 class TodoComponent {
   select = setNested({
