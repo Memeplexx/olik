@@ -59,10 +59,14 @@ const derivation = derive(
 Each component's state can be managed and debugged with or without your application store.
 ```ts
 select = setNested({                  // applicationStoreState = {
-  title: '',                          //    nested { // all nested stores are placed here
-  description: '',                    //      TodoComponent: {
-  done: false,                        //        0: { title: '', description: '', done: false }
-}, {                                  //      }
-  storeName: 'TodoComponent'          //    }   
+  title: '',                          //   /* ... */
+  description: '',                    //   nested {
+  done: false,                        //     TodoComponent: {
+}, {                                  //       1: { title: '', description: '', done: false }
+  storeName: 'TodoComponent',         //     }
+  instanceName: todoId                //   }
 }                                     // }
+
+select(s => s.done)                   // type: 'select(nested.TodoComponent.1.one).replace()'
+  .replace(true);                     // replacement: true
 ```
