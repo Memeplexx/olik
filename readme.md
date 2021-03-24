@@ -20,10 +20,7 @@ const select = set({
   username: '',
   favorite: {
     foods: new Array<string>(),
-    hobbies: new Array<{
-      id: number,
-      name: string,
-    }>(),
+    hobbies: new Array<{ id: number, name: string }>(),
   },
 });
 ```  
@@ -54,22 +51,19 @@ const derivation = derive(
   select(s => s.hobbies),
 ).usingExpensiveCalc(
   (foods, hobbies) => {
-    // some calculation we don't want to repeat unnecessarily
+    // ...some calculation...
   }
 )
 ```
 #### 🥚 **NEST STORES**
 Each component's state can be managed and debugged with or without your application store.
 ```ts
-select = setNested({                  // state = {
-  title: '',                          //    /* ... root store state ... */
+select = setNested({                  // yourStoreState = {
+  title: '',                          //    /* ... root store state omitted for brevity ... */
   description: '',                    //    nested {
   done: false,                        //      TodoComponent: {
-}, {                                  //        '0': {
-  storeName: 'TodoComponent'          //          title: '',
-}                                     //          description: '',
-                                      //          done: false,
-onClickDone(done: boolean) {          //        },
-  select(s => s.done).replace(done);  //     }
-}                                     // }
+}, {                                  //        0: { title: '', description: '', done: false }
+  storeName: 'TodoComponent'          //      } 
+}                                     //    }      
+                                      // }
 ```
