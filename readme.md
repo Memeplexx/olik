@@ -6,7 +6,7 @@
 ![Package Size](https://badgen.net/bundlephobia/minzip/olik)
 ![Dependency count](https://badgen.net/bundlephobia/dependency-count/olik)
 
-## Manage your state **in-line** using a **curated**, **consistent** set of state-update APIs.  
+## Manage state **in-line** using a **curated**, **consistent** set of state-update APIs.  
 With binding for ***[Vanilla](https://memeplexx.github.io/olik/docs/vanilla-js)***,
 ***[React](https://memeplexx.github.io/olik/docs/read)***, and
 ***[Angular](https://memeplexx.github.io/olik/docs/angular)***
