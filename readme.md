@@ -58,12 +58,11 @@ const derivation = derive(
 #### 🥚 **NEST STORES**
 Each component's state can be managed and debugged with or without your application store.
 ```ts
-select = setNested({                  // yourStoreState = {
-  title: '',                          //    /* ... root store state ... */
-  description: '',                    //    nested {
-  done: false,                        //      TodoComponent: {
-}, {                                  //        0: { title: '', description: '', done: false }
-  storeName: 'TodoComponent'          //      } 
-}                                     //    }      
-                                      // }
+select = setNested({                  // applicationStoreState = {
+  title: '',                          //    nested { // all nested stores are placed here
+  description: '',                    //      TodoComponent: {
+  done: false,                        //        0: { title: '', description: '', done: false }
+}, {                                  //      }
+  storeName: 'TodoComponent'          //    }   
+}                                     // }
 ```
