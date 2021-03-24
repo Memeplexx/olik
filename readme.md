@@ -51,7 +51,7 @@ const derivation = derive(
   select(s => s.hobbies),
 ).usingExpensiveCalc(
   (foods, hobbies) => {
-    // ...some calculation...
+    /* ...some calculation... */
   }
 )
 ```
@@ -67,6 +67,6 @@ select = setNested({                  // applicationStoreState = {
   instanceName: todoId                //   }
 }                                     // }
 
-select(s => s.done)                   // type: 'select(nested.TodoComponent.1.one).replace()'
+select(s => s.done)                   // type: 'select(nested.TodoComponent.1.done).replace()'
   .replace(true);                     // replacement: true
 ```
