@@ -14,7 +14,7 @@ With bindings for ***[Vanilla](https://memeplexx.github.io/olik/docs/vanilla-js)
 ---
 
 #### 🌈 **SET UP**
-Initializing your store couldn't be simpler and integration with the Redux Devtools extension is automatic.
+Initializing your store couldn't be simpler and integration with the [Redux Devtools extension](https://github.com/zalmoxisus/redux-devtools-extension) is automatic.
 ```ts
 const select = set({
   username: '',
@@ -25,7 +25,7 @@ const select = set({
 });
 ```  
 #### ✍️ **WRITE STATE** 
-Writes consist of a **selection** from the store followed by an **action** and state-updates are described for you. 
+Writes consist of a **selection** from the store followed by an **action** and state-updates are **described** for you. 
 ```ts
 select(s => s.username)            // type: 'select(username).replace()'
   .replace('Terence');             // replacement: 'Terence'
@@ -38,7 +38,7 @@ select(s => s.favorite.hobbies)    // type: 'select(favorite.hobbies).whereOne(i
   .patch({ name: 'coding' });      // patch: { name: 'coding' }
 ```
 #### 🔍 **READ STATE**
-State can be read, listened to, or memoised.
+State can be **read** from, **listened** to, and expensive derivations can be **memoised**.
 ```ts
 select(s => s.favorite.hobbies)
   .read()
