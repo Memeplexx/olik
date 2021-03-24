@@ -25,7 +25,7 @@ const select = set({
 });
 ```  
 #### ✍️ **WRITE STATE** 
-All writes consist of a **selection** from the store, followed by an **action** allowing Olik to describe your state-updates for you. 
+Writes consist of a **selection** from the store, followed by an **action** allowing Olik to describe your state-updates for you. 
 ```ts
 select(s => s.username)            // type: 'select(username).replace()'
   .replace('Terence');             // replacement: 'Terence'
