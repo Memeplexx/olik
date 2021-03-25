@@ -14,7 +14,7 @@ With bindings for ***[Vanilla](https://memeplexx.github.io/olik/docs/vanilla-js)
 ---
 
 #### 🌈 **SET UP**
-Initializing your store couldn't be simpler and integration with the [Redux Devtools extension](https://github.com/zalmoxisus/redux-devtools-extension) is automatic.
+Initializing your store couldn't be simpler and integration with the **[Redux Devtools extension](https://github.com/zalmoxisus/redux-devtools-extension)** is automatic.
 ```ts
 const select = set({
   username: '',
@@ -33,7 +33,7 @@ select(s => s.username)              // type: 'select(username).replace()'
 select(s => s.favorite.foods)        // type: 'select(favorite.foods).insert()'
   .insert(['Indian', 'Sushi']);      // insertion: ['Indian', 'Sushi']
 
-select(s => s.favorite.hobbies)      // type: 'select(favorite.hobbies).whereOne(id).eq(3).patch()'
+select(s => s.favorite.hobbies)      // type: 'select(favorite.hobbies).whereOne().patch()'
   .whereOne(s => s.id).eq(3)         // query: 'id === 3',
   .patch({ name: 'coding' });        // patch: { name: 'coding' }
 ```
