@@ -9,7 +9,6 @@ import {
   Trackability,
 } from './shapes-external';
 import { PathReader, UpdateStateFn } from './shapes-internal';
-import { errorMessages } from './shared-consts';
 import { libState } from './shared-state';
 import { copyPayload, createPathReader, deepCopy, deepFreeze, validateSelectorFn } from './shared-utils';
 
@@ -100,7 +99,7 @@ export const patch = <S, C, X extends C & Array<any>, T extends Trackability>(
   });
 }) as StoreForAnObject<C, T>['patch'];
 
-export const match = <S, C, X extends C & Array<any>, T extends Trackability>(
+export const upsertMatching = <S, C, X extends C & Array<any>, T extends Trackability>(
   selector: Selector<S, C, X>,
   currentState: () => S,
   updateState: UpdateStateFn<S, C, T, X>,
@@ -108,7 +107,7 @@ export const match = <S, C, X extends C & Array<any>, T extends Trackability>(
 ) => (getProp => {
   validateSelector(selector, isNested);
   return {
-    replaceElseInsert: (payload, tag) => {
+    with: (payload, tag) => {
       validateSelector(selector, isNested);
       const segs = !getProp ? [] : createPathReader((selector(currentState()) as X)[0] || {}).readSelector(getProp);
       const { payloadFrozen, payloadCopied } = copyPayload(payload);
@@ -135,7 +134,7 @@ export const match = <S, C, X extends C & Array<any>, T extends Trackability>(
           old.forEach((oe, oi) => { const found = payloadCopiedArray.find(ne => !getProp ? oe === ne : getProp(oe) === getProp(ne)); if (found) { old[oi] = deepCopy(found); } });
           payloadCopiedArray.filter(ne => !old.some(oe => !getProp ? oe === ne : getProp(oe) === getProp(ne))).forEach(ne => old.push(ne));
         },
-        actionName: `match(${segs.join('.')}).replaceElseInsert()`,
+        actionName: `upsertMatching(${segs.join('.')}).with()`,
         payload: null,
         getPayloadFn: () => ({
           argument: payloadFrozen,
@@ -146,7 +145,7 @@ export const match = <S, C, X extends C & Array<any>, T extends Trackability>(
       });
     }
   };
-}) as StoreForAnArray<X, T>['match'];
+}) as StoreForAnArray<X, T>['upsertMatching'];
 
 export const replace = <S, C, X extends C & Array<any>, T extends Trackability>(
   pathReader: PathReader<S>,

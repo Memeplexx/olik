@@ -73,14 +73,14 @@ describe('array', () => {
     expect(libState.currentMutableState).toEqual(select().read());
   })
 
-  it('should be able to replaceElseInsert() with multiple elements, replacing and inserting', () => {
+  it('should be able to upsertMatching() with multiple elements, replacing and inserting', () => {
     const select = set(initialState);
     const payload = [{ id: 2, value: 'twoo' }, { id: 3, value: 'threee' }, { id: 4, value: 'four' }];
     select(s => s.array)
-      .match(s => s.id)
-      .replaceElseInsert(payload);
+      .upsertMatching(s => s.id)
+      .with(payload);
     expect(libState.currentAction).toEqual({
-      type: 'select(array).match(id).replaceElseInsert()',
+      type: 'select(array).match(id).upsertMatching()',
       argument: payload,
       replacementCount: 2,
       insertionCount: 1,
@@ -89,14 +89,14 @@ describe('array', () => {
     expect(libState.currentMutableState).toEqual(select().read());
   });
 
-  it('should replaceElseInsert() with one element replacing', () => {
+  it('should upsertMatching() with one element replacing', () => {
     const select = set(initialState);
     const payload = { id: 2, value: 'two updated' };
     select(s => s.array)
-      .match(s => s.id)
-      .replaceElseInsert(payload);
+      .upsertMatching(s => s.id)
+      .with(payload);
     expect(libState.currentAction).toEqual({
-      type: 'select(array).match(id).replaceElseInsert()',
+      type: 'select(array).match(id).upsertMatching()',
       argument: payload,
       insertionCount: 0,
       replacementCount: 1,
@@ -105,14 +105,14 @@ describe('array', () => {
     expect(libState.currentMutableState).toEqual(select().read());
   });
 
-  it('should replaceElseInsert() with one element inserting', () => {
+  it('should upsertMatching() with one element inserting', () => {
     const select = set(initialState);
     const payload = { id: 4, value: 'four inserted' };
     select(s => s.array)
-      .match(s => s.id)
-      .replaceElseInsert(payload);
+      .upsertMatching(s => s.id)
+      .with(payload);
     expect(libState.currentAction).toEqual({
-      type: 'select(array).match(id).replaceElseInsert()',
+      type: 'select(array).match(id).upsertMatching()',
       argument: payload,
       insertionCount: 1,
       replacementCount: 0,

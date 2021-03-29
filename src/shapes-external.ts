@@ -267,29 +267,22 @@ export type StoreForAnArray<X extends DeepReadonlyArray<any>, T extends Trackabi
    */
   removeAll: (tag: Tag<T>) => void,
   /**
-   * Substitutes all elements with a new array of elements
+   * Substitute all elements with a new array of elements
    * @example
    * ...
    * .replaceAll(newTodos);
    */
   replaceAll: (replacement: X, tag: Tag<T>) => void,
   /**
-   * Get a property which will be used to compare existing array elements wth incoming array elements.
-   * We can then chain `replaceElseInsert()` to either replace existing array element(s) or insert new element(s) if they cannot be matched
+   * Insert element(s) into the store array (if they do not already exist) or update them (if they do)
    * @example
    * ...
-   * .match(s => s.id)
-   * .replaceElseInsert(elementOrArray)
+   * .upsertMatching(s => s.id) // get the property that will uniquely identify array element(s)
+   * .with(elementOrArrayOfElements) // pass in an element or array of elements
    * ...
    */
-  match: <P>(getProp?: (element: DeepReadonly<X[0]>) => P) => {
-    /**
-     * Use the previous `match()` function to either replace existing array element(s) or insert new element(s) if they cannot be matched
-     * @example
-     * ...
-     * .replaceElseInsert(elementOrArray)
-     */
-    replaceElseInsert: (elementOrArray: X[0] | X, tag: Tag<T>) => void,
+  upsertMatching: <P>(getProp?: (element: DeepReadonly<X[0]>) => P) => {
+    with: (elementOrArray: X[0] | X, tag: Tag<T>) => void,
   }
   /**
    * Specify a where clause to find many elements.

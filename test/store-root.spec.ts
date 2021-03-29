@@ -150,15 +150,15 @@ describe('Root', () => {
     expect(libState.currentMutableState).toEqual(select().read());
   });
 
-  it('match().replaceElseInsert()', () => {
+  it('match().upsertMatching()', () => {
     const initialState = ['one', 'two', 'three'];
     const select = set(initialState);
     const payload = 'four';
     select()
-      .match()
-      .replaceElseInsert(payload);
+      .upsertMatching()
+      .with(payload);
     expect(libState.currentAction).toEqual({
-      type: 'select().match().replaceElseInsert()',
+      type: 'select().upsertMatching().with()',
       argument: payload,
       insertionCount: 1,
       replacementCount: 0,
