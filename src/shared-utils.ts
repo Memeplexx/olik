@@ -123,7 +123,7 @@ export function copyPayload<C>(payload: C | FunctionReturning<C>) {
 }
 
 export const validateSelectorFn = (
-  functionName: 'selector' | 'getProp',
+  functionName: 'select' | 'getProp',
   selector?: (element: any) => any,
 ) => {
   if (libState.bypassSelectorFunctionCheck) { return; }

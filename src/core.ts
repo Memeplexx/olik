@@ -19,6 +19,7 @@ import {
   FindOrFilter,
   OptionsForReduxDevtools,
   PredicateOptionsCommon,
+  PredicateOptionsForBoolean,
   PredicateOptionsForNumber,
   PredicateOptionsForString,
   Selector,
@@ -60,15 +61,18 @@ export function createStore<S, T extends Trackability>(context: {
       const whereClauseSpecs = Array<{ filter: (arg: X[0]) => boolean, type: 'and' | 'or' | 'last' }>();
       const whereClauseStrings = Array<string>();
       const recurseWhere = (getProp => {
-        validateSelectorFn('getProp', getProp);
-        const segs = array.getSegments(selector, () => currentState, getProp);
-        const criteria = (arg: X[0], fn: (arg: X[0]) => boolean) => {
-          segs.forEach(seg => arg = arg[seg]);
-          return fn(arg);
-        };
+        const getSegsAndCriteria = () => {
+          validateSelectorFn('getProp', getProp);
+          const segs = array.getSegments(selector, () => currentState, getProp);
+          const criteria = (arg: X[0], fn: (arg: X[0]) => boolean) => {
+            segs.forEach(seg => arg = arg[seg]);
+            return fn(arg);
+          };
+          return { segs, criteria };
+        }
         const constructActions = (whereClauseString: string, fn: (e: X[0]) => boolean) => {
           const context = {
-            whereClauseSpecs, whereClauseStrings, getCurrentState: () => currentState, criteria, recurseWhere, fn, whereClauseString, selector, updateState, type, changeListeners
+            whereClauseSpecs, whereClauseStrings, getCurrentState: () => currentState, criteria: getSegsAndCriteria().criteria, recurseWhere, fn, whereClauseString, selector, updateState, type, changeListeners
           } as ArrayOperatorState<S, C, X, FindOrFilter, T>;
           return {
             and: array.and(context),
@@ -82,34 +86,37 @@ export function createStore<S, T extends Trackability>(context: {
         };
         return {
           ...{
-            eq: val => constructActions(`${segs.join('.') || 'element'} === ${val}`, e => e === val),
-            ne: val => constructActions(`${segs.join('.') || 'element'} !== ${val}`, e => e !== val),
-            in: val => constructActions(`[${val.join(', ')}].includes(${segs.join('.') || 'element'})`, e => val.includes(e)),
-            ni: val => constructActions(`![${val.join(', ')}].includes(${segs.join('.') || 'element'})`, e => !val.includes(e)),
+            eq: val => constructActions(`${getSegsAndCriteria().segs.join('.') || 'element'} === ${val}`, e => e === val),
+            ne: val => constructActions(`${getSegsAndCriteria().segs.join('.') || 'element'} !== ${val}`, e => e !== val),
+            in: val => constructActions(`[${val.join(', ')}].includes(${getSegsAndCriteria().segs.join('.') || 'element'})`, e => val.includes(e)),
+            ni: val => constructActions(`![${val.join(', ')}].includes(${getSegsAndCriteria().segs.join('.') || 'element'})`, e => !val.includes(e)),
           } as PredicateOptionsCommon<X, any, FindOrFilter, T>,
           ...{
-            gt: val => constructActions(`${segs.join('.') || 'element'} > ${val}`, e => e > val),
-            lt: val => constructActions(`${segs.join('.') || 'element'} < ${val}`, e => e < val),
-            gte: val => constructActions(`${segs.join('.') || 'element'} >= ${val}`, e => e >= val),
-            lte: val => constructActions(`${segs.join('.') || 'element'} <= ${val}`, e => e <= val),
+            returnsTrue: () => {
+              const predicate = getProp as any as (element: DeepReadonly<X[0]>) => boolean;
+              const context = { type, updateState, selector, predicate, changeListeners, getCurrentState: () => currentState } as ArrayCustomState<S, C, X, T>;
+              return {
+                remove: arrayCustom.remove(context),
+                replace: arrayCustom.replace(context),
+                patch: arrayCustom.patch(context),
+                onChange: arrayCustom.onChange(context),
+                read: arrayCustom.read(context),
+              };
+            }
+          } as PredicateOptionsForBoolean<X, FindOrFilter, T>,
+          ...{
+            gt: val => constructActions(`${getSegsAndCriteria().segs.join('.') || 'element'} > ${val}`, e => e > val),
+            lt: val => constructActions(`${getSegsAndCriteria().segs.join('.') || 'element'} < ${val}`, e => e < val),
+            gte: val => constructActions(`${getSegsAndCriteria().segs.join('.') || 'element'} >= ${val}`, e => e >= val),
+            lte: val => constructActions(`${getSegsAndCriteria().segs.join('.') || 'element'} <= ${val}`, e => e <= val),
           } as PredicateOptionsForNumber<X, any, FindOrFilter, T>,
           ...{
-            match: val => constructActions(`${segs.join('.') || 'element'}.match(${val})`, e => e.match(val)),
+            match: val => constructActions(`${getSegsAndCriteria().segs.join('.') || 'element'}.match(${val})`, e => e.match(val)),
           } as PredicateOptionsForString<X, any, FindOrFilter, T>,
         };
       }) as StoreForAnArray<X, T>['whereMany'];
       return recurseWhere;
     };
-    const findOrFilter = (type: FindOrFilter) => (predicate => {
-      const context = { type, updateState, selector, predicate, changeListeners, getCurrentState: () => currentState } as ArrayCustomState<S, C, X, T>;
-      return {
-        remove: arrayCustom.remove(context),
-        replace: arrayCustom.replace(context),
-        patch: arrayCustom.patch(context),
-        onChange: arrayCustom.onChange(context),
-        read: arrayCustom.read(context),
-      };
-    }) as StoreForAnArray<X, T>['filter'];
     const coreActions = {
       patch: patch(selector, updateState, () => !!coreActions.removeFromContainingStore),
       insert: insert(selector, updateState, () => !!coreActions.removeFromContainingStore),
@@ -118,8 +125,6 @@ export function createStore<S, T extends Trackability>(context: {
       reset: reset(pathReader, updateState, selector, initialState, () => !!coreActions.removeFromContainingStore),
       replace: replace(pathReader, updateState, selector, 'replace', () => !!coreActions.removeFromContainingStore),
       upsertMatching: upsertMatching(selector, () => currentState, updateState, () => !!coreActions.removeFromContainingStore),
-      filter: findOrFilter('filter'),
-      find: findOrFilter('find'),
       whereMany: where('filter'),
       whereOne: where('find'),
       onChange: onChange(selector, changeListeners),

@@ -109,6 +109,22 @@ export type PredicateOptionsCommon<X extends DeepReadonlyArray<any>, E, F extend
 }
 
 /**
+ * Query options for boolean
+ */
+export type PredicateOptionsForBoolean<X extends DeepReadonlyArray<any>, F extends FindOrFilter, T extends Trackability> = {
+  /**
+   * Checks whether the previously supplied function returns true.
+   * It is advised to only use this if your filtering criteria is too complicated to express using the operators supplied by this library.
+   * Using this function will mean that useful information will not show up in the devtools
+   * @example
+   * ...
+   * .returnsTrue()
+   * ...
+   */
+  returnsTrue: () => PredicateAction<X, F, T>,
+}
+
+/**
  * Query options for number
  */
 export type PredicateOptionsForNumber<X extends DeepReadonlyArray<any>, E, F extends FindOrFilter, T extends Trackability> = {
@@ -164,7 +180,8 @@ export type PredicateOptionsForString<X extends DeepReadonlyArray<any>, E, F ext
  * Query options
  */
 export type Predicate<X extends DeepReadonlyArray<any>, P, F extends FindOrFilter, T extends Trackability> =
-  [P] extends [number] ? PredicateOptionsForNumber<X, P, F, T>
+  [P] extends [boolean] ? PredicateOptionsForBoolean<X, F, T>
+  : [P] extends [number] ? PredicateOptionsForNumber<X, P, F, T>
   : [P] extends [string] ? PredicateOptionsForString<X, P, F, T>
   : PredicateOptionsCommon<X, P, F, T>;
 
@@ -302,26 +319,6 @@ export type StoreForAnArray<X extends DeepReadonlyArray<any>, T extends Trackabi
    * ...
    */
   whereOne: PredicateFunction<X, 'find', T>,
-  /**
-   * Specify a function in order to filter elements. 
-   * NOTE: It is advisable to choose the `whereMany()` function over this one because that function will allow the library to describe your actions in more detail.
-   * Only use `filter()` when your search criteria is very complicated.
-   * @example
-   * ...
-   * .filter(t => ...some complex criteria returning a boolean...).eq(1)
-   * ...
-   */
-  filter: PredicateFunctionCustom<X, 'filter', T>,
-  /**
-   * Specify a function in order to filter elements.  
-   * NOTE: It is advisable to choose the `whereOne()` function over this one because that function will allow the library to describe your actions in more detail.
-   * Only use `find()` when your search criteria is very complicated.
-   * @example
-   * ...
-   * .find(t => ...some complex criteria returning a boolean...).eq(1)
-   * ...
-   */
-  find: PredicateFunctionCustom<X, 'find', T>,
 }
 
 /**

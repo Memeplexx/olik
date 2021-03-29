@@ -6,12 +6,11 @@
 ![Package Size](https://badgen.net/bundlephobia/minzip/olik)
 ![Dependency count](https://badgen.net/bundlephobia/dependency-count/olik)
 
-## Manage state **in-line** using a **curated**, **consistent** set of state-update APIs.  
-With bindings for ***[Vanilla](https://memeplexx.github.io/olik/docs/vanilla-js)***,
-***[React](https://memeplexx.github.io/olik/docs/read)***, and
-***[Angular](https://memeplexx.github.io/olik/docs/angular)***
+## Crystal-clear state-management
 
----
+NOTE: The below code uses Olik without a framework,
+however there are also bindings for ***[React](https://memeplexx.github.io/olik/docs/read)***, and
+***[Angular](https://memeplexx.github.io/olik/docs/angular)***
 
 #### 🌈 **SET UP**
 Initializing your store couldn't be simpler and integration with the **[Redux Devtools extension](https://github.com/zalmoxisus/redux-devtools-extension)** is automatic.
@@ -25,7 +24,7 @@ const select = set({
 });
 ```  
 #### ✍️ **WRITE STATE** 
-Writes consist of a **selection** from the store followed by an **action** and state-updates are **described** for you. 
+Writes consist of a **selection** followed by an **action** allowing state-updates to be **described** for you. 
 ```ts
 select(s => s.username)              // type: 'select(username).replace()'
   .replace('Terence');               // replacement: 'Terence'

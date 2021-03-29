@@ -11,14 +11,14 @@ describe('Error', () => {
     const select = set({ arr: new Array<string>() });
     expect(() => {
       select(s => s.arr.some(e => true)).replace(false);
-    }).toThrowError(errorMessages.ILLEGAL_CHARACTERS_WITHIN_SELECTOR('selector'));
+    }).toThrowError(errorMessages.ILLEGAL_CHARACTERS_WITHIN_SELECTOR('select'));
   })
 
   it('should throw an error when filter() is invoked within a selector', () => {
     const select = set({ arr: new Array<string>() });
     expect(() => {
       select(s => s.arr.filter(e => true)).replaceAll([]);
-    }).toThrowError(errorMessages.ILLEGAL_CHARACTERS_WITHIN_SELECTOR('selector'));
+    }).toThrowError(errorMessages.ILLEGAL_CHARACTERS_WITHIN_SELECTOR('select'));
   })
 
   it('should throw an error if the initial state has functions in it', () => {
@@ -37,7 +37,7 @@ describe('Error', () => {
     const select = set({ prop: 'a' });
     expect(() => {
       select(s => s.prop.replace('', '')).replace('ss');
-    }).toThrowError(errorMessages.ILLEGAL_CHARACTERS_WITHIN_SELECTOR('selector'));
+    }).toThrowError(errorMessages.ILLEGAL_CHARACTERS_WITHIN_SELECTOR('select'));
   })
 
 });

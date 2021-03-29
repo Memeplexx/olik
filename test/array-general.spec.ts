@@ -80,7 +80,7 @@ describe('array', () => {
       .upsertMatching(s => s.id)
       .with(payload);
     expect(libState.currentAction).toEqual({
-      type: 'select(array).match(id).upsertMatching()',
+      type: 'select(array).upsertMatching(id).with()',
       argument: payload,
       replacementCount: 2,
       insertionCount: 1,
@@ -96,7 +96,7 @@ describe('array', () => {
       .upsertMatching(s => s.id)
       .with(payload);
     expect(libState.currentAction).toEqual({
-      type: 'select(array).match(id).upsertMatching()',
+      type: 'select(array).upsertMatching(id).with()',
       argument: payload,
       insertionCount: 0,
       replacementCount: 1,
@@ -112,7 +112,7 @@ describe('array', () => {
       .upsertMatching(s => s.id)
       .with(payload);
     expect(libState.currentAction).toEqual({
-      type: 'select(array).match(id).upsertMatching()',
+      type: 'select(array).upsertMatching(id).with()',
       argument: payload,
       insertionCount: 1,
       replacementCount: 0,
