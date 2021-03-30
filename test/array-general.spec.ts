@@ -16,7 +16,7 @@ describe('array', () => {
     select(s => s.array)
       .removeAll();
     expect(libState.currentAction).toEqual({
-      type: 'select(array).removeAll()',
+      type: 'array.removeAll()',
     });
     expect(select(s => s.array).read()).toEqual([]);
     expect(libState.currentMutableState).toEqual(select().read());
@@ -28,7 +28,7 @@ describe('array', () => {
     select(s => s.array)
       .replaceAll(payload);
     expect(libState.currentAction).toEqual({
-      type: 'select(array).replaceAll()',
+      type: 'array.replaceAll()',
       replacement: payload,
     });
     expect(select(s => s.array).read()).toEqual(payload);
@@ -40,7 +40,7 @@ describe('array', () => {
     select(s => s.array)
       .reset();
     expect(libState.currentAction).toEqual({
-      type: 'select(array).reset()',
+      type: 'array.reset()',
       replacement: initialState.array,
     });
     expect(select(s => s.array).read()).toEqual(initialState.array);
@@ -53,7 +53,7 @@ describe('array', () => {
     select(s => s.array)
       .insert(payload);
     expect(libState.currentAction).toEqual({
-      type: 'select(array).insert()',
+      type: 'array.insert()',
       insertion: payload,
     });
     expect(select(s => s.array).read()).toEqual([...initialState.array, payload]);
@@ -66,7 +66,7 @@ describe('array', () => {
     select(s => s.array)
       .insert(payload);
     expect(libState.currentAction).toEqual({
-      type: 'select(array).insert()',
+      type: 'array.insert()',
       insertion: payload,
     });
     expect(select(s => s.array).read()).toEqual([...initialState.array, ...payload]);
@@ -80,7 +80,7 @@ describe('array', () => {
       .upsertMatching(s => s.id)
       .with(payload);
     expect(libState.currentAction).toEqual({
-      type: 'select(array).upsertMatching(id).with()',
+      type: 'array.upsertMatching(id).with()',
       argument: payload,
       replacementCount: 2,
       insertionCount: 1,
@@ -96,7 +96,7 @@ describe('array', () => {
       .upsertMatching(s => s.id)
       .with(payload);
     expect(libState.currentAction).toEqual({
-      type: 'select(array).upsertMatching(id).with()',
+      type: 'array.upsertMatching(id).with()',
       argument: payload,
       insertionCount: 0,
       replacementCount: 1,
@@ -112,7 +112,7 @@ describe('array', () => {
       .upsertMatching(s => s.id)
       .with(payload);
     expect(libState.currentAction).toEqual({
-      type: 'select(array).upsertMatching(id).with()',
+      type: 'array.upsertMatching(id).with()',
       argument: payload,
       insertionCount: 1,
       replacementCount: 0,

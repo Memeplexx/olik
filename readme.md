@@ -26,13 +26,13 @@ const select = set({
 #### ✍️ **WRITE STATE** 
 Writes consist of a **selection** followed by an **action** allowing state-updates to be **described** for you. 
 ```ts
-select(s => s.username)              // type: 'select(username).replace()'
+select(s => s.username)              // type: 'username.replace()'
   .replace('Terence');               // replacement: 'Terence'
 
-select(s => s.favorite.foods)        // type: 'select(favorite.foods).insert()'
+select(s => s.favorite.foods)        // type: 'favorite.foods.insert()'
   .insert(['Indian', 'Sushi']);      // insertion: ['Indian', 'Sushi']
 
-select(s => s.favorite.hobbies)      // type: 'select(favorite.hobbies).whereOne().patch()'
+select(s => s.favorite.hobbies)      // type: 'favorite.hobbies.whereOne().patch()'
   .whereOne(s => s.id).eq(3)         // query: 'id === 3',
   .patch({ name: 'coding' });        // patch: { name: 'coding' }
 ```
@@ -64,8 +64,8 @@ select = setNested({                  // applicationStoreState = {
 }, {                                  //       1: { title: '', description: '', done: false }
   storeName: 'TodoComponent',         //     }
   instanceName: todoId                //   }
-}                                     // }
+});                                   // }
 
-select(s => s.done)                   // type: 'select(nested.TodoComponent.1.done).replace()'
+select(s => s.done)                   // type: 'nested.TodoComponent.1.done.replace()'
   .replace(true);                     // replacement: true
 ```

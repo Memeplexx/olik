@@ -18,7 +18,7 @@ describe('array.whereMany().replace()', () => {
       .whereMany(e => e.id).eq(2)
       .replace(payload);
     expect(libState.currentAction).toEqual({
-      type: 'select(array).whereMany().replace()',
+      type: 'array.whereMany().replace()',
       replacement: payload,
       query: 'id === 2',
     });
@@ -33,7 +33,7 @@ describe('array.whereMany().replace()', () => {
       .whereMany(e => e.id).ne(2)
       .replace(payload);
     expect(libState.currentAction).toEqual({
-      type: 'select(array).whereMany().replace()',
+      type: 'array.whereMany().replace()',
       replacement: payload,
       query: 'id !== 2',
     });
@@ -48,7 +48,7 @@ describe('array.whereMany().replace()', () => {
       .whereMany(e => e.id).gt(1)
       .replace(payload);
     expect(libState.currentAction).toEqual({
-      type: 'select(array).whereMany().replace()',
+      type: 'array.whereMany().replace()',
       replacement: payload,
       query: 'id > 1',
     });
@@ -63,7 +63,7 @@ describe('array.whereMany().replace()', () => {
       .whereMany(e => e.id).gte(1)
       .replace(payload);
     expect(libState.currentAction).toEqual({
-      type: 'select(array).whereMany().replace()',
+      type: 'array.whereMany().replace()',
       replacement: payload,
       query: 'id >= 1',
     });
@@ -78,7 +78,7 @@ describe('array.whereMany().replace()', () => {
       .whereMany(e => e.id).lt(2)
       .replace(payload);
     expect(libState.currentAction).toEqual({
-      type: 'select(array).whereMany().replace()',
+      type: 'array.whereMany().replace()',
       replacement: payload,
       query: 'id < 2',
     });
@@ -93,7 +93,7 @@ describe('array.whereMany().replace()', () => {
       .whereMany(e => e.id).lte(2)
       .replace(payload);
     expect(libState.currentAction).toEqual({
-      type: 'select(array).whereMany().replace()',
+      type: 'array.whereMany().replace()',
       replacement: payload,
       query: 'id <= 2',
     });
@@ -108,7 +108,7 @@ describe('array.whereMany().replace()', () => {
       .whereMany(e => e.id).in([1, 2])
       .replace(payload);
     expect(libState.currentAction).toEqual({
-      type: 'select(array).whereMany().replace()',
+      type: 'array.whereMany().replace()',
       replacement: payload,
       query: '[1, 2].includes(id)',
     });
@@ -123,7 +123,7 @@ describe('array.whereMany().replace()', () => {
       .whereMany(e => e.id).ni([1, 2])
       .replace(payload);
     expect(libState.currentAction).toEqual({
-      type: 'select(array).whereMany().replace()',
+      type: 'array.whereMany().replace()',
       replacement: payload,
       query: '![1, 2].includes(id)',
     });
@@ -138,7 +138,7 @@ describe('array.whereMany().replace()', () => {
       .whereMany(e => e.value).match(/^t/)
       .replace(payload);
     expect(libState.currentAction).toEqual({
-      type: 'select(array).whereMany().replace()',
+      type: 'array.whereMany().replace()',
       replacement: payload,
       query: 'value.match(/^t/)',
     });

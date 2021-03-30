@@ -164,7 +164,7 @@ export function createStore<S, T extends Trackability>(context: {
     currentState = result;
     notifySubscribers(previousState, result);
     const actionToDispatch = {
-      type: (specs.actionNameOverride ? specs.actionName : ('select(' + pathSegments.join('.') + ').' + specs.actionName)) +
+      type: (specs.actionNameOverride ? specs.actionName : (pathSegments.join('.') + (pathSegments.length ? '.' : '') + specs.actionName)) +
         (specs.tag ? ` [${tagSanitizer ? tagSanitizer(specs.tag as string) : specs.tag}]` : ''),
       ...((specs.getPayloadFn && (specs.getPayloadFn() !== undefined)) ? specs.getPayloadFn() : specs.payload),
     };

@@ -31,7 +31,11 @@ export interface Unsubscribable {
 /**
  * An array which cannot be mutated
  */
-export interface DeepReadonlyArray<T> extends ReadonlyArray<DeepReadonly<T>> { }
+export interface DeepReadonlyArray<T> extends ReadonlyArray<DeepReadonly<T>> {
+}
+// export interface DeepReadonlyArray<T> extends ReadonlyArray<DeepReadonly<T>> {
+//   slice: (start?: number, end?: number) => DeepReadonly<T>[];
+// }
 
 /**
  * An object which cannot be mutated

@@ -15,7 +15,7 @@ describe('tags', () => {
     select(s => s.object.property)
       .replace(payload, tag);
     expect(libState.currentAction).toEqual({
-      type: `select(object.property).replace() [${tag}]`,
+      type: `object.property.replace() [${tag}]`,
       replacement: payload,
     });
     expect(select(s => s.object.property).read()).toEqual(payload);
@@ -33,7 +33,7 @@ describe('tags', () => {
     select(s => s.test)
       .replace(payload, tag);
     expect(libState.currentAction).toEqual({
-      type: `select(test).replace() [${tag}x]`,
+      type: `test.replace() [${tag}x]`,
       replacement: payload,
     });
     expect(libState.currentMutableState).toEqual(select().read());
@@ -46,7 +46,7 @@ describe('tags', () => {
     select(s => s.prop)
       .replace(payload, tag);
     expect(libState.currentAction).toEqual({
-      type: `select(prop).replace() [${tag}]`,
+      type: `prop.replace() [${tag}]`,
       replacement: payload,
     });
   })

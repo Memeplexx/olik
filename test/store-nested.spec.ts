@@ -40,7 +40,7 @@ describe('Nested', () => {
     expect(nestedStore(s => s.one).read()).toEqual('');
     nestedStore(s => s.one).replace('test');
     expect(libState.currentAction).toEqual({
-      type: `select(nested.${storeName}.0.one).replace()`,
+      type: `nested.${storeName}.0.one.replace()`,
       replacement: 'test',
     })
     expect(nestedStore(s => s.one).read()).toEqual('test');

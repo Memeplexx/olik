@@ -17,7 +17,7 @@ describe('array.find().remove()', () => {
       .whereOne(e => e.id).eq(2)
       .remove();
     expect(libState.currentAction).toEqual({
-      type: 'select(array).whereOne().remove()',
+      type: 'array.whereOne().remove()',
       toRemove: initialState.array[1],
       query: 'id === 2',
     });
@@ -31,7 +31,7 @@ describe('array.find().remove()', () => {
       .whereOne(e => e.id).ne(2)
       .remove();
     expect(libState.currentAction).toEqual({
-      type: 'select(array).whereOne().remove()',
+      type: 'array.whereOne().remove()',
       toRemove: initialState.array[0],
       query: 'id !== 2',
     });
@@ -45,7 +45,7 @@ describe('array.find().remove()', () => {
       .whereOne(e => e.id).gt(1)
       .remove();
     expect(libState.currentAction).toEqual({
-      type: 'select(array).whereOne().remove()',
+      type: 'array.whereOne().remove()',
       toRemove: initialState.array[1],
       query: 'id > 1',
     });
@@ -59,7 +59,7 @@ describe('array.find().remove()', () => {
       .whereOne(e => e.id).gte(1)
       .remove();
     expect(libState.currentAction).toEqual({
-      type: 'select(array).whereOne().remove()',
+      type: 'array.whereOne().remove()',
       toRemove: initialState.array[0],
       query: 'id >= 1',
     });
@@ -73,7 +73,7 @@ describe('array.find().remove()', () => {
       .whereOne(e => e.id).lt(2)
       .remove();
     expect(libState.currentAction).toEqual({
-      type: 'select(array).whereOne().remove()',
+      type: 'array.whereOne().remove()',
       toRemove: initialState.array[0],
       query: 'id < 2',
     });
@@ -87,7 +87,7 @@ describe('array.find().remove()', () => {
       .whereOne(e => e.id).lte(2)
       .remove();
     expect(libState.currentAction).toEqual({
-      type: 'select(array).whereOne().remove()',
+      type: 'array.whereOne().remove()',
       toRemove: initialState.array[0],
       query: 'id <= 2',
     });
@@ -101,7 +101,7 @@ describe('array.find().remove()', () => {
       .whereOne(e => e.id).in([1, 2])
       .remove();
     expect(libState.currentAction).toEqual({
-      type: 'select(array).whereOne().remove()',
+      type: 'array.whereOne().remove()',
       toRemove: initialState.array[0],
       query: '[1, 2].includes(id)',
     });
@@ -115,7 +115,7 @@ describe('array.find().remove()', () => {
       .whereOne(e => e.id).ni([1, 2])
       .remove();
     expect(libState.currentAction).toEqual({
-      type: 'select(array).whereOne().remove()',
+      type: 'array.whereOne().remove()',
       toRemove: initialState.array[2],
       query: '![1, 2].includes(id)',
     });
@@ -129,7 +129,7 @@ describe('array.find().remove()', () => {
       .whereOne(e => e.value).match(/^t/)
       .remove();
     expect(libState.currentAction).toEqual({
-      type: 'select(array).whereOne().remove()',
+      type: 'array.whereOne().remove()',
       toRemove: initialState.array[1],
       query: 'value.match(/^t/)',
     });

@@ -19,7 +19,7 @@ describe('array.filterCustom().replace()', () => {
       .whereMany(query).returnsTrue()
       .replace(payload);
     expect(libState.currentAction).toEqual({
-      type: 'select(array).filter().replace()',
+      type: 'array.filter().replace()',
       replacement: payload,
       query: query.toString(),
     });
@@ -35,7 +35,7 @@ describe('array.filterCustom().replace()', () => {
       .whereMany(query).returnsTrue()
       .replace(payload);
     expect(libState.currentAction).toEqual({
-      type: 'select(array).filter().replace()',
+      type: 'array.filter().replace()',
       replacement: payload,
       query: query.toString(),
     });
@@ -51,7 +51,7 @@ describe('array.filterCustom().replace()', () => {
       .whereMany(query).returnsTrue()
       .replace(payload);
     expect(libState.currentAction).toEqual({
-      type: 'select(array).filter().replace()',
+      type: 'array.filter().replace()',
       replacement: payload,
       query: query.toString(),
     });
@@ -67,7 +67,7 @@ describe('array.filterCustom().replace()', () => {
       .whereMany(e => e.id < 2).returnsTrue()
       .replace(payload);
     expect(libState.currentAction).toEqual({
-      type: 'select(array).filter().replace()',
+      type: 'array.filter().replace()',
       replacement: payload,
       query: query.toString(),
     });
@@ -83,7 +83,7 @@ describe('array.filterCustom().replace()', () => {
       .whereMany(query).returnsTrue()
       .replace(payload);
     expect(libState.currentAction).toEqual({
-      type: 'select(array).filter().replace()',
+      type: 'array.filter().replace()',
       replacement: payload,
       query: query.toString(),
     });
@@ -99,7 +99,7 @@ describe('array.filterCustom().replace()', () => {
       .whereMany(e => ![1, 2].includes(e.id)).returnsTrue()
       .replace(payload);
     expect(libState.currentAction).toEqual({
-      type: 'select(array).filter().replace()',
+      type: 'array.filter().replace()',
       replacement: payload,
       query: query.toString(),
     });
@@ -115,7 +115,7 @@ describe('array.filterCustom().replace()', () => {
       .whereMany(query).returnsTrue()
       .replace(payload);
     expect(libState.currentAction).toEqual({
-      type: 'select(array).filter().replace()',
+      type: 'array.filter().replace()',
       replacement: payload,
       query: query.toString(),
     });
