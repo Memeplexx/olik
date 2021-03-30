@@ -95,10 +95,4 @@ describe('array.filter().and().or()', () => {
     expect(libState.currentMutableState).toEqual(select().read());
   })
 
-  // it('', () => {
-  //   const select = set({ arr: new Array<string>() });
-  //   select(s => s.arr).read().filter(e => true);
-  //   select(s => s.arr).read().slice();
-  // })
-
 });

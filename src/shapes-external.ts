@@ -33,9 +33,6 @@ export interface Unsubscribable {
  */
 export interface DeepReadonlyArray<T> extends ReadonlyArray<DeepReadonly<T>> {
 }
-// export interface DeepReadonlyArray<T> extends ReadonlyArray<DeepReadonly<T>> {
-//   slice: (start?: number, end?: number) => DeepReadonly<T>[];
-// }
 
 /**
  * An object which cannot be mutated
@@ -380,7 +377,7 @@ export type StoreOrDerivation<C> = {
   /**
    * @returns the current state
    */
-  read: () => DeepReadonly<C>,
+  read: () => C,
 }
 
 /**
@@ -432,21 +429,21 @@ export type Selector<S, C, X = C> = X extends C & ReadonlyArray<any> ? (s: S) =>
  */
 export type SelectorFromANestedStore<S> = [S] extends [Array<any>] | [number] | [string] | [boolean]
   ? () => StoreWhichIsNested<S>
-  : <C = S>(selector?: (arg: DeepReadonly<S>) => C) => StoreWhichIsNested<C>;
+  : <C = DeepReadonly<S>>(selector?: (arg: DeepReadonly<S>) => C) => StoreWhichIsNested<C>;
 
 /**
  * A function which selects from a store
  */
 export type SelectorFromAStore<S> = [S] extends [Array<any>] | [number] | [string] | [boolean]
   ? () => StoreWhichDoesntEnforceTags<S>
-  : <C = S>(selector?: (arg: DeepReadonly<S>) => C) => StoreWhichDoesntEnforceTags<C>;
+  : <C = DeepReadonly<S>>(selector?: (arg: DeepReadonly<S>) => C) => StoreWhichDoesntEnforceTags<C>;
 
 /**
  * A function which selects from a store which enforces the use of tags when performing a state update
  */
 export type SelectorFromAStoreEnforcingTags<S> = [S] extends [Array<any>] | [number] | [string] | [boolean]
   ? () => StoreWhichEnforcesTags<S>
-  : <C = S>(selector?: (arg: DeepReadonly<S>) => C) => StoreWhichEnforcesTags<C>;
+  : <C = DeepReadonly<S>>(selector?: (arg: DeepReadonly<S>) => C) => StoreWhichEnforcesTags<C>;
 
 /**
  * An input for a derivation
