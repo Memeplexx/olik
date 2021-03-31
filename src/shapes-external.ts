@@ -292,17 +292,6 @@ export type StoreForAnArray<X extends DeepReadonlyArray<any>, T extends Trackabi
    */
   replaceAll: (replacement: X, tag: Tag<T>) => void,
   /**
-   * Insert element(s) into the store array (if they do not already exist) or update them (if they do)
-   * @example
-   * ...
-   * .upsertMatching(s => s.id) // get the property that will uniquely identify array element(s)
-   * .with(elementOrArrayOfElements) // pass in an element or array of elements
-   * ...
-   */
-  upsertMatching: <P>(getProp?: (element: DeepReadonly<X[0]>) => P) => {
-    with: (elementOrArray: X[0] | X, tag: Tag<T>) => void,
-  }
-  /**
    * Specify a where clause to find many elements.
    * @example
    * ```
@@ -321,6 +310,20 @@ export type StoreForAnArray<X extends DeepReadonlyArray<any>, T extends Trackabi
    */
   whereOne: PredicateFunction<X, 'find', T>,
 }
+
+export type StoreForAnArrayOfObjects<X extends DeepReadonlyArray<any>, T extends Trackability> = {
+  /**
+   * Insert element(s) into the store array (if they do not already exist) or update them (if they do)
+   * @example
+   * ...
+   * .upsertMatching(s => s.id) // get the property that will uniquely identify array element(s)
+   * .with(elementOrArrayOfElements) // pass in an element or array of elements
+   * ...
+   */
+  upsertMatching: <P>(getProp?: (element: DeepReadonly<X[0]>) => P) => {
+    with: (elementOrArray: X[0] | X, tag: Tag<T>) => void,
+  }
+} & StoreForAnArray<X, T>;
 
 /**
  * A function which accepts another function to select a property from an array element
@@ -395,6 +398,7 @@ export type StoreWhichIsResettable<C extends any, T extends Trackability> = {
  * An object which is capable of managing states of various shapes
  */
 export type Store<C, T extends Trackability> = ([C] extends undefined ? any :
+  [C] extends DeepReadonlyArray<object[]> ? StoreForAnArrayOfObjects<[C][0], T> :
   [C] extends DeepReadonlyArray<any[]> ? StoreForAnArray<[C][0], T> :
   [C] extends [object] ? StoreForAnObject<C, T> : StoreForAnObjectOrPrimitive<C, T>)
   & StoreWhichIsResettable<C, T>;
