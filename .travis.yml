@@ -1,4 +1,6 @@
 language: node_js
 node_js:
   - "10"
-install: ./install-dependencies.sh
+install:
+  - yarn --cwd ./framework-bindings/olik-react
+  - yarn --cwd ./framework-bindings/olik-angular
