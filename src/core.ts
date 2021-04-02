@@ -23,7 +23,7 @@ import {
   PredicateOptionsForNumber,
   PredicateOptionsForString,
   Selector,
-  StoreForAnArray,
+  StoreForAnArrayOfObjects,
   StoreWhichIsNested,
   Tag,
   Trackability,
@@ -114,7 +114,7 @@ export function createStore<S, T extends Trackability>(context: {
             match: val => constructActions(`${getSegsAndCriteria().segs.join('.') || 'element'}.match(${val})`, e => e.match(val)),
           } as PredicateOptionsForString<X, any, FindOrFilter, T>,
         };
-      }) as StoreForAnArray<X, T>['whereMany'];
+      }) as StoreForAnArrayOfObjects<X, T>['whereMany'];
       return recurseWhere;
     };
     const coreActions = {

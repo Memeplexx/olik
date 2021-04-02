@@ -1,7 +1,8 @@
 import {
   FunctionReturning,
   Selector,
-  StoreForAnArray,
+  StoreForAnArrayCommon,
+  StoreForAnArrayOfObjects,
   StoreForAnObject,
   StoreOrDerivation,
   StoreWhichIsResettable,
@@ -44,7 +45,7 @@ export const replaceAll = <S, C, X extends C & Array<any>, T extends Trackabilit
   isNested: () => boolean,
 ) => (
   (replacement, tag) => replace(pathReader, updateState, selector, 'replaceAll', isNested)(replacement, tag)
-) as StoreForAnArray<X, T>['replaceAll'];
+) as StoreForAnArrayCommon<X, T>['replaceAll'];
 
 export const removeAll = <S, C, X extends C & Array<any>, T extends Trackability>(
   selector: Selector<S, C, X>,
@@ -59,7 +60,7 @@ export const removeAll = <S, C, X extends C & Array<any>, T extends Trackability
     actionName: 'removeAll()',
     tag,
   });
-}) as StoreForAnArray<X, T>['removeAll'];
+}) as StoreForAnArrayCommon<X, T>['removeAll'];
 
 export const insert = <S, C, X extends C & Array<any>, T extends Trackability>(
   selector: Selector<S, C, X>,
@@ -78,7 +79,7 @@ export const insert = <S, C, X extends C & Array<any>, T extends Trackability>(
     },
     tag,
   });
-}) as StoreForAnArray<X, T>['insert'];
+}) as StoreForAnArrayCommon<X, T>['insert'];
 
 export const patch = <S, C, X extends C & Array<any>, T extends Trackability>(
   selector: Selector<S, C, X>,
@@ -145,7 +146,7 @@ export const upsertMatching = <S, C, X extends C & Array<any>, T extends Trackab
       });
     }
   };
-}) as StoreForAnArray<X, T>['upsertMatching'];
+}) as StoreForAnArrayOfObjects<X, T>['upsertMatching'];
 
 export const replace = <S, C, X extends C & Array<any>, T extends Trackability>(
   pathReader: PathReader<S>,
