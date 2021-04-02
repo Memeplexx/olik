@@ -197,7 +197,7 @@ export type ArrayOfElementsAction<X extends DeepReadonlyArray<any>, F extends Fi
    * .and(e => e.status).eq('todo')
    * ...
    */
-  and: <P>(getProp: (element: DeepReadonly<X[0]>) => P) => Predicate<X, P, F, T>,
+  and: X[0] extends object ? <P>(getProp: (element: DeepReadonly<X[0]>) => P) => Predicate<X, P, F, T> : () => Predicate<X, X[0], F, T>,
   /**
    * Append more criteria with which to filter your array
    * @example
@@ -205,7 +205,7 @@ export type ArrayOfElementsAction<X extends DeepReadonlyArray<any>, F extends Fi
    * .or(t => t.status).eq('todo')
    * ...
    */
-  or: <P>(getProp: (element: DeepReadonly<X[0]>) => P) => Predicate<X, P, F, T>,
+  or: X[0] extends object ? <P>(getProp: (element: DeepReadonly<X[0]>) => P) => Predicate<X, P, F, T> : () => Predicate<X, X[0], F, T>,
 } & ArrayOfElementsCommonAction<X, F, T>;
 
 /**
@@ -266,7 +266,7 @@ export type ArrayOfObjectsCommonAction<X extends DeepReadonlyArray<any>, F exten
 /**
  * An object which is capable of storing and updating state which is in the shape of an array of primitives
  */
-export type StoreForAnArray<X extends DeepReadonlyArray<any>, T extends Trackability> = {
+export type StoreForAnArrayCommon<X extends DeepReadonlyArray<any>, T extends Trackability> = {
   /**
    * Appends one or more elements onto the end of the array
    * @example
@@ -291,6 +291,12 @@ export type StoreForAnArray<X extends DeepReadonlyArray<any>, T extends Trackabi
    * .replaceAll(newTodos);
    */
   replaceAll: (replacement: X, tag: Tag<T>) => void,
+}
+
+/**
+ * An object which is capable of storing and updating state which is in the shape of an array of primitives
+ */
+export type StoreForAnArrayOfPrimitives<X extends DeepReadonlyArray<any>, T extends Trackability> = {
   /**
    * Specify a where clause to find many elements.
    * @example
@@ -300,7 +306,7 @@ export type StoreForAnArray<X extends DeepReadonlyArray<any>, T extends Trackabi
    * ...
    * ```
    */
-  whereMany: PredicateFunction<X, 'filter', T>,
+  whereMany: PredicateFunctionPrimitive<X, 'filter', T>,
   /**
    * Specify a where clause to find one element.  
    * @example
@@ -308,8 +314,8 @@ export type StoreForAnArray<X extends DeepReadonlyArray<any>, T extends Trackabi
    * .whereOne(t => t.id).eq(3)
    * ...
    */
-  whereOne: PredicateFunction<X, 'find', T>,
-}
+  whereOne: PredicateFunctionPrimitive<X, 'find', T>,
+} & StoreForAnArrayCommon<X, T>;
 
 export type StoreForAnArrayOfObjects<X extends DeepReadonlyArray<any>, T extends Trackability> = {
   /**
@@ -320,20 +326,38 @@ export type StoreForAnArrayOfObjects<X extends DeepReadonlyArray<any>, T extends
    * .with(elementOrArrayOfElements) // pass in an element or array of elements
    * ...
    */
-  upsertMatching: <P>(getProp?: (element: DeepReadonly<X[0]>) => P) => {
+  upsertMatching: <P>(getProp: (element: DeepReadonly<X[0]>) => P) => {
     with: (elementOrArray: X[0] | X, tag: Tag<T>) => void,
   }
-} & StoreForAnArray<X, T>;
+  /**
+   * Specify a where clause to find many elements.
+   * @example
+   * ```
+   * ...
+   * .whereMany(t => t.status).eq('done')
+   * ...
+   * ```
+   */
+  whereMany: PredicateFunctionObject<X, 'filter', T>,
+  /**
+   * Specify a where clause to find one element.  
+   * @example
+   * ...
+   * .whereOne(t => t.id).eq(3)
+   * ...
+   */
+  whereOne: PredicateFunctionObject<X, 'find', T>,
+} & StoreForAnArrayCommon<X, T>;
 
 /**
  * A function which accepts another function to select a property from an array element
  */
-export type PredicateFunction<X extends DeepReadonlyArray<any>, F extends FindOrFilter, T extends Trackability> = <P = X[0]>(getProp?: (element: DeepReadonly<X[0]>) => P) => Predicate<X, P, F, T>
+export type PredicateFunctionObject<X extends DeepReadonlyArray<any>, F extends FindOrFilter, T extends Trackability> = <P>(getProp: (element: DeepReadonly<X[0]>) => P) => Predicate<X, P, F, T>;
 
 /**
- * A function which accepts another function to test an array element based on some condition
+ * A function which accepts another function to select a property from an array element
  */
-export type PredicateFunctionCustom<X extends DeepReadonlyArray<any>, F extends FindOrFilter, T extends Trackability> = (fn: (element: DeepReadonly<X[0]>) => boolean) => PredicateCustom<X, F, T>;
+export type PredicateFunctionPrimitive<X extends DeepReadonlyArray<any>, F extends FindOrFilter, T extends Trackability> = () => Predicate<X, X[0], F, T>;
 
 /**
  * An object which is capable of storing and updating state which is in the shape of a primitive
@@ -399,7 +423,7 @@ export type StoreWhichIsResettable<C extends any, T extends Trackability> = {
  */
 export type Store<C, T extends Trackability> = ([C] extends undefined ? any :
   [C] extends DeepReadonlyArray<object[]> ? StoreForAnArrayOfObjects<[C][0], T> :
-  [C] extends DeepReadonlyArray<any[]> ? StoreForAnArray<[C][0], T> :
+  [C] extends DeepReadonlyArray<any[]> ? StoreForAnArrayOfPrimitives<[C][0], T> :
   [C] extends [object] ? StoreForAnObject<C, T> : StoreForAnObjectOrPrimitive<C, T>)
   & StoreWhichIsResettable<C, T>;
 
