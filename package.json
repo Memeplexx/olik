@@ -28,16 +28,14 @@
     "dev": "rollup -c --watch",
     "test": "cross-env NODE_ENV=test jest --coverage --coverageReporters=text-lcov | coveralls",
     "test:cov": "cross-env NODE_ENV=test npm test --coverage --collectCoverageFrom=src/**/*.{ts}",
-    "test:watch": "cross-env NODE_ENV=test jest --watchAll --verbose false"
+    "test:watch": "cross-env NODE_ENV=test jest --watchAll --verbose false",
+    "prepack": "yarn --cwd ./framework-bindings/olik-react && yarn --cwd ./framework-bindings/olik-angular"
   },
   "dependencies": {},
   "devDependencies": {
-    "@types/enzyme-adapter-react-16": "^1.0.6",
     "@types/immutable": "^3.8.7",
     "@types/jest": "^26.0.7",
     "@types/react": "^16.9.46",
-    "enzyme": "^3.11.0",
-    "enzyme-adapter-react-16": "^1.15.6",
     "coveralls": "^3.1.0",
     "cross-env": "^7.0.2",
     "del": "^5.1.0",

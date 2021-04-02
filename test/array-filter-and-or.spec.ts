@@ -95,29 +95,4 @@ describe('array.filter().and().or()', () => {
     expect(libState.currentMutableState).toEqual(select().read());
   })
 
-  it('', () => {
-    const select = set({ arr: new Array<string>(), obj: { one: 1, two: { three: '' } } });
-    // select(s => s.arr).read().filter(e => true);
-    // select(s => s.arr).read().slice().sort()
-    // const eee = select(s => s.obj);
-    // const ttt = select(s => s.obj).read();
-    // ttt.arr = [];
-
-    // const sss = select();
-    // const ssss = select(s => s.obj);
-
-    // const rrr = select().read().obj.two;
-
-    // select(s => s.arr)
-    //   .upsertMatching()
-    //   .with('heey');
-    // console.log(select().read());
-
-    // select(s => s.arr)
-    //   .whereOne().
-    //   .and().
-
-
-  })
-
 });

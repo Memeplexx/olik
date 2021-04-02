@@ -150,23 +150,6 @@ describe('Root', () => {
     expect(libState.currentMutableState).toEqual(select().read());
   });
 
-  it('match().upsertMatching()', () => {
-    const initialState = ['one', 'two', 'three'];
-    const select = set(initialState);
-    const payload = 'four';
-    select()
-      .upsertMatching()
-      .with(payload);
-    expect(libState.currentAction).toEqual({
-      type: 'upsertMatching().with()',
-      argument: payload,
-      insertionCount: 1,
-      replacementCount: 0,
-    })
-    expect(select().read()).toEqual([...initialState, payload]);
-    expect(libState.currentMutableState).toEqual(select().read());
-  })
-
   it('find().replace()', () => {
     const select = set(['hello']);
     select().whereOne().match(/^h/).replace('another')
