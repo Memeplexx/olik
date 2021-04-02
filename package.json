@@ -28,8 +28,7 @@
     "dev": "rollup -c --watch",
     "test": "cross-env NODE_ENV=test jest --coverage --coverageReporters=text-lcov | coveralls",
     "test:cov": "cross-env NODE_ENV=test npm test --coverage --collectCoverageFrom=src/**/*.{ts}",
-    "test:watch": "cross-env NODE_ENV=test jest --watchAll --verbose false",
-    "before_install": "yarn --cwd ./framework-bindings/olik-react && yarn --cwd ./framework-bindings/olik-angular"
+    "test:watch": "cross-env NODE_ENV=test jest --watchAll --verbose false"
   },
   "dependencies": {},
   "devDependencies": {

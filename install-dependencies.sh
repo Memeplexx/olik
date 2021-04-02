@@ -1,0 +1,1 @@
+yarn --cwd ./framework-bindings/olik-react && yarn --cwd ./framework-bindings/olik-angular
