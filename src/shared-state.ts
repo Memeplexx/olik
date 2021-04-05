@@ -9,7 +9,6 @@ export const libState = {
   devTools: null as null | ReturnType<WindowAugmentedWithReduxDevtools['__REDUX_DEVTOOLS_EXTENSION__']['connect']>,
   bypassSelectorFunctionCheck: false,
   nestedContainerStore: null as null | NestedContainerStore,
-  transaction: new Array<() => void>(),
   transactionState: 'none' as 'none' | 'started' | 'last',
   transactionStartState: null as any,
   transactionActions: new Array<{ type: string }>()

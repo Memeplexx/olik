@@ -74,7 +74,7 @@ export type PredicateCustom<X extends DeepReadonlyArray<any>, F extends FindOrFi
 /**
  * Query options common to all datatypes
  */
-export type PredicateOptionsCommon<X extends DeepReadonlyArray<any>, E, F extends FindOrFilter, T extends Trackability> = {
+export type PredicateOptionsCommon<X extends DeepReadonlyArray<any>, P, F extends FindOrFilter, T extends Trackability> = {
   /**
    * Checks whether the previously selected property **equals** the supplied value
    * @example
@@ -82,7 +82,7 @@ export type PredicateOptionsCommon<X extends DeepReadonlyArray<any>, E, F extend
    * .eq(1)
    * ...
    */
-  eq: (value: E) => PredicateAction<X, F, T>,
+  eq: (value: P) => PredicateAction<X, F, T>,
   /**
    * Checks whether the previously selected property does **not equal** the supplied value
    * @example
@@ -90,7 +90,7 @@ export type PredicateOptionsCommon<X extends DeepReadonlyArray<any>, E, F extend
    * .ne(1)
    * ...
    */
-  ne: (value: E) => PredicateAction<X, F, T>,
+  ne: (value: P) => PredicateAction<X, F, T>,
   /**
    * Checks whether the previously selected property **is in** the supplied array
    * @example
@@ -98,7 +98,7 @@ export type PredicateOptionsCommon<X extends DeepReadonlyArray<any>, E, F extend
    * .filter(e => e.id).in([1, 2])
    * ...
    */
-  in: (value: E[]) => PredicateAction<X, F, T>,
+  in: (value: P[]) => PredicateAction<X, F, T>,
   /**
    * Checks whether the previously selected property **is not in** the supplied array
    * @example
@@ -106,7 +106,7 @@ export type PredicateOptionsCommon<X extends DeepReadonlyArray<any>, E, F extend
    * .ni([1, 2])
    * ...
    */
-  ni: (value: E[]) => PredicateAction<X, F, T>,
+  ni: (value: P[]) => PredicateAction<X, F, T>,
 }
 
 /**
@@ -123,7 +123,7 @@ export type PredicateOptionsForBoolean<X extends DeepReadonlyArray<any>, F exten
    * ...
    */
   returnsTrue: () => PredicateAction<X, F, T>,
-}
+} & PredicateOptionsCommon<X, boolean, F, T>;
 
 /**
  * Query options for number
@@ -422,8 +422,8 @@ export type StoreWhichIsResettable<C extends any, T extends Trackability> = {
  * An object which is capable of managing states of various shapes
  */
 export type Store<C, T extends Trackability> = ([C] extends undefined ? any :
-  [C] extends DeepReadonlyArray<object[]> ? StoreForAnArrayOfObjects<[C][0], T> :
-  [C] extends DeepReadonlyArray<any[]> ? StoreForAnArrayOfPrimitives<[C][0], T> :
+  [C] extends [DeepReadonlyArray<object>] ? StoreForAnArrayOfObjects<[C][0], T> :
+  [C] extends [DeepReadonlyArray<any>] ? StoreForAnArrayOfPrimitives<[C][0], T> :
   [C] extends [object] ? StoreForAnObject<C, T> : StoreForAnObjectOrPrimitive<C, T>)
   & StoreWhichIsResettable<C, T>;
 
