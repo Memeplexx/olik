@@ -322,8 +322,8 @@ export type StoreForAnArrayOfObjects<X extends DeepReadonlyArray<any>, T extends
    * Insert element(s) into the store array (if they do not already exist) or update them (if they do)
    * @example
    * ...
-   * .upsertMatching(s => s.id) // get the property that will uniquely identify array element(s)
-   * .with(elementOrArrayOfElements) // pass in an element or array of elements
+   * .upsertMatching(s => s.id) // get the property that that uniquely identifies each array element
+   * .with(elementOrArrayOfElements) // pass in an element or array of elements to be upserted
    * ...
    */
   upsertMatching: <P>(getProp: (element: DeepReadonly<X[0]>) => P) => {
