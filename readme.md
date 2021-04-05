@@ -8,7 +8,7 @@
 
 ## Crystal-clear state-management  
 
-Olik allows you to grok your state updates without ever leaving your component code.  
+Olik allows you to comprehensively grok your state updates without ever leaving your component code.  
 Its fluent typesafe API maximizes **transparency**, **consistency**, and **debugability** while simultaneously **auto-generating your action types** for you.
 
 ---
