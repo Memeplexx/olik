@@ -6,8 +6,12 @@
 ![Package Size](https://badgen.net/bundlephobia/minzip/olik)
 ![Dependency count](https://badgen.net/bundlephobia/dependency-count/olik)
 
-## Crystal-clear state-management
+## Crystal-clear state-management  
 
+Olik allows you to grok your state updates without ever leaving your component code.
+Its fluent typesafe API maximizes **transparency**, **consistency**, and **debugability** while simultaneously **auto-generating your action types** for you.
+
+---
 NOTE: The below code uses Olik without a framework,
 however there are also bindings for ***[React](https://memeplexx.github.io/olik/docs/read)***, and
 ***[Angular](https://memeplexx.github.io/olik/docs/angular)***
@@ -68,4 +72,15 @@ select = setNested({                  // applicationStoreState = {
 
 select(s => s.done)                   // type: 'nested.TodoComponent.1.done.replace()'
   .replace(true);                     // replacement: true
+```
+
+#### ↪️ **TRANSACT**
+Perform multiple updates in one go to prevent unnecessary re-renders
+```ts
+transact(                             // type: 'username.replace(), favorite.foods.removeAll()'
+  () => select(s => s.username)       // actions: [
+    .replace('James'),                //   { type: 'username.replace()', replacement: 'James' },
+  () => select(s => s.favorite.foods) //   { type: 'favorite.foods.removeAll()' },
+    .removeAll(),                     // ]
+);
 ```

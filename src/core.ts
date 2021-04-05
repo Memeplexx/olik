@@ -39,7 +39,7 @@ import {
 } from './shapes-internal';
 import { devtoolsDebounce } from './shared-consts';
 import { libState } from './shared-state';
-import { copyObject, createPathReader, deepFreeze, validateSelectorFn, validateState } from './shared-utils';
+import { copyObject, createPathReader, deepCopy, deepFreeze, validateSelectorFn, validateState } from './shared-utils';
 
 export function createStore<S, T extends Trackability>(context: {
   state: S,
@@ -157,20 +157,47 @@ export function createStore<S, T extends Trackability>(context: {
   } as PreviousAction;
 
   function updateState<C, T extends Trackability, X extends C = C>(specs: UpdateStateArgs<S, C, T, X>) {
+
+    if (libState.transactionState === 'started') {
+      libState.transactionStartState = currentState
+    }
+
     const previousState = currentState;
     const pathSegments = specs.pathSegments || pathReader.readSelector(specs.selector);
     const result = Object.freeze(copyObject(currentState, { ...currentState }, pathSegments.slice(), specs.replacer));
     specs.mutator(specs.selector(pathReader.mutableStateCopy) as X);
     currentState = result;
-    notifySubscribers(previousState, result);
-    const actionToDispatch = {
+
+    let actionToDispatch = {
       type: (specs.actionNameOverride ? specs.actionName : (pathSegments.join('.') + (pathSegments.length ? '.' : '') + specs.actionName)) +
         (specs.tag ? ` [${tagSanitizer ? tagSanitizer(specs.tag as string) : specs.tag}]` : ''),
       ...((specs.getPayloadFn && (specs.getPayloadFn() !== undefined)) ? specs.getPayloadFn() : specs.payload),
     };
-    const { type, ...actionPayload } = actionToDispatch;
+
+    if (libState.transactionState === 'started') {
+      libState.transactionActions.push(actionToDispatch);
+      return;
+    }
+    
+    if (libState.transactionState === 'last') {
+      libState.transactionActions.push(actionToDispatch);
+      notifySubscribers(libState.transactionStartState, result);
+      libState.transactionState = 'none';
+      libState.transactionStartState = null;
+      actionToDispatch = {
+        type: libState.transactionActions.map(action => action.type).join(', '),
+        actions: deepCopy(libState.transactionActions),
+      }
+      libState.transactionActions.length = 0;
+    } else if (libState.transactionState === 'none') {
+      notifySubscribers(previousState, result);
+    }
+    
+    
+    
     libState.currentAction = actionToDispatch;
     libState.currentMutableState = pathReader.mutableStateCopy as any;
+    const { type, ...actionPayload } = actionToDispatch;
     if (devtoolsDispatchListener && (!specs.tag || (specs.tag !== 'dontTrackWithDevtools'))) {
       const dispatchToDevtools = (payload?: any[]) => {
         const action = payload ? { ...actionToDispatch, batched: payload } : actionToDispatch;
