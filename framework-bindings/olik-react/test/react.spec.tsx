@@ -2,7 +2,7 @@ import { configure, mount } from 'enzyme';
 import Adapter from 'enzyme-adapter-react-16';
 import React from 'react';
 
-import { set, useNestedStore } from '../src';
+import { set, useFetcher, useNestedStore } from '../src';
 
 
 configure({ adapter: new Adapter() });

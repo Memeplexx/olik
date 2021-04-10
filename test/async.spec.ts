@@ -389,5 +389,10 @@ describe('async', () => {
       });
   })
 
+  // it('should not be able to support top-level stores', done => {
+  //   const select = set(0);
+  //   select().replace(() => new Promise(resolve => setTimeout(() => resolve(1), 10)), { cacheFor: 1000 });
+  // })
+
 });
 

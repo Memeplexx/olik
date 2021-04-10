@@ -1,30 +1,52 @@
-import { ArrayOfElementsCommonAction, ArrayOfObjectsCommonAction, FindOrFilter, Trackability } from './shapes-external';
+import { ArrayOfElementsCommonAction, ArrayOfObjectsCommonAction, FindOrFilter, Trackability, UpdateOptions } from './shapes-external';
 import { ArrayCustomState } from './shapes-internal';
 import { errorMessages } from './shared-consts';
-import { copyPayload, deepFreeze } from './shared-utils';
+import { copyPayload, deepFreeze, processAsyncPayload, toIsoString } from './shared-utils';
 
 export const replace = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
   context: ArrayCustomState<S, C, X, T>,
-) => ((payload, tag) => {
+) => ((payload, updateOptions) => {
   const { type, updateState, selector, predicate } = context;
-  const { payloadFrozen, payloadCopied } = copyPayload(payload);
-  const elementIndices = getElementIndices(context);
-  updateState({
-    selector,
-    replacer: old => old.map((o, i) => elementIndices.includes(i) ? payloadFrozen : o),
-    mutator: old => { old.forEach((o, i) => { if (elementIndices.includes(i)) { old[i] = payloadCopied; } }) },
-    actionName: `${type}().replace()`,
-    payload: {
-      query: predicate.toString(),
-      replacement: payloadFrozen,
-    },
-    tag,
-  });
+  const processPayload = (payload: C) => {
+    const { payloadFrozen, payloadCopied } = copyPayload(payload);
+    const elementIndices = getElementIndices(context);
+    updateState({
+      selector,
+      replacer: old => old.map((o, i) => elementIndices.includes(i) ? payloadFrozen : o),
+      mutator: old => { old.forEach((o, i) => { if (elementIndices.includes(i)) { old[i] = payloadCopied; } }) },
+      actionName: `${type}().replace()`,
+      payload: {
+        query: predicate.toString(),
+        replacement: payloadFrozen,
+      },
+      updateOptions: updateOptions as UpdateOptions<T, C, any>,
+    });
+  }
+  return processAsyncPayload(selector, payload, context.pathReader, context.storeResult, processPayload, updateOptions as UpdateOptions<T, C, any>, type + '().replace');
 }) as ArrayOfElementsCommonAction<X, F, T>['replace'];
+
+export const patch = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
+  context: ArrayCustomState<S, C, X, T>,
+) => ((payload, updateOptions) => {
+  const { type, updateState, selector, predicate } = context;
+  const processPayload = (payload: C) => {
+    const { payloadFrozen, payloadCopied } = copyPayload(payload);
+    const elementIndices = getElementIndices(context);
+    updateState({
+      selector,
+      replacer: old => old.map((o, i) => elementIndices.includes(i) ? { ...o, ...payloadFrozen } : o),
+      mutator: old => elementIndices.forEach(i => Object.assign(old[i], payloadCopied)),
+      actionName: `${type}().patch()`,
+      payload: { patch: payloadFrozen, query: predicate.toString() },
+      updateOptions: updateOptions as UpdateOptions<T, C, any>,
+    });
+  }
+  return processAsyncPayload(selector, payload, context.pathReader, context.storeResult, processPayload, updateOptions as UpdateOptions<T, C, any>, type + '().patch');
+}) as ArrayOfObjectsCommonAction<X, F, T>['patch'];
 
 export const remove = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
   context: ArrayCustomState<S, C, X, T>,
-) => (tag => {
+) => (updateOptions => {
   const { type, updateState, selector, predicate, getCurrentState } = context;
   const elementIndices = getElementIndices(context);
   updateState({
@@ -44,25 +66,9 @@ export const remove = <S, C, X extends C & Array<any>, F extends FindOrFilter, T
     },
     actionName: `${type}().remove()`,
     payload: { toRemove: (selector(getCurrentState()) as X)[type]((e, i) => elementIndices.includes(i)), query: predicate.toString() },
-    tag,
+    updateOptions,
   });
 }) as ArrayOfElementsCommonAction<X, F, T>['remove'];
-
-export const patch = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
-  context: ArrayCustomState<S, C, X, T>,
-) => ((payload, tag) => {
-  const { type, updateState, selector, predicate } = context;
-  const { payloadFrozen, payloadCopied } = copyPayload(payload);
-  const elementIndices = getElementIndices(context);
-  updateState({
-    selector,
-    replacer: old => old.map((o, i) => elementIndices.includes(i) ? { ...o, ...payloadFrozen } : o),
-    mutator: old => elementIndices.forEach(i => Object.assign(old[i], payloadCopied)),
-    actionName: `${type}().patch()`,
-    payload: { patch: payloadFrozen, query: predicate.toString() },
-    tag,
-  });
-}) as ArrayOfObjectsCommonAction<X, F, T>['patch'];
 
 export const onChange = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
   context: ArrayCustomState<S, C, X, T>,
@@ -82,6 +88,19 @@ export const read = <S, C, X extends C & Array<any>, F extends FindOrFilter, T e
     ? (selector(getCurrentState()) as X).find(e => predicate(e))
     : (selector(getCurrentState()) as X).map(e => predicate(e) ? e : null).filter(e => e != null))
 }) as ArrayOfElementsCommonAction<X, F, T>['read'];
+
+export const invalidateCache = <S, C, X extends C & Array<any>, T extends Trackability>(
+  context: ArrayCustomState<S, C, X, T>,
+) => {
+  const { pathReader, storeResult, selector, type } = context;
+  pathReader.readSelector(selector);
+  const pathSegs = pathReader.pathSegments.join('.') + (pathReader.pathSegments.length ? '.' : '') + type + '()';
+  const patch = {} as { [key: string]: string };
+  Object.keys(storeResult().read().cacheExpiryTimes)
+    .filter(key => key.startsWith(pathSegs))
+    .forEach(key => patch[key] = toIsoString(new Date()));
+  storeResult(s => (s as any).cacheExpiryTimes).patch(patch);
+}
 
 const getElementIndices = <S, C, X extends C & Array<any>, T extends Trackability>(
   context: ArrayCustomState<S, C, X, T>,

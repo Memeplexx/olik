@@ -1,5 +1,5 @@
 import {
-  FunctionReturning,
+  DeepReadonly,
   Selector,
   StoreForAnArrayCommon,
   StoreForAnArrayOfObjects,
@@ -8,10 +8,12 @@ import {
   StoreWhichIsResettable,
   Tag,
   Trackability,
+  UpdateOptions,
+  UpdateOptionsInternal,
 } from './shapes-external';
 import { PathReader, UpdateStateFn } from './shapes-internal';
 import { libState } from './shared-state';
-import { copyPayload, createPathReader, deepCopy, deepFreeze, validateSelectorFn } from './shared-utils';
+import { copyPayload, createPathReader, deepCopy, deepFreeze, processAsyncPayload, toIsoString, validateSelectorFn } from './shared-utils';
 
 export const onChange = <S, C, X extends C & Array<any>>(
   selector: Selector<S, C, X>,
@@ -34,8 +36,9 @@ export const reset = <S, C, X extends C & Array<any>, T extends Trackability>(
   selector: Selector<S, C, X>,
   initialState: S,
   isNested: () => boolean,
+  storeResult: (selector?: (s: DeepReadonly<S>) => C) => any,
 ) => (
-  tag => replace(pathReader, updateState, selector, 'reset', isNested)(selector(initialState), tag)
+  updateOptions => replace(pathReader, updateState, selector, 'reset', isNested, storeResult)(selector(initialState), updateOptions)
 ) as StoreWhichIsResettable<C, T>['reset'];
 
 export const replaceAll = <S, C, X extends C & Array<any>, T extends Trackability>(
@@ -43,22 +46,23 @@ export const replaceAll = <S, C, X extends C & Array<any>, T extends Trackabilit
   updateState: UpdateStateFn<S, C, T, X>,
   selector: Selector<S, C, X>,
   isNested: () => boolean,
+  storeResult: (selector?: (s: DeepReadonly<S>) => C) => any,
 ) => (
-  (replacement, tag) => replace(pathReader, updateState, selector, 'replaceAll', isNested)(replacement, tag)
+  (replacement, updateOptions) => replace(pathReader, updateState, selector, 'replaceAll', isNested, storeResult)(replacement as X, updateOptions as UpdateOptions<T, C, any>)
 ) as StoreForAnArrayCommon<X, T>['replaceAll'];
 
 export const removeAll = <S, C, X extends C & Array<any>, T extends Trackability>(
   selector: Selector<S, C, X>,
   updateState: UpdateStateFn<S, C, T, X>,
   isNested: () => boolean,
-) => (tag => {
+) => (updateOptions => {
   validateSelector(selector, isNested);
   updateState({
     selector,
     replacer: () => [],
     mutator: old => old.length = 0,
     actionName: 'removeAll()',
-    tag,
+    updateOptions,
   });
 }) as StoreForAnArrayCommon<X, T>['removeAll'];
 
@@ -66,38 +70,48 @@ export const insert = <S, C, X extends C & Array<any>, T extends Trackability>(
   selector: Selector<S, C, X>,
   updateState: UpdateStateFn<S, C, T, X>,
   isNested: () => boolean,
-) => ((payload, tag) => {
+  storeResult: (selector?: (s: DeepReadonly<S>) => C) => any,
+  pathReader: PathReader<S>,
+) => ((payload, updateOptions) => {
   validateSelector(selector, isNested);
-  const { payloadFrozen, payloadCopied } = copyPayload(payload);
-  updateState({
-    selector,
-    replacer: old => [...old, ...(deepCopy(Array.isArray(payloadFrozen) ? payloadFrozen : [payloadFrozen]))],
-    mutator: old => old.push(...(Array.isArray(payloadCopied) ? payloadCopied : [payloadCopied])),
-    actionName: 'insert()',
-    payload: {
-      insertion: payloadFrozen,
-    },
-    tag,
-  });
+  const processPayload = (payload: C) => {
+    const { payloadFrozen, payloadCopied } = copyPayload(payload);
+    updateState({
+      selector,
+      replacer: old => [...old, ...(deepCopy(Array.isArray(payloadFrozen) ? payloadFrozen : [payloadFrozen]))],
+      mutator: old => old.push(...(Array.isArray(payloadCopied) ? payloadCopied : [payloadCopied])),
+      actionName: 'insert()',
+      payload: {
+        insertion: payloadFrozen,
+      },
+      updateOptions: updateOptions as UpdateOptions<T, C, any>,
+    });
+  }
+  return processAsyncPayload(selector, payload, pathReader, storeResult, processPayload, updateOptions as UpdateOptions<T, C, any>, 'insert');
 }) as StoreForAnArrayCommon<X, T>['insert'];
 
 export const patch = <S, C, X extends C & Array<any>, T extends Trackability>(
   selector: Selector<S, C, X>,
   updateState: UpdateStateFn<S, C, T, X>,
   isNested: () => boolean,
-) => ((payload, tag) => {
+  storeResult: (selector?: (s: DeepReadonly<S>) => C) => any,
+  pathReader: PathReader<S>,
+) => ((payload, updateOptions) => {
   validateSelector(selector, isNested);
-  const { payloadFrozen, payloadCopied } = copyPayload(payload);
-  updateState({
-    selector,
-    replacer: old => ({ ...old, ...payloadFrozen }),
-    mutator: old => Object.assign(old, payloadCopied),
-    actionName: 'patch()',
-    payload: {
-      patch: payloadFrozen,
-    },
-    tag,
-  });
+  const processPayload = (payload: Partial<C>) => {
+    const { payloadFrozen, payloadCopied } = copyPayload(payload);
+    updateState({
+      selector,
+      replacer: old => ({ ...old, ...payloadFrozen }),
+      mutator: old => Object.assign(old, payloadCopied),
+      actionName: 'patch()',
+      payload: {
+        patch: payloadFrozen,
+      },
+      updateOptions: updateOptions as UpdateOptions<T, C, any>,
+    });
+  }
+  return processAsyncPayload(selector, payload, pathReader, storeResult, processPayload, updateOptions as UpdateOptions<T, C, any>, 'patch');
 }) as StoreForAnObject<C, T>['patch'];
 
 export const upsertMatching = <S, C, X extends C & Array<any>, T extends Trackability>(
@@ -105,45 +119,50 @@ export const upsertMatching = <S, C, X extends C & Array<any>, T extends Trackab
   currentState: () => S,
   updateState: UpdateStateFn<S, C, T, X>,
   isNested: () => boolean,
+  storeResult: (selector?: (s: DeepReadonly<S>) => C) => any,
+  pathReader: PathReader<S>,
 ) => (getProp => {
   validateSelector(selector, isNested);
   return {
-    with: (payload, tag) => {
+    with: (payload, updateOptions) => {
       validateSelector(selector, isNested);
-      const segs = !getProp ? [] : createPathReader((selector(currentState()) as X)[0] || {}).readSelector(getProp);
-      const { payloadFrozen, payloadCopied } = copyPayload(payload);
-      const payloadFrozenArray: X[0][] = Array.isArray(payloadFrozen) ? payloadFrozen : [payloadFrozen];
-      const payloadCopiedArray: X[0][] = Array.isArray(payloadCopied) ? payloadCopied : [payloadCopied];
-      let replacementCount = 0;
-      let insertionCount = 0;
-      updateState({
-        selector,
-        replacer: old => {
-          const replacements = old.map(oe => {
-            const found = payloadFrozenArray.find(ne => !getProp ? oe === ne : getProp(oe) === getProp(ne));
-            if (found !== null && found !== undefined) { replacementCount++; }
-            return found || oe;
-          });
-          const insertions = payloadFrozenArray.filter(ne => !old.some(oe => !getProp ? oe === ne : getProp(oe) === getProp(ne)));
-          insertionCount = insertions.length;
-          return [
-            ...replacements,
-            ...insertions
-          ];
-        },
-        mutator: old => {
-          old.forEach((oe, oi) => { const found = payloadCopiedArray.find(ne => !getProp ? oe === ne : getProp(oe) === getProp(ne)); if (found) { old[oi] = deepCopy(found); } });
-          payloadCopiedArray.filter(ne => !old.some(oe => !getProp ? oe === ne : getProp(oe) === getProp(ne))).forEach(ne => old.push(ne));
-        },
-        actionName: `upsertMatching(${segs.join('.')}).with()`,
-        payload: null,
-        getPayloadFn: () => ({
-          argument: payloadFrozen,
-          replacementCount,
-          insertionCount,
-        }),
-        tag,
-      });
+      const processPayload = (payload: C) => {
+        const segs = !getProp ? [] : createPathReader((selector(currentState()) as X)[0] || {}).readSelector(getProp);
+        const { payloadFrozen, payloadCopied } = copyPayload(payload);
+        const payloadFrozenArray: X[0][] = Array.isArray(payloadFrozen) ? payloadFrozen : [payloadFrozen];
+        const payloadCopiedArray: X[0][] = Array.isArray(payloadCopied) ? payloadCopied : [payloadCopied];
+        let replacementCount = 0;
+        let insertionCount = 0;
+        updateState({
+          selector,
+          replacer: old => {
+            const replacements = old.map(oe => {
+              const found = payloadFrozenArray.find(ne => !getProp ? oe === ne : getProp(oe) === getProp(ne));
+              if (found !== null && found !== undefined) { replacementCount++; }
+              return found || oe;
+            });
+            const insertions = payloadFrozenArray.filter(ne => !old.some(oe => !getProp ? oe === ne : getProp(oe) === getProp(ne)));
+            insertionCount = insertions.length;
+            return [
+              ...replacements,
+              ...insertions
+            ];
+          },
+          mutator: old => {
+            old.forEach((oe, oi) => { const found = payloadCopiedArray.find(ne => !getProp ? oe === ne : getProp(oe) === getProp(ne)); if (found) { old[oi] = deepCopy(found); } });
+            payloadCopiedArray.filter(ne => !old.some(oe => !getProp ? oe === ne : getProp(oe) === getProp(ne))).forEach(ne => old.push(ne));
+          },
+          actionName: `upsertMatching(${segs.join('.')}).with()`,
+          payload: null,
+          getPayloadFn: () => ({
+            argument: payloadFrozen,
+            replacementCount,
+            insertionCount,
+          }),
+          updateOptions: updateOptions as UpdateOptions<T, C, any>,
+        });
+      }
+      return processAsyncPayload(selector, payload, pathReader, storeResult, processPayload, updateOptions as UpdateOptions<T, C, any>, 'patch');
     }
   };
 }) as StoreForAnArrayOfObjects<X, T>['upsertMatching'];
@@ -154,32 +173,37 @@ export const replace = <S, C, X extends C & Array<any>, T extends Trackability>(
   selector: Selector<S, C, X>,
   name: string,
   isNested: () => boolean,
-) => (payload: C | FunctionReturning<C>, tag: Tag<T>) => {
+  storeResult: (selector?: (s: DeepReadonly<S>) => C) => any,
+) => (payload: C | (() => Promise<C>), updateOptions: UpdateOptions<T, C, any>) => {
   validateSelector(selector, isNested);
+  const processPayload = (payload: C) => replacePayload(pathReader, updateState, selector, name, payload as C, updateOptions);
+  return processAsyncPayload(selector, payload, pathReader, storeResult, processPayload, updateOptions as UpdateOptions<T, C, any>, 'replace');
+};
+
+export function replacePayload<S, C, X extends C & Array<any>, T extends Trackability>(
+  pathReader: PathReader<S>,
+  updateState: UpdateStateFn<S, C, T, X>,
+  selector: Selector<S, C, X>,
+  name: string,
+  payload: C,
+  updateOptions: UpdateOptions<T, C, any>
+) {
   const pathSegments = pathReader.readSelector(selector);
-  const { payloadFrozen, payloadCopied, payloadFunction } = copyPayload(payload);
+  const { payloadFrozen, payloadCopied } = copyPayload(payload);
   let payloadReturnedByFn: C;
   let getPayloadFn = (() => payloadReturnedByFn ? { replacement: payloadReturnedByFn } : payloadReturnedByFn) as unknown as () => C;
   if (!pathSegments.length) {
     updateState({
       selector,
-      replacer: old => {
-        if (payloadFunction) {
-          payloadReturnedByFn = payloadFunction(old);
-          return payloadReturnedByFn;
-        } else {
-          return payloadFrozen;
-        }
-      },
+      replacer: old => payloadFrozen,
       mutator: old => {
-        const newValue = payloadFunction ? payloadFunction(old as any) : payloadCopied;
         if (Array.isArray(old)) {
           (old as Array<any>).length = 0;
-          Object.assign(old, newValue);
+          Object.assign(old, payloadCopied);
         } else if (typeof (old) === 'boolean' || typeof (old) === 'number' || typeof (old) === 'string') {
-          pathReader.mutableStateCopy = newValue as any;
+          pathReader.mutableStateCopy = payloadCopied as any;
         } else {
-          Object.assign(old, newValue);
+          Object.assign(old, payloadCopied);
         }
       },
       actionName: `${name}()`,
@@ -188,7 +212,7 @@ export const replace = <S, C, X extends C & Array<any>, T extends Trackability>(
         replacement: payloadFrozen,
       },
       getPayloadFn,
-      tag,
+      updateOptions,
     });
   } else {
     const lastSeg = pathSegments[pathSegments.length - 1] || '';
@@ -203,8 +227,7 @@ export const replace = <S, C, X extends C & Array<any>, T extends Trackability>(
       selector: selectorRevised,
       replacer: old => {
         if (Array.isArray(old)) { return (old as Array<any>).map((o, i) => i === +lastSeg ? payloadFrozen : o); }
-        if (payloadFunction) { payloadReturnedByFn = payloadFunction((old as any)[lastSeg]); }
-        return ({ ...old, [lastSeg]: payloadFunction ? payloadFunction((old as any)[lastSeg]) : payloadFrozen })
+        return ({ ...old, [lastSeg]: payloadFrozen })
       },
       mutator: (old: Record<any, any>) => old[lastSeg] = payloadReturnedByFn || payloadCopied,
       actionName,
@@ -214,10 +237,24 @@ export const replace = <S, C, X extends C & Array<any>, T extends Trackability>(
         replacement: payloadFrozen,
       },
       getPayloadFn,
-      tag,
+      updateOptions,
     })
   }
-};
+}
+
+export function invalidateCache<S, C, X extends C & Array<any>>(
+  pathReader: PathReader<S>,
+  selector: Selector<S, C, X>,
+  storeResult: (selector?: (s: DeepReadonly<S>) => C) => any,
+) {
+  pathReader.readSelector(selector);
+  const pathSegs = pathReader.pathSegments.join('.');
+  const patch = {} as { [key: string]: string };
+  Object.keys(storeResult().read().cacheExpiryTimes)
+    .filter(key => key.startsWith(pathSegs))
+    .forEach(key => patch[key] = toIsoString(new Date()));
+  storeResult(s => (s as any).cacheExpiryTimes).patch(patch);
+}
 
 const validateSelector = <S, C, X extends C & Array<any>>(
   selector: Selector<S, C, X>,

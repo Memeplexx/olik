@@ -58,11 +58,6 @@ export type DeepWritable<E> =
   E extends DeepReadonlyObject<infer R> ? R :
   never;
 
-/**
- * A function passing in the current value and returning a new value
- */
-export type FunctionReturning<C> = (currentValue: DeepReadonly<C>) => C;
-
 export type PredicateAction<X extends DeepReadonlyArray<any>, F extends FindOrFilter, T extends Trackability> = X[0] extends object
   ? ArrayOfObjectsAction<X, F, T>
   : ArrayOfElementsAction<X, F, T>;
@@ -122,7 +117,7 @@ export type PredicateOptionsForBoolean<X extends DeepReadonlyArray<any>, F exten
    * .returnsTrue()
    * ...
    */
-  returnsTrue: () => PredicateAction<X, F, T>,
+  returnsTrue: () => PredicateCustom<X, F, T>,
 } & PredicateOptionsCommon<X, boolean, F, T>;
 
 /**
@@ -206,6 +201,7 @@ export type ArrayOfElementsAction<X extends DeepReadonlyArray<any>, F extends Fi
    * ...
    */
   or: X[0] extends object ? <P>(getProp: (element: DeepReadonly<X[0]>) => P) => Predicate<X, P, F, T> : () => Predicate<X, X[0], F, T>,
+
 } & ArrayOfElementsCommonAction<X, F, T>;
 
 /**
@@ -218,7 +214,7 @@ export type ArrayOfObjectsAction<X extends DeepReadonlyArray<any>, F extends Fin
    * ...
    * .patch({ done: true })
    */
-  patch: (replacement: Partial<X[0]>, tag: Tag<T>) => void;
+  patch: <H extends Partial<X[0]> | (() => Promise<Partial<X[0]>>)>(replacement: H, tag: UpdateOptions<T, X[0], H>) => H extends (() => Promise<any>) ? Promise<void> : void,
 } & ArrayOfElementsAction<X, F, T>;
 
 export type ArrayOfElementsCommonAction<X extends DeepReadonlyArray<any>, F extends FindOrFilter, T extends Trackability> = {
@@ -228,7 +224,7 @@ export type ArrayOfElementsCommonAction<X extends DeepReadonlyArray<any>, F exte
    * ...
    * .replace({ id: 1, text: 'bake cookies' })
    */
-  replace: (replacement: X[0], tag: Tag<T>) => void;
+  replace: <H extends X[0] | (() => Promise<X[0]>)>(replacement: H, tag: UpdateOptions<T, X[0], H>) => H extends (() => Promise<X[0]>) ? Promise<void> : void,
   /**
    * Removes any elements that were found in the search clause
    * @example
@@ -251,6 +247,11 @@ export type ArrayOfElementsCommonAction<X extends DeepReadonlyArray<any>, F exte
    * Returns the current value of the selected node.
    */
   read: () => DeepReadonly<F extends 'find' ? X[0] : X>;
+  /**
+   * Ensures that all cacheExpiryTimes related to this node of the state tree are marked with the current time.
+   * This will guarantee that fresh data is retrieved the next time promises are called to populate this node of the state tree.
+   */
+  invalidateCache: () => void,
 }
 
 export type ArrayOfObjectsCommonAction<X extends DeepReadonlyArray<any>, F extends FindOrFilter, T extends Trackability> = {
@@ -260,8 +261,19 @@ export type ArrayOfObjectsCommonAction<X extends DeepReadonlyArray<any>, F exten
    * ...
    * .patch({ done: true })
    */
-  patch: (replacement: Partial<X[0]>, tag: Tag<T>) => void;
+  patch: <H extends Partial<X[0]> | (() => Promise<Partial<X[0]>>)>(replacement: H, tag: UpdateOptions<T, X[0], H>) => H extends (() => Promise<any>) ? Promise<void> : void,
 } & ArrayOfElementsCommonAction<X, F, T>;
+
+export type UpdateOptionsInternal = {
+  /**
+   * This should be used to prevent async calls from being re-invoked too often
+   * The value you supply here specifies how many milliseconds should elapse before the promise is invoked again.
+   * Default is 0.
+   */
+  cacheFor?: number,
+}
+
+export type UpdateOptions<T extends Trackability, P, A> = (Tag<T> | (A extends P ? Tag<T> : UpdateOptionsInternal & (T extends 'untagged' ? { tag?: Tag<T> } : { tag: Tag<T> }) ) )
 
 /**
  * An object which is capable of storing and updating state which is in the shape of an array of primitives
@@ -275,8 +287,11 @@ export type StoreForAnArrayCommon<X extends DeepReadonlyArray<any>, T extends Tr
    * @example
    * ...
    * .insert(newArrayOfTodos);
+   * @example
+   * ...
+   * .insert(() => getTodosFromApi())
    */
-  insert: <R extends (X[0] | X) >(payload: R, tag: Tag<T>) => void,
+  insert: <H extends (X | X[0] | (() => Promise<X | X[0]>))>(insertion: H, options: UpdateOptions<T, X[0] | X, H> ) => H extends (() => Promise<any>) ? Promise<void> : void,
   /**
    * Removes all elements from the array
    * @example
@@ -290,7 +305,7 @@ export type StoreForAnArrayCommon<X extends DeepReadonlyArray<any>, T extends Tr
    * ...
    * .replaceAll(newTodos);
    */
-  replaceAll: (replacement: X, tag: Tag<T>) => void,
+  replaceAll: <H extends X | (() => Promise<X>)>(replacement: H, options: UpdateOptions<T, X, H>) => H extends (() => Promise<X>) ? Promise<void> : void,
 }
 
 /**
@@ -322,12 +337,12 @@ export type StoreForAnArrayOfObjects<X extends DeepReadonlyArray<any>, T extends
    * Insert element(s) into the store array (if they do not already exist) or update them (if they do)
    * @example
    * ...
-   * .upsertMatching(s => s.id) // get the property that that uniquely identifies each array element
+   * .upsertMatching(s => s.id) // get the property that uniquely identifies each array element
    * .with(elementOrArrayOfElements) // pass in an element or array of elements to be upserted
    * ...
    */
   upsertMatching: <P>(getProp: (element: DeepReadonly<X[0]>) => P) => {
-    with: (elementOrArray: X[0] | X, tag: Tag<T>) => void,
+    with: <H extends X | (X[0] | X | (() => Promise<X | X[0]>))>(elementOrArray: H, options: UpdateOptions<T, X[0] | X, H>) => H extends (() => Promise<any>) ? Promise<void> : void,
   }
   /**
    * Specify a where clause to find many elements.
@@ -370,7 +385,7 @@ export type StoreForAnObjectOrPrimitive<C extends any, T extends Trackability> =
    * @example
    * select(s => s.user.age).replace(age => age + 1);
    */
-  replace: (replacement: C | FunctionReturning<C>, tag: Tag<T>) => void,
+  replace: <H extends C | (() => Promise<C>)>(replacement: H, tag: UpdateOptions<T, C, H>) => H extends (() => Promise<any>) ? Promise<void> : void,
 }
 
 /**
@@ -383,7 +398,7 @@ export type StoreForAnObject<C extends any, T extends Trackability> = {
    * ...
    *  .patch({ firstName: 'James', age: 33 })
    */
-  patch: (partial: Partial<C>, tag: Tag<T>) => void,
+  patch: <H extends (Partial<C> | (() => Promise<Partial<C>>))>(partial: H, tag: UpdateOptions<T, C, H>) => H extends (() => Promise<Partial<C>>) ? Promise<void> : void,
 } & StoreForAnObjectOrPrimitive<C, T>;
 
 export type StoreOrDerivation<C> = {
@@ -416,6 +431,11 @@ export type StoreWhichIsResettable<C extends any, T extends Trackability> = {
    * Beware that if this store is marked with `isContainerForNestedStores: true`, then all nested stores will also be removed
    */
   reset: (tag: Tag<T>) => void,
+  /**
+   * Ensures that all cacheExpiryTimes related to this node of the state tree are marked with the current time.
+   * This will guarantee that fresh data is retrieved the next time promises are called to populate this node of the state tree.
+   */
+  invalidateCache: () => void,
 } & StoreOrDerivation<C>;
 
 /**

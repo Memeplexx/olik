@@ -11,6 +11,7 @@ import {
   replaceAll,
   upsertMatching,
   reset,
+  invalidateCache
 } from './operators-general';
 import { defineRemoveNestedStore } from './operators-internal';
 import {
@@ -27,6 +28,7 @@ import {
   StoreWhichIsNested,
   Tag,
   Trackability,
+  UpdateOptionsInternal,
 } from './shapes-external';
 import {
   ArrayCustomState,
@@ -72,7 +74,19 @@ export function createStore<S, T extends Trackability>(context: {
         }
         const constructActions = (whereClauseString: string, fn: (e: X[0]) => boolean) => {
           const context = {
-            whereClauseSpecs, whereClauseStrings, getCurrentState: () => currentState, criteria: getSegsAndCriteria().criteria, recurseWhere, fn, whereClauseString, selector, updateState, type, changeListeners
+            whereClauseSpecs,
+            whereClauseStrings,
+            getCurrentState: () => currentState,
+            criteria: getSegsAndCriteria().criteria,
+            recurseWhere,
+            fn,
+            whereClauseString,
+            selector,
+            updateState,
+            type,
+            changeListeners,
+            pathReader,
+            storeResult,
           } as ArrayOperatorState<S, C, X, FindOrFilter, T>;
           return {
             and: array.and(context),
@@ -82,6 +96,7 @@ export function createStore<S, T extends Trackability>(context: {
             remove: array.remove(context),
             onChange: array.onChange(context),
             read: array.read(context),
+            invalidateCache: () => array.invalidateCache(context),
           } as ArrayOfObjectsAction<X, FindOrFilter, T>
         };
         return {
@@ -94,13 +109,14 @@ export function createStore<S, T extends Trackability>(context: {
           ...{
             returnsTrue: () => {
               const predicate = getProp as any as (element: DeepReadonly<X[0]>) => boolean;
-              const context = { type, updateState, selector, predicate, changeListeners, getCurrentState: () => currentState } as ArrayCustomState<S, C, X, T>;
+              const context = { type, updateState, selector, predicate, changeListeners, getCurrentState: () => currentState, pathReader, storeResult } as ArrayCustomState<S, C, X, T>;
               return {
                 remove: arrayCustom.remove(context),
                 replace: arrayCustom.replace(context),
                 patch: arrayCustom.patch(context),
                 onChange: arrayCustom.onChange(context),
                 read: arrayCustom.read(context),
+                invalidateCache: () => arrayCustom.invalidateCache(context),
               };
             }
           } as PredicateOptionsForBoolean<X, FindOrFilter, T>,
@@ -118,21 +134,22 @@ export function createStore<S, T extends Trackability>(context: {
       return recurseWhere;
     };
     const coreActions = {
-      patch: patch(selector, updateState, () => !!coreActions.removeFromContainingStore),
-      insert: insert(selector, updateState, () => !!coreActions.removeFromContainingStore),
+      patch: patch(selector, updateState, () => !!coreActions.removeFromContainingStore, storeResult, pathReader),
+      insert: insert(selector, updateState, () => !!coreActions.removeFromContainingStore, storeResult, pathReader),
       removeAll: removeAll(selector, updateState, () => !!coreActions.removeFromContainingStore),
-      replaceAll: replaceAll(pathReader, updateState, selector, () => !!coreActions.removeFromContainingStore),
-      reset: reset(pathReader, updateState, selector, initialState, () => !!coreActions.removeFromContainingStore),
-      replace: replace(pathReader, updateState, selector, 'replace', () => !!coreActions.removeFromContainingStore),
-      upsertMatching: upsertMatching(selector, () => currentState, updateState, () => !!coreActions.removeFromContainingStore),
+      replaceAll: replaceAll(pathReader, updateState, selector, () => !!coreActions.removeFromContainingStore, storeResult),
+      reset: reset(pathReader, updateState, selector, initialState, () => !!coreActions.removeFromContainingStore, storeResult),
+      replace: replace(pathReader, updateState, selector, 'replace', () => !!coreActions.removeFromContainingStore, storeResult),
+      upsertMatching: upsertMatching(selector, () => currentState, updateState, () => !!coreActions.removeFromContainingStore, storeResult, pathReader),
       whereMany: where('filter'),
       whereOne: where('find'),
       onChange: onChange(selector, changeListeners),
       read: read(selector, () => currentState),
+      invalidateCache: () => invalidateCache(pathReader, selector, storeResult),
       readInitial: () => selector(initialState),
       defineRemoveNestedStore: defineRemoveNestedStore(() => currentState, updateState, nestedContainerStore),
       defineReset: (
-        (initState: C) => () => replace(pathReader, updateState, (e => selector(e)) as Selector<S, C, X>, 'reset', () => !!coreActions.removeFromContainingStore)(initState, undefined as Tag<T>)
+        (initState: C) => () => replace(pathReader, updateState, (e => selector(e)) as Selector<S, C, X>, 'reset', () => !!coreActions.removeFromContainingStore, storeResult)(initState, undefined as Tag<T>)
       ) as StoreWhichIsNestedInternal<S, C>['defineReset'],
       renew: (state => {
         pathReader = createPathReader(state);
@@ -155,6 +172,7 @@ export function createStore<S, T extends Trackability>(context: {
     payloads: [],
     debounceTimeout: 0,
   } as PreviousAction;
+  
 
   function updateState<C, T extends Trackability, X extends C = C>(specs: UpdateStateArgs<S, C, T, X>) {
 
@@ -168,9 +186,11 @@ export function createStore<S, T extends Trackability>(context: {
     specs.mutator(specs.selector(pathReader.mutableStateCopy) as X);
     currentState = result;
 
+    const tag = specs.updateOptions ? ( typeof(specs.updateOptions) === 'object' ? (specs.updateOptions as any).tag : specs.updateOptions ) : '';
+
     let actionToDispatch = {
       type: (specs.actionNameOverride ? specs.actionName : (pathSegments.join('.') + (pathSegments.length ? '.' : '') + specs.actionName)) +
-        (specs.tag ? ` [${tagSanitizer ? tagSanitizer(specs.tag as string) : specs.tag}]` : ''),
+        (tag ? ` [${tagSanitizer ? tagSanitizer(tag) : tag}]` : ''),
       ...((specs.getPayloadFn && (specs.getPayloadFn() !== undefined)) ? specs.getPayloadFn() : specs.payload),
     };
 
@@ -192,13 +212,17 @@ export function createStore<S, T extends Trackability>(context: {
     } else if (libState.transactionState === 'none') {
       notifySubscribers(previousState, result);
     }
+    // if (libState.logLevel === 'DEBUG') {
+    //   console.log('_____', actionToDispatch);
+    // }
+    
     
     
     
     libState.currentAction = actionToDispatch;
     libState.currentMutableState = pathReader.mutableStateCopy as any;
     const { type, ...actionPayload } = actionToDispatch;
-    if (devtoolsDispatchListener && (!specs.tag || (specs.tag !== 'dontTrackWithDevtools'))) {
+    if (devtoolsDispatchListener && (!specs.updateOptions || (specs.updateOptions !== 'dontTrackWithDevtools'))) {
       const dispatchToDevtools = (payload?: any[]) => {
         const action = payload ? { ...actionToDispatch, batched: payload } : actionToDispatch;
         libState.currentActionForDevtools = action;

@@ -9,15 +9,18 @@
 ## Crystal-clear state-management  
 
 Olik allows you to comprehensively grok your state updates without ever leaving your component code.  
-Its fluent typesafe API maximizes **transparency**, **consistency**, and **debugability** while simultaneously **auto-generating your action types** for you.
+* Its fluent typesafe API maximizes **transparency**, **consistency** and **eliminates ambiguity** 
+* **Debuggability** is enhanced through **auto-generated action types**
+* **Nested stores** allow you to debug your component state with or without your application state.
+* Transactions, async updates, and caching are all built-in.
 
 ---
 NOTE: The below code demonstrates Olik **without a framework**,
-however, so far, there are also bindings for ***[React](https://memeplexx.github.io/olik/docs/read)***, and
+however, bindings currently exist for ***[React](https://memeplexx.github.io/olik/docs/read)***, and
 ***[Angular](https://memeplexx.github.io/olik/docs/angular)***
 
 #### 🌈 **SET UP**
-Initializing your store couldn't be simpler and integration with the **[Redux Devtools extension](https://github.com/zalmoxisus/redux-devtools-extension)** is automatic.
+Initializing your store couldn't be simpler while integration with the **[Redux Devtools extension](https://github.com/zalmoxisus/redux-devtools-extension)** is automatic.
 ```ts
 const select = set({
   username: '',
@@ -53,9 +56,7 @@ const derivation = derive(
   select(s => s.foods),
   select(s => s.hobbies),
 ).usingExpensiveCalc(
-  (foods, hobbies) => {
-    /* ...some calculation... */
-  }
+  (foods, hobbies) => /* ...some expensive calculation we do not wish to repeat... */
 )
 ```
 #### 🥚 **NEST STORES**
@@ -83,4 +84,15 @@ transact(                             // type: 'username.replace(), favorite.foo
   () => select(s => s.favorite.foods) //   { type: 'favorite.foods.removeAll()' },
     .removeAll(),                     // ]
 );
+```
+
+#### ⏲️ **ASYNC**
+Avoid unnecessary requests for a specified period of time
+```ts
+select(s => s.favorite.hobbies)
+  .replaceAll(() => fetchHobbies(), { cacheFor: 1000 * 60 })
+  .catch(e => notifyUserOfError(e));
+
+select(s => s.favorite.hobbies)
+  .invalidateCache();
 ```

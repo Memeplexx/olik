@@ -8,8 +8,8 @@ import {
   StoreForAnObject,
   StoreOrDerivation,
   StoreWhichIsNested,
-  Tag,
   Trackability,
+  UpdateOptions,
 } from './shapes-external';
 
 export type UpdateStateArgs<S, C, T extends Trackability, X extends C = C> = {
@@ -19,7 +19,7 @@ export type UpdateStateArgs<S, C, T extends Trackability, X extends C = C> = {
   pathSegments?: string[],
   actionName: string,
   payload?: any,
-  tag: Tag<T>,
+  updateOptions: UpdateOptions<T, C, any>,
   actionNameOverride?: boolean,
   getPayloadFn?: () => any,
 };
@@ -65,6 +65,8 @@ export type ArrayOperatorState<S, C, X extends C & Array<any>, F extends FindOrF
   updateState: UpdateStateFn<S, C, T, X>,
   type: FindOrFilter,
   changeListeners: Map<(ar: any) => any, (arg: S) => any>,
+  pathReader: PathReader<S>,
+  storeResult: (selector?: (s: DeepReadonly<S>) => C) => any,
 };
 
 export type ArrayCustomState<S, C, X extends C & Array<any>, T extends Trackability> = {
@@ -74,6 +76,8 @@ export type ArrayCustomState<S, C, X extends C & Array<any>, T extends Trackabil
   getCurrentState: () => S,
   predicate: (element: DeepReadonly<X[0]>) => boolean,
   changeListeners: Map<(ar: any) => any, (arg: S) => any>,
+  pathReader: PathReader<S>,
+  storeResult: (selector?: (s: DeepReadonly<S>) => C) => any,
 }
 
 export type PreviousAction = {

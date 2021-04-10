@@ -7,9 +7,12 @@ import {
   FindOrFilter,
   Selector,
   Trackability,
+  UpdateOptions,
+  UpdateOptionsInternal,
 } from './shapes-external';
-import { ArrayOperatorState } from './shapes-internal';
-import { copyPayload, createPathReader, deepFreeze, validateSelectorFn } from './shared-utils';
+import { ArrayOperatorState, PathReader } from './shapes-internal';
+import { copyPayload, createPathReader, deepFreeze, processAsyncPayload, toIsoString, validateSelectorFn } from './shared-utils';
+import { libState } from './shared-state';
 
 export const getSegments = <S, C, X extends C & Array<any>, P>(
   selector: Selector<S, C, X>,
@@ -39,7 +42,7 @@ export const or = <S, C, X extends C & Array<any>, F extends FindOrFilter, T ext
 
 export const remove = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
   context: ArrayOperatorState<S, C, X, F, T>,
-) => (tag => {
+) => (updateOptions => {
   const { updateState, selector, type, whereClauseStrings, getCurrentState } = context;
   const elementIndices = completeWhereClause(context);
   updateState({
@@ -57,46 +60,52 @@ export const remove = <S, C, X extends C & Array<any>, F extends FindOrFilter, T
       query: whereClauseStrings.join(' '),
       toRemove: (selector(getCurrentState()) as X)[type]((e, i) => elementIndices.includes(i)),
     },
-    tag,
+    updateOptions,
   });
 }) as ArrayOfObjectsAction<X, F, T>['remove'];
 
 export const patch = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
   context: ArrayOperatorState<S, C, X, F, T>,
-) => ((payload, tag) => {
-  const { updateState, selector, type, whereClauseStrings } = context;
-  const { payloadFrozen, payloadCopied } = copyPayload(payload);
+) => ((payload, updateOptions) => {
+  const { updateState, selector, type, whereClauseStrings, pathReader, storeResult } = context;
   const elementIndices = completeWhereClause(context);
-  updateState({
-    selector,
-    replacer: old => old.map((o, i) => elementIndices.includes(i) ? { ...o, ...payloadFrozen } : o),
-    mutator: old => elementIndices.forEach(i => Object.assign(old[i], payloadCopied)),
-    actionName: `${deriveType(type)}().patch()`,
-    payload: {
-      query: whereClauseStrings.join(' '),
-      patch: payloadFrozen,
-    },
-    tag,
-  });
+  const processPayload = (payload: Partial<C>) => {
+    const { payloadFrozen, payloadCopied } = copyPayload(payload);
+    updateState({
+      selector,
+      replacer: old => old.map((o, i) => elementIndices.includes(i) ? { ...o, ...payloadFrozen } : o),
+      mutator: old => elementIndices.forEach(i => Object.assign(old[i], payloadCopied)),
+      actionName: `${deriveType(type)}().patch()`,
+      payload: {
+        query: whereClauseStrings.join(' '),
+        patch: payloadFrozen,
+      },
+      updateOptions: updateOptions as UpdateOptions<T, C, any>,
+    });
+  }
+  return processAsyncPayload(selector, payload, pathReader, storeResult, processPayload, updateOptions as UpdateOptions<T, C, any>, deriveType(type) + '(' + whereClauseStrings.join(' ') + ').patch');
 }) as ArrayOfObjectsAction<X, F, T>['patch'];
 
 export const replace = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
   context: ArrayOperatorState<S, C, X, F, T>,
-) => ((replacement, tag) => {
-  const { updateState, selector, type, whereClauseStrings } = context;
-  const { payloadFrozen, payloadCopied } = copyPayload(replacement);
-  const elementIndices = completeWhereClause(context);
-  updateState({
-    selector,
-    replacer: old => old.map((o, i) => elementIndices.includes(i) ? payloadFrozen : o),
-    mutator: old => { old.forEach((o, i) => { if (elementIndices.includes(i)) { old[i] = payloadCopied; } }) },
-    actionName: `${deriveType(type)}().replace()`,
-    payload: {
-      query: whereClauseStrings.join(' '),
-      replacement: payloadFrozen,
-    },
-    tag,
-  })
+) => ((payload, updateOptions) => {
+  const { updateState, selector, type, whereClauseStrings, pathReader, storeResult } = context;
+  const processPayload = (payload: C) => {
+    const { payloadFrozen, payloadCopied } = copyPayload(payload);
+    const elementIndices = completeWhereClause(context);
+    updateState({
+      selector,
+      replacer: old => old.map((o, i) => elementIndices.includes(i) ? payloadFrozen : o),
+      mutator: old => { old.forEach((o, i) => { if (elementIndices.includes(i)) { old[i] = payloadCopied; } }) },
+      actionName: `${deriveType(type)}().replace()`,
+      payload: {
+        query: whereClauseStrings.join(' '),
+        replacement: payloadFrozen,
+      },
+      updateOptions: updateOptions as UpdateOptions<T, C, any>,
+    })
+  }
+  return processAsyncPayload(selector, payload, pathReader, storeResult, processPayload, updateOptions as UpdateOptions<T, C, any>, whereClauseStrings.join(' ') + '.replace');
 }) as ArrayOfElementsCommonAction<X, F, T>['replace'];
 
 export const onChange = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
@@ -119,6 +128,19 @@ export const read = <S, C, X extends C & Array<any>, F extends FindOrFilter, T e
     ? (selector(getCurrentState()) as X).find(e => bundleCriteria(e, whereClauseSpecs))
     : (selector(getCurrentState()) as X).map(e => bundleCriteria(e, whereClauseSpecs) ? e : null).filter(e => e != null));
 }) as ArrayOfElementsCommonAction<X, F, T>['read'];
+
+export const invalidateCache = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
+  context: ArrayOperatorState<S, C, X, F, T>,
+) => {
+  const { pathReader, storeResult, selector, whereClauseString, type } = context;
+  pathReader.readSelector(selector);
+  const pathSegs = pathReader.pathSegments.join('.') + (pathReader.pathSegments.length ? '.' : '') + deriveType(type) + '(' + whereClauseString + ')';
+  const patch = {} as { [key: string]: string };
+  Object.keys(storeResult().read().cacheExpiryTimes)
+    .filter(key => key.startsWith(pathSegs))
+    .forEach(key => patch[key] = toIsoString(new Date()));
+  storeResult(s => (s as any).cacheExpiryTimes).patch(patch);
+}
 
 const deriveType = (type: FindOrFilter) => {
   return type === 'find' ? 'whereOne' : 'whereMany';
