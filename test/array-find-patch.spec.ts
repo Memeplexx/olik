@@ -1,5 +1,5 @@
-import { set } from '../src/store-creators';
 import { libState } from '../src/shared-state';
+import { set } from '../src/store-creators';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
 describe('array.find().patch()', () => {

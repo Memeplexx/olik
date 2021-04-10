@@ -14,11 +14,9 @@ describe('array.find().and().or()', () => {
 
   it('should eq().and().eq()', () => {
     const select = set(initialState);
-    libState.logLevel = 'DEBUG';
     select(s => s.array)
       .whereOne(s => s.id).eq(2).and(s => s.value).eq('two')
       .remove();
-    libState.logLevel = 'NONE';
     expect(libState.currentAction).toEqual({
       type: 'array.whereOne().remove()',
       toRemove: initialState.array[1],

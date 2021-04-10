@@ -138,18 +138,6 @@ describe('Root', () => {
     expect(libState.currentMutableState).toEqual(select().read());
   })
 
-  it('replace(() => ...)', () => {
-    const select = set('a');
-    select()
-      .replace(e => e + 'b');
-    expect(libState.currentAction).toEqual({
-      type: 'replace()',
-      replacement: 'ab',
-    });
-    expect(select().read()).toEqual('ab');
-    expect(libState.currentMutableState).toEqual(select().read());
-  });
-
   it('find().replace()', () => {
     const select = set(['hello']);
     select().whereOne().match(/^h/).replace('another')

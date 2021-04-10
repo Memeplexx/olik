@@ -1,4 +1,5 @@
-import { FunctionReturning } from './shapes-external';
+import { DeepReadonly, Selector, Trackability, UpdateOptions, UpdateOptionsInternal } from './shapes-external';
+import { PathReader } from './shapes-internal';
 import { errorMessages, expressionsNotAllowedInSelectorFunction } from './shared-consts';
 import { libState } from './shared-state';
 
@@ -113,12 +114,10 @@ export function createPathReader<S extends Object>(state: S) {
   })();
 }
 
-export function copyPayload<C>(payload: C | FunctionReturning<C>) {
-  const isFunction = typeof (payload) === 'function';
+export function copyPayload<C>(payload: C) {
   return {
-    payloadFrozen: (isFunction ? null : deepFreeze(deepCopy(payload))) as C,
-    payloadCopied: (isFunction ? null : deepCopy(payload)) as C,
-    payloadFunction: (isFunction ? payload as FunctionReturning<C> : null) as FunctionReturning<C>,
+    payloadFrozen: deepFreeze(deepCopy(payload)) as C,
+    payloadCopied: deepCopy(payload) as C,
   };
 }
 
@@ -134,3 +133,63 @@ export const validateSelectorFn = (
     throw new Error(errorMessages.ILLEGAL_CHARACTERS_WITHIN_SELECTOR(functionName));
   }
 }
+
+export const toIsoString = (date: Date) => {
+  var tzo = -date.getTimezoneOffset(),
+    dif = tzo >= 0 ? '+' : '-',
+    pad = function (num: number) {
+      var norm = Math.floor(Math.abs(num));
+      return (norm < 10 ? '0' : '') + norm;
+    };
+  return date.getFullYear() +
+    '-' + pad(date.getMonth() + 1) +
+    '-' + pad(date.getDate()) +
+    'T' + pad(date.getHours()) +
+    ':' + pad(date.getMinutes()) +
+    ':' + pad(date.getSeconds()) +
+    dif + pad(tzo / 60) +
+    ':' + pad(tzo % 60);
+}
+
+export const processAsyncPayload = <S, C, X extends C & Array<any>, T extends Trackability>(
+  selector: Selector<S, C, X>,
+  payload: any | (() => Promise<any>),
+  pathReader: PathReader<S>,
+  storeResult: (selector?: (s: DeepReadonly<S>) => C) => any,
+  processPayload: (payload: C) => void,
+  updateOptions: UpdateOptions<T, C, any>,
+  actionType: string,
+) => {
+  if (!!payload && typeof (payload) === 'function') {
+    const asyncPayload = payload as (() => Promise<C>);
+    pathReader.readSelector(selector);
+    const fullPath = pathReader.pathSegments.join('.') + (pathReader.pathSegments.length ? '.' : '') + actionType + '()';
+    const expirationDate = (storeResult().read().cacheExpiryTimes || {})[fullPath];
+    if (expirationDate && (new Date(expirationDate).getTime() > new Date().getTime())) {
+      return Promise.resolve();
+    }
+    return asyncPayload()
+      .then(res => {
+        const optionsInternal = updateOptions as UpdateOptionsInternal;
+        const involvesCaching = !!updateOptions && !(typeof (updateOptions) === 'string') && optionsInternal.cacheFor;
+        if (involvesCaching) {
+          libState.transactionState = 'started';
+        }
+        processPayload(res);
+        if (involvesCaching && optionsInternal.cacheFor) {
+          const cacheExpiry = toIsoString(new Date(new Date().getTime() + optionsInternal.cacheFor));
+          libState.transactionState = 'last';
+          if (!storeResult().read().cacheExpiryTimes) {
+            storeResult(s => (s as any).cacheExpiryTimes).replace({
+              ...(storeResult().read().cacheExpiryTimes || { [fullPath]: cacheExpiry }),
+            })
+          } else {
+            storeResult(s => (s as any).cacheExpiryTimes[fullPath]).replace(cacheExpiry);
+          }
+        }
+      });
+  } else {
+    processPayload(payload as C);
+  }
+}
+

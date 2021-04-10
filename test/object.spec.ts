@@ -62,18 +62,6 @@ describe('Object', () => {
     expect(libState.currentMutableState).toEqual(select().read());
   })
 
-  it('should replace() with a function', () => {
-    const select = set({ prop: 'a' });
-    select(s => s.prop)
-      .replace(e => e + 'b');
-    expect(libState.currentAction).toEqual({
-      type: 'prop.replace()',
-      replacement: 'ab',
-    });
-    expect(select().read()).toEqual({ prop: 'ab' });
-    expect(libState.currentMutableState).toEqual({ prop: 'ab' });
-  });
-
   it('should be able to add a new property onto an object', () => {
     const select = set({} as { [key: string]: string });
     const payload = { hello: 'world' };
