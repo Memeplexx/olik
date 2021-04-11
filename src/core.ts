@@ -11,7 +11,8 @@ import {
   replaceAll,
   upsertMatching,
   reset,
-  stopBypassingPromises
+  stopBypassingPromises,
+  removeKeys
 } from './operators-general';
 import { defineRemoveNestedStore } from './operators-internal';
 import {
@@ -28,7 +29,6 @@ import {
   StoreWhichIsNested,
   Tag,
   Trackability,
-  UpdateOptionsInternal,
 } from './shapes-external';
 import {
   ArrayCustomState,
@@ -134,6 +134,7 @@ export function createStore<S, T extends Trackability>(context: {
       return recurseWhere;
     };
     const coreActions = {
+      removeKeys: removeKeys(selector, updateState, () => !!coreActions.removeFromContainingStore),
       patch: patch(selector, updateState, () => !!coreActions.removeFromContainingStore, storeResult, pathReader),
       insert: insert(selector, updateState, () => !!coreActions.removeFromContainingStore, storeResult, pathReader),
       removeAll: removeAll(selector, updateState, () => !!coreActions.removeFromContainingStore),

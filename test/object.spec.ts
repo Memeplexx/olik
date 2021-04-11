@@ -74,4 +74,16 @@ describe('Object', () => {
     expect(libState.currentMutableState).toEqual(select().read());
   })
 
+  it('should be able to remove a key', () => {
+    const select = set({ hello: 'one', world: 'two', another: 'three' });
+    const payload = ['hello', 'another'] as Array<any>;
+    select().removeKeys(payload);
+    expect(libState.currentAction).toEqual({
+      type: 'removeKeys()',
+      keysToRemove: payload,
+    });
+    expect(select().read()).toEqual({ world: 'two' });
+    expect(libState.currentMutableState).toEqual(select().read());
+  })
+
 });

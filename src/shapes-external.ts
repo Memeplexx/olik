@@ -248,10 +248,9 @@ export type ArrayOfElementsCommonAction<X extends DeepReadonlyArray<any>, F exte
    */
   read: () => DeepReadonly<F extends 'find' ? X[0] : X>;
   /**
-   * Ensures that all promiseBypassTTLs related to this node of the state tree are marked with the current time.
-   * This will guarantee that fresh data is retrieved the next time promises are called to populate this node of the state tree.
+   * Ensures that fresh data is retrieved the next time any promises are used to populate this node of the state tree.
    */
-   stopBypassingPromises: () => void,
+  stopBypassingPromises: () => void,
 }
 
 export type ArrayOfObjectsCommonAction<X extends DeepReadonlyArray<any>, F extends FindOrFilter, T extends Trackability> = {
@@ -402,6 +401,12 @@ export type StoreForAnObject<C extends any, T extends Trackability> = {
    *  .patch({ firstName: 'James', age: 33 })
    */
   patch: <H extends (Partial<C> | (() => Promise<Partial<C>>)) >(partial: H, tag: UpdateOptions<T, C, H>) => H extends (() => Promise<Partial<C>>) ? Promise<void> : void,
+  /**
+   * Removes the specified key from this object.  
+   * ***WARNING***: use this conservatively as invoking this has the potentional to contradict the type-system.
+   * Only use this to remove from an object of type `{ [key: string]: any }` and NOT one with named properties eg `{ str: '', num: 0 }`
+   */
+  removeKeys: (keys: Array<keyof C>, tag: Tag<T>) =>  void,
 } & StoreForAnObjectOrPrimitive<C, T>;
 
 export type StoreOrDerivation<C> = {
@@ -435,10 +440,9 @@ export type StoreWhichIsResettable<C extends any, T extends Trackability> = {
    */
   reset: (tag: Tag<T>) => void,
   /**
-   * Ensures that all promiseBypassTTLs related to this node of the state tree are marked with the current time.
-   * This will guarantee that fresh data is retrieved the next time promises are called to populate this node of the state tree.
+   * Ensures that fresh data is retrieved the next time any promises are used to populate this node of the state tree.
    */
-   stopBypassingPromises: () => void,
+  stopBypassingPromises: () => void,
 } & StoreOrDerivation<C>;
 
 /**

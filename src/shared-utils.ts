@@ -165,7 +165,7 @@ export const processAsyncPayload = <S, C, X extends C & Array<any>, T extends Tr
       libState.transactionState = 'none';
       throw new Error(errorMessages.PROMISES_NOT_ALLOWED_IN_TRANSACTIONS)
     }
-    if (['array', 'string', 'number', 'boolean'].some(t => t === typeof(storeResult().read()))) {
+    if (['array', 'string', 'number', 'boolean'].some(t => t === typeof (storeResult().read()))) {
       throw new Error(errorMessages.INVALID_CONTAINER_FOR_CACHED_DATA);
     }
     const asyncPayload = payload as (() => Promise<C>);
@@ -193,6 +193,13 @@ export const processAsyncPayload = <S, C, X extends C & Array<any>, T extends Tr
             })
           } else {
             storeResult(s => (s as any).promiseBypassTTLs[fullPath]).replace(cacheExpiry);
+          }
+          try {
+            setTimeout(() => {
+              storeResult(s => (s as any).promiseBypassTTLs).removeKeys([fullPath]);
+            }, optionsInternal.bypassPromiseFor)
+          } catch (e) {
+            // ignoring
           }
         }
       });

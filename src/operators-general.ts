@@ -14,6 +14,7 @@ import {
 import { PathReader, UpdateStateFn } from './shapes-internal';
 import { libState } from './shared-state';
 import { copyPayload, createPathReader, deepCopy, deepFreeze, processAsyncPayload, toIsoString, validateSelectorFn } from './shared-utils';
+import { transact } from './transact';
 
 export const onChange = <S, C, X extends C & Array<any>>(
   selector: Selector<S, C, X>,
@@ -113,6 +114,24 @@ export const patch = <S, C, X extends C & Array<any>, T extends Trackability>(
   }
   return processAsyncPayload(selector, payload, pathReader, storeResult, processPayload, updateOptions as UpdateOptions<T, C, any>, 'patch()');
 }) as StoreForAnObject<C, T>['patch'];
+
+export const removeKeys = <S, C, X extends C & Array<any>, T extends Trackability>(
+  selector: Selector<S, C, X>,
+  updateState: UpdateStateFn<S, C, T, X>,
+  isNested: () => boolean,
+) => ((payload, updateOptions) => {
+  validateSelector(selector, isNested);
+  updateState({
+    selector,
+    replacer: old => { const res = Object.assign({}, old); Object.keys(res).filter(key => payload.includes(key as keyof C)).forEach(key => delete (res as any)[key]); return res; },
+    mutator: old => payload.forEach(key => delete old[key]),
+    actionName: 'removeKeys()',
+    payload: {
+      keysToRemove: payload,
+    },
+    updateOptions: updateOptions as UpdateOptions<T, C, any>,
+  });
+}) as StoreForAnObject<C, T>['removeKeys'];
 
 export const upsertMatching = <S, C, X extends C & Array<any>, T extends Trackability>(
   selector: Selector<S, C, X>,
@@ -249,11 +268,8 @@ export function stopBypassingPromises<S, C, X extends C & Array<any>>(
 ) {
   pathReader.readSelector(selector);
   const pathSegs = pathReader.pathSegments.join('.');
-  const patch = {} as { [key: string]: string };
-  Object.keys(storeResult().read().promiseBypassTTLs)
-    .filter(key => key.startsWith(pathSegs))
-    .forEach(key => patch[key] = toIsoString(new Date()));
-  storeResult(s => (s as any).promiseBypassTTLs).patch(patch);
+  storeResult(s => (s as any).promiseBypassTTLs).removeKeys(
+    Object.keys(storeResult().read().promiseBypassTTLs).filter(key => key.startsWith(pathSegs)));
 }
 
 const validateSelector = <S, C, X extends C & Array<any>>(

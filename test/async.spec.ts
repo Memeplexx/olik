@@ -1,7 +1,7 @@
 import { set, transact } from '../src';
 import { errorMessages } from '../src/shared-consts';
 import { libState } from '../src/shared-state';
-import { setEnforceTags } from '../src/store-creators';
+import { setEnforceTags, setNested } from '../src/store-creators';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
 describe('async', () => {
@@ -231,7 +231,6 @@ describe('async', () => {
           .patch(() => new Promise(resolve => setTimeout(() => resolve(payload2), 10)))
           .then(() => {
             expect(select(s => s.array).read()).toEqual([initialState.array[0], { ...initialState.array[1], ...payload }, initialState.array[2]]);
-            console.log(select().read());
             select(s => s.array)
               .filterWhere(s => s.id).eq(2)
               .stopBypassingPromises();
@@ -396,6 +395,33 @@ describe('async', () => {
     const select = set(0);
     expect(() => select().replace(() => new Promise(resolve => setTimeout(() => resolve(1), 10)), { bypassPromiseFor: 1000 }))
       .toThrowError(errorMessages.INVALID_CONTAINER_FOR_CACHED_DATA);
+  })
+
+  it('should automatically clear up expired cache keys', done => {
+    const select = set(initialState);
+    const payload = [{ id: 1, value: 'test' }];
+    select(s => s.object)
+      .replace(() => new Promise(resolve => setTimeout(() => resolve({ property: 'fdfd', property2: 'fdfd' }), 10)), { bypassPromiseFor: 1000 })
+    select(s => s.array)
+      .replaceAll(() => new Promise(resolve => setTimeout(() => resolve(payload), 10)), { bypassPromiseFor: 10 })
+      .then(() => {
+        setTimeout(() => {
+          expect(Object.keys(select(s => s.promiseBypassTTLs).read())).toEqual(['object.replace()']);
+          done();
+        }, 100);
+      });
+  })
+
+  it('should work with nested stores', done => {
+    const select = set(initialState, { isContainerForNestedStores: true });
+    const selectNested = setNested({ prop: '' }, { storeName: 'hello' });
+    const payload = 'test';
+    selectNested(s => s.prop)
+      .replace(() => new Promise(resolve => setTimeout(() => resolve(payload), 10)), { bypassPromiseFor: 1000 })
+      .then(() => {
+        expect(selectNested(s => s.prop).read()).toEqual(payload);
+        done();
+      });
   })
 
 });
