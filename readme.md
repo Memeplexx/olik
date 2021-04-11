@@ -15,8 +15,8 @@ Olik allows you to comprehensively grok your state updates without ever leaving 
 * Transactions, async updates, request de-duplication, and caching are all built-in.
 
 ---
-🛑 NOTE: The below code demonstrates Olik **without a framework**,
-however, bindings currently exist for ***[React](https://memeplexx.github.io/olik/docs/read)***, and
+🛑 NOTE: The below code demonstrates Olik **without a framework**.  
+There are, however, bindings for ***[React](https://memeplexx.github.io/olik/docs/read)***, and
 ***[Angular](https://memeplexx.github.io/olik/docs/angular)***
 
 #### 🌈 **SET UP**
@@ -59,6 +59,18 @@ const derivation = derive(
   (foods, hobbies) => /* ...some expensive calculation we do not wish to repeat... */
 )
 ```
+
+#### ⏲️ **FETCH STATE**
+Pass in promises as payloads and optionally bypass subsequent promise invocations for a specified period
+```ts
+select(s => s.favorite.hobbies)
+  .replaceAll(() => fetchTodosFromApi(), { bypassPromiseFor: 1000 * 60 })
+  .catch(e => notifyUserOfError(e));
+
+select(s => s.favorite.hobbies)
+  .stopBypassingPromises();
+```
+
 #### 🥚 **NEST STORES**
 Each component's state can be managed and debugged with or without your application store.
 ```ts
@@ -84,15 +96,4 @@ transact(                             // type: 'username.replace(), favorite.foo
   () => select(s => s.favorite.foods) //   { type: 'favorite.foods.removeAll()' },
     .removeAll(),                     // ]
 );
-```
-
-#### ⏲️ **ASYNC**
-Pass in promises as payloads and optionally bypass subsequent promise invocations for a specified period
-```ts
-select(s => s.favorite.hobbies)
-  .replaceAll(() => fetchTodosFromApi(), { bypassPromiseFor: 1000 * 60 })
-  .catch(e => notifyUserOfError(e));
-
-select(s => s.favorite.hobbies)
-  .stopBypassingPromises();
 ```
