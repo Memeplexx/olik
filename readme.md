@@ -90,7 +90,7 @@ transact(                             // type: 'username.replace(), favorite.foo
 Pass in promises as payloads and optionally bypass subsequent promise invocations for a specified period
 ```ts
 select(s => s.favorite.hobbies)
-  .replaceAll(() => axios.get('http://www.example.com/todos').then(r => r.data), { bypassPromiseFor: 1000 * 60 })
+  .replaceAll(() => fetchTodosFromApi(), { bypassPromiseFor: 1000 * 60 })
   .catch(e => notifyUserOfError(e));
 
 select(s => s.favorite.hobbies)
