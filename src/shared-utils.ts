@@ -158,7 +158,7 @@ export const processAsyncPayload = <S, C, X extends C & Array<any>, T extends Tr
   storeResult: (selector?: (s: DeepReadonly<S>) => C) => any,
   processPayload: (payload: C) => void,
   updateOptions: UpdateOptions<T, C, any>,
-  actionType: string,
+  suffix?: string,
 ) => {
   if (!!payload && typeof (payload) === 'function') {
     if (libState.transactionState !== 'none') {
@@ -170,7 +170,7 @@ export const processAsyncPayload = <S, C, X extends C & Array<any>, T extends Tr
     }
     const asyncPayload = payload as (() => Promise<C>);
     pathReader.readSelector(selector);
-    const fullPath = pathReader.pathSegments.join('.') + (pathReader.pathSegments.length ? '.' : '') + actionType + '()';
+    const fullPath = pathReader.pathSegments.join('.') + (suffix ? ((pathReader.pathSegments.length ? '.' : '') + suffix) : '');
     const expirationDate = (storeResult().read().cacheExpiryTimes || {})[fullPath];
     if (expirationDate && (new Date(expirationDate).getTime() > new Date().getTime())) {
       return Promise.resolve();

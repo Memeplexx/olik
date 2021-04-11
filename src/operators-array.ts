@@ -67,7 +67,7 @@ export const remove = <S, C, X extends C & Array<any>, F extends FindOrFilter, T
 export const patch = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
   context: ArrayOperatorState<S, C, X, F, T>,
 ) => ((payload, updateOptions) => {
-  const { updateState, selector, type, whereClauseStrings, pathReader, storeResult } = context;
+  const { updateState, selector, type, pathReader, storeResult, whereClauseString } = context;
   const elementIndices = completeWhereClause(context);
   const processPayload = (payload: Partial<C>) => {
     const { payloadFrozen, payloadCopied } = copyPayload(payload);
@@ -77,19 +77,19 @@ export const patch = <S, C, X extends C & Array<any>, F extends FindOrFilter, T 
       mutator: old => elementIndices.forEach(i => Object.assign(old[i], payloadCopied)),
       actionName: `${type}().patch()`,
       payload: {
-        query: whereClauseStrings.join(' '),
+        query: whereClauseString,
         patch: payloadFrozen,
       },
       updateOptions: updateOptions as UpdateOptions<T, C, any>,
     });
   }
-  return processAsyncPayload(selector, payload, pathReader, storeResult, processPayload, updateOptions as UpdateOptions<T, C, any>, type + '(' + whereClauseStrings.join(' ') + ').patch');
+  return processAsyncPayload(selector, payload, pathReader, storeResult, processPayload, updateOptions as UpdateOptions<T, C, any>, type + '(' + whereClauseString + ')');
 }) as ArrayOfObjectsAction<X, F, T>['patch'];
 
 export const replace = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
   context: ArrayOperatorState<S, C, X, F, T>,
 ) => ((payload, updateOptions) => {
-  const { updateState, selector, type, whereClauseStrings, pathReader, storeResult } = context;
+  const { updateState, selector, type, whereClauseString, pathReader, storeResult } = context;
   const processPayload = (payload: C) => {
     const { payloadFrozen, payloadCopied } = copyPayload(payload);
     const elementIndices = completeWhereClause(context);
@@ -99,13 +99,13 @@ export const replace = <S, C, X extends C & Array<any>, F extends FindOrFilter, 
       mutator: old => { old.forEach((o, i) => { if (elementIndices.includes(i)) { old[i] = payloadCopied; } }) },
       actionName: `${type}().replace()`,
       payload: {
-        query: whereClauseStrings.join(' '),
+        query: whereClauseString,
         replacement: payloadFrozen,
       },
       updateOptions: updateOptions as UpdateOptions<T, C, any>,
     })
   }
-  return processAsyncPayload(selector, payload, pathReader, storeResult, processPayload, updateOptions as UpdateOptions<T, C, any>, whereClauseStrings.join(' ') + '.replace');
+  return processAsyncPayload(selector, payload, pathReader, storeResult, processPayload, updateOptions as UpdateOptions<T, C, any>, type + '(' + whereClauseString + ')');
 }) as ArrayOfElementsCommonAction<X, F, T>['replace'];
 
 export const onChange = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
@@ -137,7 +137,7 @@ export const invalidateCache = <S, C, X extends C & Array<any>, F extends FindOr
   const pathSegs = pathReader.pathSegments.join('.') + (pathReader.pathSegments.length ? '.' : '') + type + '(' + whereClauseString + ')';
   const patch = {} as { [key: string]: string };
   Object.keys(storeResult().read().cacheExpiryTimes)
-    .filter(key => key.startsWith(pathSegs))
+    .filter(key => key === pathSegs)
     .forEach(key => patch[key] = toIsoString(new Date()));
   storeResult(s => (s as any).cacheExpiryTimes).patch(patch);
 }

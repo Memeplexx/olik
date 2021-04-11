@@ -22,7 +22,7 @@ export const replace = <S, C, X extends C & Array<any>, F extends FindOrFilter, 
       updateOptions: updateOptions as UpdateOptions<T, C, any>,
     });
   }
-  return processAsyncPayload(selector, payload, context.pathReader, context.storeResult, processPayload, updateOptions as UpdateOptions<T, C, any>, type + '().replace');
+  return processAsyncPayload(selector, payload, context.pathReader, context.storeResult, processPayload, updateOptions as UpdateOptions<T, C, any>, type + '()');
 }) as ArrayOfElementsCommonAction<X, F, T>['replace'];
 
 export const patch = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
@@ -41,7 +41,7 @@ export const patch = <S, C, X extends C & Array<any>, F extends FindOrFilter, T 
       updateOptions: updateOptions as UpdateOptions<T, C, any>,
     });
   }
-  return processAsyncPayload(selector, payload, context.pathReader, context.storeResult, processPayload, updateOptions as UpdateOptions<T, C, any>, type + '().patch');
+  return processAsyncPayload(selector, payload, context.pathReader, context.storeResult, processPayload, updateOptions as UpdateOptions<T, C, any>, type + '()');
 }) as ArrayOfObjectsCommonAction<X, F, T>['patch'];
 
 export const remove = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(

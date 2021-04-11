@@ -87,7 +87,7 @@ export const insert = <S, C, X extends C & Array<any>, T extends Trackability>(
       updateOptions: updateOptions as UpdateOptions<T, C, any>,
     });
   }
-  return processAsyncPayload(selector, payload, pathReader, storeResult, processPayload, updateOptions as UpdateOptions<T, C, any>, 'insert');
+  return processAsyncPayload(selector, payload, pathReader, storeResult, processPayload, updateOptions as UpdateOptions<T, C, any>);
 }) as StoreForAnArrayCommon<X, T>['insert'];
 
 export const patch = <S, C, X extends C & Array<any>, T extends Trackability>(
@@ -111,7 +111,7 @@ export const patch = <S, C, X extends C & Array<any>, T extends Trackability>(
       updateOptions: updateOptions as UpdateOptions<T, C, any>,
     });
   }
-  return processAsyncPayload(selector, payload, pathReader, storeResult, processPayload, updateOptions as UpdateOptions<T, C, any>, 'patch');
+  return processAsyncPayload(selector, payload, pathReader, storeResult, processPayload, updateOptions as UpdateOptions<T, C, any>);
 }) as StoreForAnObject<C, T>['patch'];
 
 export const upsertMatching = <S, C, X extends C & Array<any>, T extends Trackability>(
@@ -162,7 +162,7 @@ export const upsertMatching = <S, C, X extends C & Array<any>, T extends Trackab
           updateOptions: updateOptions as UpdateOptions<T, C, any>,
         });
       }
-      return processAsyncPayload(selector, payload, pathReader, storeResult, processPayload, updateOptions as UpdateOptions<T, C, any>, 'patch');
+      return processAsyncPayload(selector, payload, pathReader, storeResult, processPayload, updateOptions as UpdateOptions<T, C, any>);
     }
   };
 }) as StoreForAnArrayOfObjects<X, T>['upsertMatching'];
@@ -177,7 +177,7 @@ export const replace = <S, C, X extends C & Array<any>, T extends Trackability>(
 ) => (payload: C | (() => Promise<C>), updateOptions: UpdateOptions<T, C, any>) => {
   validateSelector(selector, isNested);
   const processPayload = (payload: C) => replacePayload(pathReader, updateState, selector, name, payload as C, updateOptions);
-  return processAsyncPayload(selector, payload, pathReader, storeResult, processPayload, updateOptions as UpdateOptions<T, C, any>, 'replace');
+  return processAsyncPayload(selector, payload, pathReader, storeResult, processPayload, updateOptions as UpdateOptions<T, C, any>);
 };
 
 export function replacePayload<S, C, X extends C & Array<any>, T extends Trackability>(
@@ -251,7 +251,7 @@ export function invalidateCache<S, C, X extends C & Array<any>>(
   const pathSegs = pathReader.pathSegments.join('.');
   const patch = {} as { [key: string]: string };
   Object.keys(storeResult().read().cacheExpiryTimes)
-    .filter(key => key.startsWith(pathSegs))
+    .filter(key => key === pathSegs)
     .forEach(key => patch[key] = toIsoString(new Date()));
   storeResult(s => (s as any).cacheExpiryTimes).patch(patch);
 }
