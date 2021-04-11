@@ -12,10 +12,10 @@ Olik allows you to comprehensively grok your state updates without ever leaving 
 * Its fluent typesafe API maximizes **transparency**, **consistency** and **eliminates ambiguity** 
 * **Debuggability** is enhanced through **auto-generated action types**
 * **Nested stores** allow you to debug your component state with or without your application state.
-* Transactions, async updates, request de-duplication and caching are all built-in.
+* Transactions, async updates, request de-duplication, and caching are all built-in.
 
 ---
-NOTE: The below code demonstrates Olik **without a framework**,
+🛑 NOTE: The below code demonstrates Olik **without a framework**,
 however, bindings currently exist for ***[React](https://memeplexx.github.io/olik/docs/read)***, and
 ***[Angular](https://memeplexx.github.io/olik/docs/angular)***
 
@@ -44,7 +44,7 @@ select(s => s.favorite.hobbies)      // type: 'favorite.hobbies.find().patch()'
   .patch({ name: 'coding' });        // patch: { name: 'coding' }
 ```
 #### 🔍 **READ STATE**
-State can be **read** from, **listened** to, and expensive derivations can be **memoised**.
+State can be **read** from, **listened** to, and expensive derivations can be **memoized**.
 ```ts
 select(s => s.favorite.hobbies)
   .read()
@@ -90,7 +90,7 @@ transact(                             // type: 'username.replace(), favorite.foo
 Pass in promises as payloads and optionally bypass subsequent promise invocations for a specified period
 ```ts
 select(s => s.favorite.hobbies)
-  .replaceAll(() => axios.get('http://www.example.com/todos'), { bypassPromiseFor: 1000 * 60 })
+  .replaceAll(() => axios.get('http://www.example.com/todos').then(r => r.data), { bypassPromiseFor: 1000 * 60 })
   .catch(e => notifyUserOfError(e));
 
 select(s => s.favorite.hobbies)
