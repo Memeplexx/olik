@@ -22,7 +22,7 @@ export const replace = <S, C, X extends C & Array<any>, F extends FindOrFilter, 
       updateOptions: updateOptions as UpdateOptions<T, C, any>,
     });
   }
-  return processAsyncPayload(selector, payload, context.pathReader, context.storeResult, processPayload, updateOptions as UpdateOptions<T, C, any>, type + '()');
+  return processAsyncPayload(selector, payload, context.pathReader, context.storeResult, processPayload, updateOptions as UpdateOptions<T, C, any>, `${type}(${predicate}).replace()`);
 }) as ArrayOfElementsCommonAction<X, F, T>['replace'];
 
 export const patch = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
@@ -41,7 +41,7 @@ export const patch = <S, C, X extends C & Array<any>, F extends FindOrFilter, T 
       updateOptions: updateOptions as UpdateOptions<T, C, any>,
     });
   }
-  return processAsyncPayload(selector, payload, context.pathReader, context.storeResult, processPayload, updateOptions as UpdateOptions<T, C, any>, type + '()');
+  return processAsyncPayload(selector, payload, context.pathReader, context.storeResult, processPayload, updateOptions as UpdateOptions<T, C, any>, `${type}(${predicate}).patch()`);
 }) as ArrayOfObjectsCommonAction<X, F, T>['patch'];
 
 export const remove = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
@@ -89,12 +89,12 @@ export const read = <S, C, X extends C & Array<any>, F extends FindOrFilter, T e
     : (selector(getCurrentState()) as X).map(e => predicate(e) ? e : null).filter(e => e != null))
 }) as ArrayOfElementsCommonAction<X, F, T>['read'];
 
-export const invalidateCache = <S, C, X extends C & Array<any>, T extends Trackability>(
+export const stopBypassingPromises = <S, C, X extends C & Array<any>, T extends Trackability>(
   context: ArrayCustomState<S, C, X, T>,
 ) => {
   const { pathReader, storeResult, selector, type } = context;
   pathReader.readSelector(selector);
-  const pathSegs = pathReader.pathSegments.join('.') + (pathReader.pathSegments.length ? '.' : '') + type + '()';
+  const pathSegs = pathReader.pathSegments.join('.') + (pathReader.pathSegments.length ? '.' : '') + type + '(' + context.predicate + ')';
   const patch = {} as { [key: string]: string };
   Object.keys(storeResult().read().promiseBypassTTLs)
     .filter(key => key.startsWith(pathSegs))

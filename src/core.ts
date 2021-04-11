@@ -11,7 +11,7 @@ import {
   replaceAll,
   upsertMatching,
   reset,
-  invalidateCache
+  stopBypassingPromises
 } from './operators-general';
 import { defineRemoveNestedStore } from './operators-internal';
 import {
@@ -96,7 +96,7 @@ export function createStore<S, T extends Trackability>(context: {
             remove: array.remove(context),
             onChange: array.onChange(context),
             read: array.read(context),
-            invalidateCache: () => array.invalidateCache(context),
+            stopBypassingPromises: () => array.stopBypassingPromises(context),
           } as ArrayOfObjectsAction<X, FindOrFilter, T>
         };
         return {
@@ -116,7 +116,7 @@ export function createStore<S, T extends Trackability>(context: {
                 patch: arrayCustom.patch(context),
                 onChange: arrayCustom.onChange(context),
                 read: arrayCustom.read(context),
-                invalidateCache: () => arrayCustom.invalidateCache(context),
+                stopBypassingPromises: () => arrayCustom.stopBypassingPromises(context),
               };
             }
           } as PredicateOptionsForBoolean<X, FindOrFilter, T>,
@@ -145,7 +145,7 @@ export function createStore<S, T extends Trackability>(context: {
       findWhere: where('find'),
       onChange: onChange(selector, changeListeners),
       read: read(selector, () => currentState),
-      invalidateCache: () => invalidateCache(pathReader, selector, storeResult),
+      stopBypassingPromises: () => stopBypassingPromises(pathReader, selector, storeResult),
       readInitial: () => selector(initialState),
       defineRemoveNestedStore: defineRemoveNestedStore(() => currentState, updateState, nestedContainerStore),
       defineReset: (

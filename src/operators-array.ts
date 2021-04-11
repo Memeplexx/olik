@@ -1,4 +1,3 @@
-import { errorMessages } from './shared-consts';
 import {
   ArrayOfElementsAction,
   ArrayOfElementsCommonAction,
@@ -8,11 +7,17 @@ import {
   Selector,
   Trackability,
   UpdateOptions,
-  UpdateOptionsInternal,
 } from './shapes-external';
-import { ArrayOperatorState, PathReader } from './shapes-internal';
-import { copyPayload, createPathReader, deepFreeze, processAsyncPayload, toIsoString, validateSelectorFn } from './shared-utils';
-import { libState } from './shared-state';
+import { ArrayOperatorState } from './shapes-internal';
+import { errorMessages } from './shared-consts';
+import {
+  copyPayload,
+  createPathReader,
+  deepFreeze,
+  processAsyncPayload,
+  toIsoString,
+  validateSelectorFn,
+} from './shared-utils';
 
 export const getSegments = <S, C, X extends C & Array<any>, P>(
   selector: Selector<S, C, X>,
@@ -83,7 +88,7 @@ export const patch = <S, C, X extends C & Array<any>, F extends FindOrFilter, T 
       updateOptions: updateOptions as UpdateOptions<T, C, any>,
     });
   }
-  return processAsyncPayload(selector, payload, pathReader, storeResult, processPayload, updateOptions as UpdateOptions<T, C, any>, type + '(' + whereClauseString + ')');
+  return processAsyncPayload(selector, payload, pathReader, storeResult, processPayload, updateOptions as UpdateOptions<T, C, any>, type + '(' + whereClauseString + ').patch()');
 }) as ArrayOfObjectsAction<X, F, T>['patch'];
 
 export const replace = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
@@ -105,7 +110,7 @@ export const replace = <S, C, X extends C & Array<any>, F extends FindOrFilter, 
       updateOptions: updateOptions as UpdateOptions<T, C, any>,
     })
   }
-  return processAsyncPayload(selector, payload, pathReader, storeResult, processPayload, updateOptions as UpdateOptions<T, C, any>, type + '(' + whereClauseString + ')');
+  return processAsyncPayload(selector, payload, pathReader, storeResult, processPayload, updateOptions as UpdateOptions<T, C, any>, type + '(' + whereClauseString + ').replace()');
 }) as ArrayOfElementsCommonAction<X, F, T>['replace'];
 
 export const onChange = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
@@ -129,7 +134,7 @@ export const read = <S, C, X extends C & Array<any>, F extends FindOrFilter, T e
     : (selector(getCurrentState()) as X).map(e => bundleCriteria(e, whereClauseSpecs) ? e : null).filter(e => e != null));
 }) as ArrayOfElementsCommonAction<X, F, T>['read'];
 
-export const invalidateCache = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
+export const stopBypassingPromises = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
   context: ArrayOperatorState<S, C, X, F, T>,
 ) => {
   const { pathReader, storeResult, selector, whereClauseString, type } = context;
@@ -137,7 +142,7 @@ export const invalidateCache = <S, C, X extends C & Array<any>, F extends FindOr
   const pathSegs = pathReader.pathSegments.join('.') + (pathReader.pathSegments.length ? '.' : '') + type + '(' + whereClauseString + ')';
   const patch = {} as { [key: string]: string };
   Object.keys(storeResult().read().promiseBypassTTLs)
-    .filter(key => key === pathSegs)
+    .filter(key => key.startsWith(pathSegs))
     .forEach(key => patch[key] = toIsoString(new Date()));
   storeResult(s => (s as any).promiseBypassTTLs).patch(patch);
 }

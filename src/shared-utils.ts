@@ -158,7 +158,7 @@ export const processAsyncPayload = <S, C, X extends C & Array<any>, T extends Tr
   storeResult: (selector?: (s: DeepReadonly<S>) => C) => any,
   processPayload: (payload: C) => void,
   updateOptions: UpdateOptions<T, C, any>,
-  suffix?: string,
+  suffix: string,
 ) => {
   if (!!payload && typeof (payload) === 'function') {
     if (libState.transactionState !== 'none') {
@@ -171,21 +171,21 @@ export const processAsyncPayload = <S, C, X extends C & Array<any>, T extends Tr
     const asyncPayload = payload as (() => Promise<C>);
     pathReader.readSelector(selector);
     const optionsInternal = (updateOptions as UpdateOptionsInternal) || {};
-    optionsInternal.bypassPromise = optionsInternal.bypassPromise || { for: 0, keys: [] };
-    const fullPath = pathReader.pathSegments.join('.') + (suffix ? ((pathReader.pathSegments.length ? '.' : '') + suffix) : '') + (optionsInternal.bypassPromise.keys && optionsInternal.bypassPromise.keys.length ? ('.' + optionsInternal.bypassPromise.keys.join('.')) : '');
+    optionsInternal.bypassPromiseFor = optionsInternal.bypassPromiseFor || 0;
+    const fullPath = pathReader.pathSegments.join('.') + (pathReader.pathSegments.length ? '.' : '') + suffix;
     const expirationDate = (storeResult().read().promiseBypassTTLs || {})[fullPath];
     if (expirationDate && (new Date(expirationDate).getTime() > new Date().getTime())) {
       return Promise.resolve();
     }
     return asyncPayload()
       .then(res => {
-        const involvesCaching = !!updateOptions && !(typeof (updateOptions) === 'string') && optionsInternal.bypassPromise && optionsInternal.bypassPromise.for;
+        const involvesCaching = !!updateOptions && !(typeof (updateOptions) === 'string') && optionsInternal.bypassPromiseFor;
         if (involvesCaching) {
           libState.transactionState = 'started';
         }
         processPayload(res);
-        if (involvesCaching && optionsInternal.bypassPromise && optionsInternal.bypassPromise.for) {
-          const cacheExpiry = toIsoString(new Date(new Date().getTime() + optionsInternal.bypassPromise.for));
+        if (involvesCaching && optionsInternal.bypassPromiseFor) {
+          const cacheExpiry = toIsoString(new Date(new Date().getTime() + optionsInternal.bypassPromiseFor));
           libState.transactionState = 'last';
           if (!storeResult().read().promiseBypassTTLs) {
             storeResult(s => (s as any).promiseBypassTTLs).replace({

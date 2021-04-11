@@ -87,12 +87,12 @@ transact(                             // type: 'username.replace(), favorite.foo
 ```
 
 #### ⏲️ **ASYNC**
-Avoid unnecessary promise invocations for a specified period
+Pass async payload and optionally prevent unnecessary subsequent promise invocations for a specified period
 ```ts
 select(s => s.favorite.hobbies)
-  .replaceAll(() => fetchHobbies(), { bypassPromise: { for: 1000 * 60 } })
+  .replaceAll(() => axios.get('http://www.example.com/todos'), { bypassPromiseFor: 1000  })
   .catch(e => notifyUserOfError(e));
 
 select(s => s.favorite.hobbies)
-  .invalidateCache();
+  .stopBypassingPromises();
 ```
