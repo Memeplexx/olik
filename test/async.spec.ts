@@ -1,5 +1,7 @@
+import { set, transact } from '../src';
+import { errorMessages } from '../src/shared-consts';
 import { libState } from '../src/shared-state';
-import { set, setEnforceTags } from '../src/store-creators';
+import { setEnforceTags } from '../src/store-creators';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
 describe('async', () => {
@@ -189,7 +191,6 @@ describe('async', () => {
   it('should work with whereOne().patch()', done => {
     const select = set(initialState);
     const payload = { value: 'twooo' };
-    libState.logLevel = 'DEBUG';
     select(s => s.array)
       .whereOne(s => s.id).eq(2)
       .patch(() => new Promise(resolve => setTimeout(() => resolve(payload), 10)), { cacheFor: 1000 })
@@ -209,7 +210,6 @@ describe('async', () => {
               .patch(() => new Promise(resolve => setTimeout(() => resolve(payload2), 10)))
                 .then(() => {
                   expect(select(s => s.array).read()).toEqual([initialState.array[0], { ...initialState.array[1], ...payload2 }, initialState.array[2]]);
-                  libState.logLevel = 'NONE';
                   done();
                 })
           })
@@ -219,7 +219,6 @@ describe('async', () => {
   it('should work with whereMany().patch()', done => {
     const select = set(initialState);
     const payload = { value: 'twooo' };
-    libState.logLevel = 'DEBUG';
     select(s => s.array)
       .whereMany(s => s.id).eq(2)
       .patch(() => new Promise(resolve => setTimeout(() => resolve(payload), 10)), { cacheFor: 1000 })
@@ -239,7 +238,6 @@ describe('async', () => {
               .patch(() => new Promise(resolve => setTimeout(() => resolve(payload2), 10)))
                 .then(() => {
                   expect(select(s => s.array).read()).toEqual([initialState.array[0], { ...initialState.array[1], ...payload2 }, initialState.array[2]]);
-                  libState.logLevel = 'NONE';
                   done();
                 })
           })
@@ -305,7 +303,6 @@ describe('async', () => {
   it('should work with whereOne().returnsTrue().patch()', done => {
     const select = set(initialState);
     const payload = { value: 'twooo' };
-    libState.logLevel = 'DEBUG';
     select(s => s.array)
       .whereOne(s => s.id === 2).returnsTrue()
       .patch(() => new Promise(resolve => setTimeout(() => resolve(payload), 10)), { cacheFor: 1000 })
@@ -325,7 +322,6 @@ describe('async', () => {
               .patch(() => new Promise(resolve => setTimeout(() => resolve(payload2), 10)))
                 .then(() => {
                   expect(select(s => s.array).read()).toEqual([initialState.array[0], { ...initialState.array[1], ...payload2 }, initialState.array[2]]);
-                  libState.logLevel = 'NONE';
                   done();
                 })
           })
@@ -335,7 +331,6 @@ describe('async', () => {
   it('should work with whereMany().returnsTrue().patch()', done => {
     const select = set(initialState);
     const payload = { value: 'twooo' };
-    libState.logLevel = 'DEBUG';
     select(s => s.array)
       .whereMany(s => s.id === 2).returnsTrue()
       .patch(() => new Promise(resolve => setTimeout(() => resolve(payload), 10)), { cacheFor: 1000 })
@@ -347,6 +342,7 @@ describe('async', () => {
           .patch(() => new Promise(resolve => setTimeout(() => resolve(payload2), 10)))
           .then(() => {
             expect(select(s => s.array).read()).toEqual([initialState.array[0], { ...initialState.array[1], ...payload }, initialState.array[2]]);
+            console.log(select().read())
             select(s => s.array)
               .whereMany(s => s.id === 2).returnsTrue()
               .invalidateCache();
@@ -355,7 +351,6 @@ describe('async', () => {
               .patch(() => new Promise(resolve => setTimeout(() => resolve(payload2), 10)))
                 .then(() => {
                   expect(select(s => s.array).read()).toEqual([initialState.array[0], { ...initialState.array[1], ...payload2 }, initialState.array[2]]);
-                  libState.logLevel = 'NONE';
                   done();
                 })
           })
@@ -389,10 +384,18 @@ describe('async', () => {
       });
   })
 
-  // it('should not be able to support top-level stores', done => {
-  //   const select = set(0);
-  //   select().replace(() => new Promise(resolve => setTimeout(() => resolve(1), 10)), { cacheFor: 1000 });
-  // })
+  it('should not be able to support transactions', () => {
+    const select = set(initialState);
+    expect(() => transact(
+      () => select(s => s.array).replaceAll(() => new Promise(resolve => setTimeout(() => resolve([]), 10))),
+    )).toThrowError(errorMessages.PROMISES_NOT_ALLOWED_IN_TRANSACTIONS);
+  })
+
+  it('should not be able to support top-level stores', () => {
+    const select = set(0);
+    expect(() => select().replace(() => new Promise(resolve => setTimeout(() => resolve(1), 10)), { cacheFor: 1000 }))
+      .toThrowError(errorMessages.INVALID_CONTAINER_FOR_CACHED_DATA);
+  })
 
 });
 

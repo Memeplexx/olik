@@ -161,6 +161,13 @@ export const processAsyncPayload = <S, C, X extends C & Array<any>, T extends Tr
   actionType: string,
 ) => {
   if (!!payload && typeof (payload) === 'function') {
+    if (libState.transactionState !== 'none') {
+      libState.transactionState = 'none';
+      throw new Error(errorMessages.PROMISES_NOT_ALLOWED_IN_TRANSACTIONS)
+    }
+    if (['array', 'string', 'number', 'boolean'].some(t => t === typeof(storeResult().read()))) {
+      throw new Error(errorMessages.INVALID_CONTAINER_FOR_CACHED_DATA);
+    }
     const asyncPayload = payload as (() => Promise<C>);
     pathReader.readSelector(selector);
     const fullPath = pathReader.pathSegments.join('.') + (pathReader.pathSegments.length ? '.' : '') + actionType + '()';
