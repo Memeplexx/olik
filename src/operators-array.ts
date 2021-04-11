@@ -136,10 +136,10 @@ export const invalidateCache = <S, C, X extends C & Array<any>, F extends FindOr
   pathReader.readSelector(selector);
   const pathSegs = pathReader.pathSegments.join('.') + (pathReader.pathSegments.length ? '.' : '') + type + '(' + whereClauseString + ')';
   const patch = {} as { [key: string]: string };
-  Object.keys(storeResult().read().cacheExpiryTimes)
+  Object.keys(storeResult().read().promiseBypassTTLs)
     .filter(key => key === pathSegs)
     .forEach(key => patch[key] = toIsoString(new Date()));
-  storeResult(s => (s as any).cacheExpiryTimes).patch(patch);
+  storeResult(s => (s as any).promiseBypassTTLs).patch(patch);
 }
 
 const completeWhereClause = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(

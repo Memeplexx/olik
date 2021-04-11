@@ -250,10 +250,10 @@ export function invalidateCache<S, C, X extends C & Array<any>>(
   pathReader.readSelector(selector);
   const pathSegs = pathReader.pathSegments.join('.');
   const patch = {} as { [key: string]: string };
-  Object.keys(storeResult().read().cacheExpiryTimes)
+  Object.keys(storeResult().read().promiseBypassTTLs)
     .filter(key => key === pathSegs)
     .forEach(key => patch[key] = toIsoString(new Date()));
-  storeResult(s => (s as any).cacheExpiryTimes).patch(patch);
+  storeResult(s => (s as any).promiseBypassTTLs).patch(patch);
 }
 
 const validateSelector = <S, C, X extends C & Array<any>>(

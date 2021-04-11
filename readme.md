@@ -87,10 +87,10 @@ transact(                             // type: 'username.replace(), favorite.foo
 ```
 
 #### ⏲️ **ASYNC**
-Avoid unnecessary requests for a specified period of time
+Avoid unnecessary promise invocations for a specified period
 ```ts
 select(s => s.favorite.hobbies)
-  .replaceAll(() => fetchHobbies(), { cacheFor: 1000 * 60 })
+  .replaceAll(() => fetchHobbies(), { bypassPromise: { for: 1000 * 60 } })
   .catch(e => notifyUserOfError(e));
 
 select(s => s.favorite.hobbies)
