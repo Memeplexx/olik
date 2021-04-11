@@ -43,7 +43,7 @@ select(s => s.favorite.hobbies)      // type: 'favorite.hobbies.find().patch()'
   .findWhere(s => s.id).eq(3)        // query: 'id === 3',
   .patch({ name: 'coding' });        // patch: { name: 'coding' }
 ```
-#### 🔍 **READ STATE**
+#### 👓 **READ STATE**
 State can be **read** from, **listened** to, and expensive derivations can be **memoized**.
 ```ts
 select(s => s.favorite.hobbies)
