@@ -8,6 +8,8 @@ describe('async', () => {
 
   beforeAll(() => libState.windowObject = windowAugmentedWithReduxDevtoolsImpl);
 
+  beforeEach(() => libState.activePromises = {});
+
   const initialState = {
     object: { property: '', property2: '' },
     array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
@@ -422,6 +424,20 @@ describe('async', () => {
         expect(selectNested(s => s.prop).read()).toEqual(payload);
         done();
       });
+  })
+
+  it('should de-duplicate simultaneious requests', done => {
+    const select = set(initialState);
+    select(s => s.array)
+      .replaceAll(() => new Promise(resolve => setTimeout(() => resolve([{ id: 1, value: 'test' }]), 10)));
+    setTimeout(() => {
+      select(s => s.array)
+        .replaceAll(() => new Promise(resolve => setTimeout(() => resolve([{ id: 2, value: 'testy' }]), 10)))
+        .then(() => {
+          expect(select(s => s.array).read()).toEqual([{ id: 1, value: 'test' }]);
+          done();
+        });
+    }, 5)
   })
 
 });

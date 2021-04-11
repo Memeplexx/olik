@@ -11,5 +11,6 @@ export const libState = {
   nestedContainerStore: null as null | NestedContainerStore,
   transactionState: 'none' as 'none' | 'started' | 'last',
   transactionStartState: null as any,
-  transactionActions: new Array<{ type: string }>()
+  transactionActions: new Array<{ type: string }>(),
+  activePromises: {} as { [key: string]: Promise<any> },
 }

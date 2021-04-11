@@ -173,12 +173,16 @@ export const processAsyncPayload = <S, C, X extends C & Array<any>, T extends Tr
     const optionsInternal = (updateOptions as UpdateOptionsInternal) || {};
     optionsInternal.bypassPromiseFor = optionsInternal.bypassPromiseFor || 0;
     const fullPath = pathReader.pathSegments.join('.') + (pathReader.pathSegments.length ? '.' : '') + suffix;
+    if (libState.activePromises[fullPath]) {
+      return libState.activePromises[fullPath];
+    }
     const expirationDate = (storeResult().read().promiseBypassTTLs || {})[fullPath];
     if (expirationDate && (new Date(expirationDate).getTime() > new Date().getTime())) {
       return Promise.resolve();
     }
-    return asyncPayload()
+    const result = asyncPayload()
       .then(res => {
+        delete libState.activePromises[fullPath];
         const involvesCaching = !!updateOptions && !(typeof (updateOptions) === 'string') && optionsInternal.bypassPromiseFor;
         if (involvesCaching) {
           libState.transactionState = 'started';
@@ -203,6 +207,8 @@ export const processAsyncPayload = <S, C, X extends C & Array<any>, T extends Tr
           }
         }
       });
+    libState.activePromises[fullPath] = result;
+    return result;
   } else {
     processPayload(payload as C);
   }

@@ -12,7 +12,7 @@ Olik allows you to comprehensively grok your state updates without ever leaving 
 * Its fluent typesafe API maximizes **transparency**, **consistency** and **eliminates ambiguity** 
 * **Debuggability** is enhanced through **auto-generated action types**
 * **Nested stores** allow you to debug your component state with or without your application state.
-* Transactions, async updates, and caching are all built-in.
+* Transactions, async updates, request de-duplication and caching are all built-in.
 
 ---
 NOTE: The below code demonstrates Olik **without a framework**,
@@ -87,7 +87,7 @@ transact(                             // type: 'username.replace(), favorite.foo
 ```
 
 #### ⏲️ **ASYNC**
-Pass in promises as payloads and optionally bypass promise invocations for a specified period
+Pass in promises as payloads and optionally bypass subsequent promise invocations for a specified period
 ```ts
 select(s => s.favorite.hobbies)
   .replaceAll(() => axios.get('http://www.example.com/todos'), { bypassPromiseFor: 1000 * 60 })
