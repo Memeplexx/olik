@@ -170,14 +170,15 @@ export const processAsyncPayload = <S, C, X extends C & Array<any>, T extends Tr
     }
     const asyncPayload = payload as (() => Promise<C>);
     pathReader.readSelector(selector);
-    const fullPath = pathReader.pathSegments.join('.') + (suffix ? ((pathReader.pathSegments.length ? '.' : '') + suffix) : '');
+    const optionsInternal = (updateOptions as UpdateOptionsInternal) || {};
+    optionsInternal.cacheKeys = optionsInternal.cacheKeys || [];
+    const fullPath = pathReader.pathSegments.join('.') + (suffix ? ((pathReader.pathSegments.length ? '.' : '') + suffix) : '') + (optionsInternal.cacheKeys.length ? ('.' + optionsInternal.cacheKeys.join('.')) : '');
     const expirationDate = (storeResult().read().cacheExpiryTimes || {})[fullPath];
     if (expirationDate && (new Date(expirationDate).getTime() > new Date().getTime())) {
       return Promise.resolve();
     }
     return asyncPayload()
       .then(res => {
-        const optionsInternal = updateOptions as UpdateOptionsInternal;
         const involvesCaching = !!updateOptions && !(typeof (updateOptions) === 'string') && optionsInternal.cacheFor;
         if (involvesCaching) {
           libState.transactionState = 'started';

@@ -271,6 +271,8 @@ export type UpdateOptionsInternal = {
    * Default is 0.
    */
   cacheFor?: number,
+
+  cacheKeys?: (string | number | boolean)[]
 }
 
 export type UpdateOptions<T extends Trackability, P, A> = (Tag<T> | (A extends P ? Tag<T> : UpdateOptionsInternal & (T extends 'untagged' ? { tag?: Tag<T> } : { tag: Tag<T> }) ) )

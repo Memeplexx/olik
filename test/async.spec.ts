@@ -11,7 +11,8 @@ describe('async', () => {
   const initialState = {
     object: { property: '', property2: '' },
     array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
-    paginated: {} as { [key: string]: [{ id: number, value: string }] }
+    paginated: {} as { [key: string]: [{ id: number, value: string }] },
+    cacheExpiryTimes: {} as { [key: string]: string },
   };
 
   it('should work with replaceAll()', done => {
@@ -354,6 +355,32 @@ describe('async', () => {
                 })
           })
       })
+  })
+
+  it('should support cache keys', done => {
+    const select = set(initialState);
+    const payload = [{ id: 1, value: 'test' }];
+    select(s => s.array)
+      .replaceAll(() => new Promise(resolve => setTimeout(() => resolve(payload), 10)), { cacheFor: 1000, cacheKeys: ['one'] })
+      .then(() => {
+        expect(Object.keys(select(s => s.cacheExpiryTimes).read())).toEqual(['array.one']);
+        expect(select(s => s.array).read()).toEqual(payload);
+        const payload2 = [{ id: 1, value: 'testy' }];
+        select(s => s.array)
+          .replaceAll(() => new Promise(resolve => setTimeout(() => resolve(payload2), 10)), { cacheFor: 1000, cacheKeys: ['two'] })
+          .then(() => {
+            expect(Object.keys(select(s => s.cacheExpiryTimes).read())).toEqual(['array.one', 'array.two']);
+            expect(select(s => s.array).read()).toEqual(payload2);
+            const payload3 = [{ id: 1, value: 'testyy' }];
+            select(s => s.array)
+              .replaceAll(() => new Promise(resolve => setTimeout(() => resolve(payload3), 10)), { cacheFor: 1000, cacheKeys: ['three'] })
+                .then(() => {
+                  expect(Object.keys(select(s => s.cacheExpiryTimes).read())).toEqual(['array.one', 'array.two', 'array.three']);
+                  expect(select(s => s.array).read()).toEqual(payload3);
+                  done();
+                })
+          })
+      });
   })
 
   it('should handle a promise rejection', done => {
