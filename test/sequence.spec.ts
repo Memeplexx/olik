@@ -20,11 +20,11 @@ describe('Sequence', () => {
     expect(libState.currentMutableState).toEqual(select().read());
     select(s => s.propTwo).insert([{ id: 1, value: 'one' }]);
     expect(libState.currentMutableState).toEqual(select().read());
-    select(s => s.propTwo).whereOne(e => e.id === 1).returnsTrue().patch({ value: 'test' });
+    select(s => s.propTwo).findWhere(e => e.id === 1).returnsTrue().patch({ value: 'test' });
     expect(libState.currentMutableState).toEqual(select().read());
     select(s => s.propTwo).upsertMatching(s => s.id).with({ id: 1, value: 'xxx' });
     expect(libState.currentMutableState).toEqual(select().read());
-    select(s => s.propTwo).whereOne(s => s.id === 1).returnsTrue().remove();
+    select(s => s.propTwo).findWhere(s => s.id === 1).returnsTrue().remove();
     expect(libState.currentMutableState).toEqual(select().read());
     select(s => s.propTwo).removeAll();
     expect(libState.currentMutableState).toEqual(select().read());
@@ -35,11 +35,11 @@ describe('Sequence', () => {
     const select = set(initialState);
     select().insert([{ id: 1, value: 'one' }]);
     expect(libState.currentMutableState).toEqual(select().read());
-    select().whereOne(e => e.id === 1).returnsTrue().patch({ value: 'test' });
+    select().findWhere(e => e.id === 1).returnsTrue().patch({ value: 'test' });
     expect(libState.currentMutableState).toEqual(select().read());
     select().upsertMatching(s => s.id).with({ id: 1, value: 'test' });
     expect(libState.currentMutableState).toEqual(select().read());
-    select().whereOne(s => s.id === 1).returnsTrue().remove();
+    select().findWhere(s => s.id === 1).returnsTrue().remove();
     expect(libState.currentMutableState).toEqual(select().read());
     select().removeAll();
     expect(libState.currentMutableState).toEqual(select().read());

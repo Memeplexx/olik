@@ -14,10 +14,10 @@ describe('array.filter().and().or()', () => {
   it('should eq().and().eq()', () => {
     const select = set(initialState);
     select(s => s.array)
-      .whereMany(s => s.id).eq(2).and(s => s.value).eq('two')
+      .filterWhere(s => s.id).eq(2).and(s => s.value).eq('two')
       .remove();
     expect(libState.currentAction).toEqual({
-      type: 'array.whereMany().remove()',
+      type: 'array.filter().remove()',
       toRemove: [ initialState.array[1] ],
       query: 'id === 2 && value === two',
     });
@@ -28,10 +28,10 @@ describe('array.filter().and().or()', () => {
   it('should eq().or().eq()', () => {
     const select = set(initialState);
     select(s => s.array)
-      .whereMany(s => s.id).eq(1).or(s => s.value).eq('two')
+      .filterWhere(s => s.id).eq(1).or(s => s.value).eq('two')
       .remove();
     expect(libState.currentAction).toEqual({
-      type: 'array.whereMany().remove()',
+      type: 'array.filter().remove()',
       toRemove: [initialState.array[0], initialState.array[1]],
       query: 'id === 1 || value === two',
     });
@@ -42,10 +42,10 @@ describe('array.filter().and().or()', () => {
   it('should eq().and().eq() not matching', () => {
     const select = set(initialState);
     select(s => s.array)
-      .whereMany(s => s.id).eq(1).and(s => s.id).eq(2)
+      .filterWhere(s => s.id).eq(1).and(s => s.id).eq(2)
       .remove();
     expect(libState.currentAction).toEqual({
-      type: 'array.whereMany().remove()',
+      type: 'array.filter().remove()',
       toRemove: [],
       query: 'id === 1 && id === 2',
     });
@@ -56,10 +56,10 @@ describe('array.filter().and().or()', () => {
   it('should eq().and().eq().or().eq()', () => {
     const select = set(initialState);
     select(s => s.array)
-      .whereMany(e => e.id).eq(1).and(e => e.id).eq(2).or(e => e.id).eq(3)
+      .filterWhere(e => e.id).eq(1).and(e => e.id).eq(2).or(e => e.id).eq(3)
       .remove();
     expect(libState.currentAction).toEqual({
-      type: 'array.whereMany().remove()',
+      type: 'array.filter().remove()',
       toRemove: [initialState.array[2]],
       query: 'id === 1 && id === 2 || id === 3',
     });
@@ -70,10 +70,10 @@ describe('array.filter().and().or()', () => {
   it('should eq().or().eq().and().eq()', () => {
     const select = set(initialState);
     select(s => s.array)
-      .whereMany(e => e.id).eq(4).or(e => e.id).eq(3).and(e => e.value).eq('three')
+      .filterWhere(e => e.id).eq(4).or(e => e.id).eq(3).and(e => e.value).eq('three')
       .remove();
     expect(libState.currentAction).toEqual({
-      type: 'array.whereMany().remove()',
+      type: 'array.filter().remove()',
       toRemove: [initialState.array[2]],
       query: 'id === 4 || id === 3 && value === three',
     });
@@ -84,10 +84,10 @@ describe('array.filter().and().or()', () => {
   it('should eq().and().eq().or().eq().and().eq()', () => {
     const select = set(initialState);
     select(s => s.array)
-      .whereMany(e => e.id).eq(1).and(e => e.value).eq('one').or(e => e.id).eq(3).and(e => e.value).eq('three')
+      .filterWhere(e => e.id).eq(1).and(e => e.value).eq('one').or(e => e.id).eq(3).and(e => e.value).eq('three')
       .remove();
     expect(libState.currentAction).toEqual({
-      type: 'array.whereMany().remove()',
+      type: 'array.filter().remove()',
       toRemove: [initialState.array[0], initialState.array[2]],
       query: 'id === 1 && value === one || id === 3 && value === three',
     });

@@ -317,19 +317,19 @@ export type StoreForAnArrayOfPrimitives<X extends DeepReadonlyArray<any>, T exte
    * @example
    * ```
    * ...
-   * .whereMany(t => t.status).eq('done')
+   * .filterWhere(t => t.status).eq('done')
    * ...
    * ```
    */
-  whereMany: PredicateFunctionPrimitive<X, 'filter', T>,
+  filterWhere: PredicateFunctionPrimitive<X, 'filter', T>,
   /**
    * Specify a where clause to find one element.  
    * @example
    * ...
-   * .whereOne(t => t.id).eq(3)
+   * .findWhere(t => t.id).eq(3)
    * ...
    */
-  whereOne: PredicateFunctionPrimitive<X, 'find', T>,
+  findWhere: PredicateFunctionPrimitive<X, 'find', T>,
 } & StoreForAnArrayCommon<X, T>;
 
 export type StoreForAnArrayOfObjects<X extends DeepReadonlyArray<any>, T extends Trackability> = {
@@ -349,19 +349,19 @@ export type StoreForAnArrayOfObjects<X extends DeepReadonlyArray<any>, T extends
    * @example
    * ```
    * ...
-   * .whereMany(t => t.status).eq('done')
+   * .filterWhere(t => t.status).eq('done')
    * ...
    * ```
    */
-  whereMany: PredicateFunctionObject<X, 'filter', T>,
+  filterWhere: PredicateFunctionObject<X, 'filter', T>,
   /**
    * Specify a where clause to find one element.  
    * @example
    * ...
-   * .whereOne(t => t.id).eq(3)
+   * .findWhere(t => t.id).eq(3)
    * ...
    */
-  whereOne: PredicateFunctionObject<X, 'find', T>,
+  findWhere: PredicateFunctionObject<X, 'find', T>,
 } & StoreForAnArrayCommon<X, T>;
 
 /**

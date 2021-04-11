@@ -34,9 +34,9 @@ describe('Read', () => {
         changeCount++;
         expect(val).toEqual({ id: 2, val: 'test' });
       });
-    select(s => s.arr).whereOne(s => s.id).eq(1).patch({ val: 'test' });
+    select(s => s.arr).findWhere(s => s.id).eq(1).patch({ val: 'test' });
     expect(changeCount).toEqual(0);
-    select(s => s.arr).whereOne(s => s.id).eq(2).patch({ val: 'test' });
+    select(s => s.arr).findWhere(s => s.id).eq(2).patch({ val: 'test' });
     expect(changeCount).toEqual(1);
   })
 

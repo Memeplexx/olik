@@ -130,7 +130,7 @@ export function createStore<S, T extends Trackability>(context: {
             match: val => constructActions(`${getSegsAndCriteria().segs.join('.') || 'element'}.match(${val})`, e => e.match(val)),
           } as PredicateOptionsForString<X, any, FindOrFilter, T>,
         };
-      }) as StoreForAnArrayOfObjects<X, T>['whereMany'];
+      }) as StoreForAnArrayOfObjects<X, T>['filterWhere'];
       return recurseWhere;
     };
     const coreActions = {
@@ -141,8 +141,8 @@ export function createStore<S, T extends Trackability>(context: {
       reset: reset(pathReader, updateState, selector, initialState, () => !!coreActions.removeFromContainingStore, storeResult),
       replace: replace(pathReader, updateState, selector, 'replace', () => !!coreActions.removeFromContainingStore, storeResult),
       upsertMatching: upsertMatching(selector, () => currentState, updateState, () => !!coreActions.removeFromContainingStore, storeResult, pathReader),
-      whereMany: where('filter'),
-      whereOne: where('find'),
+      filterWhere: where('filter'),
+      findWhere: where('find'),
       onChange: onChange(selector, changeListeners),
       read: read(selector, () => currentState),
       invalidateCache: () => invalidateCache(pathReader, selector, storeResult),

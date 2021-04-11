@@ -110,16 +110,16 @@ describe('Memoize', () => {
     let recalculating = 0;
     const mem = deriveFrom(
       select(s => s.array)
-        .whereOne(e => e.id === 2).returnsTrue()
+        .findWhere(e => e.id === 2).returnsTrue()
     ).usingExpensiveCalc(val => {
       recalculating++;
     });
     select(s => s.array)
-      .whereOne(s => s.id === 2).returnsTrue()
+      .findWhere(s => s.id === 2).returnsTrue()
       .patch({ value: 'twoo' });
     mem.read();
     select(s => s.array)
-      .whereOne(s => s.id === 1).returnsTrue()
+      .findWhere(s => s.id === 1).returnsTrue()
       .patch({ value: 'onee' });
     mem.read();
     expect(recalculating).toEqual(1);
@@ -166,16 +166,16 @@ describe('Memoize', () => {
     });
     let memoCalcCount = 0;
     const mem = deriveFrom(
-      select(s => s.array).whereOne(e => e.id).eq(2),
+      select(s => s.array).findWhere(e => e.id).eq(2),
     ).usingExpensiveCalc(thing => {
       memoCalcCount++;
       return thing;
     });
     mem.read();
     mem.read();
-    select(s => s.array).whereOne(e => e.id).eq(1).patch({ value: 'xxx' });
+    select(s => s.array).findWhere(e => e.id).eq(1).patch({ value: 'xxx' });
     expect(memoCalcCount).toEqual(1);
-    select(s => s.array).whereOne(e => e.id).eq(2).patch({ value: 'xxx' });
+    select(s => s.array).findWhere(e => e.id).eq(2).patch({ value: 'xxx' });
     mem.read();
     expect(memoCalcCount).toEqual(2);
   })
@@ -193,9 +193,9 @@ describe('Memoize', () => {
     });
     mem.read();
     mem.read();
-    select(s => s.array).whereOne(e => e.id).eq(1).patch({ value: 'xxx' });
+    select(s => s.array).findWhere(e => e.id).eq(1).patch({ value: 'xxx' });
     expect(memoCalcCount).toEqual(1);
-    select(s => s.array).whereOne(e => e.id).eq(2).patch({ value: 'xxx' });
+    select(s => s.array).findWhere(e => e.id).eq(2).patch({ value: 'xxx' });
     mem.read();
     expect(memoCalcCount).toEqual(2);
   })

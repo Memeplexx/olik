@@ -14,10 +14,10 @@ describe('array.find().remove()', () => {
   it('should eq()', () => {
     const select = set(initialState);
     select(s => s.array)
-      .whereOne(e => e.id).eq(2)
+      .findWhere(e => e.id).eq(2)
       .remove();
     expect(libState.currentAction).toEqual({
-      type: 'array.whereOne().remove()',
+      type: 'array.find().remove()',
       toRemove: initialState.array[1],
       query: 'id === 2',
     });
@@ -28,10 +28,10 @@ describe('array.find().remove()', () => {
   it('should ne()', () => {
     const select = set(initialState);
     select(s => s.array)
-      .whereOne(e => e.id).ne(2)
+      .findWhere(e => e.id).ne(2)
       .remove();
     expect(libState.currentAction).toEqual({
-      type: 'array.whereOne().remove()',
+      type: 'array.find().remove()',
       toRemove: initialState.array[0],
       query: 'id !== 2',
     });
@@ -42,10 +42,10 @@ describe('array.find().remove()', () => {
   it('should gt()', () => {
     const select = set(initialState);
     select(s => s.array)
-      .whereOne(e => e.id).gt(1)
+      .findWhere(e => e.id).gt(1)
       .remove();
     expect(libState.currentAction).toEqual({
-      type: 'array.whereOne().remove()',
+      type: 'array.find().remove()',
       toRemove: initialState.array[1],
       query: 'id > 1',
     });
@@ -56,10 +56,10 @@ describe('array.find().remove()', () => {
   it('should gte()', () => {
     const select = set(initialState);
     select(s => s.array)
-      .whereOne(e => e.id).gte(1)
+      .findWhere(e => e.id).gte(1)
       .remove();
     expect(libState.currentAction).toEqual({
-      type: 'array.whereOne().remove()',
+      type: 'array.find().remove()',
       toRemove: initialState.array[0],
       query: 'id >= 1',
     });
@@ -70,10 +70,10 @@ describe('array.find().remove()', () => {
   it('should lt()', () => {
     const select = set(initialState);
     select(s => s.array)
-      .whereOne(e => e.id).lt(2)
+      .findWhere(e => e.id).lt(2)
       .remove();
     expect(libState.currentAction).toEqual({
-      type: 'array.whereOne().remove()',
+      type: 'array.find().remove()',
       toRemove: initialState.array[0],
       query: 'id < 2',
     });
@@ -84,10 +84,10 @@ describe('array.find().remove()', () => {
   it('should lte()', () => {
     const select = set(initialState);
     select(s => s.array)
-      .whereOne(e => e.id).lte(2)
+      .findWhere(e => e.id).lte(2)
       .remove();
     expect(libState.currentAction).toEqual({
-      type: 'array.whereOne().remove()',
+      type: 'array.find().remove()',
       toRemove: initialState.array[0],
       query: 'id <= 2',
     });
@@ -98,10 +98,10 @@ describe('array.find().remove()', () => {
   it('should in()', () => {
     const select = set(initialState);
     select(s => s.array)
-      .whereOne(e => e.id).in([1, 2])
+      .findWhere(e => e.id).in([1, 2])
       .remove();
     expect(libState.currentAction).toEqual({
-      type: 'array.whereOne().remove()',
+      type: 'array.find().remove()',
       toRemove: initialState.array[0],
       query: '[1, 2].includes(id)',
     });
@@ -112,10 +112,10 @@ describe('array.find().remove()', () => {
   it('should ni()', () => {
     const select = set(initialState);
     select(s => s.array)
-      .whereOne(e => e.id).ni([1, 2])
+      .findWhere(e => e.id).ni([1, 2])
       .remove();
     expect(libState.currentAction).toEqual({
-      type: 'array.whereOne().remove()',
+      type: 'array.find().remove()',
       toRemove: initialState.array[2],
       query: '![1, 2].includes(id)',
     });
@@ -126,10 +126,10 @@ describe('array.find().remove()', () => {
   it('should match()', () => {
     const select = set(initialState);
     select(s => s.array)
-      .whereOne(e => e.value).match(/^t/)
+      .findWhere(e => e.value).match(/^t/)
       .remove();
     expect(libState.currentAction).toEqual({
-      type: 'array.whereOne().remove()',
+      type: 'array.find().remove()',
       toRemove: initialState.array[1],
       query: 'value.match(/^t/)',
     });

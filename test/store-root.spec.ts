@@ -115,10 +115,10 @@ describe('Root', () => {
     const select = set(['one', 'two', 'three']);
     const payload = 'twoo';
     select()
-      .whereOne().eq('two')
+      .findWhere().eq('two')
       .replace(payload);
     expect(libState.currentAction).toEqual({
-      type: 'whereOne().replace()',
+      type: 'find().replace()',
       replacement: payload,
       query: `element === two`,
     })
@@ -140,9 +140,9 @@ describe('Root', () => {
 
   it('find().replace()', () => {
     const select = set(['hello']);
-    select().whereOne().match(/^h/).replace('another')
+    select().findWhere().match(/^h/).replace('another')
     expect(libState.currentAction).toEqual({
-      type: 'whereOne().replace()',
+      type: 'find().replace()',
       replacement: 'another',
       query: 'element.match(/^h/)',
     });

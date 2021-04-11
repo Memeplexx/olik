@@ -14,7 +14,7 @@ describe('array.findCustom().read()', () => {
   it('should read()', () => {
     const select = set(initialState);
     const read = select(s => s.array)
-      .whereOne(e => e.id === 2).returnsTrue()
+      .findWhere(e => e.id === 2).returnsTrue()
       .read();
     expect(read).toEqual(initialState.array[1]);
   })
@@ -23,16 +23,16 @@ describe('array.findCustom().read()', () => {
     const select = set(initialState);
     let changeCount = 0;
     select(s => s.array)
-      .whereOne(e => e.id === 3).returnsTrue()
+      .findWhere(e => e.id === 3).returnsTrue()
       .onChange(e => {
         changeCount++;
         expect(e.value).toEqual('three x');
       });
     select(s => s.array)
-      .whereOne(e => e.id === 3).returnsTrue()
+      .findWhere(e => e.id === 3).returnsTrue()
       .patch({ value: 'three x' });
     select(s => s.array)
-      .whereOne(e => e.id === 1).returnsTrue()
+      .findWhere(e => e.id === 1).returnsTrue()
       .patch({ value: 'one x' });
     expect(changeCount).toEqual(1);
   })

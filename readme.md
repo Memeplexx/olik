@@ -11,7 +11,7 @@
 Olik allows you to comprehensively grok your state updates without ever leaving your component code.  
 * Its fluent typesafe API maximizes **transparency**, **consistency** and **eliminates ambiguity** 
 * **Debuggability** is enhanced through **auto-generated action types**
-* **Nested stores** allow you to debug your component state with or without your application state.
+* **Nested stores** allow you to debug your component state with or without your application store.
 * Transactions, async updates, and caching are all built-in.
 
 ---
@@ -39,8 +39,8 @@ select(s => s.username)              // type: 'username.replace()'
 select(s => s.favorite.foods)        // type: 'favorite.foods.insert()'
   .insert(['Indian', 'Sushi']);      // insertion: ['Indian', 'Sushi']
 
-select(s => s.favorite.hobbies)      // type: 'favorite.hobbies.whereOne().patch()'
-  .whereOne(s => s.id).eq(3)         // query: 'id === 3',
+select(s => s.favorite.hobbies)      // type: 'favorite.hobbies.find().patch()'
+  .findWhere(s => s.id).eq(3)        // query: 'id === 3',
   .patch({ name: 'coding' });        // patch: { name: 'coding' }
 ```
 #### 🔍 **READ STATE**

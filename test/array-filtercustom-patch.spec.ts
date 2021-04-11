@@ -16,7 +16,7 @@ describe('array.filterCustom().patch()', () => {
     const payload = { value: 'new' };
     const query = (e: typeof initialState['array'][0]) => e.id === 2;
     select(s => s.array)
-      .whereMany(query).returnsTrue()
+      .filterWhere(query).returnsTrue()
       .patch(payload);
     expect(libState.currentAction).toEqual({
       type: 'array.filter().patch()',
@@ -32,7 +32,7 @@ describe('array.filterCustom().patch()', () => {
     const payload = { value: 'four' };
     const query = (e: typeof initialState['array'][0]) => e.id !== 2;
     select(s => s.array)
-      .whereMany(query).returnsTrue()
+      .filterWhere(query).returnsTrue()
       .patch(payload);
     expect(libState.currentAction).toEqual({
       type: 'array.filter().patch()',
@@ -48,7 +48,7 @@ describe('array.filterCustom().patch()', () => {
     const payload = { value: 'four' };
     const query = (e: typeof initialState['array'][0]) => e.id > 1;
     select(s => s.array)
-      .whereMany(query).returnsTrue()
+      .filterWhere(query).returnsTrue()
       .patch(payload);
     expect(libState.currentAction).toEqual({
       type: 'array.filter().patch()',
@@ -64,7 +64,7 @@ describe('array.filterCustom().patch()', () => {
     const payload = { value: 'four' };
     const query = (e: typeof initialState['array'][0]) => e.id < 2;
     select(s => s.array)
-      .whereMany(query).returnsTrue()
+      .filterWhere(query).returnsTrue()
       .patch(payload);
     expect(libState.currentAction).toEqual({
       type: 'array.filter().patch()',
@@ -80,7 +80,7 @@ describe('array.filterCustom().patch()', () => {
     const payload = { id: 4, value: 'four' };
     const query = (e: typeof initialState['array'][0]) => [1, 2].includes(e.id);
     select(s => s.array)
-      .whereMany(query).returnsTrue()
+      .filterWhere(query).returnsTrue()
       .patch(payload);
     expect(libState.currentAction).toEqual({
       type: 'array.filter().patch()',
@@ -96,7 +96,7 @@ describe('array.filterCustom().patch()', () => {
     const payload = { value: 'four' };
     const query = (e: typeof initialState['array'][0]) => ![1, 2].includes(e.id);
     select(s => s.array)
-      .whereMany(query).returnsTrue()
+      .filterWhere(query).returnsTrue()
       .patch(payload);
     expect(libState.currentAction).toEqual({
       type: 'array.filter().patch()',
@@ -112,7 +112,7 @@ describe('array.filterCustom().patch()', () => {
     const payload = { value: 'four' };
     const query = (e: typeof initialState['array'][0]) => /^t/.test(e.value);
     select(s => s.array)
-      .whereMany(query).returnsTrue()
+      .filterWhere(query).returnsTrue()
       .patch(payload);
     expect(libState.currentAction).toEqual({
       type: 'array.filter().patch()',

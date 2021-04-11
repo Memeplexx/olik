@@ -15,7 +15,7 @@ describe('array.findCustom().remove()', () => {
     const select = set(initialState);
     const query = (e: typeof initialState['array'][0]) => e.id === 2;
     select(s => s.array)
-      .whereOne(query).returnsTrue()
+      .findWhere(query).returnsTrue()
       .remove();
     expect(libState.currentAction).toEqual({
       type: 'array.find().remove()',
@@ -30,7 +30,7 @@ describe('array.findCustom().remove()', () => {
     const select = set(initialState);
     const query = (e: typeof initialState['array'][0]) => e.id !== 2;
     select(s => s.array)
-      .whereOne(query).returnsTrue()
+      .findWhere(query).returnsTrue()
       .remove();
     expect(libState.currentAction).toEqual({
       type: 'array.find().remove()',
@@ -45,7 +45,7 @@ describe('array.findCustom().remove()', () => {
     const select = set(initialState);
     const query = (e: typeof initialState['array'][0]) => e.id > 1;
     select(s => s.array)
-      .whereOne(query).returnsTrue()
+      .findWhere(query).returnsTrue()
       .remove();
     expect(libState.currentAction).toEqual({
       type: 'array.find().remove()',
@@ -60,7 +60,7 @@ describe('array.findCustom().remove()', () => {
     const select = set(initialState);
     const query = (e: typeof initialState['array'][0]) => e.id < 2;
     select(s => s.array)
-      .whereOne(query).returnsTrue()
+      .findWhere(query).returnsTrue()
       .remove();
     expect(libState.currentAction).toEqual({
       type: 'array.find().remove()',
@@ -75,7 +75,7 @@ describe('array.findCustom().remove()', () => {
     const select = set(initialState);
     const query = (e: typeof initialState['array'][0]) => [1, 2].includes(e.id);
     select(s => s.array)
-      .whereOne(query).returnsTrue()
+      .findWhere(query).returnsTrue()
       .remove();
     expect(libState.currentAction).toEqual({
       type: 'array.find().remove()',
@@ -90,7 +90,7 @@ describe('array.findCustom().remove()', () => {
     const select = set(initialState);
     const query = (e: typeof initialState['array'][0]) => ![1, 2].includes(e.id);
     select(s => s.array)
-      .whereOne(query).returnsTrue()
+      .findWhere(query).returnsTrue()
       .remove();
     expect(libState.currentAction).toEqual({
       type: 'array.find().remove()',
@@ -105,7 +105,7 @@ describe('array.findCustom().remove()', () => {
     const select = set(initialState);
     const query = (e: typeof initialState['array'][0]) => /^t/.test(e.value);
     select(s => s.array)
-      .whereOne(query).returnsTrue()
+      .findWhere(query).returnsTrue()
       .remove();
     expect(libState.currentAction).toEqual({
       type: 'array.find().remove()',

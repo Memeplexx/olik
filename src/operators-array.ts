@@ -55,7 +55,7 @@ export const remove = <S, C, X extends C & Array<any>, F extends FindOrFilter, T
         }
       }
     },
-    actionName: `${deriveType(type)}().remove()`,
+    actionName: `${type}().remove()`,
     payload: {
       query: whereClauseStrings.join(' '),
       toRemove: (selector(getCurrentState()) as X)[type]((e, i) => elementIndices.includes(i)),
@@ -75,7 +75,7 @@ export const patch = <S, C, X extends C & Array<any>, F extends FindOrFilter, T 
       selector,
       replacer: old => old.map((o, i) => elementIndices.includes(i) ? { ...o, ...payloadFrozen } : o),
       mutator: old => elementIndices.forEach(i => Object.assign(old[i], payloadCopied)),
-      actionName: `${deriveType(type)}().patch()`,
+      actionName: `${type}().patch()`,
       payload: {
         query: whereClauseStrings.join(' '),
         patch: payloadFrozen,
@@ -83,7 +83,7 @@ export const patch = <S, C, X extends C & Array<any>, F extends FindOrFilter, T 
       updateOptions: updateOptions as UpdateOptions<T, C, any>,
     });
   }
-  return processAsyncPayload(selector, payload, pathReader, storeResult, processPayload, updateOptions as UpdateOptions<T, C, any>, deriveType(type) + '(' + whereClauseStrings.join(' ') + ').patch');
+  return processAsyncPayload(selector, payload, pathReader, storeResult, processPayload, updateOptions as UpdateOptions<T, C, any>, type + '(' + whereClauseStrings.join(' ') + ').patch');
 }) as ArrayOfObjectsAction<X, F, T>['patch'];
 
 export const replace = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
@@ -97,7 +97,7 @@ export const replace = <S, C, X extends C & Array<any>, F extends FindOrFilter, 
       selector,
       replacer: old => old.map((o, i) => elementIndices.includes(i) ? payloadFrozen : o),
       mutator: old => { old.forEach((o, i) => { if (elementIndices.includes(i)) { old[i] = payloadCopied; } }) },
-      actionName: `${deriveType(type)}().replace()`,
+      actionName: `${type}().replace()`,
       payload: {
         query: whereClauseStrings.join(' '),
         replacement: payloadFrozen,
@@ -134,16 +134,12 @@ export const invalidateCache = <S, C, X extends C & Array<any>, F extends FindOr
 ) => {
   const { pathReader, storeResult, selector, whereClauseString, type } = context;
   pathReader.readSelector(selector);
-  const pathSegs = pathReader.pathSegments.join('.') + (pathReader.pathSegments.length ? '.' : '') + deriveType(type) + '(' + whereClauseString + ')';
+  const pathSegs = pathReader.pathSegments.join('.') + (pathReader.pathSegments.length ? '.' : '') + type + '(' + whereClauseString + ')';
   const patch = {} as { [key: string]: string };
   Object.keys(storeResult().read().cacheExpiryTimes)
     .filter(key => key.startsWith(pathSegs))
     .forEach(key => patch[key] = toIsoString(new Date()));
   storeResult(s => (s as any).cacheExpiryTimes).patch(patch);
-}
-
-const deriveType = (type: FindOrFilter) => {
-  return type === 'find' ? 'whereOne' : 'whereMany';
 }
 
 const completeWhereClause = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(

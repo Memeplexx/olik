@@ -15,10 +15,10 @@ describe('array.filter().patch()', () => {
     const select = set(initialState);
     const payload = { value: 'new' };
     select(s => s.array)
-      .whereMany(e => e.id).eq(2)
+      .filterWhere(e => e.id).eq(2)
       .patch(payload);
     expect(libState.currentAction).toEqual({
-      type: 'array.whereMany().patch()',
+      type: 'array.filter().patch()',
       patch: payload,
       query: 'id === 2',
     });
@@ -30,10 +30,10 @@ describe('array.filter().patch()', () => {
     const select = set(initialState);
     const payload = { value: 'four' };
     select(s => s.array)
-      .whereMany(e => e.id).ne(2)
+      .filterWhere(e => e.id).ne(2)
       .patch(payload);
     expect(libState.currentAction).toEqual({
-      type: 'array.whereMany().patch()',
+      type: 'array.filter().patch()',
       patch: payload,
       query: 'id !== 2',
     });
@@ -45,10 +45,10 @@ describe('array.filter().patch()', () => {
     const select = set(initialState);
     const payload = { value: 'four' };
     select(s => s.array)
-      .whereMany(e => e.id).gt(1)
+      .filterWhere(e => e.id).gt(1)
       .patch(payload);
     expect(libState.currentAction).toEqual({
-      type: 'array.whereMany().patch()',
+      type: 'array.filter().patch()',
       patch: payload,
       query: 'id > 1',
     });
@@ -60,10 +60,10 @@ describe('array.filter().patch()', () => {
     const select = set(initialState);
     const payload = { value: 'four' };
     select(s => s.array)
-      .whereMany(e => e.id).gte(1)
+      .filterWhere(e => e.id).gte(1)
       .patch(payload);
     expect(libState.currentAction).toEqual({
-      type: 'array.whereMany().patch()',
+      type: 'array.filter().patch()',
       patch: payload,
       query: 'id >= 1',
     });
@@ -75,10 +75,10 @@ describe('array.filter().patch()', () => {
     const select = set(initialState);
     const payload = { value: 'four' };
     select(s => s.array)
-      .whereMany(e => e.id).lt(2)
+      .filterWhere(e => e.id).lt(2)
       .patch(payload);
     expect(libState.currentAction).toEqual({
-      type: 'array.whereMany().patch()',
+      type: 'array.filter().patch()',
       patch: payload,
       query: 'id < 2',
     });
@@ -90,10 +90,10 @@ describe('array.filter().patch()', () => {
     const select = set(initialState);
     const payload = { value: 'four' };
     select(s => s.array)
-      .whereMany(e => e.id).lte(2)
+      .filterWhere(e => e.id).lte(2)
       .patch(payload);
     expect(libState.currentAction).toEqual({
-      type: 'array.whereMany().patch()',
+      type: 'array.filter().patch()',
       patch: payload,
       query: 'id <= 2',
     });
@@ -105,10 +105,10 @@ describe('array.filter().patch()', () => {
     const select = set(initialState);
     const payload = { id: 4, value: 'four' };
     select(s => s.array)
-      .whereMany(e => e.id).in([1, 2])
+      .filterWhere(e => e.id).in([1, 2])
       .patch(payload);
     expect(libState.currentAction).toEqual({
-      type: 'array.whereMany().patch()',
+      type: 'array.filter().patch()',
       patch: payload,
       query: '[1, 2].includes(id)',
     });
@@ -120,10 +120,10 @@ describe('array.filter().patch()', () => {
     const select = set(initialState);
     const payload = { value: 'four' };
     select(s => s.array)
-      .whereMany(e => e.id).ni([1, 2])
+      .filterWhere(e => e.id).ni([1, 2])
       .patch(payload);
     expect(libState.currentAction).toEqual({
-      type: 'array.whereMany().patch()',
+      type: 'array.filter().patch()',
       patch: payload,
       query: '![1, 2].includes(id)',
     });
@@ -135,10 +135,10 @@ describe('array.filter().patch()', () => {
     const select = set(initialState);
     const payload = { value: 'four' };
     select(s => s.array)
-      .whereMany(e => e.value).match(/^t/)
+      .filterWhere(e => e.value).match(/^t/)
       .patch(payload);
     expect(libState.currentAction).toEqual({
-      type: 'array.whereMany().patch()',
+      type: 'array.filter().patch()',
       patch: payload,
       query: 'value.match(/^t/)',
     });
