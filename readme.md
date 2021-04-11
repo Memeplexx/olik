@@ -15,7 +15,7 @@ Olik allows you to comprehensively grok your state updates without ever leaving 
 * Transactions, async updates, request de-duplication, and caching are all built-in.
 
 ---
-🛑 NOTE: The below code demonstrates Olik **without a framework**.  
+🛑 <u>NOTE: The below code demonstrates Olik **without a framework**.</u>  
 There are, however, bindings for ***[React](https://memeplexx.github.io/olik/docs/read)***, and
 ***[Angular](https://memeplexx.github.io/olik/docs/angular)***
 
