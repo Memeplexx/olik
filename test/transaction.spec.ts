@@ -1,4 +1,4 @@
-import { set, transact } from '../src';
+import { store, transact } from '../src';
 import { libState } from '../src/shared-state';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
@@ -7,7 +7,7 @@ describe('Transact', () => {
   beforeAll(() => libState.windowObject = windowAugmentedWithReduxDevtoolsImpl);
 
   it('should perform a transaction', () => {
-    const select = set({ hello: '', world: new Array<string>(), some: { deep: { val: false } } });
+    const select = store({ hello: '', world: new Array<string>(), some: { deep: { val: false } } });
     let changeCount = 0;
     select().onChange(s => changeCount++);
     transact(

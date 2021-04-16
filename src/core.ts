@@ -89,8 +89,8 @@ export function createStore<S, T extends Trackability>(context: {
             storeResult,
           } as ArrayOperatorState<S, C, X, FindOrFilter, T>;
           return {
-            and: array.and(context),
-            or: array.or(context),
+            andWhere: array.andWhere(context),
+            orWhere: array.orWhere(context),
             replace: array.replace(context),
             patch: array.patch(context),
             remove: array.remove(context),

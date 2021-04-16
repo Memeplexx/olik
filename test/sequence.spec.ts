@@ -1,4 +1,4 @@
-import { set } from '../src/store-creators';
+import { store } from '../src/store-creators';
 import { libState } from '../src/shared-state';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
@@ -13,7 +13,7 @@ describe('Sequence', () => {
       },
       propTwo: new Array<{ id: number, value: string }>(),
     };
-    const select = set(initialState);
+    const select = store(initialState);
     select(s => s.propOne.subPropOne).replace('hey');
     expect(libState.currentMutableState).toEqual(select().read());
     select(s => s.propOne).patch({ subPropOne: 'xxx' });
@@ -32,7 +32,7 @@ describe('Sequence', () => {
 
   it('should maintain sequence on root array', () => {
     const initialState = new Array<{ id: number, value: string }>();
-    const select = set(initialState);
+    const select = store(initialState);
     select().insert([{ id: 1, value: 'one' }]);
     expect(libState.currentMutableState).toEqual(select().read());
     select().findWhere(e => e.id === 1).returnsTrue().patch({ value: 'test' });

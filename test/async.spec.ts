@@ -1,7 +1,7 @@
-import { set, transact } from '../src';
+import { store, transact } from '../src';
 import { errorMessages } from '../src/shared-consts';
 import { libState } from '../src/shared-state';
-import { setEnforceTags, setNested } from '../src/store-creators';
+import { storeEnforcingTags, nestedStore } from '../src/store-creators';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
 describe('async', () => {
@@ -18,7 +18,7 @@ describe('async', () => {
   };
 
   it('should work with replaceAll()', async done => {
-    const select = set(initialState);
+    const select = store(initialState);
     const payload = [{ id: 1, value: 'test' }];
     select(s => s.array)
       .replaceAll(() => new Promise(resolve => setTimeout(() => resolve(payload), 10)), { bypassPromiseFor: 1000 })
@@ -41,7 +41,7 @@ describe('async', () => {
   })
 
   it('should work with insert()', done => {
-    const select = set(initialState);
+    const select = store(initialState);
     const payload = { id: 1, value: 'test' };
     select(s => s.array)
       .insert(() => new Promise(resolve => setTimeout(() => resolve(payload), 10)), { bypassPromiseFor: 1000 })
@@ -64,7 +64,7 @@ describe('async', () => {
   })
 
   it('should work with patch()', done => {
-    const select = set(initialState);
+    const select = store(initialState);
     const payload = { property: 'xxx' };
     select(s => s.object)
       .patch(() => new Promise(resolve => setTimeout(() => resolve(payload), 10)), { bypassPromiseFor: 1000 })
@@ -87,7 +87,7 @@ describe('async', () => {
   })
 
   it('should work with replace()', done => {
-    const select = set(initialState);
+    const select = store(initialState);
     const payload = { property: 'xxx', property2: 'yyy' };
     select(s => s.object)
       .replace(() => new Promise(resolve => setTimeout(() => resolve(payload), 10)), { bypassPromiseFor: 1000 })
@@ -110,7 +110,7 @@ describe('async', () => {
   })
 
   it('should work with upsertMatching()', done => {
-    const select = set(initialState);
+    const select = store(initialState);
     const payload = { id: 1, value: 'test' };
     select(s => s.array)
       .upsertMatching(s => s.id)
@@ -136,7 +136,7 @@ describe('async', () => {
   })
 
   it('should work with findWhere().replace()', done => {
-    const select = set(initialState);
+    const select = store(initialState);
     const payload = { id: 2, value: 'twooo' };
     select(s => s.array)
       .findWhere(s => s.id).eq(2)
@@ -164,7 +164,7 @@ describe('async', () => {
   })
 
   it('should work with filterWhere().replace()', done => {
-    const select = set(initialState);
+    const select = store(initialState);
     const payload = { id: 2, value: 'twooo' };
     select(s => s.array)
       .filterWhere(s => s.id).eq(2)
@@ -192,7 +192,7 @@ describe('async', () => {
   })
 
   it('should work with findWhere().patch()', done => {
-    const select = set(initialState);
+    const select = store(initialState);
     const payload = { value: 'twooo' };
     select(s => s.array)
       .findWhere(s => s.id).eq(2)
@@ -220,7 +220,7 @@ describe('async', () => {
   })
 
   it('should work with filterWhere().patch()', done => {
-    const select = set(initialState);
+    const select = store(initialState);
     const payload = { value: 'twooo' };
     select(s => s.array)
       .filterWhere(s => s.id).eq(2)
@@ -248,7 +248,7 @@ describe('async', () => {
   })
 
   it('should work with findWhere().returnsTrue().replace()', done => {
-    const select = set(initialState);
+    const select = store(initialState);
     const payload = { id: 2, value: 'twooo' };
     select(s => s.array)
       .findWhere(s => s.id === 2).returnsTrue()
@@ -276,7 +276,7 @@ describe('async', () => {
   })
 
   it('should work with filterWhere().returnsTrue().replace()', done => {
-    const select = set(initialState);
+    const select = store(initialState);
     const payload = { id: 2, value: 'twooo' };
     select(s => s.array)
       .filterWhere(s => s.id === 2).returnsTrue()
@@ -304,7 +304,7 @@ describe('async', () => {
   })
 
   it('should work with findWhere().returnsTrue().patch()', done => {
-    const select = set(initialState);
+    const select = store(initialState);
     const payload = { value: 'twooo' };
     select(s => s.array)
       .findWhere(s => s.id === 2).returnsTrue()
@@ -332,7 +332,7 @@ describe('async', () => {
   })
 
   it('should work with filterWhere().returnsTrue().patch()', done => {
-    const select = set(initialState);
+    const select = store(initialState);
     const payload = { value: 'twooo' };
     select(s => s.array)
       .filterWhere(s => s.id === 2).returnsTrue()
@@ -360,7 +360,7 @@ describe('async', () => {
   })
 
   it('should handle a promise rejection', done => {
-    const select = set(initialState);
+    const select = store(initialState);
     const rejection = 'test';
     select(s => s.array)
       .replaceAll(() => new Promise((resolve, reject) => setTimeout(() => reject(rejection))), { bypassPromiseFor: 1000 })
@@ -372,7 +372,7 @@ describe('async', () => {
   })
 
   it('should support tags', done => {
-    const select = setEnforceTags(initialState);
+    const select = storeEnforcingTags(initialState);
     const replacement = [{ id: 1, value: 'one' }];
     const tag = 'MyComponent';
     select(s => s.array)
@@ -387,20 +387,20 @@ describe('async', () => {
   })
 
   it('should not be able to support transactions', () => {
-    const select = set(initialState);
+    const select = store(initialState);
     expect(() => transact(
       () => select(s => s.array).replaceAll(() => new Promise(resolve => setTimeout(() => resolve([]), 10))),
     )).toThrowError(errorMessages.PROMISES_NOT_ALLOWED_IN_TRANSACTIONS);
   })
 
   it('should not be able to support top-level stores', () => {
-    const select = set(0);
+    const select = store(0);
     expect(() => select().replace(() => new Promise(resolve => setTimeout(() => resolve(1), 10)), { bypassPromiseFor: 1000 }))
       .toThrowError(errorMessages.INVALID_CONTAINER_FOR_CACHED_DATA);
   })
 
   it('should automatically clear up expired cache keys', done => {
-    const select = set(initialState);
+    const select = store(initialState);
     const payload = [{ id: 1, value: 'test' }];
     select(s => s.object)
       .replace(() => new Promise(resolve => setTimeout(() => resolve({ property: 'fdfd', property2: 'fdfd' }), 10)), { bypassPromiseFor: 1000 })
@@ -415,8 +415,8 @@ describe('async', () => {
   })
 
   it('should work with nested stores', done => {
-    const select = set(initialState, { isContainerForNestedStores: true });
-    const selectNested = setNested({ prop: '' }, { storeName: 'hello' });
+    const select = store(initialState, { isContainerForNestedStores: true });
+    const selectNested = nestedStore({ prop: '' }, { storeName: 'hello' });
     const payload = 'test';
     selectNested(s => s.prop)
       .replace(() => new Promise(resolve => setTimeout(() => resolve(payload), 10)), { bypassPromiseFor: 1000 })
@@ -427,7 +427,7 @@ describe('async', () => {
   })
 
   it('should de-duplicate simultaneious requests', done => {
-    const select = set(initialState);
+    const select = store(initialState);
     select(s => s.array)
       .replaceAll(() => new Promise(resolve => setTimeout(() => resolve([{ id: 1, value: 'test' }]), 10)));
     setTimeout(() => {

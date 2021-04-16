@@ -1,5 +1,5 @@
 import { libState } from '../src/shared-state';
-import { set } from '../src/store-creators';
+import { store } from '../src/store-creators';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
 describe('Object', () => {
@@ -11,7 +11,7 @@ describe('Object', () => {
   };
 
   it('should replace()', () => {
-    const select = set(initialState);
+    const select = store(initialState);
     const payload = 'hey';
     select(s => s.object.property)
       .replace(payload);
@@ -25,7 +25,7 @@ describe('Object', () => {
   })
 
   it('should patch()', () => {
-    const select = set(initialState);
+    const select = store(initialState);
     const payload = { property: 'xxx' };
     select(s => s.object)
       .patch(payload);
@@ -39,7 +39,7 @@ describe('Object', () => {
   })
 
   it('should reset()', () => {
-    const select = set(initialState);
+    const select = store(initialState);
     select(s => s.object.property)
       .replace('hey');
     expect(select(s => s.object.property).read()).toEqual('hey');
@@ -63,7 +63,7 @@ describe('Object', () => {
   })
 
   it('should be able to add a new property onto an object', () => {
-    const select = set({} as { [key: string]: string });
+    const select = store({} as { [key: string]: string });
     const payload = { hello: 'world' };
     select().patch(payload);
     expect(libState.currentAction).toEqual({
@@ -75,7 +75,7 @@ describe('Object', () => {
   })
 
   it('should be able to remove a key', () => {
-    const select = set({ hello: 'one', world: 'two', another: 'three' });
+    const select = store({ hello: 'one', world: 'two', another: 'three' });
     const payload = ['hello', 'another'] as Array<any>;
     select().removeKeys(payload);
     expect(libState.currentAction).toEqual({

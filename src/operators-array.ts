@@ -27,23 +27,23 @@ export const getSegments = <S, C, X extends C & Array<any>, P>(
   return !getProp ? [] : createPathReader((selector(getCurrentState()) as X)[0] || {}).readSelector(getProp);
 }
 
-export const and = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
+export const andWhere = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
   context: ArrayOperatorState<S, C, X, F, T>,
 ) => (prop => {
   const { whereClauseString, whereClauseStrings, whereClauseSpecs, recurseWhere, criteria, fn } = context;
   whereClauseStrings.push(`${whereClauseString} &&`);
   whereClauseSpecs.push({ filter: o => criteria(o, fn), type: 'and' });
   return recurseWhere(prop);
-}) as ArrayOfElementsAction<X, F, T>['and'];
+}) as ArrayOfElementsAction<X, F, T>['andWhere'];
 
-export const or = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
+export const orWhere = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
   context: ArrayOperatorState<S, C, X, F, T>,
 ) => (prop => {
   const { whereClauseString, whereClauseStrings, whereClauseSpecs, recurseWhere, criteria, fn } = context;
   whereClauseStrings.push(`${whereClauseString} ||`);
   whereClauseSpecs.push({ filter: o => criteria(o, fn), type: 'or' });
   return recurseWhere(prop);
-}) as ArrayOfElementsAction<X, F, T>['or'];
+}) as ArrayOfElementsAction<X, F, T>['orWhere'];
 
 export const remove = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
   context: ArrayOperatorState<S, C, X, F, T>,

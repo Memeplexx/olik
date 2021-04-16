@@ -1,8 +1,8 @@
-import { set } from '../src/store-creators';
+import { store } from '../src/store-creators';
 import { libState } from '../src/shared-state';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
-describe('array.filterCustom().replace()', () => {
+describe('array.filterCustom().remove()', () => {
 
   beforeAll(() => libState.windowObject = windowAugmentedWithReduxDevtoolsImpl);
 
@@ -12,114 +12,107 @@ describe('array.filterCustom().replace()', () => {
   };
 
   it('should eq()', () => {
-    const select = set(initialState);
-    const payload = { id: 4, value: 'four' };
+    const select = store(initialState);
     const query = (e: typeof initialState['array'][0]) => e.id === 2;
     select(s => s.array)
       .filterWhere(query).returnsTrue()
-      .replace(payload);
+      .remove();
     expect(libState.currentAction).toEqual({
-      type: 'array.filter().replace()',
-      replacement: payload,
+      type: 'array.filter().remove()',
+      toRemove: [initialState.array[1]],
       query: query.toString(),
     });
-    expect(select(s => s.array).read()).toEqual([initialState.array[0], payload, initialState.array[2]]);
+    expect(select(s => s.array).read()).toEqual([initialState.array[0], initialState.array[2]]);
     expect(libState.currentMutableState).toEqual(select().read());
   })
 
   it('should ne()', () => {
-    const select = set(initialState);
-    const payload = { id: 4, value: 'four' };
+    const select = store(initialState);
     const query = (e: typeof initialState['array'][0]) => e.id !== 2;
     select(s => s.array)
       .filterWhere(query).returnsTrue()
-      .replace(payload);
+      .remove();
     expect(libState.currentAction).toEqual({
-      type: 'array.filter().replace()',
-      replacement: payload,
+      type: 'array.filter().remove()',
+      toRemove: [initialState.array[0], initialState.array[2]],
       query: query.toString(),
     });
-    expect(select(s => s.array).read()).toEqual([payload, initialState.array[1], payload]);
+    expect(select(s => s.array).read()).toEqual([initialState.array[1]]);
     expect(libState.currentMutableState).toEqual(select().read());
   })
 
   it('should gt()', () => {
-    const select = set(initialState);
-    const payload = { id: 4, value: 'four' };
+    const select = store(initialState);
     const query = (e: typeof initialState['array'][0]) => e.id > 1;
     select(s => s.array)
       .filterWhere(query).returnsTrue()
-      .replace(payload);
+      .remove();
     expect(libState.currentAction).toEqual({
-      type: 'array.filter().replace()',
-      replacement: payload,
+      type: 'array.filter().remove()',
+      toRemove: [initialState.array[1], initialState.array[2]],
       query: query.toString(),
     });
-    expect(select(s => s.array).read()).toEqual([initialState.array[0], payload, payload]);
+    expect(select(s => s.array).read()).toEqual([initialState.array[0]]);
     expect(libState.currentMutableState).toEqual(select().read());
   })
 
   it('should lt()', () => {
-    const select = set(initialState);
-    const payload = { id: 4, value: 'four' };
+    const select = store(initialState);
     const query = (e: typeof initialState['array'][0]) => e.id < 2;
     select(s => s.array)
-      .filterWhere(e => e.id < 2).returnsTrue()
-      .replace(payload);
+      .filterWhere(query).returnsTrue()
+      .remove();
     expect(libState.currentAction).toEqual({
-      type: 'array.filter().replace()',
-      replacement: payload,
+      type: 'array.filter().remove()',
+      toRemove: [initialState.array[0]],
       query: query.toString(),
     });
-    expect(select(s => s.array).read()).toEqual([payload, initialState.array[1], initialState.array[2]]);
+    expect(select(s => s.array).read()).toEqual([initialState.array[1], initialState.array[2]]);
     expect(libState.currentMutableState).toEqual(select().read());
   })
 
   it('should in()', () => {
-    const select = set(initialState);
-    const payload = { id: 4, value: 'four' };
+    const select = store(initialState);
     const query = (e: typeof initialState['array'][0]) => [1, 2].includes(e.id);
     select(s => s.array)
       .filterWhere(query).returnsTrue()
-      .replace(payload);
+      .remove();
     expect(libState.currentAction).toEqual({
-      type: 'array.filter().replace()',
-      replacement: payload,
+      type: 'array.filter().remove()',
+      toRemove: [initialState.array[0], initialState.array[1]],
       query: query.toString(),
     });
-    expect(select(s => s.array).read()).toEqual([payload, payload, initialState.array[2]]);
+    expect(select(s => s.array).read()).toEqual([initialState.array[2]]);
     expect(libState.currentMutableState).toEqual(select().read());
   })
 
   it('should ni()', () => {
-    const select = set(initialState);
-    const payload = { id: 4, value: 'four' };
+    const select = store(initialState);
     const query = (e: typeof initialState['array'][0]) => ![1, 2].includes(e.id);
     select(s => s.array)
-      .filterWhere(e => ![1, 2].includes(e.id)).returnsTrue()
-      .replace(payload);
+      .filterWhere(query).returnsTrue()
+      .remove();
     expect(libState.currentAction).toEqual({
-      type: 'array.filter().replace()',
-      replacement: payload,
+      type: 'array.filter().remove()',
+      toRemove: [initialState.array[2]],
       query: query.toString(),
     });
-    expect(select(s => s.array).read()).toEqual([initialState.array[0], initialState.array[1], payload]);
+    expect(select(s => s.array).read()).toEqual([initialState.array[0], initialState.array[1]]);
     expect(libState.currentMutableState).toEqual(select().read());
   })
 
   it('should match()', () => {
-    const select = set(initialState);
-    const payload = { id: 4, value: 'four' };
+    const select = store(initialState);
     const query = (e: typeof initialState['array'][0]) => /^t/.test(e.value);
     select(s => s.array)
       .filterWhere(query).returnsTrue()
-      .replace(payload);
+      .remove();
     expect(libState.currentAction).toEqual({
-      type: 'array.filter().replace()',
-      replacement: payload,
+      type: 'array.filter().remove()',
+      toRemove: [initialState.array[1], initialState.array[2]],
       query: query.toString(),
     });
-    expect(select(s => s.array).read()).toEqual([initialState.array[0], payload, payload]);
+    expect(select(s => s.array).read()).toEqual([initialState.array[0]]);
     expect(libState.currentMutableState).toEqual(select().read());
   })
 

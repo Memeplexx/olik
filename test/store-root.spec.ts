@@ -1,4 +1,4 @@
-import { set } from '../src/store-creators';
+import { store } from '../src/store-creators';
 import { libState } from '../src/shared-state';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
@@ -7,7 +7,7 @@ describe('Root', () => {
   beforeAll(() => libState.windowObject = windowAugmentedWithReduxDevtoolsImpl);
 
   it('object.replace()', () => {
-    const select = set({ hello: 'world', another: new Array<string>() });
+    const select = store({ hello: 'world', another: new Array<string>() });
     const payload = { hello: 'test', another: ['test'] };
     select()
       .replace(payload);
@@ -20,7 +20,7 @@ describe('Root', () => {
   })
 
   it('object.property.update()', () => {
-    const select = set({ x: 0, y: 0 });
+    const select = store({ x: 0, y: 0 });
     const payload = 3;
     select(s => s.x)
       .replace(payload);
@@ -33,7 +33,7 @@ describe('Root', () => {
   })
 
   it('array.insert()', () => {
-    const select = set(new Array<{ id: number, text: string }>());
+    const select = store(new Array<{ id: number, text: string }>());
     const payload = [{ id: 1, text: 'hello' }];
     select()
       .insert(payload);
@@ -46,7 +46,7 @@ describe('Root', () => {
   })
 
   it('number.replace()', () => {
-    const select = set(0);
+    const select = store(0);
     const payload = 3;
     select()
       .replace(payload);
@@ -59,7 +59,7 @@ describe('Root', () => {
   })
 
   it('boolean.replace()', () => {
-    const select = set(false);
+    const select = store(false);
     const payload = true;
     select()
       .replace(payload);
@@ -73,7 +73,7 @@ describe('Root', () => {
 
   it('union.replace()', () => {
     type union = 'one' | 'two';
-    const select = set('one' as union);
+    const select = store('one' as union);
     const payload = 'two' as union;
     select()
       .replace(payload);
@@ -86,7 +86,7 @@ describe('Root', () => {
   })
 
   it('string.replace()', () => {
-    const select = set('');
+    const select = store('');
     const payload = 'test';
     select()
       .replace(payload);
@@ -99,7 +99,7 @@ describe('Root', () => {
   })
 
   it('replaceAll()', () => {
-    const select = set(['one', 'two', 'three']);
+    const select = store(['one', 'two', 'three']);
     const payload = ['four', 'five', 'six', 'seven'];
     select()
       .replaceAll(payload);
@@ -112,7 +112,7 @@ describe('Root', () => {
   })
 
   it('find().replace()', () => {
-    const select = set(['one', 'two', 'three']);
+    const select = store(['one', 'two', 'three']);
     const payload = 'twoo';
     select()
       .findWhere().eq('two')
@@ -127,7 +127,7 @@ describe('Root', () => {
   })
 
   it('insert()', () => {
-    const select = set(['one']);
+    const select = store(['one']);
     select()
       .insert('two');
     expect(libState.currentAction).toEqual({
@@ -139,7 +139,7 @@ describe('Root', () => {
   })
 
   it('find().replace()', () => {
-    const select = set(['hello']);
+    const select = store(['hello']);
     select().findWhere().match(/^h/).replace('another')
     expect(libState.currentAction).toEqual({
       type: 'find().replace()',

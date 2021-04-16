@@ -1,4 +1,4 @@
-import { set } from '../src/store-creators';
+import { store } from '../src/store-creators';
 import { libState } from '../src/shared-state';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
@@ -12,7 +12,7 @@ describe('array.find().remove()', () => {
   };
 
   it('should eq()', () => {
-    const select = set(initialState);
+    const select = store(initialState);
     select(s => s.array)
       .findWhere(e => e.id).eq(2)
       .remove();
@@ -26,7 +26,7 @@ describe('array.find().remove()', () => {
   })
 
   it('should ne()', () => {
-    const select = set(initialState);
+    const select = store(initialState);
     select(s => s.array)
       .findWhere(e => e.id).ne(2)
       .remove();
@@ -40,7 +40,7 @@ describe('array.find().remove()', () => {
   })
 
   it('should gt()', () => {
-    const select = set(initialState);
+    const select = store(initialState);
     select(s => s.array)
       .findWhere(e => e.id).gt(1)
       .remove();
@@ -54,7 +54,7 @@ describe('array.find().remove()', () => {
   })
 
   it('should gte()', () => {
-    const select = set(initialState);
+    const select = store(initialState);
     select(s => s.array)
       .findWhere(e => e.id).gte(1)
       .remove();
@@ -68,7 +68,7 @@ describe('array.find().remove()', () => {
   })
 
   it('should lt()', () => {
-    const select = set(initialState);
+    const select = store(initialState);
     select(s => s.array)
       .findWhere(e => e.id).lt(2)
       .remove();
@@ -82,7 +82,7 @@ describe('array.find().remove()', () => {
   })
 
   it('should lte()', () => {
-    const select = set(initialState);
+    const select = store(initialState);
     select(s => s.array)
       .findWhere(e => e.id).lte(2)
       .remove();
@@ -96,7 +96,7 @@ describe('array.find().remove()', () => {
   })
 
   it('should in()', () => {
-    const select = set(initialState);
+    const select = store(initialState);
     select(s => s.array)
       .findWhere(e => e.id).in([1, 2])
       .remove();
@@ -110,7 +110,7 @@ describe('array.find().remove()', () => {
   })
 
   it('should ni()', () => {
-    const select = set(initialState);
+    const select = store(initialState);
     select(s => s.array)
       .findWhere(e => e.id).ni([1, 2])
       .remove();
@@ -124,7 +124,7 @@ describe('array.find().remove()', () => {
   })
 
   it('should match()', () => {
-    const select = set(initialState);
+    const select = store(initialState);
     select(s => s.array)
       .findWhere(e => e.value).match(/^t/)
       .remove();

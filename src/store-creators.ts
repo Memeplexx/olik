@@ -20,13 +20,13 @@ import { libState } from './shared-state';
  * @param options some additional configuration options
  * 
  * @example
- * const select = setEnforceTags({ prop: '' });
+ * const select = storeEnforcingTags({ prop: '' });
  * 
  * // Note that when updating state, we are now required to supply a string as the last argument (in this case 'MyComponent')
  * select(s => s.prop)                // type: 'prop.replace() [MyComponent]'
  *   .replace('test', 'MyComponent')  // replacement: 'test'
  */
-export function setEnforceTags<S>(
+export function storeEnforcingTags<S>(
   state: S,
   options: OptionsForMakingAStore = {},
 ) {
@@ -39,9 +39,9 @@ export function setEnforceTags<S>(
  * @param options some additional configuration options
  * 
  * @example
- * const select = set({ todos: Array<{ id: number, text: string }>() });
+ * const select = store({ todos: Array<{ id: number, text: string }>() });
  */
-export function set<S>(
+export function store<S>(
   state: S,
   options: OptionsForMakingAStore = {},
 ) {
@@ -50,13 +50,23 @@ export function set<S>(
 
 /**
  * Creates a new store which can be (but doesn't have to be) nested inside your application store.
- * If an existing store is already defined as `make({...}, { isContainerForNestedStores: true });`
+ * If an existing store is already defined as `store({...}, { isContainerForNestedStores: true });`
  * then this store will be automatically nested within that store, under the property `nested`.
  * If the opposite is true, then a new top-level store will be registered within the devtools
  * @param state The initial state
  * @param options A configuration object which, at minimum, must contain the `name` of the nested store
+ * 
+ * @example
+ * const select = nestedStore({
+ *   id: number,
+ *   text: string,
+ *   done: boolean,
+ * }, {
+ *   storeName: 'TodoComponent',
+ *   instanceName: todoId
+ * })
  */
-export function setNested<L>(
+export function nestedStore<L>(
   state: L,
   { storeName, instanceName, dontTrackWithDevtools }: OptionsForMakingANestedStore,
 ) {

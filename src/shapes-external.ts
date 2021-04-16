@@ -192,7 +192,7 @@ export type ArrayOfElementsAction<X extends DeepReadonlyArray<any>, F extends Fi
    * .and(e => e.status).eq('todo')
    * ...
    */
-  and: X[0] extends object ? <P>(getProp: (element: DeepReadonly<X[0]>) => P) => Predicate<X, P, F, T> : () => Predicate<X, X[0], F, T>,
+  andWhere: X[0] extends object ? <P>(getProp: (element: DeepReadonly<X[0]>) => P) => Predicate<X, P, F, T> : () => Predicate<X, X[0], F, T>,
   /**
    * Append more criteria with which to filter your array
    * @example
@@ -200,7 +200,7 @@ export type ArrayOfElementsAction<X extends DeepReadonlyArray<any>, F extends Fi
    * .or(t => t.status).eq('todo')
    * ...
    */
-  or: X[0] extends object ? <P>(getProp: (element: DeepReadonly<X[0]>) => P) => Predicate<X, P, F, T> : () => Predicate<X, X[0], F, T>,
+  orWhere: X[0] extends object ? <P>(getProp: (element: DeepReadonly<X[0]>) => P) => Predicate<X, P, F, T> : () => Predicate<X, X[0], F, T>,
 
 } & ArrayOfElementsCommonAction<X, F, T>;
 
@@ -209,12 +209,14 @@ export type ArrayOfElementsAction<X extends DeepReadonlyArray<any>, F extends Fi
  */
 export type ArrayOfObjectsAction<X extends DeepReadonlyArray<any>, F extends FindOrFilter, T extends Trackability> = {
   /**
-   * Partially updates array elements allowing you to omit those properties which should not change
+   * Partially updates each selected array element allowing you to omit those properties which should not change
+   * @param patch the partially filled object to be used as a patch
+   * @param updateOptions
    * @example
    * ...
    * .patch({ done: true })
    */
-  patch: <H extends Partial<X[0]> | (() => Promise<Partial<X[0]>>) >(replacement: H, tag: UpdateOptions<T, X[0], H>) => H extends (() => Promise<any>) ? Promise<void> : void,
+  patch: <H extends Partial<X[0]> | (() => Promise<Partial<X[0]>>) >(patch: H, updateOptions: UpdateOptions<T, X[0], H>) => H extends (() => Promise<any>) ? Promise<void> : void,
 } & ArrayOfElementsAction<X, F, T>;
 
 export type ArrayOfElementsCommonAction<X extends DeepReadonlyArray<any>, F extends FindOrFilter, T extends Trackability> = {
@@ -406,7 +408,7 @@ export type StoreForAnObject<C extends any, T extends Trackability> = {
    * ***WARNING***: use this conservatively as invoking this has the potentional to contradict the type-system.
    * Only use this to remove from an object of type `{ [key: string]: any }` and NOT one with named properties eg `{ str: '', num: 0 }`
    */
-  removeKeys: (keys: Array<keyof C>, tag: Tag<T>) =>  void,
+  removeKeys: (keys: Array<keyof C>, tag: Tag<T>) => void,
 } & StoreForAnObjectOrPrimitive<C, T>;
 
 export type StoreOrDerivation<C> = {

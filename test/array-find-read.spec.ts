@@ -1,4 +1,4 @@
-import { set } from '../src/store-creators';
+import { store } from '../src/store-creators';
 import { libState } from '../src/shared-state';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
@@ -12,7 +12,7 @@ describe('array.find().read()', () => {
   };
 
   it('should read()', () => {
-    const select = set(initialState);
+    const select = store(initialState);
     const read = select(s => s.array)
       .findWhere(e => e.id).eq(2)
       .read();
@@ -20,7 +20,7 @@ describe('array.find().read()', () => {
   })
 
   it('should onChange()', () => {
-    const select = set(initialState);
+    const select = store(initialState);
     let changeCount = 0;
     select(s => s.array)
       .findWhere(e => e.id).eq(3)

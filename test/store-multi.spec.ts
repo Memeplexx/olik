@@ -1,5 +1,5 @@
 import { deriveFrom } from '../src/derive-from';
-import { set } from '../src/store-creators';
+import { store } from '../src/store-creators';
 import { libState } from '../src/shared-state';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
@@ -8,8 +8,8 @@ describe('Multi-store', () => {
   beforeAll(() => libState.windowObject = windowAugmentedWithReduxDevtoolsImpl);
 
   it('should support multiple stores', () => {
-    const select1 = set(new Array<string>());
-    const select2 = set(0);
+    const select1 = store(new Array<string>());
+    const select2 = store(0);
     select1().replaceAll(['one']);
     select2().replace(2);
     expect(select1().read()).toEqual(['one']);
@@ -17,8 +17,8 @@ describe('Multi-store', () => {
   })
 
   it('should memoise using multiple stores', () => {
-    const select1 = set({ array: new Array<number>(), string: '' });
-    const select2 = set({ number: 0 });
+    const select1 = store({ array: new Array<number>(), string: '' });
+    const select2 = store({ number: 0 });
     const mem = deriveFrom(
       select1(s => s.array),
       select2(s => s.number),

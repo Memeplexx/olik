@@ -1,4 +1,4 @@
-import { set, setEnforceTags } from '../src/store-creators';
+import { store, storeEnforcingTags } from '../src/store-creators';
 import { libState } from '../src/shared-state';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
@@ -9,7 +9,7 @@ describe('tags', () => {
   it('should work with tags correctly', () => {
     const payload = 'hey';
     const tag = 'mytag';
-    const select = setEnforceTags({
+    const select = storeEnforcingTags({
       object: { property: 'one', property2: 'two' },
     });
     select(s => s.object.property)
@@ -23,7 +23,7 @@ describe('tags', () => {
   })
 
   it('should sanitize tags correctly', () => {
-    const select = setEnforceTags({
+    const select = storeEnforcingTags({
       test: '',
     }, {
       tagSanitizer: (tag) => tag + 'x',
@@ -40,7 +40,7 @@ describe('tags', () => {
   })
 
   it('should accept optional tags', () => {
-    const select = set({ prop: '' });
+    const select = store({ prop: '' });
     const tag = 'mytag';
     const payload = 'test';
     select(s => s.prop)

@@ -1,4 +1,4 @@
-import { set } from '../src/store-creators';
+import { store } from '../src/store-creators';
 import { libState } from '../src/shared-state';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
@@ -7,13 +7,13 @@ describe('Read', () => {
   beforeAll(() => libState.windowObject = windowAugmentedWithReduxDevtoolsImpl);
 
   it('should read', () => {
-    const select = set({ some: { object: 'test' } });
+    const select = store({ some: { object: 'test' } });
     const value = select(s => s.some.object).read();
     expect(value).toEqual('test');
   })
 
   it('should listen to onChange events', () => {
-    const select = set({ prop: { value: '', another: '' } });
+    const select = store({ prop: { value: '', another: '' } });
     let changeCount = 0;
     select(s => s.prop.value)
       .onChange(val => {
@@ -27,7 +27,7 @@ describe('Read', () => {
   });
 
   it('should listen to onChange events when a find() is included in the selector', () => {
-    const select = set({ arr: [{ id: 1, val: '' }, { id: 2, val: '' }] });
+    const select = store({ arr: [{ id: 1, val: '' }, { id: 2, val: '' }] });
     let changeCount = 0;
     select(s => s.arr.find(e => e.id === 2))
       .onChange(val => {

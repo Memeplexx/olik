@@ -1,4 +1,4 @@
-import { set } from '../src/store-creators';
+import { store } from '../src/store-creators';
 import { libState } from '../src/shared-state';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
@@ -12,9 +12,9 @@ describe('array.filter().and().or()', () => {
   };
 
   it('should eq().and().eq()', () => {
-    const select = set(initialState);
+    const select = store(initialState);
     select(s => s.array)
-      .filterWhere(s => s.id).eq(2).and(s => s.value).eq('two')
+      .filterWhere(s => s.id).eq(2).andWhere(s => s.value).eq('two')
       .remove();
     expect(libState.currentAction).toEqual({
       type: 'array.filter().remove()',
@@ -26,9 +26,9 @@ describe('array.filter().and().or()', () => {
   })
 
   it('should eq().or().eq()', () => {
-    const select = set(initialState);
+    const select = store(initialState);
     select(s => s.array)
-      .filterWhere(s => s.id).eq(1).or(s => s.value).eq('two')
+      .filterWhere(s => s.id).eq(1).orWhere(s => s.value).eq('two')
       .remove();
     expect(libState.currentAction).toEqual({
       type: 'array.filter().remove()',
@@ -40,9 +40,9 @@ describe('array.filter().and().or()', () => {
   })
 
   it('should eq().and().eq() not matching', () => {
-    const select = set(initialState);
+    const select = store(initialState);
     select(s => s.array)
-      .filterWhere(s => s.id).eq(1).and(s => s.id).eq(2)
+      .filterWhere(s => s.id).eq(1).andWhere(s => s.id).eq(2)
       .remove();
     expect(libState.currentAction).toEqual({
       type: 'array.filter().remove()',
@@ -54,9 +54,9 @@ describe('array.filter().and().or()', () => {
   })
 
   it('should eq().and().eq().or().eq()', () => {
-    const select = set(initialState);
+    const select = store(initialState);
     select(s => s.array)
-      .filterWhere(e => e.id).eq(1).and(e => e.id).eq(2).or(e => e.id).eq(3)
+      .filterWhere(e => e.id).eq(1).andWhere(e => e.id).eq(2).orWhere(e => e.id).eq(3)
       .remove();
     expect(libState.currentAction).toEqual({
       type: 'array.filter().remove()',
@@ -68,9 +68,9 @@ describe('array.filter().and().or()', () => {
   })
 
   it('should eq().or().eq().and().eq()', () => {
-    const select = set(initialState);
+    const select = store(initialState);
     select(s => s.array)
-      .filterWhere(e => e.id).eq(4).or(e => e.id).eq(3).and(e => e.value).eq('three')
+      .filterWhere(e => e.id).eq(4).orWhere(e => e.id).eq(3).andWhere(e => e.value).eq('three')
       .remove();
     expect(libState.currentAction).toEqual({
       type: 'array.filter().remove()',
@@ -82,9 +82,9 @@ describe('array.filter().and().or()', () => {
   })
 
   it('should eq().and().eq().or().eq().and().eq()', () => {
-    const select = set(initialState);
+    const select = store(initialState);
     select(s => s.array)
-      .filterWhere(e => e.id).eq(1).and(e => e.value).eq('one').or(e => e.id).eq(3).and(e => e.value).eq('three')
+      .filterWhere(e => e.id).eq(1).andWhere(e => e.value).eq('one').orWhere(e => e.id).eq(3).andWhere(e => e.value).eq('three')
       .remove();
     expect(libState.currentAction).toEqual({
       type: 'array.filter().remove()',

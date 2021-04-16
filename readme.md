@@ -9,20 +9,20 @@
 ## Crystal-clear state-management  
 
 Olik allows you to comprehensively grok your state updates without ever leaving your component code.  
-* Its fluent typesafe API maximizes **transparency**, **consistency** and **eliminates ambiguity** 
-* **Debuggability** is enhanced through **auto-generated action types**
+* Its fluent typesafe API enforces **consistency**, **transparency** and **eliminates ambiguity** 
+* **Debuggability** is improved through **auto-generated action types**
 * **Nested stores** allow you to debug your component state with or without your application state.
 * Transactions, async updates, request de-duplication, and caching are all built-in.
 
 ---
-🛑 <ins>NOTE: The below code demonstrates Olik **without a framework**.</ins>  
+⚠️ <ins>NOTE: The below code demonstrates Olik **without a framework**.</ins>  
 There are, however, bindings for ***[React](https://memeplexx.github.io/olik/docs/read)***, and
 ***[Angular](https://memeplexx.github.io/olik/docs/angular)***
 
 #### 🌈 **SET UP**
 Initializing your store couldn't be simpler while integration with the **[Redux Devtools extension](https://github.com/zalmoxisus/redux-devtools-extension)** is automatic.
 ```ts
-const select = set({
+const select = store({
   username: '',
   favorite: {
     foods: new Array<string>(),
@@ -46,10 +46,10 @@ select(s => s.favorite.hobbies)      // type: 'favorite.hobbies.find().patch()'
 #### 👓 **READ STATE**
 State can be **read** from, **listened** to, and expensive derivations can be **memoized**.
 ```ts
-select(s => s.favorite.hobbies)
-  .read()
+const hobbies = select(s => s.favorite.hobbies)
+  .read();
 
-select(s => s.favorite.hobbies)
+const subscription = select(s => s.favorite.hobbies)
   .onChange(e => console.log(e));
 
 const derivation = derive(
@@ -58,6 +58,17 @@ const derivation = derive(
 ).usingExpensiveCalc(
   (foods, hobbies) => /* ...some expensive calculation we do not wish to repeat... */
 )
+```
+
+#### ↪️ **TRANSACT**
+Perform multiple updates in one go to prevent unnecessary re-renders
+```ts
+transact(                             // type: 'username.replace(), favorite.foods.removeAll()'
+  () => select(s => s.username)       // actions: [
+    .replace('James'),                //   { type: 'username.replace()', replacement: 'James' },
+  () => select(s => s.favorite.foods) //   { type: 'favorite.foods.removeAll()' },
+    .removeAll(),                     // ]
+);
 ```
 
 #### ⏲️ **FETCH STATE**
@@ -72,9 +83,9 @@ select(s => s.favorite.hobbies)
 ```
 
 #### 🥚 **NEST STORES**
-Each component's state can be managed and debugged with or without your application store.
+Each component's state can be managed and debugged with or without your application state.
 ```ts
-select = setNested({                  // applicationStoreState = {
+select = nestedStore({                // applicationStoreState = {
   title: '',                          //   /* ... */
   description: '',                    //   nested {
   done: false,                        //     TodoComponent: {
@@ -87,13 +98,3 @@ select(s => s.done)                   // type: 'nested.TodoComponent.1.done.repl
   .replace(true);                     // replacement: true
 ```
 
-#### ↪️ **TRANSACT**
-Perform multiple updates in one go to prevent unnecessary re-renders
-```ts
-transact(                             // type: 'username.replace(), favorite.foods.removeAll()'
-  () => select(s => s.username)       // actions: [
-    .replace('James'),                //   { type: 'username.replace()', replacement: 'James' },
-  () => select(s => s.favorite.foods) //   { type: 'favorite.foods.removeAll()' },
-    .removeAll(),                     // ]
-);
-```
