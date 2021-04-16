@@ -89,9 +89,10 @@ export type PreviousAction = {
 
 export type OptionsForCreatingInternalRootStore = {
   isContainerForNestedStores?: boolean,
-  supportsTags: boolean,
+  enforcesTags: boolean,
   devtools?: OptionsForReduxDevtools | false,
   tagSanitizer?: (tag: string) => string,
+  tagsToAppearInType?: boolean,
 };
 
 /**

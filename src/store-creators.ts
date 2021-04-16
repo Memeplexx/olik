@@ -30,7 +30,7 @@ export function storeEnforcingTags<S>(
   state: S,
   options: OptionsForMakingAStore = {},
 ) {
-  return setInternalRootStore<S, 'tagged'>(state, { ...options, supportsTags: true }) as SelectorFromAStoreEnforcingTags<S>;
+  return setInternalRootStore<S, 'tagged'>(state, { ...options, enforcesTags: true }) as SelectorFromAStoreEnforcingTags<S>;
 }
 
 /**
@@ -45,7 +45,7 @@ export function store<S>(
   state: S,
   options: OptionsForMakingAStore = {},
 ) {
-  return setInternalRootStore<S, 'untagged'>(state, { ...options, supportsTags: false }) as SelectorFromAStore<S>;
+  return setInternalRootStore<S, 'untagged'>(state, { ...options, enforcesTags: false }) as SelectorFromAStore<S>;
 }
 
 /**
@@ -73,7 +73,7 @@ export function nestedStore<L>(
   const generateKey = (arg?: string) => (!arg && !instanceName) ? '0' :
     !instanceName ? (+arg! + 1).toString() : instanceName;
   if (!libState.nestedContainerStore) {
-    return createStore<L, 'untagged'>({ state, devtools: dontTrackWithDevtools ? false : { name: storeName + ' : ' + generateKey() }, supportsTags: false }) as SelectorFromANestedStore<L>;
+    return createStore<L, 'untagged'>({ state, devtools: dontTrackWithDevtools ? false : { name: storeName + ' : ' + generateKey() }, enforcesTags: false }) as SelectorFromANestedStore<L>;
   }
   const containerStore = libState.nestedContainerStore();
   const wrapperState = containerStore.read();
@@ -108,7 +108,8 @@ function setInternalRootStore<S, T extends Trackability>(
   state: S,
   options: OptionsForCreatingInternalRootStore,
 ) {
-  const store = createStore<S, T>({ state, devtools: options.devtools === undefined ? {} : options.devtools, supportsTags: options.supportsTags, nestedContainerStore: libState.nestedContainerStore!, tagSanitizer: options.tagSanitizer });
+  const store = createStore<S, T>({ state, devtools: options.devtools === undefined ? {} : options.devtools, enforcesTags: options.enforcesTags,
+    nestedContainerStore: libState.nestedContainerStore!, tagSanitizer: options.tagSanitizer, tagsToAppearInType: options.tagsToAppearInType });
   if (options.isContainerForNestedStores) {
     if ((typeof (state) !== 'object') || Array.isArray(state)) {
       throw new Error(errorMessages.INVALID_CONTAINER_FOR_NESTED_STORES);

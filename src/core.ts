@@ -45,12 +45,13 @@ import { copyObject, createPathReader, deepCopy, deepFreeze, validateSelectorFn,
 
 export function createStore<S, T extends Trackability>(context: {
   state: S,
-  supportsTags: boolean,
+  enforcesTags: boolean,
   devtools: OptionsForReduxDevtools | false,
   nestedContainerStore?: NestedContainerStore,
   tagSanitizer?: (tag: string) => string,
+  tagsToAppearInType?: boolean,
 }) {
-  const { state, devtools, nestedContainerStore, supportsTags, tagSanitizer } = context;
+  const { state, devtools, nestedContainerStore, enforcesTags, tagSanitizer } = context;
   validateState(state);
   const changeListeners = new Map<(ar: any) => any, (arg: S) => any>();
   let pathReader = createPathReader(state);
@@ -156,7 +157,7 @@ export function createStore<S, T extends Trackability>(context: {
         pathReader = createPathReader(state);
         currentState = deepFreeze(state) as S;
       }) as StoreWhichMayContainNestedStores<S, C, T>['renew'],
-      supportsTags: supportsTags,
+      enforcesTags: enforcesTags,
     } as unknown as StoreWhichIsNested<C>;
     return coreActions;
   };
@@ -187,19 +188,23 @@ export function createStore<S, T extends Trackability>(context: {
     specs.mutator(specs.selector(pathReader.mutableStateCopy) as X);
     currentState = result;
 
+    // Construct action to dispatch
+    const actionType = specs.actionNameOverride ? specs.actionName : (pathSegments.join('.') + (pathSegments.length ? '.' : '') + specs.actionName);
     const tag = specs.updateOptions ? ( typeof(specs.updateOptions) === 'object' ? (specs.updateOptions as any).tag : specs.updateOptions ) : '';
-
+    const tagSanitized = tag && tagSanitizer ? tagSanitizer(tag) : tag;
+    const payload = ((specs.getPayloadFn && (specs.getPayloadFn() !== undefined)) ? specs.getPayloadFn() : specs.payload);
+    const payloadWithTag = (!tag || context.tagsToAppearInType) ? { ...payload } : { ...payload, tag: tagSanitized };
+    const typeWithTag = actionType + (context.tagsToAppearInType && tag ? ` [${tagSanitized}]` : '')
     let actionToDispatch = {
-      type: (specs.actionNameOverride ? specs.actionName : (pathSegments.join('.') + (pathSegments.length ? '.' : '') + specs.actionName)) +
-        (tag ? ` [${tagSanitizer ? tagSanitizer(tag) : tag}]` : ''),
-      ...((specs.getPayloadFn && (specs.getPayloadFn() !== undefined)) ? specs.getPayloadFn() : specs.payload),
+      type: typeWithTag,
+      ...payloadWithTag,
     };
 
+    // Cater for transactions
     if (libState.transactionState === 'started') {
       libState.transactionActions.push(actionToDispatch);
       return;
     }
-    
     if (libState.transactionState === 'last') {
       libState.transactionActions.push(actionToDispatch);
       notifySubscribers(libState.transactionStartState, result);
@@ -213,13 +218,8 @@ export function createStore<S, T extends Trackability>(context: {
     } else if (libState.transactionState === 'none') {
       notifySubscribers(previousState, result);
     }
-    // if (libState.logLevel === 'DEBUG') {
-    //   console.log('_____', actionToDispatch);
-    // }
     
-    
-    
-    
+    // Dispatch to devtools
     libState.currentAction = actionToDispatch;
     libState.currentMutableState = pathReader.mutableStateCopy as any;
     const { type, ...actionPayload } = actionToDispatch;

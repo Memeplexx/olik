@@ -11,7 +11,7 @@ describe('tags', () => {
     const tag = 'mytag';
     const select = storeEnforcingTags({
       object: { property: 'one', property2: 'two' },
-    });
+    }, { tagsToAppearInType: true });
     select(s => s.object.property)
       .replace(payload, tag);
     expect(libState.currentAction).toEqual({
@@ -27,6 +27,7 @@ describe('tags', () => {
       test: '',
     }, {
       tagSanitizer: (tag) => tag + 'x',
+      tagsToAppearInType: true,
     });
     const tag = 'mytag';
     const payload = 'test';
@@ -40,7 +41,7 @@ describe('tags', () => {
   })
 
   it('should accept optional tags', () => {
-    const select = store({ prop: '' });
+    const select = store({ prop: '' }, { tagsToAppearInType: true });
     const tag = 'mytag';
     const payload = 'test';
     select(s => s.prop)
@@ -48,6 +49,19 @@ describe('tags', () => {
     expect(libState.currentAction).toEqual({
       type: `prop.replace() [${tag}]`,
       replacement: payload,
+    });
+  })
+
+  it('should, by default, place tags in the payload', () => {
+    const select = storeEnforcingTags({ prop: '' });
+    const tag = 'mytag';
+    const payload = 'test';
+    select(s => s.prop)
+      .replace(payload, tag);
+    expect(libState.currentAction).toEqual({
+      type: `prop.replace()`,
+      replacement: payload,
+      tag,
     });
   })
 

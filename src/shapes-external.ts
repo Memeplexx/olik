@@ -524,7 +524,7 @@ export type OptionsForMakingAStore = {
    */
   devtools?: OptionsForReduxDevtools | false;
   /**
-   * Setting this to true will mean that any stores which are subsequently created using `makeNested()` will automatically be nested within this store.
+   * Setting this to true will mean that any stores which are subsequently created using `nestedStore()` will automatically be nested within this store.
    * Those nested stores will then be visible within the Redux Devtools extension.
    */
   isContainerForNestedStores?: boolean;
@@ -538,6 +538,10 @@ export type OptionsForMakingAStore = {
    *  .replace(/.ts/, '')         // remove extension
    */
   tagSanitizer?: (tag: string) => string;
+  /**
+   * If set to true, then tags will appear in the action type as apposed to inside the payload (which is the default)
+   */
+  tagsToAppearInType?: boolean;
 }
 
 /**

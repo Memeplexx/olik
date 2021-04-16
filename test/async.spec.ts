@@ -372,7 +372,7 @@ describe('async', () => {
   })
 
   it('should support tags', done => {
-    const select = storeEnforcingTags(initialState);
+    const select = storeEnforcingTags(initialState, { tagsToAppearInType: true });
     const replacement = [{ id: 1, value: 'one' }];
     const tag = 'MyComponent';
     select(s => s.array)

@@ -12,7 +12,7 @@ describe('Devtools', () => {
   beforeEach( () => spyWarn.mockReset());
 
   it('should correctly respond to devtools dispatches where the state is an object', () => {
-    const select = store({ x: 0, y: 0 });
+    const select = store({ x: 0, y: 0 }, { tagsToAppearInType: true });
     select(s => s.x)
       .replace(3);
     expect(select().read()).toEqual({ x: 3, y: 0 });
@@ -23,7 +23,7 @@ describe('Devtools', () => {
   });
 
   it('should correctly respond to devtools dispatches where the state is an array', () => {
-    const select = store(['a', 'b', 'c']);
+    const select = store(['a', 'b', 'c'], { tagsToAppearInType: true });
     select()
       .replaceAll(['d', 'e', 'f']);
     expect(select().read()).toEqual(['d', 'e', 'f']);
