@@ -5,8 +5,10 @@
     "ng": "ng",
     "start": "ng serve",
     "build": "ng build",
-    "test": "ng test",
-    "lint": "ng lint"
+    "lint": "ng lint",
+    "test": "jest --coverage --coverageReporters=text-lcov",
+    "test:cov": "npm test --coverage --collectCoverageFrom=src/**/*.{ts}",
+    "test:watch": "jest --watchAll --verbose false"
   },
   "private": true,
   "dependencies": {
@@ -18,10 +20,13 @@
     "@angular/platform-browser": "~10.2.0",
     "@angular/platform-browser-dynamic": "~10.2.0",
     "@angular/router": "~10.2.0",
-    "olik": "0.0.6",
+    "@types/jest": "^26.0.7",
+    "olik": "0.0.8",
     "rxjs": "~6.6.0",
     "tslib": "^2.0.0",
-    "zone.js": "~0.10.2"
+    "zone.js": "~0.10.2",
+    "jest": "^26.1.0",
+    "ts-jest": "^26.1.4"
   },
   "devDependencies": {
     "@angular-devkit/build-angular": "~0.1002.0",
@@ -42,5 +47,19 @@
     "ts-node": "~8.3.0",
     "tslint": "~6.1.0",
     "typescript": "~4.0.2"
+  },
+  "jest": {
+    "transform": {
+      "^.+\\.tsx?$": "ts-jest"
+    },
+    "testRegex": "(/__tests__/.*|(\\.|/)(test|spec))\\.(jsx?|tsx?)$",
+    "moduleFileExtensions": [
+      "ts",
+      "tsx",
+      "js",
+      "jsx",
+      "json",
+      "node"
+    ]
   }
 }

@@ -4,9 +4,9 @@ import {
   OptionsForMakingANestedStore,
   OptionsForMakingAStore,
   SelectorFromAStore,
-  set as libSet,
-  setEnforceTags as libSetEnforceTags,
-  setNested as libSetNested,
+  store as libSet,
+  storeEnforcingTags as libSetEnforceTags,
+  nestedStore as libSetNested,
 } from 'olik';
 import { Observable } from 'rxjs';
 import { shareReplay } from 'rxjs/operators';
@@ -25,7 +25,6 @@ function observeFetchInternal<C>(
         .then(resolved => observer.next({ resolved, hasError: false, isLoading: false, rejected: null, refetch }))
         .catch(rejected => observer.next({ resolved: null, hasError: true, isLoading: false, rejected, refetch }));
     };
-    // observer.next({ resolved: null, hasError: false, isLoading: true, rejected: null, refetch });
     refetch(fetchFn);
   }).pipe(
     shareReplay({ bufferSize: 1, refCount: true }),
@@ -38,7 +37,6 @@ const observeInternal = <S>(
 ) => <L extends Parameters<typeof select>[0], C extends FnReturnType<L>>(
   selector: L,
   ) => new Observable<C>(observer => {
-    // observer.next(select(selector).read() as C);
     const subscription = select(selector).onChange(v => observer.next(v as C));
     return () => subscription.unsubscribe();
   }).pipe(
@@ -67,7 +65,7 @@ export const setEnforceTags = <S>(initialState: S, options?: OptionsForMakingASt
     /**
      * Converts the state you select into an observable
      */
-    observe: <L extends Parameters<typeof select>[0]>(selector: L) => observeInternal(select as SelectorFromAStore<S>)(selector),
+    observe: <L extends Parameters<typeof select>[0]>(selector: L) => observeInternal(select as any)(selector as any),
     /**
      * Takes a function returning an Observable, and returns a new Observable which reports the status of the first observable.
      */
@@ -82,7 +80,7 @@ export const setNested = <S>(initialState: S, options: OptionsForMakingANestedSt
     /**
      * Converts the state you select into an observable
      */
-    observe: <L extends Parameters<typeof select>[0]>(selector: L) => observeInternal(select)(selector),
+    observe: <L extends Parameters<typeof select>[0]>(selector: L) => observeInternal(select as any)(selector as any),
     /**
      * Takes a function returning an Observable, and returns a new Observable which reports the status of the first observable.
      */

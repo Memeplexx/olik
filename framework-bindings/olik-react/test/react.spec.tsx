@@ -292,7 +292,7 @@ describe('React', () => {
         isLoading,
         error,
         storeValue,
-      } = useFetcher(() => select(s => s.toPaginate[0])
+      } = useFetcher(() => select(s => s.toPaginate[index])
         .replaceAll(() => new Promise<Todo[]>(resolve => setTimeout(() => resolve(todos.slice(index * 10, (index * 10) + 10)), 10))), [index]);
       return (
         <>

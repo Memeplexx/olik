@@ -11,7 +11,7 @@ describe('Angular', () => {
   };
 
   it('should create and update a store', () => {
-    const { select } = set(initialState, { devtools: false });
+    const { select, observe } = set(initialState, { devtools: false });
     select(s => s.object.property)
       .replace('test');
     expect(select().read().object.property).toEqual('test');
