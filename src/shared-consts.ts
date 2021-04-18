@@ -8,6 +8,7 @@ export const errorMessages = {
   INVALID_STATE_INPUT: 'State can only be primitive or a POJO. It may not contain any functions, Sets, Maps etc',
   ILLEGAL_CHARACTERS_WITHIN_SELECTOR: (functionName: 'select' | 'getProp') => `Illegal characters detected in your ${functionName}() function. This function may only select a property, for example: 's => s.some.property', and no additional function invocations are allowed within the function.`,
   NO_ARRAY_ELEMENT_FOUND: `Could not find array element`,
+  NO_CONTAINER_STORE: 'No container store registered. This is a no-op.',
 };
 
 export const devtoolsDebounce = 200;

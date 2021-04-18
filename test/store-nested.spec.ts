@@ -5,7 +5,11 @@ import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
 describe('Nested', () => {
 
+  const spyInfo = jest.spyOn(console, 'info');
+
   beforeAll(() => libState.windowObject = windowAugmentedWithReduxDevtoolsImpl);
+
+  beforeEach(() => spyInfo.mockReset());
 
   it('should attach a lib store correctly', () => {
     const initialState = {
@@ -83,7 +87,7 @@ describe('Nested', () => {
     nestedStore1().removeFromContainingStore();
     expect(select().read()).toEqual({ test: '', nested: { [storeName]: { '1': { one: '' } } } });
     nestedStore2().removeFromContainingStore();
-    expect(select().read()).toEqual({ test: '', nested: { } });
+    expect(select().read()).toEqual({ test: '', nested: {} });
   })
 
   it('should be able to perform an update on a second nested store', () => {
@@ -178,6 +182,11 @@ describe('Nested', () => {
     }, { storeName: 'dd', dontTrackWithDevtools: true });
     select(s => s.object.property).replace('test');
     expect(select(s => s.object.property).read()).toEqual('test');
+    select().removeFromContainingStore();
+    expect(spyInfo).toHaveBeenCalledWith(errorMessages.NO_CONTAINER_STORE);
+    spyInfo.mockReset();
+    select(s => s.array).reset();
+    expect(spyInfo).toHaveBeenCalledWith(errorMessages.NO_CONTAINER_STORE);
   });
 
 });

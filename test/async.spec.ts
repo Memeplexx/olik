@@ -1,7 +1,7 @@
 import { store, transact } from '../src';
 import { errorMessages } from '../src/shared-consts';
 import { libState } from '../src/shared-state';
-import { storeEnforcingTags, nestedStore } from '../src/store-creators';
+import { nestedStore, storeEnforcingTags } from '../src/store-creators';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
 describe('async', () => {
@@ -15,7 +15,7 @@ describe('async', () => {
     array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
     paginated: {} as { [key: string]: [{ id: number, value: string }] },
     promiseBypassTTLs: {} as { [key: string]: string },
-  };
+  };3
 
   it('should work with replaceAll()', async done => {
     const select = store(initialState);
@@ -438,6 +438,25 @@ describe('async', () => {
           done();
         });
     }, 5)
+  })
+
+  it('should be able to paginate', done => {
+    const todos = new Array(50).fill(null).map((e, i) => ({ id: i + 1, value: `value ${i + 1}` }));
+    const select = store(initialState);
+    select(s => s.paginated[0])
+      .replaceAll(() => new Promise(resolve => setTimeout(() => resolve(todos.slice(0, 10)))))
+      .then(() => {
+        expect(select(s => s.paginated[0]).read()).toEqual(todos.slice(0, 10));
+        select(s => s.paginated[1])
+          .replaceAll(() => new Promise(resolve => setTimeout(() => resolve(todos.slice(10, 20)))))
+          .then(() => {
+            expect(select(s => s.paginated[1]).read()).toEqual(todos.slice(10, 20));
+            select(s => s.paginated)
+              .replace({});
+            expect(select(s => s.paginated).read()).toEqual({});
+            done();
+          })
+      })
   })
 
 });

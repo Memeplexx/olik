@@ -2,7 +2,10 @@ import { configure, mount } from 'enzyme';
 import Adapter from 'enzyme-adapter-react-16';
 import React from 'react';
 
-import { set, useFetcher, useNestedStore } from '../src';
+import { store, useFetcher, useNestedStore } from '../src';
+import { act, render } from '@testing-library/react';
+import { screen, waitFor } from '@testing-library/dom';
+import '@testing-library/jest-dom'
 
 
 configure({ adapter: new Adapter() });
@@ -16,31 +19,31 @@ describe('React', () => {
   };
 
   it('should create and update a store', () => {
-    const { select } = set(initialState, { devtools: false });
+    const { select } = store(initialState, { devtools: false });
     select(s => s.object.property)
       .replace('test');
     expect(select().read().object.property).toEqual('test');
   })
 
   it('useSelector', () => {
-    const { select, useSelector } = set(initialState, { devtools: false });
+    const { select, useSelector } = store(initialState, { devtools: false });
     const App = () => {
       const result = useSelector(s => s.object.property);
       return (
         <>
           <button onClick={() => select(s => s.object.property).replace('test')}>Click</button>
-          <div>{result}</div>
+          <div data-testid="result">{result}</div>
         </>
       );
     };
-    const wrapper = mount(<App />);
-    expect(wrapper.find('div').text()).toEqual(initialState.object.property);
-    wrapper.find('button').simulate('click');
-    expect(wrapper.find('div').text()).toEqual('test');
+    render(<App />);
+    expect(screen.getByTestId('result').textContent).toEqual(initialState.object.property);
+    (screen.getByRole('button') as HTMLButtonElement).click();
+    expect(screen.getByTestId('result').textContent).toEqual('test');
   });
 
   it('useDerivation with no deps', () => {
-    const { select, useDerivation } = set(initialState, { devtools: false });
+    const { select, useDerivation } = store(initialState, { devtools: false });
     let calcCount = 0;
     const App = () => {
       const result = useDerivation([
@@ -53,20 +56,20 @@ describe('React', () => {
       return (
         <>
           <button onClick={() => select(s => s.object.property).replace('test')}>Click</button>
-          <div>{result}</div>
+          <div data-testid="result">{result}</div>
         </>
       );
     };
-    const wrapper = mount(<App />);
-    expect(wrapper.find('div').text()).toEqual(initialState.string + initialState.object.property);
+    render(<App />);
+    expect(screen.getByTestId('result').textContent).toEqual(initialState.string + initialState.object.property);
     expect(calcCount).toEqual(1);
-    wrapper.find('button').simulate('click');
-    expect(wrapper.find('div').text()).toEqual(initialState.string + 'test');
+    (screen.getByRole('button') as HTMLButtonElement).click();
+    expect(screen.getByTestId('result').textContent).toEqual(initialState.string + 'test');
     expect(calcCount).toEqual(2);
   });
 
   it('useDerivation with deps', () => {
-    const { useDerivation } = set(initialState, { devtools: false });
+    const { useDerivation } = store(initialState, { devtools: false });
     let calcCount = 0;
     const App = () => {
       const [str, setStr] = React.useState('');
@@ -80,31 +83,31 @@ describe('React', () => {
       });
       return (
         <>
-          <button onClick={() => setStr('test')}>Click</button>
-          <button onClick={() => setNum(1)}>Click</button>
-          <div>{result}</div>
+          <button data-testid="btn-1" onClick={() => setStr('test')}>Click</button>
+          <button data-testid="btn-2" onClick={() => setNum(1)}>Click</button>
+          <div data-testid="result">{result}</div>
         </>
       );
     };
-    const wrapper = mount(<App />);
-    expect(wrapper.find('div').text()).toEqual(initialState.string + initialState.object.property);
+    render(<App />);
+    expect(screen.getByTestId('result').textContent).toEqual(initialState.string + initialState.object.property);
     expect(calcCount).toEqual(1);
-    wrapper.find('button').first().simulate('click');
+    (screen.getByTestId('btn-1') as HTMLButtonElement).click();
     expect(calcCount).toEqual(1);
-    wrapper.find('button').last().simulate('click');
+    (screen.getByTestId('btn-2') as HTMLButtonElement).click();
     expect(calcCount).toEqual(2);
   });
 
   it('should support classes', () => {
-    const { select, mapStateToProps } = set(initialState, { devtools: false });
+    const { select, mapStateToProps } = store(initialState, { devtools: false });
     let renderCount = 0;
     class Child extends React.Component<{ str: string, num: number }> {
       render() {
         renderCount++;
         return (
           <>
-            <div>{this.props.str}</div>
-            <div>{this.props.num}</div>
+            <div data-testid="result-str">{this.props.str}</div>
+            <div data-testid="result-num">{this.props.num}</div>
           </>
         );
       }
@@ -118,22 +121,22 @@ describe('React', () => {
       return (
         <>
           <Parent someProp={num} />
-          <button onClick={() => select(s => s.string).replace('test')}>Test 1</button>
-          <button onClick={() => select(s => s.object.property).replace('test')}>Test 2</button>
-          <button onClick={() => setNum(n => n + 1)}>Test 3</button>
+          <button data-testid="btn-1" onClick={() => select(s => s.string).replace('test')}>Test 1</button>
+          <button data-testid="btn-2" onClick={() => select(s => s.object.property).replace('test')}>Test 2</button>
+          <button data-testid="btn-3" onClick={() => setNum(n => n + 1)}>Test 3</button>
         </>
       )
     };
-    const wrapper = mount(<App />);
+    render(<App />);
     expect(renderCount).toEqual(1);
-    wrapper.find('button').at(0).simulate('click');
+    (screen.getByTestId('btn-1') as HTMLButtonElement).click();
     expect(renderCount).toEqual(1);
-    wrapper.find('button').at(1).simulate('click');
+    (screen.getByTestId('btn-2') as HTMLButtonElement).click();
     expect(renderCount).toEqual(2);
-    expect(wrapper.find(Parent).find(Child).find('div').at(0).text()).toEqual('test');
-    expect(wrapper.find(Parent).find(Child).find('div').at(1).text()).toEqual('0');
-    wrapper.find('button').at(2).simulate('click');
-    expect(wrapper.find(Parent).find(Child).find('div').at(1).text()).toEqual('1');
+    expect(screen.getByTestId('result-str').textContent).toEqual('test');
+    expect(screen.getByTestId('result-num').textContent).toEqual('0');
+    (screen.getByTestId('btn-3') as HTMLButtonElement).click();
+    expect(screen.getByTestId('result-num').textContent).toEqual('1');
   });
 
   it('should create a nested store without a parent', () => {
@@ -144,47 +147,23 @@ describe('React', () => {
       renderCount++;
       return (
         <>
-          <button onClick={() => select(s => s.object.property).replace('test')}>Click</button>
-          <button onClick={() => select(s => s.string).replace('test')}>Click</button>
-          <div>{result}</div>
+          <button data-testid="btn-1" onClick={() => select(s => s.object.property).replace('test')}>Click</button>
+          <button data-testid="btn-2" onClick={() => select(s => s.string).replace('test')}>Click</button>
+          <div data-testid="result">{result}</div>
         </>
       );
     };
-    const wrapper = mount(<App />);
+    render(<App />);
     expect(renderCount).toEqual(1);
-    wrapper.find('button').at(0).simulate('click');
-    expect(wrapper.find('div').text()).toEqual('test');
+    (screen.getByTestId('btn-1') as HTMLButtonElement).click();
+    expect(screen.getByTestId('result').textContent).toEqual('test');
     expect(renderCount).toEqual(2);
-    wrapper.find('button').at(1).simulate('click');
-    expect(renderCount).toEqual(2);
-  });
-
-  it('should create a nested store without a parent', () => {
-    let renderCount = 0;
-    const App = () => {
-      const { select, useSelector } = useNestedStore(initialState, { storeName: 'unhosted', dontTrackWithDevtools: true });
-      const result = useSelector(s => s.object.property);
-      renderCount++;
-      return (
-        <>
-          <button onClick={() => select(s => s.object.property).replace('test')}>Click</button>
-          <button onClick={() => select(s => s.string).replace('test')}>Click</button>
-          <div>{result}</div>
-        </>
-      );
-    };
-
-    const wrapper = mount(<App />);
-    expect(renderCount).toEqual(1);
-    wrapper.find('button').at(0).simulate('click');
-    expect(wrapper.find('div').text()).toEqual('test');
-    expect(renderCount).toEqual(2);
-    wrapper.find('button').at(1).simulate('click');
+    (screen.getByTestId('btn-2') as HTMLButtonElement).click();
     expect(renderCount).toEqual(2);
   });
 
   it('should create a nested store with a parent', () => {
-    const store = set({
+    const parentStore = store({
       ...initialState,
       nested: {
         component: {} as { [key: string]: { prop: string } }
@@ -197,26 +176,142 @@ describe('React', () => {
       renderCount++;
       return (
         <>
-          <button onClick={() => select(s => s.prop).replace('test')}>Click</button>
+          <button data-testid="btn" onClick={() => select(s => s.prop).replace('test')}>Click</button>
           <div>{result}</div>
         </>
       );
     };
     const Parent = () => {
-      const value = store.useSelector(s => s.object.property);
       return (
         <>
           <Child />
-          <button onClick={() => store.select(s => s.object.property).replace('test')}>Click</button>
-          {value}
         </>
       );
     }
-    const wrapper = mount(<Parent />);
+    render(<Parent />);
     expect(renderCount).toEqual(1);
-    wrapper.find(Child).at(0).find('button').at(0).simulate('click');
+    (screen.getByTestId('btn') as HTMLButtonElement).click();
     expect(renderCount).toEqual(2);
-    expect(store.select(s => s.nested.component).read()).toEqual({'0': { prop: 'test' } });
+    expect(parentStore.select(s => s.nested.component).read()).toEqual({ '0': { prop: 'test' } });
   });
+
+  it('should respond to async actions', async () => {
+    const { select, useSelector } = store(initialState, { devtools: false });
+    const App = () => {
+      const state = useSelector(s => s.object.property);
+      return (
+        <>
+          <button data-testid="btn" onClick={() => select(s => s.object.property)
+            .replace(() => new Promise(resolve => setTimeout(() => resolve('test'), 10)))}>Click</button>
+          <div data-testid="result">{state}</div>
+        </>
+      );
+    }
+    render(<App />);
+    await (screen.getByTestId('btn') as HTMLButtonElement).click();
+    await waitFor(() => expect(screen.getByTestId('result').textContent).toEqual('test'));
+  });
+
+  it('should respond to async queries', async () => {
+    const { select, useSelector } = store(initialState, { devtools: false });
+    const App = () => {
+      const state = useSelector(s => s.object.property);
+      const {
+        fetch,
+        wasResolved,
+        wasRejected,
+        isLoading
+      } = useFetcher(() => select(s => s.object.property)
+        .replace(() => new Promise<string>(resolve => setTimeout(() => resolve('test'), 10))));
+      return (
+        <>
+          <button data-testid="btn" onClick={fetch}>Click</button>
+          <div data-testid="result">{state}</div>
+          {isLoading && <div>Loading</div>}
+          {wasResolved && <div>Success</div>}
+          {wasRejected && <div>Failure</div>}
+        </>
+      );
+    }
+    render(<App />);
+    expect(screen.queryByText('Loading')).toBeInTheDocument();
+    expect(screen.getByTestId('result').textContent).toEqual('a');
+    await waitFor(() => expect(screen.getByTestId('result').textContent).toEqual('test'));
+    expect(screen.queryByText('Success')).toBeInTheDocument();
+    expect(screen.queryByText('Failure')).not.toBeInTheDocument();
+    expect(screen.queryByText('Loading')).not.toBeInTheDocument();
+  })
+
+  it('should respond to async queries', async () => {
+    const { select, useSelector } = store(initialState, { devtools: false });
+    const App = () => {
+      const {
+        fetch,
+        wasResolved,
+        wasRejected,
+        isLoading,
+        error,
+      } = useFetcher(() => select(s => s.object.property)
+        .replace(() => new Promise<string>((resolve, reject) => setTimeout(() => reject('test'), 10))));
+      return (
+        <>
+          <button data-testid="btn" onClick={fetch}>Click</button>
+          <div data-testid="result">{error}</div>
+          {isLoading && <div>Loading</div>}
+          {wasResolved && <div>Success</div>}
+          {wasRejected && <div>Failure</div>}
+        </>
+      );
+    }
+    render(<App />);
+    expect(screen.queryByText('Loading')).toBeInTheDocument();
+    expect(screen.getByTestId('result').textContent).toEqual('');
+    await waitFor(() => expect(screen.getByTestId('result').textContent).toEqual('test'));
+    expect(screen.queryByText('Success')).not.toBeInTheDocument();
+    expect(screen.queryByText('Failure')).toBeInTheDocument();
+    expect(screen.queryByText('Loading')).not.toBeInTheDocument();
+    await waitFor(() => {
+      (screen.getByTestId('btn') as HTMLButtonElement).click();
+      expect(screen.queryByText('Loading')).toBeInTheDocument();
+    });
+    expect(screen.queryByText('Loading')).not.toBeInTheDocument();
+  })
+
+  it('should be able to paginate', async () => {
+    const todos = new Array(15).fill(null).map((e, i) => ({ id: i + 1, text: `value ${i + 1}` }));
+    type Todo = { id: Number, text: string };
+    const { select, useSelector } = store({
+      toPaginate: {} as { [key: string]: Todo[] },
+    }, { devtools: false });
+    const App = () => {
+      const [index, setIndex] = React.useState(0);
+      const {
+        fetch,
+        wasResolved,
+        wasRejected,
+        isLoading,
+        error,
+        storeValue,
+      } = useFetcher(() => select(s => s.toPaginate[0])
+        .replaceAll(() => new Promise<Todo[]>(resolve => setTimeout(() => resolve(todos.slice(index * 10, (index * 10) + 10)), 10))), [index]);
+      return (
+        <>
+          <button data-testid="btn" onClick={() => setIndex(1)}>Click</button>
+          <div data-testid="result">{error}</div>
+          {isLoading && <div>Loading</div>}
+          {wasResolved && <div>Success</div>}
+          {wasRejected && <div>Failure</div>}
+          {wasResolved && <div data-testid="todos-length">{storeValue.length}</div>}
+        </>
+      );
+    }
+    render(<App />);
+    expect(screen.queryByText('Loading')).toBeInTheDocument();
+    expect(screen.getByTestId('result').textContent).toEqual('');
+    await waitFor(() => expect(screen.getByTestId('todos-length').textContent).toEqual('10'));
+    (screen.getByTestId('btn') as HTMLButtonElement).click();
+    await waitFor(() => expect(screen.queryByText('Loading')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByTestId('todos-length').textContent).toEqual('5'));
+  })
 
 });

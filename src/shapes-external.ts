@@ -309,7 +309,7 @@ export type StoreForAnArrayCommon<X extends DeepReadonlyArray<any>, T extends Tr
    * ...
    * .replaceAll(newTodos);
    */
-  replaceAll: <H extends X | (() => Promise<X>) >(replacement: H, options: UpdateOptions<T, X, H>) => H extends (() => Promise<X>) ? Promise<void> : void,
+  replaceAll: <H extends X | (() => Promise<X>) >(replacement: H, options: UpdateOptions<T, X, H>) => H extends (() => Promise<X>) ? Promise<X> : void,
 }
 
 /**

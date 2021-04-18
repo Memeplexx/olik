@@ -9,10 +9,11 @@
 ## Crystal-clear state-management  
 
 Olik allows you to comprehensively grok your state updates without ever leaving your component code.  
-* Its fluent typesafe API enforces **consistency**, **transparency** and **eliminates ambiguity** 
+* Its **fluent typesafe API** dramatically improves the **consistency** of your state operations, **eliminating ambiguity** 
 * **Debuggability** is improved through **auto-generated action types**
 * **Nested stores** allow you to debug your component state with or without your application state.
-* Transactions, async updates, request de-duplication, and caching are all built-in.
+* **Transactions** help you to group your state updates, avoiding overly abstract action types.
+* **async updates**, request **de-duplication**, and **caching** are all built-in.
 
 ---
 ⚠️ <ins>NOTE: The below code demonstrates Olik **without a framework**.</ins>  

@@ -206,6 +206,7 @@ export const processAsyncPayload = <S, C, X extends C & Array<any>, T extends Tr
             // ignoring
           }
         }
+        return storeResult(selector as any).read();
       });
     libState.activePromises[fullPath] = result;
     return result;

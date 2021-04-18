@@ -73,7 +73,13 @@ export function nestedStore<L>(
   const generateKey = (arg?: string) => (!arg && !instanceName) ? '0' :
     !instanceName ? (+arg! + 1).toString() : instanceName;
   if (!libState.nestedContainerStore) {
-    return createStore<L, 'untagged'>({ state, devtools: dontTrackWithDevtools ? false : { name: storeName + ' : ' + generateKey() }, enforcesTags: false }) as SelectorFromANestedStore<L>;
+    const nStore = createStore<L, 'untagged'>({ state, devtools: dontTrackWithDevtools ? false : { name: storeName + ' : ' + generateKey() }, enforcesTags: false }) as SelectorFromANestedStore<L>;
+    return (<C = L>(selector?: (arg: L) => C) => {
+      const cStore = selector ? nStore(selector as any) : nStore();
+      cStore.removeFromContainingStore = () => console.info(errorMessages.NO_CONTAINER_STORE);
+      cStore.reset = () => console.info(errorMessages.NO_CONTAINER_STORE);
+      return cStore as any as StoreWhichIsNested<C>;
+    }) as SelectorFromANestedStore<L>;
   }
   const containerStore = libState.nestedContainerStore();
   const wrapperState = containerStore.read();
