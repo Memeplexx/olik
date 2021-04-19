@@ -13,19 +13,57 @@ import { shareReplay } from 'rxjs/operators';
 
 export * from 'olik';
 
+type FetchPayload<C> = {
+  isLoading: boolean,
+  wasRejected: boolean,
+  wasResolved: boolean,
+  error: any,
+  fetch: () => void,
+  storeValue: C,
+};
+
 function observeFetchInternal<C>(
   fetchFn: () => Observable<C>,
 ) {
-  return new Observable<
-    { isLoading: boolean, resolved: C | null, hasError: boolean, rejected: any | null, refetch: (fetcher: () => Observable<C>) => void }
-  >(observer => {
-    const refetch = (fetcher: () => Observable<C>) => {
-      observer.next({ resolved: null, hasError: false, isLoading: true, rejected: null, refetch: () => null as any });
-      fetcher().toPromise()
-        .then(resolved => observer.next({ resolved, hasError: false, isLoading: false, rejected: null, refetch }))
-        .catch(rejected => observer.next({ resolved: null, hasError: true, isLoading: false, rejected, refetch }));
+  return new Observable<FetchPayload<C>>(observer => {
+    const fetch = () => {
+      observer.next({
+        wasRejected: latestValue.wasRejected,
+        isLoading: true,
+        error: latestValue.error,
+        wasResolved: latestValue.wasResolved,
+        fetch,
+        storeValue: latestValue.storeValue,
+      });
+      fetchFn().toPromise()
+        .then(storeValue => {
+          observer.next({
+            wasRejected: false,
+            isLoading: false,
+            error: null,
+            wasResolved: true,
+            fetch,
+            storeValue,
+          });
+        })
+        .catch(error => observer.next({
+          wasRejected: true,
+          isLoading: false,
+          error,
+          wasResolved: false,
+          fetch,
+          storeValue: latestValue.storeValue,
+        }));
     };
-    refetch(fetchFn);
+    let latestValue = {
+      wasRejected: false,
+      isLoading: true,
+      error: null,
+      wasResolved: false,
+      fetch,
+      storeValue: null as any as C,
+    } as FetchPayload<C>;
+    fetch();
   }).pipe(
     shareReplay({ bufferSize: 1, refCount: true }),
   );

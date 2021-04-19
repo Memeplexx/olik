@@ -226,7 +226,7 @@ export type ArrayOfElementsCommonAction<X extends DeepReadonlyArray<any>, F exte
    * ...
    * .replace({ id: 1, text: 'bake cookies' })
    */
-  replace: <H extends X[0] | (() => Promise<X[0]>) >(replacement: H, tag: UpdateOptions<T, X[0], H>) => H extends (() => Promise<X[0]>) ? Promise<void> : void,
+  replace: <H extends X[0] | (() => Promise<X[0]>) >(replacement: H, tag: UpdateOptions<T, X[0], H>) => H extends (() => Promise<X[0]>) ? Promise<X> : void,
   /**
    * Removes any elements that were found in the search clause
    * @example
@@ -295,7 +295,7 @@ export type StoreForAnArrayCommon<X extends DeepReadonlyArray<any>, T extends Tr
    * ...
    * .insert(() => getTodosFromApi())
    */
-  insert: <H extends (X | X[0] | (() => Promise<X | X[0]>)) >(insertion: H, options: UpdateOptions<T, X[0] | X, H>) => H extends (() => Promise<any>) ? Promise<void> : void,
+  insert: <H extends (X | X[0] | (() => Promise<X | X[0]>)) >(insertion: H, options: UpdateOptions<T, X[0] | X, H>) => H extends (() => Promise<any>) ? Promise<X> : void,
   /**
    * Removes all elements from the array
    * @example
@@ -346,7 +346,7 @@ export type StoreForAnArrayOfObjects<X extends DeepReadonlyArray<any>, T extends
    * ...
    */
   upsertMatching: <P>(getProp: (element: DeepReadonly<X[0]>) => P) => {
-    with: <H extends X | (X[0] | X | (() => Promise<X | X[0]>)) >(elementOrArray: H, options: UpdateOptions<T, X[0] | X, H>) => H extends (() => Promise<any>) ? Promise<void> : void,
+    with: <H extends X | (X[0] | X | (() => Promise<X | X[0]>)) >(elementOrArray: H, options: UpdateOptions<T, X[0] | X, H>) => H extends (() => Promise<any>) ? Promise<X> : void,
   }
   /**
    * Specify a where clause to find many elements.
@@ -389,7 +389,7 @@ export type StoreForAnObjectOrPrimitive<C extends any, T extends Trackability> =
    * @example
    * select(s => s.user.age).replace(age => age + 1);
    */
-  replace: <H extends C | (() => Promise<C>) >(replacement: H, tag: UpdateOptions<T, C, H>) => H extends (() => Promise<any>) ? Promise<void> : void,
+  replace: <H extends C | (() => Promise<C>) >(replacement: H, tag: UpdateOptions<T, C, H>) => H extends (() => Promise<any>) ? Promise<C> : void,
 }
 
 /**
@@ -402,7 +402,7 @@ export type StoreForAnObject<C extends any, T extends Trackability> = {
    * ...
    *  .patch({ firstName: 'James', age: 33 })
    */
-  patch: <H extends (Partial<C> | (() => Promise<Partial<C>>)) >(partial: H, tag: UpdateOptions<T, C, H>) => H extends (() => Promise<Partial<C>>) ? Promise<void> : void,
+  patch: <H extends (Partial<C> | (() => Promise<Partial<C>>)) >(partial: H, tag: UpdateOptions<T, C, H>) => H extends (() => Promise<Partial<C>>) ? Promise<C> : void,
   /**
    * Removes the specified key from this object.  
    * ***WARNING***: use this conservatively as invoking this has the potentional to contradict the type-system.

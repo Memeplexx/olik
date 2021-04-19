@@ -14,15 +14,16 @@ describe('async', () => {
     object: { property: '', property2: '' },
     array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
     paginated: {} as { [key: string]: [{ id: number, value: string }] },
-    promiseBypassTTLs: {} as { [key: string]: string },
-  };3
+    promiseBypassTimes: {} as { [key: string]: string },
+  }; 3
 
   it('should work with replaceAll()', async done => {
     const select = store(initialState);
     const payload = [{ id: 1, value: 'test' }];
     select(s => s.array)
       .replaceAll(() => new Promise(resolve => setTimeout(() => resolve(payload), 10)), { bypassPromiseFor: 1000 })
-      .then(() => {
+      .then(res => {
+        expect(res).toEqual(select(s => s.array).read());
         expect(select(s => s.array).read()).toEqual(payload);
         const payload2 = [{ id: 1, value: 'testy' }];
         select(s => s.array)
@@ -45,7 +46,8 @@ describe('async', () => {
     const payload = { id: 1, value: 'test' };
     select(s => s.array)
       .insert(() => new Promise(resolve => setTimeout(() => resolve(payload), 10)), { bypassPromiseFor: 1000 })
-      .then(() => {
+      .then(res => {
+        expect(res).toEqual(select(s => s.array).read());
         expect(select(s => s.array).read()).toEqual([...initialState.array, payload]);
         const payload2 = { id: 1, value: 'testy' };
         select(s => s.array)
@@ -68,7 +70,8 @@ describe('async', () => {
     const payload = { property: 'xxx' };
     select(s => s.object)
       .patch(() => new Promise(resolve => setTimeout(() => resolve(payload), 10)), { bypassPromiseFor: 1000 })
-      .then(() => {
+      .then(res => {
+        expect(res).toEqual(select(s => s.object).read());
         expect(select(s => s.object).read()).toEqual({ ...initialState.object, ...payload });
         const payload2 = { property: 'yyy' };
         select(s => s.object)
@@ -91,7 +94,8 @@ describe('async', () => {
     const payload = { property: 'xxx', property2: 'yyy' };
     select(s => s.object)
       .replace(() => new Promise(resolve => setTimeout(() => resolve(payload), 10)), { bypassPromiseFor: 1000 })
-      .then(() => {
+      .then(res => {
+        expect(res).toEqual(select(s => s.object).read());
         expect(select(s => s.object).read()).toEqual(payload);
         const payload2 = { property: 'xxx2', property2: 'yyy2' };
         select(s => s.object)
@@ -115,7 +119,8 @@ describe('async', () => {
     select(s => s.array)
       .upsertMatching(s => s.id)
       .with(() => new Promise(resolve => setTimeout(() => resolve(payload), 10)), { bypassPromiseFor: 1000 })
-      .then(() => {
+      .then(res => {
+        expect(res).toEqual(select(s => s.array).read());
         expect(select(s => s.array).read()).toEqual([payload, initialState.array[1], initialState.array[2]]);
         const payload2 = { id: 1, value: 'testt' };
         select(s => s.array)
@@ -141,7 +146,8 @@ describe('async', () => {
     select(s => s.array)
       .findWhere(s => s.id).eq(2)
       .replace(() => new Promise(resolve => setTimeout(() => resolve(payload), 10)), { bypassPromiseFor: 1000 })
-      .then(() => {
+      .then(res => {
+        expect(res).toEqual(select(s => s.array).read());
         expect(select(s => s.array).read()).toEqual([initialState.array[0], payload, initialState.array[2]]);
         const payload2 = { id: 2, value: 'twooo' };
         select(s => s.array)
@@ -169,7 +175,8 @@ describe('async', () => {
     select(s => s.array)
       .filterWhere(s => s.id).eq(2)
       .replace(() => new Promise(resolve => setTimeout(() => resolve(payload), 10)), { bypassPromiseFor: 1000 })
-      .then(() => {
+      .then(res => {
+        expect(res).toEqual(select(s => s.array).read());
         expect(select(s => s.array).read()).toEqual([initialState.array[0], payload, initialState.array[2]]);
         const payload2 = { id: 2, value: 'twooo' };
         select(s => s.array)
@@ -197,7 +204,8 @@ describe('async', () => {
     select(s => s.array)
       .findWhere(s => s.id).eq(2)
       .patch(() => new Promise(resolve => setTimeout(() => resolve(payload), 10)), { bypassPromiseFor: 1000 })
-      .then(() => {
+      .then(res => {
+        expect(res).toEqual(select(s => s.array).read());
         expect(select(s => s.array).read()).toEqual([initialState.array[0], { ...initialState.array[1], ...payload }, initialState.array[2]]);
         const payload2 = { value: 'twoooz' };
         select(s => s.array)
@@ -225,7 +233,8 @@ describe('async', () => {
     select(s => s.array)
       .filterWhere(s => s.id).eq(2)
       .patch(() => new Promise(resolve => setTimeout(() => resolve(payload), 10)), { bypassPromiseFor: 1000 })
-      .then(() => {
+      .then(res => {
+        expect(res).toEqual(select(s => s.array).read());
         expect(select(s => s.array).read()).toEqual([initialState.array[0], { ...initialState.array[1], ...payload }, initialState.array[2]]);
         const payload2 = { value: 'twoooz' };
         select(s => s.array)
@@ -253,7 +262,8 @@ describe('async', () => {
     select(s => s.array)
       .findWhere(s => s.id === 2).returnsTrue()
       .replace(() => new Promise(resolve => setTimeout(() => resolve(payload), 10)), { bypassPromiseFor: 1000 })
-      .then(() => {
+      .then(res => {
+        expect(res).toEqual(select(s => s.array).read());
         expect(select(s => s.array).read()).toEqual([initialState.array[0], payload, initialState.array[2]]);
         const payload2 = { id: 2, value: 'twooo' };
         select(s => s.array)
@@ -281,7 +291,8 @@ describe('async', () => {
     select(s => s.array)
       .filterWhere(s => s.id === 2).returnsTrue()
       .replace(() => new Promise(resolve => setTimeout(() => resolve(payload), 10)), { bypassPromiseFor: 1000 })
-      .then(() => {
+      .then(res => {
+        expect(res).toEqual(select(s => s.array).read());
         expect(select(s => s.array).read()).toEqual([initialState.array[0], payload, initialState.array[2]]);
         const payload2 = { id: 2, value: 'twooo' };
         select(s => s.array)
@@ -309,7 +320,8 @@ describe('async', () => {
     select(s => s.array)
       .findWhere(s => s.id === 2).returnsTrue()
       .patch(() => new Promise(resolve => setTimeout(() => resolve(payload), 10)), { bypassPromiseFor: 1000 })
-      .then(() => {
+      .then(res => {
+        expect(res).toEqual(select(s => s.array).read());
         expect(select(s => s.array).read()).toEqual([initialState.array[0], { ...initialState.array[1], ...payload }, initialState.array[2]]);
         const payload2 = { value: 'twoooz' };
         select(s => s.array)
@@ -337,7 +349,8 @@ describe('async', () => {
     select(s => s.array)
       .filterWhere(s => s.id === 2).returnsTrue()
       .patch(() => new Promise(resolve => setTimeout(() => resolve(payload), 10)), { bypassPromiseFor: 1000 })
-      .then(() => {
+      .then(res => {
+        expect(res).toEqual(select(s => s.array).read());
         expect(select(s => s.array).read()).toEqual([initialState.array[0], { ...initialState.array[1], ...payload }, initialState.array[2]]);
         const payload2 = { value: 'twoooz' };
         select(s => s.array)
@@ -363,7 +376,7 @@ describe('async', () => {
     const select = store(initialState);
     const rejection = 'test';
     select(s => s.array)
-      .replaceAll(() => new Promise((resolve, reject) => setTimeout(() => reject(rejection))), { bypassPromiseFor: 1000 })
+      .replaceAll(() => new Promise((resolve, reject) => setTimeout(() => reject(rejection), 10)), { bypassPromiseFor: 1000 })
       .then(() => console.log('...'))
       .catch(err => {
         expect(err).toEqual(rejection);
@@ -371,7 +384,7 @@ describe('async', () => {
       });
   })
 
-  it('should support tags', done => {
+  it('should support tags in type', done => {
     const select = storeEnforcingTags(initialState, { tagsToAppearInType: true });
     const replacement = [{ id: 1, value: 'one' }];
     const tag = 'MyComponent';
@@ -381,6 +394,22 @@ describe('async', () => {
         expect(libState.currentAction).toEqual({
           type: `array.replaceAll() [${tag}]`,
           replacement,
+        });
+        done();
+      });
+  })
+
+  it('should support tags in payload', done => {
+    const select = storeEnforcingTags(initialState);
+    const replacement = [{ id: 1, value: 'one' }];
+    const tag = 'MyComponent';
+    select(s => s.array)
+      .replaceAll(() => new Promise(resolve => setTimeout(() => resolve(replacement))), { tag })
+      .then(() => {
+        expect(libState.currentAction).toEqual({
+          type: 'array.replaceAll()',
+          replacement,
+          tag
         });
         done();
       });
@@ -408,7 +437,7 @@ describe('async', () => {
       .replaceAll(() => new Promise(resolve => setTimeout(() => resolve(payload), 10)), { bypassPromiseFor: 10 })
       .then(() => {
         setTimeout(() => {
-          expect(Object.keys(select(s => s.promiseBypassTTLs).read())).toEqual(['object.replace()']);
+          expect(Object.keys(select(s => s.promiseBypassTimes).read())).toEqual(['object.replace()']);
           done();
         }, 100);
       });
@@ -426,7 +455,7 @@ describe('async', () => {
       });
   })
 
-  it('should de-duplicate simultaneious requests', done => {
+  it('should de-duplicate simultaneous requests', done => {
     const select = store(initialState);
     select(s => s.array)
       .replaceAll(() => new Promise(resolve => setTimeout(() => resolve([{ id: 1, value: 'test' }]), 10)));
@@ -457,6 +486,23 @@ describe('async', () => {
             done();
           })
       })
+  })
+
+  it('should not bypass a promise if it has been rejected', done => {
+    const select = store(initialState);
+    const payload = [{ id: 1, value: 'one' }];
+    libState.logLevel = 'DEBUG';
+    select(s => s.array)
+      .replaceAll(() => new Promise((resolve, reject) => setTimeout(() => reject('test'), 10)), { bypassPromiseFor: 1000 })
+      .catch(error => {
+        select(s => s.array)
+          .replaceAll(() => new Promise(resolve => setTimeout(() => resolve(payload), 10)), { bypassPromiseFor: 1000 })
+          .then(res => {
+            expect(res).toEqual(select(s => s.array).read());
+            expect(select(s => s.array).read()).toEqual(payload);
+            done();
+          });
+      });
   })
 
 });

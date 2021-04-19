@@ -140,8 +140,8 @@ export const stopBypassingPromises = <S, C, X extends C & Array<any>, F extends 
   const { pathReader, storeResult, selector, whereClauseString, type } = context;
   pathReader.readSelector(selector);
   const pathSegs = pathReader.pathSegments.join('.') + (pathReader.pathSegments.length ? '.' : '') + type + '(' + whereClauseString + ')';
-  storeResult(s => (s as any).promiseBypassTTLs).removeKeys(
-    Object.keys(storeResult().read().promiseBypassTTLs).filter(key => key.startsWith(pathSegs)));
+  storeResult(s => (s as any).promiseBypassTimes).removeKeys(
+    Object.keys(storeResult().read().promiseBypassTimes).filter(key => key.startsWith(pathSegs)));
 }
 
 const completeWhereClause = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(

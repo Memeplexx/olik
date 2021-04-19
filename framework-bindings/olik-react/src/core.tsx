@@ -22,29 +22,6 @@ import React from 'react';
  *     .then(res => get(s => s.todos).replaceAll(res)));
  * const todos = useSelector(get(s => s.todos));
  */
-// export function useFetcher<C>(
-//   fetchFn: () => Promise<C>,
-//   deps?: React.DependencyList,
-// ) {
-//   const [result, setResult] = React.useState({
-//     isLoading: true,
-//     hasError: false,
-//     succeeded: false,
-//     error: null as any | null,
-//     data: null as null | C,
-//     refetch: (() => null) as unknown as ((fetcher: () => Promise<C>) => void),
-//   });
-//   React.useEffect(() => {
-//     const refetch = (fetcher: () => Promise<C>) => {
-//       setResult({ data: null, hasError: false, isLoading: true, error: null, succeeded: false, refetch });
-//       fetcher()
-//         .then(data => setResult({ data, hasError: false, isLoading: false, error: null, succeeded: true, refetch }))
-//         .catch(error => setResult({ data: null, hasError: true, isLoading: false, error, succeeded: false, refetch }));
-//     };
-//     refetch(fetchFn);
-//   }, deps);
-//   return result;
-// }
 export function useFetcher<C>(
   fetchFn: () => Promise<C>,
   deps: React.DependencyList = [],

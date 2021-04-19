@@ -95,8 +95,8 @@ export const stopBypassingPromises = <S, C, X extends C & Array<any>, T extends 
   const { pathReader, storeResult, selector, type } = context;
   pathReader.readSelector(selector);
   const pathSegs = pathReader.pathSegments.join('.') + (pathReader.pathSegments.length ? '.' : '') + type + '(' + context.predicate + ')';
-  storeResult(s => (s as any).promiseBypassTTLs).removeKeys(
-    Object.keys(storeResult().read().promiseBypassTTLs).filter(key => key.startsWith(pathSegs)));
+  storeResult(s => (s as any).promiseBypassTimes).removeKeys(
+    Object.keys(storeResult().read().promiseBypassTimes).filter(key => key.startsWith(pathSegs)));
 }
 
 const getElementIndices = <S, C, X extends C & Array<any>, T extends Trackability>(

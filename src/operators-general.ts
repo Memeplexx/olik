@@ -193,11 +193,14 @@ export const replace = <S, C, X extends C & Array<any>, T extends Trackability>(
   name: string,
   isNested: () => boolean,
   storeResult: (selector?: (s: DeepReadonly<S>) => C) => any,
-) => (payload: C | (() => Promise<C>), updateOptions: UpdateOptions<T, C, any>) => {
-  validateSelector(selector, isNested);
-  const processPayload = (payload: C) => replacePayload(pathReader, updateState, selector, name, payload as C, updateOptions);
-  return processAsyncPayload(selector, payload, pathReader, storeResult, processPayload, updateOptions as UpdateOptions<T, C, any>, 'replace()');
-};
+) => (
+  payload: C | (() => Promise<C>),
+  updateOptions: UpdateOptions<T, C, any>,
+  ) => {
+    validateSelector(selector, isNested);
+    const processPayload = (payload: C) => replacePayload(pathReader, updateState, selector, name, payload as C, updateOptions);
+    return processAsyncPayload(selector, payload, pathReader, storeResult, processPayload, updateOptions as UpdateOptions<T, C, any>, name + '()');
+  };
 
 export function replacePayload<S, C, X extends C & Array<any>, T extends Trackability>(
   pathReader: PathReader<S>,
@@ -268,8 +271,8 @@ export function stopBypassingPromises<S, C, X extends C & Array<any>>(
 ) {
   pathReader.readSelector(selector);
   const pathSegs = pathReader.pathSegments.join('.');
-  storeResult(s => (s as any).promiseBypassTTLs).removeKeys(
-    Object.keys(storeResult().read().promiseBypassTTLs).filter(key => key.startsWith(pathSegs)));
+  storeResult(s => (s as any).promiseBypassTimes).removeKeys(
+    Object.keys(storeResult().read().promiseBypassTimes).filter(key => key.startsWith(pathSegs)));
 }
 
 const validateSelector = <S, C, X extends C & Array<any>>(

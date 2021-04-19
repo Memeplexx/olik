@@ -173,16 +173,15 @@ export const processAsyncPayload = <S, C, X extends C & Array<any>, T extends Tr
     const optionsInternal = (updateOptions as UpdateOptionsInternal) || {};
     optionsInternal.bypassPromiseFor = optionsInternal.bypassPromiseFor || 0;
     const fullPath = pathReader.pathSegments.join('.') + (pathReader.pathSegments.length ? '.' : '') + suffix;
-    if (libState.activePromises[fullPath]) {
+    if (libState.activePromises[fullPath]) { // prevent duplicate simultaneous requests
       return libState.activePromises[fullPath];
     }
-    const expirationDate = (storeResult().read().promiseBypassTTLs || {})[fullPath];
+    const expirationDate = (storeResult().read().promiseBypassTimes || {})[fullPath];
     if (expirationDate && (new Date(expirationDate).getTime() > new Date().getTime())) {
-      return Promise.resolve();
+      return Promise.resolve(storeResult(selector as any).read());
     }
     const result = asyncPayload()
       .then(res => {
-        delete libState.activePromises[fullPath];
         const involvesCaching = !!updateOptions && !(typeof (updateOptions) === 'string') && optionsInternal.bypassPromiseFor;
         if (involvesCaching) {
           libState.transactionState = 'started';
@@ -191,23 +190,23 @@ export const processAsyncPayload = <S, C, X extends C & Array<any>, T extends Tr
         if (involvesCaching && optionsInternal.bypassPromiseFor) {
           const cacheExpiry = toIsoString(new Date(new Date().getTime() + optionsInternal.bypassPromiseFor));
           libState.transactionState = 'last';
-          if (!storeResult().read().promiseBypassTTLs) {
-            storeResult(s => (s as any).promiseBypassTTLs).replace({
-              ...(storeResult().read().promiseBypassTTLs || { [fullPath]: cacheExpiry }),
+          if (!storeResult().read().promiseBypassTimes) {
+            storeResult(s => (s as any).promiseBypassTimes).replace({
+              ...(storeResult().read().promiseBypassTimes || { [fullPath]: cacheExpiry }),
             })
           } else {
-            storeResult(s => (s as any).promiseBypassTTLs[fullPath]).replace(cacheExpiry);
+            storeResult(s => (s as any).promiseBypassTimes[fullPath]).replace(cacheExpiry);
           }
           try {
             setTimeout(() => {
-              storeResult(s => (s as any).promiseBypassTTLs).removeKeys([fullPath]);
+              storeResult(s => (s as any).promiseBypassTimes).removeKeys([fullPath]);
             }, optionsInternal.bypassPromiseFor)
           } catch (e) {
             // ignoring
           }
         }
         return storeResult(selector as any).read();
-      });
+      }).finally(() => delete libState.activePromises[fullPath]);
     libState.activePromises[fullPath] = result;
     return result;
   } else {
