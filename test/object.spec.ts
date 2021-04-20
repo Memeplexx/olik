@@ -76,13 +76,26 @@ describe('Object', () => {
 
   it('should be able to remove a key', () => {
     const select = store({ hello: 'one', world: 'two', another: 'three' });
-    const payload = ['hello', 'another'] as Array<any>;
-    select().removeKeys(payload);
+    const payload = 'world';
+    select().remove(payload);
     expect(libState.currentAction).toEqual({
-      type: 'removeKeys()',
-      keysToRemove: payload,
+      type: 'remove()',
+      toRemove: payload,
     });
-    expect(select().read()).toEqual({ world: 'two' });
+    expect(select().read()).toEqual({ hello: 'one', another: 'three' });
+    expect(libState.currentMutableState).toEqual(select().read());
+  })
+
+  it('should be able to insert properties', () => {
+    const initState = { one: 'one' };
+    const select = store(initState);
+    const insertion = { hello: 'test', another: 'testy' };
+    select().insert(insertion);
+    expect(libState.currentAction).toEqual({
+      type: 'insert()',
+      insertion,
+    });
+    expect(select().read()).toEqual({ ...initState, ...insertion });
     expect(libState.currentMutableState).toEqual(select().read());
   })
 

@@ -67,7 +67,7 @@ export const removeAll = <S, C, X extends C & Array<any>, T extends Trackability
   });
 }) as StoreForAnArrayCommon<X, T>['removeAll'];
 
-export const insert = <S, C, X extends C & Array<any>, T extends Trackability>(
+export const insertIntoArray = <S, C, X extends C & Array<any>, T extends Trackability>(
   selector: Selector<S, C, X>,
   updateState: UpdateStateFn<S, C, T, X>,
   isNested: () => boolean,
@@ -91,7 +91,8 @@ export const insert = <S, C, X extends C & Array<any>, T extends Trackability>(
   return processAsyncPayload(selector, payload, pathReader, storeResult, processPayload, updateOptions as UpdateOptions<T, C, any>, 'insert()');
 }) as StoreForAnArrayCommon<X, T>['insert'];
 
-export const patch = <S, C, X extends C & Array<any>, T extends Trackability>(
+export const patchOrInsertIntoObject = <S, C, X extends C & Array<any>, T extends Trackability>(
+  type: 'patch' | 'insert',
   selector: Selector<S, C, X>,
   updateState: UpdateStateFn<S, C, T, X>,
   isNested: () => boolean,
@@ -105,9 +106,11 @@ export const patch = <S, C, X extends C & Array<any>, T extends Trackability>(
       selector,
       replacer: old => ({ ...old, ...payloadFrozen }),
       mutator: old => Object.assign(old, payloadCopied),
-      actionName: 'patch()',
-      payload: {
+      actionName: `${type}()`,
+      payload: type === 'patch' ? {
         patch: payloadFrozen,
+      } : {
+        insertion: payloadFrozen,
       },
       updateOptions: updateOptions as UpdateOptions<T, C, any>,
     });
@@ -115,7 +118,7 @@ export const patch = <S, C, X extends C & Array<any>, T extends Trackability>(
   return processAsyncPayload(selector, payload, pathReader, storeResult, processPayload, updateOptions as UpdateOptions<T, C, any>, 'patch()');
 }) as StoreForAnObject<C, T>['patch'];
 
-export const removeKeys = <S, C, X extends C & Array<any>, T extends Trackability>(
+export const remove = <S, C, X extends C & Array<any>, T extends Trackability>(
   selector: Selector<S, C, X>,
   updateState: UpdateStateFn<S, C, T, X>,
   isNested: () => boolean,
@@ -123,15 +126,15 @@ export const removeKeys = <S, C, X extends C & Array<any>, T extends Trackabilit
   validateSelector(selector, isNested);
   updateState({
     selector,
-    replacer: old => { const res = Object.assign({}, old); Object.keys(res).filter(key => payload.includes(key as keyof C)).forEach(key => delete (res as any)[key]); return res; },
-    mutator: old => payload.forEach(key => delete old[key]),
-    actionName: 'removeKeys()',
+    replacer: old => { const res = Object.assign({}, old); delete (res as any)[payload]; return res; },
+    mutator: old => delete old[payload],
+    actionName: 'remove()',
     payload: {
-      keysToRemove: payload,
+      toRemove: payload,
     },
     updateOptions: updateOptions as UpdateOptions<T, C, any>,
   });
-}) as StoreForAnObject<C, T>['removeKeys'];
+}) as StoreForAnObject<C, T>['remove'];
 
 export const upsertMatching = <S, C, X extends C & Array<any>, T extends Trackability>(
   selector: Selector<S, C, X>,
@@ -271,8 +274,8 @@ export function stopBypassingPromises<S, C, X extends C & Array<any>>(
 ) {
   pathReader.readSelector(selector);
   const pathSegs = pathReader.pathSegments.join('.');
-  storeResult(s => (s as any).promiseBypassTimes).removeKeys(
-    Object.keys(storeResult().read().promiseBypassTimes).filter(key => key.startsWith(pathSegs)));
+  transact(...Object.keys(storeResult().read().promiseBypassTimes).filter(key => key.startsWith(pathSegs))
+    .map(key => () => storeResult(s => (s as any).promiseBypassTimes).remove(key)));
 }
 
 const validateSelector = <S, C, X extends C & Array<any>>(

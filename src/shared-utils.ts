@@ -194,13 +194,15 @@ export const processAsyncPayload = <S, C, X extends C & Array<any>, T extends Tr
             storeResult(s => (s as any).promiseBypassTimes).replace({
               ...(storeResult().read().promiseBypassTimes || { [fullPath]: cacheExpiry }),
             })
+          } else if (!storeResult().read().promiseBypassTimes[fullPath]) {
+            storeResult(s => (s as any).promiseBypassTimes).insert({ [fullPath]: cacheExpiry });
           } else {
             storeResult(s => (s as any).promiseBypassTimes[fullPath]).replace(cacheExpiry);
           }
           try {
             setTimeout(() => {
-              storeResult(s => (s as any).promiseBypassTimes).removeKeys([fullPath]);
-            }, optionsInternal.bypassPromiseFor)
+              storeResult(s => (s as any).promiseBypassTimes).remove(fullPath);
+            }, optionsInternal.bypassPromiseFor);
           } catch (e) {
             // ignoring
           }

@@ -10,14 +10,8 @@ import {
 } from './shapes-external';
 import { ArrayOperatorState } from './shapes-internal';
 import { errorMessages } from './shared-consts';
-import {
-  copyPayload,
-  createPathReader,
-  deepFreeze,
-  processAsyncPayload,
-  toIsoString,
-  validateSelectorFn,
-} from './shared-utils';
+import { copyPayload, createPathReader, deepFreeze, processAsyncPayload, validateSelectorFn } from './shared-utils';
+import { transact } from './transact';
 
 export const getSegments = <S, C, X extends C & Array<any>, P>(
   selector: Selector<S, C, X>,
@@ -140,8 +134,8 @@ export const stopBypassingPromises = <S, C, X extends C & Array<any>, F extends 
   const { pathReader, storeResult, selector, whereClauseString, type } = context;
   pathReader.readSelector(selector);
   const pathSegs = pathReader.pathSegments.join('.') + (pathReader.pathSegments.length ? '.' : '') + type + '(' + whereClauseString + ')';
-  storeResult(s => (s as any).promiseBypassTimes).removeKeys(
-    Object.keys(storeResult().read().promiseBypassTimes).filter(key => key.startsWith(pathSegs)));
+  transact(...Object.keys(storeResult().read().promiseBypassTimes).filter(key => key.startsWith(pathSegs))
+    .map(key => () => storeResult(s => (s as any).promiseBypassTimes).remove(key)));
 }
 
 const completeWhereClause = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(

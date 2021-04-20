@@ -6,14 +6,14 @@
 ![Package Size](https://badgen.net/bundlephobia/minzip/olik)
 ![Dependency count](https://badgen.net/bundlephobia/dependency-count/olik)
 
-## Crystal-clear state-management  
+## Consistency-obsessed, inline state-management  
 
 Olik allows you to comprehensively grok your state updates without ever leaving your component code.  
 * Its **fluent typesafe API** dramatically improves the **consistency** of your state operations, **eliminating ambiguity** 
 * **Debuggability** is improved through **auto-generated action types**
 * **Nested stores** allow you to debug your component state with or without your application state.
 * **Transactions** help you to group your state updates, avoiding overly abstract action types.
-* **async updates**, request **de-duplication**, and **caching** are all built-in.
+* **Async updates**, request **de-duplication**, and **caching** are all built-in.
 
 ---
 ⚠️ <ins>NOTE: The below code demonstrates Olik **without a framework**.</ins>  

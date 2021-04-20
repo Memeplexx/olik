@@ -2,9 +2,9 @@ import { integrateStoreWithReduxDevtools } from './devtools-integration';
 import * as array from './operators-array';
 import * as arrayCustom from './operators-arraycustom';
 import {
-  insert,
+  insertIntoArray,
   onChange,
-  patch,
+  patchOrInsertIntoObject,
   read,
   removeAll,
   replace,
@@ -12,7 +12,7 @@ import {
   upsertMatching,
   reset,
   stopBypassingPromises,
-  removeKeys
+  remove
 } from './operators-general';
 import { defineRemoveNestedStore } from './operators-internal';
 import {
@@ -135,9 +135,11 @@ export function createStore<S, T extends Trackability>(context: {
       return recurseWhere;
     };
     const coreActions = {
-      removeKeys: removeKeys(selector, updateState, () => !!coreActions.removeFromContainingStore),
-      patch: patch(selector, updateState, () => !!coreActions.removeFromContainingStore, storeResult, pathReader),
-      insert: insert(selector, updateState, () => !!coreActions.removeFromContainingStore, storeResult, pathReader),
+      remove: remove(selector, updateState, () => !!coreActions.removeFromContainingStore),
+      patch: patchOrInsertIntoObject('patch', selector, updateState, () => !!coreActions.removeFromContainingStore, storeResult, pathReader),
+      insert: Array.isArray(selector(currentState))
+        ? insertIntoArray(selector, updateState, () => !!coreActions.removeFromContainingStore, storeResult, pathReader)
+        : patchOrInsertIntoObject('insert', selector, updateState, () => !!coreActions.removeFromContainingStore, storeResult, pathReader),
       removeAll: removeAll(selector, updateState, () => !!coreActions.removeFromContainingStore),
       replaceAll: replaceAll(pathReader, updateState, selector, () => !!coreActions.removeFromContainingStore, storeResult),
       reset: reset(pathReader, updateState, selector, initialState, () => !!coreActions.removeFromContainingStore, storeResult),

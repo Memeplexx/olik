@@ -405,10 +405,16 @@ export type StoreForAnObject<C extends any, T extends Trackability> = {
   patch: <H extends (Partial<C> | (() => Promise<Partial<C>>)) >(partial: H, tag: UpdateOptions<T, C, H>) => H extends (() => Promise<Partial<C>>) ? Promise<C> : void,
   /**
    * Removes the specified key from this object.  
-   * ***WARNING***: use this conservatively as invoking this has the potentional to contradict the type-system.
-   * Only use this to remove from an object of type `{ [key: string]: any }` and NOT one with named properties eg `{ str: '', num: 0 }`
+   * ***WARNING***: invoking this has the potentional to contradict the type-system.
+   * Only use this to remove from an object of type of `{ [key: string]: any }` and NOT to one with statically defined properties eg `{ str: '', num: 0 }`
    */
-  removeKeys: (keys: Array<keyof C>, tag: Tag<T>) => void,
+  remove: (key: keyof C, tag: Tag<T>) => void,
+  /**
+   * Adds one or more key-value-pairs to this object.  
+   * ***WARNING***: invoking this has the potentional to contradict the type-system.
+   * Only use this to add to an object of type of `{ [key: string]: any }` and NOT to one with statically defined properties eg `{ str: '', num: 0 }`
+   */
+  insert: <H extends { [key: string]: any } | (() => Promise<{ [key: string]: any }>) >(insertion: H) => H extends (() => Promise<{ [key: string]: any }>) ? Promise<{ [key: string]: any }> : void,
 } & StoreForAnObjectOrPrimitive<C, T>;
 
 export type StoreOrDerivation<C> = {

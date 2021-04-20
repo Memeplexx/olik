@@ -1,3 +1,4 @@
+import { transact } from '.';
 import { ArrayOfElementsCommonAction, ArrayOfObjectsCommonAction, FindOrFilter, Trackability, UpdateOptions } from './shapes-external';
 import { ArrayCustomState } from './shapes-internal';
 import { errorMessages } from './shared-consts';
@@ -95,8 +96,8 @@ export const stopBypassingPromises = <S, C, X extends C & Array<any>, T extends 
   const { pathReader, storeResult, selector, type } = context;
   pathReader.readSelector(selector);
   const pathSegs = pathReader.pathSegments.join('.') + (pathReader.pathSegments.length ? '.' : '') + type + '(' + context.predicate + ')';
-  storeResult(s => (s as any).promiseBypassTimes).removeKeys(
-    Object.keys(storeResult().read().promiseBypassTimes).filter(key => key.startsWith(pathSegs)));
+  transact(...Object.keys(storeResult().read().promiseBypassTimes).filter(key => key.startsWith(pathSegs))
+    .map(key => () => storeResult(s => (s as any).promiseBypassTimes).remove(key)));
 }
 
 const getElementIndices = <S, C, X extends C & Array<any>, T extends Trackability>(
