@@ -1,8 +1,8 @@
 import { transact } from '.';
-import { ArrayOfElementsCommonAction, ArrayOfObjectsCommonAction, FindOrFilter, Trackability, UpdateOptions } from './shapes-external';
+import { ArrayOfElementsCommonAction, ArrayOfObjectsCommonAction, FindOrFilter, Trackability } from './shapes-external';
 import { ArrayCustomState } from './shapes-internal';
 import { errorMessages } from './shared-consts';
-import { copyPayload, deepFreeze, processAsyncPayload, toIsoString } from './shared-utils';
+import { copyPayload, deepFreeze, processAsyncPayload } from './shared-utils';
 
 export const replace = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
   context: ArrayCustomState<S, C, X, T>,
@@ -20,10 +20,10 @@ export const replace = <S, C, X extends C & Array<any>, F extends FindOrFilter, 
         query: predicate.toString(),
         replacement: payloadFrozen,
       },
-      updateOptions: updateOptions as UpdateOptions<T, C, any>,
+      updateOptions,
     });
   }
-  return processAsyncPayload(selector, payload, context.pathReader, context.storeResult, processPayload, updateOptions as UpdateOptions<T, C, any>, `${type}(${predicate}).replace()`);
+  return processAsyncPayload(selector, payload, context.pathReader, context.storeResult, processPayload, updateOptions, `${type}(${predicate}).replace()`);
 }) as ArrayOfElementsCommonAction<X, F, T>['replace'];
 
 export const patch = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
@@ -39,10 +39,10 @@ export const patch = <S, C, X extends C & Array<any>, F extends FindOrFilter, T 
       mutator: old => elementIndices.forEach(i => Object.assign(old[i], payloadCopied)),
       actionName: `${type}().patch()`,
       payload: { patch: payloadFrozen, query: predicate.toString() },
-      updateOptions: updateOptions as UpdateOptions<T, C, any>,
+      updateOptions,
     });
   }
-  return processAsyncPayload(selector, payload, context.pathReader, context.storeResult, processPayload, updateOptions as UpdateOptions<T, C, any>, `${type}(${predicate}).patch()`);
+  return processAsyncPayload(selector, payload, context.pathReader, context.storeResult, processPayload, updateOptions, `${type}(${predicate}).patch()`);
 }) as ArrayOfObjectsCommonAction<X, F, T>['patch'];
 
 export const remove = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
