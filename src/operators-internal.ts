@@ -1,4 +1,4 @@
-import { Selector, Tag, Trackability, UpdateOptions } from './shapes-external';
+import { Selector, Trackability, UpdateOptions } from './shapes-external';
 import { StoreWhichIsNestedInternal, StoreWhichMayContainNestedStores, UpdateStateFn } from './shapes-internal';
 
 export const defineRemoveNestedStore = <S, C, X extends C & Array<any>, T extends Trackability>(
@@ -18,7 +18,7 @@ export const defineRemoveNestedStore = <S, C, X extends C & Array<any>, T extend
       pathSegments: ['nested'],
       actionName: 'removeNested',
       payload: { name, key },
-      updateOptions: undefined as UpdateOptions<T, C, C>,
+      updateOptions: undefined as UpdateOptions<T>,
     })
   } else {
     updateState({
@@ -31,7 +31,7 @@ export const defineRemoveNestedStore = <S, C, X extends C & Array<any>, T extend
       pathSegments: ['nested', name],
       actionName: 'removeNested',
       payload: key,
-      updateOptions: undefined as UpdateOptions<T, C, C>,
+      updateOptions: undefined as UpdateOptions<T>,
     })
   }
 }) as StoreWhichIsNestedInternal<S, C>['defineRemoveNestedStore'];

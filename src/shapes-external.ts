@@ -212,6 +212,8 @@ export type ArrayOfObjectsAction<X extends DeepReadonlyArray<any>, F extends Fin
    * .patch({ done: true })
    */
   patch: <H extends Partial<X[0]> | (() => Promise<Partial<X[0]>>) >(patch: H, options: UpdateOptions<T>) => H extends (() => Promise<any>) ? Promise<void> : void,
+
+  // select: <P>(getProp: (element: X[0]) => P) => Store<P, T>,
 } & ArrayOfElementsAction<X, F, T>;
 
 export type ArrayOfElementsCommonAction<X extends DeepReadonlyArray<any>, F extends FindOrFilter, T extends Trackability> = {
@@ -451,13 +453,13 @@ export type StoreForAnObject<C extends any, T extends Trackability> = {
   /**
    * Removes the specified key from this object.  
    * ***WARNING***: invoking this has the potentional to contradict the type-system.
-   * Only use this to remove from an object of type of `{ [key: string]: any }` and NOT to one with statically defined properties eg `{ str: '', num: 0 }`
+   * Only use this to remove a property from an object of type of `{ [key: string]: any }` and NOT to remove a property from an object with statically defined properties eg `{ str: '', num: 0 }`
    */
   remove: (key: keyof C, options: ActionOptions<T>) => void,
   /**
    * Adds one or more key-value-pairs to this object.  
    * ***WARNING***: invoking this has the potentional to contradict the type-system.
-   * Only use this to add to an object of type of `{ [key: string]: any }` and NOT to one with statically defined properties eg `{ str: '', num: 0 }`
+   * Only use this to add properties to an object of type of `{ [key: string]: any }` and NOT to add properties with statically defined properties eg `{ str: '', num: 0 }`
    */
   insert: <H extends { [key: string]: any } | (() => Promise<{ [key: string]: any }>) >(insertion: H) => H extends (() => Promise<{ [key: string]: any }>) ? Promise<{ [key: string]: any }> : void,
 } & StoreForAnObjectOrPrimitive<C, T>;
