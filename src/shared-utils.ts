@@ -1,4 +1,4 @@
-import { DeepReadonly, Selector, Trackability, UpdateOptions, UpdateOptionsInternal } from './shapes-external';
+import { DeepReadonly, Selector, Trackability, UpdateOptions } from './shapes-external';
 import { PathReader } from './shapes-internal';
 import { errorMessages, expressionsNotAllowedInSelectorFunction } from './shared-consts';
 import { libState } from './shared-state';
@@ -157,7 +157,7 @@ export const processAsyncPayload = <S, C, X extends C & Array<any>, T extends Tr
   pathReader: PathReader<S>,
   storeResult: (selector?: (s: DeepReadonly<S>) => C) => any,
   processPayload: (payload: C) => void,
-  updateOptions: UpdateOptions<T, C, any>,
+  updateOptions: UpdateOptions<T>,
   suffix: string,
 ) => {
   if (!!payload && typeof (payload) === 'function') {
@@ -170,8 +170,7 @@ export const processAsyncPayload = <S, C, X extends C & Array<any>, T extends Tr
     }
     const asyncPayload = payload as (() => Promise<C>);
     pathReader.readSelector(selector);
-    const optionsInternal = (updateOptions as UpdateOptionsInternal) || {};
-    optionsInternal.bypassPromiseFor = optionsInternal.bypassPromiseFor || 0;
+    const bypassPromiseFor = ((updateOptions || {}) as any).bypassPromiseFor || 0;
     const fullPath = pathReader.pathSegments.join('.') + (pathReader.pathSegments.length ? '.' : '') + suffix;
     if (libState.activePromises[fullPath]) { // prevent duplicate simultaneous requests
       return libState.activePromises[fullPath];
@@ -182,13 +181,13 @@ export const processAsyncPayload = <S, C, X extends C & Array<any>, T extends Tr
     }
     const result = asyncPayload()
       .then(res => {
-        const involvesCaching = !!updateOptions && !(typeof (updateOptions) === 'string') && optionsInternal.bypassPromiseFor;
+        const involvesCaching = !!updateOptions && !(typeof (updateOptions) === 'string') && bypassPromiseFor;
         if (involvesCaching) {
           libState.transactionState = 'started';
         }
         processPayload(res);
-        if (involvesCaching && optionsInternal.bypassPromiseFor) {
-          const cacheExpiry = toIsoString(new Date(new Date().getTime() + optionsInternal.bypassPromiseFor));
+        if (involvesCaching && bypassPromiseFor) {
+          const cacheExpiry = toIsoString(new Date(new Date().getTime() + bypassPromiseFor));
           libState.transactionState = 'last';
           if (!storeResult().read().promiseBypassTimes) {
             storeResult(s => (s as any).promiseBypassTimes).replace({
@@ -202,7 +201,7 @@ export const processAsyncPayload = <S, C, X extends C & Array<any>, T extends Tr
           try {
             setTimeout(() => {
               storeResult(s => (s as any).promiseBypassTimes).remove(fullPath);
-            }, optionsInternal.bypassPromiseFor);
+            }, bypassPromiseFor);
           } catch (e) {
             // ignoring
           }

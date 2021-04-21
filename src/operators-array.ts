@@ -79,10 +79,10 @@ export const patch = <S, C, X extends C & Array<any>, F extends FindOrFilter, T 
         query: whereClauseString,
         patch: payloadFrozen,
       },
-      updateOptions: updateOptions as UpdateOptions<T, C, any>,
+      updateOptions: updateOptions as UpdateOptions<T>,
     });
   }
-  return processAsyncPayload(selector, payload, pathReader, storeResult, processPayload, updateOptions as UpdateOptions<T, C, any>, type + '(' + whereClauseString + ').patch()');
+  return processAsyncPayload(selector, payload, pathReader, storeResult, processPayload, updateOptions as UpdateOptions<T>, type + '(' + whereClauseString + ').patch()');
 }) as ArrayOfObjectsAction<X, F, T>['patch'];
 
 export const replace = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
@@ -101,10 +101,10 @@ export const replace = <S, C, X extends C & Array<any>, F extends FindOrFilter, 
         query: whereClauseString,
         replacement: payloadFrozen,
       },
-      updateOptions: updateOptions as UpdateOptions<T, C, any>,
+      updateOptions: updateOptions as UpdateOptions<T>,
     })
   }
-  return processAsyncPayload(selector, payload, pathReader, storeResult, processPayload, updateOptions as UpdateOptions<T, C, any>, type + '(' + whereClauseString + ').replace()');
+  return processAsyncPayload(selector, payload, pathReader, storeResult, processPayload, updateOptions as UpdateOptions<T>, type + '(' + whereClauseString + ').replace()');
 }) as ArrayOfElementsCommonAction<X, F, T>['replace'];
 
 export const onChange = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(

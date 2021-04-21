@@ -1,9 +1,4 @@
 /**
- * A tag which may need to be supplied when performing a state update
- */
-export type Tag<B> = B extends 'tagged' ? string : (string | void);
-
-/**
  * Whether updates to the store requires tags or not
  */
 export type Trackability = 'tagged' | 'untagged';
@@ -216,7 +211,7 @@ export type ArrayOfObjectsAction<X extends DeepReadonlyArray<any>, F extends Fin
    * ...
    * .patch({ done: true })
    */
-  patch: <H extends Partial<X[0]> | (() => Promise<Partial<X[0]>>) >(patch: H, updateOptions: UpdateOptions<T, X[0], H>) => H extends (() => Promise<any>) ? Promise<void> : void,
+  patch: <H extends Partial<X[0]> | (() => Promise<Partial<X[0]>>) >(patch: H, options: UpdateOptions<T>) => H extends (() => Promise<any>) ? Promise<void> : void,
 } & ArrayOfElementsAction<X, F, T>;
 
 export type ArrayOfElementsCommonAction<X extends DeepReadonlyArray<any>, F extends FindOrFilter, T extends Trackability> = {
@@ -226,14 +221,14 @@ export type ArrayOfElementsCommonAction<X extends DeepReadonlyArray<any>, F exte
    * ...
    * .replace({ id: 1, text: 'bake cookies' })
    */
-  replace: <H extends X[0] | (() => Promise<X[0]>) >(replacement: H, tag: UpdateOptions<T, X[0], H>) => H extends (() => Promise<X[0]>) ? Promise<X> : void,
+  replace: <H extends X[0] | (() => Promise<X[0]>) >(replacement: H, options: UpdateOptions<T>) => H extends (() => Promise<X[0]>) ? Promise<X> : void,
   /**
    * Removes any elements that were found in the search clause
    * @example
    * ...
    * .remove()
    */
-  remove: (tag: Tag<T>) => void;
+  remove: (options: ActionOptions<T>) => void;
   /**
    * Will be called any time this node changes.
    * @example
@@ -262,10 +257,58 @@ export type ArrayOfObjectsCommonAction<X extends DeepReadonlyArray<any>, F exten
    * ...
    * .patch({ done: true })
    */
-  patch: <H extends Partial<X[0]> | (() => Promise<Partial<X[0]>>) >(replacement: H, tag: UpdateOptions<T, X[0], H>) => H extends (() => Promise<any>) ? Promise<void> : void,
+  patch: <H extends Partial<X[0]> | (() => Promise<Partial<X[0]>>) >(replacement: H, options: UpdateOptions<T>) => H extends (() => Promise<any>) ? Promise<void> : void,
 } & ArrayOfElementsCommonAction<X, F, T>;
 
-export type UpdateOptionsInternal = {
+export type TaggedUpdate<T extends Trackability> = T extends 'untagged' ? {
+  /**
+   * Any string which may be used to identify the origin of a state update.    
+   * 
+   * This tag is optional because your store was initialized using `make()` instead of `makeEnforceTags()`.
+   *   
+   * If, when initializing your store, you did **not** pass `tagsToAppearInType: true` inside the options object, then your tag will appear in the action payload as follows:
+   * ```
+   * {
+   *   type: 'some.value.replace()',
+   *   tag: 'YourTag'
+   *   ...
+   * }
+   * ```
+   * If, when initializing your store, you passed `tagsToAppearInType: true` inside the options object, then your tag will appear as a suffix to the action type, for example:  
+   * ```
+   * {
+   *   type: 'some.value.replace() [YourTag]',
+   *   ...
+   * }
+   * ```
+   */
+  tag?: string
+} : {
+  /**
+   * Any string which may be used to identify the origin of a state update.  
+   * 
+   * This tag is required because your store was initialized using `makeEnforceTags()` instead of `make()`.    
+   *   
+   * If, when initializing your store, you did **not** pass `tagsToAppearInType: true` inside the options object, then your tag will appear in the action payload as follows:
+   * ```
+   * {
+   *   type: 'some.value.replace()',
+   *   tag: 'YourTag'
+   *   ...
+   * }
+   * ```
+   * If, when initializing your store, you passed `tagsToAppearInType: true` inside the options object, then your tag will appear as a suffix to the action type, for example:  
+   * ```
+   * {
+   *   type: 'some.value.replace() [YourTag]',
+   *   ...
+   * }
+   * ```
+   */
+  tag: string
+}
+
+export type PromisableUpdate = {
   /**
    * Avoid unnecessary promise invocations by supplying the number of milliseconds that should elapse before the promise is invoked again.
    * To un-do this, you can call `stopBypassingPromises()` on the node of the state tree, for example
@@ -274,10 +317,12 @@ export type UpdateOptionsInternal = {
    * @example
    * select(s => s.todos).findWhere(s => s.id).eq(2).stopBypassingPromises();
    */
-  bypassPromiseFor?: number,
+  bypassPromiseFor?: number;
 }
 
-export type UpdateOptions<T extends Trackability, P, A> = (Tag<T> | (A extends P ? Tag<T> : UpdateOptionsInternal & (T extends 'untagged' ? { tag?: Tag<T> } : { tag: Tag<T> })))
+export type ActionOptions<T extends Trackability> = T extends 'untagged' ? (TaggedUpdate<'untagged'> | void) : TaggedUpdate<'tagged'>;
+
+export type UpdateOptions<T extends Trackability> = T extends 'untagged' ? (TaggedUpdate<'untagged'> & PromisableUpdate | void) : TaggedUpdate<'tagged'> & PromisableUpdate;
 
 /**
  * An object which is capable of storing and updating state which is in the shape of an array of primitives
@@ -295,21 +340,21 @@ export type StoreForAnArrayCommon<X extends DeepReadonlyArray<any>, T extends Tr
    * ...
    * .insert(() => getTodosFromApi())
    */
-  insert: <H extends (X | X[0] | (() => Promise<X | X[0]>)) >(insertion: H, options: UpdateOptions<T, X[0] | X, H>) => H extends (() => Promise<any>) ? Promise<X> : void,
+  insert: <H extends (X | X[0] | (() => Promise<X | X[0]>)) >(insertion: H, options: UpdateOptions<T>) => H extends (() => Promise<any>) ? Promise<X> : void,
   /**
    * Removes all elements from the array
    * @example
    * ...
    * .removeAll();
    */
-  removeAll: (tag: Tag<T>) => void,
+  removeAll: (options: ActionOptions<T>) => void,
   /**
    * Substitute all elements with a new array of elements
    * @example
    * ...
    * .replaceAll(newTodos);
    */
-  replaceAll: <H extends X | (() => Promise<X>) >(replacement: H, options: UpdateOptions<T, X, H>) => H extends (() => Promise<X>) ? Promise<X> : void,
+  replaceAll: <H extends X | (() => Promise<X>) >(replacement: H, options: UpdateOptions<T>) => H extends (() => Promise<X>) ? Promise<X> : void,
 }
 
 /**
@@ -346,7 +391,7 @@ export type StoreForAnArrayOfObjects<X extends DeepReadonlyArray<any>, T extends
    * ...
    */
   upsertMatching: <P>(getProp: (element: DeepReadonly<X[0]>) => P) => {
-    with: <H extends X | (X[0] | X | (() => Promise<X | X[0]>)) >(elementOrArray: H, options: UpdateOptions<T, X[0] | X, H>) => H extends (() => Promise<any>) ? Promise<X> : void,
+    with: <H extends X | (X[0] | X | (() => Promise<X | X[0]>)) >(elementOrArray: H, options: UpdateOptions<T>) => H extends (() => Promise<any>) ? Promise<X> : void,
   }
   /**
    * Specify a where clause to find many elements.
@@ -389,7 +434,7 @@ export type StoreForAnObjectOrPrimitive<C extends any, T extends Trackability> =
    * @example
    * select(s => s.user.age).replace(age => age + 1);
    */
-  replace: <H extends C | (() => Promise<C>) >(replacement: H, tag: UpdateOptions<T, C, H>) => H extends (() => Promise<any>) ? Promise<C> : void,
+  replace: <H extends C | (() => Promise<C>) >(replacement: H, options: UpdateOptions<T>) => H extends (() => Promise<any>) ? Promise<C> : void,
 }
 
 /**
@@ -402,13 +447,13 @@ export type StoreForAnObject<C extends any, T extends Trackability> = {
    * ...
    *  .patch({ firstName: 'James', age: 33 })
    */
-  patch: <H extends (Partial<C> | (() => Promise<Partial<C>>)) >(partial: H, tag: UpdateOptions<T, C, H>) => H extends (() => Promise<Partial<C>>) ? Promise<C> : void,
+  patch: <H extends (Partial<C> | (() => Promise<Partial<C>>)) >(partial: H, options: UpdateOptions<T>) => H extends (() => Promise<Partial<C>>) ? Promise<C> : void,
   /**
    * Removes the specified key from this object.  
    * ***WARNING***: invoking this has the potentional to contradict the type-system.
    * Only use this to remove from an object of type of `{ [key: string]: any }` and NOT to one with statically defined properties eg `{ str: '', num: 0 }`
    */
-  remove: (key: keyof C, tag: Tag<T>) => void,
+  remove: (key: keyof C, options: ActionOptions<T>) => void,
   /**
    * Adds one or more key-value-pairs to this object.  
    * ***WARNING***: invoking this has the potentional to contradict the type-system.
@@ -446,7 +491,7 @@ export type StoreWhichIsResettable<C extends any, T extends Trackability> = {
    * Reverts the current state to how it was when the store was initialized.
    * Beware that if this store is marked with `isContainerForNestedStores: true`, then all nested stores will also be removed
    */
-  reset: (tag: Tag<T>) => void,
+  reset: (options: ActionOptions<T>) => void,
   /**
    * Ensures that fresh data is retrieved the next time any promises are used to populate this node of the state tree.
    */

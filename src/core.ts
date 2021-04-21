@@ -27,7 +27,6 @@ import {
   Selector,
   StoreForAnArrayOfObjects,
   StoreWhichIsNested,
-  Tag,
   Trackability,
 } from './shapes-external';
 import {
@@ -153,7 +152,7 @@ export function createStore<S, T extends Trackability>(context: {
       readInitial: () => selector(initialState),
       defineRemoveNestedStore: defineRemoveNestedStore(() => currentState, updateState, nestedContainerStore),
       defineReset: (
-        (initState: C) => () => replace(pathReader, updateState, (e => selector(e)) as Selector<S, C, X>, 'reset', () => !!coreActions.removeFromContainingStore, storeResult)(initState, undefined as Tag<T>)
+        (initState: C) => () => replace(pathReader, updateState, (e => selector(e)) as Selector<S, C, X>, 'reset', () => !!coreActions.removeFromContainingStore, storeResult)(initState, undefined)
       ) as StoreWhichIsNestedInternal<S, C>['defineReset'],
       renew: (state => {
         pathReader = createPathReader(state);
@@ -192,7 +191,7 @@ export function createStore<S, T extends Trackability>(context: {
 
     // Construct action to dispatch
     const actionType = specs.actionNameOverride ? specs.actionName : (pathSegments.join('.') + (pathSegments.length ? '.' : '') + specs.actionName);
-    const tag = specs.updateOptions ? ( typeof(specs.updateOptions) === 'object' ? (specs.updateOptions as any).tag : specs.updateOptions ) : '';
+    const tag = (specs.updateOptions || {} as any).tag || '';
     const tagSanitized = tag && tagSanitizer ? tagSanitizer(tag) : tag;
     const payload = ((specs.getPayloadFn && (specs.getPayloadFn() !== undefined)) ? specs.getPayloadFn() : specs.payload);
     const payloadWithTag = (!tag || context.tagsToAppearInType) ? { ...payload } : { ...payload, tag: tagSanitized };
@@ -225,7 +224,7 @@ export function createStore<S, T extends Trackability>(context: {
     libState.currentAction = actionToDispatch;
     libState.currentMutableState = pathReader.mutableStateCopy as any;
     const { type, ...actionPayload } = actionToDispatch;
-    if (devtoolsDispatchListener && (!specs.updateOptions || (specs.updateOptions !== 'dontTrackWithDevtools'))) {
+    if (devtoolsDispatchListener && (!specs.updateOptions || ((specs.updateOptions || {} as any).tag !== 'dontTrackWithDevtools'))) {
       const dispatchToDevtools = (payload?: any[]) => {
         const action = payload ? { ...actionToDispatch, batched: payload } : actionToDispatch;
         libState.currentActionForDevtools = action;

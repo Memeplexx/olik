@@ -19,7 +19,7 @@ export type UpdateStateArgs<S, C, T extends Trackability, X extends C = C> = {
   pathSegments?: string[],
   actionName: string,
   payload?: any,
-  updateOptions: UpdateOptions<T, C, any>,
+  updateOptions: UpdateOptions<T>,
   actionNameOverride?: boolean,
   getPayloadFn?: () => any,
 };

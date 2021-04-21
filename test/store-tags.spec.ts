@@ -13,7 +13,7 @@ describe('tags', () => {
       object: { property: 'one', property2: 'two' },
     }, { tagsToAppearInType: true });
     select(s => s.object.property)
-      .replace(payload, tag);
+      .replace(payload, { tag });
     expect(libState.currentAction).toEqual({
       type: `object.property.replace() [${tag}]`,
       replacement: payload,
@@ -32,7 +32,7 @@ describe('tags', () => {
     const tag = 'mytag';
     const payload = 'test';
     select(s => s.test)
-      .replace(payload, tag);
+      .replace(payload, { tag });
     expect(libState.currentAction).toEqual({
       type: `test.replace() [${tag}x]`,
       replacement: payload,
@@ -45,7 +45,7 @@ describe('tags', () => {
     const tag = 'mytag';
     const payload = 'test';
     select(s => s.prop)
-      .replace(payload, tag);
+      .replace(payload, { tag });
     expect(libState.currentAction).toEqual({
       type: `prop.replace() [${tag}]`,
       replacement: payload,
@@ -57,7 +57,7 @@ describe('tags', () => {
     const tag = 'mytag';
     const payload = 'test';
     select(s => s.prop)
-      .replace(payload, tag);
+      .replace(payload, { tag });
     expect(libState.currentAction).toEqual({
       type: `prop.replace()`,
       replacement: payload,

@@ -45,15 +45,15 @@ export function integrateStoreWithReduxDevtools<S, C = S>(
     }
     if (message.type === 'DISPATCH' && message.payload) {
       const selection = store() as any as (
-        { replace: (state: S, tag: string) => any } &
-        { replaceAll: (state: S, tag: string) => any }
+        { replace: (state: S, options: { tag: string }) => any } &
+        { replaceAll: (state: S, options: { tag: string }) => any }
       ) & { read: () => any, readInitial: () => any };
       const setState = (state: any) => {
         libState.bypassSelectorFunctionCheck = true;
         if (Array.isArray(selection.read())) {
-          selection.replaceAll(state, 'dontTrackWithDevtools');
+          selection.replaceAll(state, { tag: 'dontTrackWithDevtools' });
         } else {
-          selection.replace(state, 'dontTrackWithDevtools');
+          selection.replace(state, { tag: 'dontTrackWithDevtools' });
         }
         libState.bypassSelectorFunctionCheck = false;
       }

@@ -6,10 +6,8 @@ import {
   StoreForAnObject,
   StoreOrDerivation,
   StoreWhichIsResettable,
-  Tag,
   Trackability,
   UpdateOptions,
-  UpdateOptionsInternal,
 } from './shapes-external';
 import { PathReader, UpdateStateFn } from './shapes-internal';
 import { libState } from './shared-state';
@@ -39,7 +37,7 @@ export const reset = <S, C, X extends C & Array<any>, T extends Trackability>(
   isNested: () => boolean,
   storeResult: (selector?: (s: DeepReadonly<S>) => C) => any,
 ) => (
-  updateOptions => replace(pathReader, updateState, selector, 'reset', isNested, storeResult)(selector(initialState), updateOptions)
+  updateOptions => replace(pathReader, updateState, selector, 'reset', isNested, storeResult)(selector(initialState), updateOptions as UpdateOptions<T>)
 ) as StoreWhichIsResettable<C, T>['reset'];
 
 export const replaceAll = <S, C, X extends C & Array<any>, T extends Trackability>(
@@ -49,7 +47,7 @@ export const replaceAll = <S, C, X extends C & Array<any>, T extends Trackabilit
   isNested: () => boolean,
   storeResult: (selector?: (s: DeepReadonly<S>) => C) => any,
 ) => (
-  (replacement, updateOptions) => replace(pathReader, updateState, selector, 'replaceAll', isNested, storeResult)(replacement as X, updateOptions as UpdateOptions<T, C, any>)
+  (replacement, updateOptions) => replace(pathReader, updateState, selector, 'replaceAll', isNested, storeResult)(replacement as X, updateOptions as UpdateOptions<T>)
 ) as StoreForAnArrayCommon<X, T>['replaceAll'];
 
 export const removeAll = <S, C, X extends C & Array<any>, T extends Trackability>(
@@ -85,10 +83,10 @@ export const insertIntoArray = <S, C, X extends C & Array<any>, T extends Tracka
       payload: {
         insertion: payloadFrozen,
       },
-      updateOptions: updateOptions as UpdateOptions<T, C, any>,
+      updateOptions: updateOptions as UpdateOptions<T>,
     });
   }
-  return processAsyncPayload(selector, payload, pathReader, storeResult, processPayload, updateOptions as UpdateOptions<T, C, any>, 'insert()');
+  return processAsyncPayload(selector, payload, pathReader, storeResult, processPayload, updateOptions as UpdateOptions<T>, 'insert()');
 }) as StoreForAnArrayCommon<X, T>['insert'];
 
 export const patchOrInsertIntoObject = <S, C, X extends C & Array<any>, T extends Trackability>(
@@ -112,10 +110,10 @@ export const patchOrInsertIntoObject = <S, C, X extends C & Array<any>, T extend
       } : {
         insertion: payloadFrozen,
       },
-      updateOptions: updateOptions as UpdateOptions<T, C, any>,
+      updateOptions: updateOptions as UpdateOptions<T>,
     });
   }
-  return processAsyncPayload(selector, payload, pathReader, storeResult, processPayload, updateOptions as UpdateOptions<T, C, any>, 'patch()');
+  return processAsyncPayload(selector, payload, pathReader, storeResult, processPayload, updateOptions as UpdateOptions<T>, 'patch()');
 }) as StoreForAnObject<C, T>['patch'];
 
 export const remove = <S, C, X extends C & Array<any>, T extends Trackability>(
@@ -132,7 +130,7 @@ export const remove = <S, C, X extends C & Array<any>, T extends Trackability>(
     payload: {
       toRemove: payload,
     },
-    updateOptions: updateOptions as UpdateOptions<T, C, any>,
+    updateOptions,
   });
 }) as StoreForAnObject<C, T>['remove'];
 
@@ -181,10 +179,10 @@ export const upsertMatching = <S, C, X extends C & Array<any>, T extends Trackab
             replacementCount,
             insertionCount,
           }),
-          updateOptions: updateOptions as UpdateOptions<T, C, any>,
+          updateOptions: updateOptions as UpdateOptions<T>,
         });
       }
-      return processAsyncPayload(selector, payload, pathReader, storeResult, processPayload, updateOptions as UpdateOptions<T, C, any>, 'upsertMatching()');
+      return processAsyncPayload(selector, payload, pathReader, storeResult, processPayload, updateOptions, 'upsertMatching()');
     }
   };
 }) as StoreForAnArrayOfObjects<X, T>['upsertMatching'];
@@ -198,11 +196,11 @@ export const replace = <S, C, X extends C & Array<any>, T extends Trackability>(
   storeResult: (selector?: (s: DeepReadonly<S>) => C) => any,
 ) => (
   payload: C | (() => Promise<C>),
-  updateOptions: UpdateOptions<T, C, any>,
+  updateOptions: UpdateOptions<T>,
   ) => {
     validateSelector(selector, isNested);
     const processPayload = (payload: C) => replacePayload(pathReader, updateState, selector, name, payload as C, updateOptions);
-    return processAsyncPayload(selector, payload, pathReader, storeResult, processPayload, updateOptions as UpdateOptions<T, C, any>, name + '()');
+    return processAsyncPayload(selector, payload, pathReader, storeResult, processPayload, updateOptions, name + '()');
   };
 
 export function replacePayload<S, C, X extends C & Array<any>, T extends Trackability>(
@@ -211,7 +209,7 @@ export function replacePayload<S, C, X extends C & Array<any>, T extends Trackab
   selector: Selector<S, C, X>,
   name: string,
   payload: C,
-  updateOptions: UpdateOptions<T, C, any>
+  updateOptions: UpdateOptions<T>
 ) {
   const pathSegments = pathReader.readSelector(selector);
   const { payloadFrozen, payloadCopied } = copyPayload(payload);
