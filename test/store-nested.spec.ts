@@ -9,7 +9,10 @@ describe('Nested', () => {
 
   beforeAll(() => testState.windowObject = windowAugmentedWithReduxDevtoolsImpl);
 
-  beforeEach(() => spyInfo.mockReset());
+  beforeEach(() => {
+    libState.nestedContainerStore = null;
+    spyInfo.mockReset();
+  });
 
   it('should attach a lib store correctly', () => {
     const initialState = {
@@ -23,6 +26,11 @@ describe('Nested', () => {
     const storeName = 'myComp';
     nestedStore(initialStateComp, { storeName });
     expect(select().read()).toEqual({ ...initialState, nested: { [storeName]: { 0: initialStateComp } } });
+  })
+
+  it('should throw an error is more than one container store is created', () => {
+    store({}, { isContainerForNestedStores: true });
+    expect(() => store({}, { isContainerForNestedStores: true })).toThrow(errorMessages.CANNOT_CREATE_MORE_THAN_ONE_CONTAINER_STORE);
   })
 
   it('should revert to a top-level store correctly', () => {

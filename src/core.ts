@@ -32,8 +32,8 @@ import {
 import {
   ArrayCustomState,
   ArrayOperatorState,
-  NestedContainerStore,
   PreviousAction,
+  StoreState,
   StoreWhichIsNestedInternal,
   StoreWhichMayContainNestedStores,
   UpdateStateArgs,
@@ -45,13 +45,11 @@ import { copyObject, createPathReader, deepCopy, deepFreeze, validateSelectorFn,
 export function createStore<S, T extends Trackability>({
   state,
   devtools,
-  nestedContainerStore,
   tagSanitizer,
   tagsToAppearInType
 }: {
   state: S,
   devtools: OptionsForReduxDevtools | false,
-  nestedContainerStore?: NestedContainerStore,
   tagSanitizer?: (tag: string) => string,
   tagsToAppearInType?: boolean,
 }) {
@@ -62,13 +60,14 @@ export function createStore<S, T extends Trackability>({
   let initialState = currentState;
   let devtoolsDispatchListener: ((action: { type: string, payload?: any }) => any) | undefined;
   const setDevtoolsDispatchListener = (listener: (action: { type: string, payload?: any }) => any) => devtoolsDispatchListener = listener;
+  const storeState = { bypassSelectorFunctionCheck: false, selector: null as any } as StoreState<S>;
   const action = <C, X extends C & Array<any>>(selector: Selector<S, C, X>) => {
     const where = (type: FindOrFilter) => {
       const whereClauseSpecs = Array<{ filter: (arg: X[0]) => boolean, type: 'and' | 'or' | 'last' }>();
       const whereClauseStrings = Array<string>();
       const recurseWhere = (getProp => {
         const getSegsAndCriteria = () => {
-          validateSelectorFn('getProp', getProp);
+          validateSelectorFn('getProp', storeState, getProp);
           const segs = array.getSegments(selector, () => currentState, getProp);
           const criteria = (arg: X[0], fn: (arg: X[0]) => boolean) => {
             segs.forEach(seg => arg = arg[seg]);
@@ -138,30 +137,31 @@ export function createStore<S, T extends Trackability>({
       return recurseWhere;
     };
     const coreActions = {
-      remove: remove(selector, updateState, () => !!coreActions.removeFromContainingStore),
-      patch: patchOrInsertIntoObject('patch', selector, updateState, () => !!coreActions.removeFromContainingStore, storeResult, pathReader),
+      remove: remove(selector, updateState, () => !!coreActions.removeFromContainingStore, storeState),
+      patch: patchOrInsertIntoObject('patch', selector, updateState, () => !!coreActions.removeFromContainingStore, storeResult, pathReader, storeState),
       insert: Array.isArray(selector(currentState))
-        ? insertIntoArray(selector, updateState, () => !!coreActions.removeFromContainingStore, storeResult, pathReader)
-        : patchOrInsertIntoObject('insert', selector, updateState, () => !!coreActions.removeFromContainingStore, storeResult, pathReader),
-      removeAll: removeAll(selector, updateState, () => !!coreActions.removeFromContainingStore),
-      replaceAll: replaceAll(pathReader, updateState, selector, () => !!coreActions.removeFromContainingStore, storeResult),
-      reset: reset(pathReader, updateState, selector, initialState, () => !!coreActions.removeFromContainingStore, storeResult),
-      replace: replace(pathReader, updateState, selector, 'replace', () => !!coreActions.removeFromContainingStore, storeResult),
-      upsertMatching: upsertMatching(selector, () => currentState, updateState, () => !!coreActions.removeFromContainingStore, storeResult, pathReader),
+        ? insertIntoArray(selector, updateState, () => !!coreActions.removeFromContainingStore, storeResult, pathReader, storeState)
+        : patchOrInsertIntoObject('insert', selector, updateState, () => !!coreActions.removeFromContainingStore, storeResult, pathReader, storeState),
+      removeAll: removeAll(selector, updateState, () => !!coreActions.removeFromContainingStore, storeState),
+      replaceAll: replaceAll(pathReader, updateState, selector, () => !!coreActions.removeFromContainingStore, storeResult, storeState),
+      reset: reset(pathReader, updateState, selector, initialState, () => !!coreActions.removeFromContainingStore, storeResult, storeState),
+      replace: replace(pathReader, updateState, selector, 'replace', () => !!coreActions.removeFromContainingStore, storeResult, storeState),
+      upsertMatching: upsertMatching(selector, () => currentState, updateState, () => !!coreActions.removeFromContainingStore, storeResult, pathReader, storeState),
       filterWhere: where('filter'),
       findWhere: where('find'),
       onChange: onChange(selector, changeListeners),
       read: read(selector, () => currentState),
       stopBypassingPromises: () => stopBypassingPromises(pathReader, selector, storeResult),
       readInitial: () => selector(initialState),
-      defineRemoveNestedStore: defineRemoveNestedStore(() => currentState, updateState, nestedContainerStore),
+      defineRemoveNestedStore: defineRemoveNestedStore(() => currentState, updateState),
       defineReset: (
-        (initState: C) => () => replace(pathReader, updateState, (e => selector(e)) as Selector<S, C, X>, 'reset', () => !!coreActions.removeFromContainingStore, storeResult)(initState, undefined)
+        (initState: C) => () => replace(pathReader, updateState, (e => selector(e)) as Selector<S, C, X>, 'reset', () => !!coreActions.removeFromContainingStore, storeResult, storeState)(initState, undefined)
       ) as StoreWhichIsNestedInternal<S, C>['defineReset'],
       renew: (state => {
         pathReader = createPathReader(state);
         currentState = deepFreeze(state) as S;
       }) as StoreWhichMayContainNestedStores<S, C, T>['renew'],
+      getSelector: () => storeState.selector,
     } as unknown as StoreWhichIsNested<C>;
     return coreActions;
   };
@@ -277,7 +277,7 @@ export function createStore<S, T extends Trackability>({
   }
 
   if (devtools !== false) {
-    integrateStoreWithReduxDevtools<S>(storeResult as any, devtools, setDevtoolsDispatchListener);
+    integrateStoreWithReduxDevtools<S>(storeResult as any, devtools, setDevtoolsDispatchListener, storeState);
   }
 
   return storeResult;

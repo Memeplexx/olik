@@ -114,8 +114,11 @@ function setInternalRootStore<S, T extends Trackability>(
   state: S,
   options: OptionsForCreatingInternalRootStore,
 ) {
+  if (options.isContainerForNestedStores && libState.nestedContainerStore) {
+    throw new Error(errorMessages.CANNOT_CREATE_MORE_THAN_ONE_CONTAINER_STORE);
+  }
   const store = createStore<S, T>({ state, devtools: options.devtools === undefined ? {} : options.devtools,
-    nestedContainerStore: libState.nestedContainerStore!, tagSanitizer: options.tagSanitizer, tagsToAppearInType: options.tagsToAppearInType });
+    tagSanitizer: options.tagSanitizer, tagsToAppearInType: options.tagsToAppearInType });
   if (options.isContainerForNestedStores) {
     if ((typeof (state) !== 'object') || Array.isArray(state)) {
       throw new Error(errorMessages.INVALID_CONTAINER_FOR_NESTED_STORES);

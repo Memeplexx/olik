@@ -1,12 +1,13 @@
 import { OptionsForReduxDevtools, Store } from './shapes-external';
-import { WindowAugmentedWithReduxDevtools } from './shapes-internal';
+import { StoreState, WindowAugmentedWithReduxDevtools } from './shapes-internal';
 import { errorMessages } from './shared-consts';
 import { libState, testState } from './shared-state';
 
 export function integrateStoreWithReduxDevtools<S, C = S>(
   store: (selector?: (state: S) => C) => Store<C, any>,
   options: OptionsForReduxDevtools,
-  setDevtoolsDispatchListener: (listener: (action: { type: string, payload?: any }) => any) => any
+  setDevtoolsDispatchListener: (listener: (action: { type: string, payload?: any }) => any) => any,
+  storeState: StoreState<S>,
 ) {
   let windowObj = window as any as WindowAugmentedWithReduxDevtools;
   if (testState.windowObject) {
@@ -34,14 +35,14 @@ export function integrateStoreWithReduxDevtools<S, C = S>(
       }
       let segs = messagePayload.type.split('.');
       const action = segs.pop() as string;
-      libState.bypassSelectorFunctionCheck = true;
+      storeState.bypassSelectorFunctionCheck = true;
       const selection = store(s => {
         let result = s as any as C;
         segs.forEach(seg => result = result[seg as keyof typeof result] as any as C)
         return result as any as C;
       });
       (selection[action.substring(0, action.length - 2) as any as keyof typeof selection] as Function)(messagePayload.payload, message.source);
-      libState.bypassSelectorFunctionCheck = false;
+      storeState.bypassSelectorFunctionCheck = false;
     }
     if (message.type === 'DISPATCH' && message.payload) {
       const selection = store() as any as (
@@ -49,13 +50,13 @@ export function integrateStoreWithReduxDevtools<S, C = S>(
         { replaceAll: (state: S, options: { tag: string }) => any }
       ) & { read: () => any, readInitial: () => any };
       const setState = (state: any) => {
-        libState.bypassSelectorFunctionCheck = true;
+        storeState.bypassSelectorFunctionCheck = true;
         if (Array.isArray(selection.read())) {
           selection.replaceAll(state, { tag: 'dontTrackWithDevtools' });
         } else {
           selection.replace(state, { tag: 'dontTrackWithDevtools' });
         }
-        libState.bypassSelectorFunctionCheck = false;
+        storeState.bypassSelectorFunctionCheck = false;
       }
       switch (message.payload.type) {
         case 'JUMP_TO_STATE':

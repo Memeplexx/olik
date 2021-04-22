@@ -99,4 +99,13 @@ describe('Object', () => {
     expect(testState.currentMutableState).toEqual(select().read());
   })
 
+
+
+
+  it('', () => {
+    const select = store({ hello: { world: { one: 'one', two: 'two' } } });
+    select(s => s.hello.world).remove('one');
+    console.log('.........', select((select() as any).getSelector()).read());
+  })
+
 });

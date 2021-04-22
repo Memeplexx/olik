@@ -1,5 +1,5 @@
 import { DeepReadonly, Selector, Trackability, UpdateOptions } from './shapes-external';
-import { PathReader } from './shapes-internal';
+import { PathReader, StoreState } from './shapes-internal';
 import { errorMessages, expressionsNotAllowedInSelectorFunction } from './shared-consts';
 import { libState } from './shared-state';
 
@@ -123,9 +123,10 @@ export function copyPayload<C>(payload: C) {
 
 export const validateSelectorFn = (
   functionName: 'select' | 'getProp',
+  storeState: StoreState<any>,
   selector?: (element: any) => any,
 ) => {
-  if (libState.bypassSelectorFunctionCheck) { return; }
+  if (storeState.bypassSelectorFunctionCheck) { return; }
   const fnToString = (selector || '').toString();
   const illegalChars = expressionsNotAllowedInSelectorFunction
     .filter(c => c.test(fnToString));

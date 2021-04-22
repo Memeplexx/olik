@@ -102,4 +102,9 @@ export type StoreWhichMayContainNestedStores<S, C, T extends Trackability> = {
   renew: (state: S) => void;
 } & StoreForAnObject<C, T> & StoreOrDerivation<C>;
 
-export type NestedContainerStore = ((selector?: ((s: any) => any) | undefined) => StoreWhichMayContainNestedStores<any, any, any>) | undefined
+export type NestedContainerStore = ((selector?: ((s: any) => any) | undefined) => StoreWhichMayContainNestedStores<any, any, any>) | undefined;
+
+export type StoreState<S> = {
+  selector: (arg: S) => any,
+  bypassSelectorFunctionCheck: boolean,
+}

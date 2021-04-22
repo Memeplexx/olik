@@ -9,7 +9,7 @@ import {
   Trackability,
   UpdateOptions,
 } from './shapes-external';
-import { PathReader, UpdateStateFn } from './shapes-internal';
+import { PathReader, StoreState, UpdateStateFn } from './shapes-internal';
 import { libState } from './shared-state';
 import { copyPayload, createPathReader, deepCopy, deepFreeze, processAsyncPayload, toIsoString, validateSelectorFn } from './shared-utils';
 import { transact } from './transact';
@@ -36,8 +36,9 @@ export const reset = <S, C, X extends C & Array<any>, T extends Trackability>(
   initialState: S,
   isNested: () => boolean,
   storeResult: (selector?: (s: DeepReadonly<S>) => C) => any,
+  storeState: StoreState<S>,
 ) => (
-  updateOptions => replace(pathReader, updateState, selector, 'reset', isNested, storeResult)(selector(initialState), updateOptions as UpdateOptions<T>)
+  updateOptions => replace(pathReader, updateState, selector, 'reset', isNested, storeResult, storeState)(selector(initialState), updateOptions as UpdateOptions<T>)
 ) as StoreWhichIsResettable<C, T>['reset'];
 
 export const replaceAll = <S, C, X extends C & Array<any>, T extends Trackability>(
@@ -46,16 +47,18 @@ export const replaceAll = <S, C, X extends C & Array<any>, T extends Trackabilit
   selector: Selector<S, C, X>,
   isNested: () => boolean,
   storeResult: (selector?: (s: DeepReadonly<S>) => C) => any,
+  storeState: StoreState<S>,
 ) => (
-  (replacement, updateOptions) => replace(pathReader, updateState, selector, 'replaceAll', isNested, storeResult)(replacement as X, updateOptions as UpdateOptions<T>)
+  (replacement, updateOptions) => replace(pathReader, updateState, selector, 'replaceAll', isNested, storeResult, storeState)(replacement as X, updateOptions as UpdateOptions<T>)
 ) as StoreForAnArrayCommon<X, T>['replaceAll'];
 
 export const removeAll = <S, C, X extends C & Array<any>, T extends Trackability>(
   selector: Selector<S, C, X>,
   updateState: UpdateStateFn<S, C, T, X>,
   isNested: () => boolean,
+  storeState: StoreState<S>,
 ) => (updateOptions => {
-  validateSelector(selector, isNested);
+  validateSelector(selector, isNested, storeState);
   updateState({
     selector,
     replacer: () => [],
@@ -71,8 +74,9 @@ export const insertIntoArray = <S, C, X extends C & Array<any>, T extends Tracka
   isNested: () => boolean,
   storeResult: (selector?: (s: DeepReadonly<S>) => C) => any,
   pathReader: PathReader<S>,
+  storeState: StoreState<S>,
 ) => ((payload, updateOptions) => {
-  validateSelector(selector, isNested);
+  validateSelector(selector, isNested, storeState);
   const processPayload = (payload: C) => {
     const { payloadFrozen, payloadCopied } = copyPayload(payload);
     updateState({
@@ -96,8 +100,9 @@ export const patchOrInsertIntoObject = <S, C, X extends C & Array<any>, T extend
   isNested: () => boolean,
   storeResult: (selector?: (s: DeepReadonly<S>) => C) => any,
   pathReader: PathReader<S>,
+  storeState: StoreState<S>,
 ) => ((payload, updateOptions) => {
-  validateSelector(selector, isNested);
+  validateSelector(selector, isNested, storeState);
   const processPayload = (payload: Partial<C>) => {
     const { payloadFrozen, payloadCopied } = copyPayload(payload);
     updateState({
@@ -120,8 +125,10 @@ export const remove = <S, C, X extends C & Array<any>, T extends Trackability>(
   selector: Selector<S, C, X>,
   updateState: UpdateStateFn<S, C, T, X>,
   isNested: () => boolean,
+  storeState: StoreState<S>,
 ) => ((payload, updateOptions) => {
-  validateSelector(selector, isNested);
+  validateSelector(selector, isNested, storeState);
+    storeState.selector = selector; ///////////////////////////////////////////
   updateState({
     selector,
     replacer: old => { const res = Object.assign({}, old); delete (res as any)[payload]; return res; },
@@ -141,11 +148,12 @@ export const upsertMatching = <S, C, X extends C & Array<any>, T extends Trackab
   isNested: () => boolean,
   storeResult: (selector?: (s: DeepReadonly<S>) => C) => any,
   pathReader: PathReader<S>,
+  storeState: StoreState<S>,
 ) => (getProp => {
-  validateSelector(selector, isNested);
+  validateSelector(selector, isNested, storeState);
   return {
     with: (payload, updateOptions) => {
-      validateSelector(selector, isNested);
+      validateSelector(selector, isNested, storeState);
       const processPayload = (payload: C) => {
         const segs = !getProp ? [] : createPathReader((selector(currentState()) as X)[0] || {}).readSelector(getProp);
         const { payloadFrozen, payloadCopied } = copyPayload(payload);
@@ -194,11 +202,12 @@ export const replace = <S, C, X extends C & Array<any>, T extends Trackability>(
   name: string,
   isNested: () => boolean,
   storeResult: (selector?: (s: DeepReadonly<S>) => C) => any,
+  storeState: StoreState<S>,
 ) => (
   payload: C | (() => Promise<C>),
   updateOptions: UpdateOptions<T>,
   ) => {
-    validateSelector(selector, isNested);
+    validateSelector(selector, isNested, storeState);
     const processPayload = (payload: C) => replacePayload(pathReader, updateState, selector, name, payload as C, updateOptions);
     return processAsyncPayload(selector, payload, pathReader, storeResult, processPayload, updateOptions, name + '()');
   };
@@ -279,8 +288,9 @@ export function stopBypassingPromises<S, C, X extends C & Array<any>>(
 const validateSelector = <S, C, X extends C & Array<any>>(
   selector: Selector<S, C, X>,
   isNested: () => boolean,
+  storeState: StoreState<S>,
 ) => {
-  if (isNested()) { libState.bypassSelectorFunctionCheck = true; }
-  validateSelectorFn('select', selector);
-  if (isNested()) { libState.bypassSelectorFunctionCheck = false; }
+  if (isNested()) { storeState.bypassSelectorFunctionCheck = true; }
+  validateSelectorFn('select', storeState, selector);
+  if (isNested()) { storeState.bypassSelectorFunctionCheck = false; }
 }

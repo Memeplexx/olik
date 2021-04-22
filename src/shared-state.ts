@@ -1,7 +1,6 @@
 import { NestedContainerStore, WindowAugmentedWithReduxDevtools } from './shapes-internal';
 
 export const libState = {
-  bypassSelectorFunctionCheck: false,
   nestedContainerStore: null as null | NestedContainerStore,
   transactionState: 'none' as 'none' | 'started' | 'last',
   transactionStartState: null as any,

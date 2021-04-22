@@ -1,12 +1,12 @@
 import { Selector, Trackability, UpdateOptions } from './shapes-external';
-import { StoreWhichIsNestedInternal, StoreWhichMayContainNestedStores, UpdateStateFn } from './shapes-internal';
+import { StoreWhichIsNestedInternal, UpdateStateFn } from './shapes-internal';
+import { libState } from './shared-state';
 
 export const defineRemoveNestedStore = <S, C, X extends C & Array<any>, T extends Trackability>(
   currentState: () => S,
   updateState: UpdateStateFn<S, C, T, X>,
-  nestedContainerStore?: (selector?: (s: any) => any) => StoreWhichMayContainNestedStores<any, any, any>,
 ) => ((name, key) => () => {
-  if (!nestedContainerStore) { return; }
+  if (!libState.nestedContainerStore) { console.log('%%%%%%%%%%'); return; }
   if (Object.keys((currentState() as S & { nested: any }).nested[name]).length === 1) {
     updateState({
       selector: ((s: S & { nested: any }) => s.nested) as Selector<S, C, X>,
