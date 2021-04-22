@@ -1,10 +1,10 @@
+import { testState } from '../src/shared-state';
 import { store, storeEnforcingTags } from '../src/store-creators';
-import { libState } from '../src/shared-state';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
 describe('tags', () => {
 
-  beforeAll(() => libState.windowObject = windowAugmentedWithReduxDevtoolsImpl);
+  beforeAll(() => testState.windowObject = windowAugmentedWithReduxDevtoolsImpl);
 
   it('should work with tags correctly', () => {
     const payload = 'hey';
@@ -14,12 +14,12 @@ describe('tags', () => {
     }, { tagsToAppearInType: true });
     select(s => s.object.property)
       .replace(payload, { tag });
-    expect(libState.currentAction).toEqual({
+    expect(testState.currentAction).toEqual({
       type: `object.property.replace() [${tag}]`,
       replacement: payload,
     });
     expect(select(s => s.object.property).read()).toEqual(payload);
-    expect(libState.currentMutableState).toEqual(select().read());
+    expect(testState.currentMutableState).toEqual(select().read());
   })
 
   it('should sanitize tags correctly', () => {
@@ -33,11 +33,11 @@ describe('tags', () => {
     const payload = 'test';
     select(s => s.test)
       .replace(payload, { tag });
-    expect(libState.currentAction).toEqual({
+    expect(testState.currentAction).toEqual({
       type: `test.replace() [${tag}x]`,
       replacement: payload,
     });
-    expect(libState.currentMutableState).toEqual(select().read());
+    expect(testState.currentMutableState).toEqual(select().read());
   })
 
   it('should accept optional tags', () => {
@@ -46,7 +46,7 @@ describe('tags', () => {
     const payload = 'test';
     select(s => s.prop)
       .replace(payload, { tag });
-    expect(libState.currentAction).toEqual({
+    expect(testState.currentAction).toEqual({
       type: `prop.replace() [${tag}]`,
       replacement: payload,
     });
@@ -58,7 +58,7 @@ describe('tags', () => {
     const payload = 'test';
     select(s => s.prop)
       .replace(payload, { tag });
-    expect(libState.currentAction).toEqual({
+    expect(testState.currentAction).toEqual({
       type: `prop.replace()`,
       replacement: payload,
       tag,

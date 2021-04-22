@@ -1,13 +1,13 @@
 import { errorMessages } from '../src/shared-consts';
-import { store, nestedStore } from '../src/store-creators';
-import { libState } from '../src/shared-state';
+import { libState, testState } from '../src/shared-state';
+import { nestedStore, store } from '../src/store-creators';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
 describe('Nested', () => {
 
   const spyInfo = jest.spyOn(console, 'info');
 
-  beforeAll(() => libState.windowObject = windowAugmentedWithReduxDevtoolsImpl);
+  beforeAll(() => testState.windowObject = windowAugmentedWithReduxDevtoolsImpl);
 
   beforeEach(() => spyInfo.mockReset());
 
@@ -43,7 +43,7 @@ describe('Nested', () => {
     const nestedStore1 = nestedStore({ one: '' }, { storeName });
     expect(nestedStore1(s => s.one).read()).toEqual('');
     nestedStore1(s => s.one).replace('test');
-    expect(libState.currentAction).toEqual({
+    expect(testState.currentAction).toEqual({
       type: `nested.${storeName}.0.one.replace()`,
       replacement: 'test',
     })

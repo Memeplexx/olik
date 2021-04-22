@@ -1,7 +1,7 @@
-import { errorMessages } from './shared-consts';
-import { Store, OptionsForReduxDevtools } from './shapes-external';
+import { OptionsForReduxDevtools, Store } from './shapes-external';
 import { WindowAugmentedWithReduxDevtools } from './shapes-internal';
-import { libState } from './shared-state';
+import { errorMessages } from './shared-consts';
+import { libState, testState } from './shared-state';
 
 export function integrateStoreWithReduxDevtools<S, C = S>(
   store: (selector?: (state: S) => C) => Store<C, any>,
@@ -9,8 +9,8 @@ export function integrateStoreWithReduxDevtools<S, C = S>(
   setDevtoolsDispatchListener: (listener: (action: { type: string, payload?: any }) => any) => any
 ) {
   let windowObj = window as any as WindowAugmentedWithReduxDevtools;
-  if (libState.windowObject) {
-    windowObj = libState.windowObject as WindowAugmentedWithReduxDevtools;
+  if (testState.windowObject) {
+    windowObj = testState.windowObject as WindowAugmentedWithReduxDevtools;
   }
   if (!windowObj.__REDUX_DEVTOOLS_EXTENSION__) {
     console.warn(errorMessages.DEVTOOL_CANNOT_FIND_EXTENSION);
@@ -79,7 +79,6 @@ export function integrateStoreWithReduxDevtools<S, C = S>(
       }
     }
   });
-  libState.devTools = devTools;
   return devTools;
 }
 

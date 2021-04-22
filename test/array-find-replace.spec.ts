@@ -1,10 +1,10 @@
+import { testState } from '../src/shared-state';
 import { store } from '../src/store-creators';
-import { libState } from '../src/shared-state';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
 describe('array.find().replace()', () => {
 
-  beforeAll(() => libState.windowObject = windowAugmentedWithReduxDevtoolsImpl);
+  beforeAll(() => testState.windowObject = windowAugmentedWithReduxDevtoolsImpl);
 
   const initialState = {
     object: { property: '' },
@@ -17,13 +17,13 @@ describe('array.find().replace()', () => {
     select(s => s.array)
       .findWhere(e => e.id).eq(2)
       .replace(payload);
-    expect(libState.currentAction).toEqual({
+    expect(testState.currentAction).toEqual({
       type: 'array.find().replace()',
       replacement: payload,
       query: 'id === 2',
     });
     expect(select(s => s.array).read()).toEqual([initialState.array[0], payload, initialState.array[2]]);
-    expect(libState.currentMutableState).toEqual(select().read());
+    expect(testState.currentMutableState).toEqual(select().read());
   })
 
   it('should ne()', () => {
@@ -32,13 +32,13 @@ describe('array.find().replace()', () => {
     select(s => s.array)
       .findWhere(e => e.id).ne(2)
       .replace(payload);
-    expect(libState.currentAction).toEqual({
+    expect(testState.currentAction).toEqual({
       type: 'array.find().replace()',
       replacement: payload,
       query: 'id !== 2',
     });
     expect(select(s => s.array).read()).toEqual([payload, initialState.array[1], initialState.array[2]]);
-    expect(libState.currentMutableState).toEqual(select().read());
+    expect(testState.currentMutableState).toEqual(select().read());
   })
 
   it('should gt()', () => {
@@ -47,13 +47,13 @@ describe('array.find().replace()', () => {
     select(s => s.array)
       .findWhere(e => e.id).gt(1)
       .replace(payload);
-    expect(libState.currentAction).toEqual({
+    expect(testState.currentAction).toEqual({
       type: 'array.find().replace()',
       replacement: payload,
       query: 'id > 1',
     });
     expect(select(s => s.array).read()).toEqual([initialState.array[0], payload, initialState.array[2]]);
-    expect(libState.currentMutableState).toEqual(select().read());
+    expect(testState.currentMutableState).toEqual(select().read());
   })
 
   it('should gte()', () => {
@@ -62,13 +62,13 @@ describe('array.find().replace()', () => {
     select(s => s.array)
       .findWhere(e => e.id).gte(1)
       .replace(payload);
-    expect(libState.currentAction).toEqual({
+    expect(testState.currentAction).toEqual({
       type: 'array.find().replace()',
       replacement: payload,
       query: 'id >= 1',
     });
     expect(select(s => s.array).read()).toEqual([payload, initialState.array[1], initialState.array[2]]);
-    expect(libState.currentMutableState).toEqual(select().read());
+    expect(testState.currentMutableState).toEqual(select().read());
   })
 
   it('should lt()', () => {
@@ -77,13 +77,13 @@ describe('array.find().replace()', () => {
     select(s => s.array)
       .findWhere(e => e.id).lt(2)
       .replace(payload);
-    expect(libState.currentAction).toEqual({
+    expect(testState.currentAction).toEqual({
       type: 'array.find().replace()',
       replacement: payload,
       query: 'id < 2',
     });
     expect(select(s => s.array).read()).toEqual([payload, initialState.array[1], initialState.array[2]]);
-    expect(libState.currentMutableState).toEqual(select().read());
+    expect(testState.currentMutableState).toEqual(select().read());
   })
 
   it('should lte()', () => {
@@ -92,13 +92,13 @@ describe('array.find().replace()', () => {
     select(s => s.array)
       .findWhere(e => e.id).lte(2)
       .replace(payload);
-    expect(libState.currentAction).toEqual({
+    expect(testState.currentAction).toEqual({
       type: 'array.find().replace()',
       replacement: payload,
       query: 'id <= 2',
     });
     expect(select(s => s.array).read()).toEqual([payload, initialState.array[1], initialState.array[2]]);
-    expect(libState.currentMutableState).toEqual(select().read());
+    expect(testState.currentMutableState).toEqual(select().read());
   })
 
   it('should in()', () => {
@@ -107,13 +107,13 @@ describe('array.find().replace()', () => {
     select(s => s.array)
       .findWhere(e => e.id).in([1, 2])
       .replace(payload);
-    expect(libState.currentAction).toEqual({
+    expect(testState.currentAction).toEqual({
       type: 'array.find().replace()',
       replacement: payload,
       query: '[1, 2].includes(id)',
     });
     expect(select(s => s.array).read()).toEqual([payload, initialState.array[1], initialState.array[2]]);
-    expect(libState.currentMutableState).toEqual(select().read());
+    expect(testState.currentMutableState).toEqual(select().read());
   })
 
   it('should ni()', () => {
@@ -122,13 +122,13 @@ describe('array.find().replace()', () => {
     get(s => s.array)
       .findWhere(e => e.id).ni([1, 2])
       .replace(payload);
-    expect(libState.currentAction).toEqual({
+    expect(testState.currentAction).toEqual({
       type: 'array.find().replace()',
       replacement: payload,
       query: '![1, 2].includes(id)',
     });
     expect(get(s => s.array).read()).toEqual([initialState.array[0], initialState.array[1], payload]);
-    expect(libState.currentMutableState).toEqual(get().read());
+    expect(testState.currentMutableState).toEqual(get().read());
   })
 
   it('should match()', () => {
@@ -137,13 +137,13 @@ describe('array.find().replace()', () => {
     get(s => s.array)
       .findWhere(e => e.value).match(/^t/)
       .replace(payload);
-    expect(libState.currentAction).toEqual({
+    expect(testState.currentAction).toEqual({
       type: 'array.find().replace()',
       replacement: payload,
       query: 'value.match(/^t/)',
     });
     expect(get(s => s.array).read()).toEqual([initialState.array[0], payload, initialState.array[2]]);
-    expect(libState.currentMutableState).toEqual(get().read());
+    expect(testState.currentMutableState).toEqual(get().read());
   })
 
 });

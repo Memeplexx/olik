@@ -1,11 +1,11 @@
 import { store } from '../src/store-creators';
 import { errorMessages } from '../src/shared-consts';
-import { libState } from '../src/shared-state';
+import { testState } from '../src/shared-state';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
 describe('Error', () => {
 
-  beforeAll(() => libState.windowObject = windowAugmentedWithReduxDevtoolsImpl);
+  beforeAll(() => testState.windowObject = windowAugmentedWithReduxDevtoolsImpl);
 
   it('should throw an error when a method is invoked within a selector', () => {
     const select = store({ arr: new Array<string>() });

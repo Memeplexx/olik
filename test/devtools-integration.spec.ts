@@ -1,5 +1,5 @@
 import { errorMessages } from '../src/shared-consts';
-import { libState } from '../src/shared-state';
+import { libState, testState } from '../src/shared-state';
 import { store } from '../src/store-creators';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
@@ -7,7 +7,7 @@ describe('Devtools', () => {
 
   const spyWarn = jest.spyOn(console, 'warn');
 
-  beforeAll(() => libState.windowObject = windowAugmentedWithReduxDevtoolsImpl);
+  beforeAll(() => testState.windowObject = windowAugmentedWithReduxDevtoolsImpl);
   
   beforeEach( () => spyWarn.mockReset());
 
@@ -17,9 +17,9 @@ describe('Devtools', () => {
       .replace(3);
     expect(select().read()).toEqual({ x: 3, y: 0 });
     const state = { x: 1, y: 0 };
-    libState.windowObject?.__REDUX_DEVTOOLS_EXTENSION__._mockInvokeSubscription({ type: 'DISPATCH', state: JSON.stringify(state), payload: { type: 'JUMP_TO_ACTION' }, source: '@devtools-extension' });
+    testState.windowObject?.__REDUX_DEVTOOLS_EXTENSION__._mockInvokeSubscription({ type: 'DISPATCH', state: JSON.stringify(state), payload: { type: 'JUMP_TO_ACTION' }, source: '@devtools-extension' });
     expect(select().read()).toEqual(state);
-    expect(libState.currentAction.type).toEqual('replace() [dontTrackWithDevtools]');
+    expect(testState.currentAction.type).toEqual('replace() [dontTrackWithDevtools]');
   });
 
   it('should correctly respond to devtools dispatches where the state is an array', () => {
@@ -28,14 +28,14 @@ describe('Devtools', () => {
       .replaceAll(['d', 'e', 'f']);
     expect(select().read()).toEqual(['d', 'e', 'f']);
     const state = ['g', 'h'];
-    libState.windowObject?.__REDUX_DEVTOOLS_EXTENSION__._mockInvokeSubscription({ type: 'DISPATCH', state: JSON.stringify(state), payload: { type: 'JUMP_TO_ACTION' }, source: '@devtools-extension' });
+    testState.windowObject?.__REDUX_DEVTOOLS_EXTENSION__._mockInvokeSubscription({ type: 'DISPATCH', state: JSON.stringify(state), payload: { type: 'JUMP_TO_ACTION' }, source: '@devtools-extension' });
     expect(select().read()).toEqual(state);
-    expect(libState.currentAction.type).toEqual('replaceAll() [dontTrackWithDevtools]');
+    expect(testState.currentAction.type).toEqual('replaceAll() [dontTrackWithDevtools]');
   });
 
   it('should handle a COMMIT without throwing an error', () => {
     store({ hello: '' });
-    libState.windowObject?.__REDUX_DEVTOOLS_EXTENSION__._mockInvokeSubscription({ type: 'DISPATCH', payload: { type: 'COMMIT' }, source: '@devtools-extension' });
+    testState.windowObject?.__REDUX_DEVTOOLS_EXTENSION__._mockInvokeSubscription({ type: 'DISPATCH', payload: { type: 'COMMIT' }, source: '@devtools-extension' });
   });
 
   it('should handle a RESET correctly', () => {
@@ -43,7 +43,7 @@ describe('Devtools', () => {
     select(s => s.hello)
       .replace('world');
     expect(select(s => s.hello).read()).toEqual('world');
-    libState.windowObject?.__REDUX_DEVTOOLS_EXTENSION__._mockInvokeSubscription({ type: 'DISPATCH', payload: { type: 'RESET' }, source: '@devtools-extension' });
+    testState.windowObject?.__REDUX_DEVTOOLS_EXTENSION__._mockInvokeSubscription({ type: 'DISPATCH', payload: { type: 'RESET' }, source: '@devtools-extension' });
     expect(select(s => s.hello).read()).toEqual('');
   });
 
@@ -55,34 +55,34 @@ describe('Devtools', () => {
     select(s => s.num)
       .replace(2);
     expect(select(s => s.num).read()).toEqual(2);
-    libState.windowObject?.__REDUX_DEVTOOLS_EXTENSION__._mockInvokeSubscription({ type: 'DISPATCH', payload: { type: 'ROLLBACK' }, source: '@devtools-extension', state: '{ "num": 1 }' });
+    testState.windowObject?.__REDUX_DEVTOOLS_EXTENSION__._mockInvokeSubscription({ type: 'DISPATCH', payload: { type: 'ROLLBACK' }, source: '@devtools-extension', state: '{ "num": 1 }' });
     expect(select(s => s.num).read()).toEqual(1);
   });
 
   it('should throw an error should a devtools dispatch contain invalid JSON', () => {
     store({ hello: 0 });
-    expect(() => libState.windowObject?.__REDUX_DEVTOOLS_EXTENSION__
+    expect(() => testState.windowObject?.__REDUX_DEVTOOLS_EXTENSION__
       ._mockInvokeSubscription({ type: 'ACTION', source: '@devtools-extension', payload: "{'type': 'hello.replace', 'payload': 2}" }))
       .toThrow(errorMessages.DEVTOOL_DISPATCHED_INVALID_JSON);
   });
 
   it('should throw an error should a devtools dispatch not contain parenthesis', () => {
     store({ hello: 0 });
-    expect(() => libState.windowObject?.__REDUX_DEVTOOLS_EXTENSION__
+    expect(() => testState.windowObject?.__REDUX_DEVTOOLS_EXTENSION__
       ._mockInvokeSubscription({ type: 'ACTION', source: '@devtools-extension', payload: '{"type": "hello.replace", "payload": 2}' }))
       .toThrow(errorMessages.DEVTOOL_DISPATCHED_WITH_NO_ACTION('hello.replace'));
   });
 
   it('should throw an error should a devtools dispatch not contain parenthesis', () => {
     store({ hello: 0 });
-    expect(() => libState.windowObject?.__REDUX_DEVTOOLS_EXTENSION__
+    expect(() => testState.windowObject?.__REDUX_DEVTOOLS_EXTENSION__
       ._mockInvokeSubscription({ type: 'ACTION', source: '@devtools-extension', payload: '{"type": "hello.replace", "payload": 2}' }))
       .toThrow(errorMessages.DEVTOOL_DISPATCHED_WITH_NO_ACTION('hello.replace'));
   });
 
   it('should correctly devtools dispatch made by user', () => {
     const select = store({ hello: 0 });
-    libState.windowObject?.__REDUX_DEVTOOLS_EXTENSION__
+    testState.windowObject?.__REDUX_DEVTOOLS_EXTENSION__
       ._mockInvokeSubscription({ type: 'ACTION', source: '@devtools-extension', payload: '{"type": "hello.replace()", "payload": 2}' });
     expect(select(s => s.hello).read()).toEqual(2);
   })
@@ -108,7 +108,7 @@ describe('Devtools', () => {
   })
 
   it('should log an error if no devtools extension could be found', () => {
-    libState.windowObject = null;
+    testState.windowObject = null;
     store(new Array<string>());
     expect( spyWarn ).toHaveBeenCalledWith(errorMessages.DEVTOOL_CANNOT_FIND_EXTENSION);
   })

@@ -1,10 +1,10 @@
+import { testState } from '../src/shared-state';
 import { store } from '../src/store-creators';
-import { libState } from '../src/shared-state';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
 describe('array.filterCustom().read()', () => {
 
-  beforeAll(() => libState.windowObject = windowAugmentedWithReduxDevtoolsImpl);
+  beforeAll(() => testState.windowObject = windowAugmentedWithReduxDevtoolsImpl);
 
   const initialState = {
     object: { property: '' },

@@ -6,7 +6,7 @@
     "@angular/core": "^10.0.0"
   },
   "dependencies": {
-    "olik": "^0.0.6",
+    "olik": "^0.0.9",
     "tslib": "^2.0.0"
   }
 }

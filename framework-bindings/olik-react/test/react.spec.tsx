@@ -220,7 +220,7 @@ describe('React', () => {
         fetch,
         wasResolved,
         wasRejected,
-        isLoading
+        isLoading,
       } = useFetcher(() => select(s => s.object.property)
         .replace(() => new Promise<string>(resolve => setTimeout(() => resolve('test'), 10))));
       return (

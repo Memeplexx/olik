@@ -1,12 +1,12 @@
 import { store, transact } from '../src';
 import { errorMessages } from '../src/shared-consts';
-import { libState } from '../src/shared-state';
+import { libState, testState } from '../src/shared-state';
 import { nestedStore, storeEnforcingTags } from '../src/store-creators';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
 describe('async', () => {
 
-  beforeAll(() => libState.windowObject = windowAugmentedWithReduxDevtoolsImpl);
+  beforeAll(() => testState.windowObject = windowAugmentedWithReduxDevtoolsImpl);
 
   beforeEach(() => libState.activePromises = {});
 
@@ -391,7 +391,7 @@ describe('async', () => {
     select(s => s.array)
       .replaceAll(() => new Promise(resolve => setTimeout(() => resolve(replacement))), { tag })
       .then(() => {
-        expect(libState.currentAction).toEqual({
+        expect(testState.currentAction).toEqual({
           type: `array.replaceAll() [${tag}]`,
           replacement,
         });
@@ -406,7 +406,7 @@ describe('async', () => {
     select(s => s.array)
       .replaceAll(() => new Promise(resolve => setTimeout(() => resolve(replacement))), { tag })
       .then(() => {
-        expect(libState.currentAction).toEqual({
+        expect(testState.currentAction).toEqual({
           type: 'array.replaceAll()',
           replacement,
           tag
@@ -491,7 +491,6 @@ describe('async', () => {
   it('should not bypass a promise if it has been rejected', done => {
     const select = store(initialState);
     const payload = [{ id: 1, value: 'one' }];
-    libState.logLevel = 'DEBUG';
     select(s => s.array)
       .replaceAll(() => new Promise((resolve, reject) => setTimeout(() => reject('test'), 10)), { bypassPromiseFor: 1000 })
       .catch(error => {

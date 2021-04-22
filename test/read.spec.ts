@@ -1,21 +1,15 @@
+import { testState } from '../src/shared-state';
 import { store } from '../src/store-creators';
-import { libState } from '../src/shared-state';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
-import { SelectorFromAStore } from '../src';
 
 describe('Read', () => {
 
-  beforeAll(() => libState.windowObject = windowAugmentedWithReduxDevtoolsImpl);
+  beforeAll(() => testState.windowObject = windowAugmentedWithReduxDevtoolsImpl);
 
   it('should read', () => {
     const select = store({ some: { object: 'test' } });
     const value = select(s => s.some.object).read();
     expect(value).toEqual('test');
-
-
-    // const initialState = { some: { object: 'test' } };
-    // const select2 = store(initialState);
-    // const read = select2().read();
   })
 
   it('should listen to onChange events', () => {

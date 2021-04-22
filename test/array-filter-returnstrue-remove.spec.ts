@@ -1,10 +1,10 @@
+import { testState } from '../src/shared-state';
 import { store } from '../src/store-creators';
-import { libState } from '../src/shared-state';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
 describe('array.filterCustom().remove()', () => {
 
-  beforeAll(() => libState.windowObject = windowAugmentedWithReduxDevtoolsImpl);
+  beforeAll(() => testState.windowObject = windowAugmentedWithReduxDevtoolsImpl);
 
   const initialState = {
     object: { property: '' },
@@ -17,13 +17,13 @@ describe('array.filterCustom().remove()', () => {
     select(s => s.array)
       .filterWhere(query).returnsTrue()
       .remove();
-    expect(libState.currentAction).toEqual({
+    expect(testState.currentAction).toEqual({
       type: 'array.filter().remove()',
       toRemove: [initialState.array[1]],
       query: query.toString(),
     });
     expect(select(s => s.array).read()).toEqual([initialState.array[0], initialState.array[2]]);
-    expect(libState.currentMutableState).toEqual(select().read());
+    expect(testState.currentMutableState).toEqual(select().read());
   })
 
   it('should ne()', () => {
@@ -32,13 +32,13 @@ describe('array.filterCustom().remove()', () => {
     select(s => s.array)
       .filterWhere(query).returnsTrue()
       .remove();
-    expect(libState.currentAction).toEqual({
+    expect(testState.currentAction).toEqual({
       type: 'array.filter().remove()',
       toRemove: [initialState.array[0], initialState.array[2]],
       query: query.toString(),
     });
     expect(select(s => s.array).read()).toEqual([initialState.array[1]]);
-    expect(libState.currentMutableState).toEqual(select().read());
+    expect(testState.currentMutableState).toEqual(select().read());
   })
 
   it('should gt()', () => {
@@ -47,13 +47,13 @@ describe('array.filterCustom().remove()', () => {
     select(s => s.array)
       .filterWhere(query).returnsTrue()
       .remove();
-    expect(libState.currentAction).toEqual({
+    expect(testState.currentAction).toEqual({
       type: 'array.filter().remove()',
       toRemove: [initialState.array[1], initialState.array[2]],
       query: query.toString(),
     });
     expect(select(s => s.array).read()).toEqual([initialState.array[0]]);
-    expect(libState.currentMutableState).toEqual(select().read());
+    expect(testState.currentMutableState).toEqual(select().read());
   })
 
   it('should lt()', () => {
@@ -62,13 +62,13 @@ describe('array.filterCustom().remove()', () => {
     select(s => s.array)
       .filterWhere(query).returnsTrue()
       .remove();
-    expect(libState.currentAction).toEqual({
+    expect(testState.currentAction).toEqual({
       type: 'array.filter().remove()',
       toRemove: [initialState.array[0]],
       query: query.toString(),
     });
     expect(select(s => s.array).read()).toEqual([initialState.array[1], initialState.array[2]]);
-    expect(libState.currentMutableState).toEqual(select().read());
+    expect(testState.currentMutableState).toEqual(select().read());
   })
 
   it('should in()', () => {
@@ -77,13 +77,13 @@ describe('array.filterCustom().remove()', () => {
     select(s => s.array)
       .filterWhere(query).returnsTrue()
       .remove();
-    expect(libState.currentAction).toEqual({
+    expect(testState.currentAction).toEqual({
       type: 'array.filter().remove()',
       toRemove: [initialState.array[0], initialState.array[1]],
       query: query.toString(),
     });
     expect(select(s => s.array).read()).toEqual([initialState.array[2]]);
-    expect(libState.currentMutableState).toEqual(select().read());
+    expect(testState.currentMutableState).toEqual(select().read());
   })
 
   it('should ni()', () => {
@@ -92,13 +92,13 @@ describe('array.filterCustom().remove()', () => {
     select(s => s.array)
       .filterWhere(query).returnsTrue()
       .remove();
-    expect(libState.currentAction).toEqual({
+    expect(testState.currentAction).toEqual({
       type: 'array.filter().remove()',
       toRemove: [initialState.array[2]],
       query: query.toString(),
     });
     expect(select(s => s.array).read()).toEqual([initialState.array[0], initialState.array[1]]);
-    expect(libState.currentMutableState).toEqual(select().read());
+    expect(testState.currentMutableState).toEqual(select().read());
   })
 
   it('should match()', () => {
@@ -107,13 +107,13 @@ describe('array.filterCustom().remove()', () => {
     select(s => s.array)
       .filterWhere(query).returnsTrue()
       .remove();
-    expect(libState.currentAction).toEqual({
+    expect(testState.currentAction).toEqual({
       type: 'array.filter().remove()',
       toRemove: [initialState.array[1], initialState.array[2]],
       query: query.toString(),
     });
     expect(select(s => s.array).read()).toEqual([initialState.array[0]]);
-    expect(libState.currentMutableState).toEqual(select().read());
+    expect(testState.currentMutableState).toEqual(select().read());
   })
 
 });

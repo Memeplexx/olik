@@ -39,18 +39,22 @@ import {
   UpdateStateArgs,
 } from './shapes-internal';
 import { devtoolsDebounce } from './shared-consts';
-import { libState } from './shared-state';
+import { libState, testState } from './shared-state';
 import { copyObject, createPathReader, deepCopy, deepFreeze, validateSelectorFn, validateState } from './shared-utils';
 
-export function createStore<S, T extends Trackability>(context: {
+export function createStore<S, T extends Trackability>({
+  state,
+  devtools,
+  nestedContainerStore,
+  tagSanitizer,
+  tagsToAppearInType
+}: {
   state: S,
-  enforcesTags: boolean,
   devtools: OptionsForReduxDevtools | false,
   nestedContainerStore?: NestedContainerStore,
   tagSanitizer?: (tag: string) => string,
   tagsToAppearInType?: boolean,
 }) {
-  const { state, devtools, nestedContainerStore, enforcesTags, tagSanitizer } = context;
   validateState(state);
   const changeListeners = new Map<(ar: any) => any, (arg: S) => any>();
   let pathReader = createPathReader(state);
@@ -158,7 +162,6 @@ export function createStore<S, T extends Trackability>(context: {
         pathReader = createPathReader(state);
         currentState = deepFreeze(state) as S;
       }) as StoreWhichMayContainNestedStores<S, C, T>['renew'],
-      enforcesTags: enforcesTags,
     } as unknown as StoreWhichIsNested<C>;
     return coreActions;
   };
@@ -175,7 +178,7 @@ export function createStore<S, T extends Trackability>(context: {
     payloads: [],
     debounceTimeout: 0,
   } as PreviousAction;
-  
+
 
   function updateState<C, T extends Trackability, X extends C = C>(specs: UpdateStateArgs<S, C, T, X>) {
 
@@ -194,8 +197,8 @@ export function createStore<S, T extends Trackability>(context: {
     const tag = (specs.updateOptions || {} as any).tag || '';
     const tagSanitized = tag && tagSanitizer ? tagSanitizer(tag) : tag;
     const payload = ((specs.getPayloadFn && (specs.getPayloadFn() !== undefined)) ? specs.getPayloadFn() : specs.payload);
-    const payloadWithTag = (!tag || context.tagsToAppearInType) ? { ...payload } : { ...payload, tag: tagSanitized };
-    const typeWithTag = actionType + (context.tagsToAppearInType && tag ? ` [${tagSanitized}]` : '')
+    const payloadWithTag = (!tag || tagsToAppearInType) ? { ...payload } : { ...payload, tag: tagSanitized };
+    const typeWithTag = actionType + (tagsToAppearInType && tag ? ` [${tagSanitized}]` : '')
     let actionToDispatch = {
       type: typeWithTag,
       ...payloadWithTag,
@@ -219,10 +222,10 @@ export function createStore<S, T extends Trackability>(context: {
     } else if (libState.transactionState === 'none') {
       notifySubscribers(previousState, result);
     }
-    
+
     // Dispatch to devtools
-    libState.currentAction = actionToDispatch;
-    libState.currentMutableState = pathReader.mutableStateCopy as any;
+    testState.currentAction = actionToDispatch;
+    testState.currentMutableState = pathReader.mutableStateCopy as any;
     const { type, ...actionPayload } = actionToDispatch;
     if (devtoolsDispatchListener && (!specs.updateOptions || ((specs.updateOptions || {} as any).tag !== 'dontTrackWithDevtools'))) {
       const dispatchToDevtools = (payload?: any[]) => {

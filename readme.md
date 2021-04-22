@@ -11,7 +11,7 @@
 Olik allows you to comprehensively grok your state updates without ever leaving your component code.  
 * Its **fluent typesafe API** dramatically improves the **consistency** of your state operations, **eliminating ambiguity** 
 * **Debuggability** is improved through **auto-generated action types**
-* **Nested stores** allow you to debug your component state with or without your application state.
+* **Nested stores** allow you to manage and debug your component state with or without your application state.
 * **Transactions** help you to group your state updates, avoiding overly abstract action types.
 * **Async updates**, request **de-duplication**, and **caching** are all built-in.
 
@@ -57,7 +57,7 @@ const derivation = derive(
   select(s => s.foods),
   select(s => s.hobbies),
 ).usingExpensiveCalc(
-  (foods, hobbies) => /* ...some expensive calculation we do not wish to repeat... */
+  (foods, hobbies) => /* ...some expensive calculation that shouldn't repeat unnecessarily... */
 )
 ```
 

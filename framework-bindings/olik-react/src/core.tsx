@@ -47,7 +47,7 @@ export function useFetcher<C>(
         })
         .catch(error => {
           if (isSubscribed) {
-            setResult({...result, wasRejected: true, isLoading: false, error, wasResolved: false, fetch })
+            setResult({ ...result, wasRejected: true, isLoading: false, error, wasResolved: false, fetch })
           }
         });
     };
@@ -72,7 +72,7 @@ export function useNestedStore<C>(
     return libNestedStore(initialState, options);
   }, deps);
   React.useEffect(() => {
-    return () => { 
+    return () => {
       setTimeout(() => select().removeFromContainingStore());
     }
   }, deps);
@@ -145,7 +145,7 @@ function getMapStateToProps<S>(select: SelectorFromAStore<S>) {
      * }))(TodosComponent);
      * ```
      */
-    mapStateToProps: function<P extends {}, M extends {}>(mapper: (state: DeepReadonly<S>, ownProps: P) => M) {
+    mapStateToProps: function <P extends {}, M extends {}>(mapper: (state: DeepReadonly<S>, ownProps: P) => M) {
       return (Component: React.ComponentType<M>) => {
         return class TodoWrapper extends React.PureComponent<P, M> {
           sub = (select() as Store<S, any>).onChange(s => this.setState(mapper(s, this.props)));
@@ -182,7 +182,7 @@ function getUseSelector<S>(select: SelectorFromAStore<S>) {
      * const [id, setId] = React.useState(0);
      * const todo = useSelector(s => s.some.todos.find(t => t.id === id), [id]);
      */
-    useSelector: function<R>(selector: Function<S, R>, deps: React.DependencyList = []) {
+    useSelector: function <R>(selector: Function<S, R>, deps: React.DependencyList = []) {
       return useSelector(select, selector, deps);
     },
   };
@@ -206,9 +206,9 @@ function getUseDerivation<S>(select: SelectorFromAStore<S>) {
      *   s => s.some.todos.find(t => t.id === id)
      * ], [id]).usingExpensiveCalc(([num, todo]) => ...some complex calc we dont want to repeat unnecessarily... )
      */
-    useDerivation: function<X extends [Function<S, any>] | Function<S, any>[]>(inputs: X, deps?: React.DependencyList) {
+    useDerivation: function <X extends [Function<S, any>] | Function<S, any>[]>(inputs: X, deps?: React.DependencyList) {
       return {
-        usingExpensiveCalc: function<R>(calculation: (inputs: MappedSelectorsToResults<S, X>) => R) {
+        usingExpensiveCalc: function <R>(calculation: (inputs: MappedSelectorsToResults<S, X>) => R) {
           const selectors = inputs.map(input => useSelector(select, input));
           const allDeps = [...selectors];
           if (deps) { allDeps.push(...deps); }

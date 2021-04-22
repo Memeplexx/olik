@@ -8,17 +8,80 @@ import {
   storeEnforcingTags as libSetEnforceTags,
   nestedStore as libSetNested,
 } from 'olik';
-import { Observable } from 'rxjs';
-import { shareReplay } from 'rxjs/operators';
+import { Observable, of } from 'rxjs';
+import { catchError, map, shareReplay } from 'rxjs/operators';
 
 export * from 'olik';
+
+// type FetchPayload<C> = {
+//   isLoading: boolean,
+//   wasRejected: boolean,
+//   wasResolved: boolean,
+//   error: any,
+//   fetch: () => void,
+//   storeValue: C,
+// };
+
+// function observeFetchInternal<C>(
+//   fetchFn: () => Observable<C>,
+// ) {
+//   return new Observable<FetchPayload<C>>(observer => {
+//     const fetch = () => {
+//       const payload = {
+//         wasRejected: latestValue.wasRejected,
+//         isLoading: true,
+//         error: latestValue.error,
+//         wasResolved: latestValue.wasResolved,
+//         fetch,
+//         storeValue: latestValue.storeValue,
+//       };
+//       observer.next(payload);
+//       latestValue = payload;
+//       fetchFn().toPromise()
+//         .then(storeValue => {
+//           const payload = {
+//             wasRejected: false,
+//             isLoading: false,
+//             error: null,
+//             wasResolved: true,
+//             fetch,
+//             storeValue,
+//           };
+//           observer.next(payload);
+//           latestValue = payload;
+//         })
+//         .catch(error => {
+//           const payload = {
+//             wasRejected: true,
+//             isLoading: false,
+//             error,
+//             wasResolved: false,
+//             fetch,
+//             storeValue: latestValue.storeValue,
+//           };
+//           observer.next(payload);
+//           latestValue = payload;
+//         });
+//     };
+//     let latestValue = {
+//       wasRejected: false,
+//       isLoading: true,
+//       error: null,
+//       wasResolved: false,
+//       fetch,
+//       storeValue: null as any as C,
+//     } as FetchPayload<C>;
+//     fetch();
+//   }).pipe(
+//     shareReplay({ bufferSize: 1, refCount: true }),
+//   );
+// }
 
 type FetchPayload<C> = {
   isLoading: boolean,
   wasRejected: boolean,
   wasResolved: boolean,
   error: any,
-  fetch: () => void,
   storeValue: C,
 };
 
@@ -26,44 +89,32 @@ function observeFetchInternal<C>(
   fetchFn: () => Observable<C>,
 ) {
   return new Observable<FetchPayload<C>>(observer => {
-    const fetch = () => {
-      observer.next({
-        wasRejected: latestValue.wasRejected,
-        isLoading: true,
-        error: latestValue.error,
-        wasResolved: latestValue.wasResolved,
-        fetch,
-        storeValue: latestValue.storeValue,
-      });
-      fetchFn().toPromise()
-        .then(storeValue => {
-          observer.next({
-            wasRejected: false,
-            isLoading: false,
-            error: null,
-            wasResolved: true,
-            fetch,
-            storeValue,
-          });
-        })
-        .catch(error => observer.next({
-          wasRejected: true,
-          isLoading: false,
-          error,
-          wasResolved: false,
-          fetch,
-          storeValue: latestValue.storeValue,
-        }));
-    };
-    let latestValue = {
+    observer.next({
       wasRejected: false,
       isLoading: true,
       error: null,
       wasResolved: false,
-      fetch,
       storeValue: null as any as C,
-    } as FetchPayload<C>;
-    fetch();
+    });
+    fetchFn().toPromise()
+      .then(storeValue => {
+        observer.next({
+          wasRejected: false,
+          isLoading: false,
+          error: null,
+          wasResolved: true,
+          storeValue,
+        });
+      })
+      .catch(error => {
+        observer.next({
+          wasRejected: true,
+          isLoading: false,
+          error,
+          wasResolved: false,
+          storeValue: null as any as C,
+        });
+      })
   }).pipe(
     shareReplay({ bufferSize: 1, refCount: true }),
   );

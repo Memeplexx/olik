@@ -1,10 +1,10 @@
+import { testState } from '../src/shared-state';
 import { store } from '../src/store-creators';
-import { libState } from '../src/shared-state';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
 describe('array.findCustom().patch()', () => {
 
-  beforeAll(() => libState.windowObject = windowAugmentedWithReduxDevtoolsImpl);
+  beforeAll(() => testState.windowObject = windowAugmentedWithReduxDevtoolsImpl);
 
   const initialState = {
     object: { property: '' },
@@ -18,13 +18,13 @@ describe('array.findCustom().patch()', () => {
     select(s => s.array)
       .findWhere(query).returnsTrue()
       .patch(payload);
-    expect(libState.currentAction).toEqual({
+    expect(testState.currentAction).toEqual({
       type: 'array.find().patch()',
       patch: payload,
       query: query.toString(),
     });
     expect(select(s => s.array).read()).toEqual([initialState.array[0], { ...initialState.array[1], ...payload }, initialState.array[2]]);
-    expect(libState.currentMutableState).toEqual(select().read());
+    expect(testState.currentMutableState).toEqual(select().read());
   })
 
   it('should ne()', () => {
@@ -34,13 +34,13 @@ describe('array.findCustom().patch()', () => {
     select(s => s.array)
       .findWhere(query).returnsTrue()
       .patch(payload);
-    expect(libState.currentAction).toEqual({
+    expect(testState.currentAction).toEqual({
       type: 'array.find().patch()',
       patch: payload,
       query: query.toString(),
     });
     expect(select(s => s.array).read()).toEqual([{ ...initialState.array[0], ...payload }, initialState.array[1], initialState.array[2]]);
-    expect(libState.currentMutableState).toEqual(select().read());
+    expect(testState.currentMutableState).toEqual(select().read());
   })
 
   it('should gt()', () => {
@@ -50,13 +50,13 @@ describe('array.findCustom().patch()', () => {
     select(s => s.array)
       .findWhere(query).returnsTrue()
       .patch(payload);
-    expect(libState.currentAction).toEqual({
+    expect(testState.currentAction).toEqual({
       type: 'array.find().patch()',
       patch: payload,
       query: query.toString(),
     });
     expect(select(s => s.array).read()).toEqual([initialState.array[0], { ...initialState.array[1], ...payload }, initialState.array[2]]);
-    expect(libState.currentMutableState).toEqual(select().read());
+    expect(testState.currentMutableState).toEqual(select().read());
   })
 
   it('should lt()', () => {
@@ -66,13 +66,13 @@ describe('array.findCustom().patch()', () => {
     select(s => s.array)
       .findWhere(query).returnsTrue()
       .patch(payload);
-    expect(libState.currentAction).toEqual({
+    expect(testState.currentAction).toEqual({
       type: 'array.find().patch()',
       patch: payload,
       query: query.toString(),
     });
     expect(select(s => s.array).read()).toEqual([{ ...initialState.array[0], ...payload }, initialState.array[1], initialState.array[2]]);
-    expect(libState.currentMutableState).toEqual(select().read());
+    expect(testState.currentMutableState).toEqual(select().read());
   })
 
   it('should in()', () => {
@@ -82,13 +82,13 @@ describe('array.findCustom().patch()', () => {
     select(s => s.array)
       .findWhere(query).returnsTrue()
       .patch(payload);
-    expect(libState.currentAction).toEqual({
+    expect(testState.currentAction).toEqual({
       type: 'array.find().patch()',
       patch: payload,
       query: query.toString(),
     });
     expect(select(s => s.array).read()).toEqual([{ ...initialState.array[0], ...payload }, initialState.array[1], initialState.array[2]]);
-    expect(libState.currentMutableState).toEqual(select().read());
+    expect(testState.currentMutableState).toEqual(select().read());
   })
 
   it('should ni()', () => {
@@ -98,13 +98,13 @@ describe('array.findCustom().patch()', () => {
     select(s => s.array)
       .findWhere(query).returnsTrue()
       .patch(payload);
-    expect(libState.currentAction).toEqual({
+    expect(testState.currentAction).toEqual({
       type: 'array.find().patch()',
       patch: payload,
       query: query.toString(),
     });
     expect(select(s => s.array).read()).toEqual([initialState.array[0], initialState.array[1], { ...initialState.array[2], ...payload }]);
-    expect(libState.currentMutableState).toEqual(select().read());
+    expect(testState.currentMutableState).toEqual(select().read());
   })
 
   it('should match()', () => {
@@ -114,13 +114,13 @@ describe('array.findCustom().patch()', () => {
     select(s => s.array)
       .findWhere(query).returnsTrue()
       .patch(payload);
-    expect(libState.currentAction).toEqual({
+    expect(testState.currentAction).toEqual({
       type: 'array.find().patch()',
       patch: payload,
       query: query.toString(),
     });
     expect(select(s => s.array).read()).toEqual([initialState.array[0], { ...initialState.array[1], ...payload }, initialState.array[2]]);
-    expect(libState.currentMutableState).toEqual(select().read());
+    expect(testState.currentMutableState).toEqual(select().read());
   })
 
 });

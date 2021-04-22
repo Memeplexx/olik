@@ -1,10 +1,10 @@
 import { store, transact } from '../src';
-import { libState } from '../src/shared-state';
+import { testState } from '../src/shared-state';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
 describe('Transact', () => {
 
-  beforeAll(() => libState.windowObject = windowAugmentedWithReduxDevtoolsImpl);
+  beforeAll(() => testState.windowObject = windowAugmentedWithReduxDevtoolsImpl);
 
   it('should perform a transaction', () => {
     const select = store({ hello: '', world: new Array<string>(), some: { deep: { val: false } } });
@@ -18,8 +18,8 @@ describe('Transact', () => {
     expect(changeCount).toEqual(1);
     const expectedState = { hello: 'test', world: ['hey'], some: { deep: { val: true } } };
     expect(select().read()).toEqual(expectedState);
-    expect(libState.currentMutableState).toEqual(expectedState);
-    expect(libState.currentAction).toEqual({
+    expect(testState.currentMutableState).toEqual(expectedState);
+    expect(testState.currentAction).toEqual({
       type: 'hello.replace(), world.insert(), some.deep.val.replace()',
       actions: [
         {

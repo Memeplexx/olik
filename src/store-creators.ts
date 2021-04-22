@@ -73,7 +73,7 @@ export function nestedStore<L>(
   const generateKey = (arg?: string) => (!arg && !instanceName) ? '0' :
     !instanceName ? (+arg! + 1).toString() : instanceName;
   if (!libState.nestedContainerStore) {
-    const nStore = createStore<L, 'untagged'>({ state, devtools: dontTrackWithDevtools ? false : { name: storeName + ' : ' + generateKey() }, enforcesTags: false }) as SelectorFromANestedStore<L>;
+    const nStore = createStore<L, 'untagged'>({ state, devtools: dontTrackWithDevtools ? false : { name: storeName + ' : ' + generateKey() } }) as SelectorFromANestedStore<L>;
     return (<C = L>(selector?: (arg: L) => C) => {
       const cStore = selector ? nStore(selector as any) : nStore();
       cStore.removeFromContainingStore = () => console.info(errorMessages.NO_CONTAINER_STORE);
@@ -114,7 +114,7 @@ function setInternalRootStore<S, T extends Trackability>(
   state: S,
   options: OptionsForCreatingInternalRootStore,
 ) {
-  const store = createStore<S, T>({ state, devtools: options.devtools === undefined ? {} : options.devtools, enforcesTags: options.enforcesTags,
+  const store = createStore<S, T>({ state, devtools: options.devtools === undefined ? {} : options.devtools,
     nestedContainerStore: libState.nestedContainerStore!, tagSanitizer: options.tagSanitizer, tagsToAppearInType: options.tagsToAppearInType });
   if (options.isContainerForNestedStores) {
     if ((typeof (state) !== 'object') || Array.isArray(state)) {
