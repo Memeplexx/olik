@@ -10,8 +10,14 @@ import {
   UpdateOptions,
 } from './shapes-external';
 import { PathReader, StoreState, UpdateStateFn } from './shapes-internal';
-import { libState } from './shared-state';
-import { copyPayload, createPathReader, deepCopy, deepFreeze, processAsyncPayload, toIsoString, validateSelectorFn } from './shared-utils';
+import {
+  copyPayload,
+  createPathReader,
+  deepCopy,
+  deepFreeze,
+  processAsyncPayload,
+  validateSelectorFn,
+} from './shared-utils';
 import { transact } from './transact';
 
 export const onChange = <S, C, X extends C & Array<any>>(
@@ -90,7 +96,7 @@ export const insertIntoArray = <S, C, X extends C & Array<any>, T extends Tracka
       updateOptions: updateOptions as UpdateOptions<T>,
     });
   }
-  return processAsyncPayload(selector, payload, pathReader, storeResult, processPayload, updateOptions as UpdateOptions<T>, 'insert()');
+  return processAsyncPayload(selector, payload, pathReader, storeResult, processPayload, updateOptions as UpdateOptions<T>, 'insert()', storeState);
 }) as StoreForAnArrayCommon<X, T>['insert'];
 
 export const patchOrInsertIntoObject = <S, C, X extends C & Array<any>, T extends Trackability>(
@@ -118,7 +124,7 @@ export const patchOrInsertIntoObject = <S, C, X extends C & Array<any>, T extend
       updateOptions: updateOptions as UpdateOptions<T>,
     });
   }
-  return processAsyncPayload(selector, payload, pathReader, storeResult, processPayload, updateOptions as UpdateOptions<T>, 'patch()');
+  return processAsyncPayload(selector, payload, pathReader, storeResult, processPayload, updateOptions as UpdateOptions<T>, 'patch()', storeState);
 }) as StoreForAnObject<C, T>['patch'];
 
 export const remove = <S, C, X extends C & Array<any>, T extends Trackability>(
@@ -190,7 +196,7 @@ export const upsertMatching = <S, C, X extends C & Array<any>, T extends Trackab
           updateOptions: updateOptions as UpdateOptions<T>,
         });
       }
-      return processAsyncPayload(selector, payload, pathReader, storeResult, processPayload, updateOptions, 'upsertMatching()');
+      return processAsyncPayload(selector, payload, pathReader, storeResult, processPayload, updateOptions, 'upsertMatching()', storeState);
     }
   };
 }) as StoreForAnArrayOfObjects<X, T>['upsertMatching'];
@@ -209,7 +215,7 @@ export const replace = <S, C, X extends C & Array<any>, T extends Trackability>(
   ) => {
     validateSelector(selector, isNested, storeState);
     const processPayload = (payload: C) => replacePayload(pathReader, updateState, selector, name, payload as C, updateOptions);
-    return processAsyncPayload(selector, payload, pathReader, storeResult, processPayload, updateOptions, name + '()');
+    return processAsyncPayload(selector, payload, pathReader, storeResult, processPayload, updateOptions, name + '()', storeState);
   };
 
 export function replacePayload<S, C, X extends C & Array<any>, T extends Trackability>(

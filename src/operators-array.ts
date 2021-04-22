@@ -82,7 +82,7 @@ export const patch = <S, C, X extends C & Array<any>, F extends FindOrFilter, T 
       updateOptions: updateOptions as UpdateOptions<T>,
     });
   }
-  return processAsyncPayload(selector, payload, pathReader, storeResult, processPayload, updateOptions as UpdateOptions<T>, type + '(' + whereClauseString + ').patch()');
+  return processAsyncPayload(selector, payload, pathReader, storeResult, processPayload, updateOptions as UpdateOptions<T>, type + '(' + whereClauseString + ').patch()', context.storeState);
 }) as ArrayOfObjectsAction<X, F, T>['patch'];
 
 export const replace = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
@@ -104,7 +104,7 @@ export const replace = <S, C, X extends C & Array<any>, F extends FindOrFilter, 
       updateOptions: updateOptions as UpdateOptions<T>,
     })
   }
-  return processAsyncPayload(selector, payload, pathReader, storeResult, processPayload, updateOptions as UpdateOptions<T>, type + '(' + whereClauseString + ').replace()');
+  return processAsyncPayload(selector, payload, pathReader, storeResult, processPayload, updateOptions as UpdateOptions<T>, type + '(' + whereClauseString + ').replace()', context.storeState);
 }) as ArrayOfElementsCommonAction<X, F, T>['replace'];
 
 export const onChange = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
@@ -144,7 +144,7 @@ const completeWhereClause = <S, C, X extends C & Array<any>, F extends FindOrFil
   const { whereClauseStrings, whereClauseString, whereClauseSpecs, criteria, fn, getCurrentState, selector, type } = context;
   whereClauseStrings.push(whereClauseString);
   whereClauseSpecs.push({ filter: o => criteria(o, fn), type: 'last' });
-  validateSelectorFn('select', context.selector);
+  validateSelectorFn('select', context.storeState, context.selector);
   const elementIndices = type === 'find'
     ? [(selector(getCurrentState()) as X).findIndex(e => bundleCriteria(e, whereClauseSpecs))]
     : (selector(getCurrentState()) as X).map((e, i) => bundleCriteria(e, whereClauseSpecs) ? i : null).filter(i => i !== null) as number[];

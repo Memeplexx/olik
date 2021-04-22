@@ -67,6 +67,7 @@ export type ArrayOperatorState<S, C, X extends C & Array<any>, F extends FindOrF
   changeListeners: Map<(ar: any) => any, (arg: S) => any>,
   pathReader: PathReader<S>,
   storeResult: (selector?: (s: DeepReadonly<S>) => C) => any,
+  storeState: StoreState<S>,
 };
 
 export type ArrayCustomState<S, C, X extends C & Array<any>, T extends Trackability> = {
@@ -78,6 +79,7 @@ export type ArrayCustomState<S, C, X extends C & Array<any>, T extends Trackabil
   changeListeners: Map<(ar: any) => any, (arg: S) => any>,
   pathReader: PathReader<S>,
   storeResult: (selector?: (s: DeepReadonly<S>) => C) => any,
+  storeState: StoreState<S>,
 }
 
 export type PreviousAction = {
@@ -107,4 +109,5 @@ export type NestedContainerStore = ((selector?: ((s: any) => any) | undefined) =
 export type StoreState<S> = {
   selector: (arg: S) => any,
   bypassSelectorFunctionCheck: boolean,
+  activePromises: { [key: string]: Promise<any> },
 }

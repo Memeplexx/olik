@@ -160,6 +160,7 @@ export const processAsyncPayload = <S, C, X extends C & Array<any>, T extends Tr
   processPayload: (payload: C) => void,
   updateOptions: UpdateOptions<T>,
   suffix: string,
+  storeState: StoreState<S>,
 ) => {
   if (!!payload && typeof (payload) === 'function') {
     if (libState.transactionState !== 'none') {
@@ -173,8 +174,8 @@ export const processAsyncPayload = <S, C, X extends C & Array<any>, T extends Tr
     pathReader.readSelector(selector);
     const bypassPromiseFor = ((updateOptions || {}) as any).bypassPromiseFor || 0;
     const fullPath = pathReader.pathSegments.join('.') + (pathReader.pathSegments.length ? '.' : '') + suffix;
-    if (libState.activePromises[fullPath]) { // prevent duplicate simultaneous requests
-      return libState.activePromises[fullPath];
+    if (storeState.activePromises[fullPath]) { // prevent duplicate simultaneous requests
+      return storeState.activePromises[fullPath];
     }
     const expirationDate = (storeResult().read().promiseBypassTimes || {})[fullPath];
     if (expirationDate && (new Date(expirationDate).getTime() > new Date().getTime())) {
@@ -208,8 +209,8 @@ export const processAsyncPayload = <S, C, X extends C & Array<any>, T extends Tr
           }
         }
         return storeResult(selector as any).read();
-      }).finally(() => delete libState.activePromises[fullPath]);
-    libState.activePromises[fullPath] = result;
+      }).finally(() => delete storeState.activePromises[fullPath]);
+      storeState.activePromises[fullPath] = result;
     return result;
   } else {
     processPayload(payload as C);

@@ -6,7 +6,7 @@ export const defineRemoveNestedStore = <S, C, X extends C & Array<any>, T extend
   currentState: () => S,
   updateState: UpdateStateFn<S, C, T, X>,
 ) => ((name, key) => () => {
-  if (!libState.nestedContainerStore) { console.log('%%%%%%%%%%'); return; }
+  if (!libState.nestedContainerStore) { return; }
   if (Object.keys((currentState() as S & { nested: any }).nested[name]).length === 1) {
     updateState({
       selector: ((s: S & { nested: any }) => s.nested) as Selector<S, C, X>,

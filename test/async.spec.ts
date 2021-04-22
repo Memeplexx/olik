@@ -8,7 +8,7 @@ describe('async', () => {
 
   beforeAll(() => testState.windowObject = windowAugmentedWithReduxDevtoolsImpl);
 
-  beforeEach(() => libState.activePromises = {});
+  // beforeEach(() => libState.activePromises = {});
 
   const initialState = {
     object: { property: '', property2: '' },

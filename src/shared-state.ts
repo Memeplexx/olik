@@ -5,7 +5,6 @@ export const libState = {
   transactionState: 'none' as 'none' | 'started' | 'last',
   transactionStartState: null as any,
   transactionActions: new Array<{ type: string }>(),
-  activePromises: {} as { [key: string]: Promise<any> },
   currentActionForDevtools: { type: '' },
 }
 

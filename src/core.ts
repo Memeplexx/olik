@@ -60,7 +60,7 @@ export function createStore<S, T extends Trackability>({
   let initialState = currentState;
   let devtoolsDispatchListener: ((action: { type: string, payload?: any }) => any) | undefined;
   const setDevtoolsDispatchListener = (listener: (action: { type: string, payload?: any }) => any) => devtoolsDispatchListener = listener;
-  const storeState = { bypassSelectorFunctionCheck: false, selector: null as any } as StoreState<S>;
+  const storeState = { bypassSelectorFunctionCheck: false, selector: null as any, activePromises: {} } as StoreState<S>;
   const action = <C, X extends C & Array<any>>(selector: Selector<S, C, X>) => {
     const where = (type: FindOrFilter) => {
       const whereClauseSpecs = Array<{ filter: (arg: X[0]) => boolean, type: 'and' | 'or' | 'last' }>();
@@ -90,6 +90,7 @@ export function createStore<S, T extends Trackability>({
             changeListeners,
             pathReader,
             storeResult,
+            storeState,
           } as ArrayOperatorState<S, C, X, FindOrFilter, T>;
           return {
             andWhere: array.andWhere(context),
@@ -112,7 +113,7 @@ export function createStore<S, T extends Trackability>({
           ...{
             returnsTrue: () => {
               const predicate = getProp as any as (element: DeepReadonly<X[0]>) => boolean;
-              const context = { type, updateState, selector, predicate, changeListeners, getCurrentState: () => currentState, pathReader, storeResult } as ArrayCustomState<S, C, X, T>;
+              const context = { type, updateState, selector, predicate, changeListeners, getCurrentState: () => currentState, pathReader, storeResult, storeState } as ArrayCustomState<S, C, X, T>;
               return {
                 remove: arrayCustom.remove(context),
                 replace: arrayCustom.replace(context),
