@@ -27,22 +27,22 @@ const select = store({
   username: '',
   favorite: {
     foods: new Array<string>(),
-    hobbies: new Array<{ id: number, name: string }>(),
+    movies: new Array<{ id: number, name: string, rating: number }>(),
   },
 });
 ```  
 #### ✍️ **WRITE STATE** 
 Writes consist of a **selection** followed by an **action** allowing state-updates to be **described** for you. 
 ```ts
-select(s => s.username)              // type: 'username.replace()'
-  .replace('Terence');               // replacement: 'Terence'
+select(s => s.username)                  // type: 'username.replace()'
+  .replace('Terence');                   // replacement: 'Terence'
 
-select(s => s.favorite.foods)        // type: 'favorite.foods.insert()'
-  .insert(['Indian', 'Sushi']);      // insertion: ['Indian', 'Sushi']
+select(s => s.favorite.foods)            // type: 'favorite.foods.insert()'
+  .insert(['Indian', 'Sushi']);          // insertion: ['Indian', 'Sushi']
 
-select(s => s.favorite.hobbies)      // type: 'favorite.hobbies.find().patch()'
-  .findWhere(s => s.id).eq(3)        // query: 'id === 3',
-  .patch({ name: 'coding' });        // patch: { name: 'coding' }
+select(s => s.favorite.movies)           // type: 'favorite.movies.filter().remove()'
+  .filterWhere(s => s.rating).lte(3)     // where: 'rating <= 3'
+  .remove();                             // toRemove: { id: 7, name: 'Click', rating: 1 }
 ```
 #### 👓 **READ STATE**
 State can be **read** from, **listened** to, and expensive derivations can be **memoized**.

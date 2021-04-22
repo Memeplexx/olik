@@ -158,7 +158,7 @@ export const processAsyncPayload = <S, C, X extends C & Array<any>, T extends Tr
   pathReader: PathReader<S>,
   storeResult: (selector?: (s: DeepReadonly<S>) => C) => any,
   processPayload: (payload: C) => void,
-  updateOptions: UpdateOptions<T>,
+  updateOptions: UpdateOptions<T, any>,
   suffix: string,
   storeState: StoreState<S>,
 ) => {

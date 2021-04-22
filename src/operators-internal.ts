@@ -18,7 +18,7 @@ export const defineRemoveNestedStore = <S, C, X extends C & Array<any>, T extend
       pathSegments: ['nested'],
       actionName: 'removeNested',
       payload: { name, key },
-      updateOptions: undefined as UpdateOptions<T>,
+      updateOptions: undefined as UpdateOptions<T, any>,
     })
   } else {
     updateState({
@@ -31,7 +31,7 @@ export const defineRemoveNestedStore = <S, C, X extends C & Array<any>, T extend
       pathSegments: ['nested', name],
       actionName: 'removeNested',
       payload: key,
-      updateOptions: undefined as UpdateOptions<T>,
+      updateOptions: undefined as UpdateOptions<T, any>,
     })
   }
 }) as StoreWhichIsNestedInternal<S, C>['defineRemoveNestedStore'];

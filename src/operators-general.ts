@@ -39,13 +39,13 @@ export const read = <S, C, X extends C & Array<any>>(
 export const reset = <S, C, X extends C & Array<any>, T extends Trackability>(
   context: CoreActionsState<S, C, X, FindOrFilter, T>,
 ) => (
-  updateOptions => replace({ ...context, name: 'reset' })(context.selector(context.initialState), updateOptions as UpdateOptions<T>)
+  updateOptions => replace({ ...context, name: 'reset' })(context.selector(context.initialState), updateOptions as UpdateOptions<T, any>)
 ) as StoreWhichIsResettable<C, T>['reset'];
 
 export const replaceAll = <S, C, X extends C & Array<any>, T extends Trackability>(
   context: CoreActionsState<S, C, X, FindOrFilter, T>,
 ) => (
-  (replacement, updateOptions) => replace({ ...context, name: 'replaceAll' })(replacement as X, updateOptions as UpdateOptions<T>)
+  (replacement, updateOptions) => replace({ ...context, name: 'replaceAll' })(replacement as X, updateOptions as UpdateOptions<T, any>)
 ) as StoreForAnArrayCommon<X, T>['replaceAll'];
 
 export const removeAll = <S, C, X extends C & Array<any>, T extends Trackability>(
@@ -75,10 +75,10 @@ export const insertIntoArray = <S, C, X extends C & Array<any>, T extends Tracka
       payload: {
         insertion: payloadFrozen,
       },
-      updateOptions: updateOptions as UpdateOptions<T>,
+      updateOptions: updateOptions as UpdateOptions<T, any>,
     });
   }
-  return processAsyncPayload(selector, payload, pathReader, storeResult, processPayload, updateOptions as UpdateOptions<T>, 'insert()', storeState);
+  return processAsyncPayload(selector, payload, pathReader, storeResult, processPayload, updateOptions as UpdateOptions<T, any>, 'insert()', storeState);
 }) as StoreForAnArrayCommon<X, T>['insert'];
 
 export const patchOrInsertIntoObject = <S, C, X extends C & Array<any>, T extends Trackability>(
@@ -97,17 +97,17 @@ export const patchOrInsertIntoObject = <S, C, X extends C & Array<any>, T extend
       } : {
         insertion: payloadFrozen,
       },
-      updateOptions: updateOptions as UpdateOptions<T>,
+      updateOptions: updateOptions as UpdateOptions<T, any>,
     });
   }
-  return processAsyncPayload(selector, payload, pathReader, storeResult, processPayload, updateOptions as UpdateOptions<T>, 'patch()', storeState);
+  return processAsyncPayload(selector, payload, pathReader, storeResult, processPayload, updateOptions as UpdateOptions<T, any>, 'patch()', storeState);
 }) as StoreForAnObject<C, T>['patch'];
 
 export const remove = <S, C, X extends C & Array<any>, T extends Trackability>(
   { isNested, selector, storeState, updateState }: CoreActionsState<S, C, X, FindOrFilter, T>,
 ) => ((payload, updateOptions) => {
   validateSelector(selector, isNested, storeState);
-    storeState.selector = selector; ///////////////////////////////////////////
+  storeState.selector = selector; ///////////////////////////////////////////
   updateState({
     selector,
     replacer: old => { const res = Object.assign({}, old); delete (res as any)[payload]; return res; },
@@ -160,7 +160,7 @@ export const upsertMatching = <S, C, X extends C & Array<any>, T extends Trackab
             replacementCount,
             insertionCount,
           }),
-          updateOptions: updateOptions as UpdateOptions<T>,
+          updateOptions: updateOptions as UpdateOptions<T, any>,
         });
       }
       return processAsyncPayload(selector, payload, pathReader, storeResult, processPayload, updateOptions, 'upsertMatching()', storeState);
@@ -172,7 +172,7 @@ export const replace = <S, C, X extends C & Array<any>, T extends Trackability>(
   { selector, isNested, storeState, pathReader, updateState, storeResult, name }: CoreActionsState<S, C, X, FindOrFilter, T> & { name: string },
 ) => (
   payload: C | (() => Promise<C>),
-  updateOptions: UpdateOptions<T>,
+  updateOptions: UpdateOptions<T, any>,
   ) => {
     validateSelector(selector, isNested, storeState);
     const processPayload = (payload: C) => replacePayload(pathReader, updateState, selector, name, payload as C, updateOptions);
@@ -185,7 +185,7 @@ export function replacePayload<S, C, X extends C & Array<any>, T extends Trackab
   selector: Selector<S, C, X>,
   name: string,
   payload: C,
-  updateOptions: UpdateOptions<T>
+  updateOptions: UpdateOptions<T, any>
 ) {
   const pathSegments = pathReader.readSelector(selector);
   const { payloadFrozen, payloadCopied } = copyPayload(payload);
