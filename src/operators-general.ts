@@ -1,5 +1,6 @@
 import {
   DeepReadonly,
+  FindOrFilter,
   Selector,
   StoreForAnArrayCommon,
   StoreForAnArrayOfObjects,
@@ -9,7 +10,7 @@ import {
   Trackability,
   UpdateOptions,
 } from './shapes-external';
-import { PathReader, StoreState, UpdateStateFn } from './shapes-internal';
+import { CoreActionsState, PathReader, StoreState, UpdateStateFn } from './shapes-internal';
 import {
   copyPayload,
   createPathReader,
@@ -36,33 +37,19 @@ export const read = <S, C, X extends C & Array<any>>(
 ) as StoreOrDerivation<C>['read'];
 
 export const reset = <S, C, X extends C & Array<any>, T extends Trackability>(
-  pathReader: PathReader<S>,
-  updateState: UpdateStateFn<S, C, T, X>,
-  selector: Selector<S, C, X>,
-  initialState: S,
-  isNested: () => boolean,
-  storeResult: (selector?: (s: DeepReadonly<S>) => C) => any,
-  storeState: StoreState<S>,
+  context: CoreActionsState<S, C, X, FindOrFilter, T>,
 ) => (
-  updateOptions => replace(pathReader, updateState, selector, 'reset', isNested, storeResult, storeState)(selector(initialState), updateOptions as UpdateOptions<T>)
+  updateOptions => replace({ ...context, name: 'reset' })(context.selector(context.initialState), updateOptions as UpdateOptions<T>)
 ) as StoreWhichIsResettable<C, T>['reset'];
 
 export const replaceAll = <S, C, X extends C & Array<any>, T extends Trackability>(
-  pathReader: PathReader<S>,
-  updateState: UpdateStateFn<S, C, T, X>,
-  selector: Selector<S, C, X>,
-  isNested: () => boolean,
-  storeResult: (selector?: (s: DeepReadonly<S>) => C) => any,
-  storeState: StoreState<S>,
+  context: CoreActionsState<S, C, X, FindOrFilter, T>,
 ) => (
-  (replacement, updateOptions) => replace(pathReader, updateState, selector, 'replaceAll', isNested, storeResult, storeState)(replacement as X, updateOptions as UpdateOptions<T>)
+  (replacement, updateOptions) => replace({ ...context, name: 'replaceAll' })(replacement as X, updateOptions as UpdateOptions<T>)
 ) as StoreForAnArrayCommon<X, T>['replaceAll'];
 
 export const removeAll = <S, C, X extends C & Array<any>, T extends Trackability>(
-  selector: Selector<S, C, X>,
-  updateState: UpdateStateFn<S, C, T, X>,
-  isNested: () => boolean,
-  storeState: StoreState<S>,
+  { selector, isNested, storeState, updateState }: CoreActionsState<S, C, X, FindOrFilter, T>,
 ) => (updateOptions => {
   validateSelector(selector, isNested, storeState);
   updateState({
@@ -75,12 +62,7 @@ export const removeAll = <S, C, X extends C & Array<any>, T extends Trackability
 }) as StoreForAnArrayCommon<X, T>['removeAll'];
 
 export const insertIntoArray = <S, C, X extends C & Array<any>, T extends Trackability>(
-  selector: Selector<S, C, X>,
-  updateState: UpdateStateFn<S, C, T, X>,
-  isNested: () => boolean,
-  storeResult: (selector?: (s: DeepReadonly<S>) => C) => any,
-  pathReader: PathReader<S>,
-  storeState: StoreState<S>,
+  { selector, isNested, storeResult, storeState, updateState, pathReader }: CoreActionsState<S, C, X, FindOrFilter, T>,
 ) => ((payload, updateOptions) => {
   validateSelector(selector, isNested, storeState);
   const processPayload = (payload: C) => {
@@ -100,13 +82,7 @@ export const insertIntoArray = <S, C, X extends C & Array<any>, T extends Tracka
 }) as StoreForAnArrayCommon<X, T>['insert'];
 
 export const patchOrInsertIntoObject = <S, C, X extends C & Array<any>, T extends Trackability>(
-  type: 'patch' | 'insert',
-  selector: Selector<S, C, X>,
-  updateState: UpdateStateFn<S, C, T, X>,
-  isNested: () => boolean,
-  storeResult: (selector?: (s: DeepReadonly<S>) => C) => any,
-  pathReader: PathReader<S>,
-  storeState: StoreState<S>,
+  { selector, isNested, storeState, updateState, storeResult, pathReader, type }: CoreActionsState<S, C, X, FindOrFilter, T> & { type: 'patch' | 'insert', },
 ) => ((payload, updateOptions) => {
   validateSelector(selector, isNested, storeState);
   const processPayload = (payload: Partial<C>) => {
@@ -128,10 +104,7 @@ export const patchOrInsertIntoObject = <S, C, X extends C & Array<any>, T extend
 }) as StoreForAnObject<C, T>['patch'];
 
 export const remove = <S, C, X extends C & Array<any>, T extends Trackability>(
-  selector: Selector<S, C, X>,
-  updateState: UpdateStateFn<S, C, T, X>,
-  isNested: () => boolean,
-  storeState: StoreState<S>,
+  { isNested, selector, storeState, updateState }: CoreActionsState<S, C, X, FindOrFilter, T>,
 ) => ((payload, updateOptions) => {
   validateSelector(selector, isNested, storeState);
     storeState.selector = selector; ///////////////////////////////////////////
@@ -148,20 +121,14 @@ export const remove = <S, C, X extends C & Array<any>, T extends Trackability>(
 }) as StoreForAnObject<C, T>['remove'];
 
 export const upsertMatching = <S, C, X extends C & Array<any>, T extends Trackability>(
-  selector: Selector<S, C, X>,
-  currentState: () => S,
-  updateState: UpdateStateFn<S, C, T, X>,
-  isNested: () => boolean,
-  storeResult: (selector?: (s: DeepReadonly<S>) => C) => any,
-  pathReader: PathReader<S>,
-  storeState: StoreState<S>,
+  { selector, isNested, storeState, getCurrentState, updateState, pathReader, storeResult }: CoreActionsState<S, C, X, FindOrFilter, T>
 ) => (getProp => {
   validateSelector(selector, isNested, storeState);
   return {
     with: (payload, updateOptions) => {
       validateSelector(selector, isNested, storeState);
       const processPayload = (payload: C) => {
-        const segs = !getProp ? [] : createPathReader((selector(currentState()) as X)[0] || {}).readSelector(getProp);
+        const segs = !getProp ? [] : createPathReader((selector(getCurrentState()) as X)[0] || {}).readSelector(getProp);
         const { payloadFrozen, payloadCopied } = copyPayload(payload);
         const payloadFrozenArray: X[0][] = Array.isArray(payloadFrozen) ? payloadFrozen : [payloadFrozen];
         const payloadCopiedArray: X[0][] = Array.isArray(payloadCopied) ? payloadCopied : [payloadCopied];
@@ -202,13 +169,7 @@ export const upsertMatching = <S, C, X extends C & Array<any>, T extends Trackab
 }) as StoreForAnArrayOfObjects<X, T>['upsertMatching'];
 
 export const replace = <S, C, X extends C & Array<any>, T extends Trackability>(
-  pathReader: PathReader<S>,
-  updateState: UpdateStateFn<S, C, T, X>,
-  selector: Selector<S, C, X>,
-  name: string,
-  isNested: () => boolean,
-  storeResult: (selector?: (s: DeepReadonly<S>) => C) => any,
-  storeState: StoreState<S>,
+  { selector, isNested, storeState, pathReader, updateState, storeResult, name }: CoreActionsState<S, C, X, FindOrFilter, T> & { name: string },
 ) => (
   payload: C | (() => Promise<C>),
   updateOptions: UpdateOptions<T>,

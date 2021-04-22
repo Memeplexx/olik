@@ -1,14 +1,12 @@
 import { store, transact } from '../src';
 import { errorMessages } from '../src/shared-consts';
-import { libState, testState } from '../src/shared-state';
+import { testState } from '../src/shared-state';
 import { nestedStore, storeEnforcingTags } from '../src/store-creators';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
 describe('async', () => {
 
   beforeAll(() => testState.windowObject = windowAugmentedWithReduxDevtoolsImpl);
-
-  // beforeEach(() => libState.activePromises = {});
 
   const initialState = {
     object: { property: '', property2: '' },

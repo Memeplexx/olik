@@ -196,7 +196,6 @@ export type ArrayOfElementsAction<X extends DeepReadonlyArray<any>, F extends Fi
    * ...
    */
   orWhere: X[0] extends object ? <P>(getProp: (element: DeepReadonly<X[0]>) => P) => Predicate<X, P, F, T> : () => Predicate<X, X[0], F, T>,
-
 } & ArrayOfElementsCommonAction<X, F, T>;
 
 /**
@@ -211,8 +210,7 @@ export type ArrayOfObjectsAction<X extends DeepReadonlyArray<any>, F extends Fin
    * ...
    * .patch({ done: true })
    */
-  patch: <H extends Partial<X[0]> | (() => Promise<Partial<X[0]>>) >(patch: H, options: UpdateOptions<T>) => H extends (() => Promise<any>) ? Promise<void> : void,
-
+  patch: <H extends Partial<X[0]> | (() => Promise<Partial<X[0]>>) >(patch: H, options: UpdateOptions<T, H>) => H extends (() => Promise<any>) ? Promise<void> : void,
   // select: <P>(getProp: (element: X[0]) => P) => Store<P, T>,
 } & ArrayOfElementsAction<X, F, T>;
 
@@ -223,7 +221,7 @@ export type ArrayOfElementsCommonAction<X extends DeepReadonlyArray<any>, F exte
    * ...
    * .replace({ id: 1, text: 'bake cookies' })
    */
-  replace: <H extends X[0] | (() => Promise<X[0]>) >(replacement: H, options: UpdateOptions<T>) => H extends (() => Promise<X[0]>) ? Promise<X> : void,
+  replace: <H extends X[0] | (() => Promise<X[0]>) >(replacement: H, options: UpdateOptions<T, H>) => H extends (() => Promise<X[0]>) ? Promise<X> : void,
   /**
    * Removes any elements that were found in the search clause
    * @example
@@ -259,7 +257,7 @@ export type ArrayOfObjectsCommonAction<X extends DeepReadonlyArray<any>, F exten
    * ...
    * .patch({ done: true })
    */
-  patch: <H extends Partial<X[0]> | (() => Promise<Partial<X[0]>>) >(replacement: H, options: UpdateOptions<T>) => H extends (() => Promise<any>) ? Promise<void> : void,
+  patch: <H extends Partial<X[0]> | (() => Promise<Partial<X[0]>>) >(replacement: H, options: UpdateOptions<T, H>) => H extends (() => Promise<any>) ? Promise<void> : void,
 } & ArrayOfElementsCommonAction<X, F, T>;
 
 export type TaggedUpdate<T extends Trackability> = T extends 'untagged' ? {
@@ -310,7 +308,7 @@ export type TaggedUpdate<T extends Trackability> = T extends 'untagged' ? {
   tag: string
 }
 
-export type PromisableUpdate = {
+export type PromisableUpdate<H> = H extends () => Promise<any> ? {
   /**
    * Avoid unnecessary promise invocations by supplying the number of milliseconds that should elapse before the promise is invoked again.
    * To un-do this, you can call `stopBypassingPromises()` on the node of the state tree, for example
@@ -320,11 +318,11 @@ export type PromisableUpdate = {
    * select(s => s.todos).findWhere(s => s.id).eq(2).stopBypassingPromises();
    */
   bypassPromiseFor?: number;
-}
+} : {};
 
 export type ActionOptions<T extends Trackability> = T extends 'untagged' ? (TaggedUpdate<'untagged'> | void) : TaggedUpdate<'tagged'>;
 
-export type UpdateOptions<T extends Trackability> = T extends 'untagged' ? (TaggedUpdate<'untagged'> & PromisableUpdate | void) : TaggedUpdate<'tagged'> & PromisableUpdate;
+export type UpdateOptions<T extends Trackability, H> = T extends 'untagged' ? (TaggedUpdate<'untagged'> & PromisableUpdate<H> | void) : TaggedUpdate<'tagged'> & PromisableUpdate<H>;
 
 /**
  * An object which is capable of storing and updating state which is in the shape of an array of primitives
@@ -342,7 +340,7 @@ export type StoreForAnArrayCommon<X extends DeepReadonlyArray<any>, T extends Tr
    * ...
    * .insert(() => getTodosFromApi())
    */
-  insert: <H extends (X | X[0] | (() => Promise<X | X[0]>)) >(insertion: H, options: UpdateOptions<T>) => H extends (() => Promise<any>) ? Promise<X> : void,
+  insert: <H extends (X | X[0] | (() => Promise<X | X[0]>)) >(insertion: H, options: UpdateOptions<T, H>) => H extends (() => Promise<any>) ? Promise<X> : void,
   /**
    * Removes all elements from the array
    * @example
@@ -356,7 +354,7 @@ export type StoreForAnArrayCommon<X extends DeepReadonlyArray<any>, T extends Tr
    * ...
    * .replaceAll(newTodos);
    */
-  replaceAll: <H extends X | (() => Promise<X>) >(replacement: H, options: UpdateOptions<T>) => H extends (() => Promise<X>) ? Promise<X> : void,
+  replaceAll: <H extends X | (() => Promise<X>) >(replacement: H, options: UpdateOptions<T, H>) => H extends (() => Promise<X>) ? Promise<X> : void,
 }
 
 /**
@@ -393,7 +391,7 @@ export type StoreForAnArrayOfObjects<X extends DeepReadonlyArray<any>, T extends
    * ...
    */
   upsertMatching: <P>(getProp: (element: DeepReadonly<X[0]>) => P) => {
-    with: <H extends X | (X[0] | X | (() => Promise<X | X[0]>)) >(elementOrArray: H, options: UpdateOptions<T>) => H extends (() => Promise<any>) ? Promise<X> : void,
+    with: <H extends X | (X[0] | X | (() => Promise<X | X[0]>)) >(elementOrArray: H, options: UpdateOptions<T, H>) => H extends (() => Promise<any>) ? Promise<X> : void,
   }
   /**
    * Specify a where clause to find many elements.
@@ -436,7 +434,7 @@ export type StoreForAnObjectOrPrimitive<C extends any, T extends Trackability> =
    * @example
    * select(s => s.user.age).replace(age => age + 1);
    */
-  replace: <H extends C | (() => Promise<C>) >(replacement: H, options: UpdateOptions<T>) => H extends (() => Promise<any>) ? Promise<C> : void,
+  replace: <H extends C | (() => Promise<C>) >(replacement: H, options: UpdateOptions<T, H>) => H extends (() => Promise<any>) ? Promise<C> : void,
 }
 
 /**
@@ -449,7 +447,7 @@ export type StoreForAnObject<C extends any, T extends Trackability> = {
    * ...
    *  .patch({ firstName: 'James', age: 33 })
    */
-  patch: <H extends (Partial<C> | (() => Promise<Partial<C>>)) >(partial: H, options: UpdateOptions<T>) => H extends (() => Promise<Partial<C>>) ? Promise<C> : void,
+  patch: <H extends (Partial<C> | (() => Promise<Partial<C>>)) >(partial: H, options: UpdateOptions<T, H>) => H extends (() => Promise<Partial<C>>) ? Promise<C> : void,
   /**
    * Removes the specified key from this object.  
    * ***WARNING***: invoking this has the potentional to contradict the type-system.

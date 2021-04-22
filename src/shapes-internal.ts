@@ -19,7 +19,7 @@ export type UpdateStateArgs<S, C, T extends Trackability, X extends C = C> = {
   pathSegments?: string[],
   actionName: string,
   payload?: any,
-  updateOptions: UpdateOptions<T>,
+  updateOptions: UpdateOptions<T, any>,
   actionNameOverride?: boolean,
   getPayloadFn?: () => any,
 };
@@ -80,6 +80,17 @@ export type ArrayCustomState<S, C, X extends C & Array<any>, T extends Trackabil
   pathReader: PathReader<S>,
   storeResult: (selector?: (s: DeepReadonly<S>) => C) => any,
   storeState: StoreState<S>,
+}
+
+export type CoreActionsState<S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability> = {
+  selector: Selector<S, C, X>,
+  updateState: UpdateStateFn<S, C, T, X>,
+  isNested: () => boolean,
+  storeState: StoreState<S>,
+  storeResult: (selector?: (s: DeepReadonly<S>) => C) => any,
+  pathReader: PathReader<S>,
+  initialState: S,
+  getCurrentState: () => S,
 }
 
 export type PreviousAction = {

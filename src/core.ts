@@ -32,6 +32,7 @@ import {
 import {
   ArrayCustomState,
   ArrayOperatorState,
+  CoreActionsState,
   PreviousAction,
   StoreState,
   StoreWhichIsNestedInternal,
@@ -137,17 +138,27 @@ export function createStore<S, T extends Trackability>({
       }) as StoreForAnArrayOfObjects<X, T>['filterWhere'];
       return recurseWhere;
     };
+    const getCoreActionsState = () => ({
+      updateState,
+      selector,
+      isNested: () => !!coreActions.removeFromContainingStore,
+      storeState,
+      pathReader,
+      storeResult,
+      initialState,
+      getCurrentState: () => currentState,
+    } as CoreActionsState<S, C, X, FindOrFilter, T>)
     const coreActions = {
-      remove: remove(selector, updateState, () => !!coreActions.removeFromContainingStore, storeState),
-      patch: patchOrInsertIntoObject('patch', selector, updateState, () => !!coreActions.removeFromContainingStore, storeResult, pathReader, storeState),
+      remove: remove(getCoreActionsState()),
+      patch: patchOrInsertIntoObject({ ...getCoreActionsState(), type: 'patch' }),
       insert: Array.isArray(selector(currentState))
-        ? insertIntoArray(selector, updateState, () => !!coreActions.removeFromContainingStore, storeResult, pathReader, storeState)
-        : patchOrInsertIntoObject('insert', selector, updateState, () => !!coreActions.removeFromContainingStore, storeResult, pathReader, storeState),
-      removeAll: removeAll(selector, updateState, () => !!coreActions.removeFromContainingStore, storeState),
-      replaceAll: replaceAll(pathReader, updateState, selector, () => !!coreActions.removeFromContainingStore, storeResult, storeState),
-      reset: reset(pathReader, updateState, selector, initialState, () => !!coreActions.removeFromContainingStore, storeResult, storeState),
-      replace: replace(pathReader, updateState, selector, 'replace', () => !!coreActions.removeFromContainingStore, storeResult, storeState),
-      upsertMatching: upsertMatching(selector, () => currentState, updateState, () => !!coreActions.removeFromContainingStore, storeResult, pathReader, storeState),
+        ? insertIntoArray(getCoreActionsState())
+        : patchOrInsertIntoObject({ ...getCoreActionsState(), type: 'insert' }),
+      removeAll: removeAll(getCoreActionsState()),
+      replaceAll: replaceAll(getCoreActionsState()),
+      reset: reset(getCoreActionsState()),
+      replace: replace({ ...getCoreActionsState(), name: 'replace' }),
+      upsertMatching: upsertMatching(getCoreActionsState()),
       filterWhere: where('filter'),
       findWhere: where('find'),
       onChange: onChange(selector, changeListeners),
@@ -156,7 +167,7 @@ export function createStore<S, T extends Trackability>({
       readInitial: () => selector(initialState),
       defineRemoveNestedStore: defineRemoveNestedStore(() => currentState, updateState),
       defineReset: (
-        (initState: C) => () => replace(pathReader, updateState, (e => selector(e)) as Selector<S, C, X>, 'reset', () => !!coreActions.removeFromContainingStore, storeResult, storeState)(initState, undefined)
+        (initState: C) => () => replace({ ...getCoreActionsState(), name: 'reset' })(initState, undefined as any)
       ) as StoreWhichIsNestedInternal<S, C>['defineReset'],
       renew: (state => {
         pathReader = createPathReader(state);
