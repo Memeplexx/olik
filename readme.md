@@ -73,14 +73,15 @@ transact(                             // type: 'username.replace(), favorite.foo
 ```
 
 #### ⏲️ **FETCH STATE**
-Pass in promises as payloads and optionally bypass subsequent promise invocations for a specified period
+Pass in promises as payloads, bypass promise invocations temporarily, and perform optimistic updates
 ```ts
 select(s => s.favorite.hobbies)
   .replaceAll(() => fetchHobbiesFromApi(), { bypassPromiseFor: 1000 * 60 })
   .catch(e => notifyUserOfError(e));
 
-select(s => s.favorite.hobbies)
-  .stopBypassingPromises();
+const newUserName = 'Jeff';
+select(s => s.username)
+  .replace(() => updateUsernameOnApi(newUserName), { optimisticallyUpdateWith: newUserName });
 ```
 
 #### 🥚 **NEST STORES**
