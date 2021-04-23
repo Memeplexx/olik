@@ -318,6 +318,11 @@ export type PromisableUpdate<H> = H extends () => Promise<any> ? {
    * select(s => s.todos).findWhere(s => s.id).eq(2).stopBypassingPromises();
    */
   bypassPromiseFor?: number;
+  /**
+   * Allows you to set an initial value to update the store with.
+   * If the promise is rejected, this value will be reverted to what it was before the promise was invoked.
+   */
+  optimisticallyUpdateWith?: H extends () => Promise<infer W> ? W : never,
 } : {};
 
 export type ActionOptions<T extends Trackability> = T extends 'untagged' ? (TaggedUpdate<'untagged'> | void) : TaggedUpdate<'tagged'>;

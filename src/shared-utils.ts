@@ -165,6 +165,7 @@ export const processAsyncPayload = <S, C, X extends C & Array<any>, T extends Tr
   if (storeState.dryRun) {
     return;
   } else if (!!payload && typeof (payload) === 'function') {
+    
     if (libState.transactionState !== 'none') {
       libState.transactionState = 'none';
       throw new Error(errorMessages.PROMISES_NOT_ALLOWED_IN_TRANSACTIONS)
@@ -183,6 +184,14 @@ export const processAsyncPayload = <S, C, X extends C & Array<any>, T extends Tr
     if (expirationDate && (new Date(expirationDate).getTime() > new Date().getTime())) {
       return Promise.resolve(storeResult(selector as any).read());
     }
+
+
+    const { optimisticallyUpdateWith } = ((updateOptions as any) || {});
+    let snapshot = isEmpty(optimisticallyUpdateWith) ? null : storeResult(selector as any).read();
+    if (!isEmpty(snapshot)) {
+      processPayload(optimisticallyUpdateWith);
+    }
+
     const result = asyncPayload()
       .then(res => {
         const involvesCaching = !!updateOptions && !(typeof (updateOptions) === 'string') && bypassPromiseFor;
@@ -211,6 +220,11 @@ export const processAsyncPayload = <S, C, X extends C & Array<any>, T extends Tr
           }
         }
         return storeResult(selector as any).read();
+      }).catch(e => {
+        if (!isEmpty(snapshot)) {
+          processPayload(snapshot);
+        }
+        throw e;
       }).finally(() => delete storeState.activePromises[fullPath]);
     storeState.activePromises[fullPath] = result;
     return result;

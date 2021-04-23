@@ -502,5 +502,31 @@ describe('async', () => {
       });
   })
 
+  it('should be able to perform an optimistic update', done => {
+    const select = store(initialState);
+    const optimisticValue = [{id: 6, value: 'six'}];
+    const resolvedValue = [{ id: 7, value: 'seven' }];
+    select(s => s.array)
+      .replaceAll(() => new Promise(resolve => resolve(resolvedValue)), { optimisticallyUpdateWith: optimisticValue })
+      .then(() => {
+        expect(select(s => s.array).read()).toEqual(resolvedValue);
+        done();
+      });
+    expect(select(s => s.array).read()).toEqual(optimisticValue);
+  })
+
+  it('should revert an optimistic update if there is an error', done => {
+    const select = store(initialState);
+    const optimisticValue = [{id: 6, value: 'six'}];
+    select(s => s.array)
+      .replaceAll(() => new Promise((resolve, reject) => reject('test')), { optimisticallyUpdateWith: optimisticValue })
+      .then(() => {
+      }).catch(() => {
+        expect(select(s => s.array).read()).toEqual(initialState.array);
+        done();
+      });
+    expect(select(s => s.array).read()).toEqual(optimisticValue);
+  })
+
 });
 

@@ -13,7 +13,7 @@ Olik allows you to comprehensively grok your state updates without ever leaving 
 * **Debuggability** is improved through **auto-generated action types**
 * **Nested stores** allow you to manage and debug your component state with or without your application state.
 * **Transactions** help you to group your state updates, avoiding overly abstract action types.
-* **Async updates**, request **de-duplication**, and **caching** are all built-in.
+* **Async updates**, request **de-duplication**, **optimistic updates**, and **caching** are all built-in.
 
 ---
 ⚠️ <ins>NOTE: The below code demonstrates Olik **without a framework**.</ins>  
