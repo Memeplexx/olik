@@ -120,7 +120,7 @@ describe('Root', () => {
     expect(testState.currentAction).toEqual({
       type: 'find().replace()',
       replacement: payload,
-      query: `element === two`,
+      where: `element === two`,
     })
     expect(select().read()).toEqual(['one', 'twoo', 'three']);
     expect(testState.currentMutableState).toEqual(select().read());
@@ -144,7 +144,7 @@ describe('Root', () => {
     expect(testState.currentAction).toEqual({
       type: 'find().replace()',
       replacement: 'another',
-      query: 'element.match(/^h/)',
+      where: 'element.match(/^h/)',
     });
     expect(select().read()).toEqual(['another']);
     expect(testState.currentMutableState).toEqual(select().read());

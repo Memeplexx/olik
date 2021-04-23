@@ -56,7 +56,7 @@ export const remove = <S, C, X extends C & Array<any>, F extends FindOrFilter, T
     },
     actionName: `${type}().remove()`,
     payload: {
-      query: whereClauseStrings.join(' '),
+      where: whereClauseStrings.join(' '),
       toRemove: (selector(getCurrentState()) as X)[type]((e, i) => elementIndices.includes(i)),
     },
     updateOptions,
@@ -76,7 +76,7 @@ export const patch = <S, C, X extends C & Array<any>, F extends FindOrFilter, T 
       mutator: old => elementIndices.forEach(i => Object.assign(old[i], payloadCopied)),
       actionName: `${type}().patch()`,
       payload: {
-        query: whereClauseString,
+        where: whereClauseString,
         patch: payloadFrozen,
       },
       updateOptions: updateOptions as UpdateOptions<T, any>,
@@ -98,7 +98,7 @@ export const replace = <S, C, X extends C & Array<any>, F extends FindOrFilter, 
       mutator: old => { old.forEach((o, i) => { if (elementIndices.includes(i)) { old[i] = payloadCopied; } }) },
       actionName: `${type}().replace()`,
       payload: {
-        query: whereClauseString,
+        where: whereClauseString,
         replacement: payloadFrozen,
       },
       updateOptions: updateOptions as UpdateOptions<T, any>,

@@ -14,14 +14,14 @@ describe('array.filterCustom().replace()', () => {
   it('should eq()', () => {
     const select = store(initialState);
     const payload = { id: 4, value: 'four' };
-    const query = (e: typeof initialState['array'][0]) => e.id === 2;
+    const where = (e: typeof initialState['array'][0]) => e.id === 2;
     select(s => s.array)
-      .filterWhere(query).returnsTrue()
+      .filterWhere(where).returnsTrue()
       .replace(payload);
     expect(testState.currentAction).toEqual({
       type: 'array.filter().replace()',
       replacement: payload,
-      query: query.toString(),
+      where: where.toString(),
     });
     expect(select(s => s.array).read()).toEqual([initialState.array[0], payload, initialState.array[2]]);
     expect(testState.currentMutableState).toEqual(select().read());
@@ -30,14 +30,14 @@ describe('array.filterCustom().replace()', () => {
   it('should ne()', () => {
     const select = store(initialState);
     const payload = { id: 4, value: 'four' };
-    const query = (e: typeof initialState['array'][0]) => e.id !== 2;
+    const where = (e: typeof initialState['array'][0]) => e.id !== 2;
     select(s => s.array)
-      .filterWhere(query).returnsTrue()
+      .filterWhere(where).returnsTrue()
       .replace(payload);
     expect(testState.currentAction).toEqual({
       type: 'array.filter().replace()',
       replacement: payload,
-      query: query.toString(),
+      where: where.toString(),
     });
     expect(select(s => s.array).read()).toEqual([payload, initialState.array[1], payload]);
     expect(testState.currentMutableState).toEqual(select().read());
@@ -46,14 +46,14 @@ describe('array.filterCustom().replace()', () => {
   it('should gt()', () => {
     const select = store(initialState);
     const payload = { id: 4, value: 'four' };
-    const query = (e: typeof initialState['array'][0]) => e.id > 1;
+    const where = (e: typeof initialState['array'][0]) => e.id > 1;
     select(s => s.array)
-      .filterWhere(query).returnsTrue()
+      .filterWhere(where).returnsTrue()
       .replace(payload);
     expect(testState.currentAction).toEqual({
       type: 'array.filter().replace()',
       replacement: payload,
-      query: query.toString(),
+      where: where.toString(),
     });
     expect(select(s => s.array).read()).toEqual([initialState.array[0], payload, payload]);
     expect(testState.currentMutableState).toEqual(select().read());
@@ -62,14 +62,14 @@ describe('array.filterCustom().replace()', () => {
   it('should lt()', () => {
     const select = store(initialState);
     const payload = { id: 4, value: 'four' };
-    const query = (e: typeof initialState['array'][0]) => e.id < 2;
+    const where = (e: typeof initialState['array'][0]) => e.id < 2;
     select(s => s.array)
       .filterWhere(e => e.id < 2).returnsTrue()
       .replace(payload);
     expect(testState.currentAction).toEqual({
       type: 'array.filter().replace()',
       replacement: payload,
-      query: query.toString(),
+      where: where.toString(),
     });
     expect(select(s => s.array).read()).toEqual([payload, initialState.array[1], initialState.array[2]]);
     expect(testState.currentMutableState).toEqual(select().read());
@@ -78,14 +78,14 @@ describe('array.filterCustom().replace()', () => {
   it('should in()', () => {
     const select = store(initialState);
     const payload = { id: 4, value: 'four' };
-    const query = (e: typeof initialState['array'][0]) => [1, 2].includes(e.id);
+    const where = (e: typeof initialState['array'][0]) => [1, 2].includes(e.id);
     select(s => s.array)
-      .filterWhere(query).returnsTrue()
+      .filterWhere(where).returnsTrue()
       .replace(payload);
     expect(testState.currentAction).toEqual({
       type: 'array.filter().replace()',
       replacement: payload,
-      query: query.toString(),
+      where: where.toString(),
     });
     expect(select(s => s.array).read()).toEqual([payload, payload, initialState.array[2]]);
     expect(testState.currentMutableState).toEqual(select().read());
@@ -94,14 +94,14 @@ describe('array.filterCustom().replace()', () => {
   it('should ni()', () => {
     const select = store(initialState);
     const payload = { id: 4, value: 'four' };
-    const query = (e: typeof initialState['array'][0]) => ![1, 2].includes(e.id);
+    const where = (e: typeof initialState['array'][0]) => ![1, 2].includes(e.id);
     select(s => s.array)
       .filterWhere(e => ![1, 2].includes(e.id)).returnsTrue()
       .replace(payload);
     expect(testState.currentAction).toEqual({
       type: 'array.filter().replace()',
       replacement: payload,
-      query: query.toString(),
+      where: where.toString(),
     });
     expect(select(s => s.array).read()).toEqual([initialState.array[0], initialState.array[1], payload]);
     expect(testState.currentMutableState).toEqual(select().read());
@@ -110,14 +110,14 @@ describe('array.filterCustom().replace()', () => {
   it('should match()', () => {
     const select = store(initialState);
     const payload = { id: 4, value: 'four' };
-    const query = (e: typeof initialState['array'][0]) => /^t/.test(e.value);
+    const where = (e: typeof initialState['array'][0]) => /^t/.test(e.value);
     select(s => s.array)
-      .filterWhere(query).returnsTrue()
+      .filterWhere(where).returnsTrue()
       .replace(payload);
     expect(testState.currentAction).toEqual({
       type: 'array.filter().replace()',
       replacement: payload,
-      query: query.toString(),
+      where: where.toString(),
     });
     expect(select(s => s.array).read()).toEqual([initialState.array[0], payload, payload]);
     expect(testState.currentMutableState).toEqual(select().read());

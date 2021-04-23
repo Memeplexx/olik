@@ -19,7 +19,7 @@ describe('array.filter().and().or()', () => {
     expect(testState.currentAction).toEqual({
       type: 'array.filter().remove()',
       toRemove: [ initialState.array[1] ],
-      query: 'id === 2 && value === two',
+      where: 'id === 2 && value === two',
     });
     expect(select(s => s.array).read()).toEqual([initialState.array[0], initialState.array[2]]);
     expect(testState.currentMutableState).toEqual(select().read());
@@ -35,7 +35,7 @@ describe('array.filter().and().or()', () => {
     expect(testState.currentAction).toEqual({
       type: 'array.filter().remove()',
       toRemove: [initialState.array[0], initialState.array[1]],
-      query: 'id === 1 || value === two',
+      where: 'id === 1 || value === two',
     });
     expect(select(s => s.array).read()).toEqual([initialState.array[2]]);
     expect(testState.currentMutableState).toEqual(select().read());
@@ -49,7 +49,7 @@ describe('array.filter().and().or()', () => {
     expect(testState.currentAction).toEqual({
       type: 'array.filter().remove()',
       toRemove: [],
-      query: 'id === 1 && id === 2',
+      where: 'id === 1 && id === 2',
     });
     expect(select(s => s.array).read()).toEqual(initialState.array);
     expect(testState.currentMutableState).toEqual(select().read());
@@ -63,7 +63,7 @@ describe('array.filter().and().or()', () => {
     expect(testState.currentAction).toEqual({
       type: 'array.filter().remove()',
       toRemove: [initialState.array[2]],
-      query: 'id === 1 && id === 2 || id === 3',
+      where: 'id === 1 && id === 2 || id === 3',
     });
     expect(select(s => s.array).read()).toEqual([initialState.array[0], initialState.array[1]]);
     expect(testState.currentMutableState).toEqual(select().read());
@@ -77,7 +77,7 @@ describe('array.filter().and().or()', () => {
     expect(testState.currentAction).toEqual({
       type: 'array.filter().remove()',
       toRemove: [initialState.array[2]],
-      query: 'id === 4 || id === 3 && value === three',
+      where: 'id === 4 || id === 3 && value === three',
     });
     expect(select(s => s.array).read()).toEqual([initialState.array[0], initialState.array[1]]);
     expect(testState.currentMutableState).toEqual(select().read());
@@ -91,7 +91,7 @@ describe('array.filter().and().or()', () => {
     expect(testState.currentAction).toEqual({
       type: 'array.filter().remove()',
       toRemove: [initialState.array[0], initialState.array[2]],
-      query: 'id === 1 && value === one || id === 3 && value === three',
+      where: 'id === 1 && value === one || id === 3 && value === three',
     });
     expect(select(s => s.array).read()).toEqual([initialState.array[1]]);
     expect(testState.currentMutableState).toEqual(select().read());

@@ -20,7 +20,7 @@ describe('array.whereMany().replace()', () => {
     expect(testState.currentAction).toEqual({
       type: 'array.filter().replace()',
       replacement: payload,
-      query: 'id === 2',
+      where: 'id === 2',
     });
     expect(select(s => s.array).read()).toEqual([initialState.array[0], payload, initialState.array[2]]);
     expect(testState.currentMutableState).toEqual(select().read());
@@ -35,7 +35,7 @@ describe('array.whereMany().replace()', () => {
     expect(testState.currentAction).toEqual({
       type: 'array.filter().replace()',
       replacement: payload,
-      query: 'id !== 2',
+      where: 'id !== 2',
     });
     expect(select(s => s.array).read()).toEqual([payload, initialState.array[1], payload]);
     expect(testState.currentMutableState).toEqual(select().read());
@@ -50,7 +50,7 @@ describe('array.whereMany().replace()', () => {
     expect(testState.currentAction).toEqual({
       type: 'array.filter().replace()',
       replacement: payload,
-      query: 'id > 1',
+      where: 'id > 1',
     });
     expect(select(s => s.array).read()).toEqual([initialState.array[0], payload, payload]);
     expect(testState.currentMutableState).toEqual(select().read());
@@ -65,7 +65,7 @@ describe('array.whereMany().replace()', () => {
     expect(testState.currentAction).toEqual({
       type: 'array.filter().replace()',
       replacement: payload,
-      query: 'id >= 1',
+      where: 'id >= 1',
     });
     expect(select(s => s.array).read()).toEqual([payload, payload, payload]);
     expect(testState.currentMutableState).toEqual(select().read());
@@ -80,7 +80,7 @@ describe('array.whereMany().replace()', () => {
     expect(testState.currentAction).toEqual({
       type: 'array.filter().replace()',
       replacement: payload,
-      query: 'id < 2',
+      where: 'id < 2',
     });
     expect(select(s => s.array).read()).toEqual([payload, initialState.array[1], initialState.array[2]]);
     expect(testState.currentMutableState).toEqual(select().read());
@@ -95,7 +95,7 @@ describe('array.whereMany().replace()', () => {
     expect(testState.currentAction).toEqual({
       type: 'array.filter().replace()',
       replacement: payload,
-      query: 'id <= 2',
+      where: 'id <= 2',
     });
     expect(select(s => s.array).read()).toEqual([payload, payload, initialState.array[2]]);
     expect(testState.currentMutableState).toEqual(select().read());
@@ -110,7 +110,7 @@ describe('array.whereMany().replace()', () => {
     expect(testState.currentAction).toEqual({
       type: 'array.filter().replace()',
       replacement: payload,
-      query: '[1, 2].includes(id)',
+      where: '[1, 2].includes(id)',
     });
     expect(select(s => s.array).read()).toEqual([payload, payload, initialState.array[2]]);
     expect(testState.currentMutableState).toEqual(select().read());
@@ -125,7 +125,7 @@ describe('array.whereMany().replace()', () => {
     expect(testState.currentAction).toEqual({
       type: 'array.filter().replace()',
       replacement: payload,
-      query: '![1, 2].includes(id)',
+      where: '![1, 2].includes(id)',
     });
     expect(select(s => s.array).read()).toEqual([initialState.array[0], initialState.array[1], payload]);
     expect(testState.currentMutableState).toEqual(select().read());
@@ -140,7 +140,7 @@ describe('array.whereMany().replace()', () => {
     expect(testState.currentAction).toEqual({
       type: 'array.filter().replace()',
       replacement: payload,
-      query: 'value.match(/^t/)',
+      where: 'value.match(/^t/)',
     });
     expect(select(s => s.array).read()).toEqual([initialState.array[0], payload, payload]);
     expect(testState.currentMutableState).toEqual(select().read());

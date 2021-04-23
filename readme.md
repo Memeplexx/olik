@@ -6,7 +6,7 @@
 ![Package Size](https://badgen.net/bundlephobia/minzip/olik)
 ![Dependency count](https://badgen.net/bundlephobia/dependency-count/olik)
 
-## Consistency-obsessed, honest, inline state-management  
+## Axiomatic, in-line state-management
 
 Olik allows you to comprehensively grok your state updates without ever leaving your component code.  
 * Its **fluent typesafe API** dramatically improves the **consistency** of your state operations, **eliminating ambiguity** 
