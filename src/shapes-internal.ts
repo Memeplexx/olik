@@ -82,7 +82,7 @@ export type ArrayCustomState<S, C, X extends C & Array<any>, T extends Trackabil
   storeState: StoreState<S>,
 }
 
-export type CoreActionsState<S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability> = {
+export type CoreActionsState<S, C, X extends C & Array<any>, T extends Trackability> = {
   selector: Selector<S, C, X>,
   updateState: UpdateStateFn<S, C, T, X>,
   isNested: () => boolean,
@@ -123,4 +123,5 @@ export type StoreState<S> = {
   activePromises: { [key: string]: Promise<any> },
   transactionActions: Array<{ type: string }>,
   transactionStartState: any,
+  dryRun: boolean,
 }

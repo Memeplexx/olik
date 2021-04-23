@@ -149,6 +149,7 @@ const completeWhereClause = <S, C, X extends C & Array<any>, F extends FindOrFil
     ? [(selector(getCurrentState()) as X).findIndex(e => bundleCriteria(e, whereClauseSpecs))]
     : (selector(getCurrentState()) as X).map((e, i) => bundleCriteria(e, whereClauseSpecs) ? i : null).filter(i => i !== null) as number[];
   if (type === 'find' && elementIndices[0] === -1) { throw new Error(errorMessages.NO_ARRAY_ELEMENT_FOUND); }
+  context.storeState.selector = (state: S) => (context.selector(state) as X)[type]((e, i) => elementIndices.includes(i));
   return elementIndices;
 }
 

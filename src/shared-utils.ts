@@ -1,4 +1,4 @@
-import { DeepReadonly, Selector, Trackability, UpdateOptions } from './shapes-external';
+import { DeepReadonly, Selector, SelectorFromAStore, Trackability, UpdateOptions } from './shapes-external';
 import { PathReader, StoreState } from './shapes-internal';
 import { errorMessages, expressionsNotAllowedInSelectorFunction } from './shared-consts';
 import { libState } from './shared-state';
@@ -162,7 +162,9 @@ export const processAsyncPayload = <S, C, X extends C & Array<any>, T extends Tr
   suffix: string,
   storeState: StoreState<S>,
 ) => {
-  if (!!payload && typeof (payload) === 'function') {
+  if (storeState.dryRun) {
+    return;
+  } else if (!!payload && typeof (payload) === 'function') {
     if (libState.transactionState !== 'none') {
       libState.transactionState = 'none';
       throw new Error(errorMessages.PROMISES_NOT_ALLOWED_IN_TRANSACTIONS)
@@ -210,10 +212,17 @@ export const processAsyncPayload = <S, C, X extends C & Array<any>, T extends Tr
         }
         return storeResult(selector as any).read();
       }).finally(() => delete storeState.activePromises[fullPath]);
-      storeState.activePromises[fullPath] = result;
+    storeState.activePromises[fullPath] = result;
     return result;
   } else {
     processPayload(payload as C);
   }
 }
 
+export const getSelectedStateFromOperationWithoutUpdatingStore = <S>(select: SelectorFromAStore<S>, operation: () => any): any => {
+  (select() as any).dryRun(true);
+  operation();
+  const result = select((select() as any).getSelector()).read();
+  (select() as any).dryRun(false);
+  return result;
+}

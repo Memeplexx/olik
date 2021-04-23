@@ -8,53 +8,63 @@ import {
   nestedStore as libNestedStore,
   StoreOrDerivation,
   Store,
+  ArrayOfObjectsAction,
+  DeepReadonlyArray,
+  FindOrFilter,
+  Trackability,
 } from 'olik';
 import React from 'react';
 
-/**
- * A hook to track the status of a request
- * 
- * @param fetchFn A no-args function returning a promise
- * 
- * @example
- * const { isLoading, hasError, succeeded, error, data, refetch } =
- *   useFetcher(() => fetch('https://www.example.com/api/todos')
- *     .then(res => get(s => s.todos).replaceAll(res)));
- * const todos = useSelector(get(s => s.todos));
- */
-export function useFetcher<C>(
-  fetchFn: () => Promise<C>,
-  deps: React.DependencyList = [],
-) {
-  const [result, setResult] = React.useState({
-    isLoading: true,
-    wasRejected: false,
-    wasResolved: false,
-    error: null as any | null,
-    fetch: null as any as (() => void),
-    storeValue: null as any as C,
-  });
-  React.useEffect(() => {
-    let isSubscribed = false;
-    const fetch = () => {
-      let isSubscribed = true;
-      setResult({ wasRejected: false, isLoading: true, error: null, wasResolved: false, fetch, storeValue: null as any as C });
-      fetchFn()
-        .then(storeValue => {
-          if (isSubscribed) {
-            setResult({ wasRejected: false, isLoading: false, error: null, wasResolved: true, fetch, storeValue })
-          }
-        })
-        .catch(error => {
-          if (isSubscribed) {
-            setResult({ ...result, wasRejected: true, isLoading: false, error, wasResolved: false, fetch })
-          }
-        });
-    };
-    fetch();
-    return () => { isSubscribed = false; }
-  }, deps);
-  return result;
+function getUseFetcher<S>(select: SelectorFromAStore<S>) {
+  return {
+    /**
+     * A hook to track the status of a request
+     * 
+     * @param fetchFn A no-args function returning a promise
+     * 
+     * @example
+     * const { isLoading, hasError, succeeded, error, data, refetch } =
+     *   useFetcher(() => fetch('https://www.example.com/api/todos')
+     *     .then(res => get(s => s.todos).replaceAll(res)));
+     * const todos = useSelector(get(s => s.todos));
+     */
+    useFetcher: function useFetcher<C>(
+      fetchFn: () => Promise<C>,
+      deps: React.DependencyList = [],
+    ) {
+      const [result, setResult] = React.useState({
+        isLoading: true,
+        wasRejected: false,
+        wasResolved: false,
+        error: null as any | null,
+        fetch: null as any as (() => void),
+        storeValue: null as any as C,
+      });
+      React.useEffect(() => {
+        let isSubscribed = false;
+        const fetch = () => {
+          isSubscribed = true;
+          const promise = fetchFn();
+          const initialValue = select((select() as any).getSelector()).read() as any as C;
+          setResult({ wasRejected: false, isLoading: true, error: null, wasResolved: false, fetch, storeValue: initialValue });
+          promise
+            .then(storeValue => {
+              if (isSubscribed) {
+                setResult({ wasRejected: false, isLoading: false, error: null, wasResolved: true, fetch, storeValue })
+              }
+            })
+            .catch(error => {
+              if (isSubscribed) {
+                setResult({ ...result, wasRejected: true, isLoading: false, error, wasResolved: false, fetch })
+              }
+            });
+        };
+        fetch();
+        return () => { isSubscribed = false; }
+      }, deps);
+      return result;
+    },
+  };
 }
 
 /**
@@ -98,6 +108,7 @@ export function store<S>(initialState: S, options?: OptionsForMakingAStore) {
     ...getUseSelector(select),
     ...getUseDerivation(select),
     ...getMapStateToProps(select),
+    ...getUseFetcher(select),
   }
 }
 

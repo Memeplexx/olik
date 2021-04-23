@@ -2,7 +2,7 @@ import { configure, mount } from 'enzyme';
 import Adapter from 'enzyme-adapter-react-16';
 import React from 'react';
 
-import { store, useFetcher, useNestedStore } from '../src';
+import { store, useNestedStore } from '../src';
 import { act, render } from '@testing-library/react';
 import { screen, waitFor } from '@testing-library/dom';
 import '@testing-library/jest-dom'
@@ -213,20 +213,23 @@ describe('React', () => {
   });
 
   it('should respond to async queries', async () => {
-    const { select, useSelector } = store(initialState, { devtools: false });
+    const { select, useSelector, useFetcher } = store(initialState, { devtools: false });
     const App = () => {
-      const state = useSelector(s => s.object.property);
+      // const state = useSelector(s => s.object.property);
       const {
         fetch,
         wasResolved,
         wasRejected,
         isLoading,
+        storeValue
       } = useFetcher(() => select(s => s.object.property)
         .replace(() => new Promise<string>(resolve => setTimeout(() => resolve('test'), 10))));
+        console.log('.......', storeValue);
+
       return (
         <>
           <button data-testid="btn" onClick={fetch}>Click</button>
-          <div data-testid="result">{state}</div>
+          <div data-testid="result">{storeValue}</div>
           {isLoading && <div>Loading</div>}
           {wasResolved && <div>Success</div>}
           {wasRejected && <div>Failure</div>}
@@ -243,7 +246,7 @@ describe('React', () => {
   })
 
   it('should respond to async queries', async () => {
-    const { select, useSelector } = store(initialState, { devtools: false });
+    const { select, useFetcher } = store(initialState, { devtools: false });
     const App = () => {
       const {
         fetch,
@@ -274,13 +277,13 @@ describe('React', () => {
       (screen.getByTestId('btn') as HTMLButtonElement).click();
       expect(screen.queryByText('Loading')).toBeInTheDocument();
     });
-    expect(screen.queryByText('Loading')).not.toBeInTheDocument();
+    await waitFor(() => expect(screen.queryByText('Loading')).not.toBeInTheDocument());
   })
 
   it('should be able to paginate', async () => {
     const todos = new Array(15).fill(null).map((e, i) => ({ id: i + 1, text: `value ${i + 1}` }));
     type Todo = { id: Number, text: string };
-    const { select, useSelector } = store({
+    const { select, useFetcher } = store({
       toPaginate: {} as { [key: string]: Todo[] },
     }, { devtools: false });
     const App = () => {
