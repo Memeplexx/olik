@@ -1,8 +1,8 @@
-import { transact } from '.';
 import { ArrayOfElementsCommonAction, ArrayOfObjectsCommonAction, FindOrFilter, Trackability } from './shapes-external';
 import { ArrayCustomState } from './shapes-internal';
 import { errorMessages } from './shared-consts';
 import { copyPayload, deepFreeze, processAsyncPayload } from './shared-utils';
+import { transact } from './transact';
 
 export const replace = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
   context: ArrayCustomState<S, C, X, T>,

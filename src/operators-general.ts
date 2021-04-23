@@ -107,7 +107,6 @@ export const remove = <S, C, X extends C & Array<any>, T extends Trackability>(
   { isNested, selector, storeState, updateState }: CoreActionsState<S, C, X, FindOrFilter, T>,
 ) => ((payload, updateOptions) => {
   validateSelector(selector, isNested, storeState);
-  storeState.selector = selector; ///////////////////////////////////////////
   updateState({
     selector,
     replacer: old => { const res = Object.assign({}, old); delete (res as any)[payload]; return res; },
@@ -257,6 +256,7 @@ const validateSelector = <S, C, X extends C & Array<any>>(
   isNested: () => boolean,
   storeState: StoreState<S>,
 ) => {
+  storeState.selector = selector;
   if (isNested()) { storeState.bypassSelectorFunctionCheck = true; }
   validateSelectorFn('select', storeState, selector);
   if (isNested()) { storeState.bypassSelectorFunctionCheck = false; }
