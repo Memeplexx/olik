@@ -1,5 +1,5 @@
 import { errorMessages } from '../src/shared-consts';
-import { libState, testState } from '../src/shared-state';
+import { testState } from '../src/shared-state';
 import { store } from '../src/store-creators';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
@@ -92,13 +92,13 @@ describe('Devtools', () => {
     const payload: number[] = [];
     for (let i = 0; i < 100; i++) {
       select(s => s.test).replace(i);
-      expect(libState.currentActionForDevtools).toEqual({ type: 'test.replace()', replacement: 0 });
+      expect(testState.currentActionForDevtools).toEqual({ type: 'test.replace()', replacement: 0 });
       if (i > 0) {
         payload.push(i);
       }
     }
     setTimeout(() => {
-      expect(libState.currentActionForDevtools).toEqual({
+      expect(testState.currentActionForDevtools).toEqual({
         type: 'test.replace()',
         replacement: 99,
         batched: payload.slice(0, payload.length - 1).map(replacement => ({ replacement })),

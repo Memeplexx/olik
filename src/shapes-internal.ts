@@ -121,4 +121,6 @@ export type StoreState<S> = {
   selector: (arg: S) => any,
   bypassSelectorFunctionCheck: boolean,
   activePromises: { [key: string]: Promise<any> },
+  transactionActions: Array<{ type: string }>,
+  transactionStartState: any,
 }

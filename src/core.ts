@@ -6,13 +6,13 @@ import {
   onChange,
   patchOrInsertIntoObject,
   read,
+  remove,
   removeAll,
   replace,
   replaceAll,
-  upsertMatching,
   reset,
   stopBypassingPromises,
-  remove
+  upsertMatching,
 } from './operators-general';
 import { defineRemoveNestedStore } from './operators-internal';
 import {
@@ -61,7 +61,7 @@ export function createStore<S, T extends Trackability>({
   let initialState = currentState;
   let devtoolsDispatchListener: ((action: { type: string, payload?: any }) => any) | undefined;
   const setDevtoolsDispatchListener = (listener: (action: { type: string, payload?: any }) => any) => devtoolsDispatchListener = listener;
-  const storeState = { bypassSelectorFunctionCheck: false, selector: null as any, activePromises: {} } as StoreState<S>;
+  const storeState = { bypassSelectorFunctionCheck: false, selector: null as any, activePromises: {}, transactionActions: [], transactionState: 'none', transactionStartState: null } as StoreState<S>;
   const action = <C, X extends C & Array<any>>(selector: Selector<S, C, X>) => {
     const where = (type: FindOrFilter) => {
       const whereClauseSpecs = Array<{ filter: (arg: X[0]) => boolean, type: 'and' | 'or' | 'last' }>();
@@ -195,7 +195,7 @@ export function createStore<S, T extends Trackability>({
   function updateState<C, T extends Trackability, X extends C = C>(specs: UpdateStateArgs<S, C, T, X>) {
 
     if (libState.transactionState === 'started') {
-      libState.transactionStartState = currentState
+      storeState.transactionStartState = currentState
     }
 
     const previousState = currentState;
@@ -218,19 +218,19 @@ export function createStore<S, T extends Trackability>({
 
     // Cater for transactions
     if (libState.transactionState === 'started') {
-      libState.transactionActions.push(actionToDispatch);
+      storeState.transactionActions.push(actionToDispatch);
       return;
     }
     if (libState.transactionState === 'last') {
-      libState.transactionActions.push(actionToDispatch);
-      notifySubscribers(libState.transactionStartState, result);
+      storeState.transactionActions.push(actionToDispatch);
+      notifySubscribers(storeState.transactionStartState, result);
       libState.transactionState = 'none';
-      libState.transactionStartState = null;
+      storeState.transactionStartState = null;
       actionToDispatch = {
-        type: libState.transactionActions.map(action => action.type).join(', '),
-        actions: deepCopy(libState.transactionActions),
+        type: storeState.transactionActions.map(action => action.type).join(', '),
+        actions: deepCopy(storeState.transactionActions),
       }
-      libState.transactionActions.length = 0;
+      storeState.transactionActions.length = 0;
     } else if (libState.transactionState === 'none') {
       notifySubscribers(previousState, result);
     }
@@ -242,7 +242,7 @@ export function createStore<S, T extends Trackability>({
     if (devtoolsDispatchListener && (!specs.updateOptions || ((specs.updateOptions || {} as any).tag !== 'dontTrackWithDevtools'))) {
       const dispatchToDevtools = (payload?: any[]) => {
         const action = payload ? { ...actionToDispatch, batched: payload } : actionToDispatch;
-        libState.currentActionForDevtools = action;
+        testState.currentActionForDevtools = action;
         devtoolsDispatchListener!(action);
       }
       if (previousAction.debounceTimeout) {
