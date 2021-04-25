@@ -82,7 +82,7 @@ export function useNestedStore<C>(
   }, deps);
   React.useEffect(() => {
     return () => {
-      setTimeout(() => select().removeFromContainingStore());
+      setTimeout(() => select().storeDetach());
     }
   }, deps);
   return {

@@ -143,7 +143,7 @@ describe('React', () => {
   it('should create a nested store without a parent', () => {
     let renderCount = 0;
     const App = () => {
-      const { select, useSelector } = useNestedStore(initialState, { storeName: 'unhosted', dontTrackWithDevtools: true });
+      const { select, useSelector } = useNestedStore(initialState, { componentName: 'unhosted', dontTrackWithDevtools: true });
       const result = useSelector(s => s.object.property);
       renderCount++;
       return (
@@ -175,7 +175,7 @@ describe('React', () => {
       const {
         select,
         useSelector,
-      } = useNestedStore({ prop: '' }, { storeName: 'component', dontTrackWithDevtools: true });
+      } = useNestedStore({ prop: '' }, { componentName: 'component', dontTrackWithDevtools: true });
       const result = useSelector(s => s.prop);
       renderCount++;
       return (
