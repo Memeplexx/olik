@@ -443,7 +443,7 @@ describe('async', () => {
 
   it('should work with nested stores', done => {
     const select = store(initialState, { isContainerForNestedStores: true });
-    const selectNested = nestedStore({ prop: '' }, { storeName: 'hello' });
+    const selectNested = nestedStore({ prop: '' }, { componentName: 'hello' });
     const payload = 'test';
     selectNested(s => s.prop)
       .replace(() => new Promise(resolve => setTimeout(() => resolve(payload), 10)), { bypassPromiseFor: 1000 })
