@@ -12,54 +12,53 @@ import {
   DeepReadonlyArray,
   FindOrFilter,
   Trackability,
+  getSelectedStateFromOperationWithoutUpdatingStore,
 } from 'olik';
 import React from 'react';
 
 function getUseFetcher<S>(select: SelectorFromAStore<S>) {
   return {
     /**
-     * A hook to track the status of a request
+     * A hook to track the status of an asynchronouse operation
      * 
      * @param fetchFn A no-args function returning a promise
      * 
      * @example
-     * const { isLoading, hasError, succeeded, error, data, refetch } =
-     *   useFetcher(() => fetch('https://www.example.com/api/todos')
-     *     .then(res => get(s => s.todos).replaceAll(res)));
-     * const todos = useSelector(get(s => s.todos));
+     * const {
+     *   isLoading,
+     *   wasRejected,
+     *   wasResolved,
+     *   error,
+     *   storeValue,
+     * } = useFetcher(() => select(s => s.todos).replaceAll(() => fetchTodosFromAPI()));
      */
     useFetcher: function useFetcher<C>(
-      fetchFn: () => Promise<C>,
+      operation: () => Promise<C>,
       deps: React.DependencyList = [],
     ) {
-      const [result, setResult] = React.useState({
+      const initialValue = {
         isLoading: true,
         wasRejected: false,
         wasResolved: false,
         error: null as any | null,
-        fetch: null as any as (() => void),
-        storeValue: null as any as C,
-      });
+        storeValue: getSelectedStateFromOperationWithoutUpdatingStore(select, operation) as C,
+      };
+      const [result, setResult] = React.useState(initialValue);
       React.useEffect(() => {
         let isSubscribed = false;
-        const fetch = () => {
-          isSubscribed = true;
-          const promise = fetchFn();
-          const initialValue = select((select() as any).getSelector()).read() as any as C;
-          setResult({ wasRejected: false, isLoading: true, error: null, wasResolved: false, fetch, storeValue: initialValue });
-          promise
-            .then(storeValue => {
-              if (isSubscribed) {
-                setResult({ wasRejected: false, isLoading: false, error: null, wasResolved: true, fetch, storeValue })
-              }
-            })
-            .catch(error => {
-              if (isSubscribed) {
-                setResult({ ...result, wasRejected: true, isLoading: false, error, wasResolved: false, fetch })
-              }
-            });
-        };
-        fetch();
+        isSubscribed = true;
+        setResult(initialValue);
+        operation()
+          .then(storeValue => {
+            if (isSubscribed) {
+              setResult({ wasRejected: false, isLoading: false, error: null, wasResolved: true, storeValue })
+            }
+          })
+          .catch(error => {
+            if (isSubscribed) {
+              setResult({ wasRejected: true, isLoading: false, error, wasResolved: false, storeValue: result.storeValue })
+            }
+          });
         return () => { isSubscribed = false; }
       }, deps);
       return result;
@@ -90,6 +89,8 @@ export function useNestedStore<C>(
     select,
     ...getUseSelector(select as SelectorFromAStore<C>),
     ...getUseDerivation(select as SelectorFromAStore<C>),
+    ...getMapStateToProps(select as SelectorFromAStore<C>),
+    ...getUseFetcher(select as SelectorFromAStore<C>),
   };
 }
 
@@ -126,6 +127,7 @@ export function storeEnforceTags<S>(initialState: S, options?: OptionsForMakingA
     ...getUseSelector(select),
     ...getUseDerivation(select),
     ...getMapStateToProps(select),
+    ...getUseFetcher(select),
   };
 }
 

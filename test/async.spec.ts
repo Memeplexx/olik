@@ -520,8 +520,7 @@ describe('async', () => {
     const optimisticValue = [{id: 6, value: 'six'}];
     select(s => s.array)
       .replaceAll(() => new Promise((resolve, reject) => reject('test')), { optimisticallyUpdateWith: optimisticValue })
-      .then(() => {
-      }).catch(() => {
+      .catch(() => {
         expect(select(s => s.array).read()).toEqual(initialState.array);
         done();
       });

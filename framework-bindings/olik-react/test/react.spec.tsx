@@ -1,11 +1,12 @@
-import { configure, mount } from 'enzyme';
+import '@testing-library/jest-dom';
+
+import { screen, waitFor } from '@testing-library/dom';
+import { render } from '@testing-library/react';
+import { configure } from 'enzyme';
 import Adapter from 'enzyme-adapter-react-16';
 import React from 'react';
 
 import { store, useNestedStore } from '../src';
-import { act, render } from '@testing-library/react';
-import { screen, waitFor } from '@testing-library/dom';
-import '@testing-library/jest-dom'
 
 
 configure({ adapter: new Adapter() });
@@ -171,7 +172,10 @@ describe('React', () => {
     }, { devtools: false, isContainerForNestedStores: true });
     let renderCount = 0;
     const Child = () => {
-      const { select, useSelector } = useNestedStore({ prop: '' }, { storeName: 'component', dontTrackWithDevtools: true });
+      const {
+        select,
+        useSelector,
+      } = useNestedStore({ prop: '' }, { storeName: 'component', dontTrackWithDevtools: true });
       const result = useSelector(s => s.prop);
       renderCount++;
       return (
@@ -215,20 +219,15 @@ describe('React', () => {
   it('should respond to async queries', async () => {
     const { select, useSelector, useFetcher } = store(initialState, { devtools: false });
     const App = () => {
-      // const state = useSelector(s => s.object.property);
       const {
-        fetch,
         wasResolved,
         wasRejected,
         isLoading,
         storeValue
       } = useFetcher(() => select(s => s.object.property)
         .replace(() => new Promise<string>(resolve => setTimeout(() => resolve('test'), 10))));
-        console.log('.......', storeValue);
-
       return (
         <>
-          <button data-testid="btn" onClick={fetch}>Click</button>
           <div data-testid="result">{storeValue}</div>
           {isLoading && <div>Loading</div>}
           {wasResolved && <div>Success</div>}
@@ -249,7 +248,6 @@ describe('React', () => {
     const { select, useFetcher } = store(initialState, { devtools: false });
     const App = () => {
       const {
-        fetch,
         wasResolved,
         wasRejected,
         isLoading,
@@ -258,7 +256,6 @@ describe('React', () => {
         .replace(() => new Promise<string>((resolve, reject) => setTimeout(() => reject('test'), 10))));
       return (
         <>
-          <button data-testid="btn" onClick={fetch}>Click</button>
           <div data-testid="result">{error}</div>
           {isLoading && <div>Loading</div>}
           {wasResolved && <div>Success</div>}
@@ -273,23 +270,20 @@ describe('React', () => {
     expect(screen.queryByText('Success')).not.toBeInTheDocument();
     expect(screen.queryByText('Failure')).toBeInTheDocument();
     expect(screen.queryByText('Loading')).not.toBeInTheDocument();
-    await waitFor(() => {
-      (screen.getByTestId('btn') as HTMLButtonElement).click();
-      expect(screen.queryByText('Loading')).toBeInTheDocument();
-    });
-    await waitFor(() => expect(screen.queryByText('Loading')).not.toBeInTheDocument());
   })
 
   it('should be able to paginate', async () => {
     const todos = new Array(15).fill(null).map((e, i) => ({ id: i + 1, text: `value ${i + 1}` }));
     type Todo = { id: Number, text: string };
-    const { select, useFetcher } = store({
+    const {
+      select,
+      useFetcher,
+    } = store({
       toPaginate: {} as { [key: string]: Todo[] },
     }, { devtools: false });
     const App = () => {
       const [index, setIndex] = React.useState(0);
       const {
-        fetch,
         wasResolved,
         wasRejected,
         isLoading,
@@ -304,7 +298,7 @@ describe('React', () => {
           {isLoading && <div>Loading</div>}
           {wasResolved && <div>Success</div>}
           {wasRejected && <div>Failure</div>}
-          {wasResolved && <div data-testid="todos-length">{storeValue.length}</div>}
+          {wasResolved && <div data-testid='todos-length'>{storeValue.length}</div>}
         </>
       );
     }

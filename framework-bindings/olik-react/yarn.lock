@@ -4286,10 +4286,10 @@ object.values@^1.1.1, object.values@^1.1.2:
     es-abstract "^1.18.0-next.2"
     has "^1.0.3"
 
-olik@0.0.10:
-  version "0.0.10"
-  resolved "https://registry.yarnpkg.com/olik/-/olik-0.0.10.tgz#f5af21ae8a87db4a8db303e62674c1a6261b0259"
-  integrity sha512-7emJaEkZzqJn+tDSDRbSbBXiQjZqvB699Kdx8QR9c/WYX+ajflY2oGW3qdUXWKTwseXdi+EX6JXJnLoJC2fm/Q==
+olik@0.0.11:
+  version "0.0.11"
+  resolved "https://registry.yarnpkg.com/olik/-/olik-0.0.11.tgz#9e28ac5a3fda4e415aa5ec0292c73970c1b70288"
+  integrity sha512-1lQR5uSIwc6WBaIAmjtgmtLx1WF6tsQlJr/W4YYu5KKkU+fO3GfsfabYUQTvjhDXy6GgXFTH/z/Z7oE9QH1grw==
 
 once@^1.3.0, once@^1.3.1, once@^1.3.2, once@^1.4.0:
   version "1.4.0"

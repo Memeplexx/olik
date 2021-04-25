@@ -230,13 +230,13 @@ export type ArrayOfElementsCommonAction<X extends DeepReadonlyArray<any>, F exte
    */
   remove: (options: ActionOptions<T>) => void;
   /**
-   * Will be called any time this node changes.
+   * Will be called any time the selected node changes.
    * @example
    * const subscription = 
    * ...
    * onChange(value => console.log(value));
    * 
-   * // don't forget to unsubscribe to avoid a memory leak
+   * // don't forget to unsubscribe to prevent a memory leak
    * subscription.unsubscribe(); 
    */
   onChange: (listener: (state: DeepReadonly<F extends 'find' ? X[0] : X>) => void) => Unsubscribable;
@@ -264,7 +264,7 @@ export type TaggedUpdate<T extends Trackability> = T extends 'untagged' ? {
   /**
    * Any string which may be used to identify the origin of a state update.    
    * 
-   * This tag is optional because your store was initialized using `make()` instead of `makeEnforceTags()`.
+   * This tag is optional because your store was initialized using `store()` instead of `storeEnforcingTags()`.
    *   
    * If, when initializing your store, you did **not** pass `tagsToAppearInType: true` inside the options object, then your tag will appear in the action payload as follows:
    * ```
@@ -287,7 +287,7 @@ export type TaggedUpdate<T extends Trackability> = T extends 'untagged' ? {
   /**
    * Any string which may be used to identify the origin of a state update.  
    * 
-   * This tag is required because your store was initialized using `makeEnforceTags()` instead of `make()`.    
+   * This tag is required because your store was initialized using `storeEnforcingTags()` instead of `store()`.    
    *   
    * If, when initializing your store, you did **not** pass `tagsToAppearInType: true` inside the options object, then your tag will appear in the action payload as follows:
    * ```
@@ -321,6 +321,11 @@ export type PromisableUpdate<H> = H extends () => Promise<any> ? {
   /**
    * Allows you to set an initial value to update the store with.
    * If the promise is rejected, this value will be reverted to what it was before the promise was invoked.
+   * @example
+   * const newUsername = 'Jeff';
+   * select(s => s.username)
+   *   .replace(() => updateUsernameOnApi(newUsername), { optimisticallyUpdateWith: newUsername })
+   *   .catch(err => notifyUserOfError(err))
    */
   optimisticallyUpdateWith?: H extends () => Promise<infer W> ? W : never,
 } : {};

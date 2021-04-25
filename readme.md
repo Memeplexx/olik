@@ -9,7 +9,7 @@
 ## Axiomatic, in-line state-management
 
 Olik allows you to comprehensively grok your state updates without ever leaving your component code.  
-* Its **fluent typesafe API** dramatically improves the **consistency** of your state operations, **eliminating ambiguity** 
+* Its **fluent, typesafe API** dramatically improves the **consistency** of your state operations, **eliminating ambiguity** 
 * **Debuggability** is improved through **auto-generated action types**
 * **Nested stores** allow you to manage and debug your component state with or without your application state.
 * **Transactions** help you to group your state updates, avoiding overly abstract action types.
@@ -81,7 +81,8 @@ select(s => s.favorite.hobbies)
 
 const newUserName = 'Jeff';
 select(s => s.username)
-  .replace(() => updateUsernameOnApi(newUserName), { optimisticallyUpdateWith: newUserName });
+  .replace(() => updateUsernameOnApi(newUserName), { optimisticallyUpdateWith: newUserName })
+  .catch(e => notifyUserOfError(e));
 ```
 
 #### 🥚 **NEST STORES**
