@@ -534,7 +534,7 @@ export type StoreWhichIsNested<C> = Store<C, 'untagged'> & {
   /**
    * Removes this nested store from the store which was marked with `isContainerForNestedStores = true`.
    */
-  removeFromContainingStore: () => void;
+  storeDetach: () => void;
 };
 
 /**
@@ -616,7 +616,7 @@ export type OptionsForMakingANestedStore = {
   /**
    * The name that will distinguish this nested store from others within the state tree
    */
-  storeName: string;
+  componentName: string;
   /**
    * The string that will distinguish different instances of the same nested store.
    * If this value isn't supplied, the library will use an auto-incrementing integer as the storeKey

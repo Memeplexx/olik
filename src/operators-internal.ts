@@ -2,7 +2,7 @@ import { Selector, Trackability, UpdateOptions } from './shapes-external';
 import { StoreWhichIsNestedInternal, UpdateStateFn } from './shapes-internal';
 import { libState } from './shared-state';
 
-export const defineRemoveNestedStore = <S, C, X extends C & Array<any>, T extends Trackability>(
+export const defineStoreDetach = <S, C, X extends C & Array<any>, T extends Trackability>(
   currentState: () => S,
   updateState: UpdateStateFn<S, C, T, X>,
 ) => ((name, key) => () => {
@@ -34,4 +34,4 @@ export const defineRemoveNestedStore = <S, C, X extends C & Array<any>, T extend
       updateOptions: undefined as UpdateOptions<T, any>,
     })
   }
-}) as StoreWhichIsNestedInternal<S, C>['defineRemoveNestedStore'];
+}) as StoreWhichIsNestedInternal<S, C>['defineStoreDetach'];

@@ -34,8 +34,7 @@ export type UpdateStateFn<S, C, T extends Trackability, X extends C = C> = (spec
 
 export type StoreWhichIsNestedInternal<S, C> = Store<C, 'untagged'> & {
   defineReset: (initState: S) => () => any;
-  defineRemoveFromContainingStore: (name: string, key: string) => () => any;
-  defineRemoveNestedStore: (name: string, key: string) => () => any;
+  defineStoreDetach: (name: string, key: string) => () => any;
 } & StoreWhichIsNested<C>;
 
 export type WindowAugmentedWithReduxDevtools = {

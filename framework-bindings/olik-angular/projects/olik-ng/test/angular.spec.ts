@@ -1,4 +1,4 @@
-import { set, setNested } from '../src/public-api';
+import { store, storeEnforcingTags, nestedStore, resetNestedContainerStore } from '../src/public-api';
 
 describe('Angular', () => {
 
@@ -8,15 +8,16 @@ describe('Angular', () => {
     string: 'b',
   };
 
+
   it('should create and update a store', () => {
-    const { select, observe } = set(initialState, { devtools: false });
+    const { select } = store(initialState, { devtools: false });
     select(s => s.object.property)
       .replace('test');
     expect(select().read().object.property).toEqual('test');
   })
 
   it('should be able to observe state updates', done => {
-    const { select, observe } = set(initialState, { devtools: false });
+    const { select, observe } = store(initialState, { devtools: false });
     const obs$ = observe(s => s.object.property);
     const payload = 'test';
     obs$.subscribe(val => {
@@ -26,17 +27,8 @@ describe('Angular', () => {
     select(s => s.object.property).replace(payload);
   })
 
-  it('should be able to create and update a nested store', () => {
-    const parentStore = set(initialState, { devtools: false, isContainerForNestedStores: true });
-    const componentName = 'MyComponent';
-    const { select } = setNested({ prop: '' }, { storeName: componentName });
-    const payload = 'test';
-    select(s => s.prop).replace(payload);
-    expect(parentStore.select().read()).toEqual({ ...initialState, ...{ nested: { [componentName]: { '0': { prop: payload } } } } });
-  })
-
   it('should be able to observe a fetch, and resolve', done => {
-    const { select, observeFetch } = set(initialState, { devtools: false });
+    const { select, observeFetch } = store(initialState, { devtools: false });
     let count = 0;
     const obs$ = observeFetch(() => select(s => s.object.property)
       .replace(() => new Promise(resolve => setTimeout(() => resolve('val ' + count), 10))));
@@ -59,7 +51,7 @@ describe('Angular', () => {
   })
 
   it('should be able to observe a fetch, and reject', done => {
-    const { select, observeFetch } = set(initialState, { devtools: false });
+    const { select, observeFetch } = store(initialState, { devtools: false });
     let count = 0;
     const obs$ = observeFetch(() => select(s => s.object.property)
       .replace(() => new Promise((resolve, reject) => setTimeout(() => reject('test'), 10))));
@@ -80,6 +72,149 @@ describe('Angular', () => {
       }
     });
   })
+
+
+  it('should create and update a store which enforces tags', () => {
+    const { select } = storeEnforcingTags(initialState, { devtools: false });
+    select(s => s.object.property)
+      .replace('test', { tag: 'Tag' });
+    expect(select().read().object.property).toEqual('test');
+  })
+
+  it('should be able to observe state updates for a store which enforces tags', done => {
+    const { select, observe } = storeEnforcingTags(initialState, { devtools: false });
+    const obs$ = observe(s => s.object.property);
+    const payload = 'test';
+    obs$.subscribe(val => {
+      expect(val).toEqual(payload);
+      done();
+    });
+    select(s => s.object.property).replace(payload, { tag: 'Tag' });
+  })
+
+  it('should be able to observe a fetch, and resolve using a store which enforces tags', done => {
+    const { select, observeFetch } = storeEnforcingTags(initialState, { devtools: false });
+    let count = 0;
+    const obs$ = observeFetch(() => select(s => s.object.property)
+      .replace(() => new Promise(resolve => setTimeout(() => resolve('val ' + count), 10)), { tag: 'Tag' }));
+    obs$.subscribe(val => {
+      count++;
+      if (count === 1) {
+        expect(val.isLoading).toEqual(true);
+        expect(val.wasRejected).toEqual(false);
+        expect(val.wasResolved).toEqual(false);
+        expect(val.error).toEqual(null);
+      } else if (count === 2) {
+        expect(val.isLoading).toEqual(false);
+        expect(val.wasRejected).toEqual(false);
+        expect(val.wasResolved).toEqual(true);
+        expect(val.error).toEqual(null);
+        expect(val.storeValue).toEqual('val 1');
+        done();
+      }
+    });
+  })
+
+  it('should be able to observe a fetch, and reject using a store which enforces tags', done => {
+    const { select, observeFetch } = storeEnforcingTags(initialState, { devtools: false });
+    let count = 0;
+    const obs$ = observeFetch(() => select(s => s.object.property)
+      .replace(() => new Promise((resolve, reject) => setTimeout(() => reject('test'), 10)), { tag: 'Tag' }));
+    obs$.subscribe(val => {
+      count++;
+      if (count === 1) {
+        expect(val.isLoading).toEqual(true);
+        expect(val.wasRejected).toEqual(false);
+        expect(val.wasResolved).toEqual(false);
+        expect(val.error).toEqual(null);
+      } else if (count === 2) {
+        expect(val.isLoading).toEqual(false);
+        expect(val.wasRejected).toEqual(true);
+        expect(val.wasResolved).toEqual(false);
+        expect(val.error).toEqual('test');
+        expect(val.storeValue).toEqual('a');
+        done();
+      }
+    });
+  })
+
+  
+
+  it('should be able to create and update a nested store', () => {
+    const parentStore = store(initialState, { devtools: false, isContainerForNestedStores: true });
+    const componentName = 'MyComponent';
+    const { select } = nestedStore({ prop: '' }, { componentName });
+    const payload = 'test';
+    select(s => s.prop).replace(payload);
+    expect(parentStore.select().read()).toEqual({ ...initialState, ...{ nested: { [componentName]: { '0': { prop: payload } } } } });
+    resetNestedContainerStore();
+  })
+
+  it('should be able to observe state updates of a nested store', done => {
+    store(initialState, { devtools: false, isContainerForNestedStores: true });
+    const componentName = 'MyComponent';
+    const { select, observe } = nestedStore(initialState, { componentName });
+    const obs$ = observe(s => s.object.property);
+    const payload = 'test';
+    obs$.subscribe(val => {
+      expect(val).toEqual(payload);
+      done();
+    });
+    select(s => s.object.property).replace(payload);
+  })
+
+  it('should be able to observe a fetch, and resolve for a nested store', done => {
+    resetNestedContainerStore();
+    store(initialState, { devtools: false, isContainerForNestedStores: true });
+    const componentName = 'MyComponent';
+    const { select, observeFetch } = nestedStore(initialState, { componentName });
+    let count = 0;
+    const obs$ = observeFetch(() => select(s => s.object.property)
+      .replace(() => new Promise(resolve => setTimeout(() => resolve('val ' + count), 10))));
+    obs$.subscribe(val => {
+      count++;
+      if (count === 1) {
+        expect(val.isLoading).toEqual(true);
+        expect(val.wasRejected).toEqual(false);
+        expect(val.wasResolved).toEqual(false);
+        expect(val.error).toEqual(null);
+      } else if (count === 2) {
+        expect(val.isLoading).toEqual(false);
+        expect(val.wasRejected).toEqual(false);
+        expect(val.wasResolved).toEqual(true);
+        expect(val.error).toEqual(null);
+        expect(val.storeValue).toEqual('val 1');
+        resetNestedContainerStore();
+        done();
+      }
+    });
+  })
+
+  it('should be able to observe a fetch, and reject for a nested store', done => {
+    const { select, observeFetch } = store(initialState, { devtools: false });
+    let count = 0;
+    const obs$ = observeFetch(() => select(s => s.object.property)
+      .replace(() => new Promise((resolve, reject) => setTimeout(() => reject('test'), 10))));
+    obs$.subscribe(val => {
+      count++;
+      if (count === 1) {
+        expect(val.isLoading).toEqual(true);
+        expect(val.wasRejected).toEqual(false);
+        expect(val.wasResolved).toEqual(false);
+        expect(val.error).toEqual(null);
+      } else if (count === 2) {
+        expect(val.isLoading).toEqual(false);
+        expect(val.wasRejected).toEqual(true);
+        expect(val.wasResolved).toEqual(false);
+        expect(val.error).toEqual('test');
+        expect(val.storeValue).toEqual('a');
+        resetNestedContainerStore();
+        done();
+      }
+    });
+  })
+
+  
 
 
   // // reactive version

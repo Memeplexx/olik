@@ -2,15 +2,14 @@ import { NgModule, NgZone } from '@angular/core';
 import {
   getSelectedStateFromOperationWithoutUpdatingStore,
   listenToDevtoolsDispatch,
-  nestedStore as libSetNested,
+  nestedStore as libNestedStore,
   OptionsForMakingANestedStore,
   OptionsForMakingAStore,
   SelectorFromAStore,
-  store as libSet,
-  storeEnforcingTags as libSetEnforceTags,
+  store as libStore,
+  storeEnforcingTags as libStoreEnforcingTags,
 } from 'olik';
 import { Observable } from 'rxjs';
-import { shareReplay } from 'rxjs/operators';
 
 export * from 'olik';
 
@@ -22,60 +21,52 @@ type FetchPayload<C> = {
   storeValue: C,
 };
 
-function observeFetchInternal<S, C>(
-  select: SelectorFromAStore<S>,
-) {
-  return (
-    operation: () => Promise<C>,
-  ) => {
-    return new Observable<FetchPayload<C>>(observer => {
-      const initialValue = {
+const observeFetchInternal = <S, C>(
+  select: SelectorFromAStore<S>
+) => (
+  operation: () => Promise<C>
+) => new Observable<FetchPayload<C>>(observer => {
+  const initialValue = {
+    wasRejected: false,
+    isLoading: true,
+    error: null,
+    wasResolved: false,
+    storeValue: getSelectedStateFromOperationWithoutUpdatingStore(select, operation),
+  };
+  observer.next(initialValue);
+  operation()
+    .then(storeValue => {
+      observer.next({
         wasRejected: false,
-        isLoading: true,
+        isLoading: false,
         error: null,
+        wasResolved: true,
+        storeValue,
+      });
+    })
+    .catch(error => {
+      observer.next({
+        wasRejected: true,
+        isLoading: false,
+        error,
         wasResolved: false,
-        storeValue: getSelectedStateFromOperationWithoutUpdatingStore(select, operation),
-      };
-      observer.next(initialValue);
-      operation()
-        .then(storeValue => {
-          observer.next({
-            wasRejected: false,
-            isLoading: false,
-            error: null,
-            wasResolved: true,
-            storeValue,
-          });
-        })
-        .catch(error => {
-          observer.next({
-            wasRejected: true,
-            isLoading: false,
-            error,
-            wasResolved: false,
-            storeValue: initialValue.storeValue,
-          });
-        })
-    }).pipe(
-      shareReplay({ bufferSize: 1, refCount: true }),
-    );
-  }
-}
+        storeValue: initialValue.storeValue,
+      });
+    })
+})
 
 type FnReturnType<X> = X extends (...args: any[]) => infer R ? R : never;
 const observeInternal = <S>(
-  select: SelectorFromAStore<S>,
+  select: SelectorFromAStore<S>
 ) => <L extends Parameters<typeof select>[0], C extends FnReturnType<L>>(
-  selector: L,
-  ) => new Observable<C>(observer => {
-    const subscription = select(selector).onChange(v => observer.next(v as C));
-    return () => subscription.unsubscribe();
-  }).pipe(
-    shareReplay({ bufferSize: 1, refCount: true }),
-  );
+  selector: L
+) => new Observable<C>(observer => {
+  const subscription = select(selector).onChange(v => observer.next(v as C));
+  return () => subscription.unsubscribe();
+});
 
-export const set = <S>(initialState: S, options?: OptionsForMakingAStore) => {
-  const select = libSet(initialState, options);
+export const store = <S>(initialState: S, options?: OptionsForMakingAStore) => {
+  const select = libStore(initialState, options);
   return {
     /**
      * Select a piece of the state to operate on and perform some action on it
@@ -107,12 +98,12 @@ export const set = <S>(initialState: S, options?: OptionsForMakingAStore) => {
      *   <ng-container>
      * </ng-container>
      */
-    observeFetch: <C>(operation: () => Promise<C>) => observeFetchInternal(select)(operation),
+    observeFetch: <C>(operation: () => Promise<C>) => observeFetchInternal<S, C>(select)(operation),
   };
 }
 
-export const setEnforceTags = <S>(initialState: S, options?: OptionsForMakingAStore) => {
-  const select = libSetEnforceTags(initialState, options);
+export const storeEnforcingTags = <S>(initialState: S, options?: OptionsForMakingAStore) => {
+  const select = libStoreEnforcingTags(initialState, options);
   return {
     /**
      * Select a piece of the state to operate on and perform some action on it
@@ -127,7 +118,7 @@ export const setEnforceTags = <S>(initialState: S, options?: OptionsForMakingASt
      * 
      * <div *ngFor="let todo of todos.storeValue">{{todo.title}}</div>
      */
-    observe: <L extends Parameters<typeof select>[0]>(selector: L) => observeInternal(select as any)(selector as any),
+    observe: <L extends Parameters<typeof select>[0]>(selector: L) => observeInternal<S>(select as any)(selector),
     /**
      * Takes an async state-update, and returns an Observable which reports on the status of that update.
      * @example
@@ -144,12 +135,12 @@ export const setEnforceTags = <S>(initialState: S, options?: OptionsForMakingASt
      *   <ng-container>
      * </ng-container>
      */
-    observeFetch: <C>(operation: () => Promise<C>) => observeFetchInternal(select as any as SelectorFromAStore<S>)(operation),
+    observeFetch: <C>(operation: () => Promise<C>) => observeFetchInternal<S, C>(select as any as SelectorFromAStore<S>)(operation),
   };
 }
 
-export const setNested = <S>(initialState: S, options: OptionsForMakingANestedStore) => {
-  const select = libSetNested(initialState, options);
+export const nestedStore = <S>(initialState: S, options: OptionsForMakingANestedStore) => {
+  const select = libNestedStore(initialState, options);
   return {
     /**
      * Select a piece of the state to operate on and perform some action on it
@@ -164,7 +155,7 @@ export const setNested = <S>(initialState: S, options: OptionsForMakingANestedSt
      * 
      * <div *ngFor="let todo of todos.storeValue">{{todo.title}}</div>
      */
-    observe: <L extends Parameters<typeof select>[0]>(selector: L) => observeInternal(select as any)(selector as any),
+    observe: <L extends Parameters<typeof select>[0]>(selector: L) => observeInternal<S>(select)(selector),
     /**
      * Takes an async state-update, and returns an Observable which reports on the status of that update.
      * @example
@@ -181,7 +172,7 @@ export const setNested = <S>(initialState: S, options: OptionsForMakingANestedSt
      *   <ng-container>
      * </ng-container>
      */
-    observeFetch: <C>(operation: () => Promise<C>) => observeFetchInternal(select as any as SelectorFromAStore<S>)(operation),
+    observeFetch: <C>(operation: () => Promise<C>) => observeFetchInternal<S, C>(select as any as SelectorFromAStore<S>)(operation),
   };
 }
 

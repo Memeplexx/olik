@@ -1,4 +1,4 @@
-import { DeepReadonly, Selector, SelectorFromAStore, Trackability, UpdateOptions } from './shapes-external';
+import { DeepReadonly, Selector, SelectorFromAStore, StoreWhichIsNested, Trackability, UpdateOptions } from './shapes-external';
 import { PathReader, StoreState } from './shapes-internal';
 import { errorMessages, expressionsNotAllowedInSelectorFunction } from './shared-consts';
 import { libState } from './shared-state';
@@ -165,7 +165,7 @@ export const processAsyncPayload = <S, C, X extends C & Array<any>, T extends Tr
   if (storeState.dryRun) {
     return;
   } else if (!!payload && typeof (payload) === 'function') {
-    
+
     if (libState.transactionState !== 'none') {
       libState.transactionState = 'none';
       throw new Error(errorMessages.PROMISES_NOT_ALLOWED_IN_TRANSACTIONS)
@@ -184,14 +184,11 @@ export const processAsyncPayload = <S, C, X extends C & Array<any>, T extends Tr
     if (expirationDate && (new Date(expirationDate).getTime() > new Date().getTime())) {
       return Promise.resolve(storeResult(selector as any).read());
     }
-
-
     const { optimisticallyUpdateWith } = ((updateOptions as any) || {});
     let snapshot = isEmpty(optimisticallyUpdateWith) ? null : storeResult(selector as any).read();
     if (!isEmpty(snapshot)) {
       processPayload(optimisticallyUpdateWith);
     }
-
     const result = asyncPayload()
       .then(res => {
         const involvesCaching = !!updateOptions && !(typeof (updateOptions) === 'string') && bypassPromiseFor;
@@ -233,10 +230,26 @@ export const processAsyncPayload = <S, C, X extends C & Array<any>, T extends Tr
   }
 }
 
+/**
+ * To be used by framework bindings to determine what state was selected without actually performing a state update
+ */
 export const getSelectedStateFromOperationWithoutUpdatingStore = <S>(select: SelectorFromAStore<S>, operation: () => any): any => {
   (select() as any).dryRun(true);
   operation();
-  const result = select((select() as any).getSelector()).read();
+  let result: any;
+  const nested = select() as StoreWhichIsNested<any>;
+  if (!!nested.storeDetach && libState.nestedContainerStore) {
+    result = libState.nestedContainerStore((select() as any).getSelector()).read();
+  } else {
+    result = select((select() as any).getSelector()).read();
+  }
   (select() as any).dryRun(false);
   return result;
+}
+
+/**
+ * To be used by framework bindings to un-set the nested container store
+ */
+export const resetNestedContainerStore = () => {
+  libState.nestedContainerStore = null;
 }

@@ -54,7 +54,7 @@ export function store<S>(
  * then this store will be automatically nested within that store, under the property `nested`.
  * If the opposite is true, then a new top-level store will be registered within the devtools
  * @param state The initial state
- * @param options A configuration object which, at minimum, must contain the `name` of the nested store
+ * @param options A configuration object which, at minimum, must contain the `componentName` of the nested store
  * 
  * @example
  * const select = nestedStore({
@@ -68,15 +68,15 @@ export function store<S>(
  */
 export function nestedStore<L>(
   state: L,
-  { storeName, instanceName, dontTrackWithDevtools }: OptionsForMakingANestedStore,
+  { componentName, instanceName, dontTrackWithDevtools }: OptionsForMakingANestedStore,
 ) {
   const generateKey = (arg?: string) => (!arg && !instanceName) ? '0' :
     !instanceName ? (+arg! + 1).toString() : instanceName;
   if (!libState.nestedContainerStore) {
-    const nStore = createStore<L, 'untagged'>({ state, devtools: dontTrackWithDevtools ? false : { name: storeName + ' : ' + generateKey() } }) as SelectorFromANestedStore<L>;
+    const nStore = createStore<L, 'untagged'>({ state, devtools: dontTrackWithDevtools ? false : { name: componentName + ' : ' + generateKey() } }) as SelectorFromANestedStore<L>;
     return (<C = L>(selector?: (arg: L) => C) => {
       const cStore = selector ? nStore(selector as any) : nStore();
-      cStore.removeFromContainingStore = () => console.info(errorMessages.NO_CONTAINER_STORE);
+      cStore.storeDetach = () => console.info(errorMessages.NO_CONTAINER_STORE);
       cStore.reset = () => console.info(errorMessages.NO_CONTAINER_STORE);
       return cStore as any as StoreWhichIsNested<C>;
     }) as SelectorFromANestedStore<L>;
@@ -86,25 +86,25 @@ export function nestedStore<L>(
   let key: string;
   if (!containerStore.read().nested) {
     key = generateKey();
-    containerStore.patch({ nested: { [storeName]: { [key]: state } } });
-    containerStore.renew({ ...wrapperState, nested: { [storeName]: { [key]: state } } });
-  } else if (!containerStore.read().nested[storeName]) {
+    containerStore.patch({ nested: { [componentName]: { [key]: state } } });
+    containerStore.renew({ ...wrapperState, nested: { [componentName]: { [key]: state } } });
+  } else if (!containerStore.read().nested[componentName]) {
     key = generateKey();
-    libState.nestedContainerStore(s => s.nested).patch({ [storeName]: { [key]: state } });
-    containerStore.renew({ ...wrapperState, nested: { ...wrapperState.nested, [storeName]: { [key]: state } } });
+    libState.nestedContainerStore(s => s.nested).patch({ [componentName]: { [key]: state } });
+    containerStore.renew({ ...wrapperState, nested: { ...wrapperState.nested, [componentName]: { [key]: state } } });
   } else {
-    const values = libState.nestedContainerStore(s => s.nested[storeName]).read();
+    const values = libState.nestedContainerStore(s => s.nested[componentName]).read();
     const keys = Object.keys(values);
     key = generateKey(keys[keys.length - 1]);
-    libState.nestedContainerStore(s => s.nested[storeName]).patch({ [key]: state });
-    containerStore.renew({ ...wrapperState, nested: { ...wrapperState.nested, [storeName]: { ...wrapperState.nested[storeName], [key]: state } } });
+    libState.nestedContainerStore(s => s.nested[componentName]).patch({ [key]: state });
+    containerStore.renew({ ...wrapperState, nested: { ...wrapperState.nested, [componentName]: { ...wrapperState.nested[componentName], [key]: state } } });
   }
   return (<C = L>(selector?: (arg: L) => C) => {
     const cStore = libState.nestedContainerStore!(s => {
-      const nState = s.nested[storeName][key];
+      const nState = s.nested[componentName][key];
       return selector ? selector(nState) : nState;
     }) as any as StoreWhichIsNestedInternal<L, C>;
-    cStore.removeFromContainingStore = cStore.defineRemoveNestedStore(storeName, key);
+    cStore.storeDetach = cStore.defineStoreDetach(componentName, key);
     cStore.reset = cStore.defineReset(state);
     return cStore as StoreWhichIsNested<C>;
   }) as SelectorFromANestedStore<L>;
