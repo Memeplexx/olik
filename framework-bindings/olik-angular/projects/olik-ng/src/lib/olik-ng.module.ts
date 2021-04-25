@@ -1,81 +1,18 @@
 import { NgModule, NgZone } from '@angular/core';
 import {
+  getSelectedStateFromOperationWithoutUpdatingStore,
   listenToDevtoolsDispatch,
+  nestedStore as libSetNested,
   OptionsForMakingANestedStore,
   OptionsForMakingAStore,
   SelectorFromAStore,
   store as libSet,
   storeEnforcingTags as libSetEnforceTags,
-  nestedStore as libSetNested,
 } from 'olik';
-import { Observable, of } from 'rxjs';
-import { catchError, map, shareReplay } from 'rxjs/operators';
+import { Observable } from 'rxjs';
+import { shareReplay } from 'rxjs/operators';
 
 export * from 'olik';
-
-// type FetchPayload<C> = {
-//   isLoading: boolean,
-//   wasRejected: boolean,
-//   wasResolved: boolean,
-//   error: any,
-//   fetch: () => void,
-//   storeValue: C,
-// };
-
-// function observeFetchInternal<C>(
-//   fetchFn: () => Observable<C>,
-// ) {
-//   return new Observable<FetchPayload<C>>(observer => {
-//     const fetch = () => {
-//       const payload = {
-//         wasRejected: latestValue.wasRejected,
-//         isLoading: true,
-//         error: latestValue.error,
-//         wasResolved: latestValue.wasResolved,
-//         fetch,
-//         storeValue: latestValue.storeValue,
-//       };
-//       observer.next(payload);
-//       latestValue = payload;
-//       fetchFn().toPromise()
-//         .then(storeValue => {
-//           const payload = {
-//             wasRejected: false,
-//             isLoading: false,
-//             error: null,
-//             wasResolved: true,
-//             fetch,
-//             storeValue,
-//           };
-//           observer.next(payload);
-//           latestValue = payload;
-//         })
-//         .catch(error => {
-//           const payload = {
-//             wasRejected: true,
-//             isLoading: false,
-//             error,
-//             wasResolved: false,
-//             fetch,
-//             storeValue: latestValue.storeValue,
-//           };
-//           observer.next(payload);
-//           latestValue = payload;
-//         });
-//     };
-//     let latestValue = {
-//       wasRejected: false,
-//       isLoading: true,
-//       error: null,
-//       wasResolved: false,
-//       fetch,
-//       storeValue: null as any as C,
-//     } as FetchPayload<C>;
-//     fetch();
-//   }).pipe(
-//     shareReplay({ bufferSize: 1, refCount: true }),
-//   );
-// }
 
 type FetchPayload<C> = {
   isLoading: boolean,
@@ -85,39 +22,44 @@ type FetchPayload<C> = {
   storeValue: C,
 };
 
-function observeFetchInternal<C>(
-  fetchFn: () => Observable<C>,
+function observeFetchInternal<S, C>(
+  select: SelectorFromAStore<S>,
 ) {
-  return new Observable<FetchPayload<C>>(observer => {
-    observer.next({
-      wasRejected: false,
-      isLoading: true,
-      error: null,
-      wasResolved: false,
-      storeValue: null as any as C,
-    });
-    fetchFn().toPromise()
-      .then(storeValue => {
-        observer.next({
-          wasRejected: false,
-          isLoading: false,
-          error: null,
-          wasResolved: true,
-          storeValue,
-        });
-      })
-      .catch(error => {
-        observer.next({
-          wasRejected: true,
-          isLoading: false,
-          error,
-          wasResolved: false,
-          storeValue: null as any as C,
-        });
-      })
-  }).pipe(
-    shareReplay({ bufferSize: 1, refCount: true }),
-  );
+  return (
+    operation: () => Promise<C>,
+  ) => {
+    return new Observable<FetchPayload<C>>(observer => {
+      const initialValue = {
+        wasRejected: false,
+        isLoading: true,
+        error: null,
+        wasResolved: false,
+        storeValue: getSelectedStateFromOperationWithoutUpdatingStore(select, operation),
+      };
+      observer.next(initialValue);
+      operation()
+        .then(storeValue => {
+          observer.next({
+            wasRejected: false,
+            isLoading: false,
+            error: null,
+            wasResolved: true,
+            storeValue,
+          });
+        })
+        .catch(error => {
+          observer.next({
+            wasRejected: true,
+            isLoading: false,
+            error,
+            wasResolved: false,
+            storeValue: initialValue.storeValue,
+          });
+        })
+    }).pipe(
+      shareReplay({ bufferSize: 1, refCount: true }),
+    );
+  }
 }
 
 type FnReturnType<X> = X extends (...args: any[]) => infer R ? R : never;
@@ -135,45 +77,111 @@ const observeInternal = <S>(
 export const set = <S>(initialState: S, options?: OptionsForMakingAStore) => {
   const select = libSet(initialState, options);
   return {
+    /**
+     * Select a piece of the state to operate on and perform some action on it
+     * @example
+     * select(s => s.username).replace('Jeff');
+     */
     select,
     /**
      * Converts the state you select into an observable.
+     * @example
+     * todos$ = observe(s => s => s.todos);
+     * 
+     * <div *ngFor="let todo of todos.storeValue">{{todo.title}}</div>
      */
     observe: <L extends Parameters<typeof select>[0]>(selector: L) => observeInternal(select)(selector),
     /**
-     * Takes a function returning an Observable, and returns a new Observable which reports the status of the first observable.
+     * Takes an async state-update, and returns an Observable which reports on the status of that update.
+     * @example
+     * todos$ = observeFetch(() =>
+     *   select(s => s.todos)
+     *     .replaceAll(() => fetchTodosFromAPI())
+     * );
+     * 
+     * <ng-container *ngIf="todos$ | async; let todos;">
+     *   <div *ngIf="todos.isLoading">loading...</div>
+     *   <div *ngIf="todos.wasRejected">loading...</div>
+     *   <ng-container *ngIf="todos.wasResolved">
+     *     <div *ngFor="let todo of todos.storeValue">{{todo.title}}</div>
+     *   <ng-container>
+     * </ng-container>
      */
-    observeFetch: observeFetchInternal,
+    observeFetch: <C>(operation: () => Promise<C>) => observeFetchInternal(select)(operation),
   };
 }
 
 export const setEnforceTags = <S>(initialState: S, options?: OptionsForMakingAStore) => {
   const select = libSetEnforceTags(initialState, options);
   return {
+    /**
+     * Select a piece of the state to operate on and perform some action on it
+     * @example
+     * select(s => s.username).replace('Jeff', { tag: 'MyComponent' });
+     */
     select,
     /**
-     * Converts the state you select into an observable
+     * Converts the state you select into an observable.
+     * @example
+     * todos$ = observe(s => s => s.todos);
+     * 
+     * <div *ngFor="let todo of todos.storeValue">{{todo.title}}</div>
      */
     observe: <L extends Parameters<typeof select>[0]>(selector: L) => observeInternal(select as any)(selector as any),
     /**
-     * Takes a function returning an Observable, and returns a new Observable which reports the status of the first observable.
+     * Takes an async state-update, and returns an Observable which reports on the status of that update.
+     * @example
+     * todos$ = observeFetch(() =>
+     *   select(s => s.todos)
+     *     .replaceAll(() => fetchTodosFromAPI())
+     * );
+     * 
+     * <ng-container *ngIf="todos$ | async; let todos;">
+     *   <div *ngIf="todos.isLoading">loading...</div>
+     *   <div *ngIf="todos.wasRejected">loading...</div>
+     *   <ng-container *ngIf="todos.wasResolved">
+     *     <div *ngFor="let todo of todos.storeValue">{{todo.title}}</div>
+     *   <ng-container>
+     * </ng-container>
      */
-    observeFetch: observeFetchInternal,
+    observeFetch: <C>(operation: () => Promise<C>) => observeFetchInternal(select as any as SelectorFromAStore<S>)(operation),
   };
 }
 
 export const setNested = <S>(initialState: S, options: OptionsForMakingANestedStore) => {
   const select = libSetNested(initialState, options);
   return {
+    /**
+     * Select a piece of the state to operate on and perform some action on it
+     * @example
+     * select(s => s.username).replace('Jeff');
+     */
     select,
     /**
-     * Converts the state you select into an observable
+     * Converts the state you select into an observable.
+     * @example
+     * todos$ = observe(s => s => s.todos);
+     * 
+     * <div *ngFor="let todo of todos.storeValue">{{todo.title}}</div>
      */
     observe: <L extends Parameters<typeof select>[0]>(selector: L) => observeInternal(select as any)(selector as any),
     /**
-     * Takes a function returning an Observable, and returns a new Observable which reports the status of the first observable.
+     * Takes an async state-update, and returns an Observable which reports on the status of that update.
+     * @example
+     * todos$ = observeFetch(() =>
+     *   select(s => s.todos)
+     *     .replaceAll(() => fetchTodosFromAPI())
+     * );
+     * 
+     * <ng-container *ngIf="todos$ | async; let todos;">
+     *   <div *ngIf="todos.isLoading">loading...</div>
+     *   <div *ngIf="todos.wasRejected">loading...</div>
+     *   <ng-container *ngIf="todos.wasResolved">
+     *     <div *ngFor="let todo of todos.storeValue">{{todo.title}}</div>
+     *   <ng-container>
+     * </ng-container>
      */
-    observeFetch: observeFetchInternal,
+    observeFetch: <C>(operation: () => Promise<C>) => observeFetchInternal(select as any as SelectorFromAStore<S>)(operation),
   };
 }
 
