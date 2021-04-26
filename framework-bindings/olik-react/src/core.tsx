@@ -1,18 +1,14 @@
 import {
   DeepReadonly,
+  getSelectedStateFromOperationWithoutUpdatingStore,
+  nestedStore as libNestedStore,
   OptionsForMakingANestedStore,
   OptionsForMakingAStore,
   SelectorFromAStore,
-  store as libStore,
-  storeEnforcingTags as libStoreEnforceTags,
-  nestedStore as libNestedStore,
-  StoreOrDerivation,
   Store,
-  ArrayOfObjectsAction,
-  DeepReadonlyArray,
-  FindOrFilter,
-  Trackability,
-  getSelectedStateFromOperationWithoutUpdatingStore,
+  store as libStore,
+  storeEnforcingTags as libStoreEnforcingTags,
+  StoreOrDerivation,
 } from 'olik';
 import React from 'react';
 
@@ -113,8 +109,8 @@ export function store<S>(initialState: S, options?: OptionsForMakingAStore) {
   }
 }
 
-export function storeEnforceTags<S>(initialState: S, options?: OptionsForMakingAStore) {
-  const select = libStoreEnforceTags(initialState, options) as any as SelectorFromAStore<S>;
+export function storeEnforcingTags<S>(initialState: S, options?: OptionsForMakingAStore) {
+  const select = libStoreEnforcingTags(initialState, options) as any as SelectorFromAStore<S>;
   return {
     /**
      * Takes a function which selects from the store
@@ -193,7 +189,7 @@ function getUseSelector<S>(select: SelectorFromAStore<S>) {
      * const str = useSelector(s => s.some.state);
      * @example
      * const [id, setId] = React.useState(0);
-     * const todo = useSelector(s => s.some.todos.find(t => t.id === id), [id]);
+     * const todo = useSelector(s => s.some.todos.findWhere(t => t.id === id), [id]);
      */
     useSelector: function <R>(selector: Function<S, R>, deps: React.DependencyList = []) {
       return useSelector(select, selector, deps);

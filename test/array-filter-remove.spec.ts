@@ -56,14 +56,14 @@ describe('array.filter().remove()', () => {
   it('should gte()', () => {
     const select = store(initialState);
     select(s => s.array)
-      .filterWhere(e => e.id).gte(1)
+      .filterWhere(e => e.id).gte(2)
       .remove();
     expect(testState.currentAction).toEqual({
       type: 'array.filter().remove()',
-      toRemove: [initialState.array[0], initialState.array[1], initialState.array[2]],
-      where: 'id >= 1',
+      toRemove: [initialState.array[1], initialState.array[2]],
+      where: 'id >= 2',
     });
-    expect(select(s => s.array).read()).toEqual([]);
+    expect(select(s => s.array).read()).toEqual([initialState.array[0]]);
     expect(testState.currentMutableState).toEqual(select().read());
   })
 

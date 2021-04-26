@@ -20,14 +20,19 @@ describe('React', () => {
   };
 
   it('should create and update a store', () => {
-    const { select } = store(initialState, { devtools: false });
+    const {
+      select
+    } = store(initialState, { devtools: false });
     select(s => s.object.property)
       .replace('test');
     expect(select().read().object.property).toEqual('test');
   })
 
   it('useSelector', () => {
-    const { select, useSelector } = store(initialState, { devtools: false });
+    const {
+      select,
+      useSelector
+    } = store(initialState, { devtools: false });
     const App = () => {
       const result = useSelector(s => s.object.property);
       return (
@@ -44,7 +49,10 @@ describe('React', () => {
   });
 
   it('useDerivation with no deps', () => {
-    const { select, useDerivation } = store(initialState, { devtools: false });
+    const {
+      select,
+      useDerivation
+    } = store(initialState, { devtools: false });
     let calcCount = 0;
     const App = () => {
       const result = useDerivation([
@@ -70,7 +78,9 @@ describe('React', () => {
   });
 
   it('useDerivation with deps', () => {
-    const { useDerivation } = store(initialState, { devtools: false });
+    const {
+      useDerivation
+    } = store(initialState, { devtools: false });
     let calcCount = 0;
     const App = () => {
       const [str, setStr] = React.useState('');
@@ -100,7 +110,10 @@ describe('React', () => {
   });
 
   it('should support classes', () => {
-    const { select, mapStateToProps } = store(initialState, { devtools: false });
+    const {
+      select,
+      mapStateToProps
+    } = store(initialState, { devtools: false });
     let renderCount = 0;
     class Child extends React.Component<{ str: string, num: number }> {
       render() {
@@ -143,7 +156,10 @@ describe('React', () => {
   it('should create a nested store without a parent', () => {
     let renderCount = 0;
     const App = () => {
-      const { select, useSelector } = useNestedStore(initialState, { componentName: 'unhosted', dontTrackWithDevtools: true });
+      const {
+        select,
+        useSelector
+      } = useNestedStore(initialState, { componentName: 'unhosted', dontTrackWithDevtools: true });
       const result = useSelector(s => s.object.property);
       renderCount++;
       return (
@@ -217,7 +233,10 @@ describe('React', () => {
   });
 
   it('should respond to async queries', async () => {
-    const { select, useSelector, useFetcher } = store(initialState, { devtools: false });
+    const {
+      select,
+      useFetcher
+    } = store(initialState, { devtools: false });
     const App = () => {
       const {
         wasResolved,
@@ -245,7 +264,10 @@ describe('React', () => {
   })
 
   it('should respond to async queries', async () => {
-    const { select, useFetcher } = store(initialState, { devtools: false });
+    const {
+      select,
+      useFetcher
+    } = store(initialState, { devtools: false });
     const App = () => {
       const {
         wasResolved,
@@ -305,10 +327,16 @@ describe('React', () => {
     render(<App />);
     expect(screen.queryByText('Loading')).toBeInTheDocument();
     expect(screen.getByTestId('result').textContent).toEqual('');
-    await waitFor(() => expect(screen.getByTestId('todos-length').textContent).toEqual('10'));
+    await waitFor(() => {
+      expect(screen.queryByText('Loading')).not.toBeInTheDocument();
+      expect(screen.getByTestId('todos-length').textContent).toEqual('10')
+    });
     (screen.getByTestId('btn') as HTMLButtonElement).click();
     await waitFor(() => expect(screen.queryByText('Loading')).toBeInTheDocument());
-    await waitFor(() => expect(screen.getByTestId('todos-length').textContent).toEqual('5'));
+    await waitFor(() => {
+      expect(screen.queryByText('Loading')).not.toBeInTheDocument();
+      expect(screen.getByTestId('todos-length').textContent).toEqual('5');
+    });
   })
 
 });
