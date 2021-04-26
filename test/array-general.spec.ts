@@ -60,6 +60,20 @@ describe('array', () => {
     expect(testState.currentMutableState).toEqual(select().read());
   })
 
+  it('should insert() one at index', () => {
+    const select = store(initialState);
+    const payload = { id: 4, value: 'four' };
+    select(s => s.array)
+      .insert(payload, { atIndex: 1 });
+    expect(testState.currentAction).toEqual({
+      type: 'array.insert()',
+      insertion: payload,
+      atIndex: 1
+    });
+    expect(select(s => s.array).read()).toEqual([initialState.array[0], payload, initialState.array[1], initialState.array[2]]);
+    expect(testState.currentMutableState).toEqual(select().read());
+  })
+
   it('should insert() many', () => {
     const select = store(initialState);
     const payload = [{ id: 4, value: 'four' }, { id: 5, value: 'five' }];
@@ -70,6 +84,20 @@ describe('array', () => {
       insertion: payload,
     });
     expect(select(s => s.array).read()).toEqual([...initialState.array, ...payload]);
+    expect(testState.currentMutableState).toEqual(select().read());
+  })
+
+  it('should insert() many at index', () => {
+    const select = store(initialState);
+    const payload = [{ id: 4, value: 'four' }, { id: 5, value: 'five' }];
+    select(s => s.array)
+      .insert(payload, { atIndex: 1 });
+    expect(testState.currentAction).toEqual({
+      type: 'array.insert()',
+      insertion: payload,
+      atIndex: 1
+    });
+    expect(select(s => s.array).read()).toEqual([initialState.array[0], ...payload, initialState.array[1], initialState.array[2]]);
     expect(testState.currentMutableState).toEqual(select().read());
   })
 

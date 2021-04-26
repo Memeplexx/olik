@@ -225,7 +225,7 @@ describe('React', () => {
         isLoading,
         storeValue
       } = useFetcher(() => select(s => s.object.property)
-        .replace(() => new Promise<string>(resolve => setTimeout(() => resolve('test'), 10))));
+        .replace(() => new Promise(resolve => setTimeout(() => resolve('test'), 10))));
       return (
         <>
           <div data-testid="result">{storeValue}</div>

@@ -4,14 +4,9 @@
 export type Trackability = 'tagged' | 'untagged';
 
 /**
- * Whether this predicate is for a filter() or a find()
+ * Whether this predicate is for a filterWhere() or a findWhere()
  */
 export type FindOrFilter = 'find' | 'filter';
-
-/**
- * An argument which can be supplied when fetching data
- */
-export type FetchArgument<T> = T extends infer T ? T : void;
 
 /**
  * An object which can be unsubscribed from
@@ -66,7 +61,7 @@ export type PredicateCustom<X extends DeepReadonlyArray<any>, F extends FindOrFi
  */
 export type PredicateOptionsCommon<X extends DeepReadonlyArray<any>, P, F extends FindOrFilter, T extends Trackability> = {
   /**
-   * Checks whether the previously selected property **equals** the supplied value
+   * Searches for array element(s) where the previously selected property **equals** the supplied value
    * @example
    * ...
    * .eq(1)
@@ -74,7 +69,7 @@ export type PredicateOptionsCommon<X extends DeepReadonlyArray<any>, P, F extend
    */
   eq: (value: P) => PredicateAction<X, F, T>,
   /**
-   * Checks whether the previously selected property does **not equal** the supplied value
+   * Searches for array element(s) where the previously selected property **does not equal** the supplied value
    * @example
    * ...
    * .ne(1)
@@ -82,15 +77,15 @@ export type PredicateOptionsCommon<X extends DeepReadonlyArray<any>, P, F extend
    */
   ne: (value: P) => PredicateAction<X, F, T>,
   /**
-   * Checks whether the previously selected property **is in** the supplied array
+   * Searches for array element(s) where the previously selected property **is in** the supplied array
    * @example
    * ...
-   * .filter(e => e.id).in([1, 2])
+   * in([1, 2])
    * ...
    */
   in: (value: P[]) => PredicateAction<X, F, T>,
   /**
-   * Checks whether the previously selected property **is not in** the supplied array
+   * Searches for array element(s) where the previously selected property **is not in** the supplied array
    * @example
    * ...
    * .ni([1, 2])
@@ -120,7 +115,7 @@ export type PredicateOptionsForBoolean<X extends DeepReadonlyArray<any>, F exten
  */
 export type PredicateOptionsForNumber<X extends DeepReadonlyArray<any>, E, F extends FindOrFilter, T extends Trackability> = {
   /**
-   * Checks whether the previously selected number property **is greater than** the supplied number
+   * Searches for array element(s) where the previously selected property **is greater than** the supplied number
    * @example
    * ...
    * .gt(2)
@@ -128,7 +123,7 @@ export type PredicateOptionsForNumber<X extends DeepReadonlyArray<any>, E, F ext
    */
   gt: (value: number) => PredicateAction<X, F, T>,
   /**
-   * Checks whether the previously selected number property **is greater than or equal to** the supplied number
+   * Searches for array element(s) where the previously selected property **is greater than or equal to** the supplied number
    * @example
    * ...
    * .gte(2)
@@ -136,7 +131,7 @@ export type PredicateOptionsForNumber<X extends DeepReadonlyArray<any>, E, F ext
    */
   gte: (value: number) => PredicateAction<X, F, T>,
   /**
-   * Checks whether the previously selected number property **is less than** the supplied number
+   * Searches for array element(s) where the previously selected property **is less than** the supplied number
    * @example
    * ...
    * .lt(2)
@@ -144,7 +139,7 @@ export type PredicateOptionsForNumber<X extends DeepReadonlyArray<any>, E, F ext
    */
   lt: (value: number) => PredicateAction<X, F, T>,
   /**
-   * Checks whether the previously selected number property **is less than or equal to** the supplied number
+   * Searches for array element(s) where the previously selected property **is less than or equal to** the supplied number
    * @example
    * ...
    * .lte(2)
@@ -158,7 +153,8 @@ export type PredicateOptionsForNumber<X extends DeepReadonlyArray<any>, E, F ext
  */
 export type PredicateOptionsForString<X extends DeepReadonlyArray<any>, E, F extends FindOrFilter, T extends Trackability> = {
   /**
-   * Checks whether the previously selected string property **matches** the supplied regular expression
+   * Searches for array element(s) where the previously selected property **matches** the supplied regular expression
+   * @param pattern any regular expression
    * @example
    * ...
    * .match(/^hello/)
@@ -181,7 +177,8 @@ export type Predicate<X extends DeepReadonlyArray<any>, P, F extends FindOrFilte
  */
 export type ArrayOfElementsAction<X extends DeepReadonlyArray<any>, F extends FindOrFilter, T extends Trackability> = {
   /**
-   * Append more criteria with which to filter your array
+   * Append more criteria with which to find/filter the array
+   * @param getProp a function which selects the array element property to compare
    * @example
    * ...
    * .and(e => e.status).eq('todo')
@@ -189,7 +186,8 @@ export type ArrayOfElementsAction<X extends DeepReadonlyArray<any>, F extends Fi
    */
   andWhere: X[0] extends object ? <P>(getProp: (element: DeepReadonly<X[0]>) => P) => Predicate<X, P, F, T> : () => Predicate<X, X[0], F, T>,
   /**
-   * Append more criteria with which to filter your array
+   * Append more criteria with which to find/filter the array
+   * @param getProp a function which selects the array element property to compare
    * @example
    * ...
    * .or(t => t.status).eq('todo')
@@ -330,9 +328,19 @@ export type PromisableUpdate<H> = H extends () => Promise<any> ? {
   optimisticallyUpdateWith?: H extends () => Promise<infer W> ? W : never,
 } : {};
 
+export type UpdateAtIndex = { 
+  /**
+   * The index where new elements should be inserted.  
+   * The default insertion behavior is that new elements will be appended to the end of the existing array
+   */
+  atIndex?: number
+};
+
 export type ActionOptions<T extends Trackability> = T extends 'untagged' ? (TaggedUpdate<'untagged'> | void) : TaggedUpdate<'tagged'>;
 
 export type UpdateOptions<T extends Trackability, H> = T extends 'untagged' ? (TaggedUpdate<'untagged'> & PromisableUpdate<H> | void) : TaggedUpdate<'tagged'> & PromisableUpdate<H>;
+
+export type InsertOptions<T extends Trackability, H> = UpdateOptions<T, H> & (UpdateAtIndex | void);
 
 /**
  * An object which is capable of storing and updating state which is in the shape of an array of primitives
@@ -350,7 +358,7 @@ export type StoreForAnArrayCommon<X extends DeepReadonlyArray<any>, T extends Tr
    * ...
    * .insert(() => getTodosFromApi())
    */
-  insert: <H extends (X | X[0] | (() => Promise<X | X[0]>)) >(insertion: H, options: UpdateOptions<T, H>) => H extends (() => Promise<any>) ? Promise<X> : void,
+  insert: <H extends (X | X[0] | (() => Promise<X | X[0]>)) >(insertion: H, options: InsertOptions<T, H>) => H extends (() => Promise<any>) ? Promise<X> : void,
   /**
    * Removes all elements from the array
    * @example

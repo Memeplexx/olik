@@ -23,8 +23,6 @@ describe('array.filter().and().or()', () => {
     });
     expect(select(s => s.array).read()).toEqual([initialState.array[0], initialState.array[2]]);
     expect(testState.currentMutableState).toEqual(select().read());
-
-    (select() as any).currentStateSelection
   })
 
   it('should eq().or().eq()', () => {

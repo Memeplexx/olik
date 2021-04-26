@@ -1,6 +1,6 @@
 import {
   DeepReadonly,
-  FindOrFilter,
+  InsertOptions,
   Selector,
   StoreForAnArrayCommon,
   StoreForAnArrayOfObjects,
@@ -8,6 +8,7 @@ import {
   StoreOrDerivation,
   StoreWhichIsResettable,
   Trackability,
+  UpdateAtIndex,
   UpdateOptions,
 } from './shapes-external';
 import { CoreActionsState, PathReader, StoreState, UpdateStateFn } from './shapes-internal';
@@ -16,6 +17,7 @@ import {
   createPathReader,
   deepCopy,
   deepFreeze,
+  isEmpty,
   processAsyncPayload,
   validateSelectorFn,
 } from './shared-utils';
@@ -63,22 +65,28 @@ export const removeAll = <S, C, X extends C & Array<any>, T extends Trackability
 
 export const insertIntoArray = <S, C, X extends C & Array<any>, T extends Trackability>(
   { selector, isNested, storeResult, storeState, updateState, pathReader }: CoreActionsState<S, C, X, T>,
-) => ((payload, updateOptions) => {
+) => ((payload, insertOptions: UpdateAtIndex = {}) => {
   validateSelector(selector, isNested, storeState);
   const processPayload = (payload: C) => {
     const { payloadFrozen, payloadCopied } = copyPayload(payload);
     updateState({
       selector,
-      replacer: old => [...old, ...(deepCopy(Array.isArray(payloadFrozen) ? payloadFrozen : [payloadFrozen]))],
-      mutator: old => old.push(...(Array.isArray(payloadCopied) ? payloadCopied : [payloadCopied])),
+      replacer: old => {
+        const input = deepCopy(Array.isArray(payloadFrozen) ? payloadFrozen : [payloadFrozen]);
+        return (!isEmpty(insertOptions.atIndex)) ? [...old.slice(0, insertOptions.atIndex), ...input, ...old.slice(insertOptions.atIndex)] : [...old, ...input];
+      },
+      mutator: old => old.splice((!isEmpty(insertOptions.atIndex)) ? insertOptions.atIndex! : old.length, 0, ...(Array.isArray(payloadCopied) ? payloadCopied : [payloadCopied])),
       actionName: 'insert()',
-      payload: {
+      payload: (!isEmpty(insertOptions.atIndex)) ? {
+        insertion: payloadFrozen,
+        atIndex: insertOptions.atIndex
+      } : {
         insertion: payloadFrozen,
       },
-      updateOptions: updateOptions as UpdateOptions<T, any>,
+      updateOptions: insertOptions as UpdateOptions<T, any>,
     });
   }
-  return processAsyncPayload(selector, payload, pathReader, storeResult, processPayload, updateOptions as UpdateOptions<T, any>, 'insert()', storeState);
+  return processAsyncPayload(selector, payload, pathReader, storeResult, processPayload, insertOptions as UpdateOptions<T, any>, 'insert()', storeState);
 }) as StoreForAnArrayCommon<X, T>['insert'];
 
 export const patchOrInsertIntoObject = <S, C, X extends C & Array<any>, T extends Trackability>(

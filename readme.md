@@ -41,8 +41,8 @@ select(s => s.favorite.foods)            // type: 'favorite.foods.insert()'
   .insert(['Indian', 'Sushi']);          // insertion: ['Indian', 'Sushi']
 
 select(s => s.favorite.movies)           // type: 'favorite.movies.filter().remove()'
-  .filterWhere(s => s.rating).lte(3)     // where: 'rating <= 3'
-  .remove();                             // toRemove: { id: 7, name: 'Click', rating: 1 }
+  .filterWhere(s => s.rating).lte(2)     // where: 'rating <= 2'
+  .remove();                             // toRemove: [{ id: 2, name: 'Click', rating: 1 }, ...]
 ```
 #### 👓 **READ STATE**
 State can be **read** from, **listened** to, and expensive derivations can be **memoized**.
