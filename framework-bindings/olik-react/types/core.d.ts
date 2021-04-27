@@ -1,31 +1,88 @@
 import { DeepReadonly, OptionsForMakingANestedStore, OptionsForMakingAStore, SelectorFromAStore } from 'olik';
 import React from 'react';
 /**
- * A hook to track the status of a request
- *
- * @param fetchFn A no-args function returning a promise
- *
- * @example
- * const { isLoading, hasError, succeeded, error, data, refetch } =
- *   useFetcher(() => fetch('https://www.example.com/api/todos')
- *     .then(res => get(s => s.todos).replaceAll(res)));
- * const todos = useSelector(get(s => s.todos));
- */
-export declare function useFetcher<C>(fetchFn: () => Promise<C>, deps?: React.DependencyList): {
-    isLoading: boolean;
-    hasError: boolean;
-    succeeded: boolean;
-    error: any;
-    data: C | null;
-    refetch: (fetcher: () => Promise<C>) => void;
-};
-/**
  * A hook for creating a store which is capable of being nested inside your application store
  * @param initialState the initial state of the nested store you want to create
  * @param options additional options for creating a nested store, which at minimum, must specify the `name` of the store
  * @param deps optional list of dependencies under which a store should be re-created
  */
 export declare function useNestedStore<C>(initialState: C, options: OptionsForMakingANestedStore, deps?: React.DependencyList): {
+    /**
+     * A hook to track the status of an asynchronouse operation
+     *
+     * @param fetchFn A no-args function returning a promise
+     *
+     * @example
+     * const {
+     *   isLoading,
+     *   wasRejected,
+     *   wasResolved,
+     *   error,
+     *   storeValue,
+     * } = useFetcher(() => select(s => s.todos).replaceAll(() => fetchTodosFromAPI()));
+     */
+    useFetcher: <C_1>(operation: () => Promise<C_1>, deps?: React.DependencyList) => {
+        isLoading: boolean;
+        wasRejected: boolean;
+        wasResolved: boolean;
+        error: any;
+        storeValue: C_1;
+    };
+    /**
+     * Similar, in principal, to React-Redux's `mapStateToProps()`
+     * @param mapper a function which takes in state from the store (as 1st arg) and own props (as 2nd arg), and returns state which will be used
+     *
+     * The following example component receives props from the store as well as from its parent component
+     * ```
+     * const { mapStateToProps } = set({ some: { state: { todos: new Array<string>() } } });
+     *
+     * class TodosComponent extends React.Component<{ todos: Array<{ id: number, text: string }>, title: string }> {
+     *   render() {
+     *     return (
+     *        <>
+     *          <div>{this.props.title}</div>
+     *          { this.props.todos.map(todo => ( <div key={todo.id}>{todo.text}</div> )) }
+     *        </>
+     *     )
+     *   }
+     * }
+     *
+     * export default mapStateToProps((storeState, componentProps: { title: string }) => ({
+     *   todos: storeState.todos,
+     *   title: componentProps.title,
+     * }))(TodosComponent);
+     * ```
+     */
+    mapStateToProps: <P extends {}, M extends {}>(mapper: (state: DeepReadonly<C>, ownProps: P) => M) => (Component: React.ComponentType<M>) => {
+        new (props: any): {
+            sub: import("olik").Unsubscribable;
+            render(): JSX.Element;
+            componentWillUnmount(): void;
+            context: any;
+            setState<K extends keyof M>(state: M | ((prevState: Readonly<M>, props: Readonly<P>) => M | Pick<M, K> | null) | Pick<M, K> | null, callback?: (() => void) | undefined): void;
+            forceUpdate(callback?: (() => void) | undefined): void;
+            readonly props: Readonly<P> & Readonly<{
+                children?: React.ReactNode;
+            }>;
+            state: Readonly<M>;
+            refs: {
+                [key: string]: React.ReactInstance;
+            };
+            componentDidMount?(): void;
+            shouldComponentUpdate?(nextProps: Readonly<P>, nextState: Readonly<M>, nextContext: any): boolean;
+            componentDidCatch?(error: Error, errorInfo: React.ErrorInfo): void;
+            getSnapshotBeforeUpdate?(prevProps: Readonly<P>, prevState: Readonly<M>): any;
+            componentDidUpdate?(prevProps: Readonly<P>, prevState: Readonly<M>, snapshot?: any): void;
+            componentWillMount?(): void;
+            UNSAFE_componentWillMount?(): void;
+            componentWillReceiveProps?(nextProps: Readonly<P>, nextContext: any): void;
+            UNSAFE_componentWillReceiveProps?(nextProps: Readonly<P>, nextContext: any): void;
+            componentWillUpdate?(nextProps: Readonly<P>, nextState: Readonly<M>, nextContext: any): void;
+            UNSAFE_componentWillUpdate?(nextProps: Readonly<P>, nextState: Readonly<M>, nextContext: any): void;
+        };
+        getDerivedStateFromProps(props: P): M;
+        contextType?: React.Context<any> | undefined;
+    };
     /**
      * A hook to derive state and memoise the result of a complex calculation
      * @param inputs an array of functions which select from the store
@@ -53,7 +110,7 @@ export declare function useNestedStore<C>(initialState: C, options: OptionsForMa
      * const str = useSelector(s => s.some.state);
      * @example
      * const [id, setId] = React.useState(0);
-     * const todo = useSelector(s => s.some.todos.find(t => t.id === id), [id]);
+     * const todo = useSelector(s => s.some.todos.findWhere(t => t.id === id), [id]);
      */
     useSelector: <R_1>(selector: Function<C, R_1>, deps?: React.DependencyList) => R_1;
     select: import("olik").SelectorFromANestedStore<C>;
@@ -62,7 +119,28 @@ declare type Function<S, R> = (arg: DeepReadonly<S>) => R;
 declare type MappedSelectorsToResults<S, X> = {
     [K in keyof X]: X[K] extends Function<S, infer E> ? E : never;
 };
-export declare function set<S>(initialState: S, options?: OptionsForMakingAStore): {
+export declare function store<S>(initialState: S, options?: OptionsForMakingAStore): {
+    /**
+     * A hook to track the status of an asynchronouse operation
+     *
+     * @param fetchFn A no-args function returning a promise
+     *
+     * @example
+     * const {
+     *   isLoading,
+     *   wasRejected,
+     *   wasResolved,
+     *   error,
+     *   storeValue,
+     * } = useFetcher(() => select(s => s.todos).replaceAll(() => fetchTodosFromAPI()));
+     */
+    useFetcher: <C>(operation: () => Promise<C>, deps?: React.DependencyList) => {
+        isLoading: boolean;
+        wasRejected: boolean;
+        wasResolved: boolean;
+        error: any;
+        storeValue: C;
+    };
     /**
      * Similar, in principal, to React-Redux's `mapStateToProps()`
      * @param mapper a function which takes in state from the store (as 1st arg) and own props (as 2nd arg), and returns state which will be used
@@ -145,7 +223,7 @@ export declare function set<S>(initialState: S, options?: OptionsForMakingAStore
      * const str = useSelector(s => s.some.state);
      * @example
      * const [id, setId] = React.useState(0);
-     * const todo = useSelector(s => s.some.todos.find(t => t.id === id), [id]);
+     * const todo = useSelector(s => s.some.todos.findWhere(t => t.id === id), [id]);
      */
     useSelector: <R_1>(selector: Function<S, R_1>, deps?: React.DependencyList) => R_1;
     /**
@@ -155,7 +233,28 @@ export declare function set<S>(initialState: S, options?: OptionsForMakingAStore
      */
     select: SelectorFromAStore<S>;
 };
-export declare function setEnforceTags<S>(initialState: S, options?: OptionsForMakingAStore): {
+export declare function storeEnforcingTags<S>(initialState: S, options?: OptionsForMakingAStore): {
+    /**
+     * A hook to track the status of an asynchronouse operation
+     *
+     * @param fetchFn A no-args function returning a promise
+     *
+     * @example
+     * const {
+     *   isLoading,
+     *   wasRejected,
+     *   wasResolved,
+     *   error,
+     *   storeValue,
+     * } = useFetcher(() => select(s => s.todos).replaceAll(() => fetchTodosFromAPI()));
+     */
+    useFetcher: <C>(operation: () => Promise<C>, deps?: React.DependencyList) => {
+        isLoading: boolean;
+        wasRejected: boolean;
+        wasResolved: boolean;
+        error: any;
+        storeValue: C;
+    };
     /**
      * Similar, in principal, to React-Redux's `mapStateToProps()`
      * @param mapper a function which takes in state from the store (as 1st arg) and own props (as 2nd arg), and returns state which will be used
@@ -238,7 +337,7 @@ export declare function setEnforceTags<S>(initialState: S, options?: OptionsForM
      * const str = useSelector(s => s.some.state);
      * @example
      * const [id, setId] = React.useState(0);
-     * const todo = useSelector(s => s.some.todos.find(t => t.id === id), [id]);
+     * const todo = useSelector(s => s.some.todos.findWhere(t => t.id === id), [id]);
      */
     useSelector: <R_1>(selector: Function<S, R_1>, deps?: React.DependencyList) => R_1;
     /**
