@@ -14,7 +14,8 @@ describe('array.filter().and().or()', () => {
   it('should eq().and().eq()', () => {
     const select = store(initialState);
     select(s => s.array)
-      .filterWhere(s => s.id).eq(2).andWhere(s => s.value).eq('two')
+      .filterWhere(s => s.id).isEqualto(2)
+      .andWhere(s => s.value).isEqualto('two')
       .remove();
     expect(testState.currentAction).toEqual({
       type: 'array.filter().remove()',
@@ -28,7 +29,8 @@ describe('array.filter().and().or()', () => {
   it('should eq().or().eq()', () => {
     const select = store(initialState);
     select(s => s.array)
-      .filterWhere(s => s.id).eq(1).orWhere(s => s.value).eq('two')
+      .filterWhere(s => s.id).isEqualto(1)
+      .orWhere(s => s.value).isEqualto('two')
       .remove();
     expect(testState.currentAction).toEqual({
       type: 'array.filter().remove()',
@@ -42,7 +44,8 @@ describe('array.filter().and().or()', () => {
   it('should eq().and().eq() not matching', () => {
     const select = store(initialState);
     select(s => s.array)
-      .filterWhere(s => s.id).eq(1).andWhere(s => s.id).eq(2)
+      .filterWhere(s => s.id).isEqualto(1)
+      .andWhere(s => s.id).isEqualto(2)
       .remove();
     expect(testState.currentAction).toEqual({
       type: 'array.filter().remove()',
@@ -56,7 +59,9 @@ describe('array.filter().and().or()', () => {
   it('should eq().and().eq().or().eq()', () => {
     const select = store(initialState);
     select(s => s.array)
-      .filterWhere(e => e.id).eq(1).andWhere(e => e.id).eq(2).orWhere(e => e.id).eq(3)
+      .filterWhere(e => e.id).isEqualto(1)
+      .andWhere(e => e.id).isEqualto(2)
+      .orWhere(e => e.id).isEqualto(3)
       .remove();
     expect(testState.currentAction).toEqual({
       type: 'array.filter().remove()',
@@ -70,7 +75,9 @@ describe('array.filter().and().or()', () => {
   it('should eq().or().eq().and().eq()', () => {
     const select = store(initialState);
     select(s => s.array)
-      .filterWhere(e => e.id).eq(4).orWhere(e => e.id).eq(3).andWhere(e => e.value).eq('three')
+      .filterWhere(e => e.id).isEqualto(4)
+      .orWhere(e => e.id).isEqualto(3)
+      .andWhere(e => e.value).isEqualto('three')
       .remove();
     expect(testState.currentAction).toEqual({
       type: 'array.filter().remove()',
@@ -84,7 +91,10 @@ describe('array.filter().and().or()', () => {
   it('should eq().and().eq().or().eq().and().eq()', () => {
     const select = store(initialState);
     select(s => s.array)
-      .filterWhere(e => e.id).eq(1).andWhere(e => e.value).eq('one').orWhere(e => e.id).eq(3).andWhere(e => e.value).eq('three')
+      .filterWhere(e => e.id).isEqualto(1)
+      .andWhere(e => e.value).isEqualto('one')
+      .orWhere(e => e.id).isEqualto(3)
+      .andWhere(e => e.value).isEqualto('three')
       .remove();
     expect(testState.currentAction).toEqual({
       type: 'array.filter().remove()',

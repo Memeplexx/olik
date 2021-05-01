@@ -15,7 +15,7 @@ describe('array.whereMany().replace()', () => {
     const select = store(initialState);
     const payload = { id: 4, value: 'four' };
     select(s => s.array)
-      .filterWhere(e => e.id).eq(2)
+      .filterWhere(e => e.id).isEqualto(2)
       .replace(payload);
     expect(testState.currentAction).toEqual({
       type: 'array.filter().replace()',
@@ -30,7 +30,7 @@ describe('array.whereMany().replace()', () => {
     const select = store(initialState);
     const payload = { id: 4, value: 'four' };
     select(s => s.array)
-      .filterWhere(e => e.id).ne(2)
+      .filterWhere(e => e.id).isNotEqualTo(2)
       .replace(payload);
     expect(testState.currentAction).toEqual({
       type: 'array.filter().replace()',
@@ -45,7 +45,7 @@ describe('array.whereMany().replace()', () => {
     const select = store(initialState);
     const payload = { id: 4, value: 'four' };
     select(s => s.array)
-      .filterWhere(e => e.id).gt(1)
+      .filterWhere(e => e.id).isGreaterThan(1)
       .replace(payload);
     expect(testState.currentAction).toEqual({
       type: 'array.filter().replace()',
@@ -60,7 +60,7 @@ describe('array.whereMany().replace()', () => {
     const select = store(initialState);
     const payload = { id: 4, value: 'four' };
     select(s => s.array)
-      .filterWhere(e => e.id).gte(1)
+      .filterWhere(e => e.id).isGreaterThanOrEqualTo(1)
       .replace(payload);
     expect(testState.currentAction).toEqual({
       type: 'array.filter().replace()',
@@ -75,7 +75,7 @@ describe('array.whereMany().replace()', () => {
     const select = store(initialState);
     const payload = { id: 4, value: 'four' };
     select(s => s.array)
-      .filterWhere(e => e.id).lt(2)
+      .filterWhere(e => e.id).isLessThan(2)
       .replace(payload);
     expect(testState.currentAction).toEqual({
       type: 'array.filter().replace()',
@@ -90,7 +90,7 @@ describe('array.whereMany().replace()', () => {
     const select = store(initialState);
     const payload = { id: 4, value: 'four' };
     select(s => s.array)
-      .filterWhere(e => e.id).lte(2)
+      .filterWhere(e => e.id).isLessThanOrEqualTo(2)
       .replace(payload);
     expect(testState.currentAction).toEqual({
       type: 'array.filter().replace()',
@@ -105,7 +105,7 @@ describe('array.whereMany().replace()', () => {
     const select = store(initialState);
     const payload = { id: 4, value: 'four' };
     select(s => s.array)
-      .filterWhere(e => e.id).in([1, 2])
+      .filterWhere(e => e.id).isInArray([1, 2])
       .replace(payload);
     expect(testState.currentAction).toEqual({
       type: 'array.filter().replace()',
@@ -120,7 +120,7 @@ describe('array.whereMany().replace()', () => {
     const select = store(initialState);
     const payload = { id: 4, value: 'four' };
     select(s => s.array)
-      .filterWhere(e => e.id).ni([1, 2])
+      .filterWhere(e => e.id).isNotInArray([1, 2])
       .replace(payload);
     expect(testState.currentAction).toEqual({
       type: 'array.filter().replace()',
@@ -135,7 +135,7 @@ describe('array.whereMany().replace()', () => {
     const select = store(initialState);
     const payload = { id: 4, value: 'four' };
     select(s => s.array)
-      .filterWhere(e => e.value).match(/^t/)
+      .filterWhere(e => e.value).isMatchingRegex(/^t/)
       .replace(payload);
     expect(testState.currentAction).toEqual({
       type: 'array.filter().replace()',

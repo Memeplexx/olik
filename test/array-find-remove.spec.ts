@@ -14,7 +14,7 @@ describe('array.find().remove()', () => {
   it('should eq()', () => {
     const select = store(initialState);
     select(s => s.array)
-      .findWhere(e => e.id).eq(2)
+      .findWhere(e => e.id).isEqualto(2)
       .remove();
     expect(testState.currentAction).toEqual({
       type: 'array.find().remove()',
@@ -28,7 +28,7 @@ describe('array.find().remove()', () => {
   it('should ne()', () => {
     const select = store(initialState);
     select(s => s.array)
-      .findWhere(e => e.id).ne(2)
+      .findWhere(e => e.id).isNotEqualTo(2)
       .remove();
     expect(testState.currentAction).toEqual({
       type: 'array.find().remove()',
@@ -42,7 +42,7 @@ describe('array.find().remove()', () => {
   it('should gt()', () => {
     const select = store(initialState);
     select(s => s.array)
-      .findWhere(e => e.id).gt(1)
+      .findWhere(e => e.id).isGreaterThan(1)
       .remove();
     expect(testState.currentAction).toEqual({
       type: 'array.find().remove()',
@@ -56,7 +56,7 @@ describe('array.find().remove()', () => {
   it('should gte()', () => {
     const select = store(initialState);
     select(s => s.array)
-      .findWhere(e => e.id).gte(1)
+      .findWhere(e => e.id).isGreaterThanOrEqualTo(1)
       .remove();
     expect(testState.currentAction).toEqual({
       type: 'array.find().remove()',
@@ -70,7 +70,7 @@ describe('array.find().remove()', () => {
   it('should lt()', () => {
     const select = store(initialState);
     select(s => s.array)
-      .findWhere(e => e.id).lt(2)
+      .findWhere(e => e.id).isLessThan(2)
       .remove();
     expect(testState.currentAction).toEqual({
       type: 'array.find().remove()',
@@ -84,7 +84,7 @@ describe('array.find().remove()', () => {
   it('should lte()', () => {
     const select = store(initialState);
     select(s => s.array)
-      .findWhere(e => e.id).lte(2)
+      .findWhere(e => e.id).isLessThanOrEqualTo(2)
       .remove();
     expect(testState.currentAction).toEqual({
       type: 'array.find().remove()',
@@ -98,7 +98,7 @@ describe('array.find().remove()', () => {
   it('should in()', () => {
     const select = store(initialState);
     select(s => s.array)
-      .findWhere(e => e.id).in([1, 2])
+      .findWhere(e => e.id).isInArray([1, 2])
       .remove();
     expect(testState.currentAction).toEqual({
       type: 'array.find().remove()',
@@ -112,7 +112,7 @@ describe('array.find().remove()', () => {
   it('should ni()', () => {
     const select = store(initialState);
     select(s => s.array)
-      .findWhere(e => e.id).ni([1, 2])
+      .findWhere(e => e.id).isNotInArray([1, 2])
       .remove();
     expect(testState.currentAction).toEqual({
       type: 'array.find().remove()',
@@ -126,7 +126,7 @@ describe('array.find().remove()', () => {
   it('should match()', () => {
     const select = store(initialState);
     select(s => s.array)
-      .findWhere(e => e.value).match(/^t/)
+      .findWhere(e => e.value).isMatchingRegex(/^t/)
       .remove();
     expect(testState.currentAction).toEqual({
       type: 'array.find().remove()',

@@ -115,7 +115,7 @@ describe('Root', () => {
     const select = store(['one', 'two', 'three']);
     const payload = 'twoo';
     select()
-      .findWhere().eq('two')
+      .findWhere().isEqualto('two')
       .replace(payload);
     expect(testState.currentAction).toEqual({
       type: 'find().replace()',
@@ -140,7 +140,7 @@ describe('Root', () => {
 
   it('find().replace()', () => {
     const select = store(['hello']);
-    select().findWhere().match(/^h/).replace('another')
+    select().findWhere().isMatchingRegex(/^h/).replace('another')
     expect(testState.currentAction).toEqual({
       type: 'find().replace()',
       replacement: 'another',

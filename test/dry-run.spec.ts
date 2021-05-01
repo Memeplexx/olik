@@ -10,7 +10,7 @@ describe('dry-run', () => {
   it('should perform a successful dry-run with an array element update', () => {
     const initState = { arr: [{ id: 1, val: 'one' }, { id: 2, val: 'two' }], str: '' };
     const select = store(initState);
-    const state = getSelectedStateFromOperationWithoutUpdatingStore(select, () => select(s => s.arr).findWhere(s => s.id).eq(1).patch({ id: 3 }));
+    const state = getSelectedStateFromOperationWithoutUpdatingStore(select, () => select(s => s.arr).findWhere(s => s.id).isEqualto(1).patch({ id: 3 }));
     expect(state).toEqual({ id: 1, val: 'one' });
     expect(select().read()).toEqual(initState);
   })
