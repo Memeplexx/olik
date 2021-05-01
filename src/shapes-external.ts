@@ -183,7 +183,7 @@ export type ArrayOfElementsAction<X extends DeepReadonlyArray<any>, F extends Fi
    * @param getProp a function which selects the array element property to compare
    * @example
    * ...
-   * .and(e => e.status).eq('todo')
+   * .and(e => e.status).isEqualTo('todo')
    * ...
    */
   andWhere: X[0] extends object ? <P>(getProp: (element: DeepReadonly<X[0]>) => P) => Predicate<X, P, F, T> : () => Predicate<X, X[0], F, T>,
@@ -192,7 +192,7 @@ export type ArrayOfElementsAction<X extends DeepReadonlyArray<any>, F extends Fi
    * @param getProp a function which selects the array element property to compare
    * @example
    * ...
-   * .or(t => t.status).eq('todo')
+   * .or(t => t.status).isEqualTo('todo')
    * ...
    */
   orWhere: X[0] extends object ? <P>(getProp: (element: DeepReadonly<X[0]>) => P) => Predicate<X, P, F, T> : () => Predicate<X, X[0], F, T>,
@@ -315,7 +315,7 @@ export type PromisableUpdate<H> = H extends () => Promise<any> ? {
    * @example
    * select(s => s.todos).stopBypassingPromises();
    * @example
-   * select(s => s.todos).findWhere(s => s.id).eq(2).stopBypassingPromises();
+   * select(s => s.todos).findWhere(s => s.id).isEqualTo(2).stopBypassingPromises();
    */
   bypassPromiseFor?: number;
   /**
@@ -386,7 +386,7 @@ export type StoreForAnArrayOfPrimitives<X extends DeepReadonlyArray<any>, T exte
    * @example
    * ```
    * ...
-   * .filterWhere(t => t.status).eq('done')
+   * .filterWhere(t => t.status).isEqualTo('done')
    * ...
    * ```
    */
@@ -395,7 +395,7 @@ export type StoreForAnArrayOfPrimitives<X extends DeepReadonlyArray<any>, T exte
    * Specify a where clause to find one element.  
    * @example
    * ...
-   * .findWhere(t => t.id).eq(3)
+   * .findWhere(t => t.id).isEqualTo(3)
    * ...
    */
   findWhere: PredicateFunctionPrimitive<X, 'find', T>,
@@ -418,7 +418,7 @@ export type StoreForAnArrayOfObjects<X extends DeepReadonlyArray<any>, T extends
    * @example
    * ```
    * ...
-   * .filterWhere(t => t.status).eq('done')
+   * .filterWhere(t => t.status).isEqualTo('done')
    * ...
    * ```
    */
@@ -427,7 +427,7 @@ export type StoreForAnArrayOfObjects<X extends DeepReadonlyArray<any>, T extends
    * Specify a where clause to find one element.  
    * @example
    * ...
-   * .findWhere(t => t.id).eq(3)
+   * .findWhere(t => t.id).isEqualTo(3)
    * ...
    */
   findWhere: PredicateFunctionObject<X, 'find', T>,
