@@ -67,7 +67,7 @@ export type PredicateOptionsCommon<X extends DeepReadonlyArray<any>, P, F extend
    * .isEqualto(1)
    * ...
    */
-  isEqualto: (value: P) => PredicateAction<X, F, T>,
+  isEq: (value: P) => PredicateAction<X, F, T>,
   /**
    * Searches for array element(s) where the previously selected property **does not equal** the supplied value
    * @example
@@ -75,7 +75,7 @@ export type PredicateOptionsCommon<X extends DeepReadonlyArray<any>, P, F extend
    * .isNotEqualTo(1)
    * ...
    */
-  isNotEqualTo: (value: P) => PredicateAction<X, F, T>,
+  isNotEq: (value: P) => PredicateAction<X, F, T>,
   /**
    * Searches for array element(s) where the previously selected property **is in** the supplied array
    * @example
@@ -83,7 +83,7 @@ export type PredicateOptionsCommon<X extends DeepReadonlyArray<any>, P, F extend
    * isInArray([1, 2])
    * ...
    */
-  isInArray: (value: P[]) => PredicateAction<X, F, T>,
+  isIn: (value: P[]) => PredicateAction<X, F, T>,
   /**
    * Searches for array element(s) where the previously selected property **is not in** the supplied array
    * @example
@@ -91,9 +91,9 @@ export type PredicateOptionsCommon<X extends DeepReadonlyArray<any>, P, F extend
    * .isNotInArray([1, 2])
    * ...
    */
-  isNotInArray: (value: P[]) => PredicateAction<X, F, T>,
+  isNotIn: (value: P[]) => PredicateAction<X, F, T>,
 
-  whenConvertedTo: <L extends (number | string | boolean | Date)>(converter: (arg: P) => L) => Predicate<X, L, F, T>,
+  whenConvertedTo: <L>(converter: (arg: P) => L) => Predicate<X, L, F, T>,
 }
 
 /**
@@ -123,7 +123,7 @@ export type PredicateOptionsForNumber<X extends DeepReadonlyArray<any>, E, F ext
    * .gt(2)
    * ...
    */
-  isGreaterThan: (value: number) => PredicateAction<X, F, T>,
+  isMoreThan: (value: number) => PredicateAction<X, F, T>,
   /**
    * Searches for array element(s) where the previously selected property **is greater than or equal to** the supplied number
    * @example
@@ -131,7 +131,7 @@ export type PredicateOptionsForNumber<X extends DeepReadonlyArray<any>, E, F ext
    * .isGreaterThanOrEqualTo(2)
    * ...
    */
-  isGreaterThanOrEqualTo: (value: number) => PredicateAction<X, F, T>,
+  isMoreThanOrEq: (value: number) => PredicateAction<X, F, T>,
   /**
    * Searches for array element(s) where the previously selected property **is less than** the supplied number
    * @example
@@ -147,7 +147,7 @@ export type PredicateOptionsForNumber<X extends DeepReadonlyArray<any>, E, F ext
    * .isLessThanOrEqualTo(2)
    * ...
    */
-  isLessThanOrEqualTo: (value: number) => PredicateAction<X, F, T>,
+  isLessThanOrEq: (value: number) => PredicateAction<X, F, T>,
 } & PredicateOptionsCommon<X, E, F, T>;
 
 /**
@@ -162,7 +162,7 @@ export type PredicateOptionsForString<X extends DeepReadonlyArray<any>, E, F ext
    * .isMatchingRegex(/^hello/)
    * ...
    */
-  isMatchingRegex: (pattern: RegExp) => PredicateAction<X, F, T>,
+  isMatching: (pattern: RegExp) => PredicateAction<X, F, T>,
 } & PredicateOptionsCommon<X, E, F, T>;
 
 /**

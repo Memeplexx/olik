@@ -104,12 +104,14 @@ export function createStore<S, T extends Trackability>({
             stopBypassingPromises: () => array.stopBypassingPromises(context),
           } as ArrayOfObjectsAction<X, FindOrFilter, T>
         };
-        return {
+        let valueConverter: ((val: any) => any) | null = null;
+        const getValue = (val: any) => valueConverter ? valueConverter(val) : val;
+        const predicates = {
           ...{
-            isEqualto: val => constructActions(`${getSegsAndCriteria().segs.join('.') || 'element'} === ${val}`, e => e === val),
-            isNotEqualTo: val => constructActions(`${getSegsAndCriteria().segs.join('.') || 'element'} !== ${val}`, e => e !== val),
-            isInArray: val => constructActions(`[${val.join(', ')}].includes(${getSegsAndCriteria().segs.join('.') || 'element'})`, e => val.includes(e)),
-            isNotInArray: val => constructActions(`![${val.join(', ')}].includes(${getSegsAndCriteria().segs.join('.') || 'element'})`, e => !val.includes(e)),
+            isEq: val => constructActions(`${getSegsAndCriteria().segs.join('.') || 'element'} === ${val}`, e => getValue(e) === val),
+            isNotEq: val => constructActions(`${getSegsAndCriteria().segs.join('.') || 'element'} !== ${val}`, e => e !== val),
+            isIn: val => constructActions(`[${val.join(', ')}].includes(${getSegsAndCriteria().segs.join('.') || 'element'})`, e => val.includes(e)),
+            isNotIn: val => constructActions(`![${val.join(', ')}].includes(${getSegsAndCriteria().segs.join('.') || 'element'})`, e => !val.includes(e)),
           } as PredicateOptionsCommon<X, any, FindOrFilter, T>,
           ...{
             returnsTrue: () => {
@@ -126,15 +128,20 @@ export function createStore<S, T extends Trackability>({
             }
           } as PredicateOptionsForBoolean<X, FindOrFilter, T>,
           ...{
-            isGreaterThan: val => constructActions(`${getSegsAndCriteria().segs.join('.') || 'element'} > ${val}`, e => e > val),
+            isMoreThan: val => constructActions(`${getSegsAndCriteria().segs.join('.') || 'element'} > ${val}`, e => e > val),
             isLessThan: val => constructActions(`${getSegsAndCriteria().segs.join('.') || 'element'} < ${val}`, e => e < val),
-            isGreaterThanOrEqualTo: val => constructActions(`${getSegsAndCriteria().segs.join('.') || 'element'} >= ${val}`, e => e >= val),
-            isLessThanOrEqualTo: val => constructActions(`${getSegsAndCriteria().segs.join('.') || 'element'} <= ${val}`, e => e <= val),
+            isMoreThanOrEq: val => constructActions(`${getSegsAndCriteria().segs.join('.') || 'element'} >= ${val}`, e => e >= val),
+            isLessThanOrEq: val => constructActions(`${getSegsAndCriteria().segs.join('.') || 'element'} <= ${val}`, e => e <= val),
           } as PredicateOptionsForNumber<X, any, FindOrFilter, T>,
           ...{
-            isMatchingRegex: val => constructActions(`${getSegsAndCriteria().segs.join('.') || 'element'}.match(${val})`, e => e.match(val)),
+            isMatching: val => constructActions(`${getSegsAndCriteria().segs.join('.') || 'element'}.match(${val})`, e => e.match(val)),
           } as PredicateOptionsForString<X, any, FindOrFilter, T>,
         };
+        predicates.whenConvertedTo = (converter: (val: any) => any) => {
+          valueConverter = converter;
+          return predicates as any;
+        };
+        return predicates;
       }) as StoreForAnArrayOfObjects<X, T>['filterWhere'];
       return recurseWhere;
     };

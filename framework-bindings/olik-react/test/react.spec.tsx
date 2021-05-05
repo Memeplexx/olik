@@ -2,14 +2,9 @@ import '@testing-library/jest-dom';
 
 import { screen, waitFor } from '@testing-library/dom';
 import { render } from '@testing-library/react';
-import { configure } from 'enzyme';
-import Adapter from 'enzyme-adapter-react-16';
 import React from 'react';
 
 import { store, useNestedStore } from '../src';
-
-
-configure({ adapter: new Adapter() });
 
 describe('React', () => {
 

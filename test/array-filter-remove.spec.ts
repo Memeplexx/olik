@@ -14,7 +14,7 @@ describe('array.filter().remove()', () => {
   it('should eq()', () => {
     const select = store(initialState);
     select(s => s.array)
-      .filterWhere(e => e.id).isEqualto(2)
+      .filterWhere(e => e.id).isEq(2)
       .remove();
     expect(testState.currentAction).toEqual({
       type: 'array.filter().remove()',
@@ -28,7 +28,7 @@ describe('array.filter().remove()', () => {
   it('should ne()', () => {
     const select = store(initialState);
     select(s => s.array)
-      .filterWhere(e => e.id).isNotEqualTo(2)
+      .filterWhere(e => e.id).isNotEq(2)
       .remove();
     expect(testState.currentAction).toEqual({
       type: 'array.filter().remove()',
@@ -42,7 +42,7 @@ describe('array.filter().remove()', () => {
   it('should gt()', () => {
     const select = store(initialState);
     select(s => s.array)
-      .filterWhere(e => e.id).isGreaterThan(1)
+      .filterWhere(e => e.id).isMoreThan(1)
       .remove();
     expect(testState.currentAction).toEqual({
       type: 'array.filter().remove()',
@@ -56,7 +56,7 @@ describe('array.filter().remove()', () => {
   it('should gte()', () => {
     const select = store(initialState);
     select(s => s.array)
-      .filterWhere(e => e.id).isGreaterThanOrEqualTo(2)
+      .filterWhere(e => e.id).isMoreThanOrEq(2)
       .remove();
     expect(testState.currentAction).toEqual({
       type: 'array.filter().remove()',
@@ -84,7 +84,7 @@ describe('array.filter().remove()', () => {
   it('should lte()', () => {
     const select = store(initialState);
     select(s => s.array)
-      .filterWhere(e => e.id).isLessThanOrEqualTo(2)
+      .filterWhere(e => e.id).isLessThanOrEq(2)
       .remove();
     expect(testState.currentAction).toEqual({
       type: 'array.filter().remove()',
@@ -98,7 +98,7 @@ describe('array.filter().remove()', () => {
   it('should in()', () => {
     const select = store(initialState);
     select(s => s.array)
-      .filterWhere(e => e.id).isInArray([1, 2])
+      .filterWhere(e => e.id).isIn([1, 2])
       .remove();
     expect(testState.currentAction).toEqual({
       type: 'array.filter().remove()',
@@ -112,7 +112,7 @@ describe('array.filter().remove()', () => {
   it('should ni()', () => {
     const select = store(initialState);
     select(s => s.array)
-      .filterWhere(e => e.id).isNotInArray([1, 2])
+      .filterWhere(e => e.id).isNotIn([1, 2])
       .remove();
     expect(testState.currentAction).toEqual({
       type: 'array.filter().remove()',
@@ -126,7 +126,7 @@ describe('array.filter().remove()', () => {
   it('should match()', () => {
     const select = store(initialState);
     select(s => s.array)
-      .filterWhere(e => e.value).isMatchingRegex(/^t/)
+      .filterWhere(e => e.value).isMatching(/^t/)
       .remove();
     expect(testState.currentAction).toEqual({
       type: 'array.filter().remove()',

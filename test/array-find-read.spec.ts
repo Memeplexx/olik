@@ -14,7 +14,7 @@ describe('array.find().read()', () => {
   it('should read()', () => {
     const select = store(initialState);
     const read = select(s => s.array)
-      .findWhere(e => e.id).isEqualto(2)
+      .findWhere(e => e.id).isEq(2)
       .read();
     expect(read).toEqual(initialState.array[1]);
   })
@@ -23,16 +23,16 @@ describe('array.find().read()', () => {
     const select = store(initialState);
     let changeCount = 0;
     select(s => s.array)
-      .findWhere(e => e.id).isEqualto(3)
+      .findWhere(e => e.id).isEq(3)
       .onChange(e => {
         changeCount++;
         expect(e.value).toEqual('three x');
       });
     select(s => s.array)
-      .findWhere(e => e.id).isEqualto(3)
+      .findWhere(e => e.id).isEq(3)
       .patch({ value: 'three x' });
     select(s => s.array)
-      .findWhere(e => e.id).isEqualto(1)
+      .findWhere(e => e.id).isEq(1)
       .patch({ value: 'one x' });
     expect(changeCount).toEqual(1);
   })
