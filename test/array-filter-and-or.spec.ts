@@ -105,12 +105,4 @@ describe('array.filter().and().or()', () => {
     expect(testState.currentMutableState).toEqual(select().read());
   })
 
-  // it('', () => {
-  //   const select = store(initialState);
-  //   select(s => s.array)
-  //     .filterWhere(s => s.id).whenConvertedTo(s => s + '').isEq('2')
-  //     .remove();
-  //   console.log(select(s => s.array).read())
-  // })
-
 });
