@@ -199,7 +199,6 @@ export function createStore<S, T extends Trackability>({
     debounceTimeout: 0,
   } as PreviousAction;
 
-
   function updateState<C, T extends Trackability, X extends C = C>(specs: UpdateStateArgs<S, C, T, X>) {
 
     if (libState.transactionState === 'started') {
