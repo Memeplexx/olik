@@ -9,6 +9,11 @@ export type Trackability = 'tagged' | 'untagged';
 export type FindOrFilter = 'find' | 'filter';
 
 /**
+ * Whether this predicate supports converting values
+ */
+export type MaybeConvertable = 'convertable' | 'nonconvertable';
+
+/**
  * An object which can be unsubscribed from
  */
 export interface Unsubscribable {
@@ -59,7 +64,7 @@ export type PredicateCustom<X extends DeepReadonlyArray<any>, F extends FindOrFi
 /**
  * Query options common to all datatypes
  */
-export type PredicateOptionsCommon<X extends DeepReadonlyArray<any>, P, F extends FindOrFilter, T extends Trackability> = {
+export type PredicateOptionsCommon<X extends DeepReadonlyArray<any>, P, F extends FindOrFilter, T extends Trackability, K extends MaybeConvertable> = {
   /**
    * Searches for array element(s) where the previously selected property **equals** the supplied value
    * @example
@@ -92,14 +97,21 @@ export type PredicateOptionsCommon<X extends DeepReadonlyArray<any>, P, F extend
    * ...
    */
   isNotIn: (value: P[]) => PredicateAction<X, F, T>,
-
-  whenConvertedTo: <L>(converter: (arg: P) => L) => Predicate<X, L, F, T>,
-}
+} & (K extends 'convertable' ? {
+  /**
+   * Allows you to convert the selected value before comparing it
+   * @example
+   * ...
+   * .whenConvertedTo(dateString => new Date(dateString).getTime())
+   * ...
+   */
+  whenConvertedTo: <L>(converter: (arg: P) => L) => Predicate<X, L, F, T, 'nonconvertable'>,
+} : {})
 
 /**
  * Query options for boolean
  */
-export type PredicateOptionsForBoolean<X extends DeepReadonlyArray<any>, F extends FindOrFilter, T extends Trackability> = {
+export type PredicateOptionsForBoolean<X extends DeepReadonlyArray<any>, F extends FindOrFilter, T extends Trackability, K extends MaybeConvertable> = {
   /**
    * Checks whether the previously supplied function returns true.
    * It is advised to only use this if your filtering criteria is too complicated to express using the operators supplied by this library.
@@ -110,12 +122,12 @@ export type PredicateOptionsForBoolean<X extends DeepReadonlyArray<any>, F exten
    * ...
    */
   returnsTrue: () => PredicateCustom<X, F, T>,
-} & PredicateOptionsCommon<X, boolean, F, T>;
+} & PredicateOptionsCommon<X, boolean, F, T, K>;
 
 /**
  * Query options for number
  */
-export type PredicateOptionsForNumber<X extends DeepReadonlyArray<any>, E, F extends FindOrFilter, T extends Trackability> = {
+export type PredicateOptionsForNumber<X extends DeepReadonlyArray<any>, E, F extends FindOrFilter, T extends Trackability, K extends MaybeConvertable> = {
   /**
    * Searches for array element(s) where the previously selected property **is greater than** the supplied number
    * @example
@@ -148,12 +160,12 @@ export type PredicateOptionsForNumber<X extends DeepReadonlyArray<any>, E, F ext
    * ...
    */
   isLessThanOrEq: (value: number) => PredicateAction<X, F, T>,
-} & PredicateOptionsCommon<X, E, F, T>;
+} & PredicateOptionsCommon<X, E, F, T, K>;
 
 /**
  * Query options for a string
  */
-export type PredicateOptionsForString<X extends DeepReadonlyArray<any>, E, F extends FindOrFilter, T extends Trackability> = {
+export type PredicateOptionsForString<X extends DeepReadonlyArray<any>, E, F extends FindOrFilter, T extends Trackability, K extends 'convertable' | 'nonconvertable'> = {
   /**
    * Searches for array element(s) where the previously selected property **matches** the supplied regular expression
    * @param pattern any regular expression
@@ -163,16 +175,16 @@ export type PredicateOptionsForString<X extends DeepReadonlyArray<any>, E, F ext
    * ...
    */
   isMatching: (pattern: RegExp) => PredicateAction<X, F, T>,
-} & PredicateOptionsCommon<X, E, F, T>;
+} & PredicateOptionsCommon<X, E, F, T, K>;
 
 /**
  * Query options
  */
-export type Predicate<X extends DeepReadonlyArray<any>, P, F extends FindOrFilter, T extends Trackability> =
-  [P] extends [boolean] ? PredicateOptionsForBoolean<X, F, T>
-  : [P] extends [number] ? PredicateOptionsForNumber<X, P, F, T>
-  : [P] extends [string] ? PredicateOptionsForString<X, P, F, T>
-  : PredicateOptionsCommon<X, P, F, T>;
+export type Predicate<X extends DeepReadonlyArray<any>, P, F extends FindOrFilter, T extends Trackability, K extends 'convertable' | 'nonconvertable'> =
+  [P] extends [boolean] ? PredicateOptionsForBoolean<X, F, T, K>
+  : [P] extends [number] ? PredicateOptionsForNumber<X, P, F, T, K>
+  : [P] extends [string] ? PredicateOptionsForString<X, P, F, T, K>
+  : PredicateOptionsCommon<X, P, F, T, K>;
 
 /**
  * Actions which can be applied to any array
@@ -186,7 +198,7 @@ export type ArrayOfElementsAction<X extends DeepReadonlyArray<any>, F extends Fi
    * .and(e => e.status).isEqualTo('todo')
    * ...
    */
-  andWhere: X[0] extends object ? <P>(getProp: (element: DeepReadonly<X[0]>) => P) => Predicate<X, P, F, T> : () => Predicate<X, X[0], F, T>,
+  andWhere: X[0] extends object ? <P>(getProp: (element: DeepReadonly<X[0]>) => P) => Predicate<X, P, F, T, 'convertable'> : () => Predicate<X, X[0], F, T, 'convertable'>,
   /**
    * Append more criteria with which to find/filter the array
    * @param getProp a function which selects the array element property to compare
@@ -195,7 +207,7 @@ export type ArrayOfElementsAction<X extends DeepReadonlyArray<any>, F extends Fi
    * .or(t => t.status).isEqualTo('todo')
    * ...
    */
-  orWhere: X[0] extends object ? <P>(getProp: (element: DeepReadonly<X[0]>) => P) => Predicate<X, P, F, T> : () => Predicate<X, X[0], F, T>,
+  orWhere: X[0] extends object ? <P>(getProp: (element: DeepReadonly<X[0]>) => P) => Predicate<X, P, F, T, 'convertable'> : () => Predicate<X, X[0], F, T, 'convertable'>,
 } & ArrayOfElementsCommonAction<X, F, T>;
 
 /**
@@ -436,12 +448,12 @@ export type StoreForAnArrayOfObjects<X extends DeepReadonlyArray<any>, T extends
 /**
  * A function which accepts another function to select a property from an array element
  */
-export type PredicateFunctionObject<X extends DeepReadonlyArray<any>, F extends FindOrFilter, T extends Trackability> = <P>(getProp: (element: DeepReadonly<X[0]>) => P) => Predicate<X, P, F, T>;
+export type PredicateFunctionObject<X extends DeepReadonlyArray<any>, F extends FindOrFilter, T extends Trackability> = <P>(getProp: (element: DeepReadonly<X[0]>) => P) => Predicate<X, P, F, T, 'convertable'>;
 
 /**
  * A function which accepts another function to select a property from an array element
  */
-export type PredicateFunctionPrimitive<X extends DeepReadonlyArray<any>, F extends FindOrFilter, T extends Trackability> = () => Predicate<X, X[0], F, T>;
+export type PredicateFunctionPrimitive<X extends DeepReadonlyArray<any>, F extends FindOrFilter, T extends Trackability> = () => Predicate<X, X[0], F, T, 'convertable'>;
 
 /**
  * An object which is capable of storing and updating state which is in the shape of a primitive
