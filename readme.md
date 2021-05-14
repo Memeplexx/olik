@@ -6,7 +6,7 @@
 ![Package Size](https://badgen.net/bundlephobia/minzip/olik)
 ![Dependency count](https://badgen.net/bundlephobia/dependency-count/olik)
 
-## Axiomatic, meticulously described, in-line state-management
+## Axiomatic, self-describing, in-line state-management
 
 Olik allows you to comprehensively grok your state updates without ever leaving your component code.  
 * Its **fluent, typesafe API** dramatically improves the **consistency** of your state operations, **eliminating ambiguity** 
@@ -23,7 +23,7 @@ There are, however, bindings for ***[React](https://memeplexx.github.io/olik/doc
 #### 🌈 **SET UP**
 Initializing your store couldn't be simpler while integration with the **[Redux Devtools extension](https://github.com/zalmoxisus/redux-devtools-extension)** is automatic.
 ```ts
-const select = store({
+export const { select, read } = store({
   username: '',
   favorite: {
     foods: new Array<string>(),
@@ -47,8 +47,7 @@ select(s => s.favorite.movies)              // type: 'favorite.movies.filter().r
 #### 👓 **READ STATE**
 State can be **read** from, **listened** to, and expensive derivations can be **memoized**.
 ```ts
-const hobbies = select(s => s.favorite.hobbies)
-  .read();
+const hobbies = read().favorite.hobbies;
 
 const subscription = select(s => s.favorite.hobbies)
   .onChange(e => console.log(e));

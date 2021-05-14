@@ -19,6 +19,7 @@ import {
   ArrayOfObjectsAction,
   DeepReadonly,
   FindOrFilter,
+  MaybeConvertable,
   OptionsForReduxDevtools,
   PredicateOptionsCommon,
   PredicateOptionsForBoolean,
@@ -112,7 +113,7 @@ export function createStore<S, T extends Trackability>({
             isNotEq: val => constructActions(`${getSegsAndCriteria().segs.join('.') || 'element'} !== ${val}`, e => getValue(e) !== val),
             isIn: val => constructActions(`[${val.join(', ')}].includes(${getSegsAndCriteria().segs.join('.') || 'element'})`, e => val.includes(getValue(e))),
             isNotIn: val => constructActions(`![${val.join(', ')}].includes(${getSegsAndCriteria().segs.join('.') || 'element'})`, e => !val.includes(getValue(e))),
-          } as PredicateOptionsCommon<X, any, FindOrFilter, T>,
+          } as PredicateOptionsCommon<X, any, FindOrFilter, T, MaybeConvertable>,
           ...{
             returnsTrue: () => {
               const predicate = getProp as any as (element: DeepReadonly<X[0]>) => boolean;
@@ -126,16 +127,16 @@ export function createStore<S, T extends Trackability>({
                 stopBypassingPromises: () => arrayCustom.stopBypassingPromises(context),
               };
             }
-          } as PredicateOptionsForBoolean<X, FindOrFilter, T>,
+          } as PredicateOptionsForBoolean<X, FindOrFilter, T, MaybeConvertable>,
           ...{
             isMoreThan: val => constructActions(`${getSegsAndCriteria().segs.join('.') || 'element'} > ${val}`, e => getValue(e) > val),
             isLessThan: val => constructActions(`${getSegsAndCriteria().segs.join('.') || 'element'} < ${val}`, e => getValue(e) < val),
             isMoreThanOrEq: val => constructActions(`${getSegsAndCriteria().segs.join('.') || 'element'} >= ${val}`, e => getValue(e) >= val),
             isLessThanOrEq: val => constructActions(`${getSegsAndCriteria().segs.join('.') || 'element'} <= ${val}`, e => getValue(e) <= val),
-          } as PredicateOptionsForNumber<X, any, FindOrFilter, T>,
+          } as PredicateOptionsForNumber<X, any, FindOrFilter, T, MaybeConvertable>,
           ...{
             isMatching: val => constructActions(`${getSegsAndCriteria().segs.join('.') || 'element'}.match(${val})`, e => getValue(e).match(val)),
-          } as PredicateOptionsForString<X, any, FindOrFilter, T>,
+          } as PredicateOptionsForString<X, any, FindOrFilter, T, 'convertable'>,
         };
         predicates.whenConvertedTo = (converter: (val: any) => any) => {
           valueConverter = converter;
