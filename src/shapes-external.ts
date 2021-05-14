@@ -342,7 +342,7 @@ export type PromisableUpdate<H> = H extends () => Promise<any> ? {
   optimisticallyUpdateWith?: H extends () => Promise<infer W> ? W : never,
 } : {};
 
-export type UpdateAtIndex = { 
+export type UpdateAtIndex = {
   /**
    * The index where new elements should be inserted.  
    * The default insertion behavior is that new elements will be appended to the end of the existing array
@@ -567,23 +567,29 @@ export type Selector<S, C, X = C> = X extends C & ReadonlyArray<any> ? (s: S) =>
 /**
  * A function which selects from a nested store
  */
-export type SelectorFromANestedStore<S> = {select: ([S] extends [Array<any>] | [number] | [string] | [boolean]
-  ? () => StoreWhichIsNested<S>
-  : <C = DeepReadonly<S>>(selector?: (arg: DeepReadonly<S>) => C) => StoreWhichIsNested<C>)} & { read: () => DeepReadonly<S> };
+export type SelectorFromANestedStore<S> = {
+  select: ([S] extends [Array<any>] | [number] | [string] | [boolean]
+    ? () => StoreWhichIsNested<S>
+    : <C = DeepReadonly<S>>(selector?: (arg: DeepReadonly<S>) => C) => StoreWhichIsNested<C>)
+} & { read: () => DeepReadonly<S> };
 
 /**
  * A function which selects from a store
  */
-export type SelectorFromAStore<S> = {select: ([S] extends [Array<any>] | [number] | [string] | [boolean]
-  ? () => StoreWhichDoesntEnforceTags<S>
-  : <C = DeepReadonly<S>>(selector?: (arg: DeepReadonly<S>) => C) => StoreWhichDoesntEnforceTags<C>)} & { read: () => DeepReadonly<S> };
+export type SelectorFromAStore<S> = {
+  select: ([S] extends [Array<any>] | [number] | [string] | [boolean]
+    ? () => StoreWhichDoesntEnforceTags<S>
+    : <C = DeepReadonly<S>>(selector?: (arg: DeepReadonly<S>) => C) => StoreWhichDoesntEnforceTags<C>)
+} & { read: () => DeepReadonly<S> };
 
 /**
  * A function which selects from a store which enforces the use of tags when performing a state update
  */
-export type SelectorFromAStoreEnforcingTags<S> = {select: ([S] extends [Array<any>] | [number] | [string] | [boolean]
-  ? () => StoreWhichEnforcesTags<S>
-  : <C = DeepReadonly<S>>(selector?: (arg: DeepReadonly<S>) => C) => StoreWhichEnforcesTags<C>)} & { read: () => DeepReadonly<S> };
+export type SelectorFromAStoreEnforcingTags<S> = {
+  select: ([S] extends [Array<any>] | [number] | [string] | [boolean]
+    ? () => StoreWhichEnforcesTags<S>
+    : <C = DeepReadonly<S>>(selector?: (arg: DeepReadonly<S>) => C) => StoreWhichEnforcesTags<C>)
+} & { read: () => DeepReadonly<S> };
 
 /**
  * An input for a derivation
