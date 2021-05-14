@@ -12,7 +12,7 @@ describe('array.filter().patch()', () => {
   };
 
   it('should eq()', () => {
-    const select = store(initialState);
+    const { select, read } = store(initialState);
     const payload = { value: 'new' };
     select(s => s.array)
       .filterWhere(e => e.id).isEq(2)
@@ -22,12 +22,12 @@ describe('array.filter().patch()', () => {
       patch: payload,
       where: 'id === 2',
     });
-    expect(select(s => s.array).read()).toEqual([initialState.array[0], { ...initialState.array[1], ...payload }, initialState.array[2]]);
-    expect(testState.currentMutableState).toEqual(select().read());
+    expect(read().array).toEqual([initialState.array[0], { ...initialState.array[1], ...payload }, initialState.array[2]]);
+    expect(testState.currentMutableState).toEqual(read());
   })
 
   it('should ne()', () => {
-    const select = store(initialState);
+    const { select, read } = store(initialState);
     const payload = { value: 'four' };
     select(s => s.array)
       .filterWhere(e => e.id).isNotEq(2)
@@ -37,12 +37,12 @@ describe('array.filter().patch()', () => {
       patch: payload,
       where: 'id !== 2',
     });
-    expect(select(s => s.array).read()).toEqual([{ ...initialState.array[0], ...payload }, initialState.array[1], { ...initialState.array[2], ...payload }]);
-    expect(testState.currentMutableState).toEqual(select().read());
+    expect(read().array).toEqual([{ ...initialState.array[0], ...payload }, initialState.array[1], { ...initialState.array[2], ...payload }]);
+    expect(testState.currentMutableState).toEqual(read());
   })
 
   it('should gt()', () => {
-    const select = store(initialState);
+    const { select, read } = store(initialState);
     const payload = { value: 'four' };
     select(s => s.array)
       .filterWhere(e => e.id).isMoreThan(1)
@@ -52,12 +52,12 @@ describe('array.filter().patch()', () => {
       patch: payload,
       where: 'id > 1',
     });
-    expect(select(s => s.array).read()).toEqual([initialState.array[0], { ...initialState.array[1], ...payload }, { ...initialState.array[2], ...payload }]);
-    expect(testState.currentMutableState).toEqual(select().read());
+    expect(read().array).toEqual([initialState.array[0], { ...initialState.array[1], ...payload }, { ...initialState.array[2], ...payload }]);
+    expect(testState.currentMutableState).toEqual(read());
   })
 
   it('should gte()', () => {
-    const select = store(initialState);
+    const { select, read } = store(initialState);
     const payload = { value: 'four' };
     select(s => s.array)
       .filterWhere(e => e.id).isMoreThanOrEq(1)
@@ -67,12 +67,12 @@ describe('array.filter().patch()', () => {
       patch: payload,
       where: 'id >= 1',
     });
-    expect(select(s => s.array).read()).toEqual([{ ...initialState.array[0], ...payload }, { ...initialState.array[1], ...payload }, { ...initialState.array[2], ...payload }]);
-    expect(testState.currentMutableState).toEqual(select().read());
+    expect(read().array).toEqual([{ ...initialState.array[0], ...payload }, { ...initialState.array[1], ...payload }, { ...initialState.array[2], ...payload }]);
+    expect(testState.currentMutableState).toEqual(read());
   })
 
   it('should lt()', () => {
-    const select = store(initialState);
+    const { select, read } = store(initialState);
     const payload = { value: 'four' };
     select(s => s.array)
       .filterWhere(e => e.id).isLessThan(2)
@@ -82,12 +82,12 @@ describe('array.filter().patch()', () => {
       patch: payload,
       where: 'id < 2',
     });
-    expect(select(s => s.array).read()).toEqual([{ ...initialState.array[0], ...payload }, initialState.array[1], initialState.array[2]]);
-    expect(testState.currentMutableState).toEqual(select().read());
+    expect(read().array).toEqual([{ ...initialState.array[0], ...payload }, initialState.array[1], initialState.array[2]]);
+    expect(testState.currentMutableState).toEqual(read());
   })
 
   it('should lte()', () => {
-    const select = store(initialState);
+    const { select, read } = store(initialState);
     const payload = { value: 'four' };
     select(s => s.array)
       .filterWhere(e => e.id).isLessThanOrEq(2)
@@ -97,12 +97,12 @@ describe('array.filter().patch()', () => {
       patch: payload,
       where: 'id <= 2',
     });
-    expect(select(s => s.array).read()).toEqual([{ ...initialState.array[0], ...payload }, { ...initialState.array[1], ...payload }, initialState.array[2]]);
-    expect(testState.currentMutableState).toEqual(select().read());
+    expect(read().array).toEqual([{ ...initialState.array[0], ...payload }, { ...initialState.array[1], ...payload }, initialState.array[2]]);
+    expect(testState.currentMutableState).toEqual(read());
   })
 
   it('should in()', () => {
-    const select = store(initialState);
+    const { select, read } = store(initialState);
     const payload = { id: 4, value: 'four' };
     select(s => s.array)
       .filterWhere(e => e.id).isIn([1, 2])
@@ -112,12 +112,12 @@ describe('array.filter().patch()', () => {
       patch: payload,
       where: '[1, 2].includes(id)',
     });
-    expect(select(s => s.array).read()).toEqual([{ ...initialState.array[0], ...payload }, { ...initialState.array[1], ...payload }, initialState.array[2]]);
-    expect(testState.currentMutableState).toEqual(select().read());
+    expect(read().array).toEqual([{ ...initialState.array[0], ...payload }, { ...initialState.array[1], ...payload }, initialState.array[2]]);
+    expect(testState.currentMutableState).toEqual(read());
   })
 
   it('should ni()', () => {
-    const select = store(initialState);
+    const { select, read } = store(initialState);
     const payload = { value: 'four' };
     select(s => s.array)
       .filterWhere(e => e.id).isNotIn([1, 2])
@@ -127,12 +127,12 @@ describe('array.filter().patch()', () => {
       patch: payload,
       where: '![1, 2].includes(id)',
     });
-    expect(select(s => s.array).read()).toEqual([initialState.array[0], initialState.array[1], { ...initialState.array[2], ...payload }]);
-    expect(testState.currentMutableState).toEqual(select().read());
+    expect(read().array).toEqual([initialState.array[0], initialState.array[1], { ...initialState.array[2], ...payload }]);
+    expect(testState.currentMutableState).toEqual(read());
   })
 
   it('should match()', () => {
-    const select = store(initialState);
+    const { select, read } = store(initialState);
     const payload = { value: 'four' };
     select(s => s.array)
       .filterWhere(e => e.value).isMatching(/^t/)
@@ -142,8 +142,8 @@ describe('array.filter().patch()', () => {
       patch: payload,
       where: 'value.match(/^t/)',
     });
-    expect(select(s => s.array).read()).toEqual([initialState.array[0], { ...initialState.array[1], ...payload }, { ...initialState.array[2], ...payload }]);
-    expect(testState.currentMutableState).toEqual(select().read());
+    expect(read().array).toEqual([initialState.array[0], { ...initialState.array[1], ...payload }, { ...initialState.array[2], ...payload }]);
+    expect(testState.currentMutableState).toEqual(read());
   })
 
 });

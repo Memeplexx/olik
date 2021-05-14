@@ -7,13 +7,13 @@ describe('Read', () => {
   beforeAll(() => testState.windowObject = windowAugmentedWithReduxDevtoolsImpl);
 
   it('should read', () => {
-    const select = store({ some: { object: 'test' } });
-    const value = select(s => s.some.object).read();
+    const { select, read } = store({ some: { object: 'test' } });
+    const value = read().some.object;
     expect(value).toEqual('test');
   })
 
   it('should listen to onChange events', () => {
-    const select = store({ prop: { value: '', another: '' } });
+    const { select, read } = store({ prop: { value: '', another: '' } });
     let changeCount = 0;
     select(s => s.prop.value)
       .onChange(val => {
@@ -27,7 +27,7 @@ describe('Read', () => {
   });
 
   it('should listen to onChange events when a find() is included in the selector', () => {
-    const select = store({ arr: [{ id: 1, val: '' }, { id: 2, val: '' }] });
+    const { select, read } = store({ arr: [{ id: 1, val: '' }, { id: 2, val: '' }] });
     let changeCount = 0;
     select(s => s.arr.find(e => e.id === 2))
       .onChange(val => {

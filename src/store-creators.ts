@@ -74,12 +74,13 @@ export function nestedStore<L>(
     !instanceName ? (+arg! + 1).toString() : instanceName;
   if (!libState.nestedContainerStore) {
     const nStore = createStore<L, 'untagged'>({ state, devtools: dontTrackWithDevtools ? false : { name: componentName + ' : ' + generateKey() } }) as SelectorFromANestedStore<L>;
-    return (<C = L>(selector?: (arg: L) => C) => {
-      const cStore = selector ? nStore(selector as any) : nStore();
+    const select = (<C = L>(selector?: (arg: L) => C) => {
+      const cStore = selector ? nStore.select(selector as any) : nStore.select();
       cStore.storeDetach = () => console.info(errorMessages.NO_CONTAINER_STORE);
       cStore.reset = () => console.info(errorMessages.NO_CONTAINER_STORE);
       return cStore as any as StoreWhichIsNested<C>;
-    }) as SelectorFromANestedStore<L>;
+    });
+    return { select, read: () => select().read() } as SelectorFromANestedStore<L>;
   }
   const containerStore = libState.nestedContainerStore();
   const wrapperState = containerStore.read();
@@ -99,7 +100,7 @@ export function nestedStore<L>(
     libState.nestedContainerStore(s => s.nested[componentName]).patch({ [key]: state });
     containerStore.renew({ ...wrapperState, nested: { ...wrapperState.nested, [componentName]: { ...wrapperState.nested[componentName], [key]: state } } });
   }
-  return (<C = L>(selector?: (arg: L) => C) => {
+  const select = (<C = L>(selector?: (arg: L) => C) => {
     const cStore = libState.nestedContainerStore!(s => {
       const nState = s.nested[componentName][key];
       return selector ? selector(nState) : nState;
@@ -107,7 +108,8 @@ export function nestedStore<L>(
     cStore.storeDetach = cStore.defineStoreDetach(componentName, key);
     cStore.reset = cStore.defineReset(state);
     return cStore as StoreWhichIsNested<C>;
-  }) as SelectorFromANestedStore<L>;
+  });
+  return { select, read: () => select().read() } as SelectorFromANestedStore<L>;
 }
 
 function setInternalRootStore<S, T extends Trackability>(
@@ -123,7 +125,7 @@ function setInternalRootStore<S, T extends Trackability>(
     if ((typeof (state) !== 'object') || Array.isArray(state)) {
       throw new Error(errorMessages.INVALID_CONTAINER_FOR_NESTED_STORES);
     }
-    libState.nestedContainerStore = store as any;
+    libState.nestedContainerStore = store.select as any;
   }
   return store;
 }

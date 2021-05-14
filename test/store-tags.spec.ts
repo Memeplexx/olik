@@ -9,7 +9,7 @@ describe('tags', () => {
   it('should work with tags correctly', () => {
     const payload = 'hey';
     const tag = 'mytag';
-    const select = storeEnforcingTags({
+    const { select, read } = storeEnforcingTags({
       object: { property: 'one', property2: 'two' },
     }, { tagsToAppearInType: true });
     select(s => s.object.property)
@@ -18,12 +18,12 @@ describe('tags', () => {
       type: `object.property.replace() [${tag}]`,
       replacement: payload,
     });
-    expect(select(s => s.object.property).read()).toEqual(payload);
-    expect(testState.currentMutableState).toEqual(select().read());
+    expect(read().object.property).toEqual(payload);
+    expect(testState.currentMutableState).toEqual(read());
   })
 
   it('should sanitize tags correctly', () => {
-    const select = storeEnforcingTags({
+    const { select, read } = storeEnforcingTags({
       test: '',
     }, {
       tagSanitizer: (tag) => tag + 'x',
@@ -37,11 +37,11 @@ describe('tags', () => {
       type: `test.replace() [${tag}x]`,
       replacement: payload,
     });
-    expect(testState.currentMutableState).toEqual(select().read());
+    expect(testState.currentMutableState).toEqual(read());
   })
 
   it('should accept optional tags', () => {
-    const select = store({ prop: '' }, { tagsToAppearInType: true });
+    const { select, read } = store({ prop: '' }, { tagsToAppearInType: true });
     const tag = 'mytag';
     const payload = 'test';
     select(s => s.prop)
@@ -53,7 +53,7 @@ describe('tags', () => {
   })
 
   it('should, by default, place tags in the payload', () => {
-    const select = storeEnforcingTags({ prop: '' });
+    const { select, read } = storeEnforcingTags({ prop: '' });
     const tag = 'mytag';
     const payload = 'test';
     select(s => s.prop)

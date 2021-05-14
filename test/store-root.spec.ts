@@ -7,7 +7,7 @@ describe('Root', () => {
   beforeAll(() => testState.windowObject = windowAugmentedWithReduxDevtoolsImpl);
 
   it('object.replace()', () => {
-    const select = store({ hello: 'world', another: new Array<string>() });
+    const { select, read } = store({ hello: 'world', another: new Array<string>() });
     const payload = { hello: 'test', another: ['test'] };
     select()
       .replace(payload);
@@ -15,25 +15,25 @@ describe('Root', () => {
       type: 'replace()',
       replacement: payload,
     })
-    expect(select().read()).toEqual({ hello: 'test', another: ['test'] });
-    expect(testState.currentMutableState).toEqual(select().read());
+    expect(read()).toEqual({ hello: 'test', another: ['test'] });
+    expect(testState.currentMutableState).toEqual(read());
   })
 
   it('object.property.update()', () => {
-    const select = store({ x: 0, y: 0 });
+    const { select, read } = store({ x: 0, y: 0 });
     const payload = 3;
     select(s => s.x)
       .replace(payload);
-    expect(select().read()).toEqual({ x: 3, y: 0 });
+    expect(read()).toEqual({ x: 3, y: 0 });
     expect(testState.currentAction).toEqual({
       type: 'x.replace()',
       replacement: payload,
     })
-    expect(testState.currentMutableState).toEqual(select().read());
+    expect(testState.currentMutableState).toEqual(read());
   })
 
   it('array.insert()', () => {
-    const select = store(new Array<{ id: number, text: string }>());
+    const { select, read } = store(new Array<{ id: number, text: string }>());
     const payload = [{ id: 1, text: 'hello' }];
     select()
       .insert(payload);
@@ -41,12 +41,12 @@ describe('Root', () => {
       type: 'insert()',
       insertion: payload,
     })
-    expect(select().read()).toEqual([{ id: 1, text: 'hello' }]);
-    expect(testState.currentMutableState).toEqual(select().read());
+    expect(read()).toEqual([{ id: 1, text: 'hello' }]);
+    expect(testState.currentMutableState).toEqual(read());
   })
 
   it('number.replace()', () => {
-    const select = store(0);
+    const { select, read } = store(0);
     const payload = 3;
     select()
       .replace(payload);
@@ -54,12 +54,12 @@ describe('Root', () => {
       type: 'replace()',
       replacement: payload,
     })
-    expect(select().read()).toEqual(3);
-    expect(testState.currentMutableState).toEqual(select().read());
+    expect(read()).toEqual(3);
+    expect(testState.currentMutableState).toEqual(read());
   })
 
   it('boolean.replace()', () => {
-    const select = store(false);
+    const { select, read } = store(false);
     const payload = true;
     select()
       .replace(payload);
@@ -67,13 +67,13 @@ describe('Root', () => {
       type: 'replace()',
       replacement: payload,
     })
-    expect(select().read()).toEqual(payload);
-    expect(testState.currentMutableState).toEqual(select().read());
+    expect(read()).toEqual(payload);
+    expect(testState.currentMutableState).toEqual(read());
   })
 
   it('union.replace()', () => {
     type union = 'one' | 'two';
-    const select = store('one' as union);
+    const { select, read } = store('one' as union);
     const payload = 'two' as union;
     select()
       .replace(payload);
@@ -81,12 +81,12 @@ describe('Root', () => {
       type: 'replace()',
       replacement: payload,
     })
-    expect(select().read()).toEqual(payload);
-    expect(testState.currentMutableState).toEqual(select().read());
+    expect(read()).toEqual(payload);
+    expect(testState.currentMutableState).toEqual(read());
   })
 
   it('string.replace()', () => {
-    const select = store('');
+    const { select, read } = store('');
     const payload = 'test';
     select()
       .replace(payload);
@@ -94,12 +94,12 @@ describe('Root', () => {
       type: 'replace()',
       replacement: payload,
     })
-    expect(select().read()).toEqual('test');
-    expect(testState.currentMutableState).toEqual(select().read());
+    expect(read()).toEqual('test');
+    expect(testState.currentMutableState).toEqual(read());
   })
 
   it('replaceAll()', () => {
-    const select = store(['one', 'two', 'three']);
+    const { select, read } = store(['one', 'two', 'three']);
     const payload = ['four', 'five', 'six', 'seven'];
     select()
       .replaceAll(payload);
@@ -107,12 +107,12 @@ describe('Root', () => {
       type: 'replaceAll()',
       replacement: payload,
     })
-    expect(select().read()).toEqual(['four', 'five', 'six', 'seven']);
-    expect(testState.currentMutableState).toEqual(select().read());
+    expect(read()).toEqual(['four', 'five', 'six', 'seven']);
+    expect(testState.currentMutableState).toEqual(read());
   })
 
   it('find().replace()', () => {
-    const select = store(['one', 'two', 'three']);
+    const { select, read } = store(['one', 'two', 'three']);
     const payload = 'twoo';
     select()
       .findWhere().isEq('two')
@@ -122,32 +122,32 @@ describe('Root', () => {
       replacement: payload,
       where: `element === two`,
     })
-    expect(select().read()).toEqual(['one', 'twoo', 'three']);
-    expect(testState.currentMutableState).toEqual(select().read());
+    expect(read()).toEqual(['one', 'twoo', 'three']);
+    expect(testState.currentMutableState).toEqual(read());
   })
 
   it('insert()', () => {
-    const select = store(['one']);
+    const { select, read } = store(['one']);
     select()
       .insert('two');
     expect(testState.currentAction).toEqual({
       type: 'insert()',
       insertion: 'two'
     });
-    expect(select().read()).toEqual(['one', 'two']);
-    expect(testState.currentMutableState).toEqual(select().read());
+    expect(read()).toEqual(['one', 'two']);
+    expect(testState.currentMutableState).toEqual(read());
   })
 
   it('find().replace()', () => {
-    const select = store(['hello']);
+    const { select, read } = store(['hello']);
     select().findWhere().isMatching(/^h/).replace('another')
     expect(testState.currentAction).toEqual({
       type: 'find().replace()',
       replacement: 'another',
       where: 'element.match(/^h/)',
     });
-    expect(select().read()).toEqual(['another']);
-    expect(testState.currentMutableState).toEqual(select().read());
+    expect(read()).toEqual(['another']);
+    expect(testState.currentMutableState).toEqual(read());
   })
 
 });

@@ -12,7 +12,7 @@ describe('array.filterCustom().remove()', () => {
   };
 
   it('should eq()', () => {
-    const select = store(initialState);
+    const { select, read } = store(initialState);
     const where = (e: typeof initialState['array'][0]) => e.id === 2;
     select(s => s.array)
       .filterWhere(where).returnsTrue()
@@ -22,12 +22,12 @@ describe('array.filterCustom().remove()', () => {
       toRemove: [initialState.array[1]],
       where: where.toString(),
     });
-    expect(select(s => s.array).read()).toEqual([initialState.array[0], initialState.array[2]]);
-    expect(testState.currentMutableState).toEqual(select().read());
+    expect(read().array).toEqual([initialState.array[0], initialState.array[2]]);
+    expect(testState.currentMutableState).toEqual(read());
   })
 
   it('should ne()', () => {
-    const select = store(initialState);
+    const { select, read } = store(initialState);
     const where = (e: typeof initialState['array'][0]) => e.id !== 2;
     select(s => s.array)
       .filterWhere(where).returnsTrue()
@@ -37,12 +37,12 @@ describe('array.filterCustom().remove()', () => {
       toRemove: [initialState.array[0], initialState.array[2]],
       where: where.toString(),
     });
-    expect(select(s => s.array).read()).toEqual([initialState.array[1]]);
-    expect(testState.currentMutableState).toEqual(select().read());
+    expect(read().array).toEqual([initialState.array[1]]);
+    expect(testState.currentMutableState).toEqual(read());
   })
 
   it('should gt()', () => {
-    const select = store(initialState);
+    const { select, read } = store(initialState);
     const where = (e: typeof initialState['array'][0]) => e.id > 1;
     select(s => s.array)
       .filterWhere(where).returnsTrue()
@@ -52,12 +52,12 @@ describe('array.filterCustom().remove()', () => {
       toRemove: [initialState.array[1], initialState.array[2]],
       where: where.toString(),
     });
-    expect(select(s => s.array).read()).toEqual([initialState.array[0]]);
-    expect(testState.currentMutableState).toEqual(select().read());
+    expect(read().array).toEqual([initialState.array[0]]);
+    expect(testState.currentMutableState).toEqual(read());
   })
 
   it('should lt()', () => {
-    const select = store(initialState);
+    const { select, read } = store(initialState);
     const where = (e: typeof initialState['array'][0]) => e.id < 2;
     select(s => s.array)
       .filterWhere(where).returnsTrue()
@@ -67,12 +67,12 @@ describe('array.filterCustom().remove()', () => {
       toRemove: [initialState.array[0]],
       where: where.toString(),
     });
-    expect(select(s => s.array).read()).toEqual([initialState.array[1], initialState.array[2]]);
-    expect(testState.currentMutableState).toEqual(select().read());
+    expect(read().array).toEqual([initialState.array[1], initialState.array[2]]);
+    expect(testState.currentMutableState).toEqual(read());
   })
 
   it('should in()', () => {
-    const select = store(initialState);
+    const { select, read } = store(initialState);
     const where = (e: typeof initialState['array'][0]) => [1, 2].includes(e.id);
     select(s => s.array)
       .filterWhere(where).returnsTrue()
@@ -82,12 +82,12 @@ describe('array.filterCustom().remove()', () => {
       toRemove: [initialState.array[0], initialState.array[1]],
       where: where.toString(),
     });
-    expect(select(s => s.array).read()).toEqual([initialState.array[2]]);
-    expect(testState.currentMutableState).toEqual(select().read());
+    expect(read().array).toEqual([initialState.array[2]]);
+    expect(testState.currentMutableState).toEqual(read());
   })
 
   it('should ni()', () => {
-    const select = store(initialState);
+    const { select, read } = store(initialState);
     const where = (e: typeof initialState['array'][0]) => ![1, 2].includes(e.id);
     select(s => s.array)
       .filterWhere(where).returnsTrue()
@@ -97,12 +97,12 @@ describe('array.filterCustom().remove()', () => {
       toRemove: [initialState.array[2]],
       where: where.toString(),
     });
-    expect(select(s => s.array).read()).toEqual([initialState.array[0], initialState.array[1]]);
-    expect(testState.currentMutableState).toEqual(select().read());
+    expect(read().array).toEqual([initialState.array[0], initialState.array[1]]);
+    expect(testState.currentMutableState).toEqual(read());
   })
 
   it('should match()', () => {
-    const select = store(initialState);
+    const { select, read } = store(initialState);
     const where = (e: typeof initialState['array'][0]) => /^t/.test(e.value);
     select(s => s.array)
       .filterWhere(where).returnsTrue()
@@ -112,8 +112,8 @@ describe('array.filterCustom().remove()', () => {
       toRemove: [initialState.array[1], initialState.array[2]],
       where: where.toString(),
     });
-    expect(select(s => s.array).read()).toEqual([initialState.array[0]]);
-    expect(testState.currentMutableState).toEqual(select().read());
+    expect(read().array).toEqual([initialState.array[0]]);
+    expect(testState.currentMutableState).toEqual(read());
   })
 
 });

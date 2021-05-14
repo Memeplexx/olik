@@ -12,7 +12,7 @@ describe('array.find().replace()', () => {
   };
 
   it('should eq()', () => {
-    const select = store(initialState);
+    const { select, read } = store(initialState);
     const payload = { id: 4, value: 'four' };
     select(s => s.array)
       .findWhere(e => e.id).isEq(2)
@@ -22,12 +22,12 @@ describe('array.find().replace()', () => {
       replacement: payload,
       where: 'id === 2',
     });
-    expect(select(s => s.array).read()).toEqual([initialState.array[0], payload, initialState.array[2]]);
-    expect(testState.currentMutableState).toEqual(select().read());
+    expect(read().array).toEqual([initialState.array[0], payload, initialState.array[2]]);
+    expect(testState.currentMutableState).toEqual(read());
   })
 
   it('should ne()', () => {
-    const select = store(initialState);
+    const { select, read } = store(initialState);
     const payload = { id: 4, value: 'four' };
     select(s => s.array)
       .findWhere(e => e.id).isNotEq(2)
@@ -37,12 +37,12 @@ describe('array.find().replace()', () => {
       replacement: payload,
       where: 'id !== 2',
     });
-    expect(select(s => s.array).read()).toEqual([payload, initialState.array[1], initialState.array[2]]);
-    expect(testState.currentMutableState).toEqual(select().read());
+    expect(read().array).toEqual([payload, initialState.array[1], initialState.array[2]]);
+    expect(testState.currentMutableState).toEqual(read());
   })
 
   it('should gt()', () => {
-    const select = store(initialState);
+    const { select, read } = store(initialState);
     const payload = { id: 4, value: 'four' };
     select(s => s.array)
       .findWhere(e => e.id).isMoreThan(1)
@@ -52,12 +52,12 @@ describe('array.find().replace()', () => {
       replacement: payload,
       where: 'id > 1',
     });
-    expect(select(s => s.array).read()).toEqual([initialState.array[0], payload, initialState.array[2]]);
-    expect(testState.currentMutableState).toEqual(select().read());
+    expect(read().array).toEqual([initialState.array[0], payload, initialState.array[2]]);
+    expect(testState.currentMutableState).toEqual(read());
   })
 
   it('should gte()', () => {
-    const select = store(initialState);
+    const { select, read } = store(initialState);
     const payload = { id: 4, value: 'four' };
     select(s => s.array)
       .findWhere(e => e.id).isMoreThanOrEq(1)
@@ -67,12 +67,12 @@ describe('array.find().replace()', () => {
       replacement: payload,
       where: 'id >= 1',
     });
-    expect(select(s => s.array).read()).toEqual([payload, initialState.array[1], initialState.array[2]]);
-    expect(testState.currentMutableState).toEqual(select().read());
+    expect(read().array).toEqual([payload, initialState.array[1], initialState.array[2]]);
+    expect(testState.currentMutableState).toEqual(read());
   })
 
   it('should lt()', () => {
-    const select = store(initialState);
+    const { select, read } = store(initialState);
     const payload = { id: 4, value: 'four' };
     select(s => s.array)
       .findWhere(e => e.id).isLessThan(2)
@@ -82,12 +82,12 @@ describe('array.find().replace()', () => {
       replacement: payload,
       where: 'id < 2',
     });
-    expect(select(s => s.array).read()).toEqual([payload, initialState.array[1], initialState.array[2]]);
-    expect(testState.currentMutableState).toEqual(select().read());
+    expect(read().array).toEqual([payload, initialState.array[1], initialState.array[2]]);
+    expect(testState.currentMutableState).toEqual(read());
   })
 
   it('should lte()', () => {
-    const select = store(initialState);
+    const { select, read } = store(initialState);
     const payload = { id: 4, value: 'four' };
     select(s => s.array)
       .findWhere(e => e.id).isLessThanOrEq(2)
@@ -97,12 +97,12 @@ describe('array.find().replace()', () => {
       replacement: payload,
       where: 'id <= 2',
     });
-    expect(select(s => s.array).read()).toEqual([payload, initialState.array[1], initialState.array[2]]);
-    expect(testState.currentMutableState).toEqual(select().read());
+    expect(read().array).toEqual([payload, initialState.array[1], initialState.array[2]]);
+    expect(testState.currentMutableState).toEqual(read());
   })
 
   it('should in()', () => {
-    const select = store(initialState);
+    const { select, read } = store(initialState);
     const payload = { id: 4, value: 'four' };
     select(s => s.array)
       .findWhere(e => e.id).isIn([1, 2])
@@ -112,14 +112,14 @@ describe('array.find().replace()', () => {
       replacement: payload,
       where: '[1, 2].includes(id)',
     });
-    expect(select(s => s.array).read()).toEqual([payload, initialState.array[1], initialState.array[2]]);
-    expect(testState.currentMutableState).toEqual(select().read());
+    expect(read().array).toEqual([payload, initialState.array[1], initialState.array[2]]);
+    expect(testState.currentMutableState).toEqual(read());
   })
 
   it('should ni()', () => {
-    const get = store(initialState);
+    const { select, read } = store(initialState);
     const payload = { id: 4, value: 'four' };
-    get(s => s.array)
+    select(s => s.array)
       .findWhere(e => e.id).isNotIn([1, 2])
       .replace(payload);
     expect(testState.currentAction).toEqual({
@@ -127,14 +127,14 @@ describe('array.find().replace()', () => {
       replacement: payload,
       where: '![1, 2].includes(id)',
     });
-    expect(get(s => s.array).read()).toEqual([initialState.array[0], initialState.array[1], payload]);
-    expect(testState.currentMutableState).toEqual(get().read());
+    expect(read().array).toEqual([initialState.array[0], initialState.array[1], payload]);
+    expect(testState.currentMutableState).toEqual(read());
   })
 
   it('should match()', () => {
-    const get = store(initialState);
+    const { select, read } = store(initialState);
     const payload = { id: 4, value: 'four' };
-    get(s => s.array)
+    select(s => s.array)
       .findWhere(e => e.value).isMatching(/^t/)
       .replace(payload);
     expect(testState.currentAction).toEqual({
@@ -142,8 +142,8 @@ describe('array.find().replace()', () => {
       replacement: payload,
       where: 'value.match(/^t/)',
     });
-    expect(get(s => s.array).read()).toEqual([initialState.array[0], payload, initialState.array[2]]);
-    expect(testState.currentMutableState).toEqual(get().read());
+    expect(read().array).toEqual([initialState.array[0], payload, initialState.array[2]]);
+    expect(testState.currentMutableState).toEqual(read());
   })
 
 });

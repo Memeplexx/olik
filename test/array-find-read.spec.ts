@@ -12,7 +12,7 @@ describe('array.find().read()', () => {
   };
 
   it('should read()', () => {
-    const select = store(initialState);
+    const { select } = store(initialState);
     const read = select(s => s.array)
       .findWhere(e => e.id).isEq(2)
       .read();
@@ -20,7 +20,7 @@ describe('array.find().read()', () => {
   })
 
   it('should onChange()', () => {
-    const select = store(initialState);
+    const { select } = store(initialState);
     let changeCount = 0;
     select(s => s.array)
       .findWhere(e => e.id).isEq(3)

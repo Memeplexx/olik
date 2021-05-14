@@ -8,30 +8,30 @@ describe('Multi-store', () => {
   beforeAll(() => testState.windowObject = windowAugmentedWithReduxDevtoolsImpl);
 
   it('should support multiple stores', () => {
-    const select1 = store(new Array<string>());
-    const select2 = store(0);
-    select1().replaceAll(['one']);
-    select2().replace(2);
-    expect(select1().read()).toEqual(['one']);
-    expect(select2().read()).toEqual(2);
+    const store1 = store(new Array<string>());
+    const store2 = store(0);
+    store1.select().replaceAll(['one']);
+    store2.select().replace(2);
+    expect(store1.read()).toEqual(['one']);
+    expect(store2.read()).toEqual(2);
   })
 
   it('should memoise using multiple stores', () => {
-    const select1 = store({ array: new Array<number>(), string: '' });
-    const select2 = store({ number: 0 });
+    const store1 = store({ array: new Array<number>(), string: '' });
+    const store2 = store({ number: 0 });
     const mem = deriveFrom(
-      select1(s => s.array),
-      select2(s => s.number),
+      store1.select(s => s.array),
+      store2.select(s => s.number),
     ).usingExpensiveCalc((
       array, 
       number,
     ) => array.concat(number));
     let changes = 0;
     mem.onChange(() => changes++);
-    select1(s => s.string).replace('hey');
+    store1.select(s => s.string).replace('hey');
     expect(changes).toEqual(0);
     expect(mem.read()).toEqual([0]);
-    select1(s => s.array).insert([3]);
+    store1.select(s => s.array).insert([3]);
     expect(mem.read()).toEqual([3, 0]);
     expect(changes).toEqual(1);
   })

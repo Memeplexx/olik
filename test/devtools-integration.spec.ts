@@ -12,24 +12,24 @@ describe('Devtools', () => {
   beforeEach( () => spyWarn.mockReset());
 
   it('should correctly respond to devtools dispatches where the state is an object', () => {
-    const select = store({ x: 0, y: 0 }, { tagsToAppearInType: true });
+    const { select, read } = store({ x: 0, y: 0 }, { tagsToAppearInType: true });
     select(s => s.x)
       .replace(3);
-    expect(select().read()).toEqual({ x: 3, y: 0 });
+    expect(read()).toEqual({ x: 3, y: 0 });
     const state = { x: 1, y: 0 };
     testState.windowObject?.__REDUX_DEVTOOLS_EXTENSION__._mockInvokeSubscription({ type: 'DISPATCH', state: JSON.stringify(state), payload: { type: 'JUMP_TO_ACTION' }, source: '@devtools-extension' });
-    expect(select().read()).toEqual(state);
+    expect(read()).toEqual(state);
     expect(testState.currentAction.type).toEqual('replace() [dontTrackWithDevtools]');
   });
 
   it('should correctly respond to devtools dispatches where the state is an array', () => {
-    const select = store(['a', 'b', 'c'], { tagsToAppearInType: true });
+    const { select, read } = store(['a', 'b', 'c'], { tagsToAppearInType: true });
     select()
       .replaceAll(['d', 'e', 'f']);
-    expect(select().read()).toEqual(['d', 'e', 'f']);
+    expect(read()).toEqual(['d', 'e', 'f']);
     const state = ['g', 'h'];
     testState.windowObject?.__REDUX_DEVTOOLS_EXTENSION__._mockInvokeSubscription({ type: 'DISPATCH', state: JSON.stringify(state), payload: { type: 'JUMP_TO_ACTION' }, source: '@devtools-extension' });
-    expect(select().read()).toEqual(state);
+    expect(read()).toEqual(state);
     expect(testState.currentAction.type).toEqual('replaceAll() [dontTrackWithDevtools]');
   });
 
@@ -39,24 +39,24 @@ describe('Devtools', () => {
   });
 
   it('should handle a RESET correctly', () => {
-    const select = store({ hello: '' });
+    const { select, read } = store({ hello: '' });
     select(s => s.hello)
       .replace('world');
-    expect(select(s => s.hello).read()).toEqual('world');
+    expect(read().hello).toEqual('world');
     testState.windowObject?.__REDUX_DEVTOOLS_EXTENSION__._mockInvokeSubscription({ type: 'DISPATCH', payload: { type: 'RESET' }, source: '@devtools-extension' });
-    expect(select(s => s.hello).read()).toEqual('');
+    expect(read().hello).toEqual('');
   });
 
   it('should handle a ROLLBACK correctly', () => {
-    const select = store({ num: 0 });
+    const { select, read } = store({ num: 0 });
     select(s => s.num)
       .replace(1);
-    expect(select(s => s.num).read()).toEqual(1);
+    expect(read().num).toEqual(1);
     select(s => s.num)
       .replace(2);
-    expect(select(s => s.num).read()).toEqual(2);
+    expect(read().num).toEqual(2);
     testState.windowObject?.__REDUX_DEVTOOLS_EXTENSION__._mockInvokeSubscription({ type: 'DISPATCH', payload: { type: 'ROLLBACK' }, source: '@devtools-extension', state: '{ "num": 1 }' });
-    expect(select(s => s.num).read()).toEqual(1);
+    expect(read().num).toEqual(1);
   });
 
   it('should throw an error should a devtools dispatch contain invalid JSON', () => {
@@ -81,14 +81,14 @@ describe('Devtools', () => {
   });
 
   it('should correctly devtools dispatch made by user', () => {
-    const select = store({ hello: 0 });
+    const { select, read } = store({ hello: 0 });
     testState.windowObject?.__REDUX_DEVTOOLS_EXTENSION__
       ._mockInvokeSubscription({ type: 'ACTION', source: '@devtools-extension', payload: '{"type": "hello.replace()", "payload": 2}' });
-    expect(select(s => s.hello).read()).toEqual(2);
+    expect(read().hello).toEqual(2);
   })
 
   it('should throttle tightly packed updates', done => {
-    const select = store({ test: 0 });
+    const { select, read } = store({ test: 0 });
     const payload: number[] = [];
     for (let i = 0; i < 100; i++) {
       select(s => s.test).replace(i);

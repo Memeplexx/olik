@@ -11,7 +11,7 @@ describe('Object', () => {
   };
 
   it('should replace()', () => {
-    const select = store(initialState);
+    const { select, read } = store(initialState);
     const payload = 'hey';
     select(s => s.object.property)
       .replace(payload);
@@ -19,13 +19,13 @@ describe('Object', () => {
       type: 'object.property.replace()',
       replacement: payload,
     });
-    expect(select(s => s.object.property).read()).toEqual('hey');
-    expect(select(s => s.object.property2).read() === initialState.object.property2).toBeTruthy();
-    expect(testState.currentMutableState).toEqual(select().read());
+    expect(read().object.property).toEqual('hey');
+    expect(read().object.property2 === initialState.object.property2).toBeTruthy();
+    expect(testState.currentMutableState).toEqual(read());
   })
 
   it('should patch()', () => {
-    const select = store(initialState);
+    const { select, read } = store(initialState);
     const payload = { property: 'xxx' };
     select(s => s.object)
       .patch(payload);
@@ -33,70 +33,70 @@ describe('Object', () => {
       type: 'object.patch()',
       patch: payload,
     });
-    expect(select(s => s.object.property).read()).toEqual(payload.property);
-    expect(select(s => s.object.property2).read() === initialState.object.property2).toBeTruthy();
-    expect(testState.currentMutableState).toEqual(select().read());
+    expect(read().object.property).toEqual(payload.property);
+    expect(read().object.property2 === initialState.object.property2).toBeTruthy();
+    expect(testState.currentMutableState).toEqual(read());
   })
 
   it('should reset()', () => {
-    const select = store(initialState);
+    const { select, read } = store(initialState);
     select(s => s.object.property)
       .replace('hey');
-    expect(select(s => s.object.property).read()).toEqual('hey');
-    expect(testState.currentMutableState).toEqual(select().read());
+    expect(read().object.property).toEqual('hey');
+    expect(testState.currentMutableState).toEqual(read());
     select(s => s.object.property)
       .reset();
-    expect(select(s => s.object.property).read()).toEqual('one');
-    expect(testState.currentMutableState).toEqual(select().read());
+    expect(read().object.property).toEqual('one');
+    expect(testState.currentMutableState).toEqual(read());
     select()
       .replace({ object: { property: 'xx', property2: 'yy' } });
-    expect(select().read()).toEqual({ object: { property: 'xx', property2: 'yy' } });
-    expect(testState.currentMutableState).toEqual(select().read());
+    expect(read()).toEqual({ object: { property: 'xx', property2: 'yy' } });
+    expect(testState.currentMutableState).toEqual(read());
     select()
       .reset();
     expect(testState.currentAction).toEqual({
       type: 'reset()',
       replacement: initialState,
     })
-    expect(select().read()).toEqual(initialState);
-    expect(testState.currentMutableState).toEqual(select().read());
+    expect(read()).toEqual(initialState);
+    expect(testState.currentMutableState).toEqual(read());
   })
 
   it('should be able to add a new property onto an object', () => {
-    const select = store({} as { [key: string]: string });
+    const { select, read } = store({} as { [key: string]: string });
     const payload = { hello: 'world' };
     select().patch(payload);
     expect(testState.currentAction).toEqual({
       type: 'patch()',
       patch: payload,
     });
-    expect(select().read()).toEqual({ hello: 'world' });
-    expect(testState.currentMutableState).toEqual(select().read());
+    expect(read()).toEqual({ hello: 'world' });
+    expect(testState.currentMutableState).toEqual(read());
   })
 
   it('should be able to remove a key', () => {
-    const select = store({ hello: 'one', world: 'two', another: 'three' });
+    const { select, read } = store({ hello: 'one', world: 'two', another: 'three' });
     const payload = 'world';
     select().remove(payload);
     expect(testState.currentAction).toEqual({
       type: 'remove()',
       toRemove: payload,
     });
-    expect(select().read()).toEqual({ hello: 'one', another: 'three' });
-    expect(testState.currentMutableState).toEqual(select().read());
+    expect(read()).toEqual({ hello: 'one', another: 'three' });
+    expect(testState.currentMutableState).toEqual(read());
   })
 
   it('should be able to insert properties', () => {
     const initState = { one: 'one' };
-    const select = store(initState);
+    const { select, read } = store(initState);
     const insertion = { hello: 'test', another: 'testy' };
     select().insert(insertion);
     expect(testState.currentAction).toEqual({
       type: 'insert()',
       insertion,
     });
-    expect(select().read()).toEqual({ ...initState, ...insertion });
-    expect(testState.currentMutableState).toEqual(select().read());
+    expect(read()).toEqual({ ...initState, ...insertion });
+    expect(testState.currentMutableState).toEqual(read());
   })
 
 });

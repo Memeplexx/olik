@@ -567,23 +567,23 @@ export type Selector<S, C, X = C> = X extends C & ReadonlyArray<any> ? (s: S) =>
 /**
  * A function which selects from a nested store
  */
-export type SelectorFromANestedStore<S> = [S] extends [Array<any>] | [number] | [string] | [boolean]
+export type SelectorFromANestedStore<S> = {select: ([S] extends [Array<any>] | [number] | [string] | [boolean]
   ? () => StoreWhichIsNested<S>
-  : <C = DeepReadonly<S>>(selector?: (arg: DeepReadonly<S>) => C) => StoreWhichIsNested<C>;
+  : <C = DeepReadonly<S>>(selector?: (arg: DeepReadonly<S>) => C) => StoreWhichIsNested<C>)} & { read: () => DeepReadonly<S> };
 
 /**
  * A function which selects from a store
  */
-export type SelectorFromAStore<S> = [S] extends [Array<any>] | [number] | [string] | [boolean]
+export type SelectorFromAStore<S> = {select: ([S] extends [Array<any>] | [number] | [string] | [boolean]
   ? () => StoreWhichDoesntEnforceTags<S>
-  : <C = DeepReadonly<S>>(selector?: (arg: DeepReadonly<S>) => C) => StoreWhichDoesntEnforceTags<C>;
+  : <C = DeepReadonly<S>>(selector?: (arg: DeepReadonly<S>) => C) => StoreWhichDoesntEnforceTags<C>)} & { read: () => DeepReadonly<S> };
 
 /**
  * A function which selects from a store which enforces the use of tags when performing a state update
  */
-export type SelectorFromAStoreEnforcingTags<S> = [S] extends [Array<any>] | [number] | [string] | [boolean]
+export type SelectorFromAStoreEnforcingTags<S> = {select: ([S] extends [Array<any>] | [number] | [string] | [boolean]
   ? () => StoreWhichEnforcesTags<S>
-  : <C = DeepReadonly<S>>(selector?: (arg: DeepReadonly<S>) => C) => StoreWhichEnforcesTags<C>;
+  : <C = DeepReadonly<S>>(selector?: (arg: DeepReadonly<S>) => C) => StoreWhichEnforcesTags<C>)} & { read: () => DeepReadonly<S> };
 
 /**
  * An input for a derivation

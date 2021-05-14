@@ -29,7 +29,7 @@ describe.skip('Perf', () => {
   })
 
   it('should test outlik perf', () => {
-    const select = store({
+    const { select } = store({
       anotherProp: {
         some: {
           deeply: {
@@ -83,11 +83,11 @@ describe.skip('Perf', () => {
 
   it('should test olik perf', () => {
     const initialState = { height: 0, width: 0 };
-    const select = store(initialState)
+    const { select, read } = store(initialState)
     const before = performance.now();
     for (let i = 0; i < 100; i++) {
       select(s => s.width).replace(
-        select(s => s.width).read() + 1
+        read().width + 1
       );
     }
     console.log(`Olik simple: ${performance.now() - before}`);
@@ -205,7 +205,7 @@ describe.skip('Perf', () => {
   });
 
   it('should test Olik array push perf', () => {
-    const select = store(['one', 'two']);
+    const { select } = store(['one', 'two']);
     const before = performance.now();
     for (let i = 0; i < 100; i++) {
       select().insert(['three']);

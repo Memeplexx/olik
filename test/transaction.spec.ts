@@ -7,7 +7,7 @@ describe('Transact', () => {
   beforeAll(() => testState.windowObject = windowAugmentedWithReduxDevtoolsImpl);
 
   it('should perform a transaction', () => {
-    const select = store({ hello: '', world: new Array<string>(), some: { deep: { val: false } } });
+    const { select, read } = store({ hello: '', world: new Array<string>(), some: { deep: { val: false } } });
     let changeCount = 0;
     select().onChange(s => changeCount++);
     transact(
@@ -17,7 +17,7 @@ describe('Transact', () => {
     );
     expect(changeCount).toEqual(1);
     const expectedState = { hello: 'test', world: ['hey'], some: { deep: { val: true } } };
-    expect(select().read()).toEqual(expectedState);
+    expect(read()).toEqual(expectedState);
     expect(testState.currentMutableState).toEqual(expectedState);
     expect(testState.currentAction).toEqual({
       type: 'hello.replace(), world.insert(), some.deep.val.replace()',
