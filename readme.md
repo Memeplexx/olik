@@ -23,7 +23,7 @@ There are, however, bindings for ***[React](https://memeplexx.github.io/olik/doc
 #### 🌈 **SET UP**
 Initializing your store couldn't be simpler while integration with the **[Redux Devtools extension](https://github.com/zalmoxisus/redux-devtools-extension)** is automatic.
 ```ts
-export const { select, read } = store({
+export const { select, read } = createAppStore({
   username: '',
   favorite: {
     foods: new Array<string>(),
@@ -87,7 +87,7 @@ select(s => s.username)
 #### 🥚 **NEST STORES**
 Each component's state can be managed and debugged with or without your application state.
 ```ts
-select = nestedStore({                // applicationStoreState = {
+select = createNestedStore({                // applicationStoreState = {
   title: '',                          //   /* ... */
   description: '',                    //   nested {
   done: false,                        //     TodoComponent: {

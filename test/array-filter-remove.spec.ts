@@ -1,5 +1,5 @@
 import { testState } from '../src/shared-state';
-import { store } from '../src/store-creators';
+import { createAppStore } from '../src/store-creators';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
 describe('array.filter().remove()', () => {
@@ -12,7 +12,7 @@ describe('array.filter().remove()', () => {
   };
 
   it('should eq()', () => {
-    const { select, read } = store(initialState);
+    const { select, read } = createAppStore(initialState);
     select(s => s.array)
       .filterWhere(e => e.id).isEq(2)
       .remove();
@@ -26,7 +26,7 @@ describe('array.filter().remove()', () => {
   })
 
   it('should ne()', () => {
-    const { select, read } = store(initialState);
+    const { select, read } = createAppStore(initialState);
     select(s => s.array)
       .filterWhere(e => e.id).isNotEq(2)
       .remove();
@@ -40,7 +40,7 @@ describe('array.filter().remove()', () => {
   })
 
   it('should gt()', () => {
-    const { select, read } = store(initialState);
+    const { select, read } = createAppStore(initialState);
     select(s => s.array)
       .filterWhere(e => e.id).isMoreThan(1)
       .remove();
@@ -54,7 +54,7 @@ describe('array.filter().remove()', () => {
   })
 
   it('should gte()', () => {
-    const { select, read } = store(initialState);
+    const { select, read } = createAppStore(initialState);
     select(s => s.array)
       .filterWhere(e => e.id).isMoreThanOrEq(2)
       .remove();
@@ -68,7 +68,7 @@ describe('array.filter().remove()', () => {
   })
 
   it('should lt()', () => {
-    const { select, read } = store(initialState);
+    const { select, read } = createAppStore(initialState);
     select(s => s.array)
       .filterWhere(e => e.id).isLessThan(2)
       .remove();
@@ -82,7 +82,7 @@ describe('array.filter().remove()', () => {
   })
 
   it('should lte()', () => {
-    const { select, read } = store(initialState);
+    const { select, read } = createAppStore(initialState);
     select(s => s.array)
       .filterWhere(e => e.id).isLessThanOrEq(2)
       .remove();
@@ -96,7 +96,7 @@ describe('array.filter().remove()', () => {
   })
 
   it('should in()', () => {
-    const { select, read } = store(initialState);
+    const { select, read } = createAppStore(initialState);
     select(s => s.array)
       .filterWhere(e => e.id).isIn([1, 2])
       .remove();
@@ -110,7 +110,7 @@ describe('array.filter().remove()', () => {
   })
 
   it('should ni()', () => {
-    const { select, read } = store(initialState);
+    const { select, read } = createAppStore(initialState);
     select(s => s.array)
       .filterWhere(e => e.id).isNotIn([1, 2])
       .remove();
@@ -124,7 +124,7 @@ describe('array.filter().remove()', () => {
   })
 
   it('should match()', () => {
-    const { select, read } = store(initialState);
+    const { select, read } = createAppStore(initialState);
     select(s => s.array)
       .filterWhere(e => e.value).isMatching(/^t/)
       .remove();

@@ -44,7 +44,7 @@ import { devtoolsDebounce } from './shared-consts';
 import { libState, testState } from './shared-state';
 import { copyObject, createPathReader, deepCopy, deepFreeze, validateSelectorFn, validateState } from './shared-utils';
 
-export function createStore<S, T extends Trackability>({
+export function createStoreCore<S, T extends Trackability>({
   state,
   devtools,
   tagSanitizer,
@@ -283,7 +283,8 @@ export function createStore<S, T extends Trackability>({
 
   function notifySubscribers(oldState: S, newState: S) {
     changeListeners.forEach((selector, subscriber) => {
-      const selectedNewState = selector(newState);
+      let selectedNewState: any;
+      try { selectedNewState = selector(newState); } catch (e) { /* A nested store may have been detatched and state changes are being subscribed to inside nested component. Ignore */ }
       const selectedOldState = selector(oldState);
       if (selectedOldState && selectedOldState.$filtered && selectedNewState && selectedNewState.$filtered) {
         if ((selectedOldState.$filtered.length !== selectedNewState.$filtered.length)

@@ -233,7 +233,7 @@ export const processAsyncPayload = <S, C, X extends C & Array<any>, T extends Tr
 /**
  * To be used by framework bindings to determine what state was selected without actually performing a state update
  */
-export const getSelectedStateFromOperationWithoutUpdatingStore = <S>(select: SelectorFromAStore<S>['select'], operation: () => any): any => {
+export const getSelectedStateFromOperationWithoutUpdatingStore = <S>(select: SelectorFromAStore<S>, operation: () => any): any => {
   (select() as any).dryRun(true);
   operation();
   let result: any;
@@ -245,11 +245,4 @@ export const getSelectedStateFromOperationWithoutUpdatingStore = <S>(select: Sel
   }
   (select() as any).dryRun(false);
   return result;
-}
-
-/**
- * To be used by framework bindings to un-set the nested container store
- */
-export const resetNestedContainerStore = () => {
-  libState.nestedContainerStore = null;
 }

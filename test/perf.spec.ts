@@ -2,7 +2,7 @@ import { produce } from 'immer';
 import { fromJS } from 'immutable';
 
 import { testState } from '../src/shared-state';
-import { store } from '../src/store-creators';
+import { createAppStore } from '../src/store-creators';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
 describe.skip('Perf', () => {
@@ -29,7 +29,7 @@ describe.skip('Perf', () => {
   })
 
   it('should test outlik perf', () => {
-    const { select } = store({
+    const { select } = createAppStore({
       anotherProp: {
         some: {
           deeply: {
@@ -83,7 +83,7 @@ describe.skip('Perf', () => {
 
   it('should test olik perf', () => {
     const initialState = { height: 0, width: 0 };
-    const { select, read } = store(initialState)
+    const { select, read } = createAppStore(initialState)
     const before = performance.now();
     for (let i = 0; i < 100; i++) {
       select(s => s.width).replace(
@@ -205,7 +205,7 @@ describe.skip('Perf', () => {
   });
 
   it('should test Olik array push perf', () => {
-    const { select } = store(['one', 'two']);
+    const { select } = createAppStore(['one', 'two']);
     const before = performance.now();
     for (let i = 0; i < 100; i++) {
       select().insert(['three']);

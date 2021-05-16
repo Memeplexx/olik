@@ -4,7 +4,7 @@ import { screen, waitFor } from '@testing-library/dom';
 import { render } from '@testing-library/react';
 import React from 'react';
 
-import { store, useNestedStore } from '../src';
+import { createAppStore, useNestedStore } from '../src';
 
 describe('React', () => {
 
@@ -17,7 +17,7 @@ describe('React', () => {
   it('should create and update a store', () => {
     const {
       select
-    } = store(initialState, { devtools: false });
+    } = createAppStore(initialState, { devtools: false });
     select(s => s.object.property)
       .replace('test');
     expect(select().read().object.property).toEqual('test');
@@ -27,7 +27,7 @@ describe('React', () => {
     const {
       select,
       useSelector
-    } = store(initialState, { devtools: false });
+    } = createAppStore(initialState, { devtools: false });
     const App = () => {
       const result = useSelector(s => s.object.property);
       return (
@@ -47,7 +47,7 @@ describe('React', () => {
     const {
       select,
       useDerivation
-    } = store(initialState, { devtools: false });
+    } = createAppStore(initialState, { devtools: false });
     let calcCount = 0;
     const App = () => {
       const result = useDerivation([
@@ -75,7 +75,7 @@ describe('React', () => {
   it('useDerivation with deps', () => {
     const {
       useDerivation
-    } = store(initialState, { devtools: false });
+    } = createAppStore(initialState, { devtools: false });
     let calcCount = 0;
     const App = () => {
       const [str, setStr] = React.useState('');
@@ -108,7 +108,7 @@ describe('React', () => {
     const {
       select,
       mapStateToProps
-    } = store(initialState, { devtools: false });
+    } = createAppStore(initialState, { devtools: false });
     let renderCount = 0;
     class Child extends React.Component<{ str: string, num: number }> {
       render() {
@@ -175,12 +175,12 @@ describe('React', () => {
   });
 
   it('should create a nested store with a parent', () => {
-    const parentStore = store({
+    const parentStore = createAppStore({
       ...initialState,
       nested: {
         component: {} as { [key: string]: { prop: string } }
       }
-    }, { devtools: false, isContainerForNestedStores: true });
+    }, { devtools: false });
     let renderCount = 0;
     const Child = () => {
       const {
@@ -210,8 +210,43 @@ describe('React', () => {
     expect(parentStore.select(s => s.nested.component).read()).toEqual({ '0': { prop: 'test' } });
   });
 
+
+  it('nested store should recieve props from parent', async () => {
+    const parentStore = createAppStore({
+      ...initialState,
+      nested: {
+        component: {} as { [key: string]: { prop: string, num: number } }
+      }
+    }, { devtools: false });
+    const Child: React.FunctionComponent<{ num: number }> = (props) => {
+      const {
+        select,
+        useSelector,
+      } = useNestedStore({ prop: 0 }, { componentName: 'component', dontTrackWithDevtools: true });
+      React.useEffect(() => select(s => s.prop).replace(props.num), [props.num])
+      const result = useSelector(s => s.prop);
+      return (
+        <>
+          <div>{result}</div>
+        </>
+      );
+    };
+    const Parent = () => {
+      const [num, setNum] = React.useState(0);
+      return (
+        <>
+          <Child num={num} />
+          <button data-testid="btn" onClick={() => setNum(num + 1)}>Click</button>
+        </>
+      );
+    }
+    render(<Parent />);
+    (screen.getByTestId('btn') as HTMLButtonElement).click();
+    await waitFor(() => expect(parentStore.select(s => s.nested.component).read()).toEqual({ '0': { prop: 1 } }));
+  })
+
   it('should respond to async actions', async () => {
-    const { select, useSelector } = store(initialState, { devtools: false });
+    const { select, useSelector } = createAppStore(initialState, { devtools: false });
     const App = () => {
       const state = useSelector(s => s.object.property);
       return (
@@ -231,7 +266,7 @@ describe('React', () => {
     const {
       select,
       useFetcher
-    } = store(initialState, { devtools: false });
+    } = createAppStore(initialState, { devtools: false });
     const App = () => {
       const {
         wasResolved,
@@ -262,7 +297,7 @@ describe('React', () => {
     const {
       select,
       useFetcher
-    } = store(initialState, { devtools: false });
+    } = createAppStore(initialState, { devtools: false });
     const App = () => {
       const {
         wasResolved,
@@ -295,7 +330,7 @@ describe('React', () => {
     const {
       select,
       useFetcher,
-    } = store({
+    } = createAppStore({
       toPaginate: {} as { [key: string]: Todo[] },
     }, { devtools: false });
     const App = () => {
@@ -335,3 +370,4 @@ describe('React', () => {
   })
 
 });
+

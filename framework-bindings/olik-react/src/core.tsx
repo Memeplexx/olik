@@ -1,18 +1,7 @@
-import {
-  DeepReadonly,
-  getSelectedStateFromOperationWithoutUpdatingStore,
-  nestedStore as libNestedStore,
-  OptionsForMakingANestedStore,
-  OptionsForMakingAStore,
-  SelectorFromAStore,
-  Store,
-  store as libStore,
-  storeEnforcingTags as libStoreEnforcingTags,
-  StoreOrDerivation,
-} from 'olik';
+import * as core from 'olik';
 import React from 'react';
 
-function getUseFetcher<S>(select: SelectorFromAStore<S>) {
+function getUseFetcher<S>(select: core.SelectorFromAStore<S>) {
   return {
     /**
      * A hook to track the status of an asynchronouse operation
@@ -37,7 +26,7 @@ function getUseFetcher<S>(select: SelectorFromAStore<S>) {
         wasRejected: false,
         wasResolved: false,
         error: null as any | null,
-        storeValue: getSelectedStateFromOperationWithoutUpdatingStore(select, operation) as C,
+        storeValue: core.getSelectedStateFromOperationWithoutUpdatingStore(select, operation) as C,
       };
       const [result, setResult] = React.useState(initialValue);
       React.useEffect(() => {
@@ -65,36 +54,35 @@ function getUseFetcher<S>(select: SelectorFromAStore<S>) {
 /**
  * A hook for creating a store which is capable of being nested inside your application store
  * @param initialState the initial state of the nested store you want to create
- * @param options additional options for creating a nested store, which at minimum, must specify the `name` of the store
- * @param deps optional list of dependencies under which a store should be re-created
+ * @param options additional options for creating a nested store which, at minimum, must specify the `name` of the store
  */
 export function useNestedStore<C>(
   initialState: C,
-  options: OptionsForMakingANestedStore,
-  deps: React.DependencyList = [],
+  options: core.OptionsForMakingANestedStore,
 ) {
-  const select = React.useMemo(() => {
-    return libNestedStore(initialState, options);
-  }, deps);
+  const { select, read } = React.useMemo(() => {
+    return core.creatNestedStore(initialState, options);
+  }, []);
   React.useEffect(() => {
     return () => {
-      setTimeout(() => select().storeDetach());
+      select().storeDetach();
     }
-  }, deps);
+  }, []);
   return {
     select,
-    ...getUseSelector(select as SelectorFromAStore<C>),
-    ...getUseDerivation(select as SelectorFromAStore<C>),
-    ...getMapStateToProps(select as SelectorFromAStore<C>),
-    ...getUseFetcher(select as SelectorFromAStore<C>),
+    read,
+    ...getUseSelector(select as core.SelectorFromAStore<C>),
+    ...getUseDerivation(select as core.SelectorFromAStore<C>),
+    ...getMapStateToProps(select as core.SelectorFromAStore<C>),
+    ...getUseFetcher(select as core.SelectorFromAStore<C>),
   };
 }
 
-type Function<S, R> = (arg: DeepReadonly<S>) => R;
+type Function<S, R> = (arg: core.DeepReadonly<S>) => R;
 type MappedSelectorsToResults<S, X> = { [K in keyof X]: X[K] extends Function<S, infer E> ? E : never };
 
-export function store<S>(initialState: S, options?: OptionsForMakingAStore) {
-  const select = libStore(initialState, options);
+export function createAppStore<S>(initialState: S, options?: core.OptionsForMakingAStore) {
+  const { select, read } = core.createAppStore(initialState, options);
   return {
     /**
      * Takes a function which selects from the store
@@ -102,6 +90,7 @@ export function store<S>(initialState: S, options?: OptionsForMakingAStore) {
      * select(s => s.some.state).replace('test')
      */
     select,
+    read,
     ...getUseSelector(select),
     ...getUseDerivation(select),
     ...getMapStateToProps(select),
@@ -109,8 +98,8 @@ export function store<S>(initialState: S, options?: OptionsForMakingAStore) {
   }
 }
 
-export function storeEnforcingTags<S>(initialState: S, options?: OptionsForMakingAStore) {
-  const select = libStoreEnforcingTags(initialState, options) as any as SelectorFromAStore<S>;
+export function createAppStoreEnforcingTags<S>(initialState: S, options?: core.OptionsForMakingAStore) {
+  const { select, read } = core.createAppStoreEnforcingTags(initialState, options);
   return {
     /**
      * Takes a function which selects from the store
@@ -120,14 +109,15 @@ export function storeEnforcingTags<S>(initialState: S, options?: OptionsForMakin
      * select(s => s.some.state).replace('test', __filename);
      */
     select,
-    ...getUseSelector(select),
-    ...getUseDerivation(select),
-    ...getMapStateToProps(select),
-    ...getUseFetcher(select),
+    read,
+    ...getUseSelector(select as any as core.SelectorFromAStore<S>),
+    ...getUseDerivation(select as any as core.SelectorFromAStore<S>),
+    ...getMapStateToProps(select as any as core.SelectorFromAStore<S>),
+    ...getUseFetcher(select as any as core.SelectorFromAStore<S>),
   };
 }
 
-function getMapStateToProps<S>(select: SelectorFromAStore<S>) {
+function getMapStateToProps<S>(select: core.SelectorFromAStore<S>) {
   return {
     /**
      * Similar, in principal, to React-Redux's `mapStateToProps()`
@@ -154,16 +144,16 @@ function getMapStateToProps<S>(select: SelectorFromAStore<S>) {
      * }))(TodosComponent);
      * ```
      */
-    mapStateToProps: function <P extends {}, M extends {}>(mapper: (state: DeepReadonly<S>, ownProps: P) => M) {
+    mapStateToProps: function <P extends {}, M extends {}>(mapper: (state: core.DeepReadonly<S>, ownProps: P) => M) {
       return (Component: React.ComponentType<M>) => {
         return class TodoWrapper extends React.PureComponent<P, M> {
-          sub = (select() as Store<S, any>).onChange(s => this.setState(mapper(s, this.props)));
+          sub = (select() as core.Store<S, any>).onChange(s => this.setState(mapper(s, this.props)));
           constructor(props: any) {
             super(props);
-            this.state = mapper(select().read() as DeepReadonly<S>, this.props);
+            this.state = mapper(select().read() as core.DeepReadonly<S>, this.props);
           }
           static getDerivedStateFromProps(props: P) {
-            return mapper(select().read() as DeepReadonly<S>, props);
+            return mapper(select().read() as core.DeepReadonly<S>, props);
           }
           render() {
             return (
@@ -179,7 +169,7 @@ function getMapStateToProps<S>(select: SelectorFromAStore<S>) {
   };
 }
 
-function getUseSelector<S>(select: SelectorFromAStore<S>) {
+function getUseSelector<S>(select: core.SelectorFromAStore<S>) {
   return {
     /**
      * A hook to select a specific part of the state tree
@@ -197,7 +187,7 @@ function getUseSelector<S>(select: SelectorFromAStore<S>) {
   };
 }
 
-function getUseDerivation<S>(select: SelectorFromAStore<S>) {
+function getUseDerivation<S>(select: core.SelectorFromAStore<S>) {
   return {
     /**
      * A hook to derive state and memoise the result of a complex calculation
@@ -228,9 +218,9 @@ function getUseDerivation<S>(select: SelectorFromAStore<S>) {
   };
 }
 
-function useSelector<S, R>(select: SelectorFromAStore<S>, selector: Function<S, R>, deps?: React.DependencyList) {
-  const storeOrDerivation = select(selector) as StoreOrDerivation<R>;
-  const [selection, setSelection] = React.useState(storeOrDerivation.read() as DeepReadonly<R>);
+function useSelector<S, R>(select: core.SelectorFromAStore<S>, selector: Function<S, R>, deps?: React.DependencyList) {
+  const storeOrDerivation = select(selector) as core.StoreOrDerivation<R>;
+  const [selection, setSelection] = React.useState(storeOrDerivation.read() as core.DeepReadonly<R>);
   const allDeps = [storeOrDerivation.read()];
   if (deps) { allDeps.push(...deps); }
   React.useEffect(() => {

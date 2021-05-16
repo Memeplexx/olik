@@ -1,5 +1,5 @@
 import { testState } from '../src/shared-state';
-import { store } from '../src/store-creators';
+import { createAppStore } from '../src/store-creators';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
 describe('array.filter().patch()', () => {
@@ -12,7 +12,7 @@ describe('array.filter().patch()', () => {
   };
 
   it('should eq()', () => {
-    const { select, read } = store(initialState);
+    const { select, read } = createAppStore(initialState);
     const payload = { value: 'new' };
     select(s => s.array)
       .filterWhere(e => e.id).isEq(2)
@@ -27,7 +27,7 @@ describe('array.filter().patch()', () => {
   })
 
   it('should ne()', () => {
-    const { select, read } = store(initialState);
+    const { select, read } = createAppStore(initialState);
     const payload = { value: 'four' };
     select(s => s.array)
       .filterWhere(e => e.id).isNotEq(2)
@@ -42,7 +42,7 @@ describe('array.filter().patch()', () => {
   })
 
   it('should gt()', () => {
-    const { select, read } = store(initialState);
+    const { select, read } = createAppStore(initialState);
     const payload = { value: 'four' };
     select(s => s.array)
       .filterWhere(e => e.id).isMoreThan(1)
@@ -57,7 +57,7 @@ describe('array.filter().patch()', () => {
   })
 
   it('should gte()', () => {
-    const { select, read } = store(initialState);
+    const { select, read } = createAppStore(initialState);
     const payload = { value: 'four' };
     select(s => s.array)
       .filterWhere(e => e.id).isMoreThanOrEq(1)
@@ -72,7 +72,7 @@ describe('array.filter().patch()', () => {
   })
 
   it('should lt()', () => {
-    const { select, read } = store(initialState);
+    const { select, read } = createAppStore(initialState);
     const payload = { value: 'four' };
     select(s => s.array)
       .filterWhere(e => e.id).isLessThan(2)
@@ -87,7 +87,7 @@ describe('array.filter().patch()', () => {
   })
 
   it('should lte()', () => {
-    const { select, read } = store(initialState);
+    const { select, read } = createAppStore(initialState);
     const payload = { value: 'four' };
     select(s => s.array)
       .filterWhere(e => e.id).isLessThanOrEq(2)
@@ -102,7 +102,7 @@ describe('array.filter().patch()', () => {
   })
 
   it('should in()', () => {
-    const { select, read } = store(initialState);
+    const { select, read } = createAppStore(initialState);
     const payload = { id: 4, value: 'four' };
     select(s => s.array)
       .filterWhere(e => e.id).isIn([1, 2])
@@ -117,7 +117,7 @@ describe('array.filter().patch()', () => {
   })
 
   it('should ni()', () => {
-    const { select, read } = store(initialState);
+    const { select, read } = createAppStore(initialState);
     const payload = { value: 'four' };
     select(s => s.array)
       .filterWhere(e => e.id).isNotIn([1, 2])
@@ -132,7 +132,7 @@ describe('array.filter().patch()', () => {
   })
 
   it('should match()', () => {
-    const { select, read } = store(initialState);
+    const { select, read } = createAppStore(initialState);
     const payload = { value: 'four' };
     select(s => s.array)
       .filterWhere(e => e.value).isMatching(/^t/)

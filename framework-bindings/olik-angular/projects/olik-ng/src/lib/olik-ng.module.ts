@@ -1,19 +1,10 @@
 import { NgModule, NgZone } from '@angular/core';
-import {
-  getSelectedStateFromOperationWithoutUpdatingStore,
-  listenToDevtoolsDispatch,
-  nestedStore as libNestedStore,
-  OptionsForMakingANestedStore,
-  OptionsForMakingAStore,
-  SelectorFromAStore,
-  store as libStore,
-  storeEnforcingTags as libStoreEnforcingTags,
-} from 'olik';
+import * as core from 'olik';
 import { Observable } from 'rxjs';
 
 export * from 'olik';
 
-type FetchPayload<C> = {
+export type FetchPayload<C> = {
   isLoading: boolean,
   wasRejected: boolean,
   wasResolved: boolean,
@@ -22,7 +13,7 @@ type FetchPayload<C> = {
 };
 
 const observeFetchInternal = <S, C>(
-  select: SelectorFromAStore<S>
+  select: core.SelectorFromAStore<S>
 ) => (
   operation: () => Promise<C>
 ) => new Observable<FetchPayload<C>>(observer => {
@@ -31,33 +22,29 @@ const observeFetchInternal = <S, C>(
     isLoading: true,
     error: null,
     wasResolved: false,
-    storeValue: getSelectedStateFromOperationWithoutUpdatingStore(select, operation),
+    storeValue: core.getSelectedStateFromOperationWithoutUpdatingStore(select, operation),
   };
   observer.next(initialValue);
   operation()
-    .then(storeValue => {
-      observer.next({
-        wasRejected: false,
-        isLoading: false,
-        error: null,
-        wasResolved: true,
-        storeValue,
-      });
-    })
-    .catch(error => {
-      observer.next({
-        wasRejected: true,
-        isLoading: false,
-        error,
-        wasResolved: false,
-        storeValue: initialValue.storeValue,
-      });
-    })
+    .then(storeValue => observer.next({
+      wasRejected: false,
+      isLoading: false,
+      error: null,
+      wasResolved: true,
+      storeValue,
+    }))
+    .catch(error => observer.next({
+      wasRejected: true,
+      isLoading: false,
+      error,
+      wasResolved: false,
+      storeValue: initialValue.storeValue,
+    }))
 })
 
 type FnReturnType<X> = X extends (...args: any[]) => infer R ? R : never;
 const observeInternal = <S>(
-  select: SelectorFromAStore<S>
+  select: core.SelectorFromAStore<S>
 ) => <L extends Parameters<typeof select>[0], C extends FnReturnType<L>>(
   selector: L
 ) => new Observable<C>(observer => {
@@ -65,8 +52,8 @@ const observeInternal = <S>(
   return () => subscription.unsubscribe();
 });
 
-export const store = <S>(initialState: S, options?: OptionsForMakingAStore) => {
-  const select = libStore(initialState, options);
+export const createAppStore = <S>(initialState: S, options?: core.OptionsForMakingAStore) => {
+  const { select, read } = core.createAppStore(initialState, options);
   return {
     /**
      * Select a piece of the state to operate on and perform some action on it
@@ -74,6 +61,12 @@ export const store = <S>(initialState: S, options?: OptionsForMakingAStore) => {
      * select(s => s.username).replace('Jeff');
      */
     select,
+    /**
+     * Read the state tree
+     * @example
+     * const username = read().username;
+     */
+    read,
     /**
      * Converts the state you select into an observable.
      * @example
@@ -102,8 +95,8 @@ export const store = <S>(initialState: S, options?: OptionsForMakingAStore) => {
   };
 }
 
-export const storeEnforcingTags = <S>(initialState: S, options?: OptionsForMakingAStore) => {
-  const select = libStoreEnforcingTags(initialState, options);
+export const createAppStoreEnforcingTags = <S>(initialState: S, options?: core.OptionsForMakingAStore) => {
+  const { select, read } = core.createAppStoreEnforcingTags(initialState, options);
   return {
     /**
      * Select a piece of the state to operate on and perform some action on it
@@ -111,6 +104,12 @@ export const storeEnforcingTags = <S>(initialState: S, options?: OptionsForMakin
      * select(s => s.username).replace('Jeff', { tag: 'MyComponent' });
      */
     select,
+    /**
+     * Read the state tree
+     * @example
+     * const username = read().username;
+     */
+    read,
     /**
      * Converts the state you select into an observable.
      * @example
@@ -135,12 +134,12 @@ export const storeEnforcingTags = <S>(initialState: S, options?: OptionsForMakin
      *   <ng-container>
      * </ng-container>
      */
-    observeFetch: <C>(operation: () => Promise<C>) => observeFetchInternal<S, C>(select as any as SelectorFromAStore<S>)(operation),
+    observeFetch: <C>(operation: () => Promise<C>) => observeFetchInternal<S, C>(select as any as core.SelectorFromAStore<S>)(operation),
   };
 }
 
-export const nestedStore = <S>(initialState: S, options: OptionsForMakingANestedStore) => {
-  const select = libNestedStore(initialState, options);
+export const creaeNestedStore = <S>(initialState: S, options: core.OptionsForMakingANestedStore) => {
+  const { select, read } = core.creatNestedStore(initialState, options);
   return {
     /**
      * Select a piece of the state to operate on and perform some action on it
@@ -148,6 +147,12 @@ export const nestedStore = <S>(initialState: S, options: OptionsForMakingANested
      * select(s => s.username).replace('Jeff');
      */
     select,
+    /**
+     * Read the state tree
+     * @example
+     * const username = read().username;
+     */
+    read,
     /**
      * Converts the state you select into an observable.
      * @example
@@ -172,13 +177,13 @@ export const nestedStore = <S>(initialState: S, options: OptionsForMakingANested
      *   <ng-container>
      * </ng-container>
      */
-    observeFetch: <C>(operation: () => Promise<C>) => observeFetchInternal<S, C>(select as any as SelectorFromAStore<S>)(operation),
+    observeFetch: <C>(operation: () => Promise<C>) => observeFetchInternal<S, C>(select)(operation),
   };
 }
 
 @NgModule()
 export class OlikNgModule {
   constructor(ngZone: NgZone) {
-    listenToDevtoolsDispatch(() => ngZone.run(() => null));
+    core.listenToDevtoolsDispatch(() => ngZone.run(() => null));
   }
 }

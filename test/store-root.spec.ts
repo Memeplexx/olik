@@ -1,5 +1,5 @@
 import { testState } from '../src/shared-state';
-import { store } from '../src/store-creators';
+import { createAppStore } from '../src/store-creators';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
 describe('Root', () => {
@@ -7,7 +7,7 @@ describe('Root', () => {
   beforeAll(() => testState.windowObject = windowAugmentedWithReduxDevtoolsImpl);
 
   it('object.replace()', () => {
-    const { select, read } = store({ hello: 'world', another: new Array<string>() });
+    const { select, read } = createAppStore({ hello: 'world', another: new Array<string>() });
     const payload = { hello: 'test', another: ['test'] };
     select()
       .replace(payload);
@@ -20,7 +20,7 @@ describe('Root', () => {
   })
 
   it('object.property.update()', () => {
-    const { select, read } = store({ x: 0, y: 0 });
+    const { select, read } = createAppStore({ x: 0, y: 0 });
     const payload = 3;
     select(s => s.x)
       .replace(payload);
@@ -33,7 +33,7 @@ describe('Root', () => {
   })
 
   it('array.insert()', () => {
-    const { select, read } = store(new Array<{ id: number, text: string }>());
+    const { select, read } = createAppStore(new Array<{ id: number, text: string }>());
     const payload = [{ id: 1, text: 'hello' }];
     select()
       .insert(payload);
@@ -46,7 +46,7 @@ describe('Root', () => {
   })
 
   it('number.replace()', () => {
-    const { select, read } = store(0);
+    const { select, read } = createAppStore(0);
     const payload = 3;
     select()
       .replace(payload);
@@ -59,7 +59,7 @@ describe('Root', () => {
   })
 
   it('boolean.replace()', () => {
-    const { select, read } = store(false);
+    const { select, read } = createAppStore(false);
     const payload = true;
     select()
       .replace(payload);
@@ -73,7 +73,7 @@ describe('Root', () => {
 
   it('union.replace()', () => {
     type union = 'one' | 'two';
-    const { select, read } = store('one' as union);
+    const { select, read } = createAppStore('one' as union);
     const payload = 'two' as union;
     select()
       .replace(payload);
@@ -86,7 +86,7 @@ describe('Root', () => {
   })
 
   it('string.replace()', () => {
-    const { select, read } = store('');
+    const { select, read } = createAppStore('');
     const payload = 'test';
     select()
       .replace(payload);
@@ -99,7 +99,7 @@ describe('Root', () => {
   })
 
   it('replaceAll()', () => {
-    const { select, read } = store(['one', 'two', 'three']);
+    const { select, read } = createAppStore(['one', 'two', 'three']);
     const payload = ['four', 'five', 'six', 'seven'];
     select()
       .replaceAll(payload);
@@ -112,7 +112,7 @@ describe('Root', () => {
   })
 
   it('find().replace()', () => {
-    const { select, read } = store(['one', 'two', 'three']);
+    const { select, read } = createAppStore(['one', 'two', 'three']);
     const payload = 'twoo';
     select()
       .findWhere().isEq('two')
@@ -127,7 +127,7 @@ describe('Root', () => {
   })
 
   it('insert()', () => {
-    const { select, read } = store(['one']);
+    const { select, read } = createAppStore(['one']);
     select()
       .insert('two');
     expect(testState.currentAction).toEqual({
@@ -139,7 +139,7 @@ describe('Root', () => {
   })
 
   it('find().replace()', () => {
-    const { select, read } = store(['hello']);
+    const { select, read } = createAppStore(['hello']);
     select().findWhere().isMatching(/^h/).replace('another')
     expect(testState.currentAction).toEqual({
       type: 'find().replace()',

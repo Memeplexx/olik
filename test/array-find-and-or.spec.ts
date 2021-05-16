@@ -1,6 +1,6 @@
 import { errorMessages } from '../src/shared-consts';
 import { testState } from '../src/shared-state';
-import { store } from '../src/store-creators';
+import { createAppStore } from '../src/store-creators';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
 describe('array.find().and().or()', () => {
@@ -13,7 +13,7 @@ describe('array.find().and().or()', () => {
   };
 
   it('should eq().andWhere().eq()', () => {
-    const { select, read } = store(initialState);
+    const { select, read } = createAppStore(initialState);
     select(s => s.array)
       .findWhere(s => s.id).isEq(2)
       .andWhere(s => s.value).isEq('two')
@@ -28,7 +28,7 @@ describe('array.find().and().or()', () => {
   })
 
   it('should eq().orWhere().eq()', () => {
-    const { select, read } = store(initialState);
+    const { select, read } = createAppStore(initialState);
     select(s => s.array)
       .findWhere(s => s.id).isEq(1)
       .orWhere(s => s.value).isEq('two')
@@ -43,7 +43,7 @@ describe('array.find().and().or()', () => {
   })
 
   it('should eq().andWhere().eq() not matching throw', () => {
-    const { select, read } = store(initialState);
+    const { select, read } = createAppStore(initialState);
     expect(() => select(s => s.array)
       .findWhere(s => s.id).isEq(1)
       .andWhere(s => s.id).isEq(2)
@@ -51,7 +51,7 @@ describe('array.find().and().or()', () => {
   })
 
   it('should eq().andWhere().eq().or().eq()', () => {
-    const { select, read } = store(initialState);
+    const { select, read } = createAppStore(initialState);
     select(s => s.array)
       .findWhere(e => e.id).isEq(1)
       .andWhere(e => e.id).isEq(2)
@@ -67,7 +67,7 @@ describe('array.find().and().or()', () => {
   })
 
   it('should eq().orWhere().eq().andWhere().eq()', () => {
-    const { select, read } = store(initialState);
+    const { select, read } = createAppStore(initialState);
     select(s => s.array)
       .findWhere(e => e.id).isEq(4)
       .orWhere(e => e.id).isEq(3)
@@ -83,7 +83,7 @@ describe('array.find().and().or()', () => {
   })
 
   it('should eq().andWhere().eq().orWhere().eq().andWhere().eq()', () => {
-    const { select, read } = store(initialState);
+    const { select, read } = createAppStore(initialState);
     select(s => s.array)
       .findWhere(e => e.id).isEq(1)
       .andWhere(e => e.value).isEq('one')

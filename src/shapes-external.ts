@@ -521,11 +521,11 @@ export type StoreOrDerivation<C> = {
 export type StoreWhichIsResettable<C extends any, T extends Trackability> = {
   /**
    * Reverts the current state to how it was when the store was initialized.
-   * Beware that if this store is marked with `isContainerForNestedStores: true`, then all nested stores will also be removed
+   * Beware that all nested stores will also be removed.
    */
   reset: (options: ActionOptions<T>) => void,
   /**
-   * Ensures that fresh data is retrieved the next time any promises are used to populate this node of the state tree.
+   * Ensures that fresh data is retrieved the next time any promises are used to populate this node (or any descendant nodes) of the state tree.
    */
   stopBypassingPromises: () => void,
 } & StoreOrDerivation<C>;
@@ -554,7 +554,7 @@ export type StoreWhichEnforcesTags<C> = Store<C, 'tagged'>;
  */
 export type StoreWhichIsNested<C> = Store<C, 'untagged'> & {
   /**
-   * Removes this nested store from the store which was marked with `isContainerForNestedStores = true`.
+   * Removes this nested store from the application store.
    */
   storeDetach: () => void;
 };
@@ -564,32 +564,28 @@ export type StoreWhichIsNested<C> = Store<C, 'untagged'> & {
  */
 export type Selector<S, C, X = C> = X extends C & ReadonlyArray<any> ? (s: S) => X : (s: S) => C;
 
+export type SelectorReader<S, U> = { select: U, read: () => DeepReadonly<S> };
+
 /**
  * A function which selects from a nested store
  */
-export type SelectorFromANestedStore<S> = {
-  select: ([S] extends [Array<any>] | [number] | [string] | [boolean]
-    ? () => StoreWhichIsNested<S>
-    : <C = DeepReadonly<S>>(selector?: (arg: DeepReadonly<S>) => C) => StoreWhichIsNested<C>)
-} & { read: () => DeepReadonly<S> };
+export type SelectorFromANestedStore<S> = [S] extends [Array<any>] | [number] | [string] | [boolean]
+  ? () => StoreWhichIsNested<S>
+  : <C = DeepReadonly<S>>(selector?: (arg: DeepReadonly<S>) => C) => StoreWhichIsNested<C>;
 
 /**
  * A function which selects from a store
  */
-export type SelectorFromAStore<S> = {
-  select: ([S] extends [Array<any>] | [number] | [string] | [boolean]
-    ? () => StoreWhichDoesntEnforceTags<S>
-    : <C = DeepReadonly<S>>(selector?: (arg: DeepReadonly<S>) => C) => StoreWhichDoesntEnforceTags<C>)
-} & { read: () => DeepReadonly<S> };
+export type SelectorFromAStore<S> = [S] extends [Array<any>] | [number] | [string] | [boolean]
+  ? () => StoreWhichDoesntEnforceTags<S>
+  : <C = DeepReadonly<S>>(selector?: (arg: DeepReadonly<S>) => C) => StoreWhichDoesntEnforceTags<C>;
 
 /**
  * A function which selects from a store which enforces the use of tags when performing a state update
  */
-export type SelectorFromAStoreEnforcingTags<S> = {
-  select: ([S] extends [Array<any>] | [number] | [string] | [boolean]
-    ? () => StoreWhichEnforcesTags<S>
-    : <C = DeepReadonly<S>>(selector?: (arg: DeepReadonly<S>) => C) => StoreWhichEnforcesTags<C>)
-} & { read: () => DeepReadonly<S> };
+export type SelectorFromAStoreEnforcingTags<S> = [S] extends [Array<any>] | [number] | [string] | [boolean]
+  ? () => StoreWhichEnforcesTags<S>
+  : <C = DeepReadonly<S>>(selector?: (arg: DeepReadonly<S>) => C) => StoreWhichEnforcesTags<C>;
 
 /**
  * An input for a derivation
@@ -612,11 +608,6 @@ export type OptionsForMakingAStore = {
    * See https://github.com/zalmoxisus/redux-devtools-extension/blob/master/docs/API/Arguments.md for more info
    */
   devtools?: OptionsForReduxDevtools | false;
-  /**
-   * Setting this to true will mean that any stores which are subsequently created using `nestedStore()` will automatically be nested within this store.
-   * Those nested stores will then be visible within the Redux Devtools extension.
-   */
-  isContainerForNestedStores?: boolean;
   /**
    * If supplied, this function can transform all tags passed in when updating state.
    * This is of use if, for example, you are using the `__filename` node variable as a tag, and you would like the abbreviate the file path to something more readable.

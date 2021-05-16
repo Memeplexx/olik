@@ -1,10 +1,11 @@
-import { createStore } from './core';
+import { createStoreCore } from './core';
 import {
   OptionsForMakingANestedStore,
   OptionsForMakingAStore,
   SelectorFromANestedStore,
   SelectorFromAStore,
   SelectorFromAStoreEnforcingTags,
+  SelectorReader,
   StoreWhichIsNested,
   Trackability,
 } from './shapes-external';
@@ -20,44 +21,43 @@ import { libState } from './shared-state';
  * @param options some additional configuration options
  * 
  * @example
- * const select = storeEnforcingTags({ prop: '' });
+ * const select = createAppStoreEnforcingTags({ prop: '' });
  * 
  * // Note that when updating state, we are now required to supply a string as the last argument (in this case 'MyComponent')
  * select(s => s.prop)                // type: 'prop.replace() [MyComponent]'
  *   .replace('test', 'MyComponent')  // replacement: 'test'
  */
-export function storeEnforcingTags<S>(
+export function createAppStoreEnforcingTags<S>(
   state: S,
   options: OptionsForMakingAStore = {},
 ) {
-  return setInternalRootStore<S, 'tagged'>(state, { ...options, enforcesTags: true }) as SelectorFromAStoreEnforcingTags<S>;
+  return setInternalRootStore<S, 'tagged'>(state, { ...options, enforcesTags: true }) as SelectorReader<S, SelectorFromAStoreEnforcingTags<S>>;
 }
 
 /**
- * Creates a new store
+ * Creates a new application-wide store
  * @param state the initial state
  * @param options some additional configuration options
  * 
  * @example
- * const select = store({ todos: Array<{ id: number, text: string }>() });
+ * const select = createAppStore({ todos: Array<{ id: number, text: string }>() });
  */
-export function store<S>(
+export function createAppStore<S>(
   state: S,
   options: OptionsForMakingAStore = {},
 ) {
-  return setInternalRootStore<S, 'untagged'>(state, { ...options, enforcesTags: false }) as SelectorFromAStore<S>;
+  return setInternalRootStore<S, 'untagged'>(state, { ...options, enforcesTags: false }) as SelectorReader<S, SelectorFromAStore<S>>;
 }
 
 /**
- * Creates a new store which can be (but doesn't have to be) nested inside your application store.
- * If an existing store is already defined as `store({...}, { isContainerForNestedStores: true });`
- * then this store will be automatically nested within that store, under the property `nested`.
+ * Creates a new store which is nestable within inside your application store.
+ * If you have already created an application store then this store will be automatically nested within that store, under the property `nested`.
  * If the opposite is true, then a new top-level store will be registered within the devtools
  * @param state The initial state
  * @param options A configuration object which, at minimum, must contain the `componentName` of the nested store
  * 
  * @example
- * const select = nestedStore({
+ * const select = creatNestedStore({
  *   id: number,
  *   text: string,
  *   done: boolean,
@@ -66,30 +66,33 @@ export function store<S>(
  *   instanceName: todoId
  * })
  */
-export function nestedStore<L>(
+export function creatNestedStore<L>(
   state: L,
   { componentName, instanceName, dontTrackWithDevtools }: OptionsForMakingANestedStore,
 ) {
   const generateKey = (arg?: string) => (!arg && !instanceName) ? '0' :
     !instanceName ? (+arg! + 1).toString() : instanceName;
   if (!libState.nestedContainerStore) {
-    const nStore = createStore<L, 'untagged'>({ state, devtools: dontTrackWithDevtools ? false : { name: componentName + ' : ' + generateKey() } }) as SelectorFromANestedStore<L>;
+    const nStore = createStoreCore<L, 'untagged'>({ state, devtools: dontTrackWithDevtools ? false : { name: componentName + ' : ' + generateKey() } }) as SelectorReader<L, SelectorFromANestedStore<L>>;
     const select = (<C = L>(selector?: (arg: L) => C) => {
       const cStore = selector ? nStore.select(selector as any) : nStore.select();
       cStore.storeDetach = () => console.info(errorMessages.NO_CONTAINER_STORE);
       cStore.reset = () => console.info(errorMessages.NO_CONTAINER_STORE);
       return cStore as any as StoreWhichIsNested<C>;
     });
-    return { select, read: () => select().read() } as SelectorFromANestedStore<L>;
+    return { select, read: () => select().read() } as SelectorReader<L, SelectorFromANestedStore<L>>;
   }
   const containerStore = libState.nestedContainerStore();
   const wrapperState = containerStore.read();
   let key: string;
-  if (!containerStore.read().nested) {
+  if (!wrapperState.nested) {
+    if (['number', 'boolean', 'string'].some(type => typeof(wrapperState) === type) || Array.isArray(wrapperState)) {
+      throw new Error(errorMessages.INVALID_CONTAINER_FOR_NESTED_STORES);
+    }
     key = generateKey();
     containerStore.patch({ nested: { [componentName]: { [key]: state } } });
     containerStore.renew({ ...wrapperState, nested: { [componentName]: { [key]: state } } });
-  } else if (!containerStore.read().nested[componentName]) {
+  } else if (!wrapperState.nested[componentName]) {
     key = generateKey();
     libState.nestedContainerStore(s => s.nested).patch({ [componentName]: { [key]: state } });
     containerStore.renew({ ...wrapperState, nested: { ...wrapperState.nested, [componentName]: { [key]: state } } });
@@ -109,23 +112,17 @@ export function nestedStore<L>(
     cStore.reset = cStore.defineReset(state);
     return cStore as StoreWhichIsNested<C>;
   });
-  return { select, read: () => select().read() } as SelectorFromANestedStore<L>;
+  return { select, read: () => select().read() } as SelectorReader<L, SelectorFromANestedStore<L>>;
 }
 
 function setInternalRootStore<S, T extends Trackability>(
   state: S,
   options: OptionsForCreatingInternalRootStore,
 ) {
-  if (options.isContainerForNestedStores && libState.nestedContainerStore) {
-    throw new Error(errorMessages.CANNOT_CREATE_MORE_THAN_ONE_CONTAINER_STORE);
-  }
-  const store = createStore<S, T>({ state, devtools: options.devtools === undefined ? {} : options.devtools,
-    tagSanitizer: options.tagSanitizer, tagsToAppearInType: options.tagsToAppearInType });
-  if (options.isContainerForNestedStores) {
-    if ((typeof (state) !== 'object') || Array.isArray(state)) {
-      throw new Error(errorMessages.INVALID_CONTAINER_FOR_NESTED_STORES);
-    }
-    libState.nestedContainerStore = store.select as any;
-  }
+  const store = createStoreCore<S, T>({
+    state, devtools: options.devtools === undefined ? {} : options.devtools,
+    tagSanitizer: options.tagSanitizer, tagsToAppearInType: options.tagsToAppearInType
+  });
+  libState.nestedContainerStore = store.select as any;
   return store;
 }

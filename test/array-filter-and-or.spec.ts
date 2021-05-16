@@ -1,5 +1,5 @@
 import { testState } from '../src/shared-state';
-import { store } from '../src/store-creators';
+import { createAppStore } from '../src/store-creators';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
 describe('array.filter().and().or()', () => {
@@ -12,7 +12,7 @@ describe('array.filter().and().or()', () => {
   };
 
   it('should eq().and().eq()', () => {
-    const { select, read } = store(initialState);
+    const { select, read } = createAppStore(initialState);
     select(s => s.array)
       .filterWhere(s => s.id).isEq(2)
       .andWhere(s => s.value).isEq('two')
@@ -27,7 +27,7 @@ describe('array.filter().and().or()', () => {
   })
 
   it('should eq().or().eq()', () => {
-    const { select, read } = store(initialState);
+    const { select, read } = createAppStore(initialState);
     select(s => s.array)
       .filterWhere(s => s.id).isEq(1)
       .orWhere(s => s.value).isEq('two')
@@ -42,7 +42,7 @@ describe('array.filter().and().or()', () => {
   })
 
   it('should eq().and().eq() not matching', () => {
-    const { select, read } = store(initialState);
+    const { select, read } = createAppStore(initialState);
     select(s => s.array)
       .filterWhere(s => s.id).isEq(1)
       .andWhere(s => s.id).isEq(2)
@@ -57,7 +57,7 @@ describe('array.filter().and().or()', () => {
   })
 
   it('should eq().and().eq().or().eq()', () => {
-    const { select, read } = store(initialState);
+    const { select, read } = createAppStore(initialState);
     select(s => s.array)
       .filterWhere(e => e.id).isEq(1)
       .andWhere(e => e.id).isEq(2)
@@ -73,7 +73,7 @@ describe('array.filter().and().or()', () => {
   })
 
   it('should eq().or().eq().and().eq()', () => {
-    const { select, read } = store(initialState);
+    const { select, read } = createAppStore(initialState);
     select(s => s.array)
       .filterWhere(e => e.id).isEq(4)
       .orWhere(e => e.id).isEq(3)
@@ -89,7 +89,7 @@ describe('array.filter().and().or()', () => {
   })
 
   it('should eq().and().eq().or().eq().and().eq()', () => {
-    const { select, read } = store(initialState);
+    const { select, read } = createAppStore(initialState);
     select(s => s.array)
       .filterWhere(e => e.id).isEq(1)
       .andWhere(e => e.value).isEq('one')
