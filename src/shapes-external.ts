@@ -69,7 +69,7 @@ export type PredicateOptionsCommon<X extends DeepReadonlyArray<any>, P, F extend
    * Searches for array element(s) where the previously selected property **equals** the supplied value
    * @example
    * ...
-   * .isEqualto(1)
+   * .isEq(1)
    * ...
    */
   isEq: (value: P) => PredicateAction<X, F, T>,
@@ -77,7 +77,7 @@ export type PredicateOptionsCommon<X extends DeepReadonlyArray<any>, P, F extend
    * Searches for array element(s) where the previously selected property **does not equal** the supplied value
    * @example
    * ...
-   * .isNotEqualTo(1)
+   * .isNotEq(1)
    * ...
    */
   isNotEq: (value: P) => PredicateAction<X, F, T>,
@@ -85,7 +85,7 @@ export type PredicateOptionsCommon<X extends DeepReadonlyArray<any>, P, F extend
    * Searches for array element(s) where the previously selected property **is in** the supplied array
    * @example
    * ...
-   * isInArray([1, 2])
+   * isIn([1, 2])
    * ...
    */
   isIn: (value: P[]) => PredicateAction<X, F, T>,
@@ -93,7 +93,7 @@ export type PredicateOptionsCommon<X extends DeepReadonlyArray<any>, P, F extend
    * Searches for array element(s) where the previously selected property **is not in** the supplied array
    * @example
    * ...
-   * .isNotInArray([1, 2])
+   * .isNotIn([1, 2])
    * ...
    */
   isNotIn: (value: P[]) => PredicateAction<X, F, T>,
@@ -132,7 +132,7 @@ export type PredicateOptionsForNumber<X extends DeepReadonlyArray<any>, E, F ext
    * Searches for array element(s) where the previously selected property **is greater than** the supplied number
    * @example
    * ...
-   * .gt(2)
+   * .isMoreThan(2)
    * ...
    */
   isMoreThan: (value: number) => PredicateAction<X, F, T>,
@@ -140,7 +140,7 @@ export type PredicateOptionsForNumber<X extends DeepReadonlyArray<any>, E, F ext
    * Searches for array element(s) where the previously selected property **is greater than or equal to** the supplied number
    * @example
    * ...
-   * .isGreaterThanOrEqualTo(2)
+   * .isMoreThanOrEq(2)
    * ...
    */
   isMoreThanOrEq: (value: number) => PredicateAction<X, F, T>,
@@ -156,7 +156,7 @@ export type PredicateOptionsForNumber<X extends DeepReadonlyArray<any>, E, F ext
    * Searches for array element(s) where the previously selected property **is less than or equal to** the supplied number
    * @example
    * ...
-   * .isLessThanOrEqualTo(2)
+   * .isLessThanOrEq(2)
    * ...
    */
   isLessThanOrEq: (value: number) => PredicateAction<X, F, T>,
