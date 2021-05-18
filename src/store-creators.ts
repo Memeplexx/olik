@@ -64,7 +64,7 @@ export function createAppStore<S>(
  *   text: string,
  *   done: boolean,
  * }, {
- *   storeName: 'TodoComponent',
+ *   componentName: 'TodoComponent',
  *   instanceName: todoId
  * })
  */
