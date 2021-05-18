@@ -552,12 +552,7 @@ export type StoreWhichEnforcesTags<C> = Store<C, 'tagged'>;
 /**
  * An object which is capable of managing state, but which can also be nested within another store
  */
-export type StoreWhichIsNested<C> = Store<C, 'untagged'> & {
-  /**
-   * Removes this nested store from the application store.
-   */
-   detachFromAppStore: () => void;
-};
+export type StoreWhichIsNested<C> = Store<C, 'untagged'>;
 
 /**
  * A function which selects from the store

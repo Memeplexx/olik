@@ -71,8 +71,6 @@ export function creatNestedStore<L>(
   state: L,
   { componentName, instanceName, dontTrackWithDevtools }: OptionsForMakingANestedStore,
 ) {
-  // const generateKey = (arg?: string) => (!arg && !instanceName) ? '0' :
-  //   !instanceName ? (+arg! + 1).toString() : instanceName;
   const generateKey = () => {
     if (!instanceName) {
       if (isEmpty(libState.nestedStoresAutoGenKeys[componentName])) {
@@ -89,30 +87,25 @@ export function creatNestedStore<L>(
     const nStore = createStoreCore<L, 'untagged'>({ state, devtools: dontTrackWithDevtools ? false : { name: componentName + ' : ' + generateKey() } }) as SelectorReader<L, SelectorFromANestedStore<L>>;
     const select = (<C = L>(selector?: (arg: L) => C) => {
       const cStore = selector ? nStore.select(selector as any) : nStore.select();
-      cStore.detachFromAppStore = () => console.info(errorMessages.NO_CONTAINER_STORE);
       cStore.reset = () => console.info(errorMessages.NO_CONTAINER_STORE);
+      (cStore as any).isNested = true;
       return cStore as any as StoreWhichIsNested<C>;
     });
     return { select, read: () => select().read(), detachFromAppStore: () => console.info(errorMessages.NO_CONTAINER_STORE) } as SelectorReader<L, SelectorFromANestedStore<L>>;
   }
   const containerStore = libState.nestedContainerStore();
   const wrapperState = containerStore.read();
-  let key: string;
+  const key = generateKey();
   if (!wrapperState.nested) {
     if (['number', 'boolean', 'string'].some(type => typeof(wrapperState) === type) || Array.isArray(wrapperState)) {
       throw new Error(errorMessages.INVALID_CONTAINER_FOR_NESTED_STORES);
     }
-    key = generateKey();
     containerStore.patch({ nested: { [componentName]: { [key]: state } } });
     containerStore.renew({ ...wrapperState, nested: { [componentName]: { [key]: state } } });
   } else if (!wrapperState.nested[componentName]) {
-    key = generateKey();
     libState.nestedContainerStore(s => s.nested).patch({ [componentName]: { [key]: state } });
     containerStore.renew({ ...wrapperState, nested: { ...wrapperState.nested, [componentName]: { [key]: state } } });
   } else {
-    const values = libState.nestedContainerStore(s => s.nested[componentName]).read();
-    const keys = Object.keys(values);
-    key = generateKey();
     libState.nestedContainerStore(s => s.nested[componentName]).patch({ [key]: state });
     containerStore.renew({ ...wrapperState, nested: { ...wrapperState.nested, [componentName]: { ...wrapperState.nested[componentName], [key]: state } } });
   }
@@ -121,8 +114,8 @@ export function creatNestedStore<L>(
       const nState = s.nested[componentName][key];
       return selector ? selector(nState) : nState;
     }) as any as StoreWhichIsNestedInternal<L, C>;
-    cStore.detachFromAppStore = cStore.defineDetachFromAppStore(componentName, key);
     cStore.reset = cStore.defineReset(state);
+    (cStore as any).isNested = true;
     return cStore as StoreWhichIsNested<C>;
   });
 
