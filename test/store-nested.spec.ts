@@ -12,7 +12,6 @@ describe('Nested', () => {
   });
 
   beforeEach(() => {
-    libState.nestedContainerStore = null;
     libState.nestedStoresAutoGenKeys = {};
     spyInfo.mockReset();
   });
@@ -175,6 +174,7 @@ describe('Nested', () => {
   })
 
   it('should work without a container store', () => {
+    libState.nestedContainerStore = null;
     const nested = creatNestedStore({
       object: { property: 'a' },
       array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],

@@ -3879,10 +3879,10 @@ object.reduce@^1.0.0:
     for-own "^1.0.0"
     make-iterator "^1.0.0"
 
-olik@0.0.15:
-  version "0.0.15"
-  resolved "https://registry.yarnpkg.com/olik/-/olik-0.0.15.tgz#b57e13ab498e175de6773bed3239bc4b8c5ac51c"
-  integrity sha512-/RRMmpE0Yra8Y7huxiB+4Y+qT0pW4j8AoazH9qqBOK/RceOdf1bZH3LgcYNvgcWHGFo2biDA2mCdiZbxZY69kg==
+olik@0.0.16:
+  version "0.0.16"
+  resolved "https://registry.yarnpkg.com/olik/-/olik-0.0.16.tgz#a6d50603243f802bf34403b2b4dd21756c6aeb6c"
+  integrity sha512-/4Js/wbLhh7F+BVIVd8qPG0Ae5Ipx/V3JkqCnkbRupuY7gdCBTF7EPzRj4Yfgl1FPCGBOtVFEizH5utFYCv4Rw==
 
 once@^1.3.0, once@^1.3.1, once@^1.3.2, once@^1.4.0:
   version "1.4.0"

@@ -60,12 +60,12 @@ export function useNestedStore<C>(
   initialState: C,
   options: core.OptionsForMakingANestedStore,
 ) {
-  const { select, read } = React.useMemo(() => {
+  const { select, read, detachFromAppStore } = React.useMemo(() => {
     return core.creatNestedStore(initialState, options);
   }, []);
   React.useEffect(() => {
     return () => {
-      select().storeDetach();
+      detachFromAppStore();
     }
   }, []);
   return {

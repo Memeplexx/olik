@@ -215,14 +215,14 @@ describe('React', () => {
     const parentStore = createAppStore({
       ...initialState,
       nested: {
-        component: {} as { [key: string]: { prop: string, num: number } }
+        component2: {} as { [key: string]: { prop: string, num: number } }
       }
     }, { devtools: false });
     const Child: React.FunctionComponent<{ num: number }> = (props) => {
       const {
         select,
         useSelector,
-      } = useNestedStore({ prop: 0 }, { componentName: 'component', dontTrackWithDevtools: true });
+      } = useNestedStore({ prop: 0 }, { componentName: 'component2', dontTrackWithDevtools: true });
       React.useEffect(() => select(s => s.prop).replace(props.num), [props.num])
       const result = useSelector(s => s.prop);
       return (
@@ -242,7 +242,7 @@ describe('React', () => {
     }
     render(<Parent />);
     (screen.getByTestId('btn') as HTMLButtonElement).click();
-    await waitFor(() => expect(parentStore.select(s => s.nested.component).read()).toEqual({ '0': { prop: 1 } }));
+    await waitFor(() => expect(parentStore.select(s => s.nested.component2).read()).toEqual({ '0': { prop: 1 } }));
   })
 
   it('should respond to async actions', async () => {
