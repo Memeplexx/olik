@@ -33,7 +33,7 @@ export type PathReader<S> = {
 export type UpdateStateFn<S, C, T extends Trackability, X extends C = C> = (specs: UpdateStateArgs<S, C, T, X>) => void;
 
 export type StoreWhichIsNestedInternal<S, C> = Store<C, 'untagged'> & {
-  defineReset: (initState: S) => () => any;
+  defineReset: (initState: S, selector?: (arg: any) => C) => () => any;
 } & StoreWhichIsNested<C>;
 
 export type WindowAugmentedWithReduxDevtools = {

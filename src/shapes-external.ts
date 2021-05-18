@@ -559,7 +559,9 @@ export type StoreWhichIsNested<C> = Store<C, 'untagged'>;
  */
 export type Selector<S, C, X = C> = X extends C & ReadonlyArray<any> ? (s: S) => X : (s: S) => C;
 
-export type SelectorReader<S, U> = { select: U, read: () => DeepReadonly<S>, detachFromAppStore: () => void };
+export type SelectorReader<S, U> = { select: U, read: () => DeepReadonly<S> };
+
+export type SelectorReaderNested<S, U> = SelectorReader<S, U> & { detachFromAppStore: () => void };
 
 /**
  * A function which selects from a nested store

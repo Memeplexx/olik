@@ -173,7 +173,7 @@ export function createStoreCore<S, T extends Trackability>({
       stopBypassingPromises: () => stopBypassingPromises(pathReader, selector, storeResult),
       readInitial: () => selector(initialState),
       defineReset: (
-        (initState: C) => () => replace({ ...getCoreActionsState(), name: 'reset' })(initState, undefined as any)
+        (initState: C, innerSelector) => () => replace({ ...getCoreActionsState(), name: 'reset' })(!innerSelector ? initState : innerSelector(initState), undefined as any)
       ) as StoreWhichIsNestedInternal<S, C>['defineReset'],
       renew: (state => {
         pathReader = createPathReader(state);

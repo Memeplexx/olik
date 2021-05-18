@@ -6,6 +6,7 @@ import {
   SelectorFromAStore,
   SelectorFromAStoreEnforcingTags,
   SelectorReader,
+  SelectorReaderNested,
   StoreWhichIsNested,
   Trackability,
 } from './shapes-external';
@@ -87,11 +88,10 @@ export function creatNestedStore<L>(
     const nStore = createStoreCore<L, 'untagged'>({ state, devtools: dontTrackWithDevtools ? false : { name: componentName + ' : ' + generateKey() } }) as SelectorReader<L, SelectorFromANestedStore<L>>;
     const select = (<C = L>(selector?: (arg: L) => C) => {
       const cStore = selector ? nStore.select(selector as any) : nStore.select();
-      cStore.reset = () => console.info(errorMessages.NO_CONTAINER_STORE);
       (cStore as any).isNested = true;
       return cStore as any as StoreWhichIsNested<C>;
     });
-    return { select, read: () => select().read(), detachFromAppStore: () => console.info(errorMessages.NO_CONTAINER_STORE) } as SelectorReader<L, SelectorFromANestedStore<L>>;
+    return { select, read: () => select().read(), detachFromAppStore: () => console.info(errorMessages.NO_CONTAINER_STORE) } as SelectorReaderNested<L, SelectorFromANestedStore<L>>;
   }
   const containerStore = libState.nestedContainerStore();
   const wrapperState = containerStore.read();
@@ -114,11 +114,10 @@ export function creatNestedStore<L>(
       const nState = s.nested[componentName][key];
       return selector ? selector(nState) : nState;
     }) as any as StoreWhichIsNestedInternal<L, C>;
-    cStore.reset = cStore.defineReset(state);
+    cStore.reset = cStore.defineReset(state, selector);
     (cStore as any).isNested = true;
     return cStore as StoreWhichIsNested<C>;
   });
-
   const detachFromAppStore = () => {
     if (!libState.nestedContainerStore) { return; }
     const state = (libState.nestedContainerStore().read() as any).nested[componentName];
@@ -128,8 +127,7 @@ export function creatNestedStore<L>(
       libState.nestedContainerStore(s => s.nested[componentName]).remove(key);
     }
   }
-
-  return { select, read: () => select().read(), detachFromAppStore } as SelectorReader<L, SelectorFromANestedStore<L>>;
+  return { select, read: () => select().read(), detachFromAppStore } as SelectorReaderNested<L, SelectorFromANestedStore<L>>;
 }
 
 function setInternalRootStore<S, T extends Trackability>(

@@ -185,8 +185,6 @@ describe('Nested', () => {
     nested.detachFromAppStore();
     expect(spyInfo).toHaveBeenCalledWith(errorMessages.NO_CONTAINER_STORE);
     spyInfo.mockReset();
-    nested.select(s => s.array).reset();
-    expect(spyInfo).toHaveBeenCalledWith(errorMessages.NO_CONTAINER_STORE);
   });
 
   it('should be able to support a custom instance name', () => {
@@ -209,6 +207,26 @@ describe('Nested', () => {
     store1.detachFromAppStore();
     store2.detachFromAppStore();
     expect(parentStore.read()).toEqual({ test: '', nested: {  } });
+  })
+
+  it('should be able to reset a nested store inner property', () => {
+    const parentStore = createAppStore({ test: '' });
+    parentStore.select(s => s.test).replace('test');
+    const nestedStore = creatNestedStore({ array: new Array<string>() }, {componentName: 'test' });
+    testState.logLevel = 'DEBUG';
+    nestedStore.select(s => s.array).insert('test');
+    expect(parentStore.read()).toEqual({ test: 'test', nested: { test: {'0': {array: ['test'] }} } });
+    nestedStore.select(s => s.array).reset();
+    expect(parentStore.read()).toEqual({ test: 'test', nested: { test: {'0': {array: []}} } });
+    expect(testState.currentAction).toEqual({ type: 'nested.test.0.array.reset()', replacement: [] });
+  })
+
+  it('should be able to reset a detached store', () => {
+    const nested = creatNestedStore({ test: '' }, { componentName: 'test' });
+    nested.select(s => s.test).replace('test');
+    expect(nested.read()).toEqual({ test: 'test' });
+    nested.select(s => s.test).reset();
+    expect(nested.read()).toEqual({ test: '' });
   })
 
 });
