@@ -8,7 +8,6 @@ describe('Angular', () => {
     string: 'b',
   };
 
-
   it('should create and update a store', () => {
     const { select } = createAppStore(initialState, { devtools: false });
     select(s => s.object.property)
@@ -138,8 +137,6 @@ describe('Angular', () => {
     });
   })
 
-  
-
   it('should be able to create and update a nested store', () => {
     const parentStore = createAppStore(initialState, { devtools: false });
     const componentName = 'MyComponent';
@@ -210,12 +207,9 @@ describe('Angular', () => {
     });
   })
 
-  
-
-
   // // reactive version
   // const paginatedData$ = this.pageIndex$.pipe(
-  //   concatMap(pageIndex => observeFetch(select(s => s.data[pageIndex]).replaceAll(() => fetchData(index, 10)))),
+  //   concatMap(pageIndex => observeFetch(select(s => s.data[pageIndex]).replaceAll(() => fetchData(pageIndex, 10)))),
   // );
 
   // // imperative version

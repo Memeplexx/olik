@@ -3,6 +3,7 @@ import { NestedContainerStore, WindowAugmentedWithReduxDevtools } from './shapes
 export const libState = {
   nestedContainerStore: null as null | NestedContainerStore,
   transactionState: 'none' as 'none' | 'started' | 'last',
+  nestedStoresAutoGenKeys: {} as {[componentName: string]: number},
 }
 
 export const testState = {

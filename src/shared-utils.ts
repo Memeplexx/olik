@@ -238,7 +238,7 @@ export const getSelectedStateFromOperationWithoutUpdatingStore = <S>(select: Sel
   operation();
   let result: any;
   const nested = select() as StoreWhichIsNested<any>;
-  if (!!nested.storeDetach && libState.nestedContainerStore) {
+  if (!!nested.detachFromAppStore && libState.nestedContainerStore) {
     result = libState.nestedContainerStore((select() as any).getSelector()).read();
   } else {
     result = select((select() as any).getSelector()).read();

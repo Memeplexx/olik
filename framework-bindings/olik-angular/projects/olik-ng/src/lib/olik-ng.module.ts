@@ -70,7 +70,7 @@ export const createAppStore = <S>(initialState: S, options?: core.OptionsForMaki
     /**
      * Converts the state you select into an observable.
      * @example
-     * todos$ = observe(s => s => s.todos);
+     * todos$ = observe(s => s.todos);
      * 
      * <div *ngFor="let todo of todos.storeValue">{{todo.title}}</div>
      */
@@ -80,7 +80,7 @@ export const createAppStore = <S>(initialState: S, options?: core.OptionsForMaki
      * @example
      * todos$ = observeFetch(() =>
      *   select(s => s.todos)
-     *     .replaceAll(() => fetchTodosFromAPI())
+     *     .replaceAll(() => this.httpClient.get('http://example.com/todos').toPromise())
      * );
      * 
      * <ng-container *ngIf="todos$ | async; let todos;">
@@ -113,7 +113,7 @@ export const createAppStoreEnforcingTags = <S>(initialState: S, options?: core.O
     /**
      * Converts the state you select into an observable.
      * @example
-     * todos$ = observe(s => s => s.todos);
+     * todos$ = observe(s => s.todos);
      * 
      * <div *ngFor="let todo of todos.storeValue">{{todo.title}}</div>
      */
@@ -123,7 +123,7 @@ export const createAppStoreEnforcingTags = <S>(initialState: S, options?: core.O
      * @example
      * todos$ = observeFetch(() =>
      *   select(s => s.todos)
-     *     .replaceAll(() => fetchTodosFromAPI())
+     *     .replaceAll(() => this.httpClient.get('http://example.com/todos').toPromise())
      * );
      * 
      * <ng-container *ngIf="todos$ | async; let todos;">
@@ -156,7 +156,7 @@ export const creaeNestedStore = <S>(initialState: S, options: core.OptionsForMak
     /**
      * Converts the state you select into an observable.
      * @example
-     * todos$ = observe(s => s => s.todos);
+     * todos$ = observe(s => s.todos);
      * 
      * <div *ngFor="let todo of todos.storeValue">{{todo.title}}</div>
      */
@@ -166,7 +166,7 @@ export const creaeNestedStore = <S>(initialState: S, options: core.OptionsForMak
      * @example
      * todos$ = observeFetch(() =>
      *   select(s => s.todos)
-     *     .replaceAll(() => fetchTodosFromAPI())
+     *     .replaceAll(() => this.httpClient.get('http://example.com/todos').toPromise())
      * );
      * 
      * <ng-container *ngIf="todos$ | async; let todos;">

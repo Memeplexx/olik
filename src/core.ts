@@ -14,7 +14,7 @@ import {
   stopBypassingPromises,
   upsertMatching,
 } from './operators-general';
-import { defineStoreDetach } from './operators-internal';
+import { defineDetachFromAppStore } from './operators-internal';
 import {
   ArrayOfObjectsAction,
   DeepReadonly,
@@ -149,7 +149,7 @@ export function createStoreCore<S, T extends Trackability>({
     const getCoreActionsState = () => ({
       updateState,
       selector,
-      isNested: () => !!coreActions.storeDetach,
+      isNested: () => !!coreActions.detachFromAppStore,
       storeState,
       pathReader,
       storeResult,
@@ -173,7 +173,7 @@ export function createStoreCore<S, T extends Trackability>({
       read: read(selector, () => currentState),
       stopBypassingPromises: () => stopBypassingPromises(pathReader, selector, storeResult),
       readInitial: () => selector(initialState),
-      defineStoreDetach: defineStoreDetach(() => currentState, updateState),
+      defineDetachFromAppStore: defineDetachFromAppStore(() => currentState, updateState),
       defineReset: (
         (initState: C) => () => replace({ ...getCoreActionsState(), name: 'reset' })(initState, undefined as any)
       ) as StoreWhichIsNestedInternal<S, C>['defineReset'],

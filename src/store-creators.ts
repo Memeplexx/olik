@@ -12,6 +12,7 @@ import {
 import { OptionsForCreatingInternalRootStore, StoreWhichIsNestedInternal } from './shapes-internal';
 import { errorMessages } from './shared-consts';
 import { libState } from './shared-state';
+import { isEmpty } from './shared-utils';
 
 /**
  * Creates a new store which requires a 'tag' to be included with all updates.
@@ -70,17 +71,29 @@ export function creatNestedStore<L>(
   state: L,
   { componentName, instanceName, dontTrackWithDevtools }: OptionsForMakingANestedStore,
 ) {
-  const generateKey = (arg?: string) => (!arg && !instanceName) ? '0' :
-    !instanceName ? (+arg! + 1).toString() : instanceName;
+  // const generateKey = (arg?: string) => (!arg && !instanceName) ? '0' :
+  //   !instanceName ? (+arg! + 1).toString() : instanceName;
+  const generateKey = () => {
+    if (!instanceName) {
+      if (isEmpty(libState.nestedStoresAutoGenKeys[componentName])) {
+        libState.nestedStoresAutoGenKeys[componentName] = 0;
+      } else {
+        libState.nestedStoresAutoGenKeys[componentName]++;
+      }
+      return libState.nestedStoresAutoGenKeys[componentName].toString();
+    } else {
+      return instanceName;
+    }
+  }
   if (!libState.nestedContainerStore) {
     const nStore = createStoreCore<L, 'untagged'>({ state, devtools: dontTrackWithDevtools ? false : { name: componentName + ' : ' + generateKey() } }) as SelectorReader<L, SelectorFromANestedStore<L>>;
     const select = (<C = L>(selector?: (arg: L) => C) => {
       const cStore = selector ? nStore.select(selector as any) : nStore.select();
-      cStore.storeDetach = () => console.info(errorMessages.NO_CONTAINER_STORE);
+      cStore.detachFromAppStore = () => console.info(errorMessages.NO_CONTAINER_STORE);
       cStore.reset = () => console.info(errorMessages.NO_CONTAINER_STORE);
       return cStore as any as StoreWhichIsNested<C>;
     });
-    return { select, read: () => select().read() } as SelectorReader<L, SelectorFromANestedStore<L>>;
+    return { select, read: () => select().read(), detachFromAppStore: () => console.info(errorMessages.NO_CONTAINER_STORE) } as SelectorReader<L, SelectorFromANestedStore<L>>;
   }
   const containerStore = libState.nestedContainerStore();
   const wrapperState = containerStore.read();
@@ -99,7 +112,7 @@ export function creatNestedStore<L>(
   } else {
     const values = libState.nestedContainerStore(s => s.nested[componentName]).read();
     const keys = Object.keys(values);
-    key = generateKey(keys[keys.length - 1]);
+    key = generateKey();
     libState.nestedContainerStore(s => s.nested[componentName]).patch({ [key]: state });
     containerStore.renew({ ...wrapperState, nested: { ...wrapperState.nested, [componentName]: { ...wrapperState.nested[componentName], [key]: state } } });
   }
@@ -108,11 +121,22 @@ export function creatNestedStore<L>(
       const nState = s.nested[componentName][key];
       return selector ? selector(nState) : nState;
     }) as any as StoreWhichIsNestedInternal<L, C>;
-    cStore.storeDetach = cStore.defineStoreDetach(componentName, key);
+    cStore.detachFromAppStore = cStore.defineDetachFromAppStore(componentName, key);
     cStore.reset = cStore.defineReset(state);
     return cStore as StoreWhichIsNested<C>;
   });
-  return { select, read: () => select().read() } as SelectorReader<L, SelectorFromANestedStore<L>>;
+
+  const detachFromAppStore = () => {
+    if (!libState.nestedContainerStore) { return; }
+    const state = (libState.nestedContainerStore().read() as any).nested[componentName];
+    if ((Object.keys(state).length === 1) && state[key]) {
+      libState.nestedContainerStore(s => s.nested).remove(componentName);
+    } else {
+      libState.nestedContainerStore(s => s.nested[componentName]).remove(key);
+    }
+  }
+
+  return { select, read: () => select().read(), detachFromAppStore } as SelectorReader<L, SelectorFromANestedStore<L>>;
 }
 
 function setInternalRootStore<S, T extends Trackability>(

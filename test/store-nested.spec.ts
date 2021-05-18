@@ -7,10 +7,13 @@ describe('Nested', () => {
 
   const spyInfo = jest.spyOn(console, 'info');
 
-  beforeAll(() => testState.windowObject = windowAugmentedWithReduxDevtoolsImpl);
+  beforeAll(() => {
+    testState.windowObject = windowAugmentedWithReduxDevtoolsImpl;
+  });
 
   beforeEach(() => {
     libState.nestedContainerStore = null;
+    libState.nestedStoresAutoGenKeys = {};
     spyInfo.mockReset();
   });
 
@@ -66,7 +69,7 @@ describe('Nested', () => {
     const componentName = 'myComp';
     const nestedStore1 = creatNestedStore({ one: '' }, { componentName });
     expect(read()).toEqual({ test: '', nested: { [componentName]: { 0: { one: '' } } } });
-    nestedStore1.select().storeDetach();
+    nestedStore1.detachFromAppStore();
     expect(read()).toEqual({ test: '', nested: {} });
   })
 
@@ -79,9 +82,9 @@ describe('Nested', () => {
     const nestedStore1 = creatNestedStore({ one: '' }, { componentName });
     const nestedStore2 = creatNestedStore({ one: '' }, { componentName });
     expect(read()).toEqual({ test: '', nested: { [componentName]: { '0': { one: '' }, '1': { one: '' } } } });
-    nestedStore1.select().storeDetach();
+    nestedStore1.detachFromAppStore();
     expect(read()).toEqual({ test: '', nested: { [componentName]: { '1': { one: '' } } } });
-    nestedStore2.select().storeDetach();
+    nestedStore2.detachFromAppStore();
     expect(read()).toEqual({ test: '', nested: {} });
   })
 
@@ -172,17 +175,17 @@ describe('Nested', () => {
   })
 
   it('should work without a container store', () => {
-    const { select, read } = creatNestedStore({
+    const nested = creatNestedStore({
       object: { property: 'a' },
       array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
       string: 'b',
     }, { componentName: 'dd', dontTrackWithDevtools: true });
-    select(s => s.object.property).replace('test');
-    expect(read().object.property).toEqual('test');
-    select().storeDetach();
+    nested.select(s => s.object.property).replace('test');
+    expect(nested.read().object.property).toEqual('test');
+    nested.detachFromAppStore();
     expect(spyInfo).toHaveBeenCalledWith(errorMessages.NO_CONTAINER_STORE);
     spyInfo.mockReset();
-    select(s => s.array).reset();
+    nested.select(s => s.array).reset();
     expect(spyInfo).toHaveBeenCalledWith(errorMessages.NO_CONTAINER_STORE);
   });
 
@@ -192,6 +195,20 @@ describe('Nested', () => {
     const instanceName = 'test';
     creatNestedStore({ num: 0 }, { componentName, instanceName });
     expect(parentStore.read()).toEqual({ hello: '', 'nested': { [componentName]: { [instanceName]: { num: 0 } } } })
+  })
+
+  it('should auto-increment state keys after a store has been detached', () => {
+    const parentStore = createAppStore({ test: '' });
+    const componentName = 'MyComponent';
+    const store0 = creatNestedStore({ num: 0 }, { componentName });
+    const store1 = creatNestedStore({ num: 0 }, { componentName });
+    store0.detachFromAppStore();
+    expect(parentStore.read()).toEqual({ test: '', nested: { MyComponent: { '1': { num: 0 } } } });
+    const store2 = creatNestedStore({ num: 0 }, { componentName });
+    expect(parentStore.read()).toEqual({ test: '', nested: { MyComponent: { '1': { num: 0 }, '2': { num: 0 } } } });
+    store1.detachFromAppStore();
+    store2.detachFromAppStore();
+    expect(parentStore.read()).toEqual({ test: '', nested: {  } });
   })
 
 });
