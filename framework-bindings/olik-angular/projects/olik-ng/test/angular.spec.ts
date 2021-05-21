@@ -1,4 +1,4 @@
-import { createAppStore, createAppStoreEnforcingTags, creaeNestedStore } from '../src/public-api';
+import { createAppStore, createAppStoreEnforcingTags, createNestedStore } from '../src/public-api';
 
 describe('Angular', () => {
 
@@ -140,7 +140,7 @@ describe('Angular', () => {
   it('should be able to create and update a nested store', () => {
     const parentStore = createAppStore(initialState, { devtools: false });
     const componentName = 'MyComponent';
-    const { select } = creaeNestedStore({ prop: '' }, { componentName });
+    const { select } = createNestedStore({ prop: '' }, { componentName });
     const payload = 'test';
     select(s => s.prop).replace(payload);
     expect(parentStore.select().read()).toEqual({ ...initialState, ...{ nested: { [componentName]: { '0': { prop: payload } } } } });
@@ -149,7 +149,7 @@ describe('Angular', () => {
   it('should be able to observe state updates of a nested store', done => {
     createAppStore(initialState, { devtools: false });
     const componentName = 'MyComponent';
-    const { select, observe } = creaeNestedStore(initialState, { componentName });
+    const { select, observe } = createNestedStore(initialState, { componentName });
     const obs$ = observe(s => s.object.property);
     const payload = 'test';
     obs$.subscribe(val => {
@@ -159,10 +159,23 @@ describe('Angular', () => {
     select(s => s.object.property).replace(payload);
   })
 
+  it('should be able to observe root state updates of a nested store', done => {
+    createAppStore(initialState, { devtools: false });
+    const componentName = 'MyComponent';
+    const { select, observe } = createNestedStore(initialState, { componentName });
+    const obs$ = observe();
+    const payload = 'test';
+    obs$.subscribe(val => {
+      expect(val).toEqual({ ...initialState, object: { property: payload } });
+      done();
+    });
+    select(s => s.object.property).replace(payload);
+  })
+
   it('should be able to observe a fetch, and resolve for a nested store', done => {
     createAppStore(initialState, { devtools: false });
     const componentName = 'MyComponent';
-    const { select, observeFetch } = creaeNestedStore(initialState, { componentName });
+    const { select, observeFetch } = createNestedStore(initialState, { componentName });
     let count = 0;
     const obs$ = observeFetch(() => select(s => s.object.property)
       .replace(() => new Promise(resolve => setTimeout(() => resolve('val ' + count), 10))));

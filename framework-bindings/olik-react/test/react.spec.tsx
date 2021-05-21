@@ -211,7 +211,7 @@ describe('React', () => {
   });
 
 
-  it('nested store should recieve props from parent', async () => {
+  it('nested store should receive props from parent', async () => {
     const parentStore = createAppStore({
       ...initialState,
       nested: {

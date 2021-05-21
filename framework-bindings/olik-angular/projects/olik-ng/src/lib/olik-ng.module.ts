@@ -138,7 +138,7 @@ export const createAppStoreEnforcingTags = <S>(initialState: S, options?: core.O
   };
 }
 
-export const creaeNestedStore = <S>(initialState: S, options: core.OptionsForMakingANestedStore) => {
+export const createNestedStore = <S>(initialState: S, options: core.OptionsForMakingANestedStore) => {
   const { select, read } = core.creatNestedStore(initialState, options);
   return {
     /**
@@ -160,7 +160,7 @@ export const creaeNestedStore = <S>(initialState: S, options: core.OptionsForMak
      * 
      * <div *ngFor="let todo of todos.storeValue">{{todo.title}}</div>
      */
-    observe: <L extends Parameters<typeof select>[0]>(selector: L) => observeInternal<S>(select)(selector),
+    observe: <L extends Parameters<typeof select>[0]>(selector?: L) => observeInternal<S>(select)(selector),
     /**
      * Takes an async state-update, and returns an Observable which reports on the status of that update.
      * @example

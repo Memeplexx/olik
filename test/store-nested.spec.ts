@@ -143,7 +143,7 @@ describe('Nested', () => {
     createAppStore(new Array<string>());
     expect(() => creatNestedStore(0, { componentName: 'test' })).toThrowError(errorMessages.INVALID_CONTAINER_FOR_NESTED_STORES);
   })
-  
+
 
   it('should reset the container store correctly after nested stores have been added', () => {
     const initialState = {
@@ -206,18 +206,18 @@ describe('Nested', () => {
     expect(parentStore.read()).toEqual({ test: '', nested: { MyComponent: { '1': { num: 0 }, '2': { num: 0 } } } });
     store1.detachFromAppStore();
     store2.detachFromAppStore();
-    expect(parentStore.read()).toEqual({ test: '', nested: {  } });
+    expect(parentStore.read()).toEqual({ test: '', nested: {} });
   })
 
   it('should be able to reset a nested store inner property', () => {
     const parentStore = createAppStore({ test: '' });
     parentStore.select(s => s.test).replace('test');
-    const nestedStore = creatNestedStore({ array: new Array<string>() }, {componentName: 'test' });
+    const nestedStore = creatNestedStore({ array: new Array<string>() }, { componentName: 'test' });
     testState.logLevel = 'DEBUG';
     nestedStore.select(s => s.array).insert('test');
-    expect(parentStore.read()).toEqual({ test: 'test', nested: { test: {'0': {array: ['test'] }} } });
+    expect(parentStore.read()).toEqual({ test: 'test', nested: { test: { '0': { array: ['test'] } } } });
     nestedStore.select(s => s.array).reset();
-    expect(parentStore.read()).toEqual({ test: 'test', nested: { test: {'0': {array: []}} } });
+    expect(parentStore.read()).toEqual({ test: 'test', nested: { test: { '0': { array: [] } } } });
     expect(testState.currentAction).toEqual({ type: 'nested.test.0.array.reset()', replacement: [] });
   })
 
