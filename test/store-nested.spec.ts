@@ -230,7 +230,7 @@ describe('Nested', () => {
 
   it('should be able to set a deferred instance name', () => {
     const root = createAppStore({ });
-    const child = creatNestedStore({ test: 0 }, { componentName: 'MyComponent', instanceName: 'deferred' })
+    const child = creatNestedStore({ test: 0 }, { componentName: 'MyComponent', instanceName: 'deferred' });
   })
 
 });

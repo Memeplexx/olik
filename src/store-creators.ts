@@ -127,7 +127,8 @@ export function creatNestedStore<L>(
       libState.nestedContainerStore(s => s.nested[componentName]).remove(key);
     }
   }
-  return { select, read: () => select().read(), detachFromAppStore } as SelectorReaderNested<L, SelectorFromANestedStore<L>>;
+  const read = () => select().read();
+  return { select, read, detachFromAppStore } as SelectorReaderNested<L, SelectorFromANestedStore<L>>;
 }
 
 function setInternalRootStore<S, T extends Trackability>(
