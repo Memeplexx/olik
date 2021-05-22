@@ -213,7 +213,6 @@ describe('Nested', () => {
     const parentStore = createAppStore({ test: '' });
     parentStore.select(s => s.test).replace('test');
     const nestedStore = creatNestedStore({ array: new Array<string>() }, { componentName: 'test' });
-    testState.logLevel = 'DEBUG';
     nestedStore.select(s => s.array).insert('test');
     expect(parentStore.read()).toEqual({ test: 'test', nested: { test: { '0': { array: ['test'] } } } });
     nestedStore.select(s => s.array).reset();
@@ -227,6 +226,11 @@ describe('Nested', () => {
     expect(nested.read()).toEqual({ test: 'test' });
     nested.select(s => s.test).reset();
     expect(nested.read()).toEqual({ test: '' });
+  })
+
+  it('should be able to set a deferred instance name', () => {
+    const root = createAppStore({ });
+    const child = creatNestedStore({ test: 0 }, { componentName: 'MyComponent', instanceName: 'deferred' })
   })
 
 });

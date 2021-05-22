@@ -115,12 +115,12 @@ export function creatNestedStore<L>(
       return selector ? selector(nState) : nState;
     }) as any as StoreWhichIsNestedInternal<L, C>;
     cStore.reset = cStore.defineReset(state, selector);
-    (cStore as any).isNested = true;
+    cStore.isNested = true;
     return cStore as StoreWhichIsNested<C>;
   });
   const detachFromAppStore = () => {
     if (!libState.nestedContainerStore) { return; }
-    const state = (libState.nestedContainerStore().read() as any).nested[componentName];
+    const state = libState.nestedContainerStore().read().nested[componentName];
     if ((Object.keys(state).length === 1) && state[key]) {
       libState.nestedContainerStore(s => s.nested).remove(componentName);
     } else {
