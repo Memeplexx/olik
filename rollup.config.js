@@ -17,8 +17,8 @@ export default {
       format: 'es', // the preferred format
     },
     {
-      file: pkg.unpkg,
-      format: 'iife',
+      file: pkg.browser,
+      format: 'umd',
       name: 'olik', // the global which can be used in a browser
     }
   ].map(e => ({ ...e, sourcemap: true })),

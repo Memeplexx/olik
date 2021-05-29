@@ -1,6 +1,6 @@
 {
   "name": "olik",
-  "version": "0.0.20",
+  "version": "0.0.29",
   "description": "Declarative state-management. Free of inaccurate actions & convoluted reducers. All in-line.",
   "license": "MIT",
   "homepage": "https://memeplexx.github.io/Olik/",
@@ -16,15 +16,15 @@
     "typescript"
   ],
   "author": "Stephen Paul (https://github.com/memeplexx)",
-  "main": "dist/cjs/olik.js",
-  "module": "dist/esm/olik.js",
-  "unpkg": "dist/umd/olik.js",
-  "types": "types/index.d.ts",
+  "main": "dist/index.js",
+	"module": "dist/index.es.js",
+  "browser": "dist/index.bundle.js",
+  "types": "dist/index.d.ts",
   "sideEffects": false,
   "scripts": {
     "clean": "rimraf dist coverage",
     "typings": "node node_modules/gulp/bin/gulp.js",
-    "build": "rollup -c && npm run typings",
+    "build": "rollup -c && tsc",
     "dev": "rollup -c --watch",
     "test": "cross-env NODE_ENV=test jest --coverage --coverageReporters=text-lcov | coveralls",
     "test:cov": "cross-env NODE_ENV=test npm test --coverage --collectCoverageFrom=src/**/*.{ts}",

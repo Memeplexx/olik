@@ -2,8 +2,6 @@ import { NgModule, NgZone } from '@angular/core';
 import * as core from 'olik';
 import { Observable } from 'rxjs';
 
-export * from 'olik';
-
 export type FetchPayload<C> = {
   isLoading: boolean,
   wasRejected: boolean,
@@ -46,7 +44,7 @@ type FnReturnType<X> = X extends (...args: any[]) => infer R ? R : never;
 const observeInternal = <S>(
   select: core.SelectorFromAStore<S>
 ) => <L extends Parameters<typeof select>[0], C extends FnReturnType<L>>(
-  selector: L
+  selector?: L
 ) => new Observable<C>(observer => {
   observer.next(select(selector).read() as C);
   const subscription = select(selector).onChange(v => observer.next(v as C));
@@ -75,7 +73,7 @@ export const createAppStore = <S>(initialState: S, options?: core.OptionsForMaki
      * 
      * <div *ngFor="let todo of todos.storeValue">{{todo.title}}</div>
      */
-    observe: <L extends Parameters<typeof select>[0]>(selector: L) => observeInternal(select)(selector),
+    observe: <L extends Parameters<typeof select>[0]>(selector?: L) => observeInternal(select)(selector),
     /**
      * Takes an async state-update, and returns an Observable which reports on the status of that update.
      * @example
@@ -118,7 +116,7 @@ export const createAppStoreEnforcingTags = <S>(initialState: S, options?: core.O
      * 
      * <div *ngFor="let todo of todos.storeValue">{{todo.title}}</div>
      */
-    observe: <L extends Parameters<typeof select>[0]>(selector: L) => observeInternal<S>(select as any)(selector),
+    observe: <L extends Parameters<typeof select>[0]>(selector?: L) => observeInternal<S>(select as any)(selector),
     /**
      * Takes an async state-update, and returns an Observable which reports on the status of that update.
      * @example

@@ -1,4 +1,5 @@
 import { createAppStore, createAppStoreEnforcingTags, createNestedStore } from '../src/public-api';
+import { skip } from 'rxjs/operators';
 
 describe('Angular', () => {
 
@@ -19,7 +20,7 @@ describe('Angular', () => {
     const { select, observe } = createAppStore(initialState, { devtools: false });
     const obs$ = observe(s => s.object.property);
     const payload = 'test';
-    obs$.subscribe(val => {
+    obs$.pipe(skip(1)).subscribe(val => {
       expect(val).toEqual(payload);
       done();
     });
@@ -84,11 +85,13 @@ describe('Angular', () => {
     const { select, observe } = createAppStoreEnforcingTags(initialState, { devtools: false });
     const obs$ = observe(s => s.object.property);
     const payload = 'test';
-    obs$.subscribe(val => {
+    obs$.pipe(skip(1)).subscribe(val => {
       expect(val).toEqual(payload);
       done();
     });
     select(s => s.object.property).replace(payload, { tag: 'Tag' });
+
+    // const dinges = observe();
   })
 
   it('should be able to observe a fetch, and resolve using a store which enforces tags', done => {
@@ -152,7 +155,7 @@ describe('Angular', () => {
     const { select, observe } = createNestedStore(initialState, { componentName });
     const obs$ = observe(s => s.object.property);
     const payload = 'test';
-    obs$.subscribe(val => {
+    obs$.pipe(skip(1)).subscribe(val => {
       expect(val).toEqual(payload);
       done();
     });
@@ -165,7 +168,7 @@ describe('Angular', () => {
     const { select, observe } = createNestedStore(initialState, { componentName });
     const obs$ = observe();
     const payload = 'test';
-    obs$.subscribe(val => {
+    obs$.pipe(skip(1)).subscribe(val => {
       expect(val).toEqual({ ...initialState, object: { property: payload } });
       done();
     });
@@ -231,3 +234,4 @@ describe('Angular', () => {
   //   .subscribe(data => setData(data));
 
 });
+
