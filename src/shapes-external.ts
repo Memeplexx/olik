@@ -361,7 +361,7 @@ export type InsertOptions<T extends Trackability, H> = UpdateOptions<T, H> & (Up
  */
 export type StoreForAnArrayCommon<X extends DeepReadonlyArray<any>, T extends Trackability> = {
   /**
-   * Appends one or more elements onto the end of the array
+   * Appends one or more elements onto the the array
    * @example
    * ...
    * .insert(newTodo);
@@ -371,6 +371,9 @@ export type StoreForAnArrayCommon<X extends DeepReadonlyArray<any>, T extends Tr
    * @example
    * ...
    * .insert(() => getTodosFromApi())
+   * @example
+   * ...
+   * .insert(newArrayOfTodos, { atIndex: 0 });
    */
   insert: <H extends (X | X[0] | (() => Promise<X | X[0]>)) >(insertion: H, options: InsertOptions<T, H>) => H extends (() => Promise<any>) ? Promise<X> : void,
   /**

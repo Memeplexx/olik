@@ -14,6 +14,7 @@ import { OptionsForCreatingInternalRootStore, StoreWhichIsNestedInternal } from 
 import { errorMessages } from './shared-consts';
 import { libState } from './shared-state';
 import { isEmpty } from './shared-utils';
+import { transact } from './transact';
 
 /**
  * Creates a new store which requires a 'tag' to be included with all updates.
@@ -91,7 +92,9 @@ export function creatNestedStore<L>(
       (cStore as any).isNested = true;
       return cStore as any as StoreWhichIsNested<C>;
     });
-    return { select, read: () => select().read(), detachFromAppStore: () => console.info(errorMessages.NO_CONTAINER_STORE) } as SelectorReaderNested<L, SelectorFromANestedStore<L>>;
+    const read = () => select().read();
+    const detachFromAppStore = () => { /* This is a no-op */ };
+    return { select, read, detachFromAppStore } as SelectorReaderNested<L, SelectorFromANestedStore<L>>;
   }
   const containerStore = libState.nestedContainerStore();
   const wrapperState = containerStore.read();
@@ -128,7 +131,15 @@ export function creatNestedStore<L>(
     }
   }
   const read = () => select().read();
-  return { select, read, detachFromAppStore } as SelectorReaderNested<L, SelectorFromANestedStore<L>>;
+  const setInstanceName = (name: string) => {
+    const currentNestedState = (libState.nestedContainerStore!().read() as any).nested[componentName];
+    const { [key]: value } = currentNestedState;
+    transact(
+      () => libState.nestedContainerStore!(s => (s as any).nested[componentName]).remove(key),
+      () => libState.nestedContainerStore!(s => (s as any).nested[componentName]).insert({ [name]: value }),
+    )
+  }
+  return { select, read, detachFromAppStore, setInstanceName } as SelectorReaderNested<L, SelectorFromANestedStore<L>>;
 }
 
 function setInternalRootStore<S, T extends Trackability>(

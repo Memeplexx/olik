@@ -8,7 +8,6 @@ export const errorMessages = {
   INVALID_STATE_INPUT: 'State can only be primitive or a POJO. It may not contain any functions, Sets, Maps etc',
   ILLEGAL_CHARACTERS_WITHIN_SELECTOR: (functionName: 'select' | 'getProp') => `Illegal characters detected in your ${functionName}() function. If you are attempting to find or filter for array elements then complete the select statement and append a findWhere() or filterWhere() clause, for example: 'select(s => s.some.array).findWhere(s => s.id).eq(3)'`,
   NO_ARRAY_ELEMENT_FOUND: `Could not find array element`,
-  NO_CONTAINER_STORE: 'No container store registered. This is a no-op.',
 };
 
 export const devtoolsDebounce = 200;

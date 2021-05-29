@@ -183,8 +183,6 @@ describe('Nested', () => {
     nested.select(s => s.object.property).replace('test');
     expect(nested.read().object.property).toEqual('test');
     nested.detachFromAppStore();
-    expect(spyInfo).toHaveBeenCalledWith(errorMessages.NO_CONTAINER_STORE);
-    spyInfo.mockReset();
   });
 
   it('should be able to support a custom instance name', () => {
@@ -228,9 +226,12 @@ describe('Nested', () => {
     expect(nested.read()).toEqual({ test: '' });
   })
 
-  it('should be able to set a deferred instance name', () => {
+  it('should be able to set an instance name', () => {
     const root = createAppStore({ });
-    const child = creatNestedStore({ test: 0 }, { componentName: 'MyComponent', instanceName: 'deferred' });
+    const child = creatNestedStore({ test: 0 }, { componentName: 'MyComponent' });
+    expect(root.read()).toEqual({ nested: { MyComponent: { '0': { test: 0 } } } });
+    child.setInstanceName('hello');
+    expect(root.read()).toEqual({ nested: { MyComponent: { 'hello': { test: 0 } } } });
   })
 
 });

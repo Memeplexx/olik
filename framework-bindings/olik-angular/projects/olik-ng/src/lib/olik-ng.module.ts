@@ -48,6 +48,7 @@ const observeInternal = <S>(
 ) => <L extends Parameters<typeof select>[0], C extends FnReturnType<L>>(
   selector: L
 ) => new Observable<C>(observer => {
+  observer.next(select(selector).read() as C);
   const subscription = select(selector).onChange(v => observer.next(v as C));
   return () => subscription.unsubscribe();
 });
