@@ -90,8 +90,6 @@ describe('Angular', () => {
       done();
     });
     select(s => s.object.property).replace(payload, { tag: 'Tag' });
-
-    // const dinges = observe();
   })
 
   it('should be able to observe a fetch, and resolve using a store which enforces tags', done => {
@@ -173,6 +171,7 @@ describe('Angular', () => {
       done();
     });
     select(s => s.object.property).replace(payload);
+    const t = observe();
   })
 
   it('should be able to observe a fetch, and resolve for a nested store', done => {

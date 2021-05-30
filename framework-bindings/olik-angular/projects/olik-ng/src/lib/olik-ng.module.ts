@@ -41,13 +41,14 @@ const observeFetchInternal = <S, C>(
 })
 
 type FnReturnType<X> = X extends (...args: any[]) => infer R ? R : never;
+type UseIfPresentElse<T, S> = T extends (string | number | boolean | object) ? T : core.DeepReadonly<S>;
 const observeInternal = <S>(
   select: core.SelectorFromAStore<S>
 ) => <L extends Parameters<typeof select>[0], C extends FnReturnType<L>>(
   selector?: L
-) => new Observable<C>(observer => {
-  observer.next(select(selector).read() as C);
-  const subscription = select(selector).onChange(v => observer.next(v as C));
+) => new Observable<UseIfPresentElse<C, S>>(observer => {
+  observer.next(select(selector).read() as UseIfPresentElse<C, S>);
+  const subscription = select(selector).onChange(v => observer.next(v as UseIfPresentElse<C, S>));
   return () => subscription.unsubscribe();
 });
 
