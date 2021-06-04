@@ -1,13 +1,9 @@
 {
-  "Post": {
+  "Todo": {
+    "id": "number",
     "title": "string",
-    "views": "int",
-    "published": "boolean",
-    "createdAt": "date",
-    "comments": "Comment[]"
-  },
-  "Comment": {
-    "body": "string",
-    "post": "Post"
+    "done": "boolean",
+    "urgency": "number", 
+    "dueDate": "string"
   }
 }
