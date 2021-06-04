@@ -4,6 +4,6 @@
     "title": "string",
     "done": "boolean",
     "urgency": "number", 
-    "dueDate": "string"
+    "dueDate": "date"
   }
 }
