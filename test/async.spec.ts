@@ -1,6 +1,6 @@
 import { errorMessages } from '../src/shared-consts';
 import { libState, testState } from '../src/shared-state';
-import { createAppStore, creatNestedStore, createAppStoreEnforcingTags } from '../src/store-creators';
+import { createAppStore, createNestedStore, createAppStoreEnforcingTags } from '../src/store-creators';
 import { transact } from '../src/transact';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
@@ -445,7 +445,7 @@ describe('async', () => {
 
   it('should work with nested stores', done => {
     const { select, read } = createAppStore(initialState);
-    const nested = creatNestedStore({ prop: '' }, { componentName: 'hello' });
+    const nested = createNestedStore({ prop: '' }, { componentName: 'hello' });
     const payload = 'test';
     nested.select(s => s.prop)
       .replace(() => new Promise(resolve => setTimeout(() => resolve(payload), 10)), { bypassPromiseFor: 1000 })

@@ -218,6 +218,30 @@ function getUseDerivation<S>(select: core.SelectorFromAStore<S>) {
   };
 }
 
+type MappedStoresToResults<X> = { [K in keyof X]: X[K] extends core.Store<infer E, any> ? E : never };
+export const useDerivationAcrossStores = <X extends [core.StoreOrDerivation<any>] | core.StoreOrDerivation<any>[]>(args: X, deps?: React.DependencyList) => {
+  return {
+    usingExpensiveCalc: function <R>(calculation: (inputs: MappedStoresToResults<X>) => R) {
+      const selectors = args.map(arg => {
+        const [selection, setSelection] = React.useState(arg.read() as core.DeepReadonly<R>);
+        const allDeps = [arg.read()];
+        if (deps) { allDeps.push(...deps); }
+        React.useEffect(() => {
+          const subscription = arg.onChange(arg => {
+            setSelection(arg);
+          });
+          return () => subscription.unsubscribe();
+        }, allDeps);
+        return selection as R;
+      });
+      const allDeps = [...selectors];
+      if (deps) { allDeps.push(...deps); }
+      return React.useMemo(() => calculation(selectors as any), allDeps);
+    }
+  }
+}
+
+
 function useSelector<S, R>(select: core.SelectorFromAStore<S>, selector: Function<S, R>, deps?: React.DependencyList) {
   const storeOrDerivation = select(selector) as core.StoreOrDerivation<R>;
   const [selection, setSelection] = React.useState(storeOrDerivation.read() as core.DeepReadonly<R>);

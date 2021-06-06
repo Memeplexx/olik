@@ -4,7 +4,7 @@ import { screen, waitFor } from '@testing-library/dom';
 import { render } from '@testing-library/react';
 import React from 'react';
 
-import { createAppStore, useNestedStore } from '../src';
+import { createAppStore, useDerivationAcrossStores, useNestedStore } from '../src';
 
 describe('React', () => {
 
@@ -23,7 +23,7 @@ describe('React', () => {
     expect(select().read().object.property).toEqual('test');
   })
 
-  it('useSelector', () => {
+  it('should useSelector', () => {
     const {
       select,
       useSelector
@@ -43,7 +43,7 @@ describe('React', () => {
     expect(screen.getByTestId('result').textContent).toEqual('test');
   });
 
-  it('useDerivation with no deps', () => {
+  it('should useDerivation with no deps', () => {
     const {
       select,
       useDerivation
@@ -72,7 +72,7 @@ describe('React', () => {
     expect(calcCount).toEqual(2);
   });
 
-  it('useDerivation with deps', () => {
+  it('should useDerivation with deps', () => {
     const {
       useDerivation
     } = createAppStore(initialState, { devtools: false });
@@ -103,6 +103,45 @@ describe('React', () => {
     (screen.getByTestId('btn-2') as HTMLButtonElement).click();
     expect(calcCount).toEqual(2);
   });
+
+  it('should useDerivation across stores', () => {
+    const parent = createAppStore(initialState, { devtools: false });
+    let calcCount = 0;
+    const App = () => {
+      const nested = useNestedStore({ hello: false }, { componentName: 'MyComponent' });
+      const [num, setNum] = React.useState(0);
+      const result = useDerivationAcrossStores([
+        parent.select(s => s.array.find(e => e.id === 2)!.id),
+        parent.select(s => s.object.property),
+        nested.select(s => s.hello)
+      ], [num]).usingExpensiveCalc(([i0, i1, i2]) => {
+        calcCount++;
+        return `${i0}-${i1}-${i2}-${num}`
+      })
+      return (
+        <>
+          <button data-testid="btn-1" onClick={() => parent.select(s => s.string).replace('test')}>Click</button>
+          <button data-testid="btn-2" onClick={() => nested.select(s => s.hello).replace(true)}>Click</button>
+          <button data-testid="btn-3" onClick={() => parent.select(s => s.object.property).replace('xxx')}>Click</button>
+          <button data-testid="btn-4" onClick={() => setNum(n => n + 1)}>Click</button>
+          <div data-testid="result">{result}</div>
+        </>
+      )
+    }
+    render(<App />);
+    expect(screen.getByTestId('result').textContent).toEqual('2-a-false-0');
+    (screen.getByTestId('btn-1') as HTMLButtonElement).click();
+    expect(calcCount).toEqual(1);
+    (screen.getByTestId('btn-2') as HTMLButtonElement).click();
+    expect(screen.getByTestId('result').textContent).toEqual('2-a-true-0');
+    expect(calcCount).toEqual(2);
+    (screen.getByTestId('btn-3') as HTMLButtonElement).click();
+    expect(screen.getByTestId('result').textContent).toEqual('2-xxx-true-0');
+    expect(calcCount).toEqual(3);
+    (screen.getByTestId('btn-4') as HTMLButtonElement).click();
+    expect(screen.getByTestId('result').textContent).toEqual('2-xxx-true-1');
+    expect(calcCount).toEqual(4);
+  })
 
   it('should support classes', () => {
     const {

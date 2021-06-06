@@ -60,7 +60,7 @@ export function createAppStore<S>(
  * @param options A configuration object which, at minimum, must contain the `componentName` of the nested store
  * 
  * @example
- * const select = creatNestedStore({
+ * const select = createNestedStore({
  *   id: number,
  *   text: string,
  *   done: boolean,
@@ -69,7 +69,7 @@ export function createAppStore<S>(
  *   instanceName: todoId
  * })
  */
-export function creatNestedStore<L>(
+export function createNestedStore<L>(
   state: L,
   { componentName, instanceName, dontTrackWithDevtools }: OptionsForMakingANestedStore,
 ) {
@@ -125,7 +125,7 @@ export function creatNestedStore<L>(
     if (!libState.nestedContainerStore) { return; }
     const state = libState.nestedContainerStore().read().nested[componentName];
     if ((Object.keys(state).length === 1) && state[key]) {
-      libState.nestedContainerStore(s => s.nested).remove(componentName);
+      libState.nestedContainerStore(s => s.nested).remove(componentName);/////
     } else {
       libState.nestedContainerStore(s => s.nested[componentName]).remove(key);
     }
