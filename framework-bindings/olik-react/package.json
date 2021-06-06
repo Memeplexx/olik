@@ -18,13 +18,15 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "olik": "0.0.29"
+    "olik": "0.0.30"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^5.11.10",
     "@testing-library/react": "^11.2.6",
     "@types/jest": "^26.0.7",
     "@types/react": "^16.9.44",
+    "coveralls": "^3.1.0",
+    "cross-env": "^7.0.2",
     "del": "^5.1.0",
     "gulp": "^4.0.2",
     "jest": "^26.1.0",
@@ -38,9 +40,7 @@
     "rollup-plugin-terser": "^6.1.0",
     "rollup-plugin-typescript2": "^0.29.0",
     "ts-jest": "^26.1.4",
-    "typescript": "3.9.9",
-    "coveralls": "^3.1.0",
-    "cross-env": "^7.0.2"
+    "typescript": "3.9.9"
   },
   "jest": {
     "transform": {

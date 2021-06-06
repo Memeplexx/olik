@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/rules-of-hooks */
 import * as core from 'olik';
 import React from 'react';
 
@@ -21,18 +22,17 @@ function getUseFetcher<S>(select: core.SelectorFromAStore<S>) {
       operation: () => Promise<C>,
       deps: React.DependencyList = [],
     ) {
-      const initialValue = {
+      const [result, setResult] = React.useState({
         isLoading: true,
         wasRejected: false,
         wasResolved: false,
         error: null as any | null,
         storeValue: core.getSelectedStateFromOperationWithoutUpdatingStore(select, operation) as C,
-      };
-      const [result, setResult] = React.useState(initialValue);
+      });
       React.useEffect(() => {
         let isSubscribed = false;
         isSubscribed = true;
-        setResult(initialValue);
+        setResult(res => ({ ...res, isLoading: true }));
         operation()
           .then(storeValue => {
             if (isSubscribed) {
@@ -41,10 +41,11 @@ function getUseFetcher<S>(select: core.SelectorFromAStore<S>) {
           })
           .catch(error => {
             if (isSubscribed) {
-              setResult({ wasRejected: true, isLoading: false, error, wasResolved: false, storeValue: result.storeValue })
+              setResult(res => ({ ...res, wasRejected: true, isLoading: false, error, wasResolved: false }))
             }
           });
         return () => { isSubscribed = false; }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
       }, deps);
       return result;
     },
@@ -58,16 +59,25 @@ function getUseFetcher<S>(select: core.SelectorFromAStore<S>) {
  */
 export function useNestedStore<C>(
   initialState: C,
-  options: core.OptionsForMakingANestedStore,
+  options: core.OptionsForMakingANestedStore & { instanceName: string },
 ) {
+  const initState = React.useRef(initialState);
+  const opts = React.useRef(options);
   const { select, read, detachFromAppStore } = React.useMemo(() => {
-    return core.creatNestedStore(initialState, options);
+    return core.createNestedStore(initState.current, opts.current);
   }, []);
   React.useEffect(() => {
     return () => {
-      detachFromAppStore();
+      const devMode = !process.env.NODE_ENV || process.env.NODE_ENV === 'development';
+      // In dev mode, React.StrictMode is enabled. We cannot allow the store to be detached in this instance because an 
+      // error will be thrown the next time a developer saves a code update and then attempts to update the nested store state.
+      if (!devMode) {
+        detachFromAppStore();
+      } else { // Reset the state. Note for future: It may be safest that this is the ONLY correct behavior (rather than detaching)
+        select().reset();
+      }
     }
-  }, []);
+  }, [detachFromAppStore, select]);
   return {
     select,
     read,
@@ -208,10 +218,14 @@ function getUseDerivation<S>(select: core.SelectorFromAStore<S>) {
     useDerivation: function <X extends [Function<S, any>] | Function<S, any>[]>(inputs: X, deps?: React.DependencyList) {
       return {
         usingExpensiveCalc: function <R>(calculation: (inputs: MappedSelectorsToResults<S, X>) => R) {
+          // eslint-disable-next-line react-hooks/rules-of-hooks
+          const calc = React.useRef(calculation);
+          // eslint-disable-next-line react-hooks/rules-of-hooks
           const selectors = inputs.map(input => useSelector(select, input));
           const allDeps = [...selectors];
           if (deps) { allDeps.push(...deps); }
-          return React.useMemo(() => calculation(selectors as any), allDeps);
+          // eslint-disable-next-line react-hooks/rules-of-hooks, react-hooks/exhaustive-deps 
+          return React.useMemo(() => calc.current(selectors as any), [calc, ...allDeps]);
         }
       }
     },
@@ -223,24 +237,27 @@ export const useDerivationAcrossStores = <X extends [core.StoreOrDerivation<any>
   return {
     usingExpensiveCalc: function <R>(calculation: (inputs: MappedStoresToResults<X>) => R) {
       const selectors = args.map(arg => {
+        // eslint-disable-next-line react-hooks/rules-of-hooks
         const [selection, setSelection] = React.useState(arg.read() as core.DeepReadonly<R>);
         const allDeps = [arg.read()];
         if (deps) { allDeps.push(...deps); }
+        // eslint-disable-next-line react-hooks/rules-of-hooks
         React.useEffect(() => {
           const subscription = arg.onChange(arg => {
             setSelection(arg);
           });
           return () => subscription.unsubscribe();
+          // eslint-disable-next-line react-hooks/exhaustive-deps
         }, allDeps);
         return selection as R;
       });
       const allDeps = [...selectors];
       if (deps) { allDeps.push(...deps); }
-      return React.useMemo(() => calculation(selectors as any), allDeps);
+      // eslint-disable-next-line react-hooks/rules-of-hooks
+      return React.useMemo(() => calculation(selectors as any), [calculation, selectors]);
     }
   }
 }
-
 
 function useSelector<S, R>(select: core.SelectorFromAStore<S>, selector: Function<S, R>, deps?: React.DependencyList) {
   const storeOrDerivation = select(selector) as core.StoreOrDerivation<R>;
@@ -252,7 +269,11 @@ function useSelector<S, R>(select: core.SelectorFromAStore<S>, selector: Functio
       setSelection(arg);
     });
     return () => subscription.unsubscribe();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, allDeps);
   return selection as R;
 }
 
+// NOTES the following linting rules have been disabled in certain places:
+// react-hooks/exhaustive-deps: We cannot forward deps from the enclosing function without receiving this linting error https://stackoverflow.com/questions/56262515/how-to-handle-dependencies-array-for-custom-hooks-in-react
+// react-hooks/rules-of-hooks: We can guarantee the execution order of hooks in the context of the useDerivation() hook https://stackoverflow.com/questions/53906843/why-cant-react-hooks-be-called-inside-loops-or-nested-function

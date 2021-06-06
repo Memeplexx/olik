@@ -17,7 +17,11 @@ export function integrateStoreWithReduxDevtools<S, C = S>(
     console.warn(errorMessages.DEVTOOL_CANNOT_FIND_EXTENSION);
     return;
   }
-  const devTools = windowObj.__REDUX_DEVTOOLS_EXTENSION__.connect(options);
+  if (!options.name) {
+    options.name = document.title;
+  }
+  const devTools = libState.storesRegisteredWithDevtools[options.name] || windowObj.__REDUX_DEVTOOLS_EXTENSION__.connect(options);
+  libState.storesRegisteredWithDevtools[options.name] = devTools;
   devTools.init(store().read());
   setDevtoolsDispatchListener(action => {
     devTools.send(action, store().read());

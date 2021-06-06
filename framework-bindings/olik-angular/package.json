@@ -22,7 +22,7 @@
     "@angular/platform-browser-dynamic": "~10.2.0",
     "@angular/router": "~10.2.0",
     "@types/jest": "^26.0.7",
-    "olik": "0.0.29",
+    "olik": "0.0.30",
     "rxjs": "~6.6.0",
     "tslib": "^2.0.0",
     "zone.js": "~0.10.2",

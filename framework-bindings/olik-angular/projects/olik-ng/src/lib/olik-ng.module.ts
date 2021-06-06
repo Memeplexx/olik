@@ -139,7 +139,7 @@ export const createAppStoreEnforcingTags = <S>(initialState: S, options?: core.O
 }
 
 export const createNestedStore = <S>(initialState: S, options: core.OptionsForMakingANestedStore) => {
-  const { select, read } = core.creatNestedStore(initialState, options);
+  const { select, read } = core.createNestedStore(initialState, options);
   return {
     /**
      * Select a piece of the state to operate on and perform some action on it

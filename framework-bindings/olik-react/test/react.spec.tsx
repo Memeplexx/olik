@@ -108,7 +108,7 @@ describe('React', () => {
     const parent = createAppStore(initialState, { devtools: false });
     let calcCount = 0;
     const App = () => {
-      const nested = useNestedStore({ hello: false }, { componentName: 'MyComponent' });
+      const nested = useNestedStore({ hello: false }, { componentName: 'MyComponent', instanceName: '0' });
       const [num, setNum] = React.useState(0);
       const result = useDerivationAcrossStores([
         parent.select(s => s.array.find(e => e.id === 2)!.id),
@@ -193,7 +193,7 @@ describe('React', () => {
       const {
         select,
         useSelector
-      } = useNestedStore(initialState, { componentName: 'unhosted', dontTrackWithDevtools: true });
+      } = useNestedStore(initialState, { componentName: 'unhosted', instanceName: '0', dontTrackWithDevtools: true });
       const result = useSelector(s => s.object.property);
       renderCount++;
       return (
@@ -225,7 +225,7 @@ describe('React', () => {
       const {
         select,
         useSelector,
-      } = useNestedStore({ prop: '' }, { componentName: 'component', dontTrackWithDevtools: true });
+      } = useNestedStore({ prop: '' }, { componentName: 'component', instanceName: '0', dontTrackWithDevtools: true });
       const result = useSelector(s => s.prop);
       renderCount++;
       return (
@@ -261,7 +261,7 @@ describe('React', () => {
       const {
         select,
         useSelector,
-      } = useNestedStore({ prop: 0 }, { componentName: 'component2', dontTrackWithDevtools: true });
+      } = useNestedStore({ prop: 0 }, { componentName: 'component2', instanceName: '0', dontTrackWithDevtools: true });
       React.useEffect(() => select(s => s.prop).replace(props.num), [props.num])
       const result = useSelector(s => s.prop);
       return (

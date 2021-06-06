@@ -37,14 +37,16 @@ export type StoreWhichIsNestedInternal<S, C> = Store<C, 'untagged'> & {
   isNested: boolean;
 } & StoreWhichIsNested<C>;
 
+export type DevtoolsInstance = {
+  init: (state: any) => any,
+  subscribe: (listener: (message: { type: string, payload: any, state?: any, source: string }) => any) => any,
+  unsubscribe: () => any,
+  send: (action: { type: string }, state: any) => any
+}
+
 export type WindowAugmentedWithReduxDevtools = {
   __REDUX_DEVTOOLS_EXTENSION__: {
-    connect: (options: OptionsForReduxDevtools) => {
-      init: (state: any) => any,
-      subscribe: (listener: (message: { type: string, payload: any, state?: any, source: string }) => any) => any,
-      unsubscribe: () => any,
-      send: (action: { type: string }, state: any) => any
-    };
+    connect: (options: OptionsForReduxDevtools) => DevtoolsInstance;
     disconnect: () => any;
     send: (action: { type: string, payload?: any }, state: any, options: OptionsForReduxDevtools) => any;
     _mockInvokeSubscription: (message: { type: string, payload: any, state?: any, source: any }) => any,

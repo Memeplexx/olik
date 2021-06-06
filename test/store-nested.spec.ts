@@ -13,6 +13,7 @@ describe('Nested', () => {
 
   beforeEach(() => {
     libState.nestedStoresAutoGenKeys = {};
+    libState.storesRegisteredWithDevtools = {};
     spyInfo.mockReset();
   });
 
@@ -219,7 +220,7 @@ describe('Nested', () => {
   })
 
   it('should be able to reset a detached store', () => {
-    const nested = createNestedStore({ test: '' }, { componentName: 'test' });
+    const nested = createNestedStore({ test: '' }, { componentName: 'testyy' });
     nested.select(s => s.test).replace('test');
     expect(nested.read()).toEqual({ test: 'test' });
     nested.select(s => s.test).reset();
