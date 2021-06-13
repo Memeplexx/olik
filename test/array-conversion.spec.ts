@@ -25,6 +25,7 @@ describe('array conversion', () => {
     select(s => s.array)
       .filterWhere(s => s.date).whenConvertedTo(s => new Date(s).getTime()).isMoreThan(new Date('2020-01-02').getTime())
       .remove();
+    console.log(testState.currentAction);
     expect(read().array).toEqual([initialState.array[0], initialState.array[1]]);
   })
 

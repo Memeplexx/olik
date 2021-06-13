@@ -377,7 +377,6 @@ describe('async', () => {
     const rejection = 'test';
     select(s => s.array)
       .replaceAll(() => new Promise((resolve, reject) => setTimeout(() => reject(rejection), 10)), { bypassPromiseFor: 1000 })
-      .then(() => console.log('...'))
       .catch(err => {
         expect(err).toEqual(rejection);
         done();
@@ -542,7 +541,6 @@ describe('async', () => {
       .then(() => select(s => s.array).filterWhere(s => s.id).isEq(1).replace(fetchTodo2))
       .then(() => {
         expect(read().array).toEqual([{ id: 1, value: 'testy' }]);
-        console.log(read());
         select(s => s.array).filterWhere(s => s.id).isEq(1).stopBypassingPromises();
       }).then(() => select(s => s.array).filterWhere(s => s.id).isEq(1).replace(fetchTodo2))
       .then(() => {
