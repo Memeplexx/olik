@@ -18,7 +18,6 @@ import {
   ArrayOfObjectsAction,
   DeepReadonly,
   FindOrFilter,
-  MaybeConvertable,
   OptionsForReduxDevtools,
   PredicateOptionsCommon,
   PredicateOptionsForBoolean,
@@ -104,15 +103,13 @@ export function createStoreCore<S, T extends Trackability>({
             stopBypassingPromises: () => array.stopBypassingPromises(context),
           } as ArrayOfObjectsAction<X, FindOrFilter, T>
         };
-        let valueConverter: ((val: any) => any) | null = null;
-        const getValue = (val: any) => valueConverter ? valueConverter(val) : val;
-        const predicates = {
+        return {
           ...{
-            isEq: val => constructActions(`${getSegsAndCriteria().segs.join('.') || 'element'} === ${val}`, e => getValue(e) === val),
-            isNotEq: val => constructActions(`${getSegsAndCriteria().segs.join('.') || 'element'} !== ${val}`, e => getValue(e) !== val),
-            isIn: val => constructActions(`[${val.join(', ')}].includes(${getSegsAndCriteria().segs.join('.') || 'element'})`, e => val.includes(getValue(e))),
-            isNotIn: val => constructActions(`![${val.join(', ')}].includes(${getSegsAndCriteria().segs.join('.') || 'element'})`, e => !val.includes(getValue(e))),
-          } as PredicateOptionsCommon<X, any, FindOrFilter, T, MaybeConvertable>,
+            isEq: val => constructActions(`${getSegsAndCriteria().segs.join('.') || 'element'} === ${val}`, e => e === val),
+            isNotEq: val => constructActions(`${getSegsAndCriteria().segs.join('.') || 'element'} !== ${val}`, e => e !== val),
+            isIn: val => constructActions(`[${val.join(', ')}].includes(${getSegsAndCriteria().segs.join('.') || 'element'})`, e => val.includes(e)),
+            isNotIn: val => constructActions(`![${val.join(', ')}].includes(${getSegsAndCriteria().segs.join('.') || 'element'})`, e => !val.includes(e)),
+          } as PredicateOptionsCommon<X, any, FindOrFilter, T>,
           ...{
             returnsTrue: () => {
               const predicate = getProp as any as (element: DeepReadonly<X[0]>) => boolean;
@@ -126,22 +123,17 @@ export function createStoreCore<S, T extends Trackability>({
                 stopBypassingPromises: () => arrayCustom.stopBypassingPromises(context),
               };
             }
-          } as PredicateOptionsForBoolean<X, FindOrFilter, T, MaybeConvertable>,
+          } as PredicateOptionsForBoolean<X, FindOrFilter, T>,
           ...{
-            isMoreThan: val => constructActions(`${getSegsAndCriteria().segs.join('.') || 'element'} > ${val}`, e => getValue(e) > val),
-            isLessThan: val => constructActions(`${getSegsAndCriteria().segs.join('.') || 'element'} < ${val}`, e => getValue(e) < val),
-            isMoreThanOrEq: val => constructActions(`${getSegsAndCriteria().segs.join('.') || 'element'} >= ${val}`, e => getValue(e) >= val),
-            isLessThanOrEq: val => constructActions(`${getSegsAndCriteria().segs.join('.') || 'element'} <= ${val}`, e => getValue(e) <= val),
-          } as PredicateOptionsForNumber<X, any, FindOrFilter, T, MaybeConvertable>,
+            isMoreThan: val => constructActions(`${getSegsAndCriteria().segs.join('.') || 'element'} > ${val}`, e => e > val),
+            isLessThan: val => constructActions(`${getSegsAndCriteria().segs.join('.') || 'element'} < ${val}`, e => e < val),
+            isMoreThanOrEq: val => constructActions(`${getSegsAndCriteria().segs.join('.') || 'element'} >= ${val}`, e => e >= val),
+            isLessThanOrEq: val => constructActions(`${getSegsAndCriteria().segs.join('.') || 'element'} <= ${val}`, e => e <= val),
+          } as PredicateOptionsForNumber<X, any, FindOrFilter, T>,
           ...{
-            isMatching: val => constructActions(`${getSegsAndCriteria().segs.join('.') || 'element'}.match(${val})`, e => getValue(e).match(val)),
-          } as PredicateOptionsForString<X, any, FindOrFilter, T, 'convertable'>,
+            isMatching: val => constructActions(`${getSegsAndCriteria().segs.join('.') || 'element'}.match(${val})`, e => e.match(val)),
+          } as PredicateOptionsForString<X, any, FindOrFilter, T>,
         };
-        predicates.whenConvertedTo = (converter: (val: any) => any) => {
-          valueConverter = converter;
-          return predicates as any;
-        };
-        return predicates;
       }) as StoreForAnArrayOfObjects<X, T>['filterWhere'];
       return recurseWhere;
     };
