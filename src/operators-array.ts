@@ -10,7 +10,6 @@ import {
 } from './shapes-external';
 import { ArrayOperatorState } from './shapes-internal';
 import { errorMessages } from './shared-consts';
-import { testState } from './shared-state';
 import { copyPayload, createPathReader, deepFreeze, processAsyncPayload, validateSelectorFn } from './shared-utils';
 import { transact } from './transact';
 
