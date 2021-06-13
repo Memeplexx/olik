@@ -529,5 +529,27 @@ describe('async', () => {
     expect(read().array).toEqual(optimisticValue);
   })
 
+
+  it('should invalidate caches for replaceAll() independantly of replace()', done => {
+    const { select, read } = createGlobalStore(initialState);
+    const fetchTodos = () => new Promise<{ id: number, value: string }[]>(resolve => setTimeout(() => resolve([{ id: 1, value: 'test' }]), 10));
+    const fetchTodo = () => new Promise<{ id: number, value: string }>(resolve => setTimeout(() => resolve({ id: 1, value: 'testy' })));
+    const fetchTodo2 = () => new Promise<{ id: number, value: string }>(resolve => setTimeout(() => resolve({ id: 1, value: 'testyy' })));
+    select(s => s.array).
+      replaceAll(fetchTodos, { bypassPromiseFor: 1000 })
+      .then(() => select(s => s.array).filterWhere(s => s.id).isEq(1).replace(fetchTodo, { bypassPromiseFor: 1000 }))
+      .then(() => select(s => s.array).replaceAll(fetchTodos))
+      .then(() => select(s => s.array).filterWhere(s => s.id).isEq(1).replace(fetchTodo2))
+      .then(() => {
+        expect(read().array).toEqual([{ id: 1, value: 'testy' }]);
+        console.log(read());
+        select(s => s.array).filterWhere(s => s.id).isEq(1).stopBypassingPromises();
+      }).then(() => select(s => s.array).filterWhere(s => s.id).isEq(1).replace(fetchTodo2))
+      .then(() => {
+        expect(read().array).toEqual([{ id: 1, value: 'testyy' }]);
+        done();
+      });
+  })
+
 });
 
