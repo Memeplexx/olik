@@ -602,7 +602,7 @@ export type DerivationCalculationInputs<T extends Array<StoreOrDerivation<any>>>
 /**
  * An object representing options which are supplied when creating a standard store
  */
-export type OptionsForMakingAStore = {
+export type OptionsForMakingAGlobalStore = {
   /**
    * Specifications for the Redux Devtools Extension. Pass `false` if you do not want your store to be tracked within the Redux Devtools extension.
    * See https://github.com/zalmoxisus/redux-devtools-extension/blob/master/docs/API/Arguments.md for more info

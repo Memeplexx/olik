@@ -1,6 +1,6 @@
 import { errorMessages } from '../src/shared-consts';
 import { libState, testState } from '../src/shared-state';
-import { createAppStore, createNestedStore } from '../src/store-creators';
+import { createGlobalStore, createNestedStore } from '../src/store-creators';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
 describe('Nested', () => {
@@ -25,7 +25,7 @@ describe('Nested', () => {
     const initialStateComp = {
       one: ''
     };
-    const { select, read } = createAppStore(initialState);
+    const { select, read } = createGlobalStore(initialState);
     const componentName = 'myComp';
     createNestedStore(initialStateComp, { componentName });
     expect(read()).toEqual({ ...initialState, nested: { [componentName]: { 0: initialStateComp } } });
@@ -36,7 +36,7 @@ describe('Nested', () => {
       test: '',
       nested: {},
     };
-    createAppStore(initialState);
+    createGlobalStore(initialState);
     const componentName = 'myComp';
     const nestedStore1 = createNestedStore({ one: '' }, { componentName });
     expect(nestedStore1.read().one).toEqual('');
@@ -53,7 +53,7 @@ describe('Nested', () => {
       test: '',
       nested: {} as { myComp: { [key: string]: { one: string } } },
     };
-    const { select, read } = createAppStore(initialState);
+    const { select, read } = createGlobalStore(initialState);
     const componentName = 'myComp';
     const nestedStore1 = createNestedStore({ one: '' }, { componentName });
     expect(nestedStore1.read().one).toEqual('');
@@ -65,7 +65,7 @@ describe('Nested', () => {
     const initialState = {
       test: '',
     };
-    const { select, read } = createAppStore(initialState);
+    const { select, read } = createGlobalStore(initialState);
     const componentName = 'myComp';
     const nestedStore1 = createNestedStore({ one: '' }, { componentName });
     expect(read()).toEqual({ test: '', nested: { [componentName]: { 0: { one: '' } } } });
@@ -77,7 +77,7 @@ describe('Nested', () => {
     const initialState = {
       test: '',
     };
-    const { select, read } = createAppStore(initialState);
+    const { select, read } = createGlobalStore(initialState);
     const componentName = 'myComp';
     const nestedStore1 = createNestedStore({ one: '' }, { componentName });
     const nestedStore2 = createNestedStore({ one: '' }, { componentName });
@@ -92,7 +92,7 @@ describe('Nested', () => {
     const initialState = {
       test: '',
     };
-    const { select, read } = createAppStore(initialState);
+    const { select, read } = createGlobalStore(initialState);
     const componentName = 'myComp';
     const nestedStore1 = createNestedStore({ one: '' }, { componentName });
     nestedStore1.select(s => s.one).replace('test1');
@@ -105,7 +105,7 @@ describe('Nested', () => {
     const initialState = {
       test: '',
     };
-    const { select, read } = createAppStore(initialState);
+    const { select, read } = createGlobalStore(initialState);
     const componentName = 'myComp';
     const nestedStore1 = createNestedStore(new Array<string>(), { componentName });
     nestedStore1.select().insert('test');
@@ -116,7 +116,7 @@ describe('Nested', () => {
     const initialState = {
       test: '',
     };
-    const { select, read } = createAppStore(initialState);
+    const { select, read } = createGlobalStore(initialState);
     const componentName = 'myComp';
     const nestedStore1 = createNestedStore(0, { componentName });
     nestedStore1.select().replace(1);
@@ -127,7 +127,7 @@ describe('Nested', () => {
     const initialState = {
       test: '',
     };
-    const { select, read } = createAppStore(initialState);
+    const { select, read } = createGlobalStore(initialState);
     const componentName = 'myComp';
     createNestedStore(0, { componentName });
     const componentName2 = 'myComp2';
@@ -136,12 +136,12 @@ describe('Nested', () => {
   })
 
   it('should throw an error if the containing stores state is a primitive', () => {
-    createAppStore(0);
+    createGlobalStore(0);
     expect(() => createNestedStore(0, { componentName: 'test' })).toThrowError(errorMessages.INVALID_CONTAINER_FOR_NESTED_STORES);
   })
 
   it('should throw an error if the containing stores state is an array', () => {
-    createAppStore(new Array<string>());
+    createGlobalStore(new Array<string>());
     expect(() => createNestedStore(0, { componentName: 'test' })).toThrowError(errorMessages.INVALID_CONTAINER_FOR_NESTED_STORES);
   })
 
@@ -150,7 +150,7 @@ describe('Nested', () => {
     const initialState = {
       test: '',
     };
-    const { select, read } = createAppStore(initialState);
+    const { select, read } = createGlobalStore(initialState);
     const componentName = 'myComp';
     createNestedStore(0, { componentName });
     const componentName2 = 'myComp2';
@@ -163,7 +163,7 @@ describe('Nested', () => {
     const initialState = {
       test: '',
     };
-    const { select, read } = createAppStore(initialState);
+    const { select, read } = createGlobalStore(initialState);
     const componentName = 'myComp';
     const nested = createNestedStore(0, { componentName });
     nested.select().replace(1);
@@ -187,7 +187,7 @@ describe('Nested', () => {
   });
 
   it('should be able to support a custom instance name', () => {
-    const parentStore = createAppStore({ hello: '' });
+    const parentStore = createGlobalStore({ hello: '' });
     const componentName = 'MyComponent';
     const instanceName = 'test';
     createNestedStore({ num: 0 }, { componentName, instanceName });
@@ -195,7 +195,7 @@ describe('Nested', () => {
   })
 
   it('should auto-increment state keys after a store has been detached', () => {
-    const parentStore = createAppStore({ test: '' });
+    const parentStore = createGlobalStore({ test: '' });
     const componentName = 'MyComponent';
     const store0 = createNestedStore({ num: 0 }, { componentName });
     const store1 = createNestedStore({ num: 0 }, { componentName });
@@ -209,7 +209,7 @@ describe('Nested', () => {
   })
 
   it('should be able to reset a nested store inner property', () => {
-    const parentStore = createAppStore({ test: '' });
+    const parentStore = createGlobalStore({ test: '' });
     parentStore.select(s => s.test).replace('test');
     const nestedStore = createNestedStore({ array: new Array<string>() }, { componentName: 'test' });
     nestedStore.select(s => s.array).insert('test');
@@ -228,7 +228,7 @@ describe('Nested', () => {
   })
 
   it('should be able to set an instance name', () => {
-    const root = createAppStore({ });
+    const root = createGlobalStore({ });
     const child = createNestedStore({ test: 0 }, { componentName: 'MyComponent' });
     expect(root.read()).toEqual({ nested: { MyComponent: { '0': { test: 0 } } } });
     child.setInstanceName('hello');

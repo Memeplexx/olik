@@ -1,5 +1,5 @@
 import { testState } from '../src/shared-state';
-import { createAppStore } from '../src/store-creators';
+import { createGlobalStore } from '../src/store-creators';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
 describe('array.findCustom().read()', () => {
@@ -12,7 +12,7 @@ describe('array.findCustom().read()', () => {
   };
 
   it('should read()', () => {
-    const { select } = createAppStore(initialState);
+    const { select } = createGlobalStore(initialState);
     const read = select(s => s.array)
       .findWhere(e => e.id === 2).returnsTrue()
       .read();
@@ -20,7 +20,7 @@ describe('array.findCustom().read()', () => {
   })
 
   it('should onChange()', () => {
-    const { select } = createAppStore(initialState);
+    const { select } = createGlobalStore(initialState);
     let changeCount = 0;
     select(s => s.array)
       .findWhere(e => e.id === 3).returnsTrue()

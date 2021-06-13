@@ -1,5 +1,5 @@
 import { testState } from '../src/shared-state';
-import { createAppStore } from '../src/store-creators';
+import { createGlobalStore } from '../src/store-creators';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
 describe('array.filterCustom().remove()', () => {
@@ -12,7 +12,7 @@ describe('array.filterCustom().remove()', () => {
   };
 
   it('should eq()', () => {
-    const { select, read } = createAppStore(initialState);
+    const { select, read } = createGlobalStore(initialState);
     const where = (e: typeof initialState['array'][0]) => e.id === 2;
     select(s => s.array)
       .filterWhere(where).returnsTrue()
@@ -27,7 +27,7 @@ describe('array.filterCustom().remove()', () => {
   })
 
   it('should ne()', () => {
-    const { select, read } = createAppStore(initialState);
+    const { select, read } = createGlobalStore(initialState);
     const where = (e: typeof initialState['array'][0]) => e.id !== 2;
     select(s => s.array)
       .filterWhere(where).returnsTrue()
@@ -42,7 +42,7 @@ describe('array.filterCustom().remove()', () => {
   })
 
   it('should gt()', () => {
-    const { select, read } = createAppStore(initialState);
+    const { select, read } = createGlobalStore(initialState);
     const where = (e: typeof initialState['array'][0]) => e.id > 1;
     select(s => s.array)
       .filterWhere(where).returnsTrue()
@@ -57,7 +57,7 @@ describe('array.filterCustom().remove()', () => {
   })
 
   it('should lt()', () => {
-    const { select, read } = createAppStore(initialState);
+    const { select, read } = createGlobalStore(initialState);
     const where = (e: typeof initialState['array'][0]) => e.id < 2;
     select(s => s.array)
       .filterWhere(where).returnsTrue()
@@ -72,7 +72,7 @@ describe('array.filterCustom().remove()', () => {
   })
 
   it('should in()', () => {
-    const { select, read } = createAppStore(initialState);
+    const { select, read } = createGlobalStore(initialState);
     const where = (e: typeof initialState['array'][0]) => [1, 2].includes(e.id);
     select(s => s.array)
       .filterWhere(where).returnsTrue()
@@ -87,7 +87,7 @@ describe('array.filterCustom().remove()', () => {
   })
 
   it('should ni()', () => {
-    const { select, read } = createAppStore(initialState);
+    const { select, read } = createGlobalStore(initialState);
     const where = (e: typeof initialState['array'][0]) => ![1, 2].includes(e.id);
     select(s => s.array)
       .filterWhere(where).returnsTrue()
@@ -102,7 +102,7 @@ describe('array.filterCustom().remove()', () => {
   })
 
   it('should match()', () => {
-    const { select, read } = createAppStore(initialState);
+    const { select, read } = createGlobalStore(initialState);
     const where = (e: typeof initialState['array'][0]) => /^t/.test(e.value);
     select(s => s.array)
       .filterWhere(where).returnsTrue()

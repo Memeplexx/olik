@@ -1,5 +1,5 @@
 import { testState } from '../src/shared-state';
-import { createAppStore, createAppStoreEnforcingTags } from '../src/store-creators';
+import { createGlobalStore, createGlobalStoreEnforcingTags } from '../src/store-creators';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
 describe('tags', () => {
@@ -9,7 +9,7 @@ describe('tags', () => {
   it('should work with tags correctly', () => {
     const payload = 'hey';
     const tag = 'mytag';
-    const { select, read } = createAppStoreEnforcingTags({
+    const { select, read } = createGlobalStoreEnforcingTags({
       object: { property: 'one', property2: 'two' },
     }, { tagsToAppearInType: true });
     select(s => s.object.property)
@@ -23,7 +23,7 @@ describe('tags', () => {
   })
 
   it('should sanitize tags correctly', () => {
-    const { select, read } = createAppStoreEnforcingTags({
+    const { select, read } = createGlobalStoreEnforcingTags({
       test: '',
     }, {
       tagSanitizer: (tag) => tag + 'x',
@@ -41,7 +41,7 @@ describe('tags', () => {
   })
 
   it('should accept optional tags', () => {
-    const { select, read } = createAppStore({ prop: '' }, { tagsToAppearInType: true });
+    const { select, read } = createGlobalStore({ prop: '' }, { tagsToAppearInType: true });
     const tag = 'mytag';
     const payload = 'test';
     select(s => s.prop)
@@ -53,7 +53,7 @@ describe('tags', () => {
   })
 
   it('should, by default, place tags in the payload', () => {
-    const { select, read } = createAppStoreEnforcingTags({ prop: '' });
+    const { select, read } = createGlobalStoreEnforcingTags({ prop: '' });
     const tag = 'mytag';
     const payload = 'test';
     select(s => s.prop)

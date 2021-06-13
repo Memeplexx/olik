@@ -1,5 +1,5 @@
 import { testState } from '../src/shared-state';
-import { createAppStore } from '../src/store-creators';
+import { createGlobalStore } from '../src/store-creators';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
 describe('Sequence', () => {
@@ -13,7 +13,7 @@ describe('Sequence', () => {
       },
       propTwo: new Array<{ id: number, value: string }>(),
     };
-    const { select, read } = createAppStore(initialState);
+    const { select, read } = createGlobalStore(initialState);
     select(s => s.propOne.subPropOne).replace('hey');
     expect(testState.currentMutableState).toEqual(read());
     select(s => s.propOne).patch({ subPropOne: 'xxx' });
@@ -32,7 +32,7 @@ describe('Sequence', () => {
 
   it('should maintain sequence on root array', () => {
     const initialState = new Array<{ id: number, value: string }>();
-    const { select, read } = createAppStore(initialState);
+    const { select, read } = createGlobalStore(initialState);
     select().insert([{ id: 1, value: 'one' }]);
     expect(testState.currentMutableState).toEqual(read());
     select().findWhere(e => e.id === 1).returnsTrue().patch({ value: 'test' });

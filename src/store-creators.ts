@@ -1,7 +1,7 @@
 import { createStoreCore } from './core';
 import {
   OptionsForMakingANestedStore,
-  OptionsForMakingAStore,
+  OptionsForMakingAGlobalStore,
   SelectorFromANestedStore,
   SelectorFromAStore,
   SelectorFromAStoreEnforcingTags,
@@ -24,17 +24,17 @@ import { transact } from './transact';
  * @param options some additional configuration options
  * 
  * @example
- * const select = createAppStoreEnforcingTags({ prop: '' });
+ * const select = createGlobalStoreEnforcingTags({ prop: '' });
  * 
  * // Note that when updating state, we are now required to supply a string as the last argument (in this case 'MyComponent')
  * select(s => s.prop)                // type: 'prop.replace() [MyComponent]'
  *   .replace('test', 'MyComponent')  // replacement: 'test'
  */
-export function createAppStoreEnforcingTags<S>(
+export function createGlobalStoreEnforcingTags<S>(
   state: S,
-  options: OptionsForMakingAStore = {},
+  options: OptionsForMakingAGlobalStore = {},
 ) {
-  return setInternalRootStore<S, 'tagged'>(state, { ...options, enforcesTags: true }) as SelectorReader<S, SelectorFromAStoreEnforcingTags<S>>;
+  return createGlobalStoreInternal<S, 'tagged'>(state, { ...options, enforcesTags: true }) as SelectorReader<S, SelectorFromAStoreEnforcingTags<S>>;
 }
 
 /**
@@ -43,13 +43,13 @@ export function createAppStoreEnforcingTags<S>(
  * @param options some additional configuration options
  * 
  * @example
- * const select = createAppStore({ todos: Array<{ id: number, text: string }>() });
+ * const select = createGlobalStore({ todos: Array<{ id: number, text: string }>() });
  */
-export function createAppStore<S>(
+export function createGlobalStore<S>(
   state: S,
-  options: OptionsForMakingAStore = {},
+  options: OptionsForMakingAGlobalStore = {},
 ) {
-  return setInternalRootStore<S, 'untagged'>(state, { ...options, enforcesTags: false }) as SelectorReader<S, SelectorFromAStore<S>>;
+  return createGlobalStoreInternal<S, 'untagged'>(state, { ...options, enforcesTags: false }) as SelectorReader<S, SelectorFromAStore<S>>;
 }
 
 /**
@@ -191,7 +191,7 @@ export function createNestedStore<L>(
   return { select, read, detachFromAppStore, setInstanceName } as SelectorReaderNested<L, SelectorFromANestedStore<L>>;
 }
 
-function setInternalRootStore<S, T extends Trackability>(
+function createGlobalStoreInternal<S, T extends Trackability>(
   state: S,
   options: OptionsForCreatingInternalRootStore,
 ) {

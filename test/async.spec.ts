@@ -1,6 +1,6 @@
 import { errorMessages } from '../src/shared-consts';
 import { libState, testState } from '../src/shared-state';
-import { createAppStore, createNestedStore, createAppStoreEnforcingTags } from '../src/store-creators';
+import { createGlobalStore, createNestedStore, createGlobalStoreEnforcingTags } from '../src/store-creators';
 import { transact } from '../src/transact';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
@@ -18,7 +18,7 @@ describe('async', () => {
   }; 3
 
   it('should work with replaceAll()', async done => {
-    const { select, read } = createAppStore(initialState);
+    const { select, read } = createGlobalStore(initialState);
     const payload = [{ id: 1, value: 'test' }];
     select(s => s.array)
       .replaceAll(() => new Promise(resolve => setTimeout(() => resolve(payload), 10)), { bypassPromiseFor: 1000 })
@@ -42,7 +42,7 @@ describe('async', () => {
   })
 
   it('should work with insert()', done => {
-    const { select, read } = createAppStore(initialState);
+    const { select, read } = createGlobalStore(initialState);
     const payload = { id: 1, value: 'test' };
     select(s => s.array)
       .insert(() => new Promise(resolve => setTimeout(() => resolve(payload), 10)), { bypassPromiseFor: 1000 })
@@ -66,7 +66,7 @@ describe('async', () => {
   })
 
   it('should work with patch()', done => {
-    const { select, read } = createAppStore(initialState);
+    const { select, read } = createGlobalStore(initialState);
     const payload = { property: 'xxx' };
     select(s => s.object)
       .patch(() => new Promise(resolve => setTimeout(() => resolve(payload), 10)), { bypassPromiseFor: 1000 })
@@ -90,7 +90,7 @@ describe('async', () => {
   })
 
   it('should work with replace()', done => {
-    const { select, read } = createAppStore(initialState);
+    const { select, read } = createGlobalStore(initialState);
     const payload = { property: 'xxx', property2: 'yyy' };
     select(s => s.object)
       .replace(() => new Promise(resolve => setTimeout(() => resolve(payload), 10)), { bypassPromiseFor: 1000 })
@@ -114,7 +114,7 @@ describe('async', () => {
   })
 
   it('should work with upsertMatching()', done => {
-    const { select, read } = createAppStore(initialState);
+    const { select, read } = createGlobalStore(initialState);
     const payload = { id: 1, value: 'test' };
     select(s => s.array)
       .upsertMatching(s => s.id)
@@ -141,7 +141,7 @@ describe('async', () => {
   })
 
   it('should work with findWhere().replace()', done => {
-    const { select, read } = createAppStore(initialState);
+    const { select, read } = createGlobalStore(initialState);
     const payload = { id: 2, value: 'twooo' };
     select(s => s.array)
       .findWhere(s => s.id).isEq(2)
@@ -170,7 +170,7 @@ describe('async', () => {
   })
 
   it('should work with filterWhere().replace()', done => {
-    const { select, read } = createAppStore(initialState);
+    const { select, read } = createGlobalStore(initialState);
     const payload = { id: 2, value: 'twooo' };
     select(s => s.array)
       .filterWhere(s => s.id).isEq(2)
@@ -199,7 +199,7 @@ describe('async', () => {
   })
 
   it('should work with findWhere().patch()', done => {
-    const { select, read } = createAppStore(initialState);
+    const { select, read } = createGlobalStore(initialState);
     const payload = { value: 'twooo' };
     select(s => s.array)
       .findWhere(s => s.id).isEq(2)
@@ -228,7 +228,7 @@ describe('async', () => {
   })
 
   it('should work with filterWhere().patch()', done => {
-    const { select, read } = createAppStore(initialState);
+    const { select, read } = createGlobalStore(initialState);
     const payload = { value: 'twooo' };
     select(s => s.array)
       .filterWhere(s => s.id).isEq(2)
@@ -257,7 +257,7 @@ describe('async', () => {
   })
 
   it('should work with findWhere().returnsTrue().replace()', done => {
-    const { select, read } = createAppStore(initialState);
+    const { select, read } = createGlobalStore(initialState);
     const payload = { id: 2, value: 'twooo' };
     select(s => s.array)
       .findWhere(s => s.id === 2).returnsTrue()
@@ -286,7 +286,7 @@ describe('async', () => {
   })
 
   it('should work with filterWhere().returnsTrue().replace()', done => {
-    const { select, read } = createAppStore(initialState);
+    const { select, read } = createGlobalStore(initialState);
     const payload = { id: 2, value: 'twooo' };
     select(s => s.array)
       .filterWhere(s => s.id === 2).returnsTrue()
@@ -315,7 +315,7 @@ describe('async', () => {
   })
 
   it('should work with findWhere().returnsTrue().patch()', done => {
-    const { select, read } = createAppStore(initialState);
+    const { select, read } = createGlobalStore(initialState);
     const payload = { value: 'twooo' };
     select(s => s.array)
       .findWhere(s => s.id === 2).returnsTrue()
@@ -344,7 +344,7 @@ describe('async', () => {
   })
 
   it('should work with filterWhere().returnsTrue().patch()', done => {
-    const { select, read } = createAppStore(initialState);
+    const { select, read } = createGlobalStore(initialState);
     const payload = { value: 'twooo' };
     select(s => s.array)
       .filterWhere(s => s.id === 2).returnsTrue()
@@ -373,7 +373,7 @@ describe('async', () => {
   })
 
   it('should handle a promise rejection', done => {
-    const { select, read } = createAppStore(initialState);
+    const { select, read } = createGlobalStore(initialState);
     const rejection = 'test';
     select(s => s.array)
       .replaceAll(() => new Promise((resolve, reject) => setTimeout(() => reject(rejection), 10)), { bypassPromiseFor: 1000 })
@@ -385,7 +385,7 @@ describe('async', () => {
   })
 
   it('should support tags in type', done => {
-    const { select, read } = createAppStoreEnforcingTags(initialState, { tagsToAppearInType: true });
+    const { select, read } = createGlobalStoreEnforcingTags(initialState, { tagsToAppearInType: true });
     const replacement = [{ id: 1, value: 'one' }];
     const tag = 'MyComponent';
     select(s => s.array)
@@ -400,7 +400,7 @@ describe('async', () => {
   })
 
   it('should support tags in payload', done => {
-    const { select, read } = createAppStoreEnforcingTags(initialState);
+    const { select, read } = createGlobalStoreEnforcingTags(initialState);
     const replacement = [{ id: 1, value: 'one' }];
     const tag = 'MyComponent';
     select(s => s.array)
@@ -416,20 +416,20 @@ describe('async', () => {
   })
 
   it('should not be able to support transactions', () => {
-    const { select, read } = createAppStore(initialState);
+    const { select, read } = createGlobalStore(initialState);
     expect(() => transact(
       () => select(s => s.array).replaceAll(() => new Promise(resolve => setTimeout(() => resolve([]), 10))),
     )).toThrowError(errorMessages.PROMISES_NOT_ALLOWED_IN_TRANSACTIONS);
   })
 
   it('should not be able to support top-level stores', () => {
-    const { select, read } = createAppStore(0);
+    const { select, read } = createGlobalStore(0);
     expect(() => select().replace(() => new Promise(resolve => setTimeout(() => resolve(1), 10)), { bypassPromiseFor: 1000 }))
       .toThrowError(errorMessages.INVALID_CONTAINER_FOR_CACHED_DATA);
   })
 
   it('should automatically clear up expired cache keys', done => {
-    const { select, read } = createAppStore(initialState);
+    const { select, read } = createGlobalStore(initialState);
     const payload = [{ id: 1, value: 'test' }];
     select(s => s.object)
       .replace(() => new Promise(resolve => setTimeout(() => resolve({ property: 'fdfd', property2: 'fdfd' }), 10)), { bypassPromiseFor: 1000 })
@@ -444,7 +444,7 @@ describe('async', () => {
   })
 
   it('should work with nested stores', done => {
-    const { select, read } = createAppStore(initialState);
+    const { select, read } = createGlobalStore(initialState);
     const nested = createNestedStore({ prop: '' }, { componentName: 'hello' });
     const payload = 'test';
     nested.select(s => s.prop)
@@ -456,7 +456,7 @@ describe('async', () => {
   })
 
   it('should de-duplicate simultaneous requests', done => {
-    const { select, read } = createAppStore(initialState);
+    const { select, read } = createGlobalStore(initialState);
     select(s => s.array)
       .replaceAll(() => new Promise(resolve => setTimeout(() => resolve([{ id: 1, value: 'test' }]), 10)));
     setTimeout(() => {
@@ -471,7 +471,7 @@ describe('async', () => {
 
   it('should be able to paginate', done => {
     const todos = new Array(50).fill(null).map((e, i) => ({ id: i + 1, value: `value ${i + 1}` }));
-    const { select, read } = createAppStore(initialState);
+    const { select, read } = createGlobalStore(initialState);
     select(s => s.paginated[0])
       .replaceAll(() => new Promise(resolve => setTimeout(() => resolve(todos.slice(0, 10)))))
       .then(() => {
@@ -489,7 +489,7 @@ describe('async', () => {
   })
 
   it('should not bypass a promise if it has been rejected', done => {
-    const { select, read } = createAppStore(initialState);
+    const { select, read } = createGlobalStore(initialState);
     const payload = [{ id: 1, value: 'one' }];
     select(s => s.array)
       .replaceAll(() => new Promise((resolve, reject) => setTimeout(() => reject('test'), 10)), { bypassPromiseFor: 1000 })
@@ -505,8 +505,8 @@ describe('async', () => {
   })
 
   it('should be able to perform an optimistic update', done => {
-    const { select, read } = createAppStore(initialState);
-    const optimisticValue = [{id: 6, value: 'six'}];
+    const { select, read } = createGlobalStore(initialState);
+    const optimisticValue = [{ id: 6, value: 'six' }];
     const resolvedValue = [{ id: 7, value: 'seven' }];
     select(s => s.array)
       .replaceAll(() => new Promise(resolve => resolve(resolvedValue)), { optimisticallyUpdateWith: optimisticValue })
@@ -518,8 +518,8 @@ describe('async', () => {
   })
 
   it('should revert an optimistic update if there is an error', done => {
-    const { select, read } = createAppStore(initialState);
-    const optimisticValue = [{id: 6, value: 'six'}];
+    const { select, read } = createGlobalStore(initialState);
+    const optimisticValue = [{ id: 6, value: 'six' }];
     select(s => s.array)
       .replaceAll(() => new Promise((resolve, reject) => reject('test')), { optimisticallyUpdateWith: optimisticValue })
       .catch(() => {

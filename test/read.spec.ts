@@ -1,5 +1,5 @@
 import { testState } from '../src/shared-state';
-import { createAppStore } from '../src/store-creators';
+import { createGlobalStore } from '../src/store-creators';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
 describe('Read', () => {
@@ -7,13 +7,13 @@ describe('Read', () => {
   beforeAll(() => testState.windowObject = windowAugmentedWithReduxDevtoolsImpl);
 
   it('should read', () => {
-    const { select, read } = createAppStore({ some: { object: 'test' } });
+    const { select, read } = createGlobalStore({ some: { object: 'test' } });
     const value = read().some.object;
     expect(value).toEqual('test');
   })
 
   it('should listen to onChange events', () => {
-    const { select, read } = createAppStore({ prop: { value: '', another: '' } });
+    const { select, read } = createGlobalStore({ prop: { value: '', another: '' } });
     let changeCount = 0;
     select(s => s.prop.value)
       .onChange(val => {
@@ -27,7 +27,7 @@ describe('Read', () => {
   });
 
   it('should listen to onChange events when a find() is included in the selector', () => {
-    const { select, read } = createAppStore({ arr: [{ id: 1, val: '' }, { id: 2, val: '' }] });
+    const { select, read } = createGlobalStore({ arr: [{ id: 1, val: '' }, { id: 2, val: '' }] });
     let changeCount = 0;
     select(s => s.arr.find(e => e.id === 2))
       .onChange(val => {
