@@ -15,8 +15,8 @@ describe('array.find().and().or()', () => {
   it('should eq().andWhere().eq()', () => {
     const { select, read } = createGlobalStore(initialState);
     select(s => s.array)
-      .findWhere(s => s.id).isEq(2)
-      .andWhere(s => s.value).isEq('two')
+      .findWhere(s => s.id).eq(2)
+      .andWhere(s => s.value).eq('two')
       .remove();
     expect(testState.currentAction).toEqual({
       type: 'array.find().remove()',
@@ -30,8 +30,8 @@ describe('array.find().and().or()', () => {
   it('should eq().orWhere().eq()', () => {
     const { select, read } = createGlobalStore(initialState);
     select(s => s.array)
-      .findWhere(s => s.id).isEq(1)
-      .orWhere(s => s.value).isEq('two')
+      .findWhere(s => s.id).eq(1)
+      .orWhere(s => s.value).eq('two')
       .remove();
     expect(testState.currentAction).toEqual({
       type: 'array.find().remove()',
@@ -45,17 +45,17 @@ describe('array.find().and().or()', () => {
   it('should eq().andWhere().eq() not matching throw', () => {
     const { select, read } = createGlobalStore(initialState);
     expect(() => select(s => s.array)
-      .findWhere(s => s.id).isEq(1)
-      .andWhere(s => s.id).isEq(2)
+      .findWhere(s => s.id).eq(1)
+      .andWhere(s => s.id).eq(2)
       .remove()).toThrowError(errorMessages.NO_ARRAY_ELEMENT_FOUND);
   })
 
   it('should eq().andWhere().eq().or().eq()', () => {
     const { select, read } = createGlobalStore(initialState);
     select(s => s.array)
-      .findWhere(e => e.id).isEq(1)
-      .andWhere(e => e.id).isEq(2)
-      .orWhere(e => e.id).isEq(3)
+      .findWhere(e => e.id).eq(1)
+      .andWhere(e => e.id).eq(2)
+      .orWhere(e => e.id).eq(3)
       .remove();
     expect(testState.currentAction).toEqual({
       type: 'array.find().remove()',
@@ -69,9 +69,9 @@ describe('array.find().and().or()', () => {
   it('should eq().orWhere().eq().andWhere().eq()', () => {
     const { select, read } = createGlobalStore(initialState);
     select(s => s.array)
-      .findWhere(e => e.id).isEq(4)
-      .orWhere(e => e.id).isEq(3)
-      .andWhere(e => e.value).isEq('three')
+      .findWhere(e => e.id).eq(4)
+      .orWhere(e => e.id).eq(3)
+      .andWhere(e => e.value).eq('three')
       .remove();
     expect(testState.currentAction).toEqual({
       type: 'array.find().remove()',
@@ -85,10 +85,10 @@ describe('array.find().and().or()', () => {
   it('should eq().andWhere().eq().orWhere().eq().andWhere().eq()', () => {
     const { select, read } = createGlobalStore(initialState);
     select(s => s.array)
-      .findWhere(e => e.id).isEq(1)
-      .andWhere(e => e.value).isEq('one')
-      .orWhere(e => e.id).isEq(3)
-      .andWhere(e => e.value).isEq('three')
+      .findWhere(e => e.id).eq(1)
+      .andWhere(e => e.value).eq('one')
+      .orWhere(e => e.id).eq(3)
+      .andWhere(e => e.value).eq('three')
       .remove();
     expect(testState.currentAction).toEqual({
       type: 'array.find().remove()',

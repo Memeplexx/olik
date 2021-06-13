@@ -105,10 +105,10 @@ export function createStoreCore<S, T extends Trackability>({
         };
         return {
           ...{
-            isEq: val => constructActions(`${getSegsAndCriteria().segs.join('.') || 'element'} === ${val}`, e => e === val),
-            isNotEq: val => constructActions(`${getSegsAndCriteria().segs.join('.') || 'element'} !== ${val}`, e => e !== val),
-            isIn: val => constructActions(`[${val.join(', ')}].includes(${getSegsAndCriteria().segs.join('.') || 'element'})`, e => val.includes(e)),
-            isNotIn: val => constructActions(`![${val.join(', ')}].includes(${getSegsAndCriteria().segs.join('.') || 'element'})`, e => !val.includes(e)),
+            eq: val => constructActions(`${getSegsAndCriteria().segs.join('.') || 'element'} === ${val}`, e => e === val),
+            ne: val => constructActions(`${getSegsAndCriteria().segs.join('.') || 'element'} !== ${val}`, e => e !== val),
+            in: val => constructActions(`[${val.join(', ')}].includes(${getSegsAndCriteria().segs.join('.') || 'element'})`, e => val.includes(e)),
+            ni: val => constructActions(`![${val.join(', ')}].includes(${getSegsAndCriteria().segs.join('.') || 'element'})`, e => !val.includes(e)),
           } as PredicateOptionsCommon<X, any, FindOrFilter, T>,
           ...{
             returnsTrue: () => {
@@ -125,13 +125,13 @@ export function createStoreCore<S, T extends Trackability>({
             }
           } as PredicateOptionsForBoolean<X, FindOrFilter, T>,
           ...{
-            isMoreThan: val => constructActions(`${getSegsAndCriteria().segs.join('.') || 'element'} > ${val}`, e => e > val),
-            isLessThan: val => constructActions(`${getSegsAndCriteria().segs.join('.') || 'element'} < ${val}`, e => e < val),
-            isMoreThanOrEq: val => constructActions(`${getSegsAndCriteria().segs.join('.') || 'element'} >= ${val}`, e => e >= val),
-            isLessThanOrEq: val => constructActions(`${getSegsAndCriteria().segs.join('.') || 'element'} <= ${val}`, e => e <= val),
+            gt: val => constructActions(`${getSegsAndCriteria().segs.join('.') || 'element'} > ${val}`, e => e > val),
+            lt: val => constructActions(`${getSegsAndCriteria().segs.join('.') || 'element'} < ${val}`, e => e < val),
+            gte: val => constructActions(`${getSegsAndCriteria().segs.join('.') || 'element'} >= ${val}`, e => e >= val),
+            lte: val => constructActions(`${getSegsAndCriteria().segs.join('.') || 'element'} <= ${val}`, e => e <= val),
           } as PredicateOptionsForNumber<X, any, FindOrFilter, T>,
           ...{
-            isMatching: val => constructActions(`${getSegsAndCriteria().segs.join('.') || 'element'}.match(${val})`, e => e.match(val)),
+            matches: val => constructActions(`${getSegsAndCriteria().segs.join('.') || 'element'}.match(${val})`, e => e.match(val)),
           } as PredicateOptionsForString<X, any, FindOrFilter, T>,
         };
       }) as StoreForAnArrayOfObjects<X, T>['filterWhere'];

@@ -144,22 +144,22 @@ describe('async', () => {
     const { select, read } = createGlobalStore(initialState);
     const payload = { id: 2, value: 'twooo' };
     select(s => s.array)
-      .findWhere(s => s.id).isEq(2)
+      .findWhere(s => s.id).eq(2)
       .replace(() => new Promise(resolve => setTimeout(() => resolve(payload), 10)), { bypassPromiseFor: 1000 })
       .then(res => {
         expect(res).toEqual(read().array);
         expect(read().array).toEqual([initialState.array[0], payload, initialState.array[2]]);
         const payload2 = { id: 2, value: 'twooo' };
         select(s => s.array)
-          .findWhere(s => s.id).isEq(2)
+          .findWhere(s => s.id).eq(2)
           .replace(() => new Promise(resolve => setTimeout(() => resolve(payload2), 10)))
           .then(() => {
             expect(read().array).toEqual([initialState.array[0], payload, initialState.array[2]]);
             select(s => s.array)
-              .findWhere(s => s.id).isEq(2)
+              .findWhere(s => s.id).eq(2)
               .stopBypassingPromises();
             select(s => s.array)
-              .findWhere(s => s.id).isEq(2)
+              .findWhere(s => s.id).eq(2)
               .replace(() => new Promise(resolve => setTimeout(() => resolve(payload2), 10)))
               .then(() => {
                 expect(read().array).toEqual([initialState.array[0], payload2, initialState.array[2]]);
@@ -173,22 +173,22 @@ describe('async', () => {
     const { select, read } = createGlobalStore(initialState);
     const payload = { id: 2, value: 'twooo' };
     select(s => s.array)
-      .filterWhere(s => s.id).isEq(2)
+      .filterWhere(s => s.id).eq(2)
       .replace(() => new Promise(resolve => setTimeout(() => resolve(payload), 10)), { bypassPromiseFor: 1000 })
       .then(res => {
         expect(res).toEqual(read().array);
         expect(read().array).toEqual([initialState.array[0], payload, initialState.array[2]]);
         const payload2 = { id: 2, value: 'twooo' };
         select(s => s.array)
-          .filterWhere(s => s.id).isEq(2)
+          .filterWhere(s => s.id).eq(2)
           .replace(() => new Promise(resolve => setTimeout(() => resolve(payload2), 10)))
           .then(() => {
             expect(read().array).toEqual([initialState.array[0], payload, initialState.array[2]]);
             select(s => s.array)
-              .filterWhere(s => s.id).isEq(2)
+              .filterWhere(s => s.id).eq(2)
               .stopBypassingPromises();
             select(s => s.array)
-              .filterWhere(s => s.id).isEq(2)
+              .filterWhere(s => s.id).eq(2)
               .replace(() => new Promise(resolve => setTimeout(() => resolve(payload2), 10)))
               .then(() => {
                 expect(read().array).toEqual([initialState.array[0], payload2, initialState.array[2]]);
@@ -202,22 +202,22 @@ describe('async', () => {
     const { select, read } = createGlobalStore(initialState);
     const payload = { value: 'twooo' };
     select(s => s.array)
-      .findWhere(s => s.id).isEq(2)
+      .findWhere(s => s.id).eq(2)
       .patch(() => new Promise(resolve => setTimeout(() => resolve(payload), 10)), { bypassPromiseFor: 1000 })
       .then(res => {
         expect(res).toEqual(read().array);
         expect(read().array).toEqual([initialState.array[0], { ...initialState.array[1], ...payload }, initialState.array[2]]);
         const payload2 = { value: 'twoooz' };
         select(s => s.array)
-          .findWhere(s => s.id).isEq(2)
+          .findWhere(s => s.id).eq(2)
           .patch(() => new Promise(resolve => setTimeout(() => resolve(payload2), 10)))
           .then(() => {
             expect(read().array).toEqual([initialState.array[0], { ...initialState.array[1], ...payload }, initialState.array[2]]);
             select(s => s.array)
-              .findWhere(s => s.id).isEq(2)
+              .findWhere(s => s.id).eq(2)
               .stopBypassingPromises();
             select(s => s.array)
-              .findWhere(s => s.id).isEq(2)
+              .findWhere(s => s.id).eq(2)
               .patch(() => new Promise(resolve => setTimeout(() => resolve(payload2), 10)))
               .then(() => {
                 expect(read().array).toEqual([initialState.array[0], { ...initialState.array[1], ...payload2 }, initialState.array[2]]);
@@ -231,22 +231,22 @@ describe('async', () => {
     const { select, read } = createGlobalStore(initialState);
     const payload = { value: 'twooo' };
     select(s => s.array)
-      .filterWhere(s => s.id).isEq(2)
+      .filterWhere(s => s.id).eq(2)
       .patch(() => new Promise(resolve => setTimeout(() => resolve(payload), 10)), { bypassPromiseFor: 1000 })
       .then(res => {
         expect(res).toEqual(read().array);
         expect(read().array).toEqual([initialState.array[0], { ...initialState.array[1], ...payload }, initialState.array[2]]);
         const payload2 = { value: 'twoooz' };
         select(s => s.array)
-          .filterWhere(s => s.id).isEq(2)
+          .filterWhere(s => s.id).eq(2)
           .patch(() => new Promise(resolve => setTimeout(() => resolve(payload2), 10)))
           .then(() => {
             expect(read().array).toEqual([initialState.array[0], { ...initialState.array[1], ...payload }, initialState.array[2]]);
             select(s => s.array)
-              .filterWhere(s => s.id).isEq(2)
+              .filterWhere(s => s.id).eq(2)
               .stopBypassingPromises();
             select(s => s.array)
-              .filterWhere(s => s.id).isEq(2)
+              .filterWhere(s => s.id).eq(2)
               .patch(() => new Promise(resolve => setTimeout(() => resolve(payload2), 10)))
               .then(() => {
                 expect(read().array).toEqual([initialState.array[0], { ...initialState.array[1], ...payload2 }, initialState.array[2]]);
@@ -536,13 +536,13 @@ describe('async', () => {
     const fetchTodo2 = () => new Promise<{ id: number, value: string }>(resolve => setTimeout(() => resolve({ id: 1, value: 'testyy' })));
     select(s => s.array).
       replaceAll(fetchTodos, { bypassPromiseFor: 1000 })
-      .then(() => select(s => s.array).filterWhere(s => s.id).isEq(1).replace(fetchTodo, { bypassPromiseFor: 1000 }))
+      .then(() => select(s => s.array).filterWhere(s => s.id).eq(1).replace(fetchTodo, { bypassPromiseFor: 1000 }))
       .then(() => select(s => s.array).replaceAll(fetchTodos))
-      .then(() => select(s => s.array).filterWhere(s => s.id).isEq(1).replace(fetchTodo2))
+      .then(() => select(s => s.array).filterWhere(s => s.id).eq(1).replace(fetchTodo2))
       .then(() => {
         expect(read().array).toEqual([{ id: 1, value: 'testy' }]);
-        select(s => s.array).filterWhere(s => s.id).isEq(1).stopBypassingPromises();
-      }).then(() => select(s => s.array).filterWhere(s => s.id).isEq(1).replace(fetchTodo2))
+        select(s => s.array).filterWhere(s => s.id).eq(1).stopBypassingPromises();
+      }).then(() => select(s => s.array).filterWhere(s => s.id).eq(1).replace(fetchTodo2))
       .then(() => {
         expect(read().array).toEqual([{ id: 1, value: 'testyy' }]);
         done();

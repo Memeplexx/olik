@@ -115,7 +115,7 @@ describe('Root', () => {
     const { select, read } = createGlobalStore(['one', 'two', 'three']);
     const payload = 'twoo';
     select()
-      .findWhere().isEq('two')
+      .findWhere().eq('two')
       .replace(payload);
     expect(testState.currentAction).toEqual({
       type: 'find().replace()',
@@ -140,7 +140,7 @@ describe('Root', () => {
 
   it('find().replace()', () => {
     const { select, read } = createGlobalStore(['hello']);
-    select().findWhere().isMatching(/^h/).replace('another')
+    select().findWhere().matches(/^h/).replace('another')
     expect(testState.currentAction).toEqual({
       type: 'find().replace()',
       replacement: 'another',

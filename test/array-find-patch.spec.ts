@@ -15,7 +15,7 @@ describe('array.find().patch()', () => {
     const { select, read } = createGlobalStore(initialState);
     const payload = { value: 'new' };
     select(s => s.array)
-      .findWhere(e => e.id).isEq(2)
+      .findWhere(e => e.id).eq(2)
       .patch(payload);
     expect(testState.currentAction).toEqual({
       type: 'array.find().patch()',
@@ -30,7 +30,7 @@ describe('array.find().patch()', () => {
     const { select, read } = createGlobalStore(initialState);
     const payload = { value: 'four' };
     select(s => s.array)
-      .findWhere(e => e.id).isNotEq(2)
+      .findWhere(e => e.id).ne(2)
       .patch(payload);
     expect(testState.currentAction).toEqual({
       type: 'array.find().patch()',
@@ -45,7 +45,7 @@ describe('array.find().patch()', () => {
     const { select, read } = createGlobalStore(initialState);
     const payload = { value: 'four' };
     select(s => s.array)
-      .findWhere(e => e.id).isMoreThan(1)
+      .findWhere(e => e.id).gt(1)
       .patch(payload);
     expect(testState.currentAction).toEqual({
       type: 'array.find().patch()',
@@ -60,7 +60,7 @@ describe('array.find().patch()', () => {
     const { select, read } = createGlobalStore(initialState);
     const payload = { value: 'four' };
     select(s => s.array)
-      .findWhere(e => e.id).isMoreThanOrEq(1)
+      .findWhere(e => e.id).gte(1)
       .patch(payload);
     expect(testState.currentAction).toEqual({
       type: 'array.find().patch()',
@@ -75,7 +75,7 @@ describe('array.find().patch()', () => {
     const { select, read } = createGlobalStore(initialState);
     const payload = { value: 'four' };
     select(s => s.array)
-      .findWhere(e => e.id).isLessThan(2)
+      .findWhere(e => e.id).lt(2)
       .patch(payload);
     expect(testState.currentAction).toEqual({
       type: 'array.find().patch()',
@@ -90,7 +90,7 @@ describe('array.find().patch()', () => {
     const { select, read } = createGlobalStore(initialState);
     const payload = { value: 'four' };
     select(s => s.array)
-      .findWhere(e => e.id).isLessThanOrEq(2)
+      .findWhere(e => e.id).lte(2)
       .patch(payload);
     expect(testState.currentAction).toEqual({
       type: 'array.find().patch()',
@@ -105,7 +105,7 @@ describe('array.find().patch()', () => {
     const { select, read } = createGlobalStore(initialState);
     const payload = { id: 4, value: 'four' };
     select(s => s.array)
-      .findWhere(e => e.id).isIn([1, 2])
+      .findWhere(e => e.id).in([1, 2])
       .patch(payload);
     expect(testState.currentAction).toEqual({
       type: 'array.find().patch()',
@@ -120,7 +120,7 @@ describe('array.find().patch()', () => {
     const { select, read } = createGlobalStore(initialState);
     const payload = { value: 'four' };
     select(s => s.array)
-      .findWhere(e => e.id).isNotIn([1, 2])
+      .findWhere(e => e.id).ni([1, 2])
       .patch(payload);
     expect(testState.currentAction).toEqual({
       type: 'array.find().patch()',
@@ -135,7 +135,7 @@ describe('array.find().patch()', () => {
     const { select, read } = createGlobalStore(initialState);
     const payload = { value: 'four' };
     select(s => s.array)
-      .findWhere(e => e.value).isMatching(/^t/)
+      .findWhere(e => e.value).matches(/^t/)
       .patch(payload);
     expect(testState.currentAction).toEqual({
       type: 'array.find().patch()',
