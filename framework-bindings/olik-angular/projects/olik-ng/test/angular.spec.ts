@@ -1,4 +1,4 @@
-import { createAppStore, createAppStoreEnforcingTags, createNestedStore } from '../src/public-api';
+import { combineObserversAcrossStores, createAppStore, createAppStoreEnforcingTags, createNestedStore } from '../src/public-api';
 import { skip } from 'rxjs/operators';
 
 describe('Angular', () => {
@@ -220,6 +220,79 @@ describe('Angular', () => {
         done();
       }
     });
+  })
+
+  it('should be able to combineObservers for a single store', done => {
+    const { select, combineObservers } = createAppStore(initialState, { devtools: false });
+    let count = 0;
+    const obs$ = combineObservers({
+      one: s => s.object.property,
+      two: s => s.string,
+    });
+    obs$.subscribe(val => {
+      count++;
+      if (count === 1) {
+        expect(val.one).toEqual('a');
+        expect(val.two).toEqual('b');
+      } else if (count === 2) {
+        expect(val.one).toEqual('test');
+        expect(val.two).toEqual('b');
+      } else if (count === 3) {
+        expect(val.one).toEqual('test');
+        expect(val.two).toEqual('test');
+      }
+    });
+    expect(count).toEqual(1);
+    select(s => s.object.property).replace('test');
+    expect(count).toEqual(2);
+    select(s => s.string).replace('test');
+    expect(count).toEqual(3);
+    select(s => s.array).replaceAll([{ id: 5, value: 'x' }]);
+    expect(count).toEqual(3);
+    done();
+  })
+
+  it('should be able to combineObservers across stores', done => {
+    const globalStore = createAppStore(initialState, { devtools: false });
+    const nestedStore = createNestedStore({ hello: 'c', world: 'd' }, { componentName: 'test' });
+    let count = 0;
+    const obs$ = combineObserversAcrossStores({
+      one: globalStore.observe(s => s.object.property),
+      two: globalStore.observe(s => s.string),
+      three: nestedStore.observe(s => s.hello),
+    });
+    obs$.subscribe(val => {
+      count++;
+      if (count === 1) {
+        expect(val.one).toEqual('a');
+        expect(val.two).toEqual('b');
+        expect(val.three).toEqual('c');
+      } else if (count === 2) {
+        expect(val.one).toEqual('test');
+        expect(val.two).toEqual('b');
+        expect(val.three).toEqual('c');
+      } else if (count === 3) {
+        expect(val.one).toEqual('test');
+        expect(val.two).toEqual('test');
+        expect(val.three).toEqual('c');
+      } else if (count === 4) {
+        expect(val.one).toEqual('test');
+        expect(val.two).toEqual('test');
+        expect(val.three).toEqual('test');
+      }
+    });
+    expect(count).toEqual(1);
+    globalStore.select(s => s.object.property).replace('test');
+    expect(count).toEqual(2);
+    globalStore.select(s => s.string).replace('test');
+    expect(count).toEqual(3);
+    globalStore.select(s => s.array).replaceAll([{ id: 5, value: 'x' }]);
+    expect(count).toEqual(3);
+    nestedStore.select(s => s.hello).replace('test');
+    expect(count).toEqual(4);
+    nestedStore.select(s => s.world).replace('test');
+    expect(count).toEqual(4);
+    done();
   })
 
   // // reactive version

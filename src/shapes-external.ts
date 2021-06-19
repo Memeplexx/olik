@@ -115,7 +115,7 @@ export type PredicateOptionsForBoolean<X extends DeepReadonlyArray<any>, F exten
  */
 export type PredicateOptionsForNumber<X extends DeepReadonlyArray<any>, E, F extends FindOrFilter, T extends Trackability> = {
   /**
-   * Searches for array element(s) where the previously selected property **is greater than** the supplied number
+   * Searches for array element(s) where the previously selected property **is greater than** the supplied value
    * @example
    * ...
    * .isMoreThan(2)
@@ -123,7 +123,7 @@ export type PredicateOptionsForNumber<X extends DeepReadonlyArray<any>, E, F ext
    */
   gt: (value: E) => PredicateAction<X, F, T>,
   /**
-   * Searches for array element(s) where the previously selected property **is greater than or equal to** the supplied number
+   * Searches for array element(s) where the previously selected property **is greater than or equal to** the supplied value
    * @example
    * ...
    * .isMoreThanOrEq(2)
@@ -131,7 +131,7 @@ export type PredicateOptionsForNumber<X extends DeepReadonlyArray<any>, E, F ext
    */
   gte: (value: E) => PredicateAction<X, F, T>,
   /**
-   * Searches for array element(s) where the previously selected property **is less than** the supplied number
+   * Searches for array element(s) where the previously selected property **is less than** the supplied value
    * @example
    * ...
    * .isLessThan(2)
@@ -139,7 +139,7 @@ export type PredicateOptionsForNumber<X extends DeepReadonlyArray<any>, E, F ext
    */
   lt: (value: E) => PredicateAction<X, F, T>,
   /**
-   * Searches for array element(s) where the previously selected property **is less than or equal to** the supplied number
+   * Searches for array element(s) where the previously selected property **is less than or equal to** the supplied value
    * @example
    * ...
    * .isLessThanOrEq(2)
@@ -473,12 +473,22 @@ export type StoreForAnObject<C extends any, T extends Trackability> = {
    * Removes the specified key from this object.  
    * ***WARNING***: invoking this has the potentional to contradict the type-system.
    * Only use this to remove a property from an object of type of `{ [key: string]: any }` and NOT to remove a property from an object with statically defined properties eg `{ str: '', num: 0 }`
+   * @example
+   * const { select } = createGlobalStore({ skillpoints: {} as {[name: string]: number} });
+   * 
+   * select(s => s.skillpoints)
+   *   .remove('archery')
    */
   remove: (key: keyof C, options: ActionOptions<T>) => void,
   /**
    * Adds one or more key-value-pairs to this object.  
    * ***WARNING***: invoking this has the potentional to contradict the type-system.
    * Only use this to add properties to an object of type of `{ [key: string]: any }` and NOT to add properties with statically defined properties eg `{ str: '', num: 0 }`
+   * @example
+   * const { select } = createGlobalStore({ skillpoints: {} as {[name: string]: number} });
+   * 
+   * select(s => s.skillpoints)
+   *   .insert({ archery: 3, sorcery: 5 })
    */
   insert: <H extends { [key: string]: any } | (() => Promise<{ [key: string]: any }>) >(insertion: H) => H extends (() => Promise<{ [key: string]: any }>) ? Promise<{ [key: string]: any }> : void,
 } & StoreForAnObjectOrPrimitive<C, T>;
@@ -624,7 +634,6 @@ export type OptionsForMakingANestedStore = {
   componentName: string;
   /**
    * The string that will distinguish different instances of the same nested store.
-   * If this value isn't supplied, the library will use an auto-incrementing integer as the storeKey
    */
   instanceName?: string;
 }
