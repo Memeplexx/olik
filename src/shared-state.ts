@@ -3,7 +3,6 @@ import { DevtoolsInstance, NestedContainerStore, WindowAugmentedWithReduxDevtool
 export const libState = {
   nestedContainerStore: null as null | NestedContainerStore,
   transactionState: 'none' as 'none' | 'started' | 'last',
-  nestedStoresAutoGenKeys: {} as {[componentName: string]: number},
   storesRegisteredWithDevtools: {} as {[name: string]: DevtoolsInstance },
 }
 

@@ -74,16 +74,6 @@ export function createNestedStore<L>(
   options: OptionsForMakingANestedStore,
 ) {
 
-  // Ensure that the instanceName is defined
-  if (!options.instanceName) {
-    if (isEmpty(libState.nestedStoresAutoGenKeys[options.componentName])) {
-      libState.nestedStoresAutoGenKeys[options.componentName] = 0;
-    } else {
-      libState.nestedStoresAutoGenKeys[options.componentName]++;
-    }
-    options.instanceName = libState.nestedStoresAutoGenKeys[options.componentName].toString();
-  }
-
   // If there is no container store (app-store) then create a new top-level store
   if (!libState.nestedContainerStore) {
     const nStore = createStoreCore<L, 'untagged'>({

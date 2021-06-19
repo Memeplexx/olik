@@ -635,7 +635,7 @@ export type OptionsForMakingANestedStore = {
   /**
    * The string that will distinguish different instances of the same nested store.
    */
-  instanceName?: string;
+  instanceName: string;
 }
 
 /**

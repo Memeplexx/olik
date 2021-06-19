@@ -27,7 +27,7 @@ describe('dry-run', () => {
 
   it('should work with a nested store', () => {
     const { select, read } = createGlobalStore({ str: '' });
-    const nested = createNestedStore({ hello: 'xx' }, { componentName: 'test' })
+    const nested = createNestedStore({ hello: 'xx' }, { componentName: 'test', instanceName: '0' })
     const state = getSelectedStateFromOperationWithoutUpdatingStore(nested.select, () => nested.select(s => s.hello).replace('sdd'));
     expect(state).toEqual('xx');
     expect(read()).toEqual({ str: '', nested: { test: { '0': { hello: 'xx' } } } });
@@ -35,7 +35,7 @@ describe('dry-run', () => {
 
   it('should work with a nested store which isn\'t attached', () => {
     const initState = { str: 'abc' };
-    const { select, read } = createNestedStore(initState, { componentName: 'test' });
+    const { select, read } = createNestedStore(initState, { componentName: 'test', instanceName: '0' });
     const state = getSelectedStateFromOperationWithoutUpdatingStore(select, () => select(s => s.str).replace('sdd'));
     expect(state).toEqual('abc');
     expect(read()).toEqual(initState);
