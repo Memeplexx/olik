@@ -59,7 +59,7 @@ function getUseFetcher<S>(select: core.SelectorFromAStore<S>) {
  */
 export function useNestedStore<C>(
   initialState: C,
-  options: core.OptionsForMakingANestedStore & { instanceName: string },
+  options: core.OptionsForMakingANestedStore,
 ) {
   const initState = React.useRef(initialState);
   const opts = React.useRef(options);
@@ -91,8 +91,8 @@ export function useNestedStore<C>(
 type Function<S, R> = (arg: core.DeepReadonly<S>) => R;
 type MappedSelectorsToResults<S, X> = { [K in keyof X]: X[K] extends Function<S, infer E> ? E : never };
 
-export function createAppStore<S>(initialState: S, options?: core.OptionsForMakingAStore) {
-  const { select, read } = core.createAppStore(initialState, options);
+export function createGlobalStore<S>(initialState: S, options?: core.OptionsForMakingAGlobalStore) {
+  const { select, read } = core.createGlobalStore(initialState, options);
   return {
     /**
      * Takes a function which selects from the store
@@ -108,8 +108,8 @@ export function createAppStore<S>(initialState: S, options?: core.OptionsForMaki
   }
 }
 
-export function createAppStoreEnforcingTags<S>(initialState: S, options?: core.OptionsForMakingAStore) {
-  const { select, read } = core.createAppStoreEnforcingTags(initialState, options);
+export function createGlobalStoreEnforcingTags<S>(initialState: S, options?: core.OptionsForMakingAGlobalStore) {
+  const { select, read } = core.createGlobalStoreEnforcingTags(initialState, options);
   return {
     /**
      * Takes a function which selects from the store

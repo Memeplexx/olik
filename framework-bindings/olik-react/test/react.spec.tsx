@@ -4,7 +4,7 @@ import { screen, waitFor } from '@testing-library/dom';
 import { render } from '@testing-library/react';
 import React from 'react';
 
-import { createAppStore, useDerivationAcrossStores, useNestedStore } from '../src';
+import { createGlobalStore, useDerivationAcrossStores, useNestedStore } from '../src';
 
 describe('React', () => {
 
@@ -17,7 +17,7 @@ describe('React', () => {
   it('should create and update a store', () => {
     const {
       select
-    } = createAppStore(initialState, { devtools: false });
+    } = createGlobalStore(initialState, { devtools: false });
     select(s => s.object.property)
       .replace('test');
     expect(select().read().object.property).toEqual('test');
@@ -27,7 +27,7 @@ describe('React', () => {
     const {
       select,
       useSelector
-    } = createAppStore(initialState, { devtools: false });
+    } = createGlobalStore(initialState, { devtools: false });
     const App = () => {
       const result = useSelector(s => s.object.property);
       return (
@@ -47,7 +47,7 @@ describe('React', () => {
     const {
       select,
       useDerivation
-    } = createAppStore(initialState, { devtools: false });
+    } = createGlobalStore(initialState, { devtools: false });
     let calcCount = 0;
     const App = () => {
       const result = useDerivation([
@@ -75,7 +75,7 @@ describe('React', () => {
   it('should useDerivation with deps', () => {
     const {
       useDerivation
-    } = createAppStore(initialState, { devtools: false });
+    } = createGlobalStore(initialState, { devtools: false });
     let calcCount = 0;
     const App = () => {
       const [str, setStr] = React.useState('');
@@ -105,7 +105,7 @@ describe('React', () => {
   });
 
   it('should useDerivation across stores', () => {
-    const parent = createAppStore(initialState, { devtools: false });
+    const parent = createGlobalStore(initialState, { devtools: false });
     let calcCount = 0;
     const App = () => {
       const nested = useNestedStore({ hello: false }, { componentName: 'MyComponent', instanceName: '0' });
@@ -147,7 +147,7 @@ describe('React', () => {
     const {
       select,
       mapStateToProps
-    } = createAppStore(initialState, { devtools: false });
+    } = createGlobalStore(initialState, { devtools: false });
     let renderCount = 0;
     class Child extends React.Component<{ str: string, num: number }> {
       render() {
@@ -214,7 +214,7 @@ describe('React', () => {
   });
 
   it('should create a nested store with a parent', () => {
-    const parentStore = createAppStore({
+    const parentStore = createGlobalStore({
       ...initialState,
       nested: {
         component: {} as { [key: string]: { prop: string } }
@@ -251,7 +251,7 @@ describe('React', () => {
 
 
   it('nested store should receive props from parent', async () => {
-    const parentStore = createAppStore({
+    const parentStore = createGlobalStore({
       ...initialState,
       nested: {
         component2: {} as { [key: string]: { prop: string, num: number } }
@@ -285,7 +285,7 @@ describe('React', () => {
   })
 
   it('should respond to async actions', async () => {
-    const { select, useSelector } = createAppStore(initialState, { devtools: false });
+    const { select, useSelector } = createGlobalStore(initialState, { devtools: false });
     const App = () => {
       const state = useSelector(s => s.object.property);
       return (
@@ -305,7 +305,7 @@ describe('React', () => {
     const {
       select,
       useFetcher
-    } = createAppStore(initialState, { devtools: false });
+    } = createGlobalStore(initialState, { devtools: false });
     const App = () => {
       const {
         wasResolved,
@@ -336,7 +336,7 @@ describe('React', () => {
     const {
       select,
       useFetcher
-    } = createAppStore(initialState, { devtools: false });
+    } = createGlobalStore(initialState, { devtools: false });
     const App = () => {
       const {
         wasResolved,
@@ -369,7 +369,7 @@ describe('React', () => {
     const {
       select,
       useFetcher,
-    } = createAppStore({
+    } = createGlobalStore({
       toPaginate: {} as { [key: string]: Todo[] },
     }, { devtools: false });
     const App = () => {

@@ -58,8 +58,8 @@ const combineObserversInternal = <S>(select: core.SelectorFromAStore<S>) => <T e
   return combineObserversAcrossStores(obj);
 }
 
-export const createAppStore = <S>(initialState: S, options?: core.OptionsForMakingAStore) => {
-  const { select, read } = core.createAppStore(initialState, options);
+export const createGlobalStore = <S>(initialState: S, options?: core.OptionsForMakingAGlobalStore) => {
+  const { select, read } = core.createGlobalStore(initialState, options);
   return new class {
     /**
      * Select a piece of the state to operate on and perform some action on it
@@ -120,8 +120,8 @@ export const createAppStore = <S>(initialState: S, options?: core.OptionsForMaki
 
 
 
-export const createAppStoreEnforcingTags = <S>(initialState: S, options?: core.OptionsForMakingAStore) => {
-  const { select, read } = core.createAppStoreEnforcingTags(initialState, options);
+export const createGlobalStoreEnforcingTags = <S>(initialState: S, options?: core.OptionsForMakingAGlobalStore) => {
+  const { select, read } = core.createGlobalStoreEnforcingTags(initialState, options);
   return new class {
     /**
      * Select a piece of the state to operate on and perform some action on it
