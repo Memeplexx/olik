@@ -1,4 +1,11 @@
-import { DeepReadonly, Selector, SelectorFromAStore, SelectorFromAStoreEnforcingTags, StoreWhichIsNested, Trackability, UpdateOptions } from './shapes-external';
+import {
+  DeepReadonly,
+  Selector,
+  SelectorFromAStore,
+  StoreWhichIsNested,
+  Trackability,
+  UpdateOptions,
+} from './shapes-external';
 import { PathReader, StoreState } from './shapes-internal';
 import { errorMessages, expressionsNotAllowedInSelectorFunction } from './shared-consts';
 import { libState } from './shared-state';
@@ -234,7 +241,7 @@ export const processAsyncPayload = <S, C, X extends C & Array<any>, T extends Tr
  * To be used by framework bindings to determine what state was selected without actually performing a state update
  */
 export const getSelectedStateFromOperationWithoutUpdatingStore = <S>(
-  select: SelectorFromAStore<S> | SelectorFromAStoreEnforcingTags<S>,
+  select: SelectorFromAStore<S>,
   operation: () => any,
 ): any => {
   (select() as any).dryRun(true);
