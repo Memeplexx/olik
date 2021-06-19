@@ -249,8 +249,3 @@ export const getSelectedStateFromOperationWithoutUpdatingStore = <S>(
   (select() as any).dryRun(false);
   return result;
 }
-
-/**
- * To be used by framework bindings reset nested stores in between tests
- */
-export const resetAllNestedStores = () => libState.nestedStoresAutoGenKeys = {};
