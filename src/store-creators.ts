@@ -88,8 +88,8 @@ export function createNestedStore<L>(
       return cStore as any as StoreWhichIsNested<C>;
     });
     const read = () => select().read();
-    const detachFromAppStore = () => { /* This is a no-op */ };
-    return { select, read, detachFromAppStore } as SelectorReaderNested<L, SelectorFromANestedStore<L>>;
+    const detachFromGlobalStore = () => { /* This is a no-op */ };
+    return { select, read, detachFromGlobalStore } as SelectorReaderNested<L, SelectorFromANestedStore<L>>;
   }
 
   // At this point, we've established that an app-store exists
@@ -160,7 +160,7 @@ export function createNestedStore<L>(
     cStore.isNested = true;
     return cStore as StoreWhichIsNested<C>;
   });
-  const detachFromAppStore = () => {
+  const detachFromGlobalStore = () => {
     if (!libState.nestedContainerStore) { return; }
     const state = libState.nestedContainerStore().read().nested[options.componentName];
     if ((Object.keys(state).length === 1) && state[options.instanceName!]) {
@@ -178,7 +178,7 @@ export function createNestedStore<L>(
       () => libState.nestedContainerStore!(s => (s as any).nested[options.componentName]).insert({ [name]: value }),
     )
   }
-  return { select, read, detachFromAppStore, setInstanceName } as SelectorReaderNested<L, SelectorFromANestedStore<L>>;
+  return { select, read, detachFromGlobalStore, setInstanceName } as SelectorReaderNested<L, SelectorFromANestedStore<L>>;
 }
 
 function createGlobalStoreInternal<S, T extends Trackability>(

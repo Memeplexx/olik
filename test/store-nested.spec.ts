@@ -72,7 +72,7 @@ describe('Nested', () => {
     const instanceName = '0';
     const nestedStore1 = createNestedStore({ one: '' }, { componentName, instanceName });
     expect(read()).toEqual({ test: '', nested: { [componentName]: { 0: { one: '' } } } });
-    nestedStore1.detachFromAppStore();
+    nestedStore1.detachFromGlobalStore();
     expect(read()).toEqual({ test: '', nested: {} });
   })
 
@@ -85,9 +85,9 @@ describe('Nested', () => {
     const nestedStore1 = createNestedStore({ one: '' }, { componentName, instanceName: '0' });
     const nestedStore2 = createNestedStore({ one: '' }, { componentName, instanceName: '1' });
     expect(read()).toEqual({ test: '', nested: { [componentName]: { '0': { one: '' }, '1': { one: '' } } } });
-    nestedStore1.detachFromAppStore();
+    nestedStore1.detachFromGlobalStore();
     expect(read()).toEqual({ test: '', nested: { [componentName]: { '1': { one: '' } } } });
-    nestedStore2.detachFromAppStore();
+    nestedStore2.detachFromGlobalStore();
     expect(read()).toEqual({ test: '', nested: {} });
   })
 
@@ -190,7 +190,7 @@ describe('Nested', () => {
     }, { componentName: 'dd', instanceName: '0', dontTrackWithDevtools: true });
     nested.select(s => s.object.property).replace('test');
     expect(nested.read().object.property).toEqual('test');
-    nested.detachFromAppStore();
+    nested.detachFromGlobalStore();
   });
 
   it('should be able to support a custom instance name', () => {

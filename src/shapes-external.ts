@@ -64,7 +64,7 @@ export type PredicateOptionsCommon<X extends DeepReadonlyArray<any>, P, F extend
    * Searches for array element(s) where the previously selected property **equals** the supplied value
    * @example
    * ...
-   * .isEq(1)
+   * .eq(1)
    * ...
    */
   eq: (value: P) => PredicateAction<X, F, T>,
@@ -72,7 +72,7 @@ export type PredicateOptionsCommon<X extends DeepReadonlyArray<any>, P, F extend
    * Searches for array element(s) where the previously selected property **does not equal** the supplied value
    * @example
    * ...
-   * .isNotEq(1)
+   * .ne(1)
    * ...
    */
   ne: (value: P) => PredicateAction<X, F, T>,
@@ -80,7 +80,7 @@ export type PredicateOptionsCommon<X extends DeepReadonlyArray<any>, P, F extend
    * Searches for array element(s) where the previously selected property **is in** the supplied array
    * @example
    * ...
-   * isIn([1, 2])
+   * in([1, 2])
    * ...
    */
   in: (value: P[]) => PredicateAction<X, F, T>,
@@ -88,7 +88,7 @@ export type PredicateOptionsCommon<X extends DeepReadonlyArray<any>, P, F extend
    * Searches for array element(s) where the previously selected property **is not in** the supplied array
    * @example
    * ...
-   * .isNotIn([1, 2])
+   * .ni([1, 2])
    * ...
    */
   ni: (value: P[]) => PredicateAction<X, F, T>,
@@ -118,7 +118,7 @@ export type PredicateOptionsForNumber<X extends DeepReadonlyArray<any>, E, F ext
    * Searches for array element(s) where the previously selected property **is greater than** the supplied value
    * @example
    * ...
-   * .isMoreThan(2)
+   * .gt(2)
    * ...
    */
   gt: (value: E) => PredicateAction<X, F, T>,
@@ -126,7 +126,7 @@ export type PredicateOptionsForNumber<X extends DeepReadonlyArray<any>, E, F ext
    * Searches for array element(s) where the previously selected property **is greater than or equal to** the supplied value
    * @example
    * ...
-   * .isMoreThanOrEq(2)
+   * .gte(2)
    * ...
    */
   gte: (value: E) => PredicateAction<X, F, T>,
@@ -134,7 +134,7 @@ export type PredicateOptionsForNumber<X extends DeepReadonlyArray<any>, E, F ext
    * Searches for array element(s) where the previously selected property **is less than** the supplied value
    * @example
    * ...
-   * .isLessThan(2)
+   * .lt(2)
    * ...
    */
   lt: (value: E) => PredicateAction<X, F, T>,
@@ -142,7 +142,7 @@ export type PredicateOptionsForNumber<X extends DeepReadonlyArray<any>, E, F ext
    * Searches for array element(s) where the previously selected property **is less than or equal to** the supplied value
    * @example
    * ...
-   * .isLessThanOrEq(2)
+   * .lte(2)
    * ...
    */
   lte: (value: E) => PredicateAction<X, F, T>,
@@ -157,7 +157,7 @@ export type PredicateOptionsForString<X extends DeepReadonlyArray<any>, E, F ext
    * @param pattern any regular expression
    * @example
    * ...
-   * .isMatchingRegex(/^hello/)
+   * .matches(/^hello/)
    * ...
    */
   matches: (pattern: RegExp) => PredicateAction<X, F, T>,
@@ -560,7 +560,7 @@ export type Selector<S, C, X = C> = X extends C & ReadonlyArray<any> ? (s: S) =>
 
 export type SelectorReader<S, U> = { select: U, read: () => DeepReadonly<S> };
 
-export type SelectorReaderNested<S, U> = SelectorReader<S, U> & { detachFromAppStore: () => void, setInstanceName: (name: string) => void };
+export type SelectorReaderNested<S, U> = SelectorReader<S, U> & { detachFromGlobalStore: () => void, setInstanceName: (name: string) => void };
 
 /**
  * A function which selects from a nested store
@@ -635,7 +635,7 @@ export type OptionsForMakingANestedStore = {
   /**
    * The string that will distinguish different instances of the same nested store.
    */
-  instanceName: string;
+  instanceName: string | number;
 }
 
 /**
