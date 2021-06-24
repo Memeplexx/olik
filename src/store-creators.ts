@@ -25,10 +25,10 @@ import { isEmpty } from './shared-utils';
  * @param options some additional configuration options
  * 
  * @example
- * const select = createGlobalStoreEnforcingTags({ prop: '' });
+ * const store = createGlobalStoreEnforcingTags({ prop: '' });
  * 
  * // Note that when updating state, we are now required to supply a string as the last argument (in this case 'MyComponent')
- * select(s => s.prop)                // type: 'prop.replace() [MyComponent]'
+ * store.get(s => s.prop)                // type: 'prop.replace() [MyComponent]'
  *   .replace('test', 'MyComponent')  // replacement: 'test'
  */
 export function createGlobalStoreEnforcingTags<S>(
@@ -44,7 +44,7 @@ export function createGlobalStoreEnforcingTags<S>(
  * @param options some additional configuration options
  * 
  * @example
- * const select = createGlobalStore({ todos: Array<{ id: number, text: string }>() });
+ * const store = createGlobalStore({ todos: Array<{ id: number, text: string }>() });
  */
 export function createGlobalStore<S>(
   state: S,
@@ -61,7 +61,7 @@ export function createGlobalStore<S>(
  * @param options A configuration object which, at minimum, must contain the `componentName` of the nested store
  * 
  * @example
- * const select = creatNestedStore({
+ * const store = creatNestedStore({
  *   id: number,
  *   text: string,
  *   done: boolean,
@@ -84,8 +84,8 @@ export function createNestedStore<L>(
     }) as SelectorReader<L, SelectorFromANestedStore<L>>;
     const changeListeners = new Map<(ar: any) => any, (arg: L) => any>();
     const subscriptions = new Array<Unsubscribable>();
-    const select = (<C = L>(selector?: (arg: L) => C) => {
-      const cStore = selector ? nStore.select(selector as any) : nStore.select();
+    const get = (<C = L>(selector?: (arg: L) => C) => {
+      const cStore = selector ? nStore.get(selector as any) : nStore.get();
       (cStore as any).isNested = true;
       const onChange = (performAction: (v?: any) => any) => {
         subscriptions.push(cStore.onChange(performAction));
@@ -96,7 +96,7 @@ export function createNestedStore<L>(
         ...cStore, onChange
       } as any as StoreWhichIsNested<C>
     });
-    const read = () => select().read();
+    const read = () => get().read();
     const detachFromGlobalStore = () => { /* This is a no-op */ };
     const setInstanceName = (instanceName: string) => {
       if (options.instanceName !== Deferred) { throw new Error(errorMessages.CANNOT_CHANGE_INSTANCE_NAME); }
@@ -108,7 +108,7 @@ export function createNestedStore<L>(
           .onChange(key));
       changeListeners.clear();
     }
-    let result = { select, read, detachFromGlobalStore, setInstanceName } as SelectorReaderNested<L, SelectorFromANestedStore<L>>;
+    let result = { get, read, detachFromGlobalStore, setInstanceName } as SelectorReaderNested<L, SelectorFromANestedStore<L>>;
     return result;
   }
 
@@ -120,14 +120,14 @@ export function createNestedStore<L>(
         name: options.componentName + ' : ' + options.instanceName
       }
     }) as SelectorReader<L, SelectorFromANestedStore<L>>;
-    const select = (<C = L>(selector?: (arg: L) => C) => {
-      const cStore = selector ? nStore.select(selector as any) : nStore.select();
+    const get = (<C = L>(selector?: (arg: L) => C) => {
+      const cStore = selector ? nStore.get(selector as any) : nStore.get();
       (cStore as any).isNested = true;
       return cStore as any as StoreWhichIsNested<C>;
     });
-    const read = () => select().read();
+    const read = () => get().read();
     const detachFromGlobalStore = () => { /* This is a no-op */ };
-    return { select, read, detachFromGlobalStore } as SelectorReaderNested<L, SelectorFromANestedStore<L>>;
+    return { get, read, detachFromGlobalStore } as SelectorReaderNested<L, SelectorFromANestedStore<L>>;
   }
 
   return createNestedStoreInternal(state, options as OptionsForMakingANestedStore);
@@ -141,7 +141,7 @@ function createGlobalStoreInternal<S, T extends Trackability>(
     state, devtools: options.devtools === undefined ? {} : options.devtools,
     tagSanitizer: options.tagSanitizer, tagsToAppearInType: options.tagsToAppearInType
   });
-  libState.nestedContainerStore = store.select as any;
+  libState.nestedContainerStore = store.get as any;
   return store;
 }
 
@@ -208,7 +208,7 @@ function createNestedStoreInternal<L>(
       });
     }
   }
-  const select = (<C = L>(selector?: (arg: L) => C) => {
+  const get = (<C = L>(selector?: (arg: L) => C) => {
     const cStore = libState.nestedContainerStore!(s => {
       const nState = s.nested[options.componentName][options.instanceName!];
       return selector ? selector(nState) : nState;
@@ -226,6 +226,6 @@ function createNestedStoreInternal<L>(
       libState.nestedContainerStore(s => s.nested[options.componentName]).remove(options.instanceName!);
     }
   }
-  const read = () => select().read();
-  return { select, read, detachFromGlobalStore } as SelectorReaderNested<L, SelectorFromANestedStore<L>>;
+  const read = () => get().read();
+  return { get, read, detachFromGlobalStore } as SelectorReaderNested<L, SelectorFromANestedStore<L>>;
 }

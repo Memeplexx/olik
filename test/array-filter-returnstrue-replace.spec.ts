@@ -12,10 +12,10 @@ describe('array.filterCustom().replace()', () => {
   };
 
   it('should eq()', () => {
-    const { select, read } = createGlobalStore(initialState);
+    const { get, read } = createGlobalStore(initialState);
     const payload = { id: 4, value: 'four' };
     const where = (e: typeof initialState['array'][0]) => e.id === 2;
-    select(s => s.array)
+    get(s => s.array)
       .filterWhere(where).returnsTrue()
       .replace(payload);
     expect(testState.currentAction).toEqual({
@@ -28,10 +28,10 @@ describe('array.filterCustom().replace()', () => {
   })
 
   it('should ne()', () => {
-    const { select, read } = createGlobalStore(initialState);
+    const { get, read } = createGlobalStore(initialState);
     const payload = { id: 4, value: 'four' };
     const where = (e: typeof initialState['array'][0]) => e.id !== 2;
-    select(s => s.array)
+    get(s => s.array)
       .filterWhere(where).returnsTrue()
       .replace(payload);
     expect(testState.currentAction).toEqual({
@@ -44,10 +44,10 @@ describe('array.filterCustom().replace()', () => {
   })
 
   it('should gt()', () => {
-    const { select, read } = createGlobalStore(initialState);
+    const { get, read } = createGlobalStore(initialState);
     const payload = { id: 4, value: 'four' };
     const where = (e: typeof initialState['array'][0]) => e.id > 1;
-    select(s => s.array)
+    get(s => s.array)
       .filterWhere(where).returnsTrue()
       .replace(payload);
     expect(testState.currentAction).toEqual({
@@ -60,10 +60,10 @@ describe('array.filterCustom().replace()', () => {
   })
 
   it('should lt()', () => {
-    const { select, read } = createGlobalStore(initialState);
+    const { get, read } = createGlobalStore(initialState);
     const payload = { id: 4, value: 'four' };
     const where = (e: typeof initialState['array'][0]) => e.id < 2;
-    select(s => s.array)
+    get(s => s.array)
       .filterWhere(e => e.id < 2).returnsTrue()
       .replace(payload);
     expect(testState.currentAction).toEqual({
@@ -76,10 +76,10 @@ describe('array.filterCustom().replace()', () => {
   })
 
   it('should in()', () => {
-    const { select, read } = createGlobalStore(initialState);
+    const { get, read } = createGlobalStore(initialState);
     const payload = { id: 4, value: 'four' };
     const where = (e: typeof initialState['array'][0]) => [1, 2].includes(e.id);
-    select(s => s.array)
+    get(s => s.array)
       .filterWhere(where).returnsTrue()
       .replace(payload);
     expect(testState.currentAction).toEqual({
@@ -92,10 +92,10 @@ describe('array.filterCustom().replace()', () => {
   })
 
   it('should ni()', () => {
-    const { select, read } = createGlobalStore(initialState);
+    const { get, read } = createGlobalStore(initialState);
     const payload = { id: 4, value: 'four' };
     const where = (e: typeof initialState['array'][0]) => ![1, 2].includes(e.id);
-    select(s => s.array)
+    get(s => s.array)
       .filterWhere(e => ![1, 2].includes(e.id)).returnsTrue()
       .replace(payload);
     expect(testState.currentAction).toEqual({
@@ -108,10 +108,10 @@ describe('array.filterCustom().replace()', () => {
   })
 
   it('should match()', () => {
-    const { select, read } = createGlobalStore(initialState);
+    const { get, read } = createGlobalStore(initialState);
     const payload = { id: 4, value: 'four' };
     const where = (e: typeof initialState['array'][0]) => /^t/.test(e.value);
-    select(s => s.array)
+    get(s => s.array)
       .filterWhere(where).returnsTrue()
       .replace(payload);
     expect(testState.currentAction).toEqual({

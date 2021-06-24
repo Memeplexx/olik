@@ -12,9 +12,9 @@ describe('array.filter().patch()', () => {
   };
 
   it('should eq()', () => {
-    const { select, read } = createGlobalStore(initialState);
+    const { get, read } = createGlobalStore(initialState);
     const payload = { value: 'new' };
-    select(s => s.array)
+    get(s => s.array)
       .filterWhere(e => e.id).eq(2)
       .patch(payload);
     expect(testState.currentAction).toEqual({
@@ -27,9 +27,9 @@ describe('array.filter().patch()', () => {
   })
 
   it('should ne()', () => {
-    const { select, read } = createGlobalStore(initialState);
+    const { get, read } = createGlobalStore(initialState);
     const payload = { value: 'four' };
-    select(s => s.array)
+    get(s => s.array)
       .filterWhere(e => e.id).ne(2)
       .patch(payload);
     expect(testState.currentAction).toEqual({
@@ -42,9 +42,9 @@ describe('array.filter().patch()', () => {
   })
 
   it('should gt()', () => {
-    const { select, read } = createGlobalStore(initialState);
+    const { get, read } = createGlobalStore(initialState);
     const payload = { value: 'four' };
-    select(s => s.array)
+    get(s => s.array)
       .filterWhere(e => e.id).gt(1)
       .patch(payload);
     expect(testState.currentAction).toEqual({
@@ -57,9 +57,9 @@ describe('array.filter().patch()', () => {
   })
 
   it('should gte()', () => {
-    const { select, read } = createGlobalStore(initialState);
+    const { get, read } = createGlobalStore(initialState);
     const payload = { value: 'four' };
-    select(s => s.array)
+    get(s => s.array)
       .filterWhere(e => e.id).gte(1)
       .patch(payload);
     expect(testState.currentAction).toEqual({
@@ -72,9 +72,9 @@ describe('array.filter().patch()', () => {
   })
 
   it('should lt()', () => {
-    const { select, read } = createGlobalStore(initialState);
+    const { get, read } = createGlobalStore(initialState);
     const payload = { value: 'four' };
-    select(s => s.array)
+    get(s => s.array)
       .filterWhere(e => e.id).lt(2)
       .patch(payload);
     expect(testState.currentAction).toEqual({
@@ -87,9 +87,9 @@ describe('array.filter().patch()', () => {
   })
 
   it('should lte()', () => {
-    const { select, read } = createGlobalStore(initialState);
+    const { get, read } = createGlobalStore(initialState);
     const payload = { value: 'four' };
-    select(s => s.array)
+    get(s => s.array)
       .filterWhere(e => e.id).lte(2)
       .patch(payload);
     expect(testState.currentAction).toEqual({
@@ -102,9 +102,9 @@ describe('array.filter().patch()', () => {
   })
 
   it('should in()', () => {
-    const { select, read } = createGlobalStore(initialState);
+    const { get, read } = createGlobalStore(initialState);
     const payload = { id: 4, value: 'four' };
-    select(s => s.array)
+    get(s => s.array)
       .filterWhere(e => e.id).in([1, 2])
       .patch(payload);
     expect(testState.currentAction).toEqual({
@@ -117,9 +117,9 @@ describe('array.filter().patch()', () => {
   })
 
   it('should ni()', () => {
-    const { select, read } = createGlobalStore(initialState);
+    const { get, read } = createGlobalStore(initialState);
     const payload = { value: 'four' };
-    select(s => s.array)
+    get(s => s.array)
       .filterWhere(e => e.id).ni([1, 2])
       .patch(payload);
     expect(testState.currentAction).toEqual({
@@ -132,9 +132,9 @@ describe('array.filter().patch()', () => {
   })
 
   it('should match()', () => {
-    const { select, read } = createGlobalStore(initialState);
+    const { get, read } = createGlobalStore(initialState);
     const payload = { value: 'four' };
-    select(s => s.array)
+    get(s => s.array)
       .filterWhere(e => e.value).matches(/^t/)
       .patch(payload);
     expect(testState.currentAction).toEqual({

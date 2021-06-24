@@ -12,26 +12,26 @@ describe('array.find().read()', () => {
   };
 
   it('should read()', () => {
-    const { select } = createGlobalStore(initialState);
-    const read = select(s => s.array)
+    const { get } = createGlobalStore(initialState);
+    const read = get(s => s.array)
       .findWhere(e => e.id).eq(2)
       .read();
     expect(read).toEqual(initialState.array[1]);
   })
 
   it('should onChange()', () => {
-    const { select } = createGlobalStore(initialState);
+    const { get } = createGlobalStore(initialState);
     let changeCount = 0;
-    select(s => s.array)
+    get(s => s.array)
       .findWhere(e => e.id).eq(3)
       .onChange(e => {
         changeCount++;
         expect(e.value).toEqual('three x');
       });
-    select(s => s.array)
+    get(s => s.array)
       .findWhere(e => e.id).eq(3)
       .patch({ value: 'three x' });
-    select(s => s.array)
+    get(s => s.array)
       .findWhere(e => e.id).eq(1)
       .patch({ value: 'one x' });
     expect(changeCount).toEqual(1);

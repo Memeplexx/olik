@@ -9,10 +9,10 @@ describe('tags', () => {
   it('should work with tags correctly', () => {
     const payload = 'hey';
     const tag = 'mytag';
-    const { select, read } = createGlobalStoreEnforcingTags({
+    const { get, read } = createGlobalStoreEnforcingTags({
       object: { property: 'one', property2: 'two' },
     }, { tagsToAppearInType: true });
-    select(s => s.object.property)
+    get(s => s.object.property)
       .replace(payload, { tag });
     expect(testState.currentAction).toEqual({
       type: `object.property.replace() [${tag}]`,
@@ -23,7 +23,7 @@ describe('tags', () => {
   })
 
   it('should sanitize tags correctly', () => {
-    const { select, read } = createGlobalStoreEnforcingTags({
+    const { get, read } = createGlobalStoreEnforcingTags({
       test: '',
     }, {
       tagSanitizer: (tag) => tag + 'x',
@@ -31,7 +31,7 @@ describe('tags', () => {
     });
     const tag = 'mytag';
     const payload = 'test';
-    select(s => s.test)
+    get(s => s.test)
       .replace(payload, { tag });
     expect(testState.currentAction).toEqual({
       type: `test.replace() [${tag}x]`,
@@ -41,10 +41,10 @@ describe('tags', () => {
   })
 
   it('should accept optional tags', () => {
-    const { select, read } = createGlobalStore({ prop: '' }, { tagsToAppearInType: true });
+    const { get, read } = createGlobalStore({ prop: '' }, { tagsToAppearInType: true });
     const tag = 'mytag';
     const payload = 'test';
-    select(s => s.prop)
+    get(s => s.prop)
       .replace(payload, { tag });
     expect(testState.currentAction).toEqual({
       type: `prop.replace() [${tag}]`,
@@ -53,10 +53,10 @@ describe('tags', () => {
   })
 
   it('should, by default, place tags in the payload', () => {
-    const { select, read } = createGlobalStoreEnforcingTags({ prop: '' });
+    const { get, read } = createGlobalStoreEnforcingTags({ prop: '' });
     const tag = 'mytag';
     const payload = 'test';
-    select(s => s.prop)
+    get(s => s.prop)
       .replace(payload, { tag });
     expect(testState.currentAction).toEqual({
       type: `prop.replace()`,

@@ -11,9 +11,9 @@ describe('Object', () => {
   };
 
   it('should replace()', () => {
-    const { select, read } = createGlobalStore(initialState);
+    const { get, read } = createGlobalStore(initialState);
     const payload = 'hey';
-    select(s => s.object.property)
+    get(s => s.object.property)
       .replace(payload);
     expect(testState.currentAction).toEqual({
       type: 'object.property.replace()',
@@ -25,9 +25,9 @@ describe('Object', () => {
   })
 
   it('should patch()', () => {
-    const { select, read } = createGlobalStore(initialState);
+    const { get, read } = createGlobalStore(initialState);
     const payload = { property: 'xxx' };
-    select(s => s.object)
+    get(s => s.object)
       .patch(payload);
     expect(testState.currentAction).toEqual({
       type: 'object.patch()',
@@ -39,20 +39,20 @@ describe('Object', () => {
   })
 
   it('should reset()', () => {
-    const { select, read } = createGlobalStore(initialState);
-    select(s => s.object.property)
+    const { get, read } = createGlobalStore(initialState);
+    get(s => s.object.property)
       .replace('hey');
     expect(read().object.property).toEqual('hey');
     expect(testState.currentMutableState).toEqual(read());
-    select(s => s.object.property)
+    get(s => s.object.property)
       .reset();
     expect(read().object.property).toEqual('one');
     expect(testState.currentMutableState).toEqual(read());
-    select()
+    get()
       .replace({ object: { property: 'xx', property2: 'yy' } });
     expect(read()).toEqual({ object: { property: 'xx', property2: 'yy' } });
     expect(testState.currentMutableState).toEqual(read());
-    select()
+    get()
       .reset();
     expect(testState.currentAction).toEqual({
       type: 'reset()',
@@ -63,9 +63,9 @@ describe('Object', () => {
   })
 
   it('should be able to add a new property onto an object', () => {
-    const { select, read } = createGlobalStore({} as { [key: string]: string });
+    const { get, read } = createGlobalStore({} as { [key: string]: string });
     const payload = { hello: 'world' };
-    select().patch(payload);
+    get().patch(payload);
     expect(testState.currentAction).toEqual({
       type: 'patch()',
       patch: payload,
@@ -75,9 +75,9 @@ describe('Object', () => {
   })
 
   it('should be able to remove a key', () => {
-    const { select, read } = createGlobalStore({ hello: 'one', world: 'two', another: 'three' });
+    const { get, read } = createGlobalStore({ hello: 'one', world: 'two', another: 'three' });
     const payload = 'world';
-    select().remove(payload);
+    get().remove(payload);
     expect(testState.currentAction).toEqual({
       type: 'remove()',
       toRemove: payload,
@@ -88,9 +88,9 @@ describe('Object', () => {
 
   it('should be able to insert properties', () => {
     const initState = { one: 'one' };
-    const { select, read } = createGlobalStore(initState);
+    const { get, read } = createGlobalStore(initState);
     const insertion = { hello: 'test', another: 'testy' };
-    select().insert(insertion);
+    get().insert(insertion);
     expect(testState.currentAction).toEqual({
       type: 'insert()',
       insertion,

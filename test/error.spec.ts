@@ -8,16 +8,16 @@ describe('Error', () => {
   beforeAll(() => testState.windowObject = windowAugmentedWithReduxDevtoolsImpl);
 
   it('should throw an error when a method is invoked within a selector', () => {
-    const { select } = createGlobalStore({ arr: new Array<string>() });
+    const { get } = createGlobalStore({ arr: new Array<string>() });
     expect(() => {
-      select(s => s.arr.some(e => true)).replace(false);
+      get(s => s.arr.some(e => true)).replace(false);
     }).toThrowError(errorMessages.ILLEGAL_CHARACTERS_WITHIN_SELECTOR('select'));
   })
 
   it('should throw an error when filter() is invoked within a selector', () => {
-    const { select } = createGlobalStore({ arr: new Array<string>() });
+    const { get } = createGlobalStore({ arr: new Array<string>() });
     expect(() => {
-      select(s => s.arr.filter(e => true)).replaceAll([]);
+      get(s => s.arr.filter(e => true)).replaceAll([]);
     }).toThrowError(errorMessages.ILLEGAL_CHARACTERS_WITHIN_SELECTOR('select'));
   })
 
@@ -34,9 +34,9 @@ describe('Error', () => {
   })
 
   it('should throw an error if a function is invoked within a selector where the property is not an object', () => {
-    const { select } = createGlobalStore({ prop: 'a' });
+    const { get } = createGlobalStore({ prop: 'a' });
     expect(() => {
-      select(s => s.prop.replace('', '')).replace('ss');
+      get(s => s.prop.replace('', '')).replace('ss');
     }).toThrowError(errorMessages.ILLEGAL_CHARACTERS_WITHIN_SELECTOR('select'));
   })
 

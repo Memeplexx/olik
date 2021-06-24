@@ -209,7 +209,7 @@ export type ArrayOfObjectsAction<X extends DeepReadonlyArray<any>, F extends Fin
    * .patch({ done: true })
    */
   patch: <H extends Partial<X[0]> | (() => Promise<Partial<X[0]>>) >(patch: H, options: UpdateOptions<T, H>) => H extends (() => Promise<any>) ? Promise<void> : void,
-  // select: <P>(getProp: (element: X[0]) => P) => Store<P, T>,
+  // get: <P>(getProp: (element: X[0]) => P) => Store<P, T>,
 } & ArrayOfElementsAction<X, F, T>;
 
 export type ArrayOfElementsCommonAction<X extends DeepReadonlyArray<any>, F extends FindOrFilter, T extends Trackability> = {
@@ -311,9 +311,9 @@ export type PromisableUpdate<H> = H extends () => Promise<any> ? {
    * Avoid unnecessary promise invocations by supplying the number of milliseconds that should elapse before the promise is invoked again.
    * To un-do this, you can call `stopBypassingPromises()` on the node of the state tree, for example
    * @example
-   * select(s => s.todos).stopBypassingPromises();
+   * get(s => s.todos).stopBypassingPromises();
    * @example
-   * select(s => s.todos).findWhere(s => s.id).isEqualTo(2).stopBypassingPromises();
+   * get(s => s.todos).findWhere(s => s.id).isEqualTo(2).stopBypassingPromises();
    */
   bypassPromiseFor?: number;
   /**
@@ -321,7 +321,7 @@ export type PromisableUpdate<H> = H extends () => Promise<any> ? {
    * If the promise is rejected, this value will be reverted to what it was before the promise was invoked.
    * @example
    * const newUsername = 'Jeff';
-   * select(s => s.username)
+   * get(s => s.username)
    *   .replace(() => updateUsernameOnApi(newUsername), { optimisticallyUpdateWith: newUsername })
    *   .catch(err => notifyUserOfError(err))
    */
@@ -451,9 +451,9 @@ export type StoreForAnObjectOrPrimitive<C extends any, T extends Trackability> =
   /**
    * Substitutes this primitive value
    * @example
-   * select(s => s.user.age).replace(33);
+   * get(s => s.user.age).replace(33);
    * @example
-   * select(s => s.user.age).replace(age => age + 1);
+   * get(s => s.user.age).replace(age => age + 1);
    */
   replace: <H extends C | (() => Promise<C>) >(replacement: H, options: UpdateOptions<T, H>) => H extends (() => Promise<any>) ? Promise<C> : void,
 }
@@ -474,9 +474,9 @@ export type StoreForAnObject<C extends any, T extends Trackability> = {
    * ***WARNING***: invoking this has the potentional to contradict the type-system.
    * Only use this to remove a property from an object of type of `{ [key: string]: any }` and NOT to remove a property from an object with statically defined properties eg `{ str: '', num: 0 }`
    * @example
-   * const { select } = createGlobalStore({ skillpoints: {} as {[name: string]: number} });
+   * const { get } = createGlobalStore({ skillpoints: {} as {[name: string]: number} });
    * 
-   * select(s => s.skillpoints)
+   * store.get(s => s.skillpoints)
    *   .remove('archery')
    */
   remove: (key: keyof C, options: ActionOptions<T>) => void,
@@ -485,9 +485,9 @@ export type StoreForAnObject<C extends any, T extends Trackability> = {
    * ***WARNING***: invoking this has the potentional to contradict the type-system.
    * Only use this to add properties to an object of type of `{ [key: string]: any }` and NOT to add properties with statically defined properties eg `{ str: '', num: 0 }`
    * @example
-   * const { select } = createGlobalStore({ skillpoints: {} as {[name: string]: number} });
+   * const { get } = createGlobalStore({ skillpoints: {} as {[name: string]: number} });
    * 
-   * select(s => s.skillpoints)
+   * store.get(s => s.skillpoints)
    *   .insert({ archery: 3, sorcery: 5 })
    */
   insert: <H extends { [key: string]: any } | (() => Promise<{ [key: string]: any }>) >(insertion: H) => H extends (() => Promise<{ [key: string]: any }>) ? Promise<{ [key: string]: any }> : void,
@@ -558,7 +558,7 @@ export type StoreWhichIsNested<C> = Store<C, 'untagged'>;
  */
 export type Selector<S, C, X = C> = X extends C & ReadonlyArray<any> ? (s: S) => X : (s: S) => C;
 
-export type SelectorReader<S, U> = { select: U, read: () => DeepReadonly<S> };
+export type SelectorReader<S, U> = { get: U, read: () => DeepReadonly<S> };
 
 export type SelectorReaderNested<S, U> = SelectorReader<S, U> & { detachFromGlobalStore: () => void, setInstanceName: (instanceName: string) => void };
 

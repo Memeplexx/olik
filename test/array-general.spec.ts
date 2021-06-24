@@ -12,8 +12,8 @@ describe('array', () => {
   };
 
   it('should removeAll()', () => {
-    const { select, read } = createGlobalStore(initialState);
-    select(s => s.array)
+    const { get, read } = createGlobalStore(initialState);
+    get(s => s.array)
       .removeAll();
     expect(testState.currentAction).toEqual({
       type: 'array.removeAll()',
@@ -23,9 +23,9 @@ describe('array', () => {
   });
 
   it('should replaceAll()', () => {
-    const { select, read } = createGlobalStore(initialState);
+    const { get, read } = createGlobalStore(initialState);
     const payload = [{ id: 4, value: 'four' }, { id: 5, value: 'five' }];
-    select(s => s.array)
+    get(s => s.array)
       .replaceAll(payload);
     expect(testState.currentAction).toEqual({
       type: 'array.replaceAll()',
@@ -36,8 +36,8 @@ describe('array', () => {
   });
 
   it('should reset()', () => {
-    const { select, read } = createGlobalStore(initialState);
-    select(s => s.array)
+    const { get, read } = createGlobalStore(initialState);
+    get(s => s.array)
       .reset();
     expect(testState.currentAction).toEqual({
       type: 'array.reset()',
@@ -48,9 +48,9 @@ describe('array', () => {
   });
 
   it('should insert() one', () => {
-    const { select, read } = createGlobalStore(initialState);
+    const { get, read } = createGlobalStore(initialState);
     const payload = { id: 4, value: 'four' };
-    select(s => s.array)
+    get(s => s.array)
       .insert(payload);
     expect(testState.currentAction).toEqual({
       type: 'array.insert()',
@@ -61,9 +61,9 @@ describe('array', () => {
   })
 
   it('should insert() one at index', () => {
-    const { select, read } = createGlobalStore(initialState);
+    const { get, read } = createGlobalStore(initialState);
     const payload = { id: 4, value: 'four' };
-    select(s => s.array)
+    get(s => s.array)
       .insert(payload, { atIndex: 1 });
     expect(testState.currentAction).toEqual({
       type: 'array.insert()',
@@ -75,9 +75,9 @@ describe('array', () => {
   })
 
   it('should insert() many', () => {
-    const { select, read } = createGlobalStore(initialState);
+    const { get, read } = createGlobalStore(initialState);
     const payload = [{ id: 4, value: 'four' }, { id: 5, value: 'five' }];
-    select(s => s.array)
+    get(s => s.array)
       .insert(payload);
     expect(testState.currentAction).toEqual({
       type: 'array.insert()',
@@ -88,9 +88,9 @@ describe('array', () => {
   })
 
   it('should insert() many at index', () => {
-    const { select, read } = createGlobalStore(initialState);
+    const { get, read } = createGlobalStore(initialState);
     const payload = [{ id: 4, value: 'four' }, { id: 5, value: 'five' }];
-    select(s => s.array)
+    get(s => s.array)
       .insert(payload, { atIndex: 1 });
     expect(testState.currentAction).toEqual({
       type: 'array.insert()',
@@ -102,9 +102,9 @@ describe('array', () => {
   })
 
   it('should be able to upsertMatching() with multiple elements, replacing and inserting', () => {
-    const { select, read } = createGlobalStore(initialState);
+    const { get, read } = createGlobalStore(initialState);
     const payload = [{ id: 2, value: 'twoo' }, { id: 3, value: 'threee' }, { id: 4, value: 'four' }];
-    select(s => s.array)
+    get(s => s.array)
       .upsertMatching(s => s.id)
       .with(payload);
     expect(testState.currentAction).toEqual({
@@ -118,9 +118,9 @@ describe('array', () => {
   });
 
   it('should upsertMatching() with one element replacing', () => {
-    const { select, read } = createGlobalStore(initialState);
+    const { get, read } = createGlobalStore(initialState);
     const payload = { id: 2, value: 'two updated' };
-    select(s => s.array)
+    get(s => s.array)
       .upsertMatching(s => s.id)
       .with(payload);
     expect(testState.currentAction).toEqual({
@@ -134,9 +134,9 @@ describe('array', () => {
   });
 
   it('should upsertMatching() with one element inserting', () => {
-    const { select, read } = createGlobalStore(initialState);
+    const { get, read } = createGlobalStore(initialState);
     const payload = { id: 4, value: 'four inserted' };
-    select(s => s.array)
+    get(s => s.array)
       .upsertMatching(s => s.id)
       .with(payload);
     expect(testState.currentAction).toEqual({

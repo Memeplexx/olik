@@ -10,8 +10,8 @@ describe('Multi-store', () => {
   it('should support multiple stores', () => {
     const store1 = createGlobalStore(new Array<string>());
     const store2 = createGlobalStore(0);
-    store1.select().replaceAll(['one']);
-    store2.select().replace(2);
+    store1.get().replaceAll(['one']);
+    store2.get().replace(2);
     expect(store1.read()).toEqual(['one']);
     expect(store2.read()).toEqual(2);
   })
@@ -20,18 +20,18 @@ describe('Multi-store', () => {
     const store1 = createGlobalStore({ array: new Array<number>(), string: '' });
     const store2 = createGlobalStore({ number: 0 });
     const mem = deriveFrom(
-      store1.select(s => s.array),
-      store2.select(s => s.number),
+      store1.get(s => s.array),
+      store2.get(s => s.number),
     ).usingExpensiveCalc((
       array, 
       number,
     ) => array.concat(number));
     let changes = 0;
     mem.onChange(() => changes++);
-    store1.select(s => s.string).replace('hey');
+    store1.get(s => s.string).replace('hey');
     expect(changes).toEqual(0);
     expect(mem.read()).toEqual([0]);
-    store1.select(s => s.array).insert([3]);
+    store1.get(s => s.array).insert([3]);
     expect(mem.read()).toEqual([3, 0]);
     expect(changes).toEqual(1);
   })

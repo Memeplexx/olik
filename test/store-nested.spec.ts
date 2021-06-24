@@ -25,7 +25,7 @@ describe('Nested', () => {
     const initialStateComp = {
       one: ''
     };
-    const { select, read } = createGlobalStore(initialState);
+    const { get, read } = createGlobalStore(initialState);
     const componentName = 'myComp';
     const instanceName = '0';
     createNestedStore(initialStateComp, { componentName, instanceName });
@@ -42,7 +42,7 @@ describe('Nested', () => {
     const instanceName = '0';
     const nestedStore1 = createNestedStore({ one: '' }, { componentName, instanceName });
     expect(nestedStore1.read().one).toEqual('');
-    nestedStore1.select(s => s.one).replace('test');
+    nestedStore1.get(s => s.one).replace('test');
     expect(testState.currentAction).toEqual({
       type: `nested.${componentName}.0.one.replace()`,
       replacement: 'test',
@@ -55,12 +55,12 @@ describe('Nested', () => {
       test: '',
       nested: {} as { myComp: { [key: string]: { one: string } } },
     };
-    const { select, read } = createGlobalStore(initialState);
+    const { get, read } = createGlobalStore(initialState);
     const componentName = 'myComp';
     const instanceName = '0';
     const nestedStore1 = createNestedStore({ one: '' }, { componentName, instanceName });
     expect(nestedStore1.read().one).toEqual('');
-    select(s => s.nested.myComp['0'].one).replace('test');
+    get(s => s.nested.myComp['0'].one).replace('test');
     expect(nestedStore1.read().one).toEqual('test');
   })
 
@@ -68,7 +68,7 @@ describe('Nested', () => {
     const initialState = {
       test: '',
     };
-    const { select, read } = createGlobalStore(initialState);
+    const { get, read } = createGlobalStore(initialState);
     const componentName = 'myComp';
     const instanceName = '0';
     const nestedStore1 = createNestedStore({ one: '' }, { componentName, instanceName });
@@ -81,7 +81,7 @@ describe('Nested', () => {
     const initialState = {
       test: '',
     };
-    const { select, read } = createGlobalStore(initialState);
+    const { get, read } = createGlobalStore(initialState);
     const componentName = 'myComp';
     const nestedStore1 = createNestedStore({ one: '' }, { componentName, instanceName: '0' });
     const nestedStore2 = createNestedStore({ one: '' }, { componentName, instanceName: '1' });
@@ -96,12 +96,12 @@ describe('Nested', () => {
     const initialState = {
       test: '',
     };
-    const { select, read } = createGlobalStore(initialState);
+    const { get, read } = createGlobalStore(initialState);
     const componentName = 'myComp';
     const nestedStore1 = createNestedStore({ one: '' }, { componentName, instanceName: '0' });
-    nestedStore1.select(s => s.one).replace('test1');
+    nestedStore1.get(s => s.one).replace('test1');
     const nestedStore2 = createNestedStore({ one: '' }, { componentName, instanceName: '1' });
-    nestedStore2.select(s => s.one).replace('test2');
+    nestedStore2.get(s => s.one).replace('test2');
     expect(read()).toEqual({ test: '', nested: { [componentName]: { 0: { one: 'test1' }, 1: { one: 'test2' } } } });
   })
 
@@ -109,11 +109,11 @@ describe('Nested', () => {
     const initialState = {
       test: '',
     };
-    const { select, read } = createGlobalStore(initialState);
+    const { get, read } = createGlobalStore(initialState);
     const componentName = 'myComp';
     const instanceName = '0';
     const nestedStore1 = createNestedStore(new Array<string>(), { componentName, instanceName });
-    nestedStore1.select().insert('test');
+    nestedStore1.get().insert('test');
     expect(read()).toEqual({ test: '', nested: { [componentName]: { 0: ['test'] } } });
   })
 
@@ -121,11 +121,11 @@ describe('Nested', () => {
     const initialState = {
       test: '',
     };
-    const { select, read } = createGlobalStore(initialState);
+    const { get, read } = createGlobalStore(initialState);
     const componentName = 'myComp';
     const instanceName = '0';
     const nestedStore1 = createNestedStore(0, { componentName, instanceName });
-    nestedStore1.select().replace(1);
+    nestedStore1.get().replace(1);
     expect(read()).toEqual({ test: '', nested: { [componentName]: { 0: 1 } } });
   })
 
@@ -133,7 +133,7 @@ describe('Nested', () => {
     const initialState = {
       test: '',
     };
-    const { select, read } = createGlobalStore(initialState);
+    const { get, read } = createGlobalStore(initialState);
     const componentName = 'myComp';
     const instanceName = '0';
     createNestedStore(0, { componentName, instanceName });
@@ -156,13 +156,13 @@ describe('Nested', () => {
     const initialState = {
       test: '',
     };
-    const { select, read } = createGlobalStore(initialState);
+    const { get, read } = createGlobalStore(initialState);
     const instanceName = '0';
     const componentName = 'myComp';
     createNestedStore(0, { componentName, instanceName });
     const componentName2 = 'myComp2';
     createNestedStore(0, { componentName: componentName2, instanceName });
-    select().reset();
+    get().reset();
     expect(read()).toEqual(initialState);
   })
 
@@ -170,16 +170,16 @@ describe('Nested', () => {
     const initialState = {
       test: '',
     };
-    const { select, read } = createGlobalStore(initialState);
+    const { get, read } = createGlobalStore(initialState);
     const componentName = 'myComp';
     const instanceName = '0';
     const nested = createNestedStore(0, { componentName, instanceName });
-    nested.select().replace(1);
+    nested.get().replace(1);
     expect(read()).toEqual({ test: '', nested: { myComp: { '0': 1 } } });
-    nested.select().reset();
+    nested.get().reset();
     expect(read()).toEqual({ test: '', nested: { myComp: { '0': 0 } } });
     expect(nested.read()).toEqual(0);
-    select().reset();
+    get().reset();
   })
 
   it('should work without a container store', () => {
@@ -189,7 +189,7 @@ describe('Nested', () => {
       array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
       string: 'b',
     }, { componentName: 'dd', instanceName: '0', dontTrackWithDevtools: true });
-    nested.select(s => s.object.property).replace('test');
+    nested.get(s => s.object.property).replace('test');
     expect(nested.read().object.property).toEqual('test');
     nested.detachFromGlobalStore();
   });
@@ -204,20 +204,20 @@ describe('Nested', () => {
 
   it('should be able to reset a nested store inner property', () => {
     const parentStore = createGlobalStore({ test: '' });
-    parentStore.select(s => s.test).replace('test');
+    parentStore.get(s => s.test).replace('test');
     const nestedStore = createNestedStore({ array: new Array<string>() }, { componentName: 'test', instanceName: '0' });
-    nestedStore.select(s => s.array).insert('test');
+    nestedStore.get(s => s.array).insert('test');
     expect(parentStore.read()).toEqual({ test: 'test', nested: { test: { '0': { array: ['test'] } } } });
-    nestedStore.select(s => s.array).reset();
+    nestedStore.get(s => s.array).reset();
     expect(parentStore.read()).toEqual({ test: 'test', nested: { test: { '0': { array: [] } } } });
     expect(testState.currentAction).toEqual({ type: 'nested.test.0.array.reset()', replacement: [] });
   })
 
   it('should be able to reset a detached store', () => {
     const nested = createNestedStore({ test: '' }, { componentName: 'testyy', instanceName: '0' });
-    nested.select(s => s.test).replace('test');
+    nested.get(s => s.test).replace('test');
     expect(nested.read()).toEqual({ test: 'test' });
-    nested.select(s => s.test).reset();
+    nested.get(s => s.test).reset();
     expect(nested.read()).toEqual({ test: '' });
   })
 
@@ -228,7 +228,7 @@ describe('Nested', () => {
     const root = createGlobalStore(initialRootState);
     const child = createNestedStore({ val: 0 }, { componentName, instanceName: Deferred });
     let count = 0;
-    child.select().onChange(val => {
+    child.get().onChange(val => {
       count++;
       if (count === 1) {
         expect(val.val).toEqual(1);
@@ -250,19 +250,19 @@ describe('Nested', () => {
         done();
       }
     });
-    child.select(s => s.val).replace(1);
+    child.get(s => s.val).replace(1);
     child.setInstanceName(instanceName);
-    child.select(s => s.val).replace(2);
+    child.get(s => s.val).replace(2);
   })
 
-  it('should be able to set a deferred instanceName with a selector function', (done) => {
+  it('should be able to set a deferred instanceName with a getor function', (done) => {
     const initialRootState = { hello: 'hey' };
     const componentName = 'MyComponent';
     const instanceName = 'MyInstance';
     const root = createGlobalStore(initialRootState);
     const child = createNestedStore({ val: 0 }, { componentName, instanceName: Deferred });
     let count = 0;
-    child.select(s => s.val).onChange(val => {
+    child.get(s => s.val).onChange(val => {
       count++;
       if (count === 1) {
         expect(val).toEqual(1);
@@ -284,9 +284,13 @@ describe('Nested', () => {
         done();
       }
     });
-    child.select(s => s.val).replace(1);
+    child.get(s => s.val).replace(1);
     child.setInstanceName(instanceName);
-    child.select(s => s.val).replace(2);
+    child.get(s => s.val).replace(2);
+  })
+
+  it('', () => {
+    const store = createGlobalStore({ hello: '' });
   })
 
 });

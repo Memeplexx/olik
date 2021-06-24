@@ -29,7 +29,7 @@ describe.skip('Perf', () => {
   })
 
   it('should test outlik perf', () => {
-    const { select } = createGlobalStore({
+    const { get } = createGlobalStore({
       anotherProp: {
         some: {
           deeply: {
@@ -70,12 +70,12 @@ describe.skip('Perf', () => {
         someString: "ffdfdfdfd"
       })),
     });
-    select(s => s.array).onChange(e => null);
-    select(s => s.array2).onChange(e => null);
+    get(s => s.array).onChange(e => null);
+    get(s => s.array2).onChange(e => null);
     const before = performance.now();
     for (let i = 0; i < 100; i++) {
-      select(s => s.anotherProp.some.deeply.nested.number).replace(
-        select(s => s.anotherProp.some.deeply.nested.number).read() + 1
+      get(s => s.anotherProp.some.deeply.nested.number).replace(
+        get(s => s.anotherProp.some.deeply.nested.number).read() + 1
       );
     }
     console.log(`Olik: ${performance.now() - before}`);
@@ -83,10 +83,10 @@ describe.skip('Perf', () => {
 
   it('should test olik perf', () => {
     const initialState = { height: 0, width: 0 };
-    const { select, read } = createGlobalStore(initialState)
+    const { get, read } = createGlobalStore(initialState)
     const before = performance.now();
     for (let i = 0; i < 100; i++) {
-      select(s => s.width).replace(
+      get(s => s.width).replace(
         read().width + 1
       );
     }
@@ -205,10 +205,10 @@ describe.skip('Perf', () => {
   });
 
   it('should test Olik array push perf', () => {
-    const { select } = createGlobalStore(['one', 'two']);
+    const { get } = createGlobalStore(['one', 'two']);
     const before = performance.now();
     for (let i = 0; i < 100; i++) {
-      select().insert(['three']);
+      get().insert(['three']);
     }
     console.log(`Olik array push: ${performance.now() - before}`);
   });
