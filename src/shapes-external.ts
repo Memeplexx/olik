@@ -560,7 +560,7 @@ export type Selector<S, C, X = C> = X extends C & ReadonlyArray<any> ? (s: S) =>
 
 export type SelectorReader<S, U> = { select: U, read: () => DeepReadonly<S> };
 
-export type SelectorReaderNested<S, U> = SelectorReader<S, U> & { detachFromGlobalStore: () => void, setInstanceName: (name: string) => void };
+export type SelectorReaderNested<S, U> = SelectorReader<S, U> & { detachFromGlobalStore: () => void, setInstanceName: (instanceName: string) => void };
 
 /**
  * A function which selects from a nested store
@@ -620,6 +620,8 @@ export type OptionsForMakingAGlobalStore = {
   tagsToAppearInType?: boolean;
 }
 
+export const Deferred = Symbol('deferred');
+
 /**
  * An object representing options which are supplied when creating a nested store
  */
@@ -635,8 +637,8 @@ export type OptionsForMakingANestedStore = {
   /**
    * The string that will distinguish different instances of the same nested store.
    */
-  instanceName: string | number;
-}
+   instanceName: string | number | typeof Deferred;
+};
 
 /**
  * An object representing options which the Redux Ddevtools extension accepts

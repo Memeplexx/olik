@@ -1,3 +1,4 @@
+import { Deferred } from '../src/shapes-external';
 import { errorMessages } from '../src/shared-consts';
 import { libState, testState } from '../src/shared-state';
 import { createGlobalStore, createNestedStore } from '../src/store-creators';
@@ -220,12 +221,72 @@ describe('Nested', () => {
     expect(nested.read()).toEqual({ test: '' });
   })
 
-  it('should be able to set an instance name', () => {
-    const root = createGlobalStore({ });
-    const child = createNestedStore({ test: 0 }, { componentName: 'MyComponent', instanceName: '0' });
-    expect(root.read()).toEqual({ nested: { MyComponent: { '0': { test: 0 } } } });
-    child.setInstanceName('hello');
-    expect(root.read()).toEqual({ nested: { MyComponent: { 'hello': { test: 0 } } } });
+  it('should be able to set a deferred instanceName', (done) => {
+    const initialRootState = { hello: 'hey' };
+    const componentName = 'MyComponent';
+    const instanceName = 'MyInstance';
+    const root = createGlobalStore(initialRootState);
+    const child = createNestedStore({ val: 0 }, { componentName, instanceName: Deferred });
+    let count = 0;
+    child.select().onChange(val => {
+      count++;
+      if (count === 1) {
+        expect(val.val).toEqual(1);
+      } else if (count === 2) {
+        expect(val.val).toEqual(2);
+        expect(child.read()).toEqual({
+          val: 2
+        })
+        expect(root.read()).toEqual({
+          ...initialRootState,
+          nested: {
+            [componentName]: {
+              [instanceName]: {
+                val: 2
+              }
+            }
+          }
+        });
+        done();
+      }
+    });
+    child.select(s => s.val).replace(1);
+    child.setInstanceName(instanceName);
+    child.select(s => s.val).replace(2);
+  })
+
+  it('should be able to set a deferred instanceName with a selector function', (done) => {
+    const initialRootState = { hello: 'hey' };
+    const componentName = 'MyComponent';
+    const instanceName = 'MyInstance';
+    const root = createGlobalStore(initialRootState);
+    const child = createNestedStore({ val: 0 }, { componentName, instanceName: Deferred });
+    let count = 0;
+    child.select(s => s.val).onChange(val => {
+      count++;
+      if (count === 1) {
+        expect(val).toEqual(1);
+      } else if (count === 2) {
+        expect(val).toEqual(2);
+        expect(child.read()).toEqual({
+          val: 2
+        })
+        expect(root.read()).toEqual({
+          ...initialRootState,
+          nested: {
+            [componentName]: {
+              [instanceName]: {
+                val: 2
+              }
+            }
+          }
+        });
+        done();
+      }
+    });
+    child.select(s => s.val).replace(1);
+    child.setInstanceName(instanceName);
+    child.select(s => s.val).replace(2);
   })
 
 });
