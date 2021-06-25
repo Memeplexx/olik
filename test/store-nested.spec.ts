@@ -25,11 +25,11 @@ describe('Nested', () => {
     const initialStateComp = {
       one: ''
     };
-    const { get, read } = createGlobalStore(initialState);
+    const store = createGlobalStore(initialState);
     const componentName = 'myComp';
     const instanceName = '0';
     createNestedStore(initialStateComp, { componentName, instanceName });
-    expect(read()).toEqual({ ...initialState, nested: { [componentName]: { 0: initialStateComp } } });
+    expect(store.read()).toEqual({ ...initialState, nested: { [componentName]: { 0: initialStateComp } } });
   })
 
   it('should be able to update a lib store correctly', () => {
@@ -55,12 +55,12 @@ describe('Nested', () => {
       test: '',
       nested: {} as { myComp: { [key: string]: { one: string } } },
     };
-    const { get, read } = createGlobalStore(initialState);
+    const store = createGlobalStore(initialState);
     const componentName = 'myComp';
     const instanceName = '0';
     const nestedStore1 = createNestedStore({ one: '' }, { componentName, instanceName });
     expect(nestedStore1.read().one).toEqual('');
-    get(s => s.nested.myComp['0'].one).replace('test');
+    store.get(s => s.nested.myComp['0'].one).replace('test');
     expect(nestedStore1.read().one).toEqual('test');
   })
 
@@ -68,78 +68,78 @@ describe('Nested', () => {
     const initialState = {
       test: '',
     };
-    const { get, read } = createGlobalStore(initialState);
+    const store = createGlobalStore(initialState);
     const componentName = 'myComp';
     const instanceName = '0';
     const nestedStore1 = createNestedStore({ one: '' }, { componentName, instanceName });
-    expect(read()).toEqual({ test: '', nested: { [componentName]: { 0: { one: '' } } } });
+    expect(store.read()).toEqual({ test: '', nested: { [componentName]: { 0: { one: '' } } } });
     nestedStore1.detachFromGlobalStore();
-    expect(read()).toEqual({ test: '', nested: {} });
+    expect(store.read()).toEqual({ test: '', nested: {} });
   })
 
   it('should be able to stopTracking a lib store where there are multiple stores for the same lib', () => {
     const initialState = {
       test: '',
     };
-    const { get, read } = createGlobalStore(initialState);
+    const store = createGlobalStore(initialState);
     const componentName = 'myComp';
     const nestedStore1 = createNestedStore({ one: '' }, { componentName, instanceName: '0' });
     const nestedStore2 = createNestedStore({ one: '' }, { componentName, instanceName: '1' });
-    expect(read()).toEqual({ test: '', nested: { [componentName]: { '0': { one: '' }, '1': { one: '' } } } });
+    expect(store.read()).toEqual({ test: '', nested: { [componentName]: { '0': { one: '' }, '1': { one: '' } } } });
     nestedStore1.detachFromGlobalStore();
-    expect(read()).toEqual({ test: '', nested: { [componentName]: { '1': { one: '' } } } });
+    expect(store.read()).toEqual({ test: '', nested: { [componentName]: { '1': { one: '' } } } });
     nestedStore2.detachFromGlobalStore();
-    expect(read()).toEqual({ test: '', nested: {} });
+    expect(store.read()).toEqual({ test: '', nested: {} });
   })
 
   it('should be able to perform an update on a second nested store', () => {
     const initialState = {
       test: '',
     };
-    const { get, read } = createGlobalStore(initialState);
+    const store = createGlobalStore(initialState);
     const componentName = 'myComp';
     const nestedStore1 = createNestedStore({ one: '' }, { componentName, instanceName: '0' });
     nestedStore1.get(s => s.one).replace('test1');
     const nestedStore2 = createNestedStore({ one: '' }, { componentName, instanceName: '1' });
     nestedStore2.get(s => s.one).replace('test2');
-    expect(read()).toEqual({ test: '', nested: { [componentName]: { 0: { one: 'test1' }, 1: { one: 'test2' } } } });
+    expect(store.read()).toEqual({ test: '', nested: { [componentName]: { 0: { one: 'test1' }, 1: { one: 'test2' } } } });
   })
 
   it('should be able to support nested store which is a top-level array', () => {
     const initialState = {
       test: '',
     };
-    const { get, read } = createGlobalStore(initialState);
+    const store = createGlobalStore(initialState);
     const componentName = 'myComp';
     const instanceName = '0';
     const nestedStore1 = createNestedStore(new Array<string>(), { componentName, instanceName });
-    nestedStore1.get().insert('test');
-    expect(read()).toEqual({ test: '', nested: { [componentName]: { 0: ['test'] } } });
+    nestedStore1.insert('test');
+    expect(store.read()).toEqual({ test: '', nested: { [componentName]: { 0: ['test'] } } });
   })
 
   it('should be able to support nested store which is a top-level number', () => {
     const initialState = {
       test: '',
     };
-    const { get, read } = createGlobalStore(initialState);
+    const store = createGlobalStore(initialState);
     const componentName = 'myComp';
     const instanceName = '0';
     const nestedStore1 = createNestedStore(0, { componentName, instanceName });
-    nestedStore1.get().replace(1);
-    expect(read()).toEqual({ test: '', nested: { [componentName]: { 0: 1 } } });
+    nestedStore1.replace(1);
+    expect(store.read()).toEqual({ test: '', nested: { [componentName]: { 0: 1 } } });
   })
 
   it('should be able to support more than one nested store type', () => {
     const initialState = {
       test: '',
     };
-    const { get, read } = createGlobalStore(initialState);
+    const store = createGlobalStore(initialState);
     const componentName = 'myComp';
     const instanceName = '0';
     createNestedStore(0, { componentName, instanceName });
     const componentName2 = 'myComp2';
     createNestedStore(0, { componentName: componentName2, instanceName });
-    expect(read()).toEqual({ test: '', nested: { [componentName]: { 0: 0 }, [componentName2]: { 0: 0 } } });
+    expect(store.read()).toEqual({ test: '', nested: { [componentName]: { 0: 0 }, [componentName2]: { 0: 0 } } });
   })
 
   it('should throw an error if the containing stores state is a primitive', () => {
@@ -156,30 +156,30 @@ describe('Nested', () => {
     const initialState = {
       test: '',
     };
-    const { get, read } = createGlobalStore(initialState);
+    const store = createGlobalStore(initialState);
     const instanceName = '0';
     const componentName = 'myComp';
     createNestedStore(0, { componentName, instanceName });
     const componentName2 = 'myComp2';
     createNestedStore(0, { componentName: componentName2, instanceName });
-    get().reset();
-    expect(read()).toEqual(initialState);
+    store.reset();
+    expect(store.read()).toEqual(initialState);
   })
 
   it('should be able to reset the state of a nested store', () => {
     const initialState = {
       test: '',
     };
-    const { get, read } = createGlobalStore(initialState);
+    const store = createGlobalStore(initialState);
     const componentName = 'myComp';
     const instanceName = '0';
     const nested = createNestedStore(0, { componentName, instanceName });
-    nested.get().replace(1);
-    expect(read()).toEqual({ test: '', nested: { myComp: { '0': 1 } } });
-    nested.get().reset();
-    expect(read()).toEqual({ test: '', nested: { myComp: { '0': 0 } } });
+    nested.replace(1);
+    expect(store.read()).toEqual({ test: '', nested: { myComp: { '0': 1 } } });
+    nested.reset();
+    expect(store.read()).toEqual({ test: '', nested: { myComp: { '0': 0 } } });
     expect(nested.read()).toEqual(0);
-    get().reset();
+    store.reset();
   })
 
   it('should work without a container store', () => {
@@ -228,7 +228,7 @@ describe('Nested', () => {
     const root = createGlobalStore(initialRootState);
     const child = createNestedStore({ val: 0 }, { componentName, instanceName: Deferred });
     let count = 0;
-    child.get().onChange(val => {
+    child.onChange(val => {
       count++;
       if (count === 1) {
         expect(val.val).toEqual(1);
@@ -287,10 +287,6 @@ describe('Nested', () => {
     child.get(s => s.val).replace(1);
     child.setInstanceName(instanceName);
     child.get(s => s.val).replace(2);
-  })
-
-  it('', () => {
-    const store = createGlobalStore({ hello: '' });
   })
 
 });

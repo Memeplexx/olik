@@ -7,114 +7,107 @@ describe('Root', () => {
   beforeAll(() => testState.windowObject = windowAugmentedWithReduxDevtoolsImpl);
 
   it('object.replace()', () => {
-    const { get, read } = createGlobalStore({ hello: 'world', another: new Array<string>() });
+    const store = createGlobalStore({ hello: 'world', another: new Array<string>() });
     const payload = { hello: 'test', another: ['test'] };
-    get()
-      .replace(payload);
+    store.replace(payload);
     expect(testState.currentAction).toEqual({
       type: 'replace()',
       replacement: payload,
     })
-    expect(read()).toEqual({ hello: 'test', another: ['test'] });
-    expect(testState.currentMutableState).toEqual(read());
+    expect(store.read()).toEqual({ hello: 'test', another: ['test'] });
+    expect(testState.currentMutableState).toEqual(store.read());
   })
 
   it('object.property.update()', () => {
-    const { get, read } = createGlobalStore({ x: 0, y: 0 });
+    const store = createGlobalStore({ x: 0, y: 0 });
     const payload = 3;
-    get(s => s.x)
+    store.get(s => s.x)
       .replace(payload);
-    expect(read()).toEqual({ x: 3, y: 0 });
+    expect(store.read()).toEqual({ x: 3, y: 0 });
     expect(testState.currentAction).toEqual({
       type: 'x.replace()',
       replacement: payload,
     })
-    expect(testState.currentMutableState).toEqual(read());
+    expect(testState.currentMutableState).toEqual(store.read());
   })
 
   it('array.insert()', () => {
-    const { get, read } = createGlobalStore(new Array<{ id: number, text: string }>());
+    const store = createGlobalStore(new Array<{ id: number, text: string }>());
     const payload = [{ id: 1, text: 'hello' }];
-    get()
-      .insert(payload);
+    store.insert(payload);
     expect(testState.currentAction).toEqual({
       type: 'insert()',
       insertion: payload,
     })
-    expect(read()).toEqual([{ id: 1, text: 'hello' }]);
-    expect(testState.currentMutableState).toEqual(read());
+    expect(store.read()).toEqual([{ id: 1, text: 'hello' }]);
+    expect(testState.currentMutableState).toEqual(store.read());
   })
 
   it('number.replace()', () => {
-    const { get, read } = createGlobalStore(0);
+    const store = createGlobalStore(0);
     const payload = 3;
-    get()
-      .replace(payload);
+    store.replace(payload);
     expect(testState.currentAction).toEqual({
       type: 'replace()',
       replacement: payload,
     })
-    expect(read()).toEqual(3);
-    expect(testState.currentMutableState).toEqual(read());
+    expect(store.read()).toEqual(3);
+    expect(testState.currentMutableState).toEqual(store.read());
   })
 
   it('boolean.replace()', () => {
-    const { get, read } = createGlobalStore(false);
+    const store = createGlobalStore(false);
     const payload = true;
-    get()
-      .replace(payload);
+    store.replace(payload);
     expect(testState.currentAction).toEqual({
       type: 'replace()',
       replacement: payload,
     })
-    expect(read()).toEqual(payload);
-    expect(testState.currentMutableState).toEqual(read());
+    expect(store.read()).toEqual(payload);
+    expect(testState.currentMutableState).toEqual(store.read());
   })
 
   it('union.replace()', () => {
     type union = 'one' | 'two';
-    const { get, read } = createGlobalStore('one' as union);
+    const store = createGlobalStore('one' as union);
     const payload = 'two' as union;
-    get()
-      .replace(payload);
+    store.replace(payload);
     expect(testState.currentAction).toEqual({
       type: 'replace()',
       replacement: payload,
     })
-    expect(read()).toEqual(payload);
-    expect(testState.currentMutableState).toEqual(read());
+    expect(store.read()).toEqual(payload);
+    expect(testState.currentMutableState).toEqual(store.read());
   })
 
   it('string.replace()', () => {
-    const { get, read } = createGlobalStore('');
+    const store = createGlobalStore('');
     const payload = 'test';
-    get()
-      .replace(payload);
+    store.replace(payload);
     expect(testState.currentAction).toEqual({
       type: 'replace()',
       replacement: payload,
     })
-    expect(read()).toEqual('test');
-    expect(testState.currentMutableState).toEqual(read());
+    expect(store.read()).toEqual('test');
+    expect(testState.currentMutableState).toEqual(store.read());
   })
 
   it('replaceAll()', () => {
-    const { get, read } = createGlobalStore(['one', 'two', 'three']);
+    const store = createGlobalStore(['one', 'two', 'three']);
     const payload = ['four', 'five', 'six', 'seven'];
-    get()
-      .replaceAll(payload);
+    store.replaceAll(payload);
     expect(testState.currentAction).toEqual({
       type: 'replaceAll()',
       replacement: payload,
     })
-    expect(read()).toEqual(['four', 'five', 'six', 'seven']);
-    expect(testState.currentMutableState).toEqual(read());
+    expect(store.read()).toEqual(['four', 'five', 'six', 'seven']);
+    expect(testState.currentMutableState).toEqual(store.read());
   })
 
   it('find().replace()', () => {
-    const { get, read } = createGlobalStore(['one', 'two', 'three']);
+    const store = createGlobalStore(['one', 'two', 'three']);
     const payload = 'twoo';
-    get()
+    store
       .findWhere().eq('two')
       .replace(payload);
     expect(testState.currentAction).toEqual({
@@ -122,32 +115,31 @@ describe('Root', () => {
       replacement: payload,
       where: `element === two`,
     })
-    expect(read()).toEqual(['one', 'twoo', 'three']);
-    expect(testState.currentMutableState).toEqual(read());
+    expect(store.read()).toEqual(['one', 'twoo', 'three']);
+    expect(testState.currentMutableState).toEqual(store.read());
   })
 
   it('insert()', () => {
-    const { get, read } = createGlobalStore(['one']);
-    get()
-      .insert('two');
+    const store = createGlobalStore(['one']);
+    store.insert('two');
     expect(testState.currentAction).toEqual({
       type: 'insert()',
       insertion: 'two'
     });
-    expect(read()).toEqual(['one', 'two']);
-    expect(testState.currentMutableState).toEqual(read());
+    expect(store.read()).toEqual(['one', 'two']);
+    expect(testState.currentMutableState).toEqual(store.read());
   })
 
   it('find().replace()', () => {
-    const { get, read } = createGlobalStore(['hello']);
-    get().findWhere().matches(/^h/).replace('another')
+    const store = createGlobalStore(['hello']);
+    store.findWhere().matches(/^h/).replace('another')
     expect(testState.currentAction).toEqual({
       type: 'find().replace()',
       replacement: 'another',
       where: 'element.match(/^h/)',
     });
-    expect(read()).toEqual(['another']);
-    expect(testState.currentMutableState).toEqual(read());
+    expect(store.read()).toEqual(['another']);
+    expect(testState.currentMutableState).toEqual(store.read());
   })
 
 });

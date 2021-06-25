@@ -291,5 +291,5 @@ export function createStoreCore<S, T extends Trackability>({
     integrateStoreWithReduxDevtools<S>(storeResult as any, devtools, setDevtoolsDispatchListener, storeState);
   }
 
-  return { get: storeResult, read: () => storeResult().read() as S };
+  return { get: storeResult, ...storeResult() };
 }

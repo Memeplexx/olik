@@ -12,9 +12,9 @@ describe('array.find().patch()', () => {
   };
 
   it('should eq()', () => {
-    const { get, read } = createGlobalStore(initialState);
+    const store = createGlobalStore(initialState);
     const payload = { value: 'new' };
-    get(s => s.array)
+    store.get(s => s.array)
       .findWhere(e => e.id).eq(2)
       .patch(payload);
     expect(testState.currentAction).toEqual({
@@ -22,14 +22,14 @@ describe('array.find().patch()', () => {
       patch: payload,
       where: 'id === 2',
     });
-    expect(read().array).toEqual([initialState.array[0], { ...initialState.array[1], ...payload }, initialState.array[2]]);
-    expect(testState.currentMutableState).toEqual(read());
+    expect(store.read().array).toEqual([initialState.array[0], { ...initialState.array[1], ...payload }, initialState.array[2]]);
+    expect(testState.currentMutableState).toEqual(store.read());
   })
 
   it('should ne()', () => {
-    const { get, read } = createGlobalStore(initialState);
+    const store = createGlobalStore(initialState);
     const payload = { value: 'four' };
-    get(s => s.array)
+    store.get(s => s.array)
       .findWhere(e => e.id).ne(2)
       .patch(payload);
     expect(testState.currentAction).toEqual({
@@ -37,14 +37,14 @@ describe('array.find().patch()', () => {
       patch: payload,
       where: 'id !== 2',
     });
-    expect(read().array).toEqual([{ ...initialState.array[0], ...payload }, initialState.array[1], initialState.array[2]]);
-    expect(testState.currentMutableState).toEqual(read());
+    expect(store.read().array).toEqual([{ ...initialState.array[0], ...payload }, initialState.array[1], initialState.array[2]]);
+    expect(testState.currentMutableState).toEqual(store.read());
   })
 
   it('should gt()', () => {
-    const { get, read } = createGlobalStore(initialState);
+    const store = createGlobalStore(initialState);
     const payload = { value: 'four' };
-    get(s => s.array)
+    store.get(s => s.array)
       .findWhere(e => e.id).gt(1)
       .patch(payload);
     expect(testState.currentAction).toEqual({
@@ -52,14 +52,14 @@ describe('array.find().patch()', () => {
       patch: payload,
       where: 'id > 1',
     });
-    expect(read().array).toEqual([initialState.array[0], { ...initialState.array[1], ...payload }, initialState.array[2]]);
-    expect(testState.currentMutableState).toEqual(read());
+    expect(store.read().array).toEqual([initialState.array[0], { ...initialState.array[1], ...payload }, initialState.array[2]]);
+    expect(testState.currentMutableState).toEqual(store.read());
   })
 
   it('should gte()', () => {
-    const { get, read } = createGlobalStore(initialState);
+    const store = createGlobalStore(initialState);
     const payload = { value: 'four' };
-    get(s => s.array)
+    store.get(s => s.array)
       .findWhere(e => e.id).gte(1)
       .patch(payload);
     expect(testState.currentAction).toEqual({
@@ -67,14 +67,14 @@ describe('array.find().patch()', () => {
       patch: payload,
       where: 'id >= 1',
     });
-    expect(read().array).toEqual([{ ...initialState.array[0], ...payload }, initialState.array[1], initialState.array[2]]);
-    expect(testState.currentMutableState).toEqual(read());
+    expect(store.read().array).toEqual([{ ...initialState.array[0], ...payload }, initialState.array[1], initialState.array[2]]);
+    expect(testState.currentMutableState).toEqual(store.read());
   })
 
   it('should lt()', () => {
-    const { get, read } = createGlobalStore(initialState);
+    const store = createGlobalStore(initialState);
     const payload = { value: 'four' };
-    get(s => s.array)
+    store.get(s => s.array)
       .findWhere(e => e.id).lt(2)
       .patch(payload);
     expect(testState.currentAction).toEqual({
@@ -82,14 +82,14 @@ describe('array.find().patch()', () => {
       patch: payload,
       where: 'id < 2',
     });
-    expect(read().array).toEqual([{ ...initialState.array[0], ...payload }, initialState.array[1], initialState.array[2]]);
-    expect(testState.currentMutableState).toEqual(read());
+    expect(store.read().array).toEqual([{ ...initialState.array[0], ...payload }, initialState.array[1], initialState.array[2]]);
+    expect(testState.currentMutableState).toEqual(store.read());
   })
 
   it('should lte()', () => {
-    const { get, read } = createGlobalStore(initialState);
+    const store = createGlobalStore(initialState);
     const payload = { value: 'four' };
-    get(s => s.array)
+    store.get(s => s.array)
       .findWhere(e => e.id).lte(2)
       .patch(payload);
     expect(testState.currentAction).toEqual({
@@ -97,14 +97,14 @@ describe('array.find().patch()', () => {
       patch: payload,
       where: 'id <= 2',
     });
-    expect(read().array).toEqual([{ ...initialState.array[0], ...payload }, initialState.array[1], initialState.array[2]]);
-    expect(testState.currentMutableState).toEqual(read());
+    expect(store.read().array).toEqual([{ ...initialState.array[0], ...payload }, initialState.array[1], initialState.array[2]]);
+    expect(testState.currentMutableState).toEqual(store.read());
   })
 
   it('should in()', () => {
-    const { get, read } = createGlobalStore(initialState);
+    const store = createGlobalStore(initialState);
     const payload = { id: 4, value: 'four' };
-    get(s => s.array)
+    store.get(s => s.array)
       .findWhere(e => e.id).in([1, 2])
       .patch(payload);
     expect(testState.currentAction).toEqual({
@@ -112,14 +112,14 @@ describe('array.find().patch()', () => {
       patch: payload,
       where: '[1, 2].includes(id)',
     });
-    expect(read().array).toEqual([{ ...initialState.array[0], ...payload }, initialState.array[1], initialState.array[2]]);
-    expect(testState.currentMutableState).toEqual(read());
+    expect(store.read().array).toEqual([{ ...initialState.array[0], ...payload }, initialState.array[1], initialState.array[2]]);
+    expect(testState.currentMutableState).toEqual(store.read());
   })
 
   it('should ni()', () => {
-    const { get, read } = createGlobalStore(initialState);
+    const store = createGlobalStore(initialState);
     const payload = { value: 'four' };
-    get(s => s.array)
+    store.get(s => s.array)
       .findWhere(e => e.id).ni([1, 2])
       .patch(payload);
     expect(testState.currentAction).toEqual({
@@ -127,14 +127,14 @@ describe('array.find().patch()', () => {
       patch: payload,
       where: '![1, 2].includes(id)',
     });
-    expect(read().array).toEqual([initialState.array[0], initialState.array[1], { ...initialState.array[2], ...payload }]);
-    expect(testState.currentMutableState).toEqual(read());
+    expect(store.read().array).toEqual([initialState.array[0], initialState.array[1], { ...initialState.array[2], ...payload }]);
+    expect(testState.currentMutableState).toEqual(store.read());
   })
 
   it('should match()', () => {
-    const { get, read } = createGlobalStore(initialState);
+    const store = createGlobalStore(initialState);
     const payload = { value: 'four' };
-    get(s => s.array)
+    store.get(s => s.array)
       .findWhere(e => e.value).matches(/^t/)
       .patch(payload);
     expect(testState.currentAction).toEqual({
@@ -142,8 +142,8 @@ describe('array.find().patch()', () => {
       patch: payload,
       where: 'value.match(/^t/)',
     });
-    expect(read().array).toEqual([initialState.array[0], { ...initialState.array[1], ...payload }, initialState.array[2]]);
-    expect(testState.currentMutableState).toEqual(read());
+    expect(store.read().array).toEqual([initialState.array[0], { ...initialState.array[1], ...payload }, initialState.array[2]]);
+    expect(testState.currentMutableState).toEqual(store.read());
   })
 
 });

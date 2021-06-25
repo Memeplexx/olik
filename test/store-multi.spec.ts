@@ -10,8 +10,8 @@ describe('Multi-store', () => {
   it('should support multiple stores', () => {
     const store1 = createGlobalStore(new Array<string>());
     const store2 = createGlobalStore(0);
-    store1.get().replaceAll(['one']);
-    store2.get().replace(2);
+    store1.replaceAll(['one']);
+    store2.replace(2);
     expect(store1.read()).toEqual(['one']);
     expect(store2.read()).toEqual(2);
   })

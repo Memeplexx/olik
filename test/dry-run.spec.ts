@@ -11,34 +11,34 @@ describe('dry-run', () => {
 
   it('should perform a successful dry-run with an array element update', () => {
     const initState = { arr: [{ id: 1, val: 'one' }, { id: 2, val: 'two' }], str: '' };
-    const { get, read } = createGlobalStore(initState);
-    const state = getSelectedStateFromOperationWithoutUpdatingStore(get, () => get(s => s.arr).findWhere(s => s.id).eq(1).patch({ id: 3 }));
+    const store = createGlobalStore(initState);
+    const state = getSelectedStateFromOperationWithoutUpdatingStore(store.get, () => store.get(s => s.arr).findWhere(s => s.id).eq(1).patch({ id: 3 }));
     expect(state).toEqual({ id: 1, val: 'one' });
-    expect(read()).toEqual(initState);
+    expect(store.read()).toEqual(initState);
   })
 
   it('should perform a successful dry-run with an object update', () => {
     const initState = { str: 'abc' };
-    const { get, read } = createGlobalStore(initState);
-    const state = getSelectedStateFromOperationWithoutUpdatingStore(get, () => get(s => s.str).replace('sdd'));
+    const store = createGlobalStore(initState);
+    const state = getSelectedStateFromOperationWithoutUpdatingStore(store.get, () => store.get(s => s.str).replace('sdd'));
     expect(state).toEqual('abc');
-    expect(read()).toEqual(initState);
+    expect(store.read()).toEqual(initState);
   })
 
   it('should work with a nested store', () => {
-    const { get, read } = createGlobalStore({ str: '' });
+    const store = createGlobalStore({ str: '' });
     const nested = createNestedStore({ hello: 'xx' }, { componentName: 'test', instanceName: '0' })
     const state = getSelectedStateFromOperationWithoutUpdatingStore(nested.get, () => nested.get(s => s.hello).replace('sdd'));
     expect(state).toEqual('xx');
-    expect(read()).toEqual({ str: '', nested: { test: { '0': { hello: 'xx' } } } });
+    expect(store.read()).toEqual({ str: '', nested: { test: { '0': { hello: 'xx' } } } });
   })
 
   it('should work with a nested store which isn\'t attached', () => {
     const initState = { str: 'abc' };
-    const { get, read } = createNestedStore(initState, { componentName: 'test', instanceName: '0' });
-    const state = getSelectedStateFromOperationWithoutUpdatingStore(get, () => get(s => s.str).replace('sdd'));
+    const store = createNestedStore(initState, { componentName: 'test', instanceName: '0' });
+    const state = getSelectedStateFromOperationWithoutUpdatingStore(store.get, () => store.get(s => s.str).replace('sdd'));
     expect(state).toEqual('abc');
-    expect(read()).toEqual(initState);
+    expect(store.read()).toEqual(initState);
   })
 
 });
