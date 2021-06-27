@@ -452,8 +452,6 @@ export type StoreForAnObjectOrPrimitive<C extends any, T extends Trackability> =
    * Substitutes this primitive value
    * @example
    * get(s => s.user.age).replace(33);
-   * @example
-   * get(s => s.user.age).replace(age => age + 1);
    */
   replace: <H extends C | (() => Promise<C>) >(replacement: H, options: UpdateOptions<T, H>) => H extends (() => Promise<any>) ? Promise<C> : void,
 }
@@ -474,7 +472,7 @@ export type StoreForAnObject<C extends any, T extends Trackability> = {
    * ***WARNING***: invoking this has the potentional to contradict the type-system.
    * Only use this to remove a property from an object of type of `{ [key: string]: any }` and NOT to remove a property from an object with statically defined properties eg `{ str: '', num: 0 }`
    * @example
-   * const { get } = createGlobalStore({ skillpoints: {} as {[name: string]: number} });
+   * const store = createGlobalStore({ skillpoints: {} as {[name: string]: number} });
    * 
    * store.get(s => s.skillpoints)
    *   .remove('archery')
@@ -485,7 +483,7 @@ export type StoreForAnObject<C extends any, T extends Trackability> = {
    * ***WARNING***: invoking this has the potentional to contradict the type-system.
    * Only use this to add properties to an object of type of `{ [key: string]: any }` and NOT to add properties with statically defined properties eg `{ str: '', num: 0 }`
    * @example
-   * const { get } = createGlobalStore({ skillpoints: {} as {[name: string]: number} });
+   * const store = createGlobalStore({ skillpoints: {} as {[name: string]: number} });
    * 
    * store.get(s => s.skillpoints)
    *   .insert({ archery: 3, sorcery: 5 })

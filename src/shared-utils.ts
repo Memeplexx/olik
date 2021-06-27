@@ -129,7 +129,7 @@ export function copyPayload<C>(payload: C) {
 }
 
 export const validateSelectorFn = (
-  functionName: 'select' | 'getProp',
+  functionName: 'get' | 'getProp',
   storeState: StoreState<any>,
   selector?: (element: any) => any,
 ) => {
@@ -163,7 +163,7 @@ export const processAsyncPayload = <S, C, X extends C & Array<any>, T extends Tr
   selector: Selector<S, C, X>,
   payload: any | (() => Promise<any>),
   pathReader: PathReader<S>,
-  storeResult: (selector?: (s: DeepReadonly<S>) => C) => any,
+  storeResult: (selector?: (s: S) => C) => any,
   processPayload: (payload: C) => void,
   updateOptions: UpdateOptions<T, any>,
   suffix: string,

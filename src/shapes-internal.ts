@@ -67,7 +67,7 @@ export type ArrayOperatorState<S, C, X extends C & Array<any>, F extends FindOrF
   type: FindOrFilter,
   changeListeners: Map<(ar: any) => any, (arg: S) => any>,
   pathReader: PathReader<S>,
-  storeResult: (selector?: (s: DeepReadonly<S>) => C) => any,
+  storeResult: (selector?: (s: S) => C) => any,
   storeState: StoreState<S>,
 };
 
@@ -79,7 +79,7 @@ export type ArrayCustomState<S, C, X extends C & Array<any>, T extends Trackabil
   predicate: (element: DeepReadonly<X[0]>) => boolean,
   changeListeners: Map<(ar: any) => any, (arg: S) => any>,
   pathReader: PathReader<S>,
-  storeResult: (selector?: (s: DeepReadonly<S>) => C) => any,
+  storeResult: (selector?: (s: S) => C) => any,
   storeState: StoreState<S>,
 }
 
@@ -88,7 +88,7 @@ export type CoreActionsState<S, C, X extends C & Array<any>, T extends Trackabil
   updateState: UpdateStateFn<S, C, T, X>,
   isNested: () => boolean,
   storeState: StoreState<S>,
-  storeResult: (selector?: (s: DeepReadonly<S>) => C) => any,
+  storeResult: (selector?: (s: S) => C) => any,
   pathReader: PathReader<S>,
   initialState: S,
   getCurrentState: () => S,

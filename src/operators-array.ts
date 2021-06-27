@@ -144,7 +144,7 @@ const completeWhereClause = <S, C, X extends C & Array<any>, F extends FindOrFil
   const { whereClauseStrings, whereClauseString, whereClauseSpecs, criteria, fn, getCurrentState, selector, type } = context;
   whereClauseStrings.push(whereClauseString);
   whereClauseSpecs.push({ filter: o => criteria(o, fn), type: 'last' });
-  validateSelectorFn('select', context.storeState, context.selector);
+  validateSelectorFn('get', context.storeState, context.selector);
   const elementIndices = type === 'find'
     ? [(selector(getCurrentState()) as X).findIndex(e => bundleCriteria(e, whereClauseSpecs))]
     : (selector(getCurrentState()) as X).map((e, i) => bundleCriteria(e, whereClauseSpecs) ? i : null).filter(i => i !== null) as number[];

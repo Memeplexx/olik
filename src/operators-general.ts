@@ -266,6 +266,6 @@ const validateSelector = <S, C, X extends C & Array<any>>(
 ) => {
   storeState.selector = selector;
   if (isNested()) { storeState.bypassSelectorFunctionCheck = true; }
-  validateSelectorFn('select', storeState, selector);
+  validateSelectorFn('get', storeState, selector);
   if (isNested()) { storeState.bypassSelectorFunctionCheck = false; }
 }

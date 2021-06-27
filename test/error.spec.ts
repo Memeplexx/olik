@@ -11,14 +11,14 @@ describe('Error', () => {
     const store = createGlobalStore({ arr: new Array<string>() });
     expect(() => {
       store.get(s => s.arr.some(e => true)).replace(false);
-    }).toThrowError(errorMessages.ILLEGAL_CHARACTERS_WITHIN_SELECTOR('select'));
+    }).toThrowError(errorMessages.ILLEGAL_CHARACTERS_WITHIN_SELECTOR('get'));
   })
 
   it('should throw an error when filter() is invoked within a selector', () => {
     const store = createGlobalStore({ arr: new Array<string>() });
     expect(() => {
       store.get(s => s.arr.filter(e => true)).replaceAll([]);
-    }).toThrowError(errorMessages.ILLEGAL_CHARACTERS_WITHIN_SELECTOR('select'));
+    }).toThrowError(errorMessages.ILLEGAL_CHARACTERS_WITHIN_SELECTOR('get'));
   })
 
   it('should throw an error if the initial state has functions in it', () => {
@@ -37,7 +37,7 @@ describe('Error', () => {
     const store = createGlobalStore({ prop: 'a' });
     expect(() => {
       store.get(s => s.prop.replace('', '')).replace('ss');
-    }).toThrowError(errorMessages.ILLEGAL_CHARACTERS_WITHIN_SELECTOR('select'));
+    }).toThrowError(errorMessages.ILLEGAL_CHARACTERS_WITHIN_SELECTOR('get'));
   })
 
 });
