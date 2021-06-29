@@ -15,24 +15,19 @@ describe('React', () => {
   };
 
   it('should create and update a store', () => {
-    const {
-      select
-    } = createGlobalStore(initialState, { devtools: false });
-    select(s => s.object.property)
+    const store = createGlobalStore(initialState, { devtools: false });
+    store.get(s => s.object.property)
       .replace('test');
-    expect(select().read().object.property).toEqual('test');
+    expect(store.read().object.property).toEqual('test');
   })
 
   it('should useSelector', () => {
-    const {
-      select,
-      useSelector
-    } = createGlobalStore(initialState, { devtools: false });
+    const store = createGlobalStore(initialState, { devtools: false });
     const App = () => {
-      const result = useSelector(s => s.object.property);
+      const result = store.useSelector(s => s.object.property);
       return (
         <>
-          <button onClick={() => select(s => s.object.property).replace('test')}>Click</button>
+          <button onClick={() => store.get(s => s.object.property).replace('test')}>Click</button>
           <div data-testid="result">{result}</div>
         </>
       );
@@ -44,13 +39,10 @@ describe('React', () => {
   });
 
   it('should useDerivation with no deps', () => {
-    const {
-      select,
-      useDerivation
-    } = createGlobalStore(initialState, { devtools: false });
+    const store = createGlobalStore(initialState, { devtools: false });
     let calcCount = 0;
     const App = () => {
-      const result = useDerivation([
+      const result = store.useDerivation([
         s => s.string,
         s => s.object.property,
       ]).usingExpensiveCalc(([str, prop]) => {
@@ -59,7 +51,7 @@ describe('React', () => {
       });
       return (
         <>
-          <button onClick={() => select(s => s.object.property).replace('test')}>Click</button>
+          <button onClick={() => store.get(s => s.object.property).replace('test')}>Click</button>
           <div data-testid="result">{result}</div>
         </>
       );
@@ -111,18 +103,18 @@ describe('React', () => {
       const nested = useNestedStore({ hello: false }, { componentName: 'MyComponent', instanceName: '0' });
       const [num, setNum] = React.useState(0);
       const result = useDerivationAcrossStores([
-        parent.select(s => s.array.find(e => e.id === 2)!.id),
-        parent.select(s => s.object.property),
-        nested.select(s => s.hello)
+        parent.get(s => s.array.find(e => e.id === 2)!.id),
+        parent.get(s => s.object.property),
+        nested.get(s => s.hello)
       ], [num]).usingExpensiveCalc(([i0, i1, i2]) => {
         calcCount++;
         return `${i0}-${i1}-${i2}-${num}`
       })
       return (
         <>
-          <button data-testid="btn-1" onClick={() => parent.select(s => s.string).replace('test')}>Click</button>
-          <button data-testid="btn-2" onClick={() => nested.select(s => s.hello).replace(true)}>Click</button>
-          <button data-testid="btn-3" onClick={() => parent.select(s => s.object.property).replace('xxx')}>Click</button>
+          <button data-testid="btn-1" onClick={() => parent.get(s => s.string).replace('test')}>Click</button>
+          <button data-testid="btn-2" onClick={() => nested.get(s => s.hello).replace(true)}>Click</button>
+          <button data-testid="btn-3" onClick={() => parent.get(s => s.object.property).replace('xxx')}>Click</button>
           <button data-testid="btn-4" onClick={() => setNum(n => n + 1)}>Click</button>
           <div data-testid="result">{result}</div>
         </>
@@ -144,10 +136,7 @@ describe('React', () => {
   })
 
   it('should support classes', () => {
-    const {
-      select,
-      mapStateToProps
-    } = createGlobalStore(initialState, { devtools: false });
+    const store = createGlobalStore(initialState, { devtools: false });
     let renderCount = 0;
     class Child extends React.Component<{ str: string, num: number }> {
       render() {
@@ -160,7 +149,7 @@ describe('React', () => {
         );
       }
     }
-    const Parent = mapStateToProps((state, ownProps: { someProp: number }) => ({
+    const Parent = store.mapStateToProps((state, ownProps: { someProp: number }) => ({
       str: state.object.property,
       num: ownProps.someProp,
     }))(Child);
@@ -169,8 +158,8 @@ describe('React', () => {
       return (
         <>
           <Parent someProp={num} />
-          <button data-testid="btn-1" onClick={() => select(s => s.string).replace('test')}>Test 1</button>
-          <button data-testid="btn-2" onClick={() => select(s => s.object.property).replace('test')}>Test 2</button>
+          <button data-testid="btn-1" onClick={() => store.get(s => s.string).replace('test')}>Test 1</button>
+          <button data-testid="btn-2" onClick={() => store.get(s => s.object.property).replace('test')}>Test 2</button>
           <button data-testid="btn-3" onClick={() => setNum(n => n + 1)}>Test 3</button>
         </>
       )
@@ -190,16 +179,13 @@ describe('React', () => {
   it('should create a nested store without a parent', () => {
     let renderCount = 0;
     const App = () => {
-      const {
-        select,
-        useSelector
-      } = useNestedStore(initialState, { componentName: 'unhosted', instanceName: '0', dontTrackWithDevtools: true });
-      const result = useSelector(s => s.object.property);
+      const store = useNestedStore(initialState, { componentName: 'unhosted', instanceName: '0', dontTrackWithDevtools: true });
+      const result = store.useSelector(s => s.object.property);
       renderCount++;
       return (
         <>
-          <button data-testid="btn-1" onClick={() => select(s => s.object.property).replace('test')}>Click</button>
-          <button data-testid="btn-2" onClick={() => select(s => s.string).replace('test')}>Click</button>
+          <button data-testid="btn-1" onClick={() => store.get(s => s.object.property).replace('test')}>Click</button>
+          <button data-testid="btn-2" onClick={() => store.get(s => s.string).replace('test')}>Click</button>
           <div data-testid="result">{result}</div>
         </>
       );
@@ -222,15 +208,12 @@ describe('React', () => {
     }, { devtools: false });
     let renderCount = 0;
     const Child = () => {
-      const {
-        select,
-        useSelector,
-      } = useNestedStore({ prop: '' }, { componentName: 'component', instanceName: '0', dontTrackWithDevtools: true });
-      const result = useSelector(s => s.prop);
+      const store = useNestedStore({ prop: '' }, { componentName: 'component', instanceName: '0', dontTrackWithDevtools: true });
+      const result = store.useSelector(s => s.prop);
       renderCount++;
       return (
         <>
-          <button data-testid="btn" onClick={() => select(s => s.prop).replace('test')}>Click</button>
+          <button data-testid="btn" onClick={() => store.get(s => s.prop).replace('test')}>Click</button>
           <div>{result}</div>
         </>
       );
@@ -246,7 +229,7 @@ describe('React', () => {
     expect(renderCount).toEqual(1);
     (screen.getByTestId('btn') as HTMLButtonElement).click();
     expect(renderCount).toEqual(2);
-    expect(parentStore.select(s => s.nested.component).read()).toEqual({ '0': { prop: 'test' } });
+    expect(parentStore.get(s => s.nested.component).read()).toEqual({ '0': { prop: 'test' } });
   });
 
 
@@ -258,12 +241,9 @@ describe('React', () => {
       }
     }, { devtools: false });
     const Child: React.FunctionComponent<{ num: number }> = (props) => {
-      const {
-        select,
-        useSelector,
-      } = useNestedStore({ prop: 0 }, { componentName: 'component2', instanceName: '0', dontTrackWithDevtools: true });
-      React.useEffect(() => select(s => s.prop).replace(props.num), [props.num])
-      const result = useSelector(s => s.prop);
+      const store = useNestedStore({ prop: 0 }, { componentName: 'component2', instanceName: '0', dontTrackWithDevtools: true });
+      React.useEffect(() => store.get(s => s.prop).replace(props.num), [props.num])
+      const result = store.useSelector(s => s.prop);
       return (
         <>
           <div>{result}</div>
@@ -281,16 +261,16 @@ describe('React', () => {
     }
     render(<Parent />);
     (screen.getByTestId('btn') as HTMLButtonElement).click();
-    await waitFor(() => expect(parentStore.select(s => s.nested.component2).read()).toEqual({ '0': { prop: 1 } }));
+    await waitFor(() => expect(parentStore.get(s => s.nested.component2).read()).toEqual({ '0': { prop: 1 } }));
   })
 
   it('should respond to async actions', async () => {
-    const { select, useSelector } = createGlobalStore(initialState, { devtools: false });
+    const store = createGlobalStore(initialState, { devtools: false });
     const App = () => {
-      const state = useSelector(s => s.object.property);
+      const state = store.useSelector(s => s.object.property);
       return (
         <>
-          <button data-testid="btn" onClick={() => select(s => s.object.property)
+          <button data-testid="btn" onClick={() => store.get(s => s.object.property)
             .replace(() => new Promise(resolve => setTimeout(() => resolve('test'), 10)))}>Click</button>
           <div data-testid="result">{state}</div>
         </>
@@ -302,18 +282,15 @@ describe('React', () => {
   });
 
   it('should respond to async queries', async () => {
-    const {
-      select,
-      useFetcher
-    } = createGlobalStore(initialState, { devtools: false });
+    const store = createGlobalStore(initialState, { devtools: false });
+    const fetchString = () => new Promise<string>(resolve => setTimeout(() => resolve('test'), 10))
     const App = () => {
       const {
         wasResolved,
         wasRejected,
         isLoading,
         storeValue
-      } = useFetcher(() => select(s => s.object.property)
-        .replace(() => new Promise(resolve => setTimeout(() => resolve('test'), 10))));
+      } = store.useFetcher(() => store.get(s => s.object.property).replace(fetchString));
       return (
         <>
           <div data-testid="result">{storeValue}</div>
@@ -333,18 +310,15 @@ describe('React', () => {
   })
 
   it('should respond to async queries', async () => {
-    const {
-      select,
-      useFetcher
-    } = createGlobalStore(initialState, { devtools: false });
+    const store = createGlobalStore(initialState, { devtools: false });
+    const fetchString = () => new Promise<string>((resolve, reject) => setTimeout(() => reject('test'), 10));
     const App = () => {
       const {
         wasResolved,
         wasRejected,
         isLoading,
         error,
-      } = useFetcher(() => select(s => s.object.property)
-        .replace(() => new Promise<string>((resolve, reject) => setTimeout(() => reject('test'), 10))));
+      } = store.useFetcher(() => store.get(s => s.object.property).replace(fetchString));
       return (
         <>
           <div data-testid="result">{error}</div>
@@ -366,12 +340,10 @@ describe('React', () => {
   it('should be able to paginate', async () => {
     const todos = new Array(15).fill(null).map((e, i) => ({ id: i + 1, text: `value ${i + 1}` }));
     type Todo = { id: Number, text: string };
-    const {
-      select,
-      useFetcher,
-    } = createGlobalStore({
+    const store = createGlobalStore({
       toPaginate: {} as { [key: string]: Todo[] },
     }, { devtools: false });
+    const fetchTodos = (index: number) => new Promise<Todo[]>(resolve => setTimeout(() => resolve(todos.slice(index * 10, (index * 10) + 10)), 10));
     const App = () => {
       const [index, setIndex] = React.useState(0);
       const {
@@ -380,8 +352,7 @@ describe('React', () => {
         isLoading,
         error,
         storeValue,
-      } = useFetcher(() => select(s => s.toPaginate[index])
-        .replaceAll(() => new Promise<Todo[]>(resolve => setTimeout(() => resolve(todos.slice(index * 10, (index * 10) + 10)), 10))), [index]);
+      } = store.useFetcher(() => store.get(s => s.toPaginate[index]).replaceAll(() => fetchTodos(index)), [index]);
       return (
         <>
           <button data-testid="btn" onClick={() => setIndex(1)}>Click</button>

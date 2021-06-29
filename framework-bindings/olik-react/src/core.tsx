@@ -63,7 +63,7 @@ export function useNestedStore<C>(
 ) {
   const initState = React.useRef(initialState);
   const opts = React.useRef(options);
-  const { select, read, detachFromAppStore } = React.useMemo(() => {
+  const store = React.useMemo(() => {
     return core.createNestedStore(initState.current, opts.current);
   }, []);
   React.useEffect(() => {
@@ -72,19 +72,18 @@ export function useNestedStore<C>(
       // In dev mode, React.StrictMode is enabled. We cannot allow the store to be detached in this instance because an 
       // error will be thrown the next time a developer saves a code update and then attempts to update the nested store state.
       if (!devMode) {
-        detachFromAppStore();
+        store.detachFromGlobalStore();
       } else { // Reset the state. Note for future: It may be safest that this is the ONLY correct behavior (rather than detaching)
-        select().reset();
+        store.reset();
       }
     }
-  }, [detachFromAppStore, select]);
+  }, [store]);
   return {
-    select,
-    read,
-    ...getUseSelector(select as core.SelectorFromAStore<C>),
-    ...getUseDerivation(select as core.SelectorFromAStore<C>),
-    ...getMapStateToProps(select as core.SelectorFromAStore<C>),
-    ...getUseFetcher(select as core.SelectorFromAStore<C>),
+    ...store,
+    ...getUseSelector(store.get as core.SelectorFromAStore<C>),
+    ...getUseDerivation(store.get as core.SelectorFromAStore<C>),
+    ...getMapStateToProps(store.get as core.SelectorFromAStore<C>),
+    ...getUseFetcher(store.get as core.SelectorFromAStore<C>),
   };
 }
 
@@ -92,24 +91,23 @@ type Function<S, R> = (arg: core.DeepReadonly<S>) => R;
 type MappedSelectorsToResults<S, X> = { [K in keyof X]: X[K] extends Function<S, infer E> ? E : never };
 
 export function createGlobalStore<S>(initialState: S, options?: core.OptionsForMakingAGlobalStore) {
-  const { select, read } = core.createGlobalStore(initialState, options);
+  const store = core.createGlobalStore(initialState, options);
   return {
     /**
      * Takes a function which selects from the store
      * @example
      * select(s => s.some.state).replace('test')
      */
-    select,
-    read,
-    ...getUseSelector(select),
-    ...getUseDerivation(select),
-    ...getMapStateToProps(select),
-    ...getUseFetcher(select),
+    ...store,
+    ...getUseSelector(store.get),
+    ...getUseDerivation(store.get),
+    ...getMapStateToProps(store.get),
+    ...getUseFetcher(store.get),
   }
 }
 
 export function createGlobalStoreEnforcingTags<S>(initialState: S, options?: core.OptionsForMakingAGlobalStore) {
-  const { select, read } = core.createGlobalStoreEnforcingTags(initialState, options);
+  const store = core.createGlobalStoreEnforcingTags(initialState, options);
   return {
     /**
      * Takes a function which selects from the store
@@ -118,12 +116,11 @@ export function createGlobalStoreEnforcingTags<S>(initialState: S, options?: cor
      * @example
      * select(s => s.some.state).replace('test', __filename);
      */
-    select,
-    read,
-    ...getUseSelector(select as any as core.SelectorFromAStore<S>),
-    ...getUseDerivation(select as any as core.SelectorFromAStore<S>),
-    ...getMapStateToProps(select as any as core.SelectorFromAStore<S>),
-    ...getUseFetcher(select as any as core.SelectorFromAStore<S>),
+    ...store,
+    ...getUseSelector(store.get as any as core.SelectorFromAStore<S>),
+    ...getUseDerivation(store.get as any as core.SelectorFromAStore<S>),
+    ...getMapStateToProps(store.get as any as core.SelectorFromAStore<S>),
+    ...getUseFetcher(store.get as any as core.SelectorFromAStore<S>),
   };
 }
 

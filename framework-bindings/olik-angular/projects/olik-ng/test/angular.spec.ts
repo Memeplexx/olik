@@ -1,4 +1,4 @@
-import { combineObserversAcrossStores, createGlobalStore, createGlobalStoreEnforcingTags, createNestedStore } from '../src/public-api';
+import { observeCombinedAcrossStores, createGlobalStore, createGlobalStoreEnforcingTags, createNestedStore } from '../src/public-api';
 import { skip } from 'rxjs/operators';
 
 describe('Angular', () => {
@@ -10,28 +10,28 @@ describe('Angular', () => {
   };
 
   it('should create and update a store', () => {
-    const { select } = createGlobalStore(initialState, { devtools: false });
-    select(s => s.object.property)
+    const store = createGlobalStore(initialState, { devtools: false });
+    store.get(s => s.object.property)
       .replace('test');
-    expect(select().read().object.property).toEqual('test');
+    expect(store.read().object.property).toEqual('test');
   })
 
   it('should be able to observe state updates', done => {
-    const { select, observe } = createGlobalStore(initialState, { devtools: false });
-    const obs$ = observe(s => s.object.property);
+    const store = createGlobalStore(initialState, { devtools: false });
+    const obs$ = store.observe(s => s.object.property);
     const payload = 'test';
     obs$.pipe(skip(1)).subscribe(val => {
       expect(val).toEqual(payload);
       done();
     });
-    select(s => s.object.property).replace(payload);
+    store.get(s => s.object.property).replace(payload);
   })
 
   it('should be able to observe a fetch, and resolve', done => {
-    const { select, observeFetch } = createGlobalStore(initialState, { devtools: false });
+    const store = createGlobalStore(initialState, { devtools: false });
     let count = 0;
-    const obs$ = observeFetch(() => select(s => s.object.property)
-      .replace(() => new Promise(resolve => setTimeout(() => resolve('val ' + count), 10))));
+    const fetchProperty = () => new Promise<string>(resolve => setTimeout(() => resolve('val ' + count), 10));
+    const obs$ = store.observeFetch(() => store.get(s => s.object.property).replace(fetchProperty));
     obs$.subscribe(val => {
       count++;
       if (count === 1) {
@@ -51,10 +51,10 @@ describe('Angular', () => {
   })
 
   it('should be able to observe a fetch, and reject', done => {
-    const { select, observeFetch } = createGlobalStore(initialState, { devtools: false });
+    const store = createGlobalStore(initialState, { devtools: false });
     let count = 0;
-    const obs$ = observeFetch(() => select(s => s.object.property)
-      .replace(() => new Promise((resolve, reject) => setTimeout(() => reject('test'), 10))));
+    const fetchAndReject = () => new Promise<string>((resolve, reject) => setTimeout(() => reject('test'), 10));
+    const obs$ = store.observeFetch(() => store.get(s => s.object.property).replace(fetchAndReject));
     obs$.subscribe(val => {
       count++;
       if (count === 1) {
@@ -75,27 +75,27 @@ describe('Angular', () => {
 
 
   it('should create and update a store which enforces tags', () => {
-    const { select } = createGlobalStoreEnforcingTags(initialState, { devtools: false });
-    select(s => s.object.property)
+    const store = createGlobalStoreEnforcingTags(initialState, { devtools: false });
+    store.get(s => s.object.property)
       .replace('test', { tag: 'Tag' });
-    expect(select().read().object.property).toEqual('test');
+    expect(store.get().read().object.property).toEqual('test');
   })
 
   it('should be able to observe state updates for a store which enforces tags', done => {
-    const { select, observe } = createGlobalStoreEnforcingTags(initialState, { devtools: false });
-    const obs$ = observe(s => s.object.property);
+    const store = createGlobalStoreEnforcingTags(initialState, { devtools: false });
+    const obs$ = store.observe(s => s.object.property);
     const payload = 'test';
     obs$.pipe(skip(1)).subscribe(val => {
       expect(val).toEqual(payload);
       done();
     });
-    select(s => s.object.property).replace(payload, { tag: 'Tag' });
+    store.get(s => s.object.property).replace(payload, { tag: 'Tag' });
   })
 
   it('should be able to observe a fetch, and resolve using a store which enforces tags', done => {
-    const { select, observeFetch } = createGlobalStoreEnforcingTags(initialState, { devtools: false });
+    const store = createGlobalStoreEnforcingTags(initialState, { devtools: false });
     let count = 0;
-    const obs$ = observeFetch(() => select(s => s.object.property)
+    const obs$ = store.observeFetch(() => store.get(s => s.object.property)
       .replace(() => new Promise(resolve => setTimeout(() => resolve('val ' + count), 10)), { tag: 'Tag' }));
     obs$.subscribe(val => {
       count++;
@@ -116,9 +116,9 @@ describe('Angular', () => {
   })
 
   it('should be able to observe a fetch, and reject using a store which enforces tags', done => {
-    const { select, observeFetch } = createGlobalStoreEnforcingTags(initialState, { devtools: false });
+    const store = createGlobalStoreEnforcingTags(initialState, { devtools: false });
     let count = 0;
-    const obs$ = observeFetch(() => select(s => s.object.property)
+    const obs$ = store.observeFetch(() => store.get(s => s.object.property)
       .replace(() => new Promise((resolve, reject) => setTimeout(() => reject('test'), 10)), { tag: 'Tag' }));
     obs$.subscribe(val => {
       count++;
@@ -142,48 +142,48 @@ describe('Angular', () => {
     const parentStore = createGlobalStore(initialState, { devtools: false });
     const componentName = 'MyComponent';
     const instanceName = '0';
-    const { select } = createNestedStore({ prop: '' }, { componentName, instanceName });
+    const store = createNestedStore({ prop: '' }, { componentName, instanceName });
     const payload = 'test';
-    select(s => s.prop).replace(payload);
-    expect(parentStore.select().read()).toEqual({ ...initialState, ...{ nested: { [componentName]: { '0': { prop: payload } } } } });
+    store.get(s => s.prop).replace(payload);
+    expect(parentStore.read()).toEqual({ ...initialState, ...{ nested: { [componentName]: { '0': { prop: payload } } } } });
   })
 
   it('should be able to observe state updates of a nested store', done => {
     createGlobalStore(initialState, { devtools: false });
     const componentName = 'MyComponent';
     const instanceName = '0';
-    const { select, observe } = createNestedStore(initialState, { componentName, instanceName });
-    const obs$ = observe(s => s.object.property);
+    const store = createNestedStore(initialState, { componentName, instanceName });
+    const obs$ = store.observe(s => s.object.property);
     const payload = 'test';
     obs$.pipe(skip(1)).subscribe(val => {
       expect(val).toEqual(payload);
       done();
     });
-    select(s => s.object.property).replace(payload);
+    store.get(s => s.object.property).replace(payload);
   })
 
   it('should be able to observe root state updates of a nested store', done => {
     createGlobalStore(initialState, { devtools: false });
     const componentName = 'MyComponent';
     const instanceName = '0';
-    const { select, observe } = createNestedStore(initialState, { componentName, instanceName });
-    const obs$ = observe();
+    const store = createNestedStore(initialState, { componentName, instanceName });
+    const obs$ = store.observe();
     const payload = 'test';
     obs$.pipe(skip(1)).subscribe(val => {
       expect(val).toEqual({ ...initialState, object: { property: payload } });
       done();
     });
-    select(s => s.object.property).replace(payload);
-    const t = observe();
+    store.get(s => s.object.property).replace(payload);
+    // const t = store.observe();
   })
 
   it('should be able to observe a fetch, and resolve for a nested store', done => {
     createGlobalStore(initialState, { devtools: false });
     const componentName = 'MyComponent';
     const instanceName = '0';
-    const { select, observeFetch } = createNestedStore(initialState, { componentName, instanceName });
+    const store = createNestedStore(initialState, { componentName, instanceName });
     let count = 0;
-    const obs$ = observeFetch(() => select(s => s.object.property)
+    const obs$ = store.observeFetch(() => store.get(s => s.object.property)
       .replace(() => new Promise(resolve => setTimeout(() => resolve('val ' + count), 10))));
     obs$.subscribe(val => {
       count++;
@@ -204,10 +204,10 @@ describe('Angular', () => {
   })
 
   it('should be able to observe a fetch, and reject for a nested store', done => {
-    const { select, observeFetch } = createGlobalStore(initialState, { devtools: false });
+    const store = createGlobalStore(initialState, { devtools: false });
     let count = 0;
-    const obs$ = observeFetch(() => select(s => s.object.property)
-      .replace(() => new Promise((resolve, reject) => setTimeout(() => reject('test'), 10))));
+    const fetchAndReject = () => new Promise<string>((resolve, reject) => setTimeout(() => reject('test'), 10));
+    const obs$ = store.observeFetch(() => store.get(s => s.object.property).replace(fetchAndReject));
     obs$.subscribe(val => {
       count++;
       if (count === 1) {
@@ -227,9 +227,9 @@ describe('Angular', () => {
   })
 
   it('should be able to combineObservers for a single store', done => {
-    const { select, combineObservers } = createGlobalStore(initialState, { devtools: false });
+    const store = createGlobalStore(initialState, { devtools: false });
     let count = 0;
-    const obs$ = combineObservers({
+    const obs$ = store.combineObservers({
       one: s => s.object.property,
       two: s => s.string,
     });
@@ -247,11 +247,11 @@ describe('Angular', () => {
       }
     });
     expect(count).toEqual(1);
-    select(s => s.object.property).replace('test');
+    store.get(s => s.object.property).replace('test');
     expect(count).toEqual(2);
-    select(s => s.string).replace('test');
+    store.get(s => s.string).replace('test');
     expect(count).toEqual(3);
-    select(s => s.array).replaceAll([{ id: 5, value: 'x' }]);
+    store.get(s => s.array).replaceAll([{ id: 5, value: 'x' }]);
     expect(count).toEqual(3);
     done();
   })
@@ -260,7 +260,7 @@ describe('Angular', () => {
     const globalStore = createGlobalStore(initialState, { devtools: false });
     const nestedStore = createNestedStore({ hello: 'c', world: 'd' }, { componentName: 'test', instanceName: '0' });
     let count = 0;
-    const obs$ = combineObserversAcrossStores({
+    const obs$ = observeCombinedAcrossStores({
       one: globalStore.observe(s => s.object.property),
       two: globalStore.observe(s => s.string),
       three: nestedStore.observe(s => s.hello),
@@ -286,15 +286,15 @@ describe('Angular', () => {
       }
     });
     expect(count).toEqual(1);
-    globalStore.select(s => s.object.property).replace('test');
+    globalStore.get(s => s.object.property).replace('test');
     expect(count).toEqual(2);
-    globalStore.select(s => s.string).replace('test');
+    globalStore.get(s => s.string).replace('test');
     expect(count).toEqual(3);
-    globalStore.select(s => s.array).replaceAll([{ id: 5, value: 'x' }]);
+    globalStore.get(s => s.array).replaceAll([{ id: 5, value: 'x' }]);
     expect(count).toEqual(3);
-    nestedStore.select(s => s.hello).replace('test');
+    nestedStore.get(s => s.hello).replace('test');
     expect(count).toEqual(4);
-    nestedStore.select(s => s.world).replace('test');
+    nestedStore.get(s => s.world).replace('test');
     expect(count).toEqual(4);
     done();
   })

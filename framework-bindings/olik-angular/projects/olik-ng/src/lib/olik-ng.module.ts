@@ -52,21 +52,21 @@ const observeInternal = <S>(
   return () => subscription.unsubscribe();
 });
 
-const combineObserversInternal = <S>(select: core.SelectorFromAStore<S>) => <T extends { [key: string]: (state: core.DeepReadonly<S>) => any }>(arg: T) => {
+const observeCombinedInternal = <S>(select: core.SelectorFromAStore<S>) => <T extends { [key: string]: (state: core.DeepReadonly<S>) => any }>(arg: T) => {
   const obj = {} as { [key in keyof T]: Observable<ReturnType<T[key]>>; };
   (Object.keys(arg) as (keyof T)[]).forEach(key => obj[key] = observeInternal(select)(arg[key]))
-  return combineObserversAcrossStores(obj);
+  return observeCombinedAcrossStores(obj);
 }
 
 export const createGlobalStore = <S>(initialState: S, options?: core.OptionsForMakingAGlobalStore) => {
-  const { select, read } = core.createGlobalStore(initialState, options);
+  const { get, read } = core.createGlobalStore(initialState, options);
   return new class {
     /**
      * Select a piece of the state to operate on and perform some action on it
      * @example
      * select(s => s.username).replace('Jeff');
      */
-    select = select;
+    get = get;
     /**
      * Read the state tree
      * @example
@@ -82,7 +82,7 @@ export const createGlobalStore = <S>(initialState: S, options?: core.OptionsForM
      */
     observe(): Observable<S>;
     observe<T extends (state: core.DeepReadonly<S>) => any>(selector: T): Observable<ReturnType<typeof selector>>
-    observe(selector?: (state: core.DeepReadonly<S>) => any) { return observeInternal(select)(selector!); }
+    observe(selector?: (state: core.DeepReadonly<S>) => any) { return observeInternal(get)(selector!); }
     /**
      * Takes an async state-update, and returns an Observable which reports on the status of that update.
      * @example
@@ -99,7 +99,7 @@ export const createGlobalStore = <S>(initialState: S, options?: core.OptionsForM
      *   <ng-container>
      * </ng-container>
      */
-    observeFetch = <C>(operation: () => Promise<C>) => observeFetchInternal<S, C>(select)(operation);
+    observeFetch = <C>(operation: () => Promise<C>) => observeFetchInternal<S, C>(get)(operation);
     /**
      * The purpose of this function is to minimise the number of async pipes that need to be declared in the component template.
      * This function accepts an object whose keys are user-defined strings and values are functions selecting particular nodes of the state tree.
@@ -114,21 +114,21 @@ export const createGlobalStore = <S>(initialState: S, options?: core.OptionsForM
      *   <div *ngFor="let todo of state.todos">{{todo.title}}</div>
      * </ng-container>
      */
-    combineObservers = <T extends { [key: string]: (state: core.DeepReadonly<S>) => any }>(selectorObject: T) => combineObserversInternal(select)(selectorObject);
+    combineObservers = <T extends { [key: string]: (state: core.DeepReadonly<S>) => any }>(selectorObject: T) => observeCombinedInternal(get)(selectorObject);
   }();
 }
 
 
 
 export const createGlobalStoreEnforcingTags = <S>(initialState: S, options?: core.OptionsForMakingAGlobalStore) => {
-  const { select, read } = core.createGlobalStoreEnforcingTags(initialState, options);
+  const { get, read } = core.createGlobalStoreEnforcingTags(initialState, options);
   return new class {
     /**
      * Select a piece of the state to operate on and perform some action on it
      * @example
      * select(s => s.username).replace('Jeff', { tag: 'MyComponent' });
      */
-    select = select;
+    get = get;
     /**
      * Read the state tree
      * @example
@@ -144,7 +144,7 @@ export const createGlobalStoreEnforcingTags = <S>(initialState: S, options?: cor
      */
     observe(): Observable<S>;
     observe<T extends (state: core.DeepReadonly<S>) => any>(selector: T): Observable<ReturnType<typeof selector>>
-    observe(selector?: (state: core.DeepReadonly<S>) => any) { return observeInternal(select as any as core.SelectorFromAStore<S>)(selector!); }
+    observe(selector?: (state: core.DeepReadonly<S>) => any) { return observeInternal(get as any as core.SelectorFromAStore<S>)(selector!); }
     /**
      * Takes an async state-update, and returns an Observable which reports on the status of that update.
      * @example
@@ -161,7 +161,7 @@ export const createGlobalStoreEnforcingTags = <S>(initialState: S, options?: cor
      *   <ng-container>
      * </ng-container>
      */
-    observeFetch = <C>(operation: () => Promise<C>) => observeFetchInternal<S, C>(select as any as core.SelectorFromAStore<S>)(operation);
+    observeFetch = <C>(operation: () => Promise<C>) => observeFetchInternal<S, C>(get as any as core.SelectorFromAStore<S>)(operation);
     /**
      * The purpose of this function is to minimise the number of async pipes that need to be declared in the component template.
      * This function accepts an object whose keys are user-defined strings and values are functions selecting particular nodes of the state tree.
@@ -176,19 +176,19 @@ export const createGlobalStoreEnforcingTags = <S>(initialState: S, options?: cor
      *   <div *ngFor="let todo of state.todos">{{todo.title}}</div>
      * </ng-container>
      */
-    combineObservers = <T extends { [key: string]: (state: core.DeepReadonly<S>) => any }>(selectorObject: T) => combineObserversInternal(select as any as core.SelectorFromAStore<S>)(selectorObject);
+    combineObservers = <T extends { [key: string]: (state: core.DeepReadonly<S>) => any }>(selectorObject: T) => observeCombinedInternal(get as any as core.SelectorFromAStore<S>)(selectorObject);
   }();
 }
 
 export const createNestedStore = <S>(initialState: S, options: core.OptionsForMakingANestedStore) => {
-  const { select, read } = core.createNestedStore(initialState, options);
+  const { get, read } = core.createNestedStore(initialState, options);
   return new class {
     /**
      * Select a piece of the state to operate on and perform some action on it
      * @example
      * select(s => s.username).replace('Jeff');
      */
-    select = select;
+    get = get;
     /**
      * Read the state tree
      * @example
@@ -204,7 +204,7 @@ export const createNestedStore = <S>(initialState: S, options: core.OptionsForMa
      */
     observe(): Observable<S>;
     observe<T extends (state: core.DeepReadonly<S>) => any>(selector: T): Observable<ReturnType<typeof selector>>
-    observe<L extends Parameters<typeof select>[0]>(selector?: L) { return observeInternal<S>(select)(selector!); }
+    observe<L extends Parameters<typeof get>[0]>(selector?: L) { return observeInternal<S>(get)(selector!); }
     /**
      * Takes an async state-update, and returns an Observable which reports on the status of that update.
      * @example
@@ -221,7 +221,7 @@ export const createNestedStore = <S>(initialState: S, options: core.OptionsForMa
      *   <ng-container>
      * </ng-container>
      */
-    observeFetch = <C>(operation: () => Promise<C>) => observeFetchInternal<S, C>(select)(operation);
+    observeFetch = <C>(operation: () => Promise<C>) => observeFetchInternal<S, C>(get)(operation);
     /**
      * The purpose of this function is to minimise the number of async pipes that need to be declared in the component template.
      * This function accepts an object whose keys are user-defined strings and values are functions selecting particular nodes of the state tree.
@@ -236,7 +236,7 @@ export const createNestedStore = <S>(initialState: S, options: core.OptionsForMa
      *   <div *ngFor="let todo of state.todos">{{todo.title}}</div>
      * </ng-container>
      */
-    combineObservers = <T extends { [key: string]: (state: core.DeepReadonly<S>) => any }>(selectorObject: T) => combineObserversInternal(select)(selectorObject);
+    combineObservers = <T extends { [key: string]: (state: core.DeepReadonly<S>) => any }>(selectorObject: T) => observeCombinedInternal(get)(selectorObject);
   }();
 }
 
@@ -260,7 +260,7 @@ export const createNestedStore = <S>(initialState: S, options: core.OptionsForMa
  *   <div *ngFor="let todo of state.todos">{{todo.title}}</div>
  * </ng-container>
  */
-export const combineObserversAcrossStores = <T extends { [key: string]: Observable<any> }>(
+export const observeCombinedAcrossStores = <T extends { [key: string]: Observable<any> }>(
   arg: T
 ) =>
   combineLatest((Object.keys(arg) as (keyof typeof arg)[]).map((key) => arg[key])).pipe(
