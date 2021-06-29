@@ -1,4 +1,4 @@
-import { observeCombinedAcrossStores, createGlobalStore, createGlobalStoreEnforcingTags, createNestedStore } from '../src/public-api';
+import { combineObserversAcrossStores, createGlobalStore, createGlobalStoreEnforcingTags, createNestedStore } from '../src/public-api';
 import { skip } from 'rxjs/operators';
 
 describe('Angular', () => {
@@ -95,8 +95,8 @@ describe('Angular', () => {
   it('should be able to observe a fetch, and resolve using a store which enforces tags', done => {
     const store = createGlobalStoreEnforcingTags(initialState, { devtools: false });
     let count = 0;
-    const obs$ = store.observeFetch(() => store.get(s => s.object.property)
-      .replace(() => new Promise(resolve => setTimeout(() => resolve('val ' + count), 10)), { tag: 'Tag' }));
+    const fetchProperty = () => new Promise<string>(resolve => setTimeout(() => resolve('val ' + count), 10));
+    const obs$ = store.observeFetch(() => store.get(s => s.object.property).replace(fetchProperty, { tag: 'Tag' }));
     obs$.subscribe(val => {
       count++;
       if (count === 1) {
@@ -118,8 +118,8 @@ describe('Angular', () => {
   it('should be able to observe a fetch, and reject using a store which enforces tags', done => {
     const store = createGlobalStoreEnforcingTags(initialState, { devtools: false });
     let count = 0;
-    const obs$ = store.observeFetch(() => store.get(s => s.object.property)
-      .replace(() => new Promise((resolve, reject) => setTimeout(() => reject('test'), 10)), { tag: 'Tag' }));
+    const fetchAndReject = () => new Promise<string>((resolve, reject) => setTimeout(() => reject('test'), 10));
+    const obs$ = store.observeFetch(() => store.get(s => s.object.property).replace(fetchAndReject, { tag: 'Tag' }));
     obs$.subscribe(val => {
       count++;
       if (count === 1) {
@@ -174,7 +174,6 @@ describe('Angular', () => {
       done();
     });
     store.get(s => s.object.property).replace(payload);
-    // const t = store.observe();
   })
 
   it('should be able to observe a fetch, and resolve for a nested store', done => {
@@ -229,7 +228,7 @@ describe('Angular', () => {
   it('should be able to combineObservers for a single store', done => {
     const store = createGlobalStore(initialState, { devtools: false });
     let count = 0;
-    const obs$ = store.combineObservers({
+    const obs$ = store.observeCombined({
       one: s => s.object.property,
       two: s => s.string,
     });
@@ -260,7 +259,7 @@ describe('Angular', () => {
     const globalStore = createGlobalStore(initialState, { devtools: false });
     const nestedStore = createNestedStore({ hello: 'c', world: 'd' }, { componentName: 'test', instanceName: '0' });
     let count = 0;
-    const obs$ = observeCombinedAcrossStores({
+    const obs$ = combineObserversAcrossStores({
       one: globalStore.observe(s => s.object.property),
       two: globalStore.observe(s => s.string),
       three: nestedStore.observe(s => s.hello),
@@ -311,3 +310,12 @@ describe('Angular', () => {
 
 });
 
+// const { get } = createGlobalStore({ one: '', arr: new Array<string>() });
+// const obs$ = get(s => s.arr).findWhere().eq('3').observe();
+// const obs$ = get(s => s.one).observe();
+
+// observePromise(() => get(s => s.one).replace(() => Promise.resolve('')));
+
+// const obs = get(s => s.one).observe();
+// observeFetch(() =>  get(s => s.one).replace()  );
+// const todos = get().state;

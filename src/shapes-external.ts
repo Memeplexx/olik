@@ -447,7 +447,7 @@ export type PredicateFunctionPrimitive<X extends DeepReadonlyArray<any>, F exten
 /**
  * An object which is capable of storing and updating state which is in the shape of a primitive
  */
-export type StoreForAnObjectOrPrimitive<C extends any, T extends Trackability> = {
+export type StoreForAnObjectOrPrimitive<C, T extends Trackability> = {
   /**
    * Substitutes this primitive value
    * @example
@@ -459,7 +459,7 @@ export type StoreForAnObjectOrPrimitive<C extends any, T extends Trackability> =
 /**
  * An object which is capable of storing and updating state which is in the shape of an object
  */
-export type StoreForAnObject<C extends any, T extends Trackability> = {
+export type StoreForAnObject<C, T extends Trackability> = {
   /**
    * Partially updates this object
    * @example
@@ -515,7 +515,7 @@ export type StoreOrDerivation<C> = {
 /**
  * An object which is capable of resetting its internal state
  */
-export type StoreWhichIsResettable<C extends any, T extends Trackability> = {
+export type StoreWhichIsResettable<C, T extends Trackability> = {
   /**
    * Reverts the current state to how it was when the store was initialized.
    * Beware that all nested stores will also be removed.

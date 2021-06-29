@@ -2,6 +2,15 @@
 import * as core from 'olik';
 import React from 'react';
 
+declare module 'olik' {
+  interface StoreForAnObjectOrPrimitive<C, T extends core.Trackability> {
+    test: string;
+  }
+  interface StoreForAnArrayOfPrimitives<X extends core.DeepReadonlyArray<any>, T extends core.Trackability> extends core.StoreForAnArrayCommon<X, T> {
+    test: string;
+  }
+}
+
 function getUseFetcher<S>(select: core.SelectorFromAStore<S>) {
   return {
     /**
@@ -274,3 +283,5 @@ function useSelector<S, R>(select: core.SelectorFromAStore<S>, selector: Functio
 // NOTES the following linting rules have been disabled in certain places:
 // react-hooks/exhaustive-deps: We cannot forward deps from the enclosing function without receiving this linting error https://stackoverflow.com/questions/56262515/how-to-handle-dependencies-array-for-custom-hooks-in-react
 // react-hooks/rules-of-hooks: We can guarantee the execution order of hooks in the context of the useDerivation() hook https://stackoverflow.com/questions/53906843/why-cant-react-hooks-be-called-inside-loops-or-nested-function
+
+
