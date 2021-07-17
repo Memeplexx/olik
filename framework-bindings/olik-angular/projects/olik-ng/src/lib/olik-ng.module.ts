@@ -58,52 +58,56 @@ const combinedObserversInternal = <S>(select: core.SelectorFromAStore<S>) => <T 
   return combineObserversAcrossStores(obj);
 }
 
+// export const createGlobalStore = <S>(initialState: S, options?: core.OptionsForMakingAGlobalStore) => {
+//   const store = core.createGlobalStore(initialState, options);
+//   return Object.assign(new class {
+//     /**
+//      * Converts the state you select into an observable.
+//      * @example
+//      * todos$ = observe(s => s.todos);
+//      * 
+//      * <div *ngFor="let todo of todos.storeValue">{{todo.title}}</div>
+//      */
+//     observe(): Observable<S>;
+//     observe<T extends (state: core.DeepReadonly<S>) => any>(selector: T): Observable<ReturnType<typeof selector>>
+//     observe(selector?: (state: core.DeepReadonly<S>) => any) { return observeInternal(store.get)(selector!); }
+//     /**
+//      * Takes an async state-update, and returns an Observable which reports on the status of that update.
+//      * @example
+//      * todos$ = observeFetch(() =>
+//      *   select(s => s.todos)
+//      *     .replaceAll(() => this.httpClient.get('http://example.com/todos').toPromise())
+//      * );
+//      * 
+//      * <ng-container *ngIf="todos$ | async; let todos;">
+//      *   <div *ngIf="todos.isLoading">loading...</div>
+//      *   <div *ngIf="todos.wasRejected">loading...</div>
+//      *   <ng-container *ngIf="todos.wasResolved">
+//      *     <div *ngFor="let todo of todos.storeValue">{{todo.title}}</div>
+//      *   <ng-container>
+//      * </ng-container>
+//      */
+//     observeFetch = <C>(operation: () => Promise<C>) => observeFetchInternal<S, C>(store.get)(operation);
+//     /**
+//      * The purpose of this function is to minimise the number of async pipes that need to be declared in the component template.
+//      * This function accepts an object whose keys are user-defined strings and values are functions selecting particular nodes of the state tree.
+//      * What will be returned is a single observable which means that only one async pipe is required at the root of your component template.
+//      * @example
+//      * state$ = observeCombined({
+//      *   userName: s.user.name,
+//      *   todos: s => s.todos,
+//      * })
+//      * <ng-container *ngIf="state$ | async; let state;">
+//      *   <div>{{state.userName}}</div>
+//      *   <div *ngFor="let todo of state.todos">{{todo.title}}</div>
+//      * </ng-container>
+//      */
+//     observeCombined = <T extends { [key: string]: (state: core.DeepReadonly<S>) => any }>(selectorObject: T) => combinedObserversInternal(store.get)(selectorObject);
+//   }(), store);
+// }
+
 export const createGlobalStore = <S>(initialState: S, options?: core.OptionsForMakingAGlobalStore) => {
-  const store = core.createGlobalStore(initialState, options);
-  return Object.assign(new class {
-    /**
-     * Converts the state you select into an observable.
-     * @example
-     * todos$ = observe(s => s.todos);
-     * 
-     * <div *ngFor="let todo of todos.storeValue">{{todo.title}}</div>
-     */
-    observe(): Observable<S>;
-    observe<T extends (state: core.DeepReadonly<S>) => any>(selector: T): Observable<ReturnType<typeof selector>>
-    observe(selector?: (state: core.DeepReadonly<S>) => any) { return observeInternal(store.get)(selector!); }
-    /**
-     * Takes an async state-update, and returns an Observable which reports on the status of that update.
-     * @example
-     * todos$ = observeFetch(() =>
-     *   select(s => s.todos)
-     *     .replaceAll(() => this.httpClient.get('http://example.com/todos').toPromise())
-     * );
-     * 
-     * <ng-container *ngIf="todos$ | async; let todos;">
-     *   <div *ngIf="todos.isLoading">loading...</div>
-     *   <div *ngIf="todos.wasRejected">loading...</div>
-     *   <ng-container *ngIf="todos.wasResolved">
-     *     <div *ngFor="let todo of todos.storeValue">{{todo.title}}</div>
-     *   <ng-container>
-     * </ng-container>
-     */
-    observeFetch = <C>(operation: () => Promise<C>) => observeFetchInternal<S, C>(store.get)(operation);
-    /**
-     * The purpose of this function is to minimise the number of async pipes that need to be declared in the component template.
-     * This function accepts an object whose keys are user-defined strings and values are functions selecting particular nodes of the state tree.
-     * What will be returned is a single observable which means that only one async pipe is required at the root of your component template.
-     * @example
-     * state$ = observeCombined({
-     *   userName: s.user.name,
-     *   todos: s => s.todos,
-     * })
-     * <ng-container *ngIf="state$ | async; let state;">
-     *   <div>{{state.userName}}</div>
-     *   <div *ngFor="let todo of state.todos">{{todo.title}}</div>
-     * </ng-container>
-     */
-    observeCombined = <T extends { [key: string]: (state: core.DeepReadonly<S>) => any }>(selectorObject: T) => combinedObserversInternal(store.get)(selectorObject);
-  }(), store);
+  return core.createGlobalStore(initialState, options);
 }
 
 

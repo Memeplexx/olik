@@ -6,14 +6,8 @@ import {
   SelectorFromANestedStore,
   SelectorFromAStore,
   SelectorFromAStoreEnforcingTags,
-  SelectorReader,
-  SelectorReaderNested,
-  Store,
-  StoreWhichDoesntEnforceTags,
-  StoreWhichEnforcesTags,
   StoreWhichIsNested,
   Trackability,
-  Unsubscribable,
 } from './shapes-external';
 import { OptionsForCreatingInternalRootStore, StoreWhichIsNestedInternal } from './shapes-internal';
 import { errorMessages } from './shared-consts';
@@ -38,7 +32,7 @@ export function createGlobalStoreEnforcingTags<S>(
   state: S,
   options: OptionsForMakingAGlobalStore = {},
 ) {
-  return createGlobalStoreInternal<S, 'tagged'>(state, { ...options, enforcesTags: true }) as SelectorReader<S, SelectorFromAStoreEnforcingTags<S>> & StoreWhichEnforcesTags<S>;
+  return createGlobalStoreInternal<S, 'tagged'>(state, { ...options, enforcesTags: true }) as SelectorFromAStoreEnforcingTags<S>;
 }
 
 /**
@@ -53,7 +47,7 @@ export function createGlobalStore<S>(
   state: S,
   options: OptionsForMakingAGlobalStore = {},
 ) {
-  return createGlobalStoreInternal<S, 'untagged'>(state, { ...options, enforcesTags: false }) as SelectorReader<S, SelectorFromAStore<S>> & StoreWhichDoesntEnforceTags<S>;
+  return createGlobalStoreInternal<S, 'untagged'>(state, { ...options, enforcesTags: false }) as SelectorFromAStore<S>;
 }
 
 /**
@@ -76,7 +70,7 @@ export function createGlobalStore<S>(
 export function createNestedStore<L>(
   state: L,
   options: OptionsForMakingANestedStore,
-): SelectorReaderNested<L, SelectorFromANestedStore<L>> & StoreWhichIsNested<L> {
+): SelectorFromANestedStore<L> {
   // If the instanceName is set to deferred, then deal with that scenario
   if (options.instanceName === Deferred) {
     const nStore = createStoreCore<L, 'untagged'>({
@@ -84,54 +78,31 @@ export function createNestedStore<L>(
       devtools: (!libState.nestedContainerStore || options.dontTrackWithDevtools) ? false : {
         name: options.componentName
       }
-    }) as SelectorReader<L, SelectorFromANestedStore<L>>;
-    const changeListeners = new Map<(ar: any) => any, (arg: L) => any>();
-    const subscriptions = new Array<Unsubscribable>();
-    const get = (<C = L>(selector?: (arg: L) => C) => {
-      const cStore = selector ? nStore.get(selector as any) : nStore.get();
-      (cStore as any).isNested = true;
-      const onChange = (performAction: (v?: any) => any) => {
-        subscriptions.push(cStore.onChange(performAction));
-        changeListeners.set(performAction, selector || (e => e));
-        return { unsubscribe: () => changeListeners.delete(performAction) };
-      };
-      return {
-        ...cStore, onChange
-      } as any as StoreWhichIsNested<C>
     });
-    const setInstanceName = (instanceName: string) => {
-      if (options.instanceName !== Deferred) { throw new Error(errorMessages.CANNOT_CHANGE_INSTANCE_NAME); }
-      Object.assign(result, createNestedStoreInternal(get().read(), { ...options, instanceName }));
-      subscriptions.forEach(s => s.unsubscribe());
-      options.instanceName = instanceName;
-      Array.from(changeListeners.entries())
-        .forEach(([key, val]) => libState.nestedContainerStore!(s => val(s.nested[options.componentName][options.instanceName]))
-          .onChange(key));
-      changeListeners.clear();
-    }
-    const result = { get, ...get() } as (SelectorReaderNested<L, SelectorFromANestedStore<L>> & StoreWhichIsNested<L>);
-    result.setInstanceName = setInstanceName;
-    result.detachFromGlobalStore = () => { /* This is a no-op */ };
-    return result;
+    const get = (<C = L>(selector?: (arg: L) => C) => {
+      const cStore = selector ? nStore(selector as any) : nStore();
+      (cStore as any).isNested = true;
+      cStore.detachFromGlobalStore = () => { /* This is a no-op */ };
+      cStore.setInstanceName = (instanceName: string) => {
+        if (options.instanceName !== Deferred) { throw new Error(errorMessages.CANNOT_CHANGE_INSTANCE_NAME); }
+        createNestedStoreInternal(get().read(), { ...options, instanceName });
+        options.instanceName = instanceName;
+        // get all changeListeners from nested store and set them on container store
+        Array.from(((nStore() as any).changeListeners as Map<(ar: any) => any, (arg: any) => any>).entries())
+          .forEach(([performAction, selector]) =>
+            libState.nestedContainerStore!(s => selector(s.nested[options.componentName][options.instanceName])).onChange(performAction))
+      }
+      if (options.instanceName !== Deferred) {
+        return getNestedStoreWithinContainerStore(state, options, selector);
+      } else {
+        return cStore as StoreWhichIsNested<C>;
+      }
+    });
+    return get as SelectorFromANestedStore<L>;
   }
 
-  // If there is no global store, then create a new top-level store
   if (!libState.nestedContainerStore) {
-    const nStore = createStoreCore<L, 'untagged'>({
-      state,
-      devtools: options.dontTrackWithDevtools ? false : {
-        name: options.componentName + ' : ' + options.instanceName
-      }
-    }) as SelectorReader<L, SelectorFromANestedStore<L>>;
-    const get = (<C = L>(selector?: (arg: L) => C) => {
-      const cStore = selector ? nStore.get(selector as any) : nStore.get();
-      (cStore as any).isNested = true;
-      return cStore as any as StoreWhichIsNested<C>;
-    });
-    const result = { get, ...get() } as SelectorReaderNested<L, SelectorFromANestedStore<L>> & StoreWhichIsNested<L>;
-    result.detachFromGlobalStore = () => { /* This is a no-op */ };
-    result.setInstanceName = () => { /* This is a no-op */ }
-    return result;
+    return createDetatchedNestedStore(state, options);
   }
 
   return createNestedStoreInternal(state, options as OptionsForMakingANestedStore);
@@ -141,12 +112,55 @@ function createGlobalStoreInternal<S, T extends Trackability>(
   state: S,
   options: OptionsForCreatingInternalRootStore,
 ) {
-  const store = createStoreCore<S, T>({
+  const get = createStoreCore<S, T>({
     state, devtools: options.devtools === undefined ? {} : options.devtools,
     tagSanitizer: options.tagSanitizer, tagsToAppearInType: options.tagsToAppearInType
   });
-  libState.nestedContainerStore = store.get as any;
-  return store;
+  libState.nestedContainerStore = get as any;
+  return get;
+}
+
+function getNestedStoreWithinContainerStore<L, C = L>(
+  state: L,
+  options: OptionsForMakingANestedStore,
+  selector?: (arg: L) => C
+) {
+  const cStore = libState.nestedContainerStore!(s => {
+    const nState = s.nested[options.componentName][options.instanceName!];
+    return selector ? selector(nState) : nState;
+  }) as any as StoreWhichIsNestedInternal<L, C>;
+  cStore.reset = cStore.defineReset(state, selector);
+  cStore.isNested = true;
+  cStore.detachFromGlobalStore = () => {
+    if (!libState.nestedContainerStore) { return; }
+    const state = libState.nestedContainerStore().read().nested[options.componentName];
+    if ((Object.keys(state).length === 1) && state[options.instanceName!]) {
+      libState.nestedContainerStore(s => s.nested).remove(options.componentName);
+    } else {
+      libState.nestedContainerStore(s => s.nested[options.componentName]).remove(options.instanceName!);
+    }
+  }
+  return cStore as StoreWhichIsNested<C>;
+}
+
+function createDetatchedNestedStore<L>(
+  state: L,
+  options: OptionsForMakingANestedStore,
+) {
+  const nStore = createStoreCore<L, 'untagged'>({
+    state,
+    devtools: options.dontTrackWithDevtools ? false : {
+      name: options.componentName + ' : ' + (options.instanceName as string)
+    }
+  });
+  const get = (<C = L>(selector?: (arg: L) => C) => {
+    const cStore = selector ? nStore(selector as any) : nStore();
+    cStore.isNested = true;
+    cStore.detachFromGlobalStore = () => { /* This is a no-op */ };
+    cStore.setInstanceName = () => { /* This is a no-op */ }
+    return cStore as any as StoreWhichIsNested<C>;
+  });
+  return get as SelectorFromANestedStore<L>;
 }
 
 function createNestedStoreInternal<L>(
@@ -212,23 +226,5 @@ function createNestedStoreInternal<L>(
       });
     }
   }
-  const get = (<C = L>(selector?: (arg: L) => C) => {
-    const cStore = libState.nestedContainerStore!(s => {
-      const nState = s.nested[options.componentName][options.instanceName!];
-      return selector ? selector(nState) : nState;
-    }) as any as StoreWhichIsNestedInternal<L, C>;
-    cStore.reset = cStore.defineReset(state, selector);
-    cStore.isNested = true;
-    return cStore as StoreWhichIsNested<C>;
-  });
-  const detachFromGlobalStore = () => {
-    if (!libState.nestedContainerStore) { return; }
-    const state = libState.nestedContainerStore().read().nested[options.componentName];
-    if ((Object.keys(state).length === 1) && state[options.instanceName!]) {
-      libState.nestedContainerStore(s => s.nested).remove(options.componentName);
-    } else {
-      libState.nestedContainerStore(s => s.nested[options.componentName]).remove(options.instanceName!);
-    }
-  }
-  return Object.assign({ get, ...get(), detachFromGlobalStore }) as SelectorReaderNested<L, SelectorFromANestedStore<L>> & StoreWhichIsNested<L>;
+  return (<C = L>(selector?: (arg: L) => C) => getNestedStoreWithinContainerStore(state, options, selector)) as SelectorFromANestedStore<L>;
 }

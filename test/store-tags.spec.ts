@@ -9,21 +9,21 @@ describe('tags', () => {
   it('should work with tags correctly', () => {
     const payload = 'hey';
     const tag = 'mytag';
-    const store = createGlobalStoreEnforcingTags({
+    const select = createGlobalStoreEnforcingTags({
       object: { property: 'one', property2: 'two' },
     }, { tagsToAppearInType: true });
-    store.get(s => s.object.property)
+    select(s => s.object.property)
       .replace(payload, { tag });
     expect(testState.currentAction).toEqual({
       type: `object.property.replace() [${tag}]`,
       replacement: payload,
     });
-    expect(store.read().object.property).toEqual(payload);
-    expect(testState.currentMutableState).toEqual(store.read());
+    expect(select().read().object.property).toEqual(payload);
+    expect(testState.currentMutableState).toEqual(select().read());
   })
 
   it('should sanitize tags correctly', () => {
-    const store = createGlobalStoreEnforcingTags({
+    const select = createGlobalStoreEnforcingTags({
       test: '',
     }, {
       tagSanitizer: (tag) => tag + 'x',
@@ -31,20 +31,20 @@ describe('tags', () => {
     });
     const tag = 'mytag';
     const payload = 'test';
-    store.get(s => s.test)
+    select(s => s.test)
       .replace(payload, { tag });
     expect(testState.currentAction).toEqual({
       type: `test.replace() [${tag}x]`,
       replacement: payload,
     });
-    expect(testState.currentMutableState).toEqual(store.read());
+    expect(testState.currentMutableState).toEqual(select().read());
   })
 
   it('should accept optional tags', () => {
-    const store = createGlobalStore({ prop: '' }, { tagsToAppearInType: true });
+    const select = createGlobalStore({ prop: '' }, { tagsToAppearInType: true });
     const tag = 'mytag';
     const payload = 'test';
-    store.get(s => s.prop)
+    select(s => s.prop)
       .replace(payload, { tag });
     expect(testState.currentAction).toEqual({
       type: `prop.replace() [${tag}]`,
@@ -53,10 +53,10 @@ describe('tags', () => {
   })
 
   it('should, by default, place tags in the payload', () => {
-    const store = createGlobalStoreEnforcingTags({ prop: '' });
+    const select = createGlobalStoreEnforcingTags({ prop: '' });
     const tag = 'mytag';
     const payload = 'test';
-    store.get(s => s.prop)
+    select(s => s.prop)
       .replace(payload, { tag });
     expect(testState.currentAction).toEqual({
       type: `prop.replace()`,

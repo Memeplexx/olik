@@ -10,15 +10,15 @@ describe('Angular', () => {
   };
 
   it('should create and update a store', () => {
-    const store = createGlobalStore(initialState, { devtools: false });
-    store.get(s => s.object.property)
+    const select = createGlobalStore(initialState, { devtools: false });
+    select(s => s.object.property)
       .replace('test');
-    expect(store.read().object.property).toEqual('test');
+    expect(select().read().object.property).toEqual('test');
   })
 
   it('should be able to observe state updates', done => {
-    const store = createGlobalStore(initialState, { devtools: false });
-    const obs$ = store.observe(s => s.object.property);
+    const select = createGlobalStore(initialState, { devtools: false });
+    const obs$ = select(s => s.object.property).read();
     const payload = 'test';
     obs$.pipe(skip(1)).subscribe(val => {
       expect(val).toEqual(payload);

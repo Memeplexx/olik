@@ -491,7 +491,7 @@ export type StoreForAnObject<C, T extends Trackability> = {
   insert: <H extends { [key: string]: any } | (() => Promise<{ [key: string]: any }>) >(insertion: H) => H extends (() => Promise<{ [key: string]: any }>) ? Promise<{ [key: string]: any }> : void,
 } & StoreForAnObjectOrPrimitive<C, T>;
 
-export type StoreOrDerivation<C> = {
+export interface StoreOrDerivation<C> {
   /**
    * Listens to any updates on this node
    * @returns a subscription which will need to be unsubscribed from to prevent a memory leak
@@ -549,7 +549,7 @@ export type StoreWhichEnforcesTags<C> = Store<C, 'tagged'>;
 /**
  * An object which is capable of managing state, but which can also be nested within another store
  */
-export type StoreWhichIsNested<C> = Store<C, 'untagged'>;
+export type StoreWhichIsNested<C> = Store<C, 'untagged'> & { detachFromGlobalStore: () => void, setInstanceName: (instanceName: string) => void };
 
 /**
  * A function which selects from the store

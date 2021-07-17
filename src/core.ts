@@ -173,6 +173,7 @@ export function createStoreCore<S, T extends Trackability>({
       }) as StoreWhichMayContainNestedStores<S, C, T>['renew'],
       getSelector: () => storeState.selector,
       dryRun: (dryRun: boolean) => storeState.dryRun = dryRun,
+      changeListeners,
     } as unknown as StoreWhichIsNested<C>;
     return coreActions;
   };
@@ -291,5 +292,5 @@ export function createStoreCore<S, T extends Trackability>({
     integrateStoreWithReduxDevtools<S>(storeResult as any, devtools, setDevtoolsDispatchListener, storeState);
   }
 
-  return { get: storeResult, ...storeResult() };
+  return storeResult;
 }
