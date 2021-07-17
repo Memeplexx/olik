@@ -702,3 +702,10 @@ export type Derivation<R> = {
    */
   onChange: (listener: (value: R) => any) => Unsubscribable,
 };
+
+export type Augmentation = {
+  selection?: {
+    name: string,
+    action: <C>(selection: StoreOrDerivation<C>) => () => any,
+  };
+}

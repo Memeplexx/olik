@@ -1,3 +1,4 @@
+import { augmentations } from './augmentations';
 import { integrateStoreWithReduxDevtools } from './devtools-integration';
 import * as array from './operators-array';
 import * as arrayCustom from './operators-arraycustom';
@@ -25,6 +26,7 @@ import {
   PredicateOptionsForString,
   Selector,
   StoreForAnArrayOfObjects,
+  StoreOrDerivation,
   StoreWhichIsNested,
   Trackability,
 } from './shapes-external';
@@ -92,7 +94,7 @@ export function createStoreCore<S, T extends Trackability>({
             storeResult,
             storeState,
           } as ArrayOperatorState<S, C, X, FindOrFilter, T>;
-          return {
+          const arrayActions = {
             andWhere: array.andWhere(context),
             orWhere: array.orWhere(context),
             replace: array.replace(context),
@@ -101,7 +103,11 @@ export function createStoreCore<S, T extends Trackability>({
             onChange: array.onChange(context),
             read: array.read(context),
             stopBypassingPromises: () => array.stopBypassingPromises(context),
-          } as ArrayOfObjectsAction<X, FindOrFilter, T>
+          } as ArrayOfObjectsAction<X, FindOrFilter, T>;
+          if (augmentations.selection) {
+            (arrayActions as any)[augmentations.selection.name] = augmentations.selection.action(arrayActions as StoreOrDerivation<C>);
+          }
+          return arrayActions;
         };
         return {
           ...{
@@ -114,7 +120,7 @@ export function createStoreCore<S, T extends Trackability>({
             returnsTrue: () => {
               const predicate = getProp as any as (element: DeepReadonly<X[0]>) => boolean;
               const context = { type, updateState, selector, predicate, changeListeners, getCurrentState: () => currentState, pathReader, storeResult, storeState } as ArrayCustomState<S, C, X, T>;
-              return {
+              const elementActions = {
                 remove: arrayCustom.remove(context),
                 replace: arrayCustom.replace(context),
                 patch: arrayCustom.patch(context),
@@ -122,6 +128,10 @@ export function createStoreCore<S, T extends Trackability>({
                 read: arrayCustom.read(context),
                 stopBypassingPromises: () => arrayCustom.stopBypassingPromises(context),
               };
+              if (augmentations.selection) {
+                (elementActions as any)[augmentations.selection.name] = augmentations.selection.action(elementActions as StoreOrDerivation<C>);
+              }
+              return elementActions;
             }
           } as PredicateOptionsForBoolean<X, FindOrFilter, T>,
           ...{
@@ -175,6 +185,9 @@ export function createStoreCore<S, T extends Trackability>({
       dryRun: (dryRun: boolean) => storeState.dryRun = dryRun,
       changeListeners,
     } as unknown as StoreWhichIsNested<C>;
+    if (augmentations.selection) {
+      (coreActions as any)[augmentations.selection.name] = augmentations.selection.action(coreActions);
+    }
     return coreActions;
   };
 
