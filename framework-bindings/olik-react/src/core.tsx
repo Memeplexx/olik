@@ -2,15 +2,6 @@
 import * as core from 'olik';
 import React from 'react';
 
-declare module 'olik' {
-  interface StoreForAnObjectOrPrimitive<C, T extends core.Trackability> {
-    test: string;
-  }
-  interface StoreForAnArrayOfPrimitives<X extends core.DeepReadonlyArray<any>, T extends core.Trackability> extends core.StoreForAnArrayCommon<X, T> {
-    test: string;
-  }
-}
-
 function getUseFetcher<S>(select: core.SelectorFromAStore<S>) {
   return {
     /**
