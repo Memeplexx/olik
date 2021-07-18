@@ -112,19 +112,20 @@ export const patchOrInsertIntoObject = <S, C, X extends C & Array<any>, T extend
 }) as StoreForAnObject<C, T>['patch'];
 
 export const remove = <S, C, X extends C & Array<any>, T extends Trackability>(
-  { isNested, selector, storeState, updateState }: CoreActionsState<S, C, X, T>,
+  { isNested, selector, storeState, updateState, pathReader, storeResult }: CoreActionsState<S, C, X, T>,
 ) => ((payload, updateOptions) => {
   validateSelector(selector, isNested, storeState);
-  updateState({
+  const processPayload = (payload: any) => updateState({
     selector,
     replacer: old => { const res = Object.assign({}, old); delete (res as any)[payload]; return res; },
-    mutator: old => delete old[payload],
+    mutator: old => delete (old as any)[payload],
     actionName: 'remove()',
     payload: {
       toRemove: payload,
     },
     updateOptions,
   });
+  return processAsyncPayload(selector, payload, pathReader, storeResult, processPayload, updateOptions as UpdateOptions<T, any>, 'remove()', storeState);
 }) as StoreForAnObject<C, T>['remove'];
 
 export const upsertMatching = <S, C, X extends C & Array<any>, T extends Trackability>(

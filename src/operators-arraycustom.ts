@@ -23,7 +23,8 @@ export const replace = <S, C, X extends C & Array<any>, F extends FindOrFilter, 
       updateOptions,
     });
   }
-  return processAsyncPayload(selector, payload, context.pathReader, context.storeResult, processPayload, updateOptions, `${type}(${predicate}).replace()`, context.storeState);
+  return processAsyncPayload(((s: any) => (selector(s) as any)[context.type]((e: any) => predicate(e))) as any, 
+    payload, context.pathReader, context.storeResult, processPayload, updateOptions, `${type}(${predicate}).replace()`, context.storeState);
 }) as ArrayOfElementsCommonAction<X, F, T>['replace'];
 
 export const patch = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
@@ -42,15 +43,16 @@ export const patch = <S, C, X extends C & Array<any>, F extends FindOrFilter, T 
       updateOptions,
     });
   }
-  return processAsyncPayload(selector, payload, context.pathReader, context.storeResult, processPayload, updateOptions, `${type}(${predicate}).patch()`, context.storeState);
+  return processAsyncPayload(((s: any) => (selector(s) as any)[context.type]((e: any) => predicate(e))) as any, 
+    payload, context.pathReader, context.storeResult, processPayload, updateOptions, `${type}(${predicate}).patch()`, context.storeState);
 }) as ArrayOfObjectsCommonAction<X, F, T>['patch'];
 
 export const remove = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
   context: ArrayCustomState<S, C, X, T>,
-) => (updateOptions => {
+) => ((arg: any, updateOptions: any) => {
   const { type, updateState, selector, predicate, getCurrentState } = context;
   const elementIndices = getElementIndices(context);
-  updateState({
+  const processPayload = () => updateState({
     selector,
     replacer: old => old.filter((o, i) => !elementIndices.includes(i)),
     mutator: old => {
@@ -67,8 +69,10 @@ export const remove = <S, C, X extends C & Array<any>, F extends FindOrFilter, T
     },
     actionName: `${type}().remove()`,
     payload: { toRemove: (selector(getCurrentState()) as X)[type]((e, i) => elementIndices.includes(i)), where: predicate.toString() },
-    updateOptions,
+    updateOptions: typeof arg === 'function' ? updateOptions : arg,
   });
+  return processAsyncPayload(((s: any) => (selector(s) as any)[context.type]((e: any) => predicate(e))) as any, 
+    arg, context.pathReader, context.storeResult, processPayload, updateOptions, `${type}(${predicate}).remove()`, context.storeState);
 }) as ArrayOfElementsCommonAction<X, F, T>['remove'];
 
 export const onChange = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(

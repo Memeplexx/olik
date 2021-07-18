@@ -1,5 +1,8 @@
+import { augmentations } from './augmentations';
 import {
   DeepReadonly,
+  Future,
+  FutureState,
   Selector,
   SelectorFromAStore,
   StoreWhichIsNested,
@@ -8,7 +11,7 @@ import {
 } from './shapes-external';
 import { PathReader, StoreState } from './shapes-internal';
 import { errorMessages, expressionsNotAllowedInSelectorFunction } from './shared-consts';
-import { libState } from './shared-state';
+import { libState, testState } from './shared-state';
 
 export function deepFreeze<T extends Object>(o: T): T {
   Object.freeze(o);
@@ -172,7 +175,6 @@ export const processAsyncPayload = <S, C, X extends C & Array<any>, T extends Tr
   if (storeState.dryRun) {
     return;
   } else if (!!payload && typeof (payload) === 'function') {
-
     if (libState.transactionState !== 'none') {
       libState.transactionState = 'none';
       throw new Error(errorMessages.PROMISES_NOT_ALLOWED_IN_TRANSACTIONS)
@@ -184,54 +186,77 @@ export const processAsyncPayload = <S, C, X extends C & Array<any>, T extends Tr
     pathReader.readSelector(selector);
     const bypassPromiseFor = ((updateOptions || {}) as any).bypassPromiseFor || 0;
     const fullPath = pathReader.pathSegments.join('.') + (pathReader.pathSegments.length ? '.' : '') + suffix;
-    if (storeState.activePromises[fullPath]) { // prevent duplicate simultaneous requests
-      return storeState.activePromises[fullPath];
+    if (storeState.activeFutures[fullPath]) { // prevent duplicate simultaneous requests
+      return storeState.activeFutures[fullPath];
     }
     const expirationDate = (storeResult().read().promiseBypassTimes || {})[fullPath];
     if (expirationDate && (new Date(expirationDate).getTime() > new Date().getTime())) {
-      return Promise.resolve(storeResult(selector as any).read());
+      const result = {
+        read: () => storeResult(selector as any).read(),
+        asPromise: () => Promise.resolve(storeResult(selector as any).read()),
+        onChange: (fn) => fn({ storeValue: storeResult(selector as any).read(), error: null, wasResolved: true, isLoading: false, wasRejected: false } as FutureState<C>),
+      } as Future<C>;
+      Object.keys(augmentations.future).forEach(name => (result as any)[name] = augmentations.future[name](result));
+      return result;
     }
     const { optimisticallyUpdateWith } = ((updateOptions as any) || {});
     let snapshot = isEmpty(optimisticallyUpdateWith) ? null : storeResult(selector as any).read();
     if (!isEmpty(snapshot)) {
       processPayload(optimisticallyUpdateWith);
     }
-    const result = asyncPayload()
-      .then(res => {
-        const involvesCaching = !!updateOptions && !(typeof (updateOptions) === 'string') && bypassPromiseFor;
-        if (involvesCaching) {
-          libState.transactionState = 'started';
-        }
-        processPayload(res);
-        if (involvesCaching && bypassPromiseFor) {
-          const cacheExpiry = toIsoString(new Date(new Date().getTime() + bypassPromiseFor));
-          libState.transactionState = 'last';
-          if (!storeResult().read().promiseBypassTimes) {
-            storeResult(s => (s as any).promiseBypassTimes).replace({
-              ...(storeResult().read().promiseBypassTimes || { [fullPath]: cacheExpiry }),
-            })
-          } else if (!storeResult().read().promiseBypassTimes[fullPath]) {
-            storeResult(s => (s as any).promiseBypassTimes).insert({ [fullPath]: cacheExpiry });
-          } else {
-            storeResult(s => (s as any).promiseBypassTimes[fullPath]).replace(cacheExpiry);
+    const promiseResult = () => {
+      const promise = (augmentations.async ? augmentations.async(asyncPayload) : asyncPayload()) as Promise<C>;
+      return promise
+        .then(res => {
+          const involvesCaching = !!updateOptions && !(typeof (updateOptions) === 'string') && bypassPromiseFor;
+          if (involvesCaching) {
+            libState.transactionState = 'started';
           }
-          try {
-            setTimeout(() => {
-              storeResult(s => (s as any).promiseBypassTimes).remove(fullPath);
-            }, bypassPromiseFor);
-          } catch (e) {
-            // ignoring
+          processPayload(res);
+          if (involvesCaching && bypassPromiseFor) {
+            const cacheExpiry = toIsoString(new Date(new Date().getTime() + bypassPromiseFor));
+            libState.transactionState = 'last';
+            if (!storeResult().read().promiseBypassTimes) {
+              storeResult(s => (s as any).promiseBypassTimes).replace({
+                ...(storeResult().read().promiseBypassTimes || { [fullPath]: cacheExpiry }),
+              })
+            } else if (!storeResult().read().promiseBypassTimes[fullPath]) {
+              storeResult(s => (s as any).promiseBypassTimes).insert({ [fullPath]: cacheExpiry });
+            } else {
+              storeResult(s => (s as any).promiseBypassTimes[fullPath]).replace(cacheExpiry);
+            }
+            try {
+              setTimeout(() => {
+                storeResult(s => (s as any).promiseBypassTimes).remove(fullPath);
+              }, bypassPromiseFor);
+            } catch (e) {
+              // ignoring
+            }
           }
-        }
-        return storeResult(selector as any).read();
-      }).catch(e => {
-        if (!isEmpty(snapshot)) {
-          processPayload(snapshot);
-        }
-        throw e;
-      }).finally(() => delete storeState.activePromises[fullPath]);
-    storeState.activePromises[fullPath] = result;
-    return result;
+          return storeResult(selector as any).read();
+        }).catch(e => {
+          if (!isEmpty(snapshot)) {
+            processPayload(snapshot);
+          }
+          throw e;
+        }).finally(() => delete storeState.activeFutures[fullPath]);
+    };
+    const state = { storeValue: storeResult(selector as any).read(), error: null, isLoading: true, wasRejected: false, wasResolved: false } as FutureState<C>;
+    const result = {
+      read: () => storeResult(s => (s as any)).read(),
+      asPromise: () => promiseResult(),
+      onChange: (fn) => {
+        let subscribed = true;
+        fn(state)
+        promiseResult()
+          .then(storeValue => { if (subscribed) { fn({ ...state, wasResolved: true, isLoading: false, storeValue }) } })
+          .catch(error => { if (subscribed) { fn({ ...state, wasRejected: true, isLoading: false, error }) } })
+        return { unsubscribe: () => { subscribed = false; } };
+      }
+    } as Future<C>;
+    Object.keys(augmentations.future).forEach(name => (result as any)[name] = augmentations.future[name](result));
+    storeState.activeFutures[fullPath] = result;
+    return result
   } else {
     processPayload(payload as C);
   }

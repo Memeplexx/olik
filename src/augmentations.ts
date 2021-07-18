@@ -1,5 +1,7 @@
-import { Augmentation, StoreOrDerivation } from "./shapes-external";
+import { Augmentations } from './shapes-external';
 
-export const augmentations = {
-  selection: undefined,
-} as Augmentation;
+export const augmentations: Augmentations = {
+  selection: {},
+  future: {},
+  async: promise => promise(),
+};

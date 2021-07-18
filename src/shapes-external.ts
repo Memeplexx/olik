@@ -208,25 +208,26 @@ export type ArrayOfObjectsAction<X extends DeepReadonlyArray<any>, F extends Fin
    * ...
    * .patch({ done: true })
    */
-  patch: <H extends Partial<X[0]> | (() => Promise<Partial<X[0]>>) >(patch: H, options: UpdateOptions<T, H>) => H extends (() => Promise<any>) ? Promise<void> : void,
+  patch: <H extends Partial<X[0]> | (() => AnyAsync<Partial<X[0]>>) >(patch: H, options: UpdateOptions<T, H>) => H extends (() => AnyAsync<any>) ? Future<F extends 'find' ? H : H[]> : void,
   // get: <P>(getProp: (element: X[0]) => P) => Store<P, T>,
 } & ArrayOfElementsAction<X, F, T>;
 
-export type ArrayOfElementsCommonAction<X extends DeepReadonlyArray<any>, F extends FindOrFilter, T extends Trackability> = {
+export interface ArrayOfElementsCommonAction<X extends DeepReadonlyArray<any>, F extends FindOrFilter, T extends Trackability> {
   /**
    * Replaces the selected element(s)
    * @example
    * ...
    * .replace({ id: 1, text: 'bake cookies' })
    */
-  replace: <H extends X[0] | (() => Promise<X[0]>) >(replacement: H, options: UpdateOptions<T, H>) => H extends (() => Promise<X[0]>) ? Promise<X> : void,
+  replace: <H extends X[0] | (() => AnyAsync<X[0]>) >(replacement: H, options: UpdateOptions<T, H>) => H extends (() => AnyAsync<X[0]>) ? Future<F extends 'find' ? X[0] : X> : void,
   /**
    * Removes any elements that were found in the search clause
    * @example
    * ...
    * .remove()
    */
-  remove: (options: ActionOptions<T>) => void;
+  remove(asyncRemover: () => AnyAsync<any>, options: ActionOptions<T>): Future<any>;
+  remove(options: ActionOptions<T>): void;
   /**
    * Will be called any time the selected node changes.
    * @example
@@ -255,7 +256,7 @@ export type ArrayOfObjectsCommonAction<X extends DeepReadonlyArray<any>, F exten
    * ...
    * .patch({ done: true })
    */
-  patch: <H extends Partial<X[0]> | (() => Promise<Partial<X[0]>>) >(replacement: H, options: UpdateOptions<T, H>) => H extends (() => Promise<any>) ? Promise<void> : void,
+  patch: <H extends Partial<X[0]> | (() => AnyAsync<Partial<X[0]>>) >(replacement: H, options: UpdateOptions<T, H>) => H extends (() => AnyAsync<any>) ? Future<void> : void,
 } & ArrayOfElementsCommonAction<X, F, T>;
 
 export type TaggedUpdate<T extends Trackability> = T extends 'untagged' ? {
@@ -306,7 +307,7 @@ export type TaggedUpdate<T extends Trackability> = T extends 'untagged' ? {
   tag: string
 }
 
-export type PromisableUpdate<H> = H extends () => Promise<any> ? {
+export type PromisableUpdate<H> = H extends () => AnyAsync<any> ? {
   /**
    * Avoid unnecessary promise invocations by supplying the number of milliseconds that should elapse before the promise is invoked again.
    * To un-do this, you can call `stopBypassingPromises()` on the node of the state tree, for example
@@ -325,7 +326,7 @@ export type PromisableUpdate<H> = H extends () => Promise<any> ? {
    *   .replace(() => updateUsernameOnApi(newUsername), { optimisticallyUpdateWith: newUsername })
    *   .catch(err => notifyUserOfError(err))
    */
-  optimisticallyUpdateWith?: H extends () => Promise<infer W> ? W : never,
+  optimisticallyUpdateWith?: H extends () => AnyAsync<infer W> ? W : never,
 } : {};
 
 export type UpdateAtIndex = {
@@ -361,7 +362,7 @@ export type StoreForAnArrayCommon<X extends DeepReadonlyArray<any>, T extends Tr
    * ...
    * .insert(newArrayOfTodos, { atIndex: 0 });
    */
-  insert: <H extends (X | X[0] | (() => Promise<X | X[0]>)) >(insertion: H, options: InsertOptions<T, H>) => H extends (() => Promise<any>) ? Promise<X> : void,
+  insert: <H extends (X | X[0] | (() => AnyAsync<X | X[0]>)) >(insertion: H, options: InsertOptions<T, H>) => H extends (() => AnyAsync<any>) ? Future<X> : void,
   /**
    * Removes all elements from the array
    * @example
@@ -375,7 +376,7 @@ export type StoreForAnArrayCommon<X extends DeepReadonlyArray<any>, T extends Tr
    * ...
    * .replaceAll(newTodos);
    */
-  replaceAll: <H extends X | (() => Promise<X>) >(replacement: H, options: UpdateOptions<T, H>) => H extends (() => Promise<X>) ? Promise<X> : void,
+  replaceAll: <H extends X | (() => AnyAsync<X>) >(replacement: H, options: UpdateOptions<T, H>) => H extends (() => AnyAsync<X>) ? Future<X> : void,
 }
 
 /**
@@ -412,7 +413,7 @@ export type StoreForAnArrayOfObjects<X extends DeepReadonlyArray<any>, T extends
    * ...
    */
   upsertMatching: <P>(getProp: (element: DeepReadonly<X[0]>) => P) => {
-    with: <H extends X | (X[0] | X | (() => Promise<X | X[0]>)) >(elementOrArray: H, options: UpdateOptions<T, H>) => H extends (() => Promise<any>) ? Promise<X> : void,
+    with: <H extends X | (X[0] | X | (() => AnyAsync<X | X[0]>)) >(elementOrArray: H, options: UpdateOptions<T, H>) => H extends (() => AnyAsync<any>) ? Future<X> : void,
   }
   /**
    * Specify a where clause to find many elements.
@@ -453,7 +454,7 @@ export type StoreForAnObjectOrPrimitive<C, T extends Trackability> = {
    * @example
    * get(s => s.user.age).replace(33);
    */
-  replace: <H extends C | (() => Promise<C>) >(replacement: H, options: UpdateOptions<T, H>) => H extends (() => Promise<any>) ? Promise<C> : void,
+  replace: <H extends C | (() => AnyAsync<C>) >(replacement: H, options: UpdateOptions<T, H>) => H extends (() => AnyAsync<any>) ? Future<C> : void,
 }
 
 /**
@@ -466,7 +467,7 @@ export type StoreForAnObject<C, T extends Trackability> = {
    * ...
    *  .patch({ firstName: 'James', age: 33 })
    */
-  patch: <H extends (Partial<C> | (() => Promise<Partial<C>>)) >(partial: H, options: UpdateOptions<T, H>) => H extends (() => Promise<Partial<C>>) ? Promise<C> : void,
+  patch: <H extends (Partial<C> | (() => AnyAsync<Partial<C>>))>(partial: H, options: UpdateOptions<T, H>) => H extends (() => AnyAsync<Partial<C>>) ? Future<C> : void,
   /**
    * Removes the specified key from this object.  
    * ***WARNING***: invoking this has the potentional to contradict the type-system.
@@ -477,7 +478,7 @@ export type StoreForAnObject<C, T extends Trackability> = {
    * store.get(s => s.skillpoints)
    *   .remove('archery')
    */
-  remove: (key: keyof C, options: ActionOptions<T>) => void,
+  remove: <H extends (keyof C | (() => AnyAsync<keyof C>))>(key: H, options: ActionOptions<T>) => H extends (() => AnyAsync<keyof C>) ? Future<C> : void,
   /**
    * Adds one or more key-value-pairs to this object.  
    * ***WARNING***: invoking this has the potentional to contradict the type-system.
@@ -488,7 +489,7 @@ export type StoreForAnObject<C, T extends Trackability> = {
    * store.get(s => s.skillpoints)
    *   .insert({ archery: 3, sorcery: 5 })
    */
-  insert: <H extends { [key: string]: any } | (() => Promise<{ [key: string]: any }>) >(insertion: H) => H extends (() => Promise<{ [key: string]: any }>) ? Promise<{ [key: string]: any }> : void,
+  insert: <H extends { [key: string]: any } | (() => AnyAsync<{ [key: string]: any }>) >(insertion: H) => H extends (() => AnyAsync<{ [key: string]: any }>) ? Future<{ [key: string]: any }> : void,
 } & StoreForAnObjectOrPrimitive<C, T>;
 
 export interface StoreOrDerivation<C> {
@@ -703,9 +704,27 @@ export type Derivation<R> = {
   onChange: (listener: (value: R) => any) => Unsubscribable,
 };
 
-export type Augmentation = {
-  selection?: {
-    name: string,
-    action: <C>(selection: StoreOrDerivation<C>) => () => any,
-  };
+export type Augmentations = {
+  selection: { [name: string ]: <C>(selection: StoreOrDerivation<C>) => () => any },
+  future: { [name: string]: <C>(future: Future<C>) => () => any };
+  async: <C>(fnReturningFutureAugmentation: () => any) => Promise<C>;
 }
+
+export type FutureState<C> = {
+  isLoading: boolean,
+  wasRejected: boolean,
+  wasResolved: boolean,
+  error: any,
+  storeValue: C,
+};
+
+export interface Future<C> {
+  asPromise: () => Promise<C>;
+  onChange: (fn: (state: FutureState<C>) => any) => Unsubscribable;
+  read: () => C;
+}
+
+export interface Async<C> {
+}
+
+export type AnyAsync<C> = Async<C> | Promise<C>;

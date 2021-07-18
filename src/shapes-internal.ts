@@ -1,6 +1,7 @@
 import {
   DeepReadonly,
   FindOrFilter,
+  Future,
   OptionsForReduxDevtools,
   PredicateFunctionObject,
   Selector,
@@ -120,7 +121,7 @@ export type NestedContainerStore = ((selector?: ((s: any) => any) | undefined) =
 export type StoreState<S> = {
   selector: (arg: S) => any,
   bypassSelectorFunctionCheck: boolean,
-  activePromises: { [key: string]: Promise<any> },
+  activeFutures: { [key: string]: Future<any> },
   transactionActions: Array<{ type: string }>,
   transactionStartState: any,
   dryRun: boolean,

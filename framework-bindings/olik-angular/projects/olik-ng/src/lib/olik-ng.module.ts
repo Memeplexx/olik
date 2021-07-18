@@ -1,6 +1,7 @@
 import { NgModule, NgZone } from '@angular/core';
 import * as core from 'olik';
-import { combineLatest, Observable } from 'rxjs';
+import { FutureState } from 'olik';
+import { combineLatest, from, Observable, Subscription } from 'rxjs';
 import { map } from 'rxjs/operators';
 
 export type FetchPayload<C> = {
@@ -249,22 +250,43 @@ export class OlikNgModule {
 }
 
 core.augmentations.selection = {
-  name: 'observe',
-  action: <C>(selection: core.StoreOrDerivation<C>) => {
+  observe: <C>(selection: core.StoreOrDerivation<C>) => {
     return () => new Observable<any>(observer => {
       observer.next(selection.read());
       const subscription = selection.onChange(v => observer.next(v));
       return () => subscription.unsubscribe();
     });
+  },
+}
+core.augmentations.future = {
+  observeStatus: (future) => {
+    return () => new Observable<any>(observer => {
+      const subscription = future.onChange(v => {
+        observer.next(v);
+      });
+      return () => subscription.unsubscribe();
+    });
+  },
+  asObservable: (future) => {
+    return () => from(future.asPromise())
   }
 }
-
+core.augmentations.async = <C>(fnReturningFutureAugmentation: () => any) => {
+  const promiseOrObservable = fnReturningFutureAugmentation();
+  return promiseOrObservable.then ? promiseOrObservable : (fnReturningFutureAugmentation() as Observable<C>).toPromise()
+}
 
 declare module 'olik' {
   interface StoreOrDerivation<C> {
     observe: () => Observable<C>;
   }
-  // interface ArrayOfElementsCommonAction<X extends core.DeepReadonlyArray<any>, F extends core.FindOrFilter, T extends core.Trackability> {
-  //   observe: () => Observable<F extends 'find' ? X[0] : X>;
-  // }
+  interface ArrayOfElementsCommonAction<X extends core.DeepReadonlyArray<any>, F extends core.FindOrFilter, T extends core.Trackability> {
+    observe: () => Observable<F extends 'find' ? X[0] : X>;
+  }
+  interface Future<C> {
+    observeStatus: () => Observable<FutureState<C>>;
+    asObservable: () => Observable<C>; ////////////////////////// TO BE IMPLEMENTED
+  }
+  interface Async<C> extends Observable<C> {
+  }
 }

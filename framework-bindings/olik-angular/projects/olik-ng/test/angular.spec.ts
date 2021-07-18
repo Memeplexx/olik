@@ -1,7 +1,7 @@
+import { from } from 'rxjs';
 import { skip } from 'rxjs/operators';
 
 import { createGlobalStore } from '../src/public-api';
-import * as core from 'olik';
 
 describe('Angular', () => {
 
@@ -27,59 +27,70 @@ describe('Angular', () => {
       done();
     });
     select(s => s.object.property).replace(payload);
-
-
-    // useQuery(() => select(s => s.object.property).replace(() => Promise.resolve('')))
-    // select(s => s.object.property)
-    //   .replace(() => Promise.resolve(''))
-    //   .useQuery();
   })
 
-  // it('should be able to observe a fetch, and resolve', done => {
-  //   const store = createGlobalStore(initialState, { devtools: false });
-  //   let count = 0;
-  //   const fetchProperty = () => new Promise<string>(resolve => setTimeout(() => resolve('val ' + count), 10));
-  //   const obs$ = store.observeFetch(() => store.get(s => s.object.property).replace(fetchProperty));
-  //   obs$.subscribe(val => {
-  //     count++;
-  //     if (count === 1) {
-  //       expect(val.isLoading).toEqual(true);
-  //       expect(val.wasRejected).toEqual(false);
-  //       expect(val.wasResolved).toEqual(false);
-  //       expect(val.error).toEqual(null);
-  //     } else if (count === 2) {
-  //       expect(val.isLoading).toEqual(false);
-  //       expect(val.wasRejected).toEqual(false);
-  //       expect(val.wasResolved).toEqual(true);
-  //       expect(val.error).toEqual(null);
-  //       expect(val.storeValue).toEqual('val 1');
-  //       done();
-  //     }
-  //   });
-  // })
+  it('should be able to observe a fetch, and resolve', done => {
+    const select = createGlobalStore(initialState, { devtools: false });
+    let count = 0;
+    const fetchProperty = () => from(new Promise<string>(resolve => setTimeout(() => resolve('val ' + count), 10)));
+    select(s => s.object.property)
+      .replace(fetchProperty)
+      .observeStatus()
+      .subscribe(val => {
+        count++;
+        if (count === 1) {
+          expect(val.isLoading).toEqual(true);
+          expect(val.wasRejected).toEqual(false);
+          expect(val.wasResolved).toEqual(false);
+          expect(val.error).toEqual(null);
+        } else if (count === 2) {
+          expect(val.isLoading).toEqual(false);
+          expect(val.wasRejected).toEqual(false);
+          expect(val.wasResolved).toEqual(true);
+          expect(val.error).toEqual(null);
+          expect(val.storeValue).toEqual('val 1');
+          done();
+        }
+      });
+  })
 
-  // it('should be able to observe a fetch, and reject', done => {
-  //   const store = createGlobalStore(initialState, { devtools: false });
-  //   let count = 0;
-  //   const fetchAndReject = () => new Promise<string>((resolve, reject) => setTimeout(() => reject('test'), 10));
-  //   const obs$ = store.observeFetch(() => store.get(s => s.object.property).replace(fetchAndReject));
-  //   obs$.subscribe(val => {
-  //     count++;
-  //     if (count === 1) {
-  //       expect(val.isLoading).toEqual(true);
-  //       expect(val.wasRejected).toEqual(false);
-  //       expect(val.wasResolved).toEqual(false);
-  //       expect(val.error).toEqual(null);
-  //     } else if (count === 2) {
-  //       expect(val.isLoading).toEqual(false);
-  //       expect(val.wasRejected).toEqual(true);
-  //       expect(val.wasResolved).toEqual(false);
-  //       expect(val.error).toEqual('test');
-  //       expect(val.storeValue).toEqual('a');
-  //       done();
-  //     }
-  //   });
-  // })
+  it('should be able to observe a fetch, and reject', done => {
+    const select = createGlobalStore(initialState, { devtools: false });
+    let count = 0;
+    const fetchAndReject = () => new Promise<string>((resolve, reject) => setTimeout(() => reject('test'), 10));
+    select(s => s.object.property)
+      .replace(fetchAndReject)
+      .observeStatus()
+      .subscribe(val => {
+        count++;
+        if (count === 1) {
+          expect(val.isLoading).toEqual(true);
+          expect(val.wasRejected).toEqual(false);
+          expect(val.wasResolved).toEqual(false);
+          expect(val.error).toEqual(null);
+        } else if (count === 2) {
+          expect(val.isLoading).toEqual(false);
+          expect(val.wasRejected).toEqual(true);
+          expect(val.wasResolved).toEqual(false);
+          expect(val.error).toEqual('test');
+          expect(val.storeValue).toEqual('a');
+          done();
+        }
+      });
+  })
+
+  it('', done => {
+    const select = createGlobalStore(initialState, { devtools: false });
+    const payload = 'val';
+    const fetchProperty = () => from(new Promise<string>(resolve => setTimeout(() => resolve(payload), 10)));
+    select(s => s.object.property)
+      .replace(fetchProperty)
+      .asObservable()
+      .subscribe(val => {
+        expect(val).toEqual(payload)
+        done();
+      })
+  })
 
 
   // it('should create and update a store which enforces tags', () => {

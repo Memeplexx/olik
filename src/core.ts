@@ -62,7 +62,7 @@ export function createStoreCore<S, T extends Trackability>({
   let initialState = currentState;
   let devtoolsDispatchListener: ((action: { type: string, payload?: any }) => any) | undefined;
   const setDevtoolsDispatchListener = (listener: (action: { type: string, payload?: any }) => any) => devtoolsDispatchListener = listener;
-  const storeState = { bypassSelectorFunctionCheck: false, selector: null as any, activePromises: {}, transactionActions: [], transactionState: 'none', transactionStartState: null, dryRun: false } as StoreState<S>;
+  const storeState = { bypassSelectorFunctionCheck: false, selector: null as any, activeFutures: {}, transactionActions: [], transactionState: 'none', transactionStartState: null, dryRun: false } as StoreState<S>;
   const action = <C, X extends C & Array<any>>(selector: Selector<S, C, X>) => {
     const where = (type: FindOrFilter) => {
       const whereClauseSpecs = Array<{ filter: (arg: X[0]) => boolean, type: 'and' | 'or' | 'last' }>();
@@ -104,9 +104,10 @@ export function createStoreCore<S, T extends Trackability>({
             read: array.read(context),
             stopBypassingPromises: () => array.stopBypassingPromises(context),
           } as ArrayOfObjectsAction<X, FindOrFilter, T>;
-          if (augmentations.selection) {
-            (arrayActions as any)[augmentations.selection.name] = augmentations.selection.action(arrayActions as StoreOrDerivation<C>);
-          }
+          // if (augmentations.selection) {
+          //   (arrayActions as any)[augmentations.selection.name] = augmentations.selection.action(arrayActions as StoreOrDerivation<C>);
+          // }
+          Object.keys(augmentations.selection).forEach(name => (arrayActions as any)[name] = augmentations.selection[name](arrayActions as StoreOrDerivation<C>));
           return arrayActions;
         };
         return {
@@ -128,9 +129,10 @@ export function createStoreCore<S, T extends Trackability>({
                 read: arrayCustom.read(context),
                 stopBypassingPromises: () => arrayCustom.stopBypassingPromises(context),
               };
-              if (augmentations.selection) {
-                (elementActions as any)[augmentations.selection.name] = augmentations.selection.action(elementActions as StoreOrDerivation<C>);
-              }
+              // if (augmentations.selection) {
+              //   (elementActions as any)[augmentations.selection.name] = augmentations.selection.action(elementActions as StoreOrDerivation<C>);
+              // }
+              Object.keys(augmentations.selection).forEach(name => (elementActions as any)[name] = augmentations.selection[name](elementActions as StoreOrDerivation<C>));
               return elementActions;
             }
           } as PredicateOptionsForBoolean<X, FindOrFilter, T>,
@@ -185,9 +187,10 @@ export function createStoreCore<S, T extends Trackability>({
       dryRun: (dryRun: boolean) => storeState.dryRun = dryRun,
       changeListeners,
     } as unknown as StoreWhichIsNested<C>;
-    if (augmentations.selection) {
-      (coreActions as any)[augmentations.selection.name] = augmentations.selection.action(coreActions);
-    }
+    // if (augmentations.selection) {
+    //   (coreActions as any)[augmentations.selection.name] = augmentations.selection.action(coreActions);
+    // }
+    Object.keys(augmentations.selection).forEach(name => (coreActions as any)[name] = augmentations.selection[name](coreActions as StoreOrDerivation<C>));
     return coreActions;
   };
 

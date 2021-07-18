@@ -41,10 +41,10 @@ export const orWhere = <S, C, X extends C & Array<any>, F extends FindOrFilter, 
 
 export const remove = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
   context: ArrayOperatorState<S, C, X, F, T>,
-) => (updateOptions => {
-  const { updateState, selector, type, whereClauseStrings, getCurrentState } = context;
+) => ((arg: any, updateOptions: any) => {
+  const { updateState, selector, type, pathReader, storeResult, whereClauseString, whereClauseStrings, getCurrentState } = context;
   const elementIndices = completeWhereClause(context);
-  updateState({
+  const processPayload = () => updateState({
     selector,
     replacer: old => old.filter((o, i) => !elementIndices.includes(i)),
     mutator: old => {
@@ -59,8 +59,10 @@ export const remove = <S, C, X extends C & Array<any>, F extends FindOrFilter, T
       where: whereClauseStrings.join(' '),
       toRemove: (selector(getCurrentState()) as X)[type]((e, i) => elementIndices.includes(i)),
     },
-    updateOptions,
+    updateOptions: typeof arg === 'function' ? updateOptions : arg,
   });
+  return processAsyncPayload(((s: any) => (selector(s) as any)[context.type]((e: any) => bundleCriteria(e, context.whereClauseSpecs))) as any,
+    arg, pathReader, storeResult, processPayload, updateOptions as UpdateOptions<T, any>, type + '(' + whereClauseString + ').remove()', context.storeState);
 }) as ArrayOfObjectsAction<X, F, T>['remove'];
 
 export const patch = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
@@ -82,7 +84,8 @@ export const patch = <S, C, X extends C & Array<any>, F extends FindOrFilter, T 
       updateOptions: updateOptions as UpdateOptions<T, any>,
     });
   }
-  return processAsyncPayload(selector, payload, pathReader, storeResult, processPayload, updateOptions as UpdateOptions<T, any>, type + '(' + whereClauseString + ').patch()', context.storeState);
+  return processAsyncPayload(((s: any) => (selector(s) as any)[context.type]((e: any) => bundleCriteria(e, context.whereClauseSpecs))) as any,
+    payload, pathReader, storeResult, processPayload, updateOptions as UpdateOptions<T, any>, type + '(' + whereClauseString + ').patch()', context.storeState);
 }) as ArrayOfObjectsAction<X, F, T>['patch'];
 
 export const replace = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
@@ -104,7 +107,8 @@ export const replace = <S, C, X extends C & Array<any>, F extends FindOrFilter, 
       updateOptions: updateOptions as UpdateOptions<T, any>,
     })
   }
-  return processAsyncPayload(selector, payload, pathReader, storeResult, processPayload, updateOptions as UpdateOptions<T, any>, type + '(' + whereClauseString + ').replace()', context.storeState);
+  return processAsyncPayload(((s: any) => (selector(s) as any)[context.type]((e: any) => bundleCriteria(e, context.whereClauseSpecs))) as any,
+    payload, pathReader, storeResult, processPayload, updateOptions as UpdateOptions<T, any>, type + '(' + whereClauseString + ').replace()', context.storeState);
 }) as ArrayOfElementsCommonAction<X, F, T>['replace'];
 
 export const onChange = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
