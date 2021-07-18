@@ -285,7 +285,7 @@ declare module 'olik' {
   }
   interface Future<C> {
     observeStatus: () => Observable<FutureState<C>>;
-    asObservable: () => Observable<C>; ////////////////////////// TO BE IMPLEMENTED
+    asObservable: () => Observable<C>;
   }
   interface Async<C> extends Observable<C> {
   }
