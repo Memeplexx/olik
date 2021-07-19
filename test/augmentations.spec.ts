@@ -1,9 +1,10 @@
 import { Observable } from 'rxjs';
+import { augment } from '../src/augmentations';
 
-import { augmentations } from '../src/augmentations';
 import { libState, testState } from '../src/shared-state';
 import { createGlobalStore } from '../src/store-creators';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
+import { deriveFrom } from '../src/derive-from';
 
 describe('augmentations', () => {
 
@@ -12,41 +13,51 @@ describe('augmentations', () => {
   beforeEach(() => libState.nestedContainerStore = null);
 
   afterAll(() => {
-    augmentations.selection = {};
-    augmentations.future = {};
+    augment({
+      selection: {},
+      future: {},
+    })
   })
 
   it('should be able to augment a selection on a core action', () => {
-    augmentations.selection.myThing = (selection) => () => {
-      return selection.read();
-    }
+    augment({
+      selection: {
+        myThing: selection => () => selection.read(),
+      }
+    })
     const select = createGlobalStore({ num: 42 });
     const res = (select(s => s.num) as any).myThing();
     expect(res).toEqual(42);
   })
 
   it('should be able to augment a selection on an array action', () => {
-    augmentations.selection.myThing = (selection) => () => {
-      return selection.read();
-    }
+    augment({
+      selection: {
+        myThing: selection => () => selection.read(),
+      }
+    })
     const select = createGlobalStore({ array: [42] });
     const res = (select(s => s.array) as any).myThing();
     expect(res).toEqual([42]);
   })
 
   it('should be able to augment a selection on an array element action', () => {
-    augmentations.selection.myThing = (selection) => () => {
-      return selection.read();
-    }
+    augment({
+      selection: {
+        myThing: selection => () => selection.read(),
+      }
+    })
     const select = createGlobalStore({ array: [42] });
     const res = (select(s => s.array).findWhere().eq(42) as any).myThing();
     expect(res).toEqual(42);
   })
 
   it('should be able to augment a future on a core action', done => {
-    augmentations.future.myThing = (selection) => () => {
-      return selection.asPromise();
-    }
+    augment({
+      future: {
+        myThing: selection => () => selection.asPromise(),
+      }
+    })
     const select = createGlobalStore({ num: 42 });
     const fetch = () => new Promise(resolve => setTimeout(() => resolve(43), 5))
     const res = (select(s => s.num) as any).replace(fetch).myThing();
@@ -57,9 +68,11 @@ describe('augmentations', () => {
   })
 
   it('should be able to augment a future on an array action', done => {
-    augmentations.future.myThing = (selection) => () => {
-      return selection.asPromise();
-    }
+    augment({
+      future: {
+        myThing: selection => () => selection.asPromise(),
+      }
+    })
     const select = createGlobalStore({ array: [42] });
     const fetch = () => new Promise(resolve => setTimeout(() => resolve([43]), 5))
     const res = (select(s => s.array) as any).replace(fetch).myThing();
@@ -70,9 +83,11 @@ describe('augmentations', () => {
   })
 
   it('should be able to augment a future on an array element action', done => {
-    augmentations.future.myThing = (selection) => () => {
-      return selection.asPromise();
-    }
+    augment({
+      future: {
+        myThing: selection => () => selection.asPromise(),
+      }
+    })
     const select = createGlobalStore({ array: [42] });
     const fetch = () => new Promise(resolve => setTimeout(() => resolve(43), 5))
     const res = (select(s => s.array) as any).findWhere().eq(42).replace(fetch).myThing();
@@ -83,9 +98,9 @@ describe('augmentations', () => {
   })
 
   it('should be able to augment an async', done => {
-    augmentations.async = (fnReturningFutureAugmentation: () => Observable<any>) =>  {
-      return fnReturningFutureAugmentation().toPromise();
-    }
+    augment({
+      async: fnReturningFutureAugmentation => fnReturningFutureAugmentation().toPromise(),
+    })
     const select = createGlobalStore({ thing: '' });
     const fetch = () => new Observable(observer => {
       observer.next('test');
@@ -95,6 +110,22 @@ describe('augmentations', () => {
     res.asPromise().then((r: any) => {
       done();
     });
+  })
+
+  it('should be able to augment a derivation', done => {
+    augment({
+      derivation: {
+        myThing: derviation => () => derviation.read()
+      }
+    })
+    const select = createGlobalStore({ one: 'abc', two: false });
+    const result = (deriveFrom(
+      select(s => s.one),
+      select(s => s.two),
+    ).usingExpensiveCalc((one, two) => one + two) as any)
+      .myThing();
+    expect(result).toEqual('abcfalse');
+    done();
   })
 
   // it('should be able to augment a future on a core action', done => {
@@ -107,6 +138,8 @@ describe('augmentations', () => {
   //     }
   //   }
   // })
-  
+
 
 });
+
+

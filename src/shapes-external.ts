@@ -689,7 +689,7 @@ export type OptionsForReduxDevtools = {
 /**
  * An object representing derived state
  */
-export type Derivation<R> = {
+export interface Derivation<R> {
   /**
    * The current value of the derivation
    */
@@ -707,6 +707,7 @@ export type Derivation<R> = {
 export type Augmentations = {
   selection: { [name: string ]: <C>(selection: StoreOrDerivation<C>) => () => any },
   future: { [name: string]: <C>(future: Future<C>) => () => any };
+  derivation: { [name: string]: <R>(derivation: Derivation<R>) => () => any }
   async: <C>(fnReturningFutureAugmentation: () => any) => Promise<C>;
 }
 

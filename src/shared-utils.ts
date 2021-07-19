@@ -235,7 +235,7 @@ export const processAsyncPayload = <S, C, X extends C & Array<any>, T extends Tr
           }
           return storeResult(selector as any).read();
         }).catch(e => {
-          if (!isEmpty(snapshot)) {
+          if (!isEmpty(snapshot)) { //////////////////////////////////// what exactly does this do?
             processPayload(snapshot);
           }
           throw e;
