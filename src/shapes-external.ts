@@ -702,12 +702,16 @@ export interface Derivation<R> {
    *   .onChange(derivation => console.log(derivation)) ;
    */
   onChange: (listener: (value: R) => any) => Unsubscribable,
+  /**
+   * Ensure that the next time state is read, it is re-caculated
+   */
+  invalidate: () => void,
 };
 
 export type Augmentations = {
-  selection: { [name: string ]: <C>(selection: StoreOrDerivation<C>) => () => any },
-  future: { [name: string]: <C>(future: Future<C>) => () => any };
-  derivation: { [name: string]: <R>(derivation: Derivation<R>) => () => any }
+  selection: { [name: string]: <C>(selection: StoreOrDerivation<C>) => (...args: any[]) => any },
+  future: { [name: string]: <C>(future: Future<C>) => (...args: any[]) => any };
+  derivation: { [name: string]: <R>(derivation: Derivation<R>) => (...args: any[]) => any }
   async: <C>(fnReturningFutureAugmentation: () => any) => Promise<C>;
 }
 

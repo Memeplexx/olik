@@ -1,8 +1,13 @@
-import { createGlobalStore, createNestedStore, deriveFrom } from 'olik';
 import { from, of } from 'rxjs';
 import { catchError, skip } from 'rxjs/operators';
 
-import { combineAllObservablesForTemplate, Observables, OlikNgModule } from '../src/public-api';
+import {
+  combineComponentObservables,
+  createGlobalStore,
+  createNestedStore,
+  deriveFrom,
+  OlikNgModule,
+} from '../src/public-api';
 
 describe('Angular', () => {
 
@@ -11,7 +16,7 @@ describe('Angular', () => {
     array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
     string: 'b',
   };
-  
+
   beforeAll(() => {
     new OlikNgModule(null as any);
   })
@@ -43,17 +48,17 @@ describe('Angular', () => {
       .observeStatus()
       .subscribe(val => {
         count++;
-        if (count === 1) {
+        if (count === 2) {
           expect(val.isLoading).toEqual(true);
           expect(val.wasRejected).toEqual(false);
           expect(val.wasResolved).toEqual(false);
           expect(val.error).toEqual(null);
-        } else if (count === 2) {
+        } else if (count === 3) {
           expect(val.isLoading).toEqual(false);
           expect(val.wasRejected).toEqual(false);
           expect(val.wasResolved).toEqual(true);
           expect(val.error).toEqual(null);
-          expect(val.storeValue).toEqual('val 1');
+          expect(val.storeValue).toEqual('val 2');
           done();
         }
       });
@@ -68,12 +73,12 @@ describe('Angular', () => {
       .observeStatus()
       .subscribe(val => {
         count++;
-        if (count === 1) {
+        if (count === 2) {
           expect(val.isLoading).toEqual(true);
           expect(val.wasRejected).toEqual(false);
           expect(val.wasResolved).toEqual(false);
           expect(val.error).toEqual(null);
-        } else if (count === 2) {
+        } else if (count === 3) {
           expect(val.isLoading).toEqual(false);
           expect(val.wasRejected).toEqual(true);
           expect(val.wasResolved).toEqual(false);
@@ -141,19 +146,18 @@ describe('Angular', () => {
     class MyClass {
       obs1$ = select(s => s.object.property).observe();
       obs2$ = select(s => s.string).observe();
-      templateObservables$ = combineAllObservablesForTemplate<MyClass>(this);
-      $observables!: Observables<MyClass>;
+      observables$ = combineComponentObservables<MyClass>(this);
       constructor() {
-        this.templateObservables$.subscribe(e => {
+        this.observables$ .subscribe(e => {
           count++;
           if (count === 1) {
             const expectation = { obs1$: 'a', obs2$: 'b' };
             expect(e).toEqual(expectation);
-            expect(this.$observables).toEqual(expectation);
+            expect(this.observables$.value).toEqual(expectation);
           } else if (count === 2) {
             const expectation = { obs1$: 'b', obs2$: 'b' };
             expect(e).toEqual(expectation);
-            expect(this.$observables).toEqual(expectation);
+            expect(this.observables$.value).toEqual(expectation);
             done();
           }
         });

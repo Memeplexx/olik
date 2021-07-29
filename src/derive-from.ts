@@ -31,8 +31,9 @@ export function deriveFrom<X extends StoreOrDerivation<any>[]>(...args: X) {
         return result;
       }
       const changeListeners = new Set<(value: R) => any>();
-      const result = {
+      const result: Derivation<R> = {
         read: () => getValue(),
+        invalidate: () => previousParams.length = 0,
         onChange: (listener: (value: R) => any) => {
           changeListeners.add(listener);
           const unsubscribables: Unsubscribable[] = (args as Array<StoreOrDerivation<any>>)
@@ -44,7 +45,7 @@ export function deriveFrom<X extends StoreOrDerivation<any>[]>(...args: X) {
             }
           }
         }
-      } as Derivation<R>;
+      };
       Object.keys(augmentations.derivation).forEach(name => (result as any)[name] = augmentations.derivation[name](result));
       return result;
     }

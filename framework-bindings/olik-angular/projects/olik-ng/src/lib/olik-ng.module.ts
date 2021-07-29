@@ -10,12 +10,10 @@ type FunctionParameter<T> = T extends (arg: infer H) => any ? H : never;
 type ClassObservables<T> = {
   [I in keyof T]: T[I] extends Observable<any> ? FunctionParameter<Parameters<T[I]['subscribe']>[0]> : never;
 };
-
 type SubType<Base, Condition> = Pick<Base, {
   [Key in keyof Base]: Base[Key] extends Condition ? Key : never
 }[keyof Base]>;
-
-export type Observables<T> = ClassObservables<SubType<Omit<T, 'templateObservables$' | '$observables'>, Observable<any>>>;
+type Observables<T> = ClassObservables<SubType<Omit<T, 'observables$'>, Observable<any>>>;
 
 /**
  * Takes a component instance, finds all its observables, and combines them into 1 observable for the template to consume.
@@ -24,7 +22,7 @@ export type Observables<T> = ClassObservables<SubType<Omit<T, 'templateObservabl
  *
  * @example
  * ```
- * <ng-container *ngIf="templateObservables$ | async; let observe;">
+ * <ng-container *ngIf="observables$ | async; let observe;">
  *   <div>Observable 1: {{observe.observable1$}}</div>
  *   <div>Observable 2: {{observe.observable2$}}</div>
  * </ng-container>
@@ -32,29 +30,30 @@ export type Observables<T> = ClassObservables<SubType<Omit<T, 'templateObservabl
  * class MyComponent {
  *   readonly observable1$ = ...;
  *   readonly observable2$ = ...;
- *   readonly templateObservables$ = combineAllObservablesForTemplate<MyComponent>(this);
- *   readonly $observables: Observables<HomeComponent>; // this is optional and allows for synchronous access to observables state
+ *   readonly observables$ = combineComponentObservables<MyComponent>(this);
  *
  *   ngAfterViewInit() {
  *     // synchronous access to observable values
- *     const firstObservableValue = this.$observables.observable1$;
+ *     const observable1Value = this.$observables.value.observable1$;
  *   }
  * }
  * ```
  */
-export const combineAllObservablesForTemplate = <T>(component: T) => {
-  const keysOfObservableMembers = (Object.keys(component) as (keyof T)[])
-    .filter(key => component[key] instanceof Observable && !(component[key] instanceof EventEmitter));
-  return combineLatest(
-    keysOfObservableMembers.map(key => component[key] as any as Observable<any>)
+ export const combineComponentObservables = <T>(component: T, flag?: boolean): Observable<Observables<T>> & { value: Observables<T> } => {
+  const keysOfObservableMembers = Object.keys(component)
+    .filter(key => (component as any)[key] instanceof Observable && !((component as any)[key] instanceof EventEmitter));
+  const res = combineLatest(
+    keysOfObservableMembers.map(key => (component as any)[key] as Observable<any>)
   ).pipe(
     map(observers => {
-      const result = {} as { [key in keyof T]: Observable<any> };
+      const result = {} as {[key: string]: any};
       observers.forEach((obs, idx) => result[keysOfObservableMembers[idx]] = obs);
       (component as any).$observables = result;
-      return result as any as Observables<T>;
+      (res as any).value = result;
+      return result as Observables<T>;
     })
   );
+  return res as Observable<Observables<T>> & { value: Observables<T> };
 };
 
 @NgModule()
@@ -73,6 +72,7 @@ export class OlikNgModule {
       },
       future: {
         observeStatus: (future) => () => new Observable<any>(observer => {
+          observer.next({ error: null, isLoading: false, storeValue: future.read(), wasRejected: false, wasResolved: false });
           const subscription = future.onChange(v => observer.next(v));
           return () => subscription.unsubscribe();
         }),

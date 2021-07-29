@@ -104,9 +104,6 @@ export function createStoreCore<S, T extends Trackability>({
             read: array.read(context),
             stopBypassingPromises: () => array.stopBypassingPromises(context),
           } as ArrayOfObjectsAction<X, FindOrFilter, T>;
-          // if (augmentations.selection) {
-          //   (arrayActions as any)[augmentations.selection.name] = augmentations.selection.action(arrayActions as StoreOrDerivation<C>);
-          // }
           Object.keys(augmentations.selection).forEach(name => (arrayActions as any)[name] = augmentations.selection[name](arrayActions as StoreOrDerivation<C>));
           return arrayActions;
         };
@@ -129,9 +126,6 @@ export function createStoreCore<S, T extends Trackability>({
                 read: arrayCustom.read(context),
                 stopBypassingPromises: () => arrayCustom.stopBypassingPromises(context),
               };
-              // if (augmentations.selection) {
-              //   (elementActions as any)[augmentations.selection.name] = augmentations.selection.action(elementActions as StoreOrDerivation<C>);
-              // }
               Object.keys(augmentations.selection).forEach(name => (elementActions as any)[name] = augmentations.selection[name](elementActions as StoreOrDerivation<C>));
               return elementActions;
             }
@@ -187,9 +181,6 @@ export function createStoreCore<S, T extends Trackability>({
       dryRun: (dryRun: boolean) => storeState.dryRun = dryRun,
       changeListeners,
     } as unknown as StoreWhichIsNested<C>;
-    // if (augmentations.selection) {
-    //   (coreActions as any)[augmentations.selection.name] = augmentations.selection.action(coreActions);
-    // }
     Object.keys(augmentations.selection).forEach(name => (coreActions as any)[name] = augmentations.selection[name](coreActions as StoreOrDerivation<C>));
     return coreActions;
   };

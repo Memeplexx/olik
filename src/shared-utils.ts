@@ -243,7 +243,7 @@ export const processAsyncPayload = <S, C, X extends C & Array<any>, T extends Tr
     };
     const state = { storeValue: storeResult(selector as any).read(), error: null, isLoading: true, wasRejected: false, wasResolved: false } as FutureState<C>;
     const result = {
-      read: () => storeResult(s => (s as any)).read(),
+      read: () => storeResult(selector).read(),
       asPromise: () => promiseResult(),
       onChange: (fn) => {
         let subscribed = true;
