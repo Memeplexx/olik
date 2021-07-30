@@ -172,9 +172,7 @@ export const processAsyncPayload = <S, C, X extends C & Array<any>, T extends Tr
   suffix: string,
   storeState: StoreState<S>,
 ) => {
-  if (storeState.dryRun) {
-    return;
-  } else if (!!payload && typeof (payload) === 'function') {
+  if (!!payload && typeof (payload) === 'function') {
     if (libState.transactionState !== 'none') {
       libState.transactionState = 'none';
       throw new Error(errorMessages.PROMISES_NOT_ALLOWED_IN_TRANSACTIONS)
@@ -269,7 +267,6 @@ export const getSelectedStateFromOperationWithoutUpdatingStore = <S>(
   select: SelectorFromAStore<S>,
   operation: () => any,
 ): any => {
-  (select() as any).dryRun(true);
   operation();
   let result: any;
   const nested = select() as StoreWhichIsNested<any>;
@@ -278,6 +275,5 @@ export const getSelectedStateFromOperationWithoutUpdatingStore = <S>(
   } else {
     result = select((select() as any).getSelector()).read();
   }
-  (select() as any).dryRun(false);
   return result;
 }

@@ -62,7 +62,7 @@ export function createStoreCore<S, T extends Trackability>({
   let initialState = currentState;
   let devtoolsDispatchListener: ((action: { type: string, payload?: any }) => any) | undefined;
   const setDevtoolsDispatchListener = (listener: (action: { type: string, payload?: any }) => any) => devtoolsDispatchListener = listener;
-  const storeState = { bypassSelectorFunctionCheck: false, selector: null as any, activeFutures: {}, transactionActions: [], transactionState: 'none', transactionStartState: null, dryRun: false } as StoreState<S>;
+  const storeState = { bypassSelectorFunctionCheck: false, selector: null as any, activeFutures: {}, transactionActions: [], transactionState: 'none', transactionStartState: null } as StoreState<S>;
   const action = <C, X extends C & Array<any>>(selector: Selector<S, C, X>) => {
     const where = (type: FindOrFilter) => {
       const whereClauseSpecs = Array<{ filter: (arg: X[0]) => boolean, type: 'and' | 'or' | 'last' }>();
@@ -178,7 +178,6 @@ export function createStoreCore<S, T extends Trackability>({
         currentState = deepFreeze(state) as S;
       }) as StoreWhichMayContainNestedStores<S, C, T>['renew'],
       getSelector: () => storeState.selector,
-      dryRun: (dryRun: boolean) => storeState.dryRun = dryRun,
       changeListeners,
     } as unknown as StoreWhichIsNested<C>;
     Object.keys(augmentations.selection).forEach(name => (coreActions as any)[name] = augmentations.selection[name](coreActions as StoreOrDerivation<C>));

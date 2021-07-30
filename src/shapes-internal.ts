@@ -124,5 +124,4 @@ export type StoreState<S> = {
   activeFutures: { [key: string]: Future<any> },
   transactionActions: Array<{ type: string }>,
   transactionStartState: any,
-  dryRun: boolean,
 }
