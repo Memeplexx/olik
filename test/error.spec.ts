@@ -1,4 +1,4 @@
-import { createGlobalStore } from '../src/store-creators';
+import { createRootStore } from '../src/store-creators';
 import { errorMessages } from '../src/shared-consts';
 import { testState } from '../src/shared-state';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
@@ -8,33 +8,33 @@ describe('Error', () => {
   beforeAll(() => testState.windowObject = windowAugmentedWithReduxDevtoolsImpl);
 
   it('should throw an error when a method is invoked within a selector', () => {
-    const select = createGlobalStore({ arr: new Array<string>() });
+    const select = createRootStore({ arr: new Array<string>() });
     expect(() => {
       select(s => s.arr.some(e => true)).replace(false);
     }).toThrowError(errorMessages.ILLEGAL_CHARACTERS_WITHIN_SELECTOR('get'));
   })
 
   it('should throw an error when filter() is invoked within a selector', () => {
-    const select = createGlobalStore({ arr: new Array<string>() });
+    const select = createRootStore({ arr: new Array<string>() });
     expect(() => {
       select(s => s.arr.filter(e => true)).replaceAll([]);
     }).toThrowError(errorMessages.ILLEGAL_CHARACTERS_WITHIN_SELECTOR('get'));
   })
 
   it('should throw an error if the initial state has functions in it', () => {
-    expect(() => createGlobalStore({
+    expect(() => createRootStore({
       test: () => null,
     })).toThrowError(errorMessages.INVALID_STATE_INPUT);
   })
 
   it('should throw an error if the initial state has a set in it', () => {
-    expect(() => createGlobalStore({
+    expect(() => createRootStore({
       test: new Set(),
     })).toThrowError(errorMessages.INVALID_STATE_INPUT);
   })
 
   it('should throw an error if a function is invoked within a selector where the property is not an object', () => {
-    const select = createGlobalStore({ prop: 'a' });
+    const select = createRootStore({ prop: 'a' });
     expect(() => {
       select(s => s.prop.replace('', '')).replace('ss');
     }).toThrowError(errorMessages.ILLEGAL_CHARACTERS_WITHIN_SELECTOR('get'));

@@ -22,17 +22,17 @@ import { isEmpty } from './shared-utils';
  * @param options some additional configuration options
  * 
  * @example
- * const store = createGlobalStoreEnforcingTags({ prop: '' });
+ * const store = createRootStoreEnforcingTags({ prop: '' });
  * 
  * // Note that when updating state, we are now required to supply a string as the last argument (in this case 'MyComponent')
  * store.get(s => s.prop)                // type: 'prop.replace() [MyComponent]'
  *   .replace('test', 'MyComponent')  // replacement: 'test'
  */
-export function createGlobalStoreEnforcingTags<S>(
+export function createRootStoreEnforcingTags<S>(
   state: S,
   options: OptionsForMakingAGlobalStore = {},
 ) {
-  return createGlobalStoreInternal<S, 'tagged'>(state, { ...options, enforcesTags: true }) as SelectorFromAStoreEnforcingTags<S>;
+  return createRootStoreInternal<S, 'tagged'>(state, options) as SelectorFromAStoreEnforcingTags<S>;
 }
 
 /**
@@ -41,13 +41,13 @@ export function createGlobalStoreEnforcingTags<S>(
  * @param options some additional configuration options
  * 
  * @example
- * const store = createGlobalStore({ todos: Array<{ id: number, text: string }>() });
+ * const store = createRootStore({ todos: Array<{ id: number, text: string }>() });
  */
-export function createGlobalStore<S>(
+export function createRootStore<S>(
   state: S,
   options: OptionsForMakingAGlobalStore = {},
 ) {
-  return createGlobalStoreInternal<S, 'untagged'>(state, { ...options, enforcesTags: false }) as SelectorFromAStore<S>;
+  return createRootStoreInternal<S, 'untagged'>(state, options) as SelectorFromAStore<S>;
 }
 
 /**
@@ -108,7 +108,7 @@ export function createNestedStore<L>(
   return createNestedStoreInternal(state, options as OptionsForMakingANestedStore);
 }
 
-function createGlobalStoreInternal<S, T extends Trackability>(
+function createRootStoreInternal<S, T extends Trackability>(
   state: S,
   options: OptionsForCreatingInternalRootStore,
 ) {

@@ -1,5 +1,5 @@
 import { testState } from '../src/shared-state';
-import { createGlobalStore } from '../src/store-creators';
+import { createRootStore } from '../src/store-creators';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
 describe('array.whereMany().replace()', () => {
@@ -12,7 +12,7 @@ describe('array.whereMany().replace()', () => {
   };
 
   it('should eq()', () => {
-    const select = createGlobalStore(initialState);
+    const select = createRootStore(initialState);
     const payload = { id: 4, value: 'four' };
     select(s => s.array)
       .filterWhere(e => e.id).eq(2)
@@ -27,7 +27,7 @@ describe('array.whereMany().replace()', () => {
   })
 
   it('should ne()', () => {
-    const select = createGlobalStore(initialState);
+    const select = createRootStore(initialState);
     const payload = { id: 4, value: 'four' };
     select(s => s.array)
       .filterWhere(e => e.id).ne(2)
@@ -42,7 +42,7 @@ describe('array.whereMany().replace()', () => {
   })
 
   it('should gt()', () => {
-    const select = createGlobalStore(initialState);
+    const select = createRootStore(initialState);
     const payload = { id: 4, value: 'four' };
     select(s => s.array)
       .filterWhere(e => e.id).gt(1)
@@ -57,7 +57,7 @@ describe('array.whereMany().replace()', () => {
   })
 
   it('should gte()', () => {
-    const select = createGlobalStore(initialState);
+    const select = createRootStore(initialState);
     const payload = { id: 4, value: 'four' };
     select(s => s.array)
       .filterWhere(e => e.id).gte(1)
@@ -72,7 +72,7 @@ describe('array.whereMany().replace()', () => {
   })
 
   it('should lt()', () => {
-    const select = createGlobalStore(initialState);
+    const select = createRootStore(initialState);
     const payload = { id: 4, value: 'four' };
     select(s => s.array)
       .filterWhere(e => e.id).lt(2)
@@ -87,7 +87,7 @@ describe('array.whereMany().replace()', () => {
   })
 
   it('should lte()', () => {
-    const select = createGlobalStore(initialState);
+    const select = createRootStore(initialState);
     const payload = { id: 4, value: 'four' };
     select(s => s.array)
       .filterWhere(e => e.id).lte(2)
@@ -102,7 +102,7 @@ describe('array.whereMany().replace()', () => {
   })
 
   it('should in()', () => {
-    const select = createGlobalStore(initialState);
+    const select = createRootStore(initialState);
     const payload = { id: 4, value: 'four' };
     select(s => s.array)
       .filterWhere(e => e.id).in([1, 2])
@@ -117,7 +117,7 @@ describe('array.whereMany().replace()', () => {
   })
 
   it('should ni()', () => {
-    const select = createGlobalStore(initialState);
+    const select = createRootStore(initialState);
     const payload = { id: 4, value: 'four' };
     select(s => s.array)
       .filterWhere(e => e.id).ni([1, 2])
@@ -132,7 +132,7 @@ describe('array.whereMany().replace()', () => {
   })
 
   it('should match()', () => {
-    const select = createGlobalStore(initialState);
+    const select = createRootStore(initialState);
     const payload = { id: 4, value: 'four' };
     select(s => s.array)
       .filterWhere(e => e.value).matches(/^t/)

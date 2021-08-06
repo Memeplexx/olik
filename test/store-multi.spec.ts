@@ -1,6 +1,6 @@
 import { deriveFrom } from '../src/derive-from';
 import { testState } from '../src/shared-state';
-import { createGlobalStore } from '../src/store-creators';
+import { createRootStore } from '../src/store-creators';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
 describe('Multi-store', () => {
@@ -8,8 +8,8 @@ describe('Multi-store', () => {
   beforeAll(() => testState.windowObject = windowAugmentedWithReduxDevtoolsImpl);
 
   it('should support multiple stores', () => {
-    const store1 = createGlobalStore(new Array<string>());
-    const store2 = createGlobalStore(0);
+    const store1 = createRootStore(new Array<string>());
+    const store2 = createRootStore(0);
     store1().replaceAll(['one']);
     store2().replace(2);
     expect(store1().read()).toEqual(['one']);
@@ -17,8 +17,8 @@ describe('Multi-store', () => {
   })
 
   it('should memoise using multiple stores', () => {
-    const store1 = createGlobalStore({ array: new Array<number>(), string: '' });
-    const store2 = createGlobalStore({ number: 0 });
+    const store1 = createRootStore({ array: new Array<number>(), string: '' });
+    const store2 = createRootStore({ number: 0 });
     const mem = deriveFrom(
       store1(s => s.array),
       store2(s => s.number),

@@ -473,9 +473,9 @@ export type StoreForAnObject<C, T extends Trackability> = {
    * ***WARNING***: invoking this has the potentional to contradict the type-system.
    * Only use this to remove a property from an object of type of `{ [key: string]: any }` and NOT to remove a property from an object with statically defined properties eg `{ str: '', num: 0 }`
    * @example
-   * const store = createGlobalStore({ skillpoints: {} as {[name: string]: number} });
+   * const select = createRootStore({ skillpoints: {} as {[name: string]: number} });
    * 
-   * store.get(s => s.skillpoints)
+   * select(s => s.skillpoints)
    *   .remove('archery')
    */
   remove: <H extends (keyof C | (() => AnyAsync<keyof C>))>(key: H, options: ActionOptions<T>) => H extends (() => AnyAsync<keyof C>) ? Future<C> : void,
@@ -484,9 +484,9 @@ export type StoreForAnObject<C, T extends Trackability> = {
    * ***WARNING***: invoking this has the potentional to contradict the type-system.
    * Only use this to add properties to an object of type of `{ [key: string]: any }` and NOT to add properties with statically defined properties eg `{ str: '', num: 0 }`
    * @example
-   * const store = createGlobalStore({ skillpoints: {} as {[name: string]: number} });
+   * const select = createRootStore({ skillpoints: {} as {[name: string]: number} });
    * 
-   * store.get(s => s.skillpoints)
+   * select(s => s.skillpoints)
    *   .insert({ archery: 3, sorcery: 5 })
    */
   insert: <H extends { [key: string]: any } | (() => AnyAsync<{ [key: string]: any }>) >(insertion: H) => H extends (() => AnyAsync<{ [key: string]: any }>) ? Future<{ [key: string]: any }> : void,

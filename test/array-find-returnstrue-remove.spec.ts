@@ -1,5 +1,5 @@
 import { testState } from '../src/shared-state';
-import { createGlobalStore } from '../src/store-creators';
+import { createRootStore } from '../src/store-creators';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
 describe('array.findCustom().remove()', () => {
@@ -12,7 +12,7 @@ describe('array.findCustom().remove()', () => {
   };
 
   it('should eq()', () => {
-    const select = createGlobalStore(initialState);
+    const select = createRootStore(initialState);
     const where = (e: typeof initialState.array[0]) => e.id === 2;
     select(s => s.array)
       .findWhere(where).returnsTrue()
@@ -27,7 +27,7 @@ describe('array.findCustom().remove()', () => {
   })
 
   it('should ne()', () => {
-    const select = createGlobalStore(initialState);
+    const select = createRootStore(initialState);
     const where = (e: typeof initialState.array[0]) => e.id !== 2;
     select(s => s.array)
       .findWhere(where).returnsTrue()
@@ -42,7 +42,7 @@ describe('array.findCustom().remove()', () => {
   })
 
   it('should gt()', () => {
-    const select = createGlobalStore(initialState);
+    const select = createRootStore(initialState);
     const where = (e: typeof initialState.array[0]) => e.id > 1;
     select(s => s.array)
       .findWhere(where).returnsTrue()
@@ -57,7 +57,7 @@ describe('array.findCustom().remove()', () => {
   })
 
   it('should lt()', () => {
-    const select = createGlobalStore(initialState);
+    const select = createRootStore(initialState);
     const where = (e: typeof initialState.array[0]) => e.id < 2;
     select(s => s.array)
       .findWhere(where).returnsTrue()
@@ -72,7 +72,7 @@ describe('array.findCustom().remove()', () => {
   })
 
   it('should in()', () => {
-    const select = createGlobalStore(initialState);
+    const select = createRootStore(initialState);
     const where = (e: typeof initialState.array[0]) => [1, 2].includes(e.id);
     select(s => s.array)
       .findWhere(where).returnsTrue()
@@ -87,7 +87,7 @@ describe('array.findCustom().remove()', () => {
   })
 
   it('should ni()', () => {
-    const select = createGlobalStore(initialState);
+    const select = createRootStore(initialState);
     const where = (e: typeof initialState.array[0]) => ![1, 2].includes(e.id);
     select(s => s.array)
       .findWhere(where).returnsTrue()
@@ -102,7 +102,7 @@ describe('array.findCustom().remove()', () => {
   })
 
   it('should match()', () => {
-    const select = createGlobalStore(initialState);
+    const select = createRootStore(initialState);
     const where = (e: typeof initialState.array[0]) => /^t/.test(e.value);
     select(s => s.array)
       .findWhere(where).returnsTrue()

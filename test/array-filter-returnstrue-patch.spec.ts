@@ -1,5 +1,5 @@
 import { testState } from '../src/shared-state';
-import { createGlobalStore } from '../src/store-creators';
+import { createRootStore } from '../src/store-creators';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
 describe('array.filterCustom().patch()', () => {
@@ -12,7 +12,7 @@ describe('array.filterCustom().patch()', () => {
   };
 
   it('should eq()', () => {
-    const select = createGlobalStore(initialState);
+    const select = createRootStore(initialState);
     const payload = { value: 'new' };
     const where = (e: typeof initialState['array'][0]) => e.id === 2;
     select(s => s.array)
@@ -28,7 +28,7 @@ describe('array.filterCustom().patch()', () => {
   })
 
   it('should ne()', () => {
-    const select = createGlobalStore(initialState);
+    const select = createRootStore(initialState);
     const payload = { value: 'four' };
     const where = (e: typeof initialState['array'][0]) => e.id !== 2;
     select(s => s.array)
@@ -44,7 +44,7 @@ describe('array.filterCustom().patch()', () => {
   })
 
   it('should gt()', () => {
-    const select = createGlobalStore(initialState);
+    const select = createRootStore(initialState);
     const payload = { value: 'four' };
     const where = (e: typeof initialState['array'][0]) => e.id > 1;
     select(s => s.array)
@@ -60,7 +60,7 @@ describe('array.filterCustom().patch()', () => {
   })
 
   it('should lt()', () => {
-    const select = createGlobalStore(initialState);
+    const select = createRootStore(initialState);
     const payload = { value: 'four' };
     const where = (e: typeof initialState['array'][0]) => e.id < 2;
     select(s => s.array)
@@ -76,7 +76,7 @@ describe('array.filterCustom().patch()', () => {
   })
 
   it('should in()', () => {
-    const select = createGlobalStore(initialState);
+    const select = createRootStore(initialState);
     const payload = { id: 4, value: 'four' };
     const where = (e: typeof initialState['array'][0]) => [1, 2].includes(e.id);
     select(s => s.array)
@@ -92,7 +92,7 @@ describe('array.filterCustom().patch()', () => {
   })
 
   it('should ni()', () => {
-    const select = createGlobalStore(initialState);
+    const select = createRootStore(initialState);
     const payload = { value: 'four' };
     const where = (e: typeof initialState['array'][0]) => ![1, 2].includes(e.id);
     select(s => s.array)
@@ -108,7 +108,7 @@ describe('array.filterCustom().patch()', () => {
   })
 
   it('should match()', () => {
-    const select = createGlobalStore(initialState);
+    const select = createRootStore(initialState);
     const payload = { value: 'four' };
     const where = (e: typeof initialState['array'][0]) => /^t/.test(e.value);
     select(s => s.array)

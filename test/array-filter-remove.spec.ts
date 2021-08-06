@@ -1,5 +1,5 @@
 import { testState } from '../src/shared-state';
-import { createGlobalStore } from '../src/store-creators';
+import { createRootStore } from '../src/store-creators';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
 describe('array.filter().remove()', () => {
@@ -12,7 +12,7 @@ describe('array.filter().remove()', () => {
   };
 
   it('should eq()', () => {
-    const select = createGlobalStore(initialState);
+    const select = createRootStore(initialState);
     select(s => s.array)
       .filterWhere(e => e.id).eq(2)
       .remove({  });
@@ -26,7 +26,7 @@ describe('array.filter().remove()', () => {
   })
 
   it('should ne()', () => {
-    const select = createGlobalStore(initialState);
+    const select = createRootStore(initialState);
     select(s => s.array)
       .filterWhere(e => e.id).ne(2)
       .remove();
@@ -40,7 +40,7 @@ describe('array.filter().remove()', () => {
   })
 
   it('should gt()', () => {
-    const select = createGlobalStore(initialState);
+    const select = createRootStore(initialState);
     select(s => s.array)
       .filterWhere(e => e.id).gt(1)
       .remove();
@@ -54,7 +54,7 @@ describe('array.filter().remove()', () => {
   })
 
   it('should gte()', () => {
-    const select = createGlobalStore(initialState);
+    const select = createRootStore(initialState);
     select(s => s.array)
       .filterWhere(e => e.id).gte(2)
       .remove();
@@ -68,7 +68,7 @@ describe('array.filter().remove()', () => {
   })
 
   it('should lt()', () => {
-    const select = createGlobalStore(initialState);
+    const select = createRootStore(initialState);
     select(s => s.array)
       .filterWhere(e => e.id).lt(2)
       .remove();
@@ -82,7 +82,7 @@ describe('array.filter().remove()', () => {
   })
 
   it('should lte()', () => {
-    const select = createGlobalStore(initialState);
+    const select = createRootStore(initialState);
     select(s => s.array)
       .filterWhere(e => e.id).lte(2)
       .remove();
@@ -96,7 +96,7 @@ describe('array.filter().remove()', () => {
   })
 
   it('should in()', () => {
-    const select = createGlobalStore(initialState);
+    const select = createRootStore(initialState);
     select(s => s.array)
       .filterWhere(e => e.id).in([1, 2])
       .remove();
@@ -110,7 +110,7 @@ describe('array.filter().remove()', () => {
   })
 
   it('should ni()', () => {
-    const select = createGlobalStore(initialState);
+    const select = createRootStore(initialState);
     select(s => s.array)
       .filterWhere(e => e.id).ni([1, 2])
       .remove();
@@ -124,7 +124,7 @@ describe('array.filter().remove()', () => {
   })
 
   it('should match()', () => {
-    const select = createGlobalStore(initialState);
+    const select = createRootStore(initialState);
     select(s => s.array)
       .filterWhere(e => e.value).matches(/^t/)
       .remove();

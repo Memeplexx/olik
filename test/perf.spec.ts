@@ -2,7 +2,7 @@ import { produce } from 'immer';
 import { fromJS } from 'immutable';
 
 import { testState } from '../src/shared-state';
-import { createGlobalStore } from '../src/store-creators';
+import { createRootStore } from '../src/store-creators';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
 describe.skip('Perf', () => {
@@ -29,7 +29,7 @@ describe.skip('Perf', () => {
   })
 
   it('should test outlik perf', () => {
-    const select = createGlobalStore({
+    const select = createRootStore({
       anotherProp: {
         some: {
           deeply: {
@@ -83,7 +83,7 @@ describe.skip('Perf', () => {
 
   it('should test olik perf', () => {
     const initialState = { height: 0, width: 0 };
-    const select = createGlobalStore(initialState)
+    const select = createRootStore(initialState)
     const before = performance.now();
     for (let i = 0; i < 100; i++) {
       select(s => s.width).replace(
@@ -205,7 +205,7 @@ describe.skip('Perf', () => {
   });
 
   it('should test Olik array push perf', () => {
-    const select = createGlobalStore(['one', 'two']);
+    const select = createRootStore(['one', 'two']);
     const before = performance.now();
     for (let i = 0; i < 100; i++) {
       select().insert(['three']);

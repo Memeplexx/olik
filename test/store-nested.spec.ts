@@ -1,7 +1,7 @@
 import { Deferred } from '../src/shapes-external';
 import { errorMessages } from '../src/shared-consts';
 import { libState, testState } from '../src/shared-state';
-import { createGlobalStore, createNestedStore } from '../src/store-creators';
+import { createRootStore, createNestedStore } from '../src/store-creators';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
 describe('Nested', () => {
@@ -25,7 +25,7 @@ describe('Nested', () => {
     const initialStateComp = {
       one: ''
     };
-    const select = createGlobalStore(initialState);
+    const select = createRootStore(initialState);
     const componentName = 'myComp';
     const instanceName = '0';
     createNestedStore(initialStateComp, { componentName, instanceName });
@@ -37,7 +37,7 @@ describe('Nested', () => {
       test: '',
       nested: {},
     };
-    createGlobalStore(initialState);
+    createRootStore(initialState);
     const componentName = 'myComp';
     const instanceName = '0';
     const nestedStore1 = createNestedStore({ one: '' }, { componentName, instanceName });
@@ -55,7 +55,7 @@ describe('Nested', () => {
       test: '',
       nested: {} as { myComp: { [key: string]: { one: string } } },
     };
-    const parent = createGlobalStore(initialState);
+    const parent = createRootStore(initialState);
     const componentName = 'myComp';
     const instanceName = '0';
     const nestedStore1 = createNestedStore({ one: '' }, { componentName, instanceName });
@@ -68,7 +68,7 @@ describe('Nested', () => {
     const initialState = {
       test: '',
     };
-    const select = createGlobalStore(initialState);
+    const select = createRootStore(initialState);
     const componentName = 'myComp';
     const instanceName = '0';
     const nested1 = createNestedStore({ one: '' }, { componentName, instanceName });
@@ -81,7 +81,7 @@ describe('Nested', () => {
     const initialState = {
       test: '',
     };
-    const select = createGlobalStore(initialState);
+    const select = createRootStore(initialState);
     const componentName = 'myComp';
     const nested1 = createNestedStore({ one: '' }, { componentName, instanceName: '0' });
     const nested2 = createNestedStore({ one: '' }, { componentName, instanceName: '1' });
@@ -96,7 +96,7 @@ describe('Nested', () => {
     const initialState = {
       test: '',
     };
-    const select = createGlobalStore(initialState);
+    const select = createRootStore(initialState);
     const componentName = 'myComp';
     const nested1 = createNestedStore({ one: '' }, { componentName, instanceName: '0' });
     nested1(s => s.one).replace('test1');
@@ -109,7 +109,7 @@ describe('Nested', () => {
     const initialState = {
       test: '',
     };
-    const select = createGlobalStore(initialState);
+    const select = createRootStore(initialState);
     const componentName = 'myComp';
     const instanceName = '0';
     const nested = createNestedStore(new Array<string>(), { componentName, instanceName });
@@ -121,7 +121,7 @@ describe('Nested', () => {
     const initialState = {
       test: '',
     };
-    const select = createGlobalStore(initialState);
+    const select = createRootStore(initialState);
     const componentName = 'myComp';
     const instanceName = '0';
     const nested = createNestedStore(0, { componentName, instanceName });
@@ -133,7 +133,7 @@ describe('Nested', () => {
     const initialState = {
       test: '',
     };
-    const select = createGlobalStore(initialState);
+    const select = createRootStore(initialState);
     const componentName = 'myComp';
     const instanceName = '0';
     createNestedStore(0, { componentName, instanceName });
@@ -143,12 +143,12 @@ describe('Nested', () => {
   })
 
   it('should throw an error if the containing stores state is a primitive', () => {
-    createGlobalStore(0);
+    createRootStore(0);
     expect(() => createNestedStore(0, { componentName: 'test', instanceName: '0' })).toThrowError(errorMessages.INVALID_CONTAINER_FOR_NESTED_STORES);
   })
 
   it('should throw an error if the containing stores state is an array', () => {
-    createGlobalStore(new Array<string>());
+    createRootStore(new Array<string>());
     expect(() => createNestedStore(0, { componentName: 'test', instanceName: '0' })).toThrowError(errorMessages.INVALID_CONTAINER_FOR_NESTED_STORES);
   })
 
@@ -156,7 +156,7 @@ describe('Nested', () => {
     const initialState = {
       test: '',
     };
-    const select = createGlobalStore(initialState);
+    const select = createRootStore(initialState);
     const instanceName = '0';
     const componentName = 'myComp';
     createNestedStore(0, { componentName, instanceName });
@@ -170,7 +170,7 @@ describe('Nested', () => {
     const initialState = {
       test: '',
     };
-    const select = createGlobalStore(initialState);
+    const select = createRootStore(initialState);
     const componentName = 'myComp';
     const instanceName = '0';
     const nested = createNestedStore(0, { componentName, instanceName });
@@ -195,7 +195,7 @@ describe('Nested', () => {
   });
 
   it('should be able to support a custom instance name', () => {
-    const parent = createGlobalStore({ hello: '' });
+    const parent = createRootStore({ hello: '' });
     const componentName = 'MyComponent';
     const instanceName = 'test';
     createNestedStore({ num: 0 }, { componentName, instanceName });
@@ -203,7 +203,7 @@ describe('Nested', () => {
   })
 
   it('should be able to reset a nested store inner property', () => {
-    const parent = createGlobalStore({ test: '' });
+    const parent = createRootStore({ test: '' });
     parent(s => s.test).replace('test');
     const nested = createNestedStore({ array: new Array<string>() }, { componentName: 'test', instanceName: '0' });
     nested(s => s.array).insert('test');
@@ -225,7 +225,7 @@ describe('Nested', () => {
     const initialRootState = { hello: 'hey' };
     const componentName = 'MyComponent';
     const instanceName = 'MyInstance';
-    const root = createGlobalStore(initialRootState);
+    const root = createRootStore(initialRootState);
     const child = createNestedStore({ val: 0 }, { componentName, instanceName: Deferred });
     let count = 0;
     child().onChange(val => {
@@ -259,7 +259,7 @@ describe('Nested', () => {
     const initialRootState = { hello: 'hey' };
     const componentName = 'MyComponent';
     const instanceName = 'MyInstance';
-    const root = createGlobalStore(initialRootState);
+    const root = createRootStore(initialRootState);
     const child = createNestedStore({ val: 0 }, { componentName, instanceName: Deferred });
     let count = 0;
     child(s => s.val).onChange(val => {

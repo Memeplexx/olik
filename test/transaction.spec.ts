@@ -1,4 +1,4 @@
-import { createGlobalStore, transact } from '../src';
+import { createRootStore, transact } from '../src';
 import { testState } from '../src/shared-state';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
@@ -7,7 +7,7 @@ describe('Transact', () => {
   beforeAll(() => testState.windowObject = windowAugmentedWithReduxDevtoolsImpl);
 
   it('should perform a transaction', () => {
-    const select = createGlobalStore({ hello: '', world: new Array<string>(), some: { deep: { val: false } } });
+    const select = createRootStore({ hello: '', world: new Array<string>(), some: { deep: { val: false } } });
     let changeCount = 0;
     select().onChange(s => changeCount++);
     transact(

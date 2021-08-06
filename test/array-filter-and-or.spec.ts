@@ -1,5 +1,5 @@
 import { testState } from '../src/shared-state';
-import { createGlobalStore } from '../src/store-creators';
+import { createRootStore } from '../src/store-creators';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
 describe('array.filter().and().or()', () => {
@@ -12,7 +12,7 @@ describe('array.filter().and().or()', () => {
   };
 
   it('should eq().and().eq()', () => {
-    const select = createGlobalStore(initialState);
+    const select = createRootStore(initialState);
     select(s => s.array)
       .filterWhere(s => s.id).eq(2)
       .andWhere(s => s.value).eq('two')
@@ -27,7 +27,7 @@ describe('array.filter().and().or()', () => {
   })
 
   it('should eq().or().eq()', () => {
-    const select = createGlobalStore(initialState);
+    const select = createRootStore(initialState);
     select(s => s.array)
       .filterWhere(s => s.id).eq(1)
       .orWhere(s => s.value).eq('two')
@@ -42,7 +42,7 @@ describe('array.filter().and().or()', () => {
   })
 
   it('should eq().and().eq() not matching', () => {
-    const select = createGlobalStore(initialState);
+    const select = createRootStore(initialState);
     select(s => s.array)
       .filterWhere(s => s.id).eq(1)
       .andWhere(s => s.id).eq(2)
@@ -57,7 +57,7 @@ describe('array.filter().and().or()', () => {
   })
 
   it('should eq().and().eq().or().eq()', () => {
-    const select = createGlobalStore(initialState);
+    const select = createRootStore(initialState);
     select(s => s.array)
       .filterWhere(e => e.id).eq(1)
       .andWhere(e => e.id).eq(2)
@@ -73,7 +73,7 @@ describe('array.filter().and().or()', () => {
   })
 
   it('should eq().or().eq().and().eq()', () => {
-    const select = createGlobalStore(initialState);
+    const select = createRootStore(initialState);
     select(s => s.array)
       .filterWhere(e => e.id).eq(4)
       .orWhere(e => e.id).eq(3)
@@ -89,7 +89,7 @@ describe('array.filter().and().or()', () => {
   })
 
   it('should eq().and().eq().or().eq().and().eq()', () => {
-    const select = createGlobalStore(initialState);
+    const select = createRootStore(initialState);
     select(s => s.array)
       .filterWhere(e => e.id).eq(1)
       .andWhere(e => e.value).eq('one')

@@ -1,5 +1,5 @@
 import { testState } from '../src/shared-state';
-import { createGlobalStore } from '../src/store-creators';
+import { createRootStore } from '../src/store-creators';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
 describe('Root', () => {
@@ -7,7 +7,7 @@ describe('Root', () => {
   beforeAll(() => testState.windowObject = windowAugmentedWithReduxDevtoolsImpl);
 
   it('object.replace()', () => {
-    const select = createGlobalStore({ hello: 'world', another: new Array<string>() });
+    const select = createRootStore({ hello: 'world', another: new Array<string>() });
     const payload = { hello: 'test', another: ['test'] };
     select().replace(payload);
     expect(testState.currentAction).toEqual({
@@ -19,7 +19,7 @@ describe('Root', () => {
   })
 
   it('object.property.update()', () => {
-    const select = createGlobalStore({ x: 0, y: 0 });
+    const select = createRootStore({ x: 0, y: 0 });
     const payload = 3;
     select(s => s.x)
       .replace(payload);
@@ -32,7 +32,7 @@ describe('Root', () => {
   })
 
   it('array.insert()', () => {
-    const select = createGlobalStore(new Array<{ id: number, text: string }>());
+    const select = createRootStore(new Array<{ id: number, text: string }>());
     const payload = [{ id: 1, text: 'hello' }];
     select().insert(payload);
     expect(testState.currentAction).toEqual({
@@ -44,7 +44,7 @@ describe('Root', () => {
   })
 
   it('number.replace()', () => {
-    const select = createGlobalStore(0);
+    const select = createRootStore(0);
     const payload = 3;
     select().replace(payload);
     expect(testState.currentAction).toEqual({
@@ -56,7 +56,7 @@ describe('Root', () => {
   })
 
   it('boolean.replace()', () => {
-    const select = createGlobalStore(false);
+    const select = createRootStore(false);
     const payload = true;
     select().replace(payload);
     expect(testState.currentAction).toEqual({
@@ -69,7 +69,7 @@ describe('Root', () => {
 
   it('union.replace()', () => {
     type union = 'one' | 'two';
-    const select = createGlobalStore('one' as union);
+    const select = createRootStore('one' as union);
     const payload = 'two' as union;
     select().replace(payload);
     expect(testState.currentAction).toEqual({
@@ -81,7 +81,7 @@ describe('Root', () => {
   })
 
   it('string.replace()', () => {
-    const select = createGlobalStore('');
+    const select = createRootStore('');
     const payload = 'test';
     select().replace(payload);
     expect(testState.currentAction).toEqual({
@@ -93,7 +93,7 @@ describe('Root', () => {
   })
 
   it('replaceAll()', () => {
-    const select = createGlobalStore(['one', 'two', 'three']);
+    const select = createRootStore(['one', 'two', 'three']);
     const payload = ['four', 'five', 'six', 'seven'];
     select().replaceAll(payload);
     expect(testState.currentAction).toEqual({
@@ -105,7 +105,7 @@ describe('Root', () => {
   })
 
   it('find().replace()', () => {
-    const select = createGlobalStore(['one', 'two', 'three']);
+    const select = createRootStore(['one', 'two', 'three']);
     const payload = 'twoo';
     select()
       .findWhere().eq('two')
@@ -120,7 +120,7 @@ describe('Root', () => {
   })
 
   it('insert()', () => {
-    const select = createGlobalStore(['one']);
+    const select = createRootStore(['one']);
     select().insert('two');
     expect(testState.currentAction).toEqual({
       type: 'insert()',
@@ -131,7 +131,7 @@ describe('Root', () => {
   })
 
   it('find().replace()', () => {
-    const select = createGlobalStore(['hello']);
+    const select = createRootStore(['hello']);
     select().findWhere().matches(/^h/).replace('another')
     expect(testState.currentAction).toEqual({
       type: 'find().replace()',

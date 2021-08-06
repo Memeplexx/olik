@@ -103,7 +103,6 @@ export type PreviousAction = {
 };
 
 export type OptionsForCreatingInternalRootStore = {
-  enforcesTags: boolean,
   devtools?: OptionsForReduxDevtools | false,
   tagSanitizer?: (tag: string) => string,
   tagsToAppearInType?: boolean,

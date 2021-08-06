@@ -1,7 +1,7 @@
 export const errorMessages = {
   DEVTOOL_DISPATCHED_INVALID_JSON: 'Please dispatch a valid object and ensure that all keys are enclosed in double-quotes',
   DEVTOOL_DISPATCHED_WITH_NO_ACTION: (type: string) => `Cannot dispatch ${type} because there is no action to perform, eg. replace()`,
-  DEVTOOL_CANNOT_FIND_EXTENSION: 'Cannot find Redux Devtools Extension. Please install it in your browser or else turn it off when creating your store as follows: `createGlobalStore(..., { devtools: false })`.',
+  DEVTOOL_CANNOT_FIND_EXTENSION: 'Cannot find Redux Devtools Extension. Please install it in your browser or else turn it off when creating your store as follows: `createRootStore(..., { devtools: false })`.',
   INVALID_CONTAINER_FOR_NESTED_STORES: `Could not to attach a nested store to your application store because the root of your application store is either a primitive or an array`,
   INVALID_CONTAINER_FOR_CACHED_DATA: `If you want to support caching, then your stores initial state cannot be a primitive or an array`,
   PROMISES_NOT_ALLOWED_IN_TRANSACTIONS: `Transactions do not currently support asynchronous payloads (functions returning promises)`,
