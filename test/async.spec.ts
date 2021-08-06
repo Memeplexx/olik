@@ -8,7 +8,7 @@ describe('async', () => {
 
   beforeAll(() => testState.windowObject = windowAugmentedWithReduxDevtoolsImpl);
 
-  beforeEach(() => libState.componentContainerStore = null);
+  beforeEach(() => libState.rootStore = null);
 
   const initialState = {
     object: { property: '', property2: '' },

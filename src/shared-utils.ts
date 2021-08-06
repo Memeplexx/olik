@@ -260,20 +260,35 @@ export const processAsyncPayload = <S, C, X extends C & Array<any>, T extends Tr
   }
 }
 
-/**
- * To be used by framework bindings to determine what state was selected without actually performing a state update
- */
-export const getSelectedStateFromOperationWithoutUpdatingStore = <S>(
-  select: SelectorFromAStore<S>,
-  operation: () => any,
-): any => {
-  operation();
-  let result: any;
-  const componentStore = select() as StoreForAComponent<any>;
-  if (!!(componentStore as any).isComponentStore && libState.componentContainerStore) {
-    result = libState.componentContainerStore((select() as any).getSelector()).read();
-  } else {
-    result = select((select() as any).getSelector()).read();
+const isObject = <S>(item: S) => (item && typeof item === 'object' && !Array.isArray(item));
+
+export const mergeDeepImmutable = <S>(target: S, source: S) => {
+  let output = Object.assign({}, target);
+  if (isObject(target) && isObject(source)) {
+    (Object.keys(source) as Array<keyof S>).forEach(key => {
+      if (isObject(source[key])) {
+        if (!(key in target)) {
+          Object.assign(output, { [key]: source[key] });
+        } else {
+          output[key] = mergeDeepImmutable(target[key], source[key]);
+        }
+      } else {
+        Object.assign(output, { [key]: source[key] });
+      }
+    });
   }
-  return result;
+  return output;
+}
+
+export const mergeDeepMutable = <S>(target: S, source: S) => {
+  if (isObject(target) && isObject(source)) {
+    for (const key in source) {
+      if (isObject(source[key])) {
+        if (!target[key]) Object.assign(target, { [key]: {} });
+        mergeDeepMutable(target[key], source[key]);
+      } else {
+        Object.assign(target, { [key]: source[key] });
+      }
+    }
+  }
 }

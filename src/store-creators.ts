@@ -8,6 +8,7 @@ import {
   SelectorFromAStoreEnforcingTags,
   StoreForAComponent,
   Trackability,
+  DeepReadonly,
 } from './shapes-external';
 import { OptionsForCreatingInternalRootStore, StoreForAComponentInternal } from './shapes-internal';
 import { errorMessages } from './shared-consts';
@@ -50,12 +51,6 @@ export function createRootStore<S>(
   return createRootStoreInternal<S, 'untagged'>(state, options) as SelectorFromAStore<S>;
 }
 
-export function createModuleStore<S>(
-  state: S,
-) {
-
-}
-
 /**
  * Creates a new store which is nestable within inside your application store.
  * If you have already created an application store then this store will be automatically nested within that store, under the property `components`.
@@ -81,13 +76,13 @@ export function createComponentStore<L>(
   if (options.instanceName === Deferred) {
     const nStore = createStoreCore<L, 'untagged'>({
       state,
-      devtools: (!libState.componentContainerStore || options.dontTrackWithDevtools) ? false : {
+      devtools: (!libState.rootStore || options.dontTrackWithDevtools) ? false : {
         name: options.componentName
       }
     });
     const select = (<C = L>(selector?: (arg: L) => C) => {
-      const cStore = selector ? nStore(selector as any) : nStore();
-      (cStore as any).isComponentStore = true;
+      const cStore: StoreForAComponentInternal<L, C> = selector ? nStore(selector as any) : nStore();
+      cStore.isComponentStore = true;
       cStore.detachFromRootStore = () => { /* This is a no-op */ };
       cStore.setInstanceName = (instanceName: string) => {
         if (options.instanceName !== Deferred) { throw new Error(errorMessages.CANNOT_CHANGE_INSTANCE_NAME); }
@@ -96,7 +91,7 @@ export function createComponentStore<L>(
         // get all changeListeners from component store and set them on container store
         Array.from(((nStore() as any).changeListeners as Map<(ar: any) => any, (arg: any) => any>).entries())
           .forEach(([performAction, selector]) =>
-            libState.componentContainerStore!(s => selector(s.components[options.componentName][options.instanceName])).onChange(performAction))
+            libState.rootStore!(s => selector(s.components[options.componentName][options.instanceName])).onChange(performAction))
       }
       if (options.instanceName !== Deferred) {
         return getComponentStoreWithinContainerStore(state, options, selector);
@@ -107,7 +102,7 @@ export function createComponentStore<L>(
     return select as SelectorFromAComponentStore<L>;
   }
 
-  if (!libState.componentContainerStore) {
+  if (!libState.rootStore) {
     return createDetatchedComponentStore(state, options);
   }
 
@@ -118,12 +113,19 @@ function createRootStoreInternal<S, T extends Trackability>(
   state: S,
   options: OptionsForCreatingInternalRootStore,
 ) {
-  const get = createStoreCore<S, T>({
-    state, devtools: options.devtools === undefined ? {} : options.devtools,
-    tagSanitizer: options.tagSanitizer, tagsToAppearInType: options.tagsToAppearInType
+  const devtools = options.devtools === undefined ? {} : options.devtools;
+  if (options.mergeIntoExistingStoreIfItExists && libState.rootStore) {
+    libState.rootStore().deepMerge(state);
+    return libState.rootStore;
+  }
+  const select = createStoreCore<S, T>({
+    state,
+    devtools,
+    tagSanitizer: options.tagSanitizer,
+    tagsToAppearInType: options.tagsToAppearInType
   });
-  libState.componentContainerStore = get as any;
-  return get;
+  libState.rootStore = select;
+  return select;
 }
 
 function getComponentStoreWithinContainerStore<L, C = L>(
@@ -131,19 +133,19 @@ function getComponentStoreWithinContainerStore<L, C = L>(
   options: OptionsForMakingAComponentStore,
   selector?: (arg: L) => C
 ) {
-  const cStore = libState.componentContainerStore!(s => {
+  const cStore = libState.rootStore!(s => {
     const nState = s.components[options.componentName][options.instanceName!];
     return selector ? selector(nState) : nState;
   }) as any as StoreForAComponentInternal<L, C>;
   cStore.reset = cStore.defineReset(state, selector);
   cStore.isComponentStore = true;
   cStore.detachFromRootStore = () => {
-    if (!libState.componentContainerStore) { return; }
-    const state = libState.componentContainerStore().read().components[options.componentName];
+    if (!libState.rootStore) { return; }
+    const state = libState.rootStore().read().components[options.componentName];
     if ((Object.keys(state).length === 1) && state[options.instanceName!]) {
-      libState.componentContainerStore(s => s.components).remove(options.componentName);
+      libState.rootStore(s => s.components).remove(options.componentName);
     } else {
-      libState.componentContainerStore(s => s.components[options.componentName]).remove(options.instanceName!);
+      libState.rootStore(s => s.components[options.componentName]).remove(options.instanceName!);
     }
   }
   return cStore as StoreForAComponent<C>;
@@ -159,12 +161,12 @@ function createDetatchedComponentStore<L>(
       name: options.componentName + ' : ' + (options.instanceName as string)
     }
   });
-  const get = (<C = L>(selector?: (arg: L) => C) => {
-    const cStore = selector ? nStore(selector as any) : nStore();
+  const get = (<C = L>(selector?: (arg: DeepReadonly<L>) => C) => {
+    const cStore = selector ? nStore(selector) : nStore();
     cStore.isComponentStore = true;
     cStore.detachFromRootStore = () => { /* This is a no-op */ };
     cStore.setInstanceName = () => { /* This is a no-op */ }
-    return cStore as any as StoreForAComponent<C>;
+    return cStore as StoreForAComponent<C>;
   });
   return get as SelectorFromAComponentStore<L>;
 }
@@ -174,7 +176,7 @@ function createComponentStoreInternal<L>(
   options: OptionsForMakingAComponentStore,
 ) {
   // At this point, we've established that an app-store exists
-  const containerStore = libState.componentContainerStore!();
+  const containerStore = libState.rootStore!();
   const wrapperState = containerStore.read();
 
   // If a component store with the same componentName and instanceName has not been added to the app-store, then add it now
@@ -202,7 +204,7 @@ function createComponentStoreInternal<L>(
         }
       });
     } else if (!wrapperState.components[options.componentName]) {
-      libState.componentContainerStore!(s => s.components).patch({
+      libState.rootStore!(s => s.components).patch({
         [options.componentName]: {
           [options.instanceName!]: state
         }
@@ -217,7 +219,7 @@ function createComponentStoreInternal<L>(
         }
       });
     } else {
-      libState.componentContainerStore!(s => s.components[options.componentName]).patch({
+      libState.rootStore!(s => s.components[options.componentName]).patch({
         [options.instanceName!]: state
       });
       containerStore.renew({

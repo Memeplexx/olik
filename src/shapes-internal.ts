@@ -106,6 +106,7 @@ export type OptionsForCreatingInternalRootStore = {
   devtools?: OptionsForReduxDevtools | false,
   tagSanitizer?: (tag: string) => string,
   tagsToAppearInType?: boolean,
+  mergeIntoExistingStoreIfItExists?: boolean,
 };
 
 /**

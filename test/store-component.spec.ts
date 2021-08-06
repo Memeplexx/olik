@@ -13,7 +13,6 @@ describe('Component stores', () => {
   });
 
   beforeEach(() => {
-    libState.storesRegisteredWithDevtools = {};
     spyInfo.mockReset();
   });
 
@@ -183,7 +182,7 @@ describe('Component stores', () => {
   })
 
   it('should work without a container store', () => {
-    libState.componentContainerStore = null;
+    libState.rootStore = null;
     const component = createComponentStore({
       object: { property: 'a' },
       array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],

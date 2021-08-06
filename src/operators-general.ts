@@ -18,6 +18,8 @@ import {
   deepCopy,
   deepFreeze,
   isEmpty,
+  mergeDeepImmutable,
+  mergeDeepMutable,
   processAsyncPayload,
   validateSelectorFn,
 } from './shared-utils';
@@ -127,6 +129,27 @@ export const remove = <S, C, X extends C & Array<any>, T extends Trackability>(
   });
   return processAsyncPayload(selector, payload, pathReader, storeResult, processPayload, updateOptions as UpdateOptions<T, any>, 'remove()', storeState);
 }) as StoreForAnObject<C, T>['remove'];
+
+
+export const deepMerge = <S, C, X extends C & Array<any>, T extends Trackability>(
+  { selector, isComponentStore, storeState, pathReader, updateState, storeResult }: CoreActionsState<S, C, X, T>,
+) => ((
+  payload: C | (() => Promise<C>),
+  updateOptions: UpdateOptions<T, any>,
+  ) => {
+    validateSelector(selector, isComponentStore, storeState);
+    const processPayload = (payload: any) => updateState({
+      selector,
+      replacer: old => mergeDeepImmutable(old, payload),
+      mutator: old => mergeDeepMutable(old, payload),
+      actionName: 'deepMerge()',
+      payload: {
+        toMerge: payload,
+      },
+      updateOptions,
+    });
+    return processAsyncPayload(selector, payload, pathReader, storeResult, processPayload, updateOptions as UpdateOptions<T, any>, 'deepMerge()', storeState);
+  }) as StoreForAnObject<C, T>['deepMerge'];
 
 export const upsertMatching = <S, C, X extends C & Array<any>, T extends Trackability>(
   { selector, isComponentStore, storeState, getCurrentState, updateState, pathReader, storeResult }: CoreActionsState<S, C, X, T>

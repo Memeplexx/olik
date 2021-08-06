@@ -20,8 +20,7 @@ export function integrateStoreWithReduxDevtools<S, C = S>(
   if (!options.name) {
     options.name = document.title;
   }
-  const devTools = libState.storesRegisteredWithDevtools[options.name] || windowObj.__REDUX_DEVTOOLS_EXTENSION__.connect(options);
-  libState.storesRegisteredWithDevtools[options.name] = devTools;
+  const devTools = windowObj.__REDUX_DEVTOOLS_EXTENSION__.connect(options);
   devTools.init(store().read());
   setDevtoolsDispatchListener(action => {
     devTools.send(action, store().read());

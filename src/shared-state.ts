@@ -1,9 +1,8 @@
-import { DevtoolsInstance, ComponentContainerStore, WindowAugmentedWithReduxDevtools } from './shapes-internal';
+import { ComponentContainerStore, WindowAugmentedWithReduxDevtools } from './shapes-internal';
 
 export const libState = {
-  componentContainerStore: null as null | ComponentContainerStore,
+  rootStore: null as null | ComponentContainerStore,
   transactionState: 'none' as 'none' | 'started' | 'last',
-  storesRegisteredWithDevtools: {} as {[name: string]: DevtoolsInstance },
 }
 
 export const testState = {

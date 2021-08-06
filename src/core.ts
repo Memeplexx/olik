@@ -4,6 +4,7 @@ import * as array from './operators-array';
 import * as arrayCustom from './operators-arraycustom';
 import {
   insertIntoArray,
+  deepMerge,
   onChange,
   patchOrInsertIntoObject,
   read,
@@ -154,6 +155,7 @@ export function createStoreCore<S, T extends Trackability>({
       getCurrentState: () => currentState,
     } as CoreActionsState<S, C, X, T>)
     const coreActions = {
+      deepMerge: deepMerge(getCoreActionsState()),
       remove: remove(getCoreActionsState()),
       patch: patchOrInsertIntoObject({ ...getCoreActionsState(), type: 'patch' }),
       insert: Array.isArray(selector(currentState))

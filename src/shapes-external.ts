@@ -490,6 +490,15 @@ export type StoreForAnObject<C, T extends Trackability> = {
    *   .insert({ archery: 3, sorcery: 5 })
    */
   insert: <H extends { [key: string]: any } | (() => AnyAsync<{ [key: string]: any }>) >(insertion: H) => H extends (() => AnyAsync<{ [key: string]: any }>) ? Future<{ [key: string]: any }> : void,
+  /**
+   * Deep-merges the existing object with the supplied object.
+   * @example
+   * const select = createRootStore({ obj: { hello: 'foo' } });
+   * 
+   * select(s => s.obj).deepMerge({ hello: 'bar', arr: [1, 2, 3] });
+   * console.log(select().read()); // { obj: { hello: 'bar', arr: [1, 2, 3] } }
+   */
+  deepMerge: <H extends C | (() => AnyAsync<C>) >(state: H) => H extends (() => AnyAsync<C>) ? Future<C> : void,
 } & StoreForAnObjectOrPrimitive<C, T>;
 
 export interface StoreOrDerivation<C> {
@@ -617,6 +626,11 @@ export type OptionsForMakingARootStore = {
    * If set to true, then tags will appear in the action type as apposed to inside the payload (which is the default)
    */
   tagsToAppearInType?: boolean;
+  /**
+   * If set to true, then this store will be merged into the existing application store. 
+   * The default behavior is that this store will replace the existing application store.
+   */
+  mergeIntoExistingStoreIfItExists?: boolean;
 }
 
 export const Deferred = Symbol('deferred');

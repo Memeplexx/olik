@@ -4,4 +4,3 @@ export * from './devtools-integration';
 export * from './shapes-external';
 export * from './transact';
 export { augment } from './augmentations';
-export { getSelectedStateFromOperationWithoutUpdatingStore } from './shared-utils';
