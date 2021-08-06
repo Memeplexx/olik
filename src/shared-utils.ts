@@ -5,7 +5,7 @@ import {
   FutureState,
   Selector,
   SelectorFromAStore,
-  StoreWhichIsNested,
+  StoreForAComponent,
   Trackability,
   UpdateOptions,
 } from './shapes-external';
@@ -269,9 +269,9 @@ export const getSelectedStateFromOperationWithoutUpdatingStore = <S>(
 ): any => {
   operation();
   let result: any;
-  const nested = select() as StoreWhichIsNested<any>;
-  if (!!(nested as any).isNested && libState.nestedContainerStore) {
-    result = libState.nestedContainerStore((select() as any).getSelector()).read();
+  const componentStore = select() as StoreForAComponent<any>;
+  if (!!(componentStore as any).isComponentStore && libState.componentContainerStore) {
+    result = libState.componentContainerStore((select() as any).getSelector()).read();
   } else {
     result = select((select() as any).getSelector()).read();
   }

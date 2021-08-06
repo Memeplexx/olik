@@ -27,7 +27,7 @@ import {
   Selector,
   StoreForAnArrayOfObjects,
   StoreOrDerivation,
-  StoreWhichIsNested,
+  StoreForAComponent,
   Trackability,
 } from './shapes-external';
 import {
@@ -36,8 +36,8 @@ import {
   CoreActionsState,
   PreviousAction,
   StoreState,
-  StoreWhichIsNestedInternal,
-  StoreWhichMayContainNestedStores,
+  StoreForAComponentInternal,
+  StoreWhichMayContainComponentStores,
   UpdateStateArgs,
 } from './shapes-internal';
 import { devtoolsDebounce } from './shared-consts';
@@ -146,7 +146,7 @@ export function createStoreCore<S, T extends Trackability>({
     const getCoreActionsState = () => ({
       updateState,
       selector,
-      isNested: () => !!(coreActions as any).isNested,
+      isComponentStore: () => !!(coreActions as any).isComponentStore,
       storeState,
       pathReader,
       storeResult,
@@ -172,14 +172,14 @@ export function createStoreCore<S, T extends Trackability>({
       readInitial: () => selector(initialState),
       defineReset: (
         (initState: C, innerSelector) => () => replace({ ...getCoreActionsState(), name: 'reset' })(!innerSelector ? initState : innerSelector(initState), undefined as any)
-      ) as StoreWhichIsNestedInternal<S, C>['defineReset'],
+      ) as StoreForAComponentInternal<S, C>['defineReset'],
       renew: (state => {
         pathReader = createPathReader(state);
         currentState = deepFreeze(state) as S;
-      }) as StoreWhichMayContainNestedStores<S, C, T>['renew'],
+      }) as StoreWhichMayContainComponentStores<S, C, T>['renew'],
       getSelector: () => storeState.selector,
       changeListeners,
-    } as unknown as StoreWhichIsNested<C>;
+    } as unknown as StoreForAComponent<C>;
     Object.keys(augmentations.selection).forEach(name => (coreActions as any)[name] = augmentations.selection[name](coreActions as StoreOrDerivation<C>));
     return coreActions;
   };
@@ -281,7 +281,7 @@ export function createStoreCore<S, T extends Trackability>({
   function notifySubscribers(oldState: S, newState: S) {
     changeListeners.forEach((selector, subscriber) => {
       let selectedNewState: any;
-      try { selectedNewState = selector(newState); } catch (e) { /* A nested store may have been detatched and state changes are being subscribed to inside nested component. Ignore */ }
+      try { selectedNewState = selector(newState); } catch (e) { /* A component store may have been detatched and state changes are being subscribed to inside component. Ignore */ }
       const selectedOldState = selector(oldState);
       if (selectedOldState && selectedOldState.$filtered && selectedNewState && selectedNewState.$filtered) {
         if ((selectedOldState.$filtered.length !== selectedNewState.$filtered.length)

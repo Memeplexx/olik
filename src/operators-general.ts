@@ -51,9 +51,9 @@ export const replaceAll = <S, C, X extends C & Array<any>, T extends Trackabilit
 ) as StoreForAnArrayCommon<X, T>['replaceAll'];
 
 export const removeAll = <S, C, X extends C & Array<any>, T extends Trackability>(
-  { selector, isNested, storeState, updateState }: CoreActionsState<S, C, X, T>,
+  { selector, isComponentStore, storeState, updateState }: CoreActionsState<S, C, X, T>,
 ) => (updateOptions => {
-  validateSelector(selector, isNested, storeState);
+  validateSelector(selector, isComponentStore, storeState);
   updateState({
     selector,
     replacer: () => [],
@@ -64,9 +64,9 @@ export const removeAll = <S, C, X extends C & Array<any>, T extends Trackability
 }) as StoreForAnArrayCommon<X, T>['removeAll'];
 
 export const insertIntoArray = <S, C, X extends C & Array<any>, T extends Trackability>(
-  { selector, isNested, storeResult, storeState, updateState, pathReader }: CoreActionsState<S, C, X, T>,
+  { selector, isComponentStore, storeResult, storeState, updateState, pathReader }: CoreActionsState<S, C, X, T>,
 ) => ((payload, insertOptions: UpdateAtIndex = {}) => {
-  validateSelector(selector, isNested, storeState);
+  validateSelector(selector, isComponentStore, storeState);
   const processPayload = (payload: C) => {
     const { payloadFrozen, payloadCopied } = copyPayload(payload);
     updateState({
@@ -90,9 +90,9 @@ export const insertIntoArray = <S, C, X extends C & Array<any>, T extends Tracka
 }) as StoreForAnArrayCommon<X, T>['insert'];
 
 export const patchOrInsertIntoObject = <S, C, X extends C & Array<any>, T extends Trackability>(
-  { selector, isNested, storeState, updateState, storeResult, pathReader, type }: CoreActionsState<S, C, X, T> & { type: 'patch' | 'insert', },
+  { selector, isComponentStore, storeState, updateState, storeResult, pathReader, type }: CoreActionsState<S, C, X, T> & { type: 'patch' | 'insert', },
 ) => ((payload, updateOptions) => {
-  validateSelector(selector, isNested, storeState);
+  validateSelector(selector, isComponentStore, storeState);
   const processPayload = (payload: Partial<C>) => {
     const { payloadFrozen, payloadCopied } = copyPayload(payload);
     updateState({
@@ -112,9 +112,9 @@ export const patchOrInsertIntoObject = <S, C, X extends C & Array<any>, T extend
 }) as StoreForAnObject<C, T>['patch'];
 
 export const remove = <S, C, X extends C & Array<any>, T extends Trackability>(
-  { isNested, selector, storeState, updateState, pathReader, storeResult }: CoreActionsState<S, C, X, T>,
+  { isComponentStore, selector, storeState, updateState, pathReader, storeResult }: CoreActionsState<S, C, X, T>,
 ) => ((payload, updateOptions) => {
-  validateSelector(selector, isNested, storeState);
+  validateSelector(selector, isComponentStore, storeState);
   const processPayload = (payload: any) => updateState({
     selector,
     replacer: old => { const res = Object.assign({}, old); delete (res as any)[payload]; return res; },
@@ -129,12 +129,12 @@ export const remove = <S, C, X extends C & Array<any>, T extends Trackability>(
 }) as StoreForAnObject<C, T>['remove'];
 
 export const upsertMatching = <S, C, X extends C & Array<any>, T extends Trackability>(
-  { selector, isNested, storeState, getCurrentState, updateState, pathReader, storeResult }: CoreActionsState<S, C, X, T>
+  { selector, isComponentStore, storeState, getCurrentState, updateState, pathReader, storeResult }: CoreActionsState<S, C, X, T>
 ) => (getProp => {
-  validateSelector(selector, isNested, storeState);
+  validateSelector(selector, isComponentStore, storeState);
   return {
     with: (payload, updateOptions) => {
-      validateSelector(selector, isNested, storeState);
+      validateSelector(selector, isComponentStore, storeState);
       const processPayload = (payload: C) => {
         const segs = !getProp ? [] : createPathReader((selector(getCurrentState()) as X)[0] || {}).readSelector(getProp);
         const { payloadFrozen, payloadCopied } = copyPayload(payload);
@@ -177,12 +177,12 @@ export const upsertMatching = <S, C, X extends C & Array<any>, T extends Trackab
 }) as StoreForAnArrayOfObjects<X, T>['upsertMatching'];
 
 export const replace = <S, C, X extends C & Array<any>, T extends Trackability>(
-  { selector, isNested, storeState, pathReader, updateState, storeResult, name }: CoreActionsState<S, C, X, T> & { name: string },
+  { selector, isComponentStore, storeState, pathReader, updateState, storeResult, name }: CoreActionsState<S, C, X, T> & { name: string },
 ) => (
   payload: C | (() => Promise<C>),
   updateOptions: UpdateOptions<T, any>,
   ) => {
-    validateSelector(selector, isNested, storeState);
+    validateSelector(selector, isComponentStore, storeState);
     const processPayload = (payload: C) => replacePayload(pathReader, updateState, selector, name, payload as C, updateOptions);
     return processAsyncPayload(selector, payload, pathReader, storeResult, processPayload, updateOptions, name + '()', storeState);
   };
@@ -262,11 +262,11 @@ export function stopBypassingPromises<S, C, X extends C & Array<any>>(
 
 const validateSelector = <S, C, X extends C & Array<any>>(
   selector: Selector<S, C, X>,
-  isNested: () => boolean,
+  isComponentStore: () => boolean,
   storeState: StoreState<S>,
 ) => {
   storeState.selector = selector;
-  if (isNested()) { storeState.bypassSelectorFunctionCheck = true; }
+  if (isComponentStore()) { storeState.bypassSelectorFunctionCheck = true; }
   validateSelectorFn('get', storeState, selector);
-  if (isNested()) { storeState.bypassSelectorFunctionCheck = false; }
+  if (isComponentStore()) { storeState.bypassSelectorFunctionCheck = false; }
 }

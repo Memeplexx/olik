@@ -1,15 +1,15 @@
 import { createStoreCore } from './core';
 import {
   Deferred,
-  OptionsForMakingAGlobalStore,
-  OptionsForMakingANestedStore,
-  SelectorFromANestedStore,
+  OptionsForMakingARootStore,
+  OptionsForMakingAComponentStore,
+  SelectorFromAComponentStore,
   SelectorFromAStore,
   SelectorFromAStoreEnforcingTags,
-  StoreWhichIsNested,
+  StoreForAComponent,
   Trackability,
 } from './shapes-external';
-import { OptionsForCreatingInternalRootStore, StoreWhichIsNestedInternal } from './shapes-internal';
+import { OptionsForCreatingInternalRootStore, StoreForAComponentInternal } from './shapes-internal';
 import { errorMessages } from './shared-consts';
 import { libState } from './shared-state';
 import { isEmpty } from './shared-utils';
@@ -30,7 +30,7 @@ import { isEmpty } from './shared-utils';
  */
 export function createRootStoreEnforcingTags<S>(
   state: S,
-  options: OptionsForMakingAGlobalStore = {},
+  options: OptionsForMakingARootStore = {},
 ) {
   return createRootStoreInternal<S, 'tagged'>(state, options) as SelectorFromAStoreEnforcingTags<S>;
 }
@@ -45,20 +45,20 @@ export function createRootStoreEnforcingTags<S>(
  */
 export function createRootStore<S>(
   state: S,
-  options: OptionsForMakingAGlobalStore = {},
+  options: OptionsForMakingARootStore = {},
 ) {
   return createRootStoreInternal<S, 'untagged'>(state, options) as SelectorFromAStore<S>;
 }
 
 /**
  * Creates a new store which is nestable within inside your application store.
- * If you have already created an application store then this store will be automatically nested within that store, under the property `nested`.
+ * If you have already created an application store then this store will be automatically nested within that store, under the property `components`.
  * If the opposite is true, then a new top-level store will be registered within the devtools
  * @param state The initial state
- * @param options A configuration object which, at minimum, must contain the `componentName` of the nested store
+ * @param options A configuration object which, at minimum, must contain the `componentName` of the component store
  * 
  * @example
- * const store = creatNestedStore({
+ * const store = createComponentStore({
  *   id: number,
  *   text: string,
  *   done: boolean,
@@ -67,45 +67,45 @@ export function createRootStore<S>(
  *   instanceName: todoId
  * })
  */
-export function createNestedStore<L>(
+export function createComponentStore<L>(
   state: L,
-  options: OptionsForMakingANestedStore,
-): SelectorFromANestedStore<L> {
+  options: OptionsForMakingAComponentStore,
+): SelectorFromAComponentStore<L> {
   // If the instanceName is set to deferred, then deal with that scenario
   if (options.instanceName === Deferred) {
     const nStore = createStoreCore<L, 'untagged'>({
       state,
-      devtools: (!libState.nestedContainerStore || options.dontTrackWithDevtools) ? false : {
+      devtools: (!libState.componentContainerStore || options.dontTrackWithDevtools) ? false : {
         name: options.componentName
       }
     });
     const get = (<C = L>(selector?: (arg: L) => C) => {
       const cStore = selector ? nStore(selector as any) : nStore();
-      (cStore as any).isNested = true;
-      cStore.detachFromGlobalStore = () => { /* This is a no-op */ };
+      (cStore as any).isComponentStore = true;
+      cStore.detachFromRootStore = () => { /* This is a no-op */ };
       cStore.setInstanceName = (instanceName: string) => {
         if (options.instanceName !== Deferred) { throw new Error(errorMessages.CANNOT_CHANGE_INSTANCE_NAME); }
-        createNestedStoreInternal(get().read(), { ...options, instanceName });
+        createComponentStoreInternal(get().read(), { ...options, instanceName });
         options.instanceName = instanceName;
-        // get all changeListeners from nested store and set them on container store
+        // get all changeListeners from component store and set them on container store
         Array.from(((nStore() as any).changeListeners as Map<(ar: any) => any, (arg: any) => any>).entries())
           .forEach(([performAction, selector]) =>
-            libState.nestedContainerStore!(s => selector(s.nested[options.componentName][options.instanceName])).onChange(performAction))
+            libState.componentContainerStore!(s => selector(s.components[options.componentName][options.instanceName])).onChange(performAction))
       }
       if (options.instanceName !== Deferred) {
-        return getNestedStoreWithinContainerStore(state, options, selector);
+        return getComponentStoreWithinContainerStore(state, options, selector);
       } else {
-        return cStore as StoreWhichIsNested<C>;
+        return cStore as StoreForAComponent<C>;
       }
     });
-    return get as SelectorFromANestedStore<L>;
+    return get as SelectorFromAComponentStore<L>;
   }
 
-  if (!libState.nestedContainerStore) {
-    return createDetatchedNestedStore(state, options);
+  if (!libState.componentContainerStore) {
+    return createDetatchedComponentStore(state, options);
   }
 
-  return createNestedStoreInternal(state, options as OptionsForMakingANestedStore);
+  return createComponentStoreInternal(state, options as OptionsForMakingAComponentStore);
 }
 
 function createRootStoreInternal<S, T extends Trackability>(
@@ -116,36 +116,36 @@ function createRootStoreInternal<S, T extends Trackability>(
     state, devtools: options.devtools === undefined ? {} : options.devtools,
     tagSanitizer: options.tagSanitizer, tagsToAppearInType: options.tagsToAppearInType
   });
-  libState.nestedContainerStore = get as any;
+  libState.componentContainerStore = get as any;
   return get;
 }
 
-function getNestedStoreWithinContainerStore<L, C = L>(
+function getComponentStoreWithinContainerStore<L, C = L>(
   state: L,
-  options: OptionsForMakingANestedStore,
+  options: OptionsForMakingAComponentStore,
   selector?: (arg: L) => C
 ) {
-  const cStore = libState.nestedContainerStore!(s => {
-    const nState = s.nested[options.componentName][options.instanceName!];
+  const cStore = libState.componentContainerStore!(s => {
+    const nState = s.components[options.componentName][options.instanceName!];
     return selector ? selector(nState) : nState;
-  }) as any as StoreWhichIsNestedInternal<L, C>;
+  }) as any as StoreForAComponentInternal<L, C>;
   cStore.reset = cStore.defineReset(state, selector);
-  cStore.isNested = true;
-  cStore.detachFromGlobalStore = () => {
-    if (!libState.nestedContainerStore) { return; }
-    const state = libState.nestedContainerStore().read().nested[options.componentName];
+  cStore.isComponentStore = true;
+  cStore.detachFromRootStore = () => {
+    if (!libState.componentContainerStore) { return; }
+    const state = libState.componentContainerStore().read().components[options.componentName];
     if ((Object.keys(state).length === 1) && state[options.instanceName!]) {
-      libState.nestedContainerStore(s => s.nested).remove(options.componentName);
+      libState.componentContainerStore(s => s.components).remove(options.componentName);
     } else {
-      libState.nestedContainerStore(s => s.nested[options.componentName]).remove(options.instanceName!);
+      libState.componentContainerStore(s => s.components[options.componentName]).remove(options.instanceName!);
     }
   }
-  return cStore as StoreWhichIsNested<C>;
+  return cStore as StoreForAComponent<C>;
 }
 
-function createDetatchedNestedStore<L>(
+function createDetatchedComponentStore<L>(
   state: L,
-  options: OptionsForMakingANestedStore,
+  options: OptionsForMakingAComponentStore,
 ) {
   const nStore = createStoreCore<L, 'untagged'>({
     state,
@@ -155,33 +155,33 @@ function createDetatchedNestedStore<L>(
   });
   const get = (<C = L>(selector?: (arg: L) => C) => {
     const cStore = selector ? nStore(selector as any) : nStore();
-    cStore.isNested = true;
-    cStore.detachFromGlobalStore = () => { /* This is a no-op */ };
+    cStore.isComponentStore = true;
+    cStore.detachFromRootStore = () => { /* This is a no-op */ };
     cStore.setInstanceName = () => { /* This is a no-op */ }
-    return cStore as any as StoreWhichIsNested<C>;
+    return cStore as any as StoreForAComponent<C>;
   });
-  return get as SelectorFromANestedStore<L>;
+  return get as SelectorFromAComponentStore<L>;
 }
 
-function createNestedStoreInternal<L>(
+function createComponentStoreInternal<L>(
   state: L,
-  options: OptionsForMakingANestedStore,
+  options: OptionsForMakingAComponentStore,
 ) {
   // At this point, we've established that an app-store exists
-  const containerStore = libState.nestedContainerStore!();
+  const containerStore = libState.componentContainerStore!();
   const wrapperState = containerStore.read();
 
-  // If a nested store with the same componentName and instanceName has not been added to the app-store, then add it now
-  const thisNestedStoreHasNotBeenAttachedToTheAppStoreYet = isEmpty(wrapperState.nested)
-    || isEmpty(wrapperState.nested[options.componentName])
-    || isEmpty(wrapperState.nested[options.componentName][options.instanceName!])
-  if (thisNestedStoreHasNotBeenAttachedToTheAppStoreYet) {
-    if (!wrapperState.nested) {
+  // If a component store with the same componentName and instanceName has not been added to the app-store, then add it now
+  const thisComponentStoreHasNotBeenAttachedToTheAppStoreYet = isEmpty(wrapperState.components)
+    || isEmpty(wrapperState.components[options.componentName])
+    || isEmpty(wrapperState.components[options.componentName][options.instanceName!])
+  if (thisComponentStoreHasNotBeenAttachedToTheAppStoreYet) {
+    if (!wrapperState.components) {
       if (['number', 'boolean', 'string'].some(type => typeof (wrapperState) === type) || Array.isArray(wrapperState)) {
-        throw new Error(errorMessages.INVALID_CONTAINER_FOR_NESTED_STORES);
+        throw new Error(errorMessages.INVALID_CONTAINER_FOR_COMPONENT_STORES);
       }
       containerStore.patch({
-        nested: {
+        components: {
           [options.componentName]: {
             [options.instanceName!]: state
           }
@@ -189,42 +189,42 @@ function createNestedStoreInternal<L>(
       });
       containerStore.renew({
         ...wrapperState,
-        nested: {
+        components: {
           [options.componentName]: {
             [options.instanceName!]: state
           }
         }
       });
-    } else if (!wrapperState.nested[options.componentName]) {
-      libState.nestedContainerStore!(s => s.nested).patch({
+    } else if (!wrapperState.components[options.componentName]) {
+      libState.componentContainerStore!(s => s.components).patch({
         [options.componentName]: {
           [options.instanceName!]: state
         }
       });
       containerStore.renew({
         ...wrapperState,
-        nested: {
-          ...wrapperState.nested,
+        components: {
+          ...wrapperState.components,
           [options.componentName]: {
             [options.instanceName!]: state
           }
         }
       });
     } else {
-      libState.nestedContainerStore!(s => s.nested[options.componentName]).patch({
+      libState.componentContainerStore!(s => s.components[options.componentName]).patch({
         [options.instanceName!]: state
       });
       containerStore.renew({
         ...wrapperState,
-        nested: {
-          ...wrapperState.nested,
+        components: {
+          ...wrapperState.components,
           [options.componentName]: {
-            ...wrapperState.nested[options.componentName],
+            ...wrapperState.components[options.componentName],
             [options.instanceName!]: state
           }
         }
       });
     }
   }
-  return (<C = L>(selector?: (arg: L) => C) => getNestedStoreWithinContainerStore(state, options, selector)) as SelectorFromANestedStore<L>;
+  return (<C = L>(selector?: (arg: L) => C) => getComponentStoreWithinContainerStore(state, options, selector)) as SelectorFromAComponentStore<L>;
 }

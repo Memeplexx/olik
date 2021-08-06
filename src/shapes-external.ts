@@ -467,7 +467,7 @@ export type StoreForAnObject<C, T extends Trackability> = {
    * ...
    *  .patch({ firstName: 'James', age: 33 })
    */
-  patch: <H extends (Partial<C> | (() => AnyAsync<Partial<C>>))>(partial: H, options: UpdateOptions<T, H>) => H extends (() => AnyAsync<Partial<C>>) ? Future<C> : void,
+  patch: <H extends (Partial<C> | (() => AnyAsync<Partial<C>>)) >(partial: H, options: UpdateOptions<T, H>) => H extends (() => AnyAsync<Partial<C>>) ? Future<C> : void,
   /**
    * Removes the specified key from this object.  
    * ***WARNING***: invoking this has the potentional to contradict the type-system.
@@ -478,7 +478,7 @@ export type StoreForAnObject<C, T extends Trackability> = {
    * select(s => s.skillpoints)
    *   .remove('archery')
    */
-  remove: <H extends (keyof C | (() => AnyAsync<keyof C>))>(key: H, options: ActionOptions<T>) => H extends (() => AnyAsync<keyof C>) ? Future<C> : void,
+  remove: <H extends (keyof C | (() => AnyAsync<keyof C>)) >(key: H, options: ActionOptions<T>) => H extends (() => AnyAsync<keyof C>) ? Future<C> : void,
   /**
    * Adds one or more key-value-pairs to this object.  
    * ***WARNING***: invoking this has the potentional to contradict the type-system.
@@ -519,7 +519,7 @@ export interface StoreOrDerivation<C> {
 export type StoreWhichIsResettable<C, T extends Trackability> = {
   /**
    * Reverts the current state to how it was when the store was initialized.
-   * Beware that all nested stores will also be removed.
+   * Beware that all component stores will also be removed.
    */
   reset: (options: ActionOptions<T>) => void,
   /**
@@ -548,9 +548,9 @@ export type StoreWhichDoesntEnforceTags<C> = Store<C, 'untagged'>;
 export type StoreWhichEnforcesTags<C> = Store<C, 'tagged'>;
 
 /**
- * An object which is capable of managing state, but which can also be nested within another store
+ * An object which is capable of managing state for a component
  */
-export type StoreWhichIsNested<C> = Store<C, 'untagged'> & { detachFromGlobalStore: () => void, setInstanceName: (instanceName: string) => void };
+export type StoreForAComponent<C> = Store<C, 'untagged'> & { detachFromRootStore: () => void, setInstanceName: (instanceName: string) => void };
 
 /**
  * A function which selects from the store
@@ -559,14 +559,14 @@ export type Selector<S, C, X = C> = X extends C & ReadonlyArray<any> ? (s: S) =>
 
 export type SelectorReader<S, U> = { get: U, read: () => DeepReadonly<S> };
 
-export type SelectorReaderNested<S, U> = SelectorReader<S, U> & { detachFromGlobalStore: () => void, setInstanceName: (instanceName: string) => void };
+export type SelectorReaderComponent<S, U> = SelectorReader<S, U> & { detachFromRootStore: () => void, setInstanceName: (instanceName: string) => void };
 
 /**
- * A function which selects from a nested store
+ * A function which selects from a component store
  */
-export type SelectorFromANestedStore<S> = [S] extends [Array<any>] | [number] | [string] | [boolean]
-  ? () => StoreWhichIsNested<S>
-  : <C = DeepReadonly<S>>(selector?: (arg: DeepReadonly<S>) => C) => StoreWhichIsNested<C>;
+export type SelectorFromAComponentStore<S> = [S] extends [Array<any>] | [number] | [string] | [boolean]
+  ? () => StoreForAComponent<S>
+  : <C = DeepReadonly<S>>(selector?: (arg: DeepReadonly<S>) => C) => StoreForAComponent<C>;
 
 /**
  * A function which selects from a store
@@ -597,7 +597,7 @@ export type DerivationCalculationInputs<T extends Array<StoreOrDerivation<any>>>
 /**
  * An object representing options which are supplied when creating a standard store
  */
-export type OptionsForMakingAGlobalStore = {
+export type OptionsForMakingARootStore = {
   /**
    * Specifications for the Redux Devtools Extension. Pass `false` if you do not want your store to be tracked within the Redux Devtools extension.
    * See https://github.com/zalmoxisus/redux-devtools-extension/blob/master/docs/API/Arguments.md for more info
@@ -622,21 +622,21 @@ export type OptionsForMakingAGlobalStore = {
 export const Deferred = Symbol('deferred');
 
 /**
- * An object representing options which are supplied when creating a nested store
+ * An object representing options which are supplied when creating a component store
  */
-export type OptionsForMakingANestedStore = {
+export type OptionsForMakingAComponentStore = {
   /**
    * Pass `true` if you do not want your store to be tracked inside the devtools. Default is false.
    */
   dontTrackWithDevtools?: boolean,
   /**
-   * The name that will distinguish this nested store from others within the state tree
+   * The name that will distinguish this component store from others within the state tree
    */
   componentName: string;
   /**
-   * The string that will distinguish different instances of the same nested store.
+   * The string that will distinguish different instances of the same component store.
    */
-   instanceName: string | number | typeof Deferred;
+  instanceName: string | number | typeof Deferred;
 };
 
 /**

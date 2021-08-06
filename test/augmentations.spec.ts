@@ -10,7 +10,7 @@ describe('augmentations', () => {
 
   beforeAll(() => testState.windowObject = windowAugmentedWithReduxDevtoolsImpl);
 
-  beforeEach(() => libState.nestedContainerStore = null);
+  beforeEach(() => libState.componentContainerStore = null);
 
   afterAll(() => {
     augment({

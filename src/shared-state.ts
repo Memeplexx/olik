@@ -1,7 +1,7 @@
-import { DevtoolsInstance, NestedContainerStore, WindowAugmentedWithReduxDevtools } from './shapes-internal';
+import { DevtoolsInstance, ComponentContainerStore, WindowAugmentedWithReduxDevtools } from './shapes-internal';
 
 export const libState = {
-  nestedContainerStore: null as null | NestedContainerStore,
+  componentContainerStore: null as null | ComponentContainerStore,
   transactionState: 'none' as 'none' | 'started' | 'last',
   storesRegisteredWithDevtools: {} as {[name: string]: DevtoolsInstance },
 }

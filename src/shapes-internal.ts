@@ -8,7 +8,7 @@ import {
   Store,
   StoreForAnObject,
   StoreOrDerivation,
-  StoreWhichIsNested,
+  StoreForAComponent,
   Trackability,
   UpdateOptions,
 } from './shapes-external';
@@ -33,10 +33,10 @@ export type PathReader<S> = {
 
 export type UpdateStateFn<S, C, T extends Trackability, X extends C = C> = (specs: UpdateStateArgs<S, C, T, X>) => void;
 
-export type StoreWhichIsNestedInternal<S, C> = Store<C, 'untagged'> & {
+export type StoreForAComponentInternal<S, C> = Store<C, 'untagged'> & {
   defineReset: (initState: S, selector?: (arg: any) => C) => () => any;
-  isNested: boolean;
-} & StoreWhichIsNested<C>;
+  isComponentStore: boolean;
+} & StoreForAComponent<C>;
 
 export type DevtoolsInstance = {
   init: (state: any) => any,
@@ -87,7 +87,7 @@ export type ArrayCustomState<S, C, X extends C & Array<any>, T extends Trackabil
 export type CoreActionsState<S, C, X extends C & Array<any>, T extends Trackability> = {
   selector: Selector<S, C, X>,
   updateState: UpdateStateFn<S, C, T, X>,
-  isNested: () => boolean,
+  isComponentStore: () => boolean,
   storeState: StoreState<S>,
   storeResult: (selector?: (s: S) => C) => any,
   pathReader: PathReader<S>,
@@ -109,13 +109,13 @@ export type OptionsForCreatingInternalRootStore = {
 };
 
 /**
- * An object which is capable of storing nested stores
+ * An object which is capable of storing component stores
  */
-export type StoreWhichMayContainNestedStores<S, C, T extends Trackability> = {
+export type StoreWhichMayContainComponentStores<S, C, T extends Trackability> = {
   renew: (state: S) => void;
 } & StoreForAnObject<C, T> & StoreOrDerivation<C>;
 
-export type NestedContainerStore = ((selector?: ((s: any) => any) | undefined) => StoreWhichMayContainNestedStores<any, any, any>) | undefined;
+export type ComponentContainerStore = ((selector?: ((s: any) => any) | undefined) => StoreWhichMayContainComponentStores<any, any, any>) | undefined;
 
 export type StoreState<S> = {
   selector: (arg: S) => any,

@@ -1,6 +1,6 @@
 import { errorMessages } from '../src/shared-consts';
 import { libState, testState } from '../src/shared-state';
-import { createRootStore, createNestedStore, createRootStoreEnforcingTags } from '../src/store-creators';
+import { createRootStore, createComponentStore, createRootStoreEnforcingTags } from '../src/store-creators';
 import { transact } from '../src/transact';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
@@ -8,7 +8,7 @@ describe('async', () => {
 
   beforeAll(() => testState.windowObject = windowAugmentedWithReduxDevtoolsImpl);
 
-  beforeEach(() => libState.nestedContainerStore = null);
+  beforeEach(() => libState.componentContainerStore = null);
 
   const initialState = {
     object: { property: '', property2: '' },
@@ -503,7 +503,7 @@ describe('async', () => {
 
   it('should work with nested stores', done => {
     const select = createRootStore(initialState);
-    const nested = createNestedStore({ prop: '' }, { componentName: 'hello', instanceName: 'test' });
+    const nested = createComponentStore({ prop: '' }, { componentName: 'hello', instanceName: 'test' });
     const payload = 'test';
     nested(s => s.prop)
       .replace(() => new Promise(resolve => setTimeout(() => resolve(payload), 10)), { bypassPromiseFor: 1000 }).asPromise()
