@@ -312,9 +312,9 @@ export type PromisableUpdate<H> = H extends () => AnyAsync<any> ? {
    * Avoid unnecessary promise invocations by supplying the number of milliseconds that should elapse before the promise is invoked again.
    * To un-do this, you can call `stopBypassingPromises()` on the node of the state tree, for example
    * @example
-   * get(s => s.todos).stopBypassingPromises();
+   * select(s => s.todos).stopBypassingPromises();
    * @example
-   * get(s => s.todos).findWhere(s => s.id).isEqualTo(2).stopBypassingPromises();
+   * select(s => s.todos).findWhere(s => s.id).isEqualTo(2).stopBypassingPromises();
    */
   bypassPromiseFor?: number;
   /**
@@ -322,7 +322,7 @@ export type PromisableUpdate<H> = H extends () => AnyAsync<any> ? {
    * If the promise is rejected, this value will be reverted to what it was before the promise was invoked.
    * @example
    * const newUsername = 'Jeff';
-   * get(s => s.username)
+   * select(s => s.username)
    *   .replace(() => updateUsernameOnApi(newUsername), { optimisticallyUpdateWith: newUsername })
    *   .catch(err => notifyUserOfError(err))
    */
@@ -452,7 +452,7 @@ export type StoreForAnObjectOrPrimitive<C, T extends Trackability> = {
   /**
    * Substitutes this primitive value
    * @example
-   * get(s => s.user.age).replace(33);
+   * select(s => s.user.age).replace(33);
    */
   replace: <H extends C | (() => AnyAsync<C>) >(replacement: H, options: UpdateOptions<T, H>) => H extends (() => AnyAsync<any>) ? Future<C> : void,
 }

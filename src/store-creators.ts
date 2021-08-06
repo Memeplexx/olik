@@ -25,7 +25,7 @@ import { isEmpty } from './shared-utils';
  * const store = createRootStoreEnforcingTags({ prop: '' });
  * 
  * // Note that when updating state, we are now required to supply a string as the last argument (in this case 'MyComponent')
- * store.get(s => s.prop)                // type: 'prop.replace() [MyComponent]'
+ * select(s => s.prop)                // type: 'prop.replace() [MyComponent]'
  *   .replace('test', 'MyComponent')  // replacement: 'test'
  */
 export function createRootStoreEnforcingTags<S>(
@@ -41,13 +41,19 @@ export function createRootStoreEnforcingTags<S>(
  * @param options some additional configuration options
  * 
  * @example
- * const store = createRootStore({ todos: Array<{ id: number, text: string }>() });
+ * const select = createRootStore({ todos: Array<{ id: number, text: string }>() });
  */
 export function createRootStore<S>(
   state: S,
   options: OptionsForMakingARootStore = {},
 ) {
   return createRootStoreInternal<S, 'untagged'>(state, options) as SelectorFromAStore<S>;
+}
+
+export function createModuleStore<S>(
+  state: S,
+) {
+
 }
 
 /**
@@ -79,13 +85,13 @@ export function createComponentStore<L>(
         name: options.componentName
       }
     });
-    const get = (<C = L>(selector?: (arg: L) => C) => {
+    const select = (<C = L>(selector?: (arg: L) => C) => {
       const cStore = selector ? nStore(selector as any) : nStore();
       (cStore as any).isComponentStore = true;
       cStore.detachFromRootStore = () => { /* This is a no-op */ };
       cStore.setInstanceName = (instanceName: string) => {
         if (options.instanceName !== Deferred) { throw new Error(errorMessages.CANNOT_CHANGE_INSTANCE_NAME); }
-        createComponentStoreInternal(get().read(), { ...options, instanceName });
+        createComponentStoreInternal(select().read(), { ...options, instanceName });
         options.instanceName = instanceName;
         // get all changeListeners from component store and set them on container store
         Array.from(((nStore() as any).changeListeners as Map<(ar: any) => any, (arg: any) => any>).entries())
@@ -98,7 +104,7 @@ export function createComponentStore<L>(
         return cStore as StoreForAComponent<C>;
       }
     });
-    return get as SelectorFromAComponentStore<L>;
+    return select as SelectorFromAComponentStore<L>;
   }
 
   if (!libState.componentContainerStore) {

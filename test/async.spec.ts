@@ -1,6 +1,6 @@
 import { errorMessages } from '../src/shared-consts';
 import { libState, testState } from '../src/shared-state';
-import { createRootStore, createComponentStore, createRootStoreEnforcingTags } from '../src/store-creators';
+import { createComponentStore, createRootStore, createRootStoreEnforcingTags } from '../src/store-creators';
 import { transact } from '../src/transact';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
@@ -443,7 +443,7 @@ describe('async', () => {
   })
 
   it('should support tags in type', done => {
-    const select = createRootStoreEnforcingTags(initialState, { tagsToAppearInType: true });
+    const select = createRootStore(initialState, { tagsToAppearInType: true });
     const replacement = [{ id: 1, value: 'one' }];
     const tag = 'MyComponent';
     select(s => s.array)
