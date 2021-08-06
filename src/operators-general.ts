@@ -1,6 +1,5 @@
 import {
   DeepReadonly,
-  InsertOptions,
   Selector,
   StoreForAnArrayCommon,
   StoreForAnArrayOfObjects,
@@ -55,7 +54,7 @@ export const replaceAll = <S, C, X extends C & Array<any>, T extends Trackabilit
 export const removeAll = <S, C, X extends C & Array<any>, T extends Trackability>(
   arg: CoreActionsState<S, C, X, T>,
 ) => (updateOptions => {
-  validateSelector(arg.selector, arg.isComponentStore, arg.storeState);
+  validateSelector(arg);
   arg.updateState({
     selector: arg.selector,
     replacer: () => [],
@@ -68,7 +67,7 @@ export const removeAll = <S, C, X extends C & Array<any>, T extends Trackability
 export const insertIntoArray = <S, C, X extends C & Array<any>, T extends Trackability>(
   arg: CoreActionsState<S, C, X, T>,
 ) => ((payload, updateOptions: UpdateAtIndex = {}) => {
-  validateSelector(arg.selector, arg.isComponentStore, arg.storeState);
+  validateSelector(arg);
   const processPayload = (payload: C) => {
     const { payloadFrozen, payloadCopied } = copyPayload(payload);
     arg.updateState({
@@ -100,7 +99,7 @@ export const insertIntoArray = <S, C, X extends C & Array<any>, T extends Tracka
 export const patchOrInsertIntoObject = <S, C, X extends C & Array<any>, T extends Trackability>(
   arg: CoreActionsState<S, C, X, T> & { type: 'patch' | 'insert', },
 ) => ((payload, updateOptions) => {
-  validateSelector(arg.selector, arg.isComponentStore, arg.storeState);
+  validateSelector(arg);
   const processPayload = (payload: Partial<C>) => {
     const { payloadFrozen, payloadCopied } = copyPayload(payload);
     arg.updateState({
@@ -128,7 +127,7 @@ export const patchOrInsertIntoObject = <S, C, X extends C & Array<any>, T extend
 export const remove = <S, C, X extends C & Array<any>, T extends Trackability>(
   arg: CoreActionsState<S, C, X, T>,
 ) => ((payload, updateOptions) => {
-  validateSelector(arg.selector, arg.isComponentStore, arg.storeState);
+  validateSelector(arg);
   const processPayload = (payload: any) => arg.updateState({
     selector: arg.selector,
     replacer: old => { const res = Object.assign({}, old); delete (res as any)[payload]; return res; },
@@ -154,7 +153,7 @@ export const deepMerge = <S, C, X extends C & Array<any>, T extends Trackability
   payload: C | (() => Promise<C>),
   updateOptions: UpdateOptions<T, any>,
 ) => {
-  validateSelector(arg.selector, arg.isComponentStore, arg.storeState);
+  validateSelector(arg);
   const processPayload = (payload: any) => arg.updateState({
     selector: arg.selector,
     replacer: old => mergeDeepImmutable(old, payload),
@@ -177,10 +176,10 @@ export const deepMerge = <S, C, X extends C & Array<any>, T extends Trackability
 export const upsertMatching = <S, C, X extends C & Array<any>, T extends Trackability>(
   arg: CoreActionsState<S, C, X, T>
 ) => (getProp => {
-  validateSelector(arg.selector, arg.isComponentStore, arg.storeState);
+  validateSelector(arg);
   return {
     with: (payload, updateOptions) => {
-      validateSelector(arg.selector, arg.isComponentStore, arg.storeState);
+      validateSelector(arg);
       const processPayload = (payload: C) => {
         const segs = !getProp ? [] : createPathReader((arg.selector(arg.getCurrentState()) as X)[0] || {}).readSelector(getProp);
         const { payloadFrozen, payloadCopied } = copyPayload(payload);
@@ -234,7 +233,7 @@ export const replace = <S, C, X extends C & Array<any>, T extends Trackability>(
   payload: C | (() => Promise<C>),
   updateOptions: UpdateOptions<T, any>,
   ) => {
-    validateSelector(arg.selector, arg.isComponentStore, arg.storeState);
+    validateSelector(arg);
     const processPayload = (payload: C) => replacePayload(arg.pathReader, arg.updateState, arg.selector, arg.name, payload as C, updateOptions);
     return processAsyncPayload({
       ...arg,
@@ -319,12 +318,14 @@ export function stopBypassingPromises<S, C, X extends C & Array<any>>(
 }
 
 const validateSelector = <S, C, X extends C & Array<any>>(
-  selector: Selector<S, C, X>,
-  isComponentStore: () => boolean,
-  storeState: StoreState<S>,
+  arg: {
+    selector: Selector<S, C, X>,
+    isComponentStore: () => boolean,
+    storeState: StoreState<S>
+  },
 ) => {
-  storeState.selector = selector;
-  if (isComponentStore()) { storeState.bypassSelectorFunctionCheck = true; }
-  validateSelectorFn('get', storeState, selector);
-  if (isComponentStore()) { storeState.bypassSelectorFunctionCheck = false; }
+  arg.storeState.selector = arg.selector;
+  if (arg.isComponentStore()) { arg.storeState.bypassSelectorFunctionCheck = true; }
+  validateSelectorFn('get', arg.storeState, arg.selector);
+  if (arg.isComponentStore()) { arg.storeState.bypassSelectorFunctionCheck = false; }
 }
