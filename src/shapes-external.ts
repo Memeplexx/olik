@@ -498,7 +498,7 @@ export type StoreForAnObject<C, T extends Trackability> = {
    * select(s => s.obj).deepMerge({ hello: 'bar', arr: [1, 2, 3] });
    * console.log(select().read()); // { obj: { hello: 'bar', arr: [1, 2, 3] } }
    */
-  deepMerge: <H extends C | (() => AnyAsync<C>) >(state: H) => H extends (() => AnyAsync<C>) ? Future<C> : void,
+  deepMerge: <K extends Object, H extends K | (() => AnyAsync<K>) >(state: H) => H extends (() => AnyAsync<C>) ? Future<C> : void,
 } & StoreForAnObjectOrPrimitive<C, T>;
 
 export interface StoreOrDerivation<C> {
