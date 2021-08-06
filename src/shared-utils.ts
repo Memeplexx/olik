@@ -1,17 +1,8 @@
 import { augmentations } from './augmentations';
-import {
-  DeepReadonly,
-  Future,
-  FutureState,
-  Selector,
-  SelectorFromAStore,
-  StoreForAComponent,
-  Trackability,
-  UpdateOptions,
-} from './shapes-external';
+import { Future, FutureState, Selector } from './shapes-external';
 import { PathReader, StoreState } from './shapes-internal';
 import { errorMessages, expressionsNotAllowedInSelectorFunction } from './shared-consts';
-import { libState, testState } from './shared-state';
+import { libState } from './shared-state';
 
 export function deepFreeze<T extends Object>(o: T): T {
   Object.freeze(o);
@@ -162,86 +153,89 @@ export const toIsoString = (date: Date) => {
     ':' + pad(tzo % 60);
 }
 
-export const processAsyncPayload = <S, C, X extends C & Array<any>, T extends Trackability>(
-  selector: Selector<S, C, X>,
-  payload: any | (() => Promise<any>),
-  pathReader: PathReader<S>,
-  storeResult: (selector?: (s: S) => C) => any,
-  processPayload: (payload: C) => void,
-  updateOptions: UpdateOptions<T, any>,
-  suffix: string,
-  storeState: StoreState<S>,
+export const processAsyncPayload = <S, C, X extends C & Array<any>>(
+  arg: {
+    selector: Selector<S, C, X>,
+    payload: any | (() => Promise<any>),
+    pathReader: PathReader<S>,
+    storeResult: (selector?: (s: S) => C) => any,
+    processPayload: (payload: C) => void,
+    updateOptions: {} | void,
+    suffix: string,
+    storeState: StoreState<S>,
+  }
 ) => {
-  if (!!payload && typeof (payload) === 'function') {
+  if (!!arg.payload && typeof (arg.payload) === 'function') {
     if (libState.transactionState !== 'none') {
       libState.transactionState = 'none';
       throw new Error(errorMessages.PROMISES_NOT_ALLOWED_IN_TRANSACTIONS)
     }
-    if (['array', 'string', 'number', 'boolean'].some(t => t === typeof (storeResult().read()))) {
+    if (['array', 'string', 'number', 'boolean'].some(t => t === typeof (arg.storeResult().read()))) {
       throw new Error(errorMessages.INVALID_CONTAINER_FOR_CACHED_DATA);
     }
-    const asyncPayload = payload as (() => Promise<C>);
-    pathReader.readSelector(selector);
-    const bypassPromiseFor = ((updateOptions || {}) as any).bypassPromiseFor || 0;
-    const fullPath = pathReader.pathSegments.join('.') + (pathReader.pathSegments.length ? '.' : '') + suffix;
-    if (storeState.activeFutures[fullPath]) { // prevent duplicate simultaneous requests
-      return storeState.activeFutures[fullPath];
+    const asyncPayload = arg.payload as (() => Promise<C>);
+    arg.pathReader.readSelector(arg.selector);
+    const bypassPromiseFor = ((arg.updateOptions || {}) as any).bypassPromiseFor || 0;
+    const fullPath = arg.pathReader.pathSegments.join('.') + (arg.pathReader.pathSegments.length ? '.' : '') + arg.suffix;
+    if (arg.storeState.activeFutures[fullPath]) { // prevent duplicate simultaneous requests
+      return arg.storeState.activeFutures[fullPath];
     }
-    const expirationDate = (storeResult().read().promiseBypassTimes || {})[fullPath];
+    const expirationDate = (arg.storeResult().read().promiseBypassTimes || {})[fullPath];
     if (expirationDate && (new Date(expirationDate).getTime() > new Date().getTime())) {
       const result = {
-        read: () => storeResult(selector as any).read(),
-        asPromise: () => Promise.resolve(storeResult(selector as any).read()),
-        onChange: (fn) => fn({ storeValue: storeResult(selector as any).read(), error: null, wasResolved: true, isLoading: false, wasRejected: false } as FutureState<C>),
+        read: () => arg.storeResult(arg.selector).read(),
+        asPromise: () => Promise.resolve(arg.storeResult(arg.selector).read()),
+        onChange: (fn) => fn({ storeValue: arg.storeResult(arg.selector).read(), error: null, wasResolved: true, isLoading: false, wasRejected: false } as FutureState<C>),
       } as Future<C>;
       Object.keys(augmentations.future).forEach(name => (result as any)[name] = augmentations.future[name](result));
       return result;
     }
-    const { optimisticallyUpdateWith } = ((updateOptions as any) || {});
-    let snapshot = isEmpty(optimisticallyUpdateWith) ? null : storeResult(selector as any).read();
+    const { optimisticallyUpdateWith } = ((arg.updateOptions as any) || {});
+    let snapshot = isEmpty(optimisticallyUpdateWith) ? null : arg.storeResult(arg.selector).read();
     if (!isEmpty(snapshot)) {
-      processPayload(optimisticallyUpdateWith);
+      arg.processPayload(optimisticallyUpdateWith);
     }
     const promiseResult = () => {
       const promise = (augmentations.async ? augmentations.async(asyncPayload) : asyncPayload()) as Promise<C>;
       return promise
         .then(res => {
-          const involvesCaching = !!updateOptions && !(typeof (updateOptions) === 'string') && bypassPromiseFor;
+          const involvesCaching = !!arg.updateOptions && !(typeof (arg.updateOptions) === 'string') && bypassPromiseFor;
           if (involvesCaching) {
             libState.transactionState = 'started';
           }
-          processPayload(res);
+          arg.processPayload(res);
           if (involvesCaching && bypassPromiseFor) {
             const cacheExpiry = toIsoString(new Date(new Date().getTime() + bypassPromiseFor));
             libState.transactionState = 'last';
-            if (!storeResult().read().promiseBypassTimes) {
-              storeResult(s => (s as any).promiseBypassTimes).replace({
-                ...(storeResult().read().promiseBypassTimes || { [fullPath]: cacheExpiry }),
+            if (!arg.storeResult().read().promiseBypassTimes) {
+              arg.storeResult(s => (s as any).promiseBypassTimes).replace({
+                ...(arg.storeResult().read().promiseBypassTimes || { [fullPath]: cacheExpiry }),
               })
-            } else if (!storeResult().read().promiseBypassTimes[fullPath]) {
-              storeResult(s => (s as any).promiseBypassTimes).insert({ [fullPath]: cacheExpiry });
+            } else if (!arg.storeResult().read().promiseBypassTimes[fullPath]) {
+              arg.storeResult(s => (s as any).promiseBypassTimes).insert({ [fullPath]: cacheExpiry });
             } else {
-              storeResult(s => (s as any).promiseBypassTimes[fullPath]).replace(cacheExpiry);
+              arg.storeResult(s => (s as any).promiseBypassTimes[fullPath]).replace(cacheExpiry);
             }
             try {
               setTimeout(() => {
-                storeResult(s => (s as any).promiseBypassTimes).remove(fullPath);
+                arg.storeResult(s => (s as any).promiseBypassTimes).remove(fullPath);
               }, bypassPromiseFor);
             } catch (e) {
               // ignoring
             }
           }
-          return storeResult(selector as any).read();
+          return arg.storeResult(arg.selector).read();
         }).catch(e => {
-          if (!isEmpty(snapshot)) { //////////////////////////////////// what exactly does this do?
-            processPayload(snapshot);
+          // Revert optimistic update
+          if (!isEmpty(snapshot)) {
+            arg.processPayload(snapshot);
           }
           throw e;
-        }).finally(() => delete storeState.activeFutures[fullPath]);
+        }).finally(() => delete arg.storeState.activeFutures[fullPath]);
     };
-    const state = { storeValue: storeResult(selector as any).read(), error: null, isLoading: true, wasRejected: false, wasResolved: false } as FutureState<C>;
+    const state = { storeValue: arg.storeResult(arg.selector).read(), error: null, isLoading: true, wasRejected: false, wasResolved: false } as FutureState<C>;
     const result = {
-      read: () => storeResult(selector).read(),
+      read: () => arg.storeResult(arg.selector).read(),
       asPromise: () => promiseResult(),
       onChange: (fn) => {
         let subscribed = true;
@@ -253,10 +247,10 @@ export const processAsyncPayload = <S, C, X extends C & Array<any>, T extends Tr
       }
     } as Future<C>;
     Object.keys(augmentations.future).forEach(name => (result as any)[name] = augmentations.future[name](result));
-    storeState.activeFutures[fullPath] = result;
+    arg.storeState.activeFutures[fullPath] = result;
     return result
   } else {
-    processPayload(payload as C);
+    arg.processPayload(arg.payload as C);
   }
 }
 

@@ -53,11 +53,11 @@ export const replaceAll = <S, C, X extends C & Array<any>, T extends Trackabilit
 ) as StoreForAnArrayCommon<X, T>['replaceAll'];
 
 export const removeAll = <S, C, X extends C & Array<any>, T extends Trackability>(
-  { selector, isComponentStore, storeState, updateState }: CoreActionsState<S, C, X, T>,
+  arg: CoreActionsState<S, C, X, T>,
 ) => (updateOptions => {
-  validateSelector(selector, isComponentStore, storeState);
-  updateState({
-    selector,
+  validateSelector(arg.selector, arg.isComponentStore, arg.storeState);
+  arg.updateState({
+    selector: arg.selector,
     replacer: () => [],
     mutator: old => old.length = 0,
     actionName: 'removeAll()',
@@ -66,59 +66,71 @@ export const removeAll = <S, C, X extends C & Array<any>, T extends Trackability
 }) as StoreForAnArrayCommon<X, T>['removeAll'];
 
 export const insertIntoArray = <S, C, X extends C & Array<any>, T extends Trackability>(
-  { selector, isComponentStore, storeResult, storeState, updateState, pathReader }: CoreActionsState<S, C, X, T>,
-) => ((payload, insertOptions: UpdateAtIndex = {}) => {
-  validateSelector(selector, isComponentStore, storeState);
+  arg: CoreActionsState<S, C, X, T>,
+) => ((payload, updateOptions: UpdateAtIndex = {}) => {
+  validateSelector(arg.selector, arg.isComponentStore, arg.storeState);
   const processPayload = (payload: C) => {
     const { payloadFrozen, payloadCopied } = copyPayload(payload);
-    updateState({
-      selector,
+    arg.updateState({
+      selector: arg.selector,
       replacer: old => {
         const input = deepCopy(Array.isArray(payloadFrozen) ? payloadFrozen : [payloadFrozen]);
-        return (!isEmpty(insertOptions.atIndex)) ? [...old.slice(0, insertOptions.atIndex), ...input, ...old.slice(insertOptions.atIndex)] : [...old, ...input];
+        return (!isEmpty(updateOptions.atIndex)) ? [...old.slice(0, updateOptions.atIndex), ...input, ...old.slice(updateOptions.atIndex)] : [...old, ...input];
       },
-      mutator: old => old.splice((!isEmpty(insertOptions.atIndex)) ? insertOptions.atIndex! : old.length, 0, ...(Array.isArray(payloadCopied) ? payloadCopied : [payloadCopied])),
+      mutator: old => old.splice((!isEmpty(updateOptions.atIndex)) ? updateOptions.atIndex! : old.length, 0, ...(Array.isArray(payloadCopied) ? payloadCopied : [payloadCopied])),
       actionName: 'insert()',
-      payload: (!isEmpty(insertOptions.atIndex)) ? {
+      payload: (!isEmpty(updateOptions.atIndex)) ? {
         insertion: payloadFrozen,
-        atIndex: insertOptions.atIndex
-      } : {
-        insertion: payloadFrozen,
-      },
-      updateOptions: insertOptions as UpdateOptions<T, any>,
-    });
-  }
-  return processAsyncPayload(selector, payload, pathReader, storeResult, processPayload, insertOptions as UpdateOptions<T, any>, 'insert()', storeState);
-}) as StoreForAnArrayCommon<X, T>['insert'];
-
-export const patchOrInsertIntoObject = <S, C, X extends C & Array<any>, T extends Trackability>(
-  { selector, isComponentStore, storeState, updateState, storeResult, pathReader, type }: CoreActionsState<S, C, X, T> & { type: 'patch' | 'insert', },
-) => ((payload, updateOptions) => {
-  validateSelector(selector, isComponentStore, storeState);
-  const processPayload = (payload: Partial<C>) => {
-    const { payloadFrozen, payloadCopied } = copyPayload(payload);
-    updateState({
-      selector,
-      replacer: old => ({ ...old, ...payloadFrozen }),
-      mutator: old => Object.assign(old, payloadCopied),
-      actionName: `${type}()`,
-      payload: type === 'patch' ? {
-        patch: payloadFrozen,
+        atIndex: updateOptions.atIndex
       } : {
         insertion: payloadFrozen,
       },
       updateOptions: updateOptions as UpdateOptions<T, any>,
     });
   }
-  return processAsyncPayload(selector, payload, pathReader, storeResult, processPayload, updateOptions as UpdateOptions<T, any>, 'patch()', storeState);
+  return processAsyncPayload<S, C, X>({
+    ...arg,
+    processPayload,
+    updateOptions,
+    suffix: 'insert()',
+    payload,
+  });
+}) as StoreForAnArrayCommon<X, T>['insert'];
+
+export const patchOrInsertIntoObject = <S, C, X extends C & Array<any>, T extends Trackability>(
+  arg: CoreActionsState<S, C, X, T> & { type: 'patch' | 'insert', },
+) => ((payload, updateOptions) => {
+  validateSelector(arg.selector, arg.isComponentStore, arg.storeState);
+  const processPayload = (payload: Partial<C>) => {
+    const { payloadFrozen, payloadCopied } = copyPayload(payload);
+    arg.updateState({
+      selector: arg.selector,
+      replacer: old => ({ ...old, ...payloadFrozen }),
+      mutator: old => Object.assign(old, payloadCopied),
+      actionName: `${arg.type}()`,
+      payload: arg.type === 'patch' ? {
+        patch: payloadFrozen,
+      } : {
+        insertion: payloadFrozen,
+      },
+      updateOptions,
+    });
+  }
+  return processAsyncPayload({
+    ...arg,
+    payload,
+    processPayload,
+    updateOptions,
+    suffix: 'patch()',
+  });
 }) as StoreForAnObject<C, T>['patch'];
 
 export const remove = <S, C, X extends C & Array<any>, T extends Trackability>(
-  { isComponentStore, selector, storeState, updateState, pathReader, storeResult }: CoreActionsState<S, C, X, T>,
+  arg: CoreActionsState<S, C, X, T>,
 ) => ((payload, updateOptions) => {
-  validateSelector(selector, isComponentStore, storeState);
-  const processPayload = (payload: any) => updateState({
-    selector,
+  validateSelector(arg.selector, arg.isComponentStore, arg.storeState);
+  const processPayload = (payload: any) => arg.updateState({
+    selector: arg.selector,
     replacer: old => { const res = Object.assign({}, old); delete (res as any)[payload]; return res; },
     mutator: old => delete (old as any)[payload],
     actionName: 'remove()',
@@ -127,46 +139,57 @@ export const remove = <S, C, X extends C & Array<any>, T extends Trackability>(
     },
     updateOptions,
   });
-  return processAsyncPayload(selector, payload, pathReader, storeResult, processPayload, updateOptions as UpdateOptions<T, any>, 'remove()', storeState);
+  return processAsyncPayload({
+    ...arg,
+    processPayload,
+    updateOptions,
+    suffix: 'remove()',
+    payload,
+  });
 }) as StoreForAnObject<C, T>['remove'];
 
-
 export const deepMerge = <S, C, X extends C & Array<any>, T extends Trackability>(
-  { selector, isComponentStore, storeState, pathReader, updateState, storeResult }: CoreActionsState<S, C, X, T>,
+  arg: CoreActionsState<S, C, X, T>,
 ) => ((
   payload: C | (() => Promise<C>),
   updateOptions: UpdateOptions<T, any>,
-  ) => {
-    validateSelector(selector, isComponentStore, storeState);
-    const processPayload = (payload: any) => updateState({
-      selector,
-      replacer: old => mergeDeepImmutable(old, payload),
-      mutator: old => mergeDeepMutable(old, payload),
-      actionName: 'deepMerge()',
-      payload: {
-        toMerge: payload,
-      },
-      updateOptions,
-    });
-    return processAsyncPayload(selector, payload, pathReader, storeResult, processPayload, updateOptions as UpdateOptions<T, any>, 'deepMerge()', storeState);
-  }) as StoreForAnObject<C, T>['deepMerge'];
+) => {
+  validateSelector(arg.selector, arg.isComponentStore, arg.storeState);
+  const processPayload = (payload: any) => arg.updateState({
+    selector: arg.selector,
+    replacer: old => mergeDeepImmutable(old, payload),
+    mutator: old => mergeDeepMutable(old, payload),
+    actionName: 'deepMerge()',
+    payload: {
+      toMerge: payload,
+    },
+    updateOptions,
+  });
+  return processAsyncPayload({
+    ...arg,
+    payload,
+    processPayload,
+    suffix: 'deepMerge()',
+    updateOptions,
+  });
+}) as StoreForAnObject<C, T>['deepMerge'];
 
 export const upsertMatching = <S, C, X extends C & Array<any>, T extends Trackability>(
-  { selector, isComponentStore, storeState, getCurrentState, updateState, pathReader, storeResult }: CoreActionsState<S, C, X, T>
+  arg: CoreActionsState<S, C, X, T>
 ) => (getProp => {
-  validateSelector(selector, isComponentStore, storeState);
+  validateSelector(arg.selector, arg.isComponentStore, arg.storeState);
   return {
     with: (payload, updateOptions) => {
-      validateSelector(selector, isComponentStore, storeState);
+      validateSelector(arg.selector, arg.isComponentStore, arg.storeState);
       const processPayload = (payload: C) => {
-        const segs = !getProp ? [] : createPathReader((selector(getCurrentState()) as X)[0] || {}).readSelector(getProp);
+        const segs = !getProp ? [] : createPathReader((arg.selector(arg.getCurrentState()) as X)[0] || {}).readSelector(getProp);
         const { payloadFrozen, payloadCopied } = copyPayload(payload);
         const payloadFrozenArray: X[0][] = Array.isArray(payloadFrozen) ? payloadFrozen : [payloadFrozen];
         const payloadCopiedArray: X[0][] = Array.isArray(payloadCopied) ? payloadCopied : [payloadCopied];
         let replacementCount = 0;
         let insertionCount = 0;
-        updateState({
-          selector,
+        arg.updateState({
+          selector: arg.selector,
           replacer: old => {
             const replacements = old.map(oe => {
               const found = payloadFrozenArray.find(ne => !getProp ? oe === ne : getProp(oe) === getProp(ne));
@@ -194,20 +217,32 @@ export const upsertMatching = <S, C, X extends C & Array<any>, T extends Trackab
           updateOptions: updateOptions as UpdateOptions<T, any>,
         });
       }
-      return processAsyncPayload(selector, payload, pathReader, storeResult, processPayload, updateOptions, 'upsertMatching()', storeState);
+      return processAsyncPayload({
+        ...arg,
+        processPayload,
+        updateOptions,
+        suffix: 'upsertMatching()',
+        payload,
+      });
     }
   };
 }) as StoreForAnArrayOfObjects<X, T>['upsertMatching'];
 
 export const replace = <S, C, X extends C & Array<any>, T extends Trackability>(
-  { selector, isComponentStore, storeState, pathReader, updateState, storeResult, name }: CoreActionsState<S, C, X, T> & { name: string },
+  arg: CoreActionsState<S, C, X, T> & { name: string },
 ) => (
   payload: C | (() => Promise<C>),
   updateOptions: UpdateOptions<T, any>,
   ) => {
-    validateSelector(selector, isComponentStore, storeState);
-    const processPayload = (payload: C) => replacePayload(pathReader, updateState, selector, name, payload as C, updateOptions);
-    return processAsyncPayload(selector, payload, pathReader, storeResult, processPayload, updateOptions, name + '()', storeState);
+    validateSelector(arg.selector, arg.isComponentStore, arg.storeState);
+    const processPayload = (payload: C) => replacePayload(arg.pathReader, arg.updateState, arg.selector, arg.name, payload as C, updateOptions);
+    return processAsyncPayload({
+      ...arg,
+      processPayload,
+      updateOptions,
+      suffix: arg.name + '()',
+      payload,
+    });
   };
 
 export function replacePayload<S, C, X extends C & Array<any>, T extends Trackability>(

@@ -22,30 +22,27 @@ export const getSegments = <S, C, X extends C & Array<any>, P>(
 }
 
 export const andWhere = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
-  context: ArrayOperatorState<S, C, X, F, T>,
+  arg: ArrayOperatorState<S, C, X, F, T>,
 ) => (prop => {
-  const { whereClauseString, whereClauseStrings, whereClauseSpecs, recurseWhere, criteria, fn } = context;
-  whereClauseStrings.push(`${whereClauseString} &&`);
-  whereClauseSpecs.push({ filter: o => criteria(o, fn), type: 'and' });
-  return recurseWhere(prop);
+  arg.whereClauseStrings.push(`${arg.whereClauseString} &&`);
+  arg.whereClauseSpecs.push({ filter: o => arg.criteria(o, arg.fn), type: 'and' });
+  return arg.recurseWhere(prop);
 }) as ArrayOfElementsAction<X, F, T>['andWhere'];
 
 export const orWhere = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
-  context: ArrayOperatorState<S, C, X, F, T>,
+  arg: ArrayOperatorState<S, C, X, F, T>,
 ) => (prop => {
-  const { whereClauseString, whereClauseStrings, whereClauseSpecs, recurseWhere, criteria, fn } = context;
-  whereClauseStrings.push(`${whereClauseString} ||`);
-  whereClauseSpecs.push({ filter: o => criteria(o, fn), type: 'or' });
-  return recurseWhere(prop);
+  arg.whereClauseStrings.push(`${arg.whereClauseString} ||`);
+  arg.whereClauseSpecs.push({ filter: o => arg.criteria(o, arg.fn), type: 'or' });
+  return arg.recurseWhere(prop);
 }) as ArrayOfElementsAction<X, F, T>['orWhere'];
 
 export const remove = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
-  context: ArrayOperatorState<S, C, X, F, T>,
-) => ((arg: any, updateOptions: any) => {
-  const { updateState, selector, type, pathReader, storeResult, whereClauseString, whereClauseStrings, getCurrentState } = context;
-  const elementIndices = completeWhereClause(context);
-  const processPayload = () => updateState({
-    selector,
+  arg: ArrayOperatorState<S, C, X, F, T>,
+) => ((payload: any, updateOptions: any) => {
+  const elementIndices = completeWhereClause(arg);
+  const processPayload = () => arg.updateState({
+    selector: arg.selector,
     replacer: old => old.filter((o, i) => !elementIndices.includes(i)),
     mutator: old => {
       for (var i = 0, j = 0; i < old.length; i++, j++) {
@@ -54,61 +51,79 @@ export const remove = <S, C, X extends C & Array<any>, F extends FindOrFilter, T
         }
       }
     },
-    actionName: `${type}().remove()`,
+    actionName: `${arg.type}().remove()`,
     payload: {
-      where: whereClauseStrings.join(' '),
-      toRemove: (selector(getCurrentState()) as X)[type]((e, i) => elementIndices.includes(i)),
+      where: arg.whereClauseStrings.join(' '),
+      toRemove: (arg.selector(arg.getCurrentState()) as X)[arg.type]((e, i) => elementIndices.includes(i)),
     },
-    updateOptions: typeof arg === 'function' ? updateOptions : arg,
+    updateOptions: typeof payload === 'function' ? updateOptions : payload,
   });
-  return processAsyncPayload(((s: any) => (selector(s) as any)[context.type]((e: any) => bundleCriteria(e, context.whereClauseSpecs))) as any,
-    arg, pathReader, storeResult, processPayload, updateOptions as UpdateOptions<T, any>, type + '(' + whereClauseString + ').remove()', context.storeState);
+  return processAsyncPayload({
+    ...arg,
+    selector: ((s: any) => (arg.selector(s) as any)[arg.type]((e: any) => bundleCriteria(e, arg.whereClauseSpecs))) as any,
+    payload,
+    processPayload,
+    updateOptions,
+    suffix: arg.type + '(' + arg.whereClauseString + ').remove()',
+  });
 }) as ArrayOfObjectsAction<X, F, T>['remove'];
 
 export const patch = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
-  context: ArrayOperatorState<S, C, X, F, T>,
+  arg: ArrayOperatorState<S, C, X, F, T>,
 ) => ((payload, updateOptions) => {
-  const { updateState, selector, type, pathReader, storeResult, whereClauseString } = context;
-  const elementIndices = completeWhereClause(context);
+  const elementIndices = completeWhereClause(arg);
   const processPayload = (payload: Partial<C>) => {
     const { payloadFrozen, payloadCopied } = copyPayload(payload);
-    updateState({
-      selector,
+    arg.updateState({
+      selector: arg.selector,
       replacer: old => old.map((o, i) => elementIndices.includes(i) ? { ...o, ...payloadFrozen } : o),
       mutator: old => elementIndices.forEach(i => Object.assign(old[i], payloadCopied)),
-      actionName: `${type}().patch()`,
+      actionName: `${arg.type}().patch()`,
       payload: {
-        where: whereClauseString,
+        where: arg.whereClauseString,
         patch: payloadFrozen,
       },
       updateOptions: updateOptions as UpdateOptions<T, any>,
     });
   }
-  return processAsyncPayload(((s: any) => (selector(s) as any)[context.type]((e: any) => bundleCriteria(e, context.whereClauseSpecs))) as any,
-    payload, pathReader, storeResult, processPayload, updateOptions as UpdateOptions<T, any>, type + '(' + whereClauseString + ').patch()', context.storeState);
+  return processAsyncPayload({
+    ...arg,
+    selector: ((s: any) => (arg.selector(s) as any)[arg.type]((e: any) => bundleCriteria(e, arg.whereClauseSpecs))) as any,
+    payload,
+    processPayload,
+    updateOptions,
+    suffix: arg.type + '(' + arg.whereClauseString + ').patch()',
+  });
 }) as ArrayOfObjectsAction<X, F, T>['patch'];
 
 export const replace = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
-  context: ArrayOperatorState<S, C, X, F, T>,
+  arg: ArrayOperatorState<S, C, X, F, T>,
 ) => ((payload, updateOptions) => {
-  const { updateState, selector, type, whereClauseString, pathReader, storeResult } = context;
   const processPayload = (payload: C) => {
     const { payloadFrozen, payloadCopied } = copyPayload(payload);
-    const elementIndices = completeWhereClause(context);
-    updateState({
-      selector,
+    const elementIndices = completeWhereClause(arg);
+    arg.updateState({
+      selector: arg.selector,
       replacer: old => old.map((o, i) => elementIndices.includes(i) ? payloadFrozen : o),
       mutator: old => { old.forEach((o, i) => { if (elementIndices.includes(i)) { old[i] = payloadCopied; } }) },
-      actionName: `${type}().replace()`,
+      actionName: `${arg.type}().replace()`,
       payload: {
-        where: whereClauseString,
+        where: arg.whereClauseString,
         replacement: payloadFrozen,
       },
       updateOptions: updateOptions as UpdateOptions<T, any>,
     })
   }
-  return processAsyncPayload(((s: any) => (selector(s) as any)[context.type]((e: any) => bundleCriteria(e, context.whereClauseSpecs))) as any,
-    payload, pathReader, storeResult, processPayload, updateOptions as UpdateOptions<T, any>, type + '(' + whereClauseString + ').replace()', context.storeState);
+  return processAsyncPayload<S, C, X>({
+    selector: ((s: any) => (arg.selector(s) as any)[arg.type]((e: any) => bundleCriteria(e, arg.whereClauseSpecs))) as any,
+    payload,
+    pathReader: arg.pathReader,
+    storeResult: arg.storeResult,
+    processPayload,
+    updateOptions,
+    suffix: arg.type + '(' + arg.whereClauseString + ').replace()',
+    storeState: arg.storeState,
+  });
 }) as ArrayOfElementsCommonAction<X, F, T>['replace'];
 
 export const onChange = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
@@ -143,17 +158,16 @@ export const stopBypassingPromises = <S, C, X extends C & Array<any>, F extends 
 }
 
 const completeWhereClause = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
-  context: ArrayOperatorState<S, C, X, F, T>,
+  arg: ArrayOperatorState<S, C, X, F, T>,
 ) => {
-  const { whereClauseStrings, whereClauseString, whereClauseSpecs, criteria, fn, getCurrentState, selector, type } = context;
-  whereClauseStrings.push(whereClauseString);
-  whereClauseSpecs.push({ filter: o => criteria(o, fn), type: 'last' });
-  validateSelectorFn('get', context.storeState, context.selector);
-  const elementIndices = type === 'find'
-    ? [(selector(getCurrentState()) as X).findIndex(e => bundleCriteria(e, whereClauseSpecs))]
-    : (selector(getCurrentState()) as X).map((e, i) => bundleCriteria(e, whereClauseSpecs) ? i : null).filter(i => i !== null) as number[];
-  if (type === 'find' && elementIndices[0] === -1) { throw new Error(errorMessages.NO_ARRAY_ELEMENT_FOUND); }
-  context.storeState.selector = (state: S) => (context.selector(state) as X)[type]((e, i) => elementIndices.includes(i));
+  arg.whereClauseStrings.push(arg.whereClauseString);
+  arg.whereClauseSpecs.push({ filter: o => arg.criteria(o, arg.fn), type: 'last' });
+  validateSelectorFn('get', arg.storeState, arg.selector);
+  const elementIndices = arg.type === 'find'
+    ? [(arg.selector(arg.getCurrentState()) as X).findIndex(e => bundleCriteria(e, arg.whereClauseSpecs))]
+    : (arg.selector(arg.getCurrentState()) as X).map((e, i) => bundleCriteria(e, arg.whereClauseSpecs) ? i : null).filter(i => i !== null) as number[];
+  if (arg.type === 'find' && elementIndices[0] === -1) { throw new Error(errorMessages.NO_ARRAY_ELEMENT_FOUND); }
+  arg.storeState.selector = (state: S) => (arg.selector(state) as X)[arg.type]((e, i) => elementIndices.includes(i));
   return elementIndices;
 }
 
