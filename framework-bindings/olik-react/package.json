@@ -18,7 +18,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "olik": "0.0.41"
+    "olik": "0.0.42"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^5.11.10",

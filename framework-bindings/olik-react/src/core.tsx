@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/rules-of-hooks */
 import * as core from 'olik';
-import { FutureState, SelectorFromANestedStore, SelectorFromAStore, SelectorFromAStoreEnforcingTags } from 'olik';
+import { FutureState } from 'olik';
 import React from 'react';
 
 export * from 'olik';
@@ -92,14 +92,14 @@ export const init = () => {
   })
 }
 
-export const useNestedStore = function<C>(
+export const useComponentStore = function<C>(
   initialState: C,
-  options: core.OptionsForMakingANestedStore,
+  options: core.OptionsForMakingAComponentStore,
 ) {
   const initState = React.useRef(initialState);
   const opts = React.useRef(options);
   const select = React.useMemo(() => {
-    return core.createNestedStore(initState.current, opts.current);
+    return core.createComponentStore(initState.current, opts.current);
   }, []);
   React.useEffect(() => {
     return () => {
@@ -107,7 +107,7 @@ export const useNestedStore = function<C>(
       // In dev mode, React.StrictMode is enabled. We cannot allow the store to be detached in this instance because an 
       // error will be thrown the next time a developer saves a code update and then attempts to update the nested store state.
       if (!devMode) {
-        select().detachFromGlobalStore();
+        select().detachFromRootStore();
       } else { // Reset the state. Note for future: It may be safest that this is the ONLY correct behavior (rather than detaching)
         select().reset();
       }

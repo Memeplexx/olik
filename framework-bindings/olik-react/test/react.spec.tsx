@@ -4,7 +4,7 @@ import { screen, waitFor } from '@testing-library/dom';
 import { render } from '@testing-library/react';
 import React from 'react';
 
-import { createGlobalStore, deriveFrom, init, useNestedStore } from '../src';
+import { createRootStore, deriveFrom, init, useComponentStore } from '../src';
 
 describe('React', () => {
 
@@ -19,14 +19,14 @@ describe('React', () => {
   })
 
   it('should create and update a store', () => {
-    const select = createGlobalStore(initialState, { devtools: false });
+    const select = createRootStore(initialState, { devtools: false });
     select(s => s.object.property)
       .replace('test');
     expect(select().read().object.property).toEqual('test');
   })
 
   it('should useSelector', () => {
-    const select = createGlobalStore(initialState, { devtools: false });
+    const select = createRootStore(initialState, { devtools: false });
     const App = () => {
       const result = select(s => s.object.property).useState();
       return (
@@ -43,7 +43,7 @@ describe('React', () => {
   });
 
   it('should useDerivation with no deps', async () => {
-    const select = createGlobalStore(initialState, { devtools: false });
+    const select = createRootStore(initialState, { devtools: false });
     let calcCount = 0;
     const App = () => {
       const result = deriveFrom(
@@ -69,7 +69,7 @@ describe('React', () => {
   });
 
   it('should useDerivation with deps', async () => {
-    const select = createGlobalStore(initialState, { devtools: false });
+    const select = createRootStore(initialState, { devtools: false });
     let calcCount = 0;
     const App = () => {
       const [str, setStr] = React.useState('');
@@ -98,10 +98,10 @@ describe('React', () => {
     await waitFor(() => expect(calcCount).toEqual(2));
   });
 
-  it('should create a nested store without a parent', () => {
+  it('should create a component store without a parent', () => {
     let renderCount = 0;
     const App = () => {
-      const select = useNestedStore(initialState, { componentName: 'unhosted', instanceName: '0', dontTrackWithDevtools: true });
+      const select = useComponentStore(initialState, { componentName: 'unhosted', instanceName: '0', dontTrackWithDevtools: true });
       const result = select(s => s.object.property).useState();
       renderCount++;
       return (
@@ -121,16 +121,16 @@ describe('React', () => {
     expect(renderCount).toEqual(2);
   });
 
-  it('should create a nested store with a parent', () => {
-    const parentSelect = createGlobalStore({
+  it('should create a component store with a parent', () => {
+    const parentSelect = createRootStore({
       ...initialState,
-      nested: {
+      components: {
         component: {} as { [key: string]: { prop: string } }
       }
     }, { devtools: false });
     let renderCount = 0;
     const Child = () => {
-      const select = useNestedStore({ prop: '' }, { componentName: 'component', instanceName: '0', dontTrackWithDevtools: true });
+      const select = useComponentStore({ prop: '' }, { componentName: 'component', instanceName: '0', dontTrackWithDevtools: true });
       const result = select(s => s.prop).useState();
       renderCount++;
       return (
@@ -151,19 +151,19 @@ describe('React', () => {
     expect(renderCount).toEqual(1);
     (screen.getByTestId('btn') as HTMLButtonElement).click();
     expect(renderCount).toEqual(2);
-    expect(parentSelect(s => s.nested.component).read()).toEqual({ '0': { prop: 'test' } });
+    expect(parentSelect(s => s.components.component).read()).toEqual({ '0': { prop: 'test' } });
   });
 
 
-  it('nested store should receive props from parent', async () => {
-    const parentSelect = createGlobalStore({
+  it('component store should receive props from parent', async () => {
+    const parentSelect = createRootStore({
       ...initialState,
-      nested: {
+      components: {
         component2: {} as { [key: string]: { prop: string, num: number } }
       }
     }, { devtools: false });
     const Child: React.FunctionComponent<{ num: number }> = (props) => {
-      const select = useNestedStore({ prop: 0 }, { componentName: 'component2', instanceName: '0', dontTrackWithDevtools: true });
+      const select = useComponentStore({ prop: 0 }, { componentName: 'component2', instanceName: '0', dontTrackWithDevtools: true });
       React.useEffect(() => select(s => s.prop).replace(props.num), [props.num, select])
       const result = select(s => s.prop).useState();
       return (
@@ -183,11 +183,11 @@ describe('React', () => {
     }
     render(<Parent />);
     (screen.getByTestId('btn') as HTMLButtonElement).click();
-    await waitFor(() => expect(parentSelect(s => s.nested.component2).read()).toEqual({ '0': { prop: 1 } }));
+    await waitFor(() => expect(parentSelect(s => s.components.component2).read()).toEqual({ '0': { prop: 1 } }));
   })
 
   it('should respond to async actions', async () => {
-    const select = createGlobalStore(initialState, { devtools: false });
+    const select = createRootStore(initialState, { devtools: false });
     const App = () => {
       const state = select(s => s.object.property).useState();
       return (
@@ -204,7 +204,7 @@ describe('React', () => {
   });
 
   it('should respond to async queries', async () => {
-    const select = createGlobalStore(initialState, { devtools: false });
+    const select = createRootStore(initialState, { devtools: false });
     const fetchString = () => new Promise<string>(resolve => setTimeout(() => resolve('test'), 10))
     const App = () => {
       const {
@@ -234,7 +234,7 @@ describe('React', () => {
   it('should be able to paginate', async () => {
     const todos = new Array(15).fill(null).map((e, i) => ({ id: i + 1, text: `value ${i + 1}` }));
     type Todo = { id: Number, text: string };
-    const select = createGlobalStore({
+    const select = createRootStore({
       toPaginate: {} as { [key: string]: Todo[] },
     }, { devtools: false });
     const fetchTodos = (index: number) => new Promise<Todo[]>(resolve => setTimeout(() => resolve(todos.slice(index * 10, (index * 10) + 10)), 10));
