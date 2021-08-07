@@ -19,7 +19,8 @@
   "license": "ISC",
   "dependencies": {
     "olik": "0.0.42",
-    "@angular/core": "~10.2.0"
+    "@angular/core": "~10.2.0",
+    "rxjs": "~6.5.4"
   },
   "devDependencies": {
     "@testing-library/jest-dom": "^5.11.10",
