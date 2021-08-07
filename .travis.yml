@@ -3,5 +3,3 @@ node_js:
   - "10"
 install:
   - yarn
-  - yarn --cwd ./framework-bindings/olik-react
-  - yarn --cwd ./framework-bindings/olik-ng
