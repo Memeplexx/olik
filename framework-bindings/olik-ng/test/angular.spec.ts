@@ -3,11 +3,11 @@ import { catchError, skip } from 'rxjs/operators';
 import { Observable } from 'rxjs';
 
 import {
-  combineComponentObservables,
+  // combineComponentObservables,
   createRootStore,
   createComponentStore,
   deriveFrom,
-  OlikNgModule,
+  // OlikNgModule,
 } from '../src/core';
 
 describe('Angular', () => {
@@ -19,7 +19,7 @@ describe('Angular', () => {
   };
 
   beforeEach(() => {
-    new OlikNgModule(null as any);
+    // new OlikNgModule(null as any);
   })
 
   it('', () => {
@@ -32,23 +32,23 @@ describe('Angular', () => {
     })
   })
 
-  it('should create and update a store', () => {
-    const select = createRootStore(initialState, { devtools: false });
-    select(s => s.object.property)
-      .replace('test');
-    expect(select().read().object.property).toEqual('test');
-  })
+  // it('should create and update a store', () => {
+  //   const select = createRootStore(initialState, { devtools: false });
+  //   select(s => s.object.property)
+  //     .replace('test');
+  //   expect(select().read().object.property).toEqual('test');
+  // })
 
-  it('should be able to observe state updates', done => {
-    const select = createRootStore(initialState, { devtools: false });
-    const obs$ = select(s => s.object.property).observe();
-    const payload = 'test';
-    obs$.pipe(skip(1)).subscribe(val => {
-      expect(val).toEqual(payload);
-      done();
-    });
-    select(s => s.object.property).replace(payload);
-  })
+  // it('should be able to observe state updates', done => {
+  //   const select = createRootStore(initialState, { devtools: false });
+  //   const obs$ = select(s => s.object.property).observe();
+  //   const payload = 'test';
+  //   obs$.pipe(skip(1)).subscribe(val => {
+  //     expect(val).toEqual(payload);
+  //     done();
+  //   });
+  //   select(s => s.object.property).replace(payload);
+  // })
 
   // it('should be able to observe the status of a resolved fetch', done => {
   //   const select = createRootStore(initialState, { devtools: false });
