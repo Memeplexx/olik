@@ -7,7 +7,7 @@ import commonJS from 'rollup-plugin-commonjs'
 
 export default {
   input: `src/index.ts`,
-  external: ['react', 'olik'],
+  external: ['olik'],
   output: [
     {
       file: pkg.main,
@@ -20,12 +20,10 @@ export default {
     {
       file: pkg.browser,
       format: 'umd',
-      name: 'oulikreact', // the global which can be used in a browser
+      name: 'olik-ng', // the global which can be used in a browser
     }
   ].map(e => ({
-    ...e, sourcemap: true, globals: {
-      'react': 'React'
-    }
+    ...e, sourcemap: true
   })),
   plugins: [
     resolve(),

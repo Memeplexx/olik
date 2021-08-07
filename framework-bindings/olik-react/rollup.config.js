@@ -20,7 +20,7 @@ export default {
     {
       file: pkg.browser,
       format: 'umd',
-      name: 'oulikreact', // the global which can be used in a browser
+      name: 'oulik-react', // the global which can be used in a browser
     }
   ].map(e => ({
     ...e, sourcemap: true, globals: {

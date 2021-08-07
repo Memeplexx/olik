@@ -8,7 +8,7 @@ import {
   deriveFrom,
 } from 'olik';
 // import { OlikNgModule } from '../src';
-import {test} from '../src';
+import { test } from '../src';
 
 describe('Angular', () => {
 
