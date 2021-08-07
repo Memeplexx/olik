@@ -120,21 +120,15 @@ describe('Angular', () => {
 
   it('should observe a derivation', done => {
     const select = createRootStore(initialState, { devtools: false });
-    // deriveFrom(
-    //   select(s => s.object.property),
-    //   select(s => s.string)
-    // ).usingExpensiveCalc((a, b) => a + b)
-    //   .observe()
-    //   .subscribe(val => {
-    //     expect(val).toEqual('ab');
-    //     done();
-    //   });
     deriveFrom(
       select(s => s.object.property),
       select(s => s.string)
     ).usingExpensiveCalc((a, b) => a + b)
-      .read();
-    done();
+      .observe()
+      .subscribe(val => {
+        expect(val).toEqual('ab');
+        done();
+      });
   })
 
   it('should observe a nested store update', done => {
