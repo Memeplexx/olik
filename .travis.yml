@@ -4,4 +4,4 @@ node_js:
 install:
   - yarn
   - yarn --cwd ./framework-bindings/olik-react
-  - yarn --cwd ./framework-bindings/olik-angular
+  - yarn --cwd ./framework-bindings/olik-ng
