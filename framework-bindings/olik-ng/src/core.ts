@@ -1,7 +1,9 @@
+import { Observable } from 'rxjs';
+
 export * from 'olik';
 
 declare module 'olik' {
   interface StoreOrDerivation<C> {
-    useState: () => C;
+    observe: () => Observable<C>;
   }
 }
