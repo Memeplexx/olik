@@ -23,6 +23,8 @@
     "src/**/*"
   ],
   "exclude": [
-    "dist/**/*"
+    "dist/**/*",
+    "node_modules/**/*",
+    "../olik-ng/src/core.ts"
   ]
 }
