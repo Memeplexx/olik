@@ -19,7 +19,6 @@ describe('tags', () => {
       replacement: payload,
     });
     expect(select().read().object.property).toEqual(payload);
-    expect(testState.currentMutableState).toEqual(select().read());
   })
 
   it('should sanitize tags correctly', () => {
@@ -37,7 +36,6 @@ describe('tags', () => {
       type: `test.replace() [${tag}x]`,
       replacement: payload,
     });
-    expect(testState.currentMutableState).toEqual(select().read());
   })
 
   it('should accept optional tags', () => {

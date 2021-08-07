@@ -19,7 +19,6 @@ describe('array', () => {
       type: 'array.removeAll()',
     });
     expect(select().read().array).toEqual([]);
-    expect(testState.currentMutableState).toEqual(select().read());
   });
 
   it('should replaceAll()', () => {
@@ -32,7 +31,6 @@ describe('array', () => {
       replacement: payload,
     });
     expect(select().read().array).toEqual(payload);
-    expect(testState.currentMutableState).toEqual(select().read());
   });
 
   it('should reset()', () => {
@@ -44,7 +42,6 @@ describe('array', () => {
       replacement: initialState.array,
     });
     expect(select().read().array).toEqual(initialState.array);
-    expect(testState.currentMutableState).toEqual(select().read());
   });
 
   it('should insert() one', () => {
@@ -57,7 +54,6 @@ describe('array', () => {
       insertion: payload,
     });
     expect(select().read().array).toEqual([...initialState.array, payload]);
-    expect(testState.currentMutableState).toEqual(select().read());
   })
 
   it('should insert() one at index', () => {
@@ -71,7 +67,6 @@ describe('array', () => {
       atIndex: 1
     });
     expect(select().read().array).toEqual([initialState.array[0], payload, initialState.array[1], initialState.array[2]]);
-    expect(testState.currentMutableState).toEqual(select().read());
   })
 
   it('should insert() many', () => {
@@ -84,7 +79,6 @@ describe('array', () => {
       insertion: payload,
     });
     expect(select().read().array).toEqual([...initialState.array, ...payload]);
-    expect(testState.currentMutableState).toEqual(select().read());
   })
 
   it('should insert() many at index', () => {
@@ -98,7 +92,6 @@ describe('array', () => {
       atIndex: 1
     });
     expect(select().read().array).toEqual([initialState.array[0], ...payload, initialState.array[1], initialState.array[2]]);
-    expect(testState.currentMutableState).toEqual(select().read());
   })
 
   it('should be able to upsertMatching() with multiple elements, replacing and inserting', () => {
@@ -114,7 +107,6 @@ describe('array', () => {
       insertionCount: 1,
     });
     expect(select().read().array).toEqual([{ id: 1, value: 'one' }, { id: 2, value: 'twoo' }, { id: 3, value: 'threee' }, { id: 4, value: 'four' }]);
-    expect(testState.currentMutableState).toEqual(select().read());
   });
 
   it('should upsertMatching() with one element replacing', () => {
@@ -130,7 +122,6 @@ describe('array', () => {
       replacementCount: 1,
     });
     expect(select().read().array).toEqual([initialState.array[0], payload, initialState.array[2]]);
-    expect(testState.currentMutableState).toEqual(select().read());
   });
 
   it('should upsertMatching() with one element inserting', () => {
@@ -146,7 +137,6 @@ describe('array', () => {
       replacementCount: 0,
     });
     expect(select().read().array).toEqual([...initialState.array, payload]);
-    expect(testState.currentMutableState).toEqual(select().read());
   });
 
 });

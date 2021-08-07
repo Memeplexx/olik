@@ -15,7 +15,6 @@ describe('Root', () => {
       replacement: payload,
     })
     expect(select().read()).toEqual({ hello: 'test', another: ['test'] });
-    expect(testState.currentMutableState).toEqual(select().read());
   })
 
   it('object.property.update()', () => {
@@ -28,7 +27,6 @@ describe('Root', () => {
       type: 'x.replace()',
       replacement: payload,
     })
-    expect(testState.currentMutableState).toEqual(select().read());
   })
 
   it('array.insert()', () => {
@@ -40,7 +38,6 @@ describe('Root', () => {
       insertion: payload,
     })
     expect(select().read()).toEqual([{ id: 1, text: 'hello' }]);
-    expect(testState.currentMutableState).toEqual(select().read());
   })
 
   it('number.replace()', () => {
@@ -52,7 +49,6 @@ describe('Root', () => {
       replacement: payload,
     })
     expect(select().read()).toEqual(3);
-    expect(testState.currentMutableState).toEqual(select().read());
   })
 
   it('boolean.replace()', () => {
@@ -64,7 +60,6 @@ describe('Root', () => {
       replacement: payload,
     })
     expect(select().read()).toEqual(payload);
-    expect(testState.currentMutableState).toEqual(select().read());
   })
 
   it('union.replace()', () => {
@@ -77,7 +72,6 @@ describe('Root', () => {
       replacement: payload,
     })
     expect(select().read()).toEqual(payload);
-    expect(testState.currentMutableState).toEqual(select().read());
   })
 
   it('string.replace()', () => {
@@ -89,7 +83,6 @@ describe('Root', () => {
       replacement: payload,
     })
     expect(select().read()).toEqual('test');
-    expect(testState.currentMutableState).toEqual(select().read());
   })
 
   it('replaceAll()', () => {
@@ -101,7 +94,6 @@ describe('Root', () => {
       replacement: payload,
     })
     expect(select().read()).toEqual(['four', 'five', 'six', 'seven']);
-    expect(testState.currentMutableState).toEqual(select().read());
   })
 
   it('find().replace()', () => {
@@ -116,7 +108,6 @@ describe('Root', () => {
       where: `element === two`,
     })
     expect(select().read()).toEqual(['one', 'twoo', 'three']);
-    expect(testState.currentMutableState).toEqual(select().read());
   })
 
   it('insert()', () => {
@@ -127,7 +118,6 @@ describe('Root', () => {
       insertion: 'two'
     });
     expect(select().read()).toEqual(['one', 'two']);
-    expect(testState.currentMutableState).toEqual(select().read());
   })
 
   it('find().replace()', () => {
@@ -139,7 +129,6 @@ describe('Root', () => {
       where: 'element.match(/^h/)',
     });
     expect(select().read()).toEqual(['another']);
-    expect(testState.currentMutableState).toEqual(select().read());
   })
 
 });

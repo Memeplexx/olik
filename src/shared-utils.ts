@@ -1,8 +1,8 @@
 import { augmentations } from './augmentations';
 import { Future, FutureState, Selector } from './shapes-external';
-import { PathReader, StoreState } from './shapes-internal';
+import { StoreState } from './shapes-internal';
 import { errorMessages, expressionsNotAllowedInSelectorFunction } from './shared-consts';
-import { libState } from './shared-state';
+import { libState, testState } from './shared-state';
 
 export function deepFreeze<T extends Object>(o: T): T {
   Object.freeze(o);
@@ -79,46 +79,41 @@ export function copyObject<T>(oldObj: T, newObj: T, segs: string[], action: (new
   }
 }
 
-export function createPathReader<S extends Object>(state: S) {
-  return (() => {
-    const mutableStateCopy = deepCopy(state);
-    const pathSegments = new Array<string>();
-    const initialize = (state: S): S => {
-      if (typeof (state) !== 'object') { // may happen if we have a top-level primitive
-        return null as any as S;
-      }
-      return new Proxy(state, {
-        get: function (target, prop: any) {
-          if (!(target as any)[prop]) { // to support queries on empty array elements
-            (target as any)[prop] = {};
-          }
-          const val = (target as any)[prop];
-          if (val !== null && typeof (val) === 'object') {
-            pathSegments.push(prop);
-            return initialize(val);
-          } else if (typeof (val) === 'function') {
-            return function (...args: any[]) {
-            };
-          }
+export function readSelector(selector: (state: any) => any) {
+  const pathSegments = new Array<string>();
+  const initialize = (s: any): any => {
+    if (typeof s !== 'object') {
+      // may happen if we have a top-level primitive
+      return null as any;
+    }
+    return new Proxy(s, {
+      get: function(target, prop: any) {
+        if (prop === 'find' || prop === 'filter') {
+          (target as any)[prop] = (e: any) => {};
+        }
+        if (!(target as any)[prop]) {
+          (target as any)[prop] = {};
+        }
+        const val = (target as any)[prop];
+        if (val !== null && typeof val === 'object') {
           pathSegments.push(prop);
-          return val;
-        },
-      });
-    }
-    const proxy = initialize(mutableStateCopy);
-    const readSelector = <C>(selector: (state: S) => C) => {
-      pathSegments.length = 0;
-      selector(proxy);
-      return pathSegments;
-    }
-    return { readSelector, mutableStateCopy, pathSegments }
-  })();
+          return initialize(val);
+        } else if (typeof val === 'function') {
+          return function(...args: any[]) {};
+        }
+        pathSegments.push(prop);
+        return val;
+      }
+    });
+  };
+  const proxy = initialize({});
+  selector(proxy);
+  return pathSegments;
 }
 
 export function copyPayload<C>(payload: C) {
   return {
     payloadFrozen: deepFreeze(deepCopy(payload)) as C,
-    payloadCopied: deepCopy(payload) as C,
   };
 }
 
@@ -157,7 +152,6 @@ export const processAsyncPayload = <S, C, X extends C & Array<any>>(
   arg: {
     selector: Selector<S, C, X>,
     payload: any | (() => Promise<any>),
-    pathReader: PathReader<S>,
     storeResult: (selector?: (s: S) => C) => any,
     processPayload: (payload: C) => void,
     updateOptions: {} | void,
@@ -174,9 +168,9 @@ export const processAsyncPayload = <S, C, X extends C & Array<any>>(
       throw new Error(errorMessages.INVALID_CONTAINER_FOR_CACHED_DATA);
     }
     const asyncPayload = arg.payload as (() => Promise<C>);
-    arg.pathReader.readSelector(arg.selector);
+    const segs = readSelector(arg.selector);
     const bypassPromiseFor = ((arg.updateOptions || {}) as any).bypassPromiseFor || 0;
-    const fullPath = arg.pathReader.pathSegments.join('.') + (arg.pathReader.pathSegments.length ? '.' : '') + arg.suffix;
+    const fullPath = segs.join('.') + (segs.length ? '.' : '') + arg.suffix;
     if (arg.storeState.activeFutures[fullPath]) { // prevent duplicate simultaneous requests
       return arg.storeState.activeFutures[fullPath];
     }
@@ -251,38 +245,5 @@ export const processAsyncPayload = <S, C, X extends C & Array<any>>(
     return result
   } else {
     arg.processPayload(arg.payload as C);
-  }
-}
-
-const isObject = <S>(item: S) => (item && typeof item === 'object' && !Array.isArray(item));
-
-export const mergeDeepImmutable = <S>(target: S, source: S) => {
-  let output = Object.assign({}, target);
-  if (isObject(target) && isObject(source)) {
-    (Object.keys(source) as Array<keyof S>).forEach(key => {
-      if (isObject(source[key])) {
-        if (!(key in target)) {
-          Object.assign(output, { [key]: source[key] });
-        } else {
-          output[key] = mergeDeepImmutable(target[key], source[key]);
-        }
-      } else {
-        Object.assign(output, { [key]: source[key] });
-      }
-    });
-  }
-  return output;
-}
-
-export const mergeDeepMutable = <S>(target: S, source: S) => {
-  if (isObject(target) && isObject(source)) {
-    for (const key in source) {
-      if (isObject(source[key])) {
-        if (!target[key]) Object.assign(target, { [key]: {} });
-        mergeDeepMutable(target[key], source[key]);
-      } else {
-        Object.assign(target, { [key]: source[key] });
-      }
-    }
   }
 }

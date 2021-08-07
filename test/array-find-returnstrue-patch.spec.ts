@@ -24,7 +24,6 @@ describe('array.findCustom().patch()', () => {
       where: where.toString(),
     });
     expect(select().read().array).toEqual([initialState.array[0], { ...initialState.array[1], ...payload }, initialState.array[2]]);
-    expect(testState.currentMutableState).toEqual(select().read());
   })
 
   it('should ne()', () => {
@@ -40,7 +39,6 @@ describe('array.findCustom().patch()', () => {
       where: where.toString(),
     });
     expect(select().read().array).toEqual([{ ...initialState.array[0], ...payload }, initialState.array[1], initialState.array[2]]);
-    expect(testState.currentMutableState).toEqual(select().read());
   })
 
   it('should gt()', () => {
@@ -56,7 +54,6 @@ describe('array.findCustom().patch()', () => {
       where: where.toString(),
     });
     expect(select().read().array).toEqual([initialState.array[0], { ...initialState.array[1], ...payload }, initialState.array[2]]);
-    expect(testState.currentMutableState).toEqual(select().read());
   })
 
   it('should lt()', () => {
@@ -72,7 +69,6 @@ describe('array.findCustom().patch()', () => {
       where: where.toString(),
     });
     expect(select().read().array).toEqual([{ ...initialState.array[0], ...payload }, initialState.array[1], initialState.array[2]]);
-    expect(testState.currentMutableState).toEqual(select().read());
   })
 
   it('should in()', () => {
@@ -88,7 +84,6 @@ describe('array.findCustom().patch()', () => {
       where: where.toString(),
     });
     expect(select().read().array).toEqual([{ ...initialState.array[0], ...payload }, initialState.array[1], initialState.array[2]]);
-    expect(testState.currentMutableState).toEqual(select().read());
   })
 
   it('should ni()', () => {
@@ -104,7 +99,6 @@ describe('array.findCustom().patch()', () => {
       where: where.toString(),
     });
     expect(select().read().array).toEqual([initialState.array[0], initialState.array[1], { ...initialState.array[2], ...payload }]);
-    expect(testState.currentMutableState).toEqual(select().read());
   })
 
   it('should match()', () => {
@@ -120,7 +114,6 @@ describe('array.findCustom().patch()', () => {
       where: where.toString(),
     });
     expect(select().read().array).toEqual([initialState.array[0], { ...initialState.array[1], ...payload }, initialState.array[2]]);
-    expect(testState.currentMutableState).toEqual(select().read());
   })
 
 });

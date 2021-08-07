@@ -23,7 +23,6 @@ describe('array.filterCustom().remove()', () => {
       where: where.toString(),
     });
     expect(select().read().array).toEqual([initialState.array[0], initialState.array[2]]);
-    expect(testState.currentMutableState).toEqual(select().read());
   })
 
   it('should ne()', () => {
@@ -38,7 +37,6 @@ describe('array.filterCustom().remove()', () => {
       where: where.toString(),
     });
     expect(select().read().array).toEqual([initialState.array[1]]);
-    expect(testState.currentMutableState).toEqual(select().read());
   })
 
   it('should gt()', () => {
@@ -53,7 +51,6 @@ describe('array.filterCustom().remove()', () => {
       where: where.toString(),
     });
     expect(select().read().array).toEqual([initialState.array[0]]);
-    expect(testState.currentMutableState).toEqual(select().read());
   })
 
   it('should lt()', () => {
@@ -68,7 +65,6 @@ describe('array.filterCustom().remove()', () => {
       where: where.toString(),
     });
     expect(select().read().array).toEqual([initialState.array[1], initialState.array[2]]);
-    expect(testState.currentMutableState).toEqual(select().read());
   })
 
   it('should in()', () => {
@@ -83,7 +79,6 @@ describe('array.filterCustom().remove()', () => {
       where: where.toString(),
     });
     expect(select().read().array).toEqual([initialState.array[2]]);
-    expect(testState.currentMutableState).toEqual(select().read());
   })
 
   it('should ni()', () => {
@@ -98,7 +93,6 @@ describe('array.filterCustom().remove()', () => {
       where: where.toString(),
     });
     expect(select().read().array).toEqual([initialState.array[0], initialState.array[1]]);
-    expect(testState.currentMutableState).toEqual(select().read());
   })
 
   it('should match()', () => {
@@ -113,7 +107,6 @@ describe('array.filterCustom().remove()', () => {
       where: where.toString(),
     });
     expect(select().read().array).toEqual([initialState.array[0]]);
-    expect(testState.currentMutableState).toEqual(select().read());
   })
 
 });

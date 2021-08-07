@@ -18,7 +18,6 @@ describe('Transact', () => {
     expect(changeCount).toEqual(1);
     const expectedState = { hello: 'test', world: ['hey'], some: { deep: { val: true } } };
     expect(select().read()).toEqual(expectedState);
-    expect(testState.currentMutableState).toEqual(expectedState);
     expect(testState.currentAction).toEqual({
       type: 'hello.replace(), world.insert(), some.deep.val.replace()',
       actions: [

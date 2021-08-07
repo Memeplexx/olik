@@ -10,7 +10,7 @@ import {
 } from './shapes-external';
 import { ArrayOperatorState } from './shapes-internal';
 import { errorMessages } from './shared-consts';
-import { copyPayload, createPathReader, deepFreeze, processAsyncPayload, validateSelectorFn } from './shared-utils';
+import { copyPayload, deepFreeze, processAsyncPayload, readSelector, validateSelectorFn } from './shared-utils';
 import { transact } from './transact';
 
 export const getSegments = <S, C, X extends C & Array<any>, P>(
@@ -18,7 +18,7 @@ export const getSegments = <S, C, X extends C & Array<any>, P>(
   getCurrentState: () => S,
   getProp?: (element: DeepReadonly<X[0]>) => P,
 ) => {
-  return !getProp ? [] : createPathReader((selector(getCurrentState()) as X)[0] || {}).readSelector(getProp);
+  return !getProp ? [] : readSelector(getProp);
 }
 
 export const andWhere = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
@@ -44,13 +44,6 @@ export const remove = <S, C, X extends C & Array<any>, F extends FindOrFilter, T
   const processPayload = () => arg.updateState({
     selector: arg.selector,
     replacer: old => old.filter((o, i) => !elementIndices.includes(i)),
-    mutator: old => {
-      for (var i = 0, j = 0; i < old.length; i++, j++) {
-        if (elementIndices.includes(j)) {
-          old.splice(i, 1); i--;
-        }
-      }
-    },
     actionName: `${arg.type}().remove()`,
     payload: {
       where: arg.whereClauseStrings.join(' '),
@@ -73,11 +66,10 @@ export const patch = <S, C, X extends C & Array<any>, F extends FindOrFilter, T 
 ) => ((payload, updateOptions) => {
   const elementIndices = completeWhereClause(arg);
   const processPayload = (payload: Partial<C>) => {
-    const { payloadFrozen, payloadCopied } = copyPayload(payload);
+    const { payloadFrozen } = copyPayload(payload);
     arg.updateState({
       selector: arg.selector,
       replacer: old => old.map((o, i) => elementIndices.includes(i) ? { ...o, ...payloadFrozen } : o),
-      mutator: old => elementIndices.forEach(i => Object.assign(old[i], payloadCopied)),
       actionName: `${arg.type}().patch()`,
       payload: {
         where: arg.whereClauseString,
@@ -100,12 +92,11 @@ export const replace = <S, C, X extends C & Array<any>, F extends FindOrFilter, 
   arg: ArrayOperatorState<S, C, X, F, T>,
 ) => ((payload, updateOptions) => {
   const processPayload = (payload: C) => {
-    const { payloadFrozen, payloadCopied } = copyPayload(payload);
+    const { payloadFrozen } = copyPayload(payload);
     const elementIndices = completeWhereClause(arg);
     arg.updateState({
       selector: arg.selector,
       replacer: old => old.map((o, i) => elementIndices.includes(i) ? payloadFrozen : o),
-      mutator: old => { old.forEach((o, i) => { if (elementIndices.includes(i)) { old[i] = payloadCopied; } }) },
       actionName: `${arg.type}().replace()`,
       payload: {
         where: arg.whereClauseString,
@@ -117,7 +108,6 @@ export const replace = <S, C, X extends C & Array<any>, F extends FindOrFilter, 
   return processAsyncPayload<S, C, X>({
     selector: ((s: any) => (arg.selector(s) as any)[arg.type]((e: any) => bundleCriteria(e, arg.whereClauseSpecs))) as any,
     payload,
-    pathReader: arg.pathReader,
     storeResult: arg.storeResult,
     processPayload,
     updateOptions,
@@ -150,9 +140,9 @@ export const read = <S, C, X extends C & Array<any>, F extends FindOrFilter, T e
 export const stopBypassingPromises = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
   context: ArrayOperatorState<S, C, X, F, T>,
 ) => {
-  const { pathReader, storeResult, selector, whereClauseString, type } = context;
-  pathReader.readSelector(selector);
-  const pathSegs = pathReader.pathSegments.join('.') + (pathReader.pathSegments.length ? '.' : '') + type + '(' + whereClauseString + ')';
+  const { storeResult, selector, whereClauseString, type, getCurrentState } = context;
+  const segs = readSelector(selector);
+  const pathSegs = segs.join('.') + (segs.length ? '.' : '') + type + '(' + whereClauseString + ')';
   transact(...Object.keys(storeResult().read().promiseBypassTimes).filter(key => key.startsWith(pathSegs))
     .map(key => () => storeResult(s => (s as any).promiseBypassTimes).remove(key)));
 }

@@ -21,7 +21,6 @@ describe('Object', () => {
     });
     expect(select().read().object.property).toEqual('hey');
     expect(select().read().object.property2 === initialState.object.property2).toBeTruthy();
-    expect(testState.currentMutableState).toEqual(select().read());
   })
 
   it('should patch()', () => {
@@ -35,7 +34,6 @@ describe('Object', () => {
     });
     expect(select().read().object.property).toEqual(payload.property);
     expect(select().read().object.property2 === initialState.object.property2).toBeTruthy();
-    expect(testState.currentMutableState).toEqual(select().read());
   })
 
   it('should reset()', () => {
@@ -43,21 +41,17 @@ describe('Object', () => {
     select(s => s.object.property)
       .replace('hey');
     expect(select().read().object.property).toEqual('hey');
-    expect(testState.currentMutableState).toEqual(select().read());
     select(s => s.object.property)
       .reset();
     expect(select().read().object.property).toEqual('one');
-    expect(testState.currentMutableState).toEqual(select().read());
     select().replace({ object: { property: 'xx', property2: 'yy' } });
     expect(select().read()).toEqual({ object: { property: 'xx', property2: 'yy' } });
-    expect(testState.currentMutableState).toEqual(select().read());
     select().reset();
     expect(testState.currentAction).toEqual({
       type: 'reset()',
       replacement: initialState,
     })
     expect(select().read()).toEqual(initialState);
-    expect(testState.currentMutableState).toEqual(select().read());
   })
 
   it('should be able to add a new property onto an object', () => {
@@ -69,7 +63,6 @@ describe('Object', () => {
       patch: payload,
     });
     expect(select().read()).toEqual({ hello: 'world' });
-    expect(testState.currentMutableState).toEqual(select().read());
   })
 
   it('should be able to remove a key', () => {
@@ -81,7 +74,6 @@ describe('Object', () => {
       toRemove: payload,
     });
     expect(select().read()).toEqual({ hello: 'one', another: 'three' });
-    expect(testState.currentMutableState).toEqual(select().read());
   })
 
   it('should be able to insert properties', () => {
@@ -94,7 +86,6 @@ describe('Object', () => {
       insertion,
     });
     expect(select().read()).toEqual({ ...initState, ...insertion });
-    expect(testState.currentMutableState).toEqual(select().read());
   })
 
 });

@@ -10,7 +10,7 @@ describe('augmentations', () => {
 
   beforeAll(() => testState.windowObject = windowAugmentedWithReduxDevtoolsImpl);
 
-  beforeEach(() => libState.componentContainerStore = null);
+  beforeEach(() => libState.rootStore = null);
 
   afterAll(() => {
     augment({
@@ -88,9 +88,11 @@ describe('augmentations', () => {
         myThing: selection => () => selection.asPromise(),
       }
     })
+    testState.logLevel = 'DEBUG';
     const select = createRootStore({ array: [42] });
     const fetch = () => new Promise(resolve => setTimeout(() => resolve(43), 5))
     const res = (select(s => s.array) as any).findWhere().eq(42).replace(fetch).myThing();
+    testState.logLevel = 'NONE';
     res.then((r: any) => {
       expect(r).toEqual(undefined);
       done();

@@ -16,19 +16,12 @@ import {
 export type UpdateStateArgs<S, C, T extends Trackability, X extends C = C> = {
   selector: Selector<S, C, X>,
   replacer: (newNode: DeepReadonly<X>) => any,
-  mutator: (newNode: X) => any,
   pathSegments?: string[],
   actionName: string,
   payload?: any,
   updateOptions: UpdateOptions<T, any>,
   actionNameOverride?: boolean,
   getPayloadFn?: () => any,
-};
-
-export type PathReader<S> = {
-  readSelector: <C>(selector: (state: S) => C) => string[];
-  mutableStateCopy: S;
-  pathSegments: string[];
 };
 
 export type UpdateStateFn<S, C, T extends Trackability, X extends C = C> = (specs: UpdateStateArgs<S, C, T, X>) => void;
@@ -67,7 +60,6 @@ export type ArrayOperatorState<S, C, X extends C & Array<any>, F extends FindOrF
   updateState: UpdateStateFn<S, C, T, X>,
   type: FindOrFilter,
   changeListeners: Map<(ar: any) => any, (arg: S) => any>,
-  pathReader: PathReader<S>,
   storeResult: (selector?: (s: S) => C) => any,
   storeState: StoreState<S>,
 };
@@ -79,7 +71,6 @@ export type ArrayCustomState<S, C, X extends C & Array<any>, T extends Trackabil
   getCurrentState: () => S,
   predicate: (element: DeepReadonly<X[0]>) => boolean,
   changeListeners: Map<(ar: any) => any, (arg: S) => any>,
-  pathReader: PathReader<S>,
   storeResult: (selector?: (s: S) => C) => any,
   storeState: StoreState<S>,
 }
@@ -90,7 +81,6 @@ export type CoreActionsState<S, C, X extends C & Array<any>, T extends Trackabil
   isComponentStore: () => boolean,
   storeState: StoreState<S>,
   storeResult: (selector?: (s: S) => C) => any,
-  pathReader: PathReader<S>,
   initialState: S,
   getCurrentState: () => S,
 }

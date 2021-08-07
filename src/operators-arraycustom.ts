@@ -1,19 +1,18 @@
 import { ArrayOfElementsCommonAction, ArrayOfObjectsCommonAction, FindOrFilter, Trackability } from './shapes-external';
 import { ArrayCustomState } from './shapes-internal';
 import { errorMessages } from './shared-consts';
-import { copyPayload, deepFreeze, processAsyncPayload } from './shared-utils';
+import { copyPayload, deepFreeze, processAsyncPayload, readSelector } from './shared-utils';
 import { transact } from './transact';
 
 export const replace = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
   arg: ArrayCustomState<S, C, X, T>,
 ) => ((payload, updateOptions) => {
   const processPayload = (payload: C) => {
-    const { payloadFrozen, payloadCopied } = copyPayload(payload);
+    const { payloadFrozen } = copyPayload(payload);
     const elementIndices = getElementIndices(arg);
     arg.updateState({
       selector: arg.selector,
       replacer: old => old.map((o, i) => elementIndices.includes(i) ? payloadFrozen : o),
-      mutator: old => { old.forEach((o, i) => { if (elementIndices.includes(i)) { old[i] = payloadCopied; } }) },
       actionName: `${arg.type}().replace()`,
       payload: {
         where: arg.predicate.toString(),
@@ -36,12 +35,11 @@ export const patch = <S, C, X extends C & Array<any>, F extends FindOrFilter, T 
   arg: ArrayCustomState<S, C, X, T>,
 ) => ((payload, updateOptions) => {
   const processPayload = (payload: C) => {
-    const { payloadFrozen, payloadCopied } = copyPayload(payload);
+    const { payloadFrozen } = copyPayload(payload);
     const elementIndices = getElementIndices(arg);
     arg.updateState({
       selector: arg.selector,
       replacer: old => old.map((o, i) => elementIndices.includes(i) ? { ...o, ...payloadFrozen } : o),
-      mutator: old => elementIndices.forEach(i => Object.assign(old[i], payloadCopied)),
       actionName: `${arg.type}().patch()`,
       payload: {
         patch: payloadFrozen,
@@ -67,18 +65,6 @@ export const remove = <S, C, X extends C & Array<any>, F extends FindOrFilter, T
   const processPayload = () => arg.updateState({
     selector: arg.selector,
     replacer: old => old.filter((o, i) => !elementIndices.includes(i)),
-    mutator: old => {
-      if (arg.type === 'find') {
-        old.splice(elementIndices[0], 1);
-      } else {
-        const toRemove = old.filter(arg.predicate);
-        for (var i = 0; i < old.length; i++) {
-          if (toRemove.includes(old[i])) {
-            old.splice(i, 1); i--;
-          }
-        }
-      }
-    },
     actionName: `${arg.type}().remove()`,
     payload: {
       toRemove: (arg.selector(arg.getCurrentState()) as X)[arg.type]((e, i) => elementIndices.includes(i)), where: arg.predicate.toString(),
@@ -115,8 +101,8 @@ export const read = <S, C, X extends C & Array<any>, F extends FindOrFilter, T e
 export const stopBypassingPromises = <S, C, X extends C & Array<any>, T extends Trackability>(
   arg: ArrayCustomState<S, C, X, T>,
 ) => {
-  arg.pathReader.readSelector(arg.selector);
-  const pathSegs = arg.pathReader.pathSegments.join('.') + (arg.pathReader.pathSegments.length ? '.' : '') + arg.type + '(' + arg.predicate + ')';
+  const segs = readSelector(arg.selector);
+  const pathSegs = segs.join('.') + (segs.length ? '.' : '') + arg.type + '(' + arg.predicate + ')';
   transact(...Object.keys(arg.storeResult().read().promiseBypassTimes).filter(key => key.startsWith(pathSegs))
     .map(key => () => arg.storeResult(s => (s as any).promiseBypassTimes).remove(key)));
 }

@@ -23,7 +23,6 @@ describe('array.filter().and().or()', () => {
       where: 'id === 2 && value === two',
     });
     expect(select().read().array).toEqual([initialState.array[0], initialState.array[2]]);
-    expect(testState.currentMutableState).toEqual(select().read());
   })
 
   it('should eq().or().eq()', () => {
@@ -38,7 +37,6 @@ describe('array.filter().and().or()', () => {
       where: 'id === 1 || value === two',
     });
     expect(select().read().array).toEqual([initialState.array[2]]);
-    expect(testState.currentMutableState).toEqual(select().read());
   })
 
   it('should eq().and().eq() not matching', () => {
@@ -53,7 +51,6 @@ describe('array.filter().and().or()', () => {
       where: 'id === 1 && id === 2',
     });
     expect(select().read().array).toEqual(initialState.array);
-    expect(testState.currentMutableState).toEqual(select().read());
   })
 
   it('should eq().and().eq().or().eq()', () => {
@@ -69,7 +66,6 @@ describe('array.filter().and().or()', () => {
       where: 'id === 1 && id === 2 || id === 3',
     });
     expect(select().read().array).toEqual([initialState.array[0], initialState.array[1]]);
-    expect(testState.currentMutableState).toEqual(select().read());
   })
 
   it('should eq().or().eq().and().eq()', () => {
@@ -85,7 +81,6 @@ describe('array.filter().and().or()', () => {
       where: 'id === 4 || id === 3 && value === three',
     });
     expect(select().read().array).toEqual([initialState.array[0], initialState.array[1]]);
-    expect(testState.currentMutableState).toEqual(select().read());
   })
 
   it('should eq().and().eq().or().eq().and().eq()', () => {
@@ -102,7 +97,6 @@ describe('array.filter().and().or()', () => {
       where: 'id === 1 && value === one || id === 3 && value === three',
     });
     expect(select().read().array).toEqual([initialState.array[1]]);
-    expect(testState.currentMutableState).toEqual(select().read());
   })
 
 });

@@ -10,16 +10,14 @@ import {
   UpdateAtIndex,
   UpdateOptions,
 } from './shapes-external';
-import { CoreActionsState, PathReader, StoreState, UpdateStateFn } from './shapes-internal';
+import { CoreActionsState, StoreState, UpdateStateFn } from './shapes-internal';
 import {
   copyPayload,
-  createPathReader,
   deepCopy,
   deepFreeze,
   isEmpty,
-  mergeDeepImmutable,
-  mergeDeepMutable,
   processAsyncPayload,
+  readSelector,
   validateSelectorFn,
 } from './shared-utils';
 import { transact } from './transact';
@@ -58,7 +56,6 @@ export const removeAll = <S, C, X extends C & Array<any>, T extends Trackability
   arg.updateState({
     selector: arg.selector,
     replacer: () => [],
-    mutator: old => old.length = 0,
     actionName: 'removeAll()',
     updateOptions,
   });
@@ -69,14 +66,13 @@ export const insertIntoArray = <S, C, X extends C & Array<any>, T extends Tracka
 ) => ((payload, updateOptions: UpdateAtIndex = {}) => {
   validateSelector(arg);
   const processPayload = (payload: C) => {
-    const { payloadFrozen, payloadCopied } = copyPayload(payload);
+    const { payloadFrozen } = copyPayload(payload);
     arg.updateState({
       selector: arg.selector,
       replacer: old => {
         const input = deepCopy(Array.isArray(payloadFrozen) ? payloadFrozen : [payloadFrozen]);
         return (!isEmpty(updateOptions.atIndex)) ? [...old.slice(0, updateOptions.atIndex), ...input, ...old.slice(updateOptions.atIndex)] : [...old, ...input];
       },
-      mutator: old => old.splice((!isEmpty(updateOptions.atIndex)) ? updateOptions.atIndex! : old.length, 0, ...(Array.isArray(payloadCopied) ? payloadCopied : [payloadCopied])),
       actionName: 'insert()',
       payload: (!isEmpty(updateOptions.atIndex)) ? {
         insertion: payloadFrozen,
@@ -101,11 +97,10 @@ export const patchOrInsertIntoObject = <S, C, X extends C & Array<any>, T extend
 ) => ((payload, updateOptions) => {
   validateSelector(arg);
   const processPayload = (payload: Partial<C>) => {
-    const { payloadFrozen, payloadCopied } = copyPayload(payload);
+    const { payloadFrozen } = copyPayload(payload);
     arg.updateState({
       selector: arg.selector,
       replacer: old => ({ ...old, ...payloadFrozen }),
-      mutator: old => Object.assign(old, payloadCopied),
       actionName: `${arg.type}()`,
       payload: arg.type === 'patch' ? {
         patch: payloadFrozen,
@@ -131,7 +126,6 @@ export const remove = <S, C, X extends C & Array<any>, T extends Trackability>(
   const processPayload = (payload: any) => arg.updateState({
     selector: arg.selector,
     replacer: old => { const res = Object.assign({}, old); delete (res as any)[payload]; return res; },
-    mutator: old => delete (old as any)[payload],
     actionName: 'remove()',
     payload: {
       toRemove: payload,
@@ -156,8 +150,27 @@ export const deepMerge = <S, C, X extends C & Array<any>, T extends Trackability
   validateSelector(arg);
   const processPayload = (payload: any) => arg.updateState({
     selector: arg.selector,
-    replacer: old => mergeDeepImmutable(old, payload),
-    mutator: old => mergeDeepMutable(old, payload),
+    replacer: old => {
+      const isObject = <S>(item: S) => (item && typeof item === 'object' && !Array.isArray(item));
+      const mergeDeep = <S>(target: S, source: S) => {
+        let output = Object.assign({}, target);
+        if (isObject(target) && isObject(source)) {
+          (Object.keys(source) as Array<keyof S>).forEach(key => {
+            if (isObject(source[key])) {
+              if (!(key in target)) {
+                Object.assign(output, { [key]: source[key] });
+              } else {
+                output[key] = mergeDeep(target[key], source[key]);
+              }
+            } else {
+              Object.assign(output, { [key]: source[key] });
+            }
+          });
+        }
+        return output;
+      }
+      return mergeDeep(old, payload);
+    },
     actionName: 'deepMerge()',
     payload: {
       toMerge: payload,
@@ -181,10 +194,9 @@ export const upsertMatching = <S, C, X extends C & Array<any>, T extends Trackab
     with: (payload, updateOptions) => {
       validateSelector(arg);
       const processPayload = (payload: C) => {
-        const segs = !getProp ? [] : createPathReader((arg.selector(arg.getCurrentState()) as X)[0] || {}).readSelector(getProp);
-        const { payloadFrozen, payloadCopied } = copyPayload(payload);
+        const segs = !getProp ? [] : readSelector(getProp);
+        const { payloadFrozen } = copyPayload(payload);
         const payloadFrozenArray: X[0][] = Array.isArray(payloadFrozen) ? payloadFrozen : [payloadFrozen];
-        const payloadCopiedArray: X[0][] = Array.isArray(payloadCopied) ? payloadCopied : [payloadCopied];
         let replacementCount = 0;
         let insertionCount = 0;
         arg.updateState({
@@ -201,10 +213,6 @@ export const upsertMatching = <S, C, X extends C & Array<any>, T extends Trackab
               ...replacements,
               ...insertions
             ];
-          },
-          mutator: old => {
-            old.forEach((oe, oi) => { const found = payloadCopiedArray.find(ne => !getProp ? oe === ne : getProp(oe) === getProp(ne)); if (found) { old[oi] = deepCopy(found); } });
-            payloadCopiedArray.filter(ne => !old.some(oe => !getProp ? oe === ne : getProp(oe) === getProp(ne))).forEach(ne => old.push(ne));
           },
           actionName: `upsertMatching(${segs.join('.')}).with()`,
           payload: null,
@@ -234,7 +242,7 @@ export const replace = <S, C, X extends C & Array<any>, T extends Trackability>(
   updateOptions: UpdateOptions<T, any>,
   ) => {
     validateSelector(arg);
-    const processPayload = (payload: C) => replacePayload(arg.pathReader, arg.updateState, arg.selector, arg.name, payload as C, updateOptions);
+    const processPayload = (payload: C) => replacePayload(arg.updateState, arg.selector, arg.name, payload as C, updateOptions);
     return processAsyncPayload({
       ...arg,
       processPayload,
@@ -245,31 +253,20 @@ export const replace = <S, C, X extends C & Array<any>, T extends Trackability>(
   };
 
 export function replacePayload<S, C, X extends C & Array<any>, T extends Trackability>(
-  pathReader: PathReader<S>,
   updateState: UpdateStateFn<S, C, T, X>,
   selector: Selector<S, C, X>,
   name: string,
   payload: C,
   updateOptions: UpdateOptions<T, any>
 ) {
-  const pathSegments = pathReader.readSelector(selector);
-  const { payloadFrozen, payloadCopied } = copyPayload(payload);
+  const pathSegments = readSelector(selector);
+  const { payloadFrozen } = copyPayload(payload);
   let payloadReturnedByFn: C;
   let getPayloadFn = (() => payloadReturnedByFn ? { replacement: payloadReturnedByFn } : payloadReturnedByFn) as unknown as () => C;
   if (!pathSegments.length) {
     updateState({
       selector,
       replacer: old => payloadFrozen,
-      mutator: old => {
-        if (Array.isArray(old)) {
-          (old as Array<any>).length = 0;
-          Object.assign(old, payloadCopied);
-        } else if (typeof (old) === 'boolean' || typeof (old) === 'number' || typeof (old) === 'string') {
-          pathReader.mutableStateCopy = payloadCopied as any;
-        } else {
-          Object.assign(old, payloadCopied);
-        }
-      },
       actionName: `${name}()`,
       pathSegments: [],
       payload: {
@@ -293,7 +290,6 @@ export function replacePayload<S, C, X extends C & Array<any>, T extends Trackab
         if (Array.isArray(old)) { return (old as Array<any>).map((o, i) => i === +lastSeg ? payloadFrozen : o); }
         return ({ ...old, [lastSeg]: payloadFrozen })
       },
-      mutator: (old: Record<any, any>) => old[lastSeg] = payloadReturnedByFn || payloadCopied,
       actionName,
       actionNameOverride: true,
       pathSegments: segsCopy,
@@ -307,12 +303,11 @@ export function replacePayload<S, C, X extends C & Array<any>, T extends Trackab
 }
 
 export function stopBypassingPromises<S, C, X extends C & Array<any>>(
-  pathReader: PathReader<S>,
   selector: Selector<S, C, X>,
   storeResult: (selector?: (s: DeepReadonly<S>) => C) => any,
 ) {
-  pathReader.readSelector(selector);
-  const pathSegs = pathReader.pathSegments.join('.');
+  const segs = readSelector(selector);
+  const pathSegs = segs.join('.');
   transact(...Object.keys(storeResult().read().promiseBypassTimes).filter(key => key.startsWith(pathSegs))
     .map(key => () => storeResult(s => (s as any).promiseBypassTimes).remove(key)));
 }

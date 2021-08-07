@@ -43,7 +43,7 @@ import {
 } from './shapes-internal';
 import { devtoolsDebounce } from './shared-consts';
 import { libState, testState } from './shared-state';
-import { copyObject, createPathReader, deepCopy, deepFreeze, validateSelectorFn, validateState } from './shared-utils';
+import { copyObject, deepCopy, deepFreeze, readSelector, validateSelectorFn, validateState } from './shared-utils';
 
 export function createStoreCore<S, T extends Trackability>({
   state,
@@ -58,7 +58,6 @@ export function createStoreCore<S, T extends Trackability>({
 }) {
   validateState(state);
   const changeListeners = new Map<(ar: any) => any, (arg: S) => any>();
-  let pathReader = createPathReader(state);
   let currentState = deepFreeze(state) as S;
   let initialState = currentState;
   let devtoolsDispatchListener: ((action: { type: string, payload?: any }) => any) | undefined;
@@ -91,7 +90,6 @@ export function createStoreCore<S, T extends Trackability>({
             updateState,
             type,
             changeListeners,
-            pathReader,
             storeResult,
             storeState,
           } as ArrayOperatorState<S, C, X, FindOrFilter, T>;
@@ -118,7 +116,7 @@ export function createStoreCore<S, T extends Trackability>({
           ...{
             returnsTrue: () => {
               const predicate = getProp as any as (element: DeepReadonly<X[0]>) => boolean;
-              const context = { type, updateState, selector, predicate, changeListeners, getCurrentState: () => currentState, pathReader, storeResult, storeState } as ArrayCustomState<S, C, X, T>;
+              const context = { type, updateState, selector, predicate, changeListeners, getCurrentState: () => currentState, storeResult, storeState } as ArrayCustomState<S, C, X, T>;
               const elementActions = {
                 remove: arrayCustom.remove(context),
                 replace: arrayCustom.replace(context),
@@ -149,7 +147,6 @@ export function createStoreCore<S, T extends Trackability>({
       selector,
       isComponentStore: () => !!(coreActions as any).isComponentStore,
       storeState,
-      pathReader,
       storeResult,
       initialState,
       getCurrentState: () => currentState,
@@ -170,13 +167,12 @@ export function createStoreCore<S, T extends Trackability>({
       findWhere: where('find'),
       onChange: onChange(selector, changeListeners),
       read: read(selector, () => currentState),
-      stopBypassingPromises: () => stopBypassingPromises(pathReader, selector, storeResult),
+      stopBypassingPromises: () => stopBypassingPromises(selector, storeResult),
       readInitial: () => selector(initialState),
       defineReset: (
         (initState: C, innerSelector) => () => replace({ ...getCoreActionsState(), name: 'reset' })(!innerSelector ? initState : innerSelector(initState), undefined as any)
       ) as StoreForAComponentInternal<S, C>['defineReset'],
       renew: (state => {
-        pathReader = createPathReader(state);
         currentState = deepFreeze(state) as S;
       }) as StoreWhichMayContainComponentStores<S, C, T>['renew'],
       getSelector: () => storeState.selector,
@@ -206,9 +202,8 @@ export function createStoreCore<S, T extends Trackability>({
     }
 
     const previousState = currentState;
-    const pathSegments = specs.pathSegments || pathReader.readSelector(specs.selector);
+    const pathSegments = specs.pathSegments || readSelector(specs.selector);
     const result = Object.freeze(copyObject(currentState, { ...currentState }, pathSegments.slice(), specs.replacer));
-    specs.mutator(specs.selector(pathReader.mutableStateCopy) as X);
     currentState = result;
 
     // Construct action to dispatch
@@ -244,7 +239,6 @@ export function createStoreCore<S, T extends Trackability>({
 
     // Dispatch to devtools
     testState.currentAction = actionToDispatch;
-    testState.currentMutableState = pathReader.mutableStateCopy as any;
     const { type, ...actionPayload } = actionToDispatch;
     if (devtoolsDispatchListener && (!specs.updateOptions || ((specs.updateOptions || {} as any).tag !== 'dontTrackWithDevtools'))) {
       const dispatchToDevtools = (payload?: any[]) => {

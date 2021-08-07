@@ -23,7 +23,6 @@ describe('array.find().replace()', () => {
       where: 'id === 2',
     });
     expect(select().read().array).toEqual([initialState.array[0], payload, initialState.array[2]]);
-    expect(testState.currentMutableState).toEqual(select().read());
   })
 
   it('should ne()', () => {
@@ -38,7 +37,6 @@ describe('array.find().replace()', () => {
       where: 'id !== 2',
     });
     expect(select().read().array).toEqual([payload, initialState.array[1], initialState.array[2]]);
-    expect(testState.currentMutableState).toEqual(select().read());
   })
 
   it('should gt()', () => {
@@ -53,7 +51,6 @@ describe('array.find().replace()', () => {
       where: 'id > 1',
     });
     expect(select().read().array).toEqual([initialState.array[0], payload, initialState.array[2]]);
-    expect(testState.currentMutableState).toEqual(select().read());
   })
 
   it('should gte()', () => {
@@ -68,7 +65,6 @@ describe('array.find().replace()', () => {
       where: 'id >= 1',
     });
     expect(select().read().array).toEqual([payload, initialState.array[1], initialState.array[2]]);
-    expect(testState.currentMutableState).toEqual(select().read());
   })
 
   it('should lt()', () => {
@@ -83,7 +79,6 @@ describe('array.find().replace()', () => {
       where: 'id < 2',
     });
     expect(select().read().array).toEqual([payload, initialState.array[1], initialState.array[2]]);
-    expect(testState.currentMutableState).toEqual(select().read());
   })
 
   it('should lte()', () => {
@@ -98,7 +93,6 @@ describe('array.find().replace()', () => {
       where: 'id <= 2',
     });
     expect(select().read().array).toEqual([payload, initialState.array[1], initialState.array[2]]);
-    expect(testState.currentMutableState).toEqual(select().read());
   })
 
   it('should in()', () => {
@@ -113,7 +107,6 @@ describe('array.find().replace()', () => {
       where: '[1, 2].includes(id)',
     });
     expect(select().read().array).toEqual([payload, initialState.array[1], initialState.array[2]]);
-    expect(testState.currentMutableState).toEqual(select().read());
   })
 
   it('should ni()', () => {
@@ -128,7 +121,6 @@ describe('array.find().replace()', () => {
       where: '![1, 2].includes(id)',
     });
     expect(select().read().array).toEqual([initialState.array[0], initialState.array[1], payload]);
-    expect(testState.currentMutableState).toEqual(select().read());
   })
 
   it('should match()', () => {
@@ -143,7 +135,6 @@ describe('array.find().replace()', () => {
       where: 'value.match(/^t/)',
     });
     expect(select().read().array).toEqual([initialState.array[0], payload, initialState.array[2]]);
-    expect(testState.currentMutableState).toEqual(select().read());
   })
 
 });

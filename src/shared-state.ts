@@ -8,7 +8,6 @@ export const libState = {
 export const testState = {
   logLevel: 'NONE' as 'NONE' | 'DEBUG',
   currentAction: { type: '' },
-  currentMutableState: null,
   windowObject: null as null | WindowAugmentedWithReduxDevtools,
   currentActionForDevtools: { type: '' },
 }
