@@ -5,7 +5,6 @@
     "outDir": "./dist/out-tsc",
     "forceConsistentCasingInFileNames": true,
     "strict": true,
-    "noImplicitAny": false,
     "noImplicitReturns": true,
     "noFallthroughCasesInSwitch": true,
     "sourceMap": true,
@@ -33,6 +32,7 @@
     "strictTemplates": true
   },
   "exclude": [
-    "dist/**/*"
+    "dist/**/*",
+    "node_modules/**/*"
   ]
 }
