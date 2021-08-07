@@ -12,7 +12,6 @@ import {
 } from './shapes-external';
 import { CoreActionsState, StoreState, UpdateStateFn } from './shapes-internal';
 import {
-  copyPayload,
   deepCopy,
   deepFreeze,
   isEmpty,
@@ -66,19 +65,18 @@ export const insertIntoArray = <S, C, X extends C & Array<any>, T extends Tracka
 ) => ((payload, updateOptions: UpdateAtIndex = {}) => {
   validateSelector(arg);
   const processPayload = (payload: C) => {
-    const { payloadFrozen } = copyPayload(payload);
     arg.updateState({
       selector: arg.selector,
       replacer: old => {
-        const input = deepCopy(Array.isArray(payloadFrozen) ? payloadFrozen : [payloadFrozen]);
+        const input = deepCopy(Array.isArray(payload) ? payload : [payload]);
         return (!isEmpty(updateOptions.atIndex)) ? [...old.slice(0, updateOptions.atIndex), ...input, ...old.slice(updateOptions.atIndex)] : [...old, ...input];
       },
       actionName: 'insert()',
       payload: (!isEmpty(updateOptions.atIndex)) ? {
-        insertion: payloadFrozen,
+        insertion: payload,
         atIndex: updateOptions.atIndex
       } : {
-        insertion: payloadFrozen,
+        insertion: payload,
       },
       updateOptions: updateOptions as UpdateOptions<T, any>,
     });
@@ -97,15 +95,14 @@ export const patchOrInsertIntoObject = <S, C, X extends C & Array<any>, T extend
 ) => ((payload, updateOptions) => {
   validateSelector(arg);
   const processPayload = (payload: Partial<C>) => {
-    const { payloadFrozen } = copyPayload(payload);
     arg.updateState({
       selector: arg.selector,
-      replacer: old => ({ ...old, ...payloadFrozen }),
+      replacer: old => ({ ...old, ...payload }),
       actionName: `${arg.type}()`,
       payload: arg.type === 'patch' ? {
-        patch: payloadFrozen,
+        patch: payload,
       } : {
-        insertion: payloadFrozen,
+        insertion: payload,
       },
       updateOptions,
     });
@@ -195,8 +192,7 @@ export const upsertMatching = <S, C, X extends C & Array<any>, T extends Trackab
       validateSelector(arg);
       const processPayload = (payload: C) => {
         const segs = !getProp ? [] : readSelector(getProp);
-        const { payloadFrozen } = copyPayload(payload);
-        const payloadFrozenArray: X[0][] = Array.isArray(payloadFrozen) ? payloadFrozen : [payloadFrozen];
+        const payloadFrozenArray: X[0][] = Array.isArray(payload) ? payload : [payload];
         let replacementCount = 0;
         let insertionCount = 0;
         arg.updateState({
@@ -217,7 +213,7 @@ export const upsertMatching = <S, C, X extends C & Array<any>, T extends Trackab
           actionName: `upsertMatching(${segs.join('.')}).with()`,
           payload: null,
           getPayloadFn: () => ({
-            argument: payloadFrozen,
+            argument: payload,
             replacementCount,
             insertionCount,
           }),
@@ -260,17 +256,16 @@ export function replacePayload<S, C, X extends C & Array<any>, T extends Trackab
   updateOptions: UpdateOptions<T, any>
 ) {
   const pathSegments = readSelector(selector);
-  const { payloadFrozen } = copyPayload(payload);
   let payloadReturnedByFn: C;
   let getPayloadFn = (() => payloadReturnedByFn ? { replacement: payloadReturnedByFn } : payloadReturnedByFn) as unknown as () => C;
   if (!pathSegments.length) {
     updateState({
       selector,
-      replacer: old => payloadFrozen,
+      replacer: old => payload,
       actionName: `${name}()`,
       pathSegments: [],
       payload: {
-        replacement: payloadFrozen,
+        replacement: payload,
       },
       getPayloadFn,
       updateOptions,
@@ -287,14 +282,14 @@ export function replacePayload<S, C, X extends C & Array<any>, T extends Trackab
     updateState({
       selector: selectorRevised,
       replacer: old => {
-        if (Array.isArray(old)) { return (old as Array<any>).map((o, i) => i === +lastSeg ? payloadFrozen : o); }
-        return ({ ...old, [lastSeg]: payloadFrozen })
+        if (Array.isArray(old)) { return (old as Array<any>).map((o, i) => i === +lastSeg ? payload : o); }
+        return ({ ...old, [lastSeg]: payload })
       },
       actionName,
       actionNameOverride: true,
       pathSegments: segsCopy,
       payload: {
-        replacement: payloadFrozen,
+        replacement: payload,
       },
       getPayloadFn,
       updateOptions,

@@ -2,7 +2,7 @@ import { augmentations } from './augmentations';
 import { Future, FutureState, Selector } from './shapes-external';
 import { StoreState } from './shapes-internal';
 import { errorMessages, expressionsNotAllowedInSelectorFunction } from './shared-consts';
-import { libState, testState } from './shared-state';
+import { libState } from './shared-state';
 
 export function deepFreeze<T extends Object>(o: T): T {
   Object.freeze(o);
@@ -109,12 +109,6 @@ export function readSelector(selector: (state: any) => any) {
   const proxy = initialize({});
   selector(proxy);
   return pathSegments;
-}
-
-export function copyPayload<C>(payload: C) {
-  return {
-    payloadFrozen: deepFreeze(deepCopy(payload)) as C,
-  };
 }
 
 export const validateSelectorFn = (

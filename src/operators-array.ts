@@ -2,24 +2,14 @@ import {
   ArrayOfElementsAction,
   ArrayOfElementsCommonAction,
   ArrayOfObjectsAction,
-  DeepReadonly,
   FindOrFilter,
-  Selector,
   Trackability,
   UpdateOptions,
 } from './shapes-external';
 import { ArrayOperatorState } from './shapes-internal';
 import { errorMessages } from './shared-consts';
-import { copyPayload, deepFreeze, processAsyncPayload, readSelector, validateSelectorFn } from './shared-utils';
+import { deepFreeze, processAsyncPayload, readSelector, validateSelectorFn } from './shared-utils';
 import { transact } from './transact';
-
-export const getSegments = <S, C, X extends C & Array<any>, P>(
-  selector: Selector<S, C, X>,
-  getCurrentState: () => S,
-  getProp?: (element: DeepReadonly<X[0]>) => P,
-) => {
-  return !getProp ? [] : readSelector(getProp);
-}
 
 export const andWhere = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
   arg: ArrayOperatorState<S, C, X, F, T>,
@@ -66,14 +56,13 @@ export const patch = <S, C, X extends C & Array<any>, F extends FindOrFilter, T 
 ) => ((payload, updateOptions) => {
   const elementIndices = completeWhereClause(arg);
   const processPayload = (payload: Partial<C>) => {
-    const { payloadFrozen } = copyPayload(payload);
     arg.updateState({
       selector: arg.selector,
-      replacer: old => old.map((o, i) => elementIndices.includes(i) ? { ...o, ...payloadFrozen } : o),
+      replacer: old => old.map((o, i) => elementIndices.includes(i) ? { ...o, ...payload } : o),
       actionName: `${arg.type}().patch()`,
       payload: {
         where: arg.whereClauseString,
-        patch: payloadFrozen,
+        patch: payload,
       },
       updateOptions: updateOptions as UpdateOptions<T, any>,
     });
@@ -92,15 +81,14 @@ export const replace = <S, C, X extends C & Array<any>, F extends FindOrFilter, 
   arg: ArrayOperatorState<S, C, X, F, T>,
 ) => ((payload, updateOptions) => {
   const processPayload = (payload: C) => {
-    const { payloadFrozen } = copyPayload(payload);
     const elementIndices = completeWhereClause(arg);
     arg.updateState({
       selector: arg.selector,
-      replacer: old => old.map((o, i) => elementIndices.includes(i) ? payloadFrozen : o),
+      replacer: old => old.map((o, i) => elementIndices.includes(i) ? payload : o),
       actionName: `${arg.type}().replace()`,
       payload: {
         where: arg.whereClauseString,
-        replacement: payloadFrozen,
+        replacement: payload,
       },
       updateOptions: updateOptions as UpdateOptions<T, any>,
     })
@@ -117,34 +105,31 @@ export const replace = <S, C, X extends C & Array<any>, F extends FindOrFilter, 
 }) as ArrayOfElementsCommonAction<X, F, T>['replace'];
 
 export const onChange = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
-  context: ArrayOperatorState<S, C, X, F, T>,
+  arg: ArrayOperatorState<S, C, X, F, T>,
 ) => (performAction => {
-  const { whereClauseSpecs, criteria, fn, changeListeners, type, selector } = context;
-  whereClauseSpecs.push({ filter: o => criteria(o, fn), type: 'last' });
-  changeListeners.set(performAction, nextState => deepFreeze(type === 'find'
-    ? (selector(nextState) as X).find(e => bundleCriteria(e, whereClauseSpecs))
-    : { $filtered: (selector(nextState) as X).map(e => bundleCriteria(e, whereClauseSpecs) ? e : null).filter(e => e !== null) }));
-  return { unsubscribe: () => changeListeners.delete(performAction) };
+  arg.whereClauseSpecs.push({ filter: o => arg.criteria(o, arg.fn), type: 'last' });
+  arg.changeListeners.set(performAction, nextState => deepFreeze(arg.type === 'find'
+    ? (arg.selector(nextState) as X).find(e => bundleCriteria(e, arg.whereClauseSpecs))
+    : { $filtered: (arg.selector(nextState) as X).map(e => bundleCriteria(e, arg.whereClauseSpecs) ? e : null).filter(e => e !== null) }));
+  return { unsubscribe: () => arg.changeListeners.delete(performAction) };
 }) as ArrayOfElementsCommonAction<X, F, T>['onChange'];
 
 export const read = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
-  context: ArrayOperatorState<S, C, X, F, T>,
+  arg: ArrayOperatorState<S, C, X, F, T>,
 ) => (() => {
-  const { whereClauseSpecs, criteria, fn, type, selector, getCurrentState } = context;
-  whereClauseSpecs.push({ filter: o => criteria(o, fn), type: 'last' });
-  return deepFreeze(type === 'find'
-    ? (selector(getCurrentState()) as X).find(e => bundleCriteria(e, whereClauseSpecs))
-    : (selector(getCurrentState()) as X).map(e => bundleCriteria(e, whereClauseSpecs) ? e : null).filter(e => e != null));
+  arg.whereClauseSpecs.push({ filter: o => arg.criteria(o, arg.fn), type: 'last' });
+  return deepFreeze(arg.type === 'find'
+    ? (arg.selector(arg.getCurrentState()) as X).find(e => bundleCriteria(e, arg.whereClauseSpecs))
+    : (arg.selector(arg.getCurrentState()) as X).map(e => bundleCriteria(e, arg.whereClauseSpecs) ? e : null).filter(e => e != null));
 }) as ArrayOfElementsCommonAction<X, F, T>['read'];
 
 export const stopBypassingPromises = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
-  context: ArrayOperatorState<S, C, X, F, T>,
+  arg: ArrayOperatorState<S, C, X, F, T>,
 ) => {
-  const { storeResult, selector, whereClauseString, type, getCurrentState } = context;
-  const segs = readSelector(selector);
-  const pathSegs = segs.join('.') + (segs.length ? '.' : '') + type + '(' + whereClauseString + ')';
-  transact(...Object.keys(storeResult().read().promiseBypassTimes).filter(key => key.startsWith(pathSegs))
-    .map(key => () => storeResult(s => (s as any).promiseBypassTimes).remove(key)));
+  const segs = readSelector(arg.selector);
+  const pathSegs = segs.join('.') + (segs.length ? '.' : '') + arg.type + '(' + arg.whereClauseString + ')';
+  transact(...Object.keys(arg.storeResult().read().promiseBypassTimes).filter(key => key.startsWith(pathSegs))
+    .map(key => () => arg.storeResult(s => (s as any).promiseBypassTimes).remove(key)));
 }
 
 const completeWhereClause = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(

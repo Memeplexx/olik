@@ -70,7 +70,7 @@ export function createStoreCore<S, T extends Trackability>({
       const recurseWhere = (getProp => {
         const getSegsAndCriteria = () => {
           validateSelectorFn('getProp', storeState, getProp);
-          const segs = array.getSegments(selector, () => currentState, getProp);
+          const segs = !getProp ? [] : readSelector(getProp);
           const criteria = (arg: X[0], fn: (arg: X[0]) => boolean) => {
             segs.forEach(seg => arg = arg[seg]);
             return fn(arg);
@@ -172,9 +172,7 @@ export function createStoreCore<S, T extends Trackability>({
       defineReset: (
         (initState: C, innerSelector) => () => replace({ ...getCoreActionsState(), name: 'reset' })(!innerSelector ? initState : innerSelector(initState), undefined as any)
       ) as StoreForAComponentInternal<S, C>['defineReset'],
-      renew: (state => {
-        currentState = deepFreeze(state) as S;
-      }) as StoreWhichMayContainComponentStores<S, C, T>['renew'],
+      renew: (state => currentState = deepFreeze(state)) as StoreWhichMayContainComponentStores<S, C, T>['renew'],
       getSelector: () => storeState.selector,
       changeListeners,
     } as unknown as StoreForAComponent<C>;

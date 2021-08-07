@@ -1,22 +1,21 @@
 import { ArrayOfElementsCommonAction, ArrayOfObjectsCommonAction, FindOrFilter, Trackability } from './shapes-external';
 import { ArrayCustomState } from './shapes-internal';
 import { errorMessages } from './shared-consts';
-import { copyPayload, deepFreeze, processAsyncPayload, readSelector } from './shared-utils';
+import { deepFreeze, processAsyncPayload, readSelector } from './shared-utils';
 import { transact } from './transact';
 
 export const replace = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
   arg: ArrayCustomState<S, C, X, T>,
 ) => ((payload, updateOptions) => {
   const processPayload = (payload: C) => {
-    const { payloadFrozen } = copyPayload(payload);
     const elementIndices = getElementIndices(arg);
     arg.updateState({
       selector: arg.selector,
-      replacer: old => old.map((o, i) => elementIndices.includes(i) ? payloadFrozen : o),
+      replacer: old => old.map((o, i) => elementIndices.includes(i) ? payload : o),
       actionName: `${arg.type}().replace()`,
       payload: {
         where: arg.predicate.toString(),
-        replacement: payloadFrozen,
+        replacement: payload,
       },
       updateOptions,
     });
@@ -35,14 +34,13 @@ export const patch = <S, C, X extends C & Array<any>, F extends FindOrFilter, T 
   arg: ArrayCustomState<S, C, X, T>,
 ) => ((payload, updateOptions) => {
   const processPayload = (payload: C) => {
-    const { payloadFrozen } = copyPayload(payload);
     const elementIndices = getElementIndices(arg);
     arg.updateState({
       selector: arg.selector,
-      replacer: old => old.map((o, i) => elementIndices.includes(i) ? { ...o, ...payloadFrozen } : o),
+      replacer: old => old.map((o, i) => elementIndices.includes(i) ? { ...o, ...payload } : o),
       actionName: `${arg.type}().patch()`,
       payload: {
-        patch: payloadFrozen,
+        patch: payload,
         where: arg.predicate.toString(),
       },
       updateOptions,
