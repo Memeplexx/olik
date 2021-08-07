@@ -7,7 +7,7 @@ export * from 'olik';
 
 declare module 'olik' {
   interface StoreOrDerivation<C> {
-    observe: () => Observable<C>;
+    observe: () => /*Observable<C>*/any;
   }
   // interface ArrayOfElementsCommonAction<X extends core.DeepReadonlyArray<any>, F extends core.FindOrFilter, T extends core.Trackability> {
   //   observe: () => Observable<F extends 'find' ? X[0] : X>;
