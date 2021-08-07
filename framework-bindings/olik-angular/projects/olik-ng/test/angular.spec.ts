@@ -30,7 +30,7 @@ describe('Angular', () => {
 
   it('should be able to observe state updates', done => {
     const select = createRootStore(initialState, { devtools: false });
-    const obs$ = select(s => s.object.property).observe2();
+    const obs$ = select(s => s.object.property).observe();
     const payload = 'test';
     obs$.pipe(skip(1)).subscribe(val => {
       expect(val).toEqual(payload);
