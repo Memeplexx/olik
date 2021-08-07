@@ -8,6 +8,7 @@ export * from 'olik';
 declare module 'olik' {
   interface StoreOrDerivation<C> {
     observe: () => Observable<C>;
+    observe2: () => { pipe: (arg: any) => { subscribe: (a: (arg: any) => any ) => any } };
   }
   interface ArrayOfElementsCommonAction<X extends core.DeepReadonlyArray<any>, F extends core.FindOrFilter, T extends core.Trackability> {
     observe: () => Observable<F extends 'find' ? X[0] : X>;
@@ -82,6 +83,11 @@ export class OlikNgModule {
     core.augment({
       selection: {
         observe: <C>(selection: core.StoreOrDerivation<C>) => () => new Observable<any>(observer => {
+          observer.next(selection.read());
+          const subscription = selection.onChange(v => observer.next(v));
+          return () => subscription.unsubscribe();
+        }),
+        observe2: <C>(selection: core.StoreOrDerivation<C>) => () => new Observable<any>(observer => {
           observer.next(selection.read());
           const subscription = selection.onChange(v => observer.next(v));
           return () => subscription.unsubscribe();
