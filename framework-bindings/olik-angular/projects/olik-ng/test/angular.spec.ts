@@ -18,7 +18,7 @@ describe('Angular', () => {
     string: 'b',
   };
 
-  beforeAll(() => {
+  beforeEach(() => {
     new OlikNgModule(null as any);
   })
 
