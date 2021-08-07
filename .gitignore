@@ -2,7 +2,7 @@
 /dist
 /types
 /framework-bindings/olik-ng/node_modules
-/framework-bindings/olik-angular/projects/olik-ng/node_modules
+/framework-bindings/olik-ng/dist
 /framework-bindings/olik-react/node_modules
 /framework-bindings/olik-react/dist
 /.jekyll-cache
