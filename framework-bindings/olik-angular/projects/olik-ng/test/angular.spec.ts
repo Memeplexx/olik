@@ -1,5 +1,6 @@
 import { from, of } from 'rxjs';
 import { catchError, skip } from 'rxjs/operators';
+import { Observable } from 'rxjs';
 
 import {
   combineComponentObservables,
