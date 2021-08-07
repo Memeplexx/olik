@@ -7,7 +7,8 @@ import {
   createComponentStore,
   deriveFrom,
 } from 'olik';
-import { OlikNgModule } from '../src';
+// import { OlikNgModule } from '../src';
+import {test} from '../src';
 
 describe('Angular', () => {
 
@@ -18,7 +19,8 @@ describe('Angular', () => {
   };
 
   beforeEach(() => {
-    new OlikNgModule(null as any);
+    // new OlikNgModule(null as any);
+    test();
   })
 
   it('', () => {
