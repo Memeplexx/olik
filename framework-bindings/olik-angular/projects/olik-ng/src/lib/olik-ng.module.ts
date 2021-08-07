@@ -6,6 +6,7 @@ import { map } from 'rxjs/operators';
 
 export * from 'olik';
 
+console.log('test before');
 declare module 'olik' {
   interface StoreOrDerivation<C> {
     observe: () => Observable<C>;
@@ -23,6 +24,7 @@ declare module 'olik' {
     observe: () => Observable<R>;
   }
 }
+console.log('test after');
 
 type FunctionParameter<T> = T extends (arg: infer H) => any ? H : never;
 type ClassObservables<T> = {
