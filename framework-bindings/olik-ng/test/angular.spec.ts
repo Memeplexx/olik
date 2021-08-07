@@ -23,7 +23,7 @@ describe('Angular', () => {
   })
 
   it('', () => {
-    const select = createRootStore(initialState);
+    const select = createRootStore(initialState, { devtools: false });
     const result = deriveFrom(
       select(s => s.string),
       select(s => s.object.property),
