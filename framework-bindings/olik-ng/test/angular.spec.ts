@@ -3,12 +3,11 @@ import { catchError, skip } from 'rxjs/operators';
 import { Observable } from 'rxjs';
 
 import {
-  // combineComponentObservables,
   createRootStore,
   createComponentStore,
   deriveFrom,
-  // OlikNgModule,
 } from 'olik';
+// import { OlikNgModule, combineComponentObservables } from '../src';
 
 describe('Angular', () => {
 
