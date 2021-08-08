@@ -1,10 +1,6 @@
 /node_modules
 /dist
 /types
-/olik-ng/node_modules
-/olik-ng/dist
-/olik-react/node_modules
-/olik-react/dist
 /.jekyll-cache
 /_site
 /.idea
