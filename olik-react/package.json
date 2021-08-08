@@ -1,0 +1,64 @@
+{
+  "name": "olik-react",
+  "version": "0.0.7",
+  "description": "",
+  "main": "dist/index.js",
+  "module": "dist/index.es.js",
+  "browser": "dist/index.bundle.js",
+  "types": "dist/index.d.ts",
+  "scripts": {
+    "clean": "rimraf dist coverage",
+    "tsc": "tsc && node node_modules/gulp/bin/gulp.js",
+    "build": "rollup -c && npm run tsc",
+    "dev": "rollup -c --watch",
+    "test": "jest --coverage --coverageReporters=text-lcov",
+    "test:cov": "npm test --coverage --collectCoverageFrom=src/**/*.{ts}",
+    "test:watch": "jest --watchAll --verbose false"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "olik": "0.0.42"
+  },
+  "devDependencies": {
+    "@testing-library/jest-dom": "^5.11.10",
+    "@testing-library/react": "^11.2.6",
+    "@types/jest": "^26.0.7",
+    "@types/react": "^16.9.44",
+    "@typescript-eslint/eslint-plugin": "^4.28.3",
+    "@typescript-eslint/parser": "^4.28.3",
+    "coveralls": "^3.1.0",
+    "cross-env": "^7.0.2",
+    "del": "^5.1.0",
+    "eslint": "^7.31.0",
+    "eslint-plugin-react": "^7.24.0",
+    "eslint-plugin-react-hooks": "^4.2.0",
+    "gulp": "^4.0.2",
+    "jest": "^26.1.0",
+    "react": "^16.13.1",
+    "react-dom": "^16.0.1",
+    "rimraf": "^3.0.2",
+    "rollup": "^2.23.0",
+    "rollup-plugin-commonjs": "^10.1.0",
+    "rollup-plugin-node-resolve": "^5.2.0",
+    "rollup-plugin-peer-deps-external": "^2.2.3",
+    "rollup-plugin-terser": "^6.1.0",
+    "rollup-plugin-typescript2": "^0.29.0",
+    "ts-jest": "^26.1.4",
+    "typescript": "4.0.3"
+  },
+  "jest": {
+    "transform": {
+      "^.+\\.tsx?$": "ts-jest"
+    },
+    "testRegex": "(/__tests__/.*|(\\.|/)(test|spec))\\.(jsx?|tsx?)$",
+    "moduleFileExtensions": [
+      "ts",
+      "tsx",
+      "js",
+      "jsx",
+      "json",
+      "node"
+    ]
+  }
+}

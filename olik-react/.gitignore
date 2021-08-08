@@ -1,0 +1,6 @@
+/node_modules
+/dist
+/types
+/.jekyll-cache
+/_site
+/.idea

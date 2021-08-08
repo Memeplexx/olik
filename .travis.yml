@@ -3,3 +3,5 @@ node_js:
   - "10"
 install:
   - yarn
+  - yarn --cwd ./olik-react
+  - yarn --cwd ./olik-ng
