@@ -24,7 +24,6 @@
     "src/**/*"
   ],
   "exclude": [
-    "dist/**/*",
-    "framework-bindings/**/*"
+    "dist/**/*"
   ]
 }
