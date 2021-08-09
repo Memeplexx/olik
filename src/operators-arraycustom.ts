@@ -13,7 +13,7 @@ export const replace = <S, C, X extends C & Array<any>, F extends FindOrFilter, 
     selector: ((s: any) => (arg.selector(s) as any)[arg.type]((e: any) => arg.predicate(e))) as any, 
     payload,
     updateOptions,
-    suffix: `${arg.type}(${arg.predicate}).replace()`,
+    cacheKeySuffix: `${arg.type}(${arg.predicate}).replace()`,
     actionNameOverride: true,
     actionName: !pathSegments.length ? `${arg.type}().replace()` : `${pathSegments.join('.')}.${arg.type}().replace()`,
     replacer: (old, payload) => {
@@ -36,7 +36,7 @@ export const patch = <S, C, X extends C & Array<any>, F extends FindOrFilter, T 
     selector: ((s: any) => (arg.selector(s) as any)[arg.type]((e: any) => arg.predicate(e))) as any,
     payload,
     updateOptions,
-    suffix: `${arg.type}(${arg.predicate}).patch()`,
+    cacheKeySuffix: `${arg.type}(${arg.predicate}).patch()`,
     actionNameOverride: true,
     actionName: !pathSegments.length ? `${arg.type}().patch()` : `${pathSegments.join('.')}.${arg.type}().patch()`,
     replacer: (oldd, payload) => {
@@ -60,7 +60,7 @@ export const remove = <S, C, X extends C & Array<any>, F extends FindOrFilter, T
     selector: ((s: any) => (arg.selector(s) as any)[arg.type]((e: any) => arg.predicate(e))) as any,
     payload,
     updateOptions,
-    suffix: `${arg.type}().remove()`,
+    cacheKeySuffix: `${arg.type}().remove()`,
     replacer: old => old.filter((o, i) => !elementIndices.includes(i)),
     getPayload: () => ({
       toRemove: (arg.selector(arg.getCurrentState()) as X)[arg.type]((e, i) => elementIndices.includes(i)), where: arg.predicate.toString(),

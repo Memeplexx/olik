@@ -67,7 +67,7 @@ export const insertIntoArray = <S, C, X extends C & Array<any>, T extends Tracka
   return processPayload<S, C, X, T>({
     ...arg,
     updateOptions,
-    suffix: 'insert()',
+    cacheKeySuffix: 'insert()',
     payload,
     replacer: (old, payload) => {
       const input = deepCopy(Array.isArray(payload) ? payload : [payload]);
@@ -90,7 +90,7 @@ export const patchOrInsertIntoObject = <S, C, X extends C & Array<any>, T extend
     ...arg,
     payload,
     updateOptions,
-    suffix: `${arg.type}()`,
+    cacheKeySuffix: `${arg.type}()`,
     replacer: (old, payload) => ({ ...old, ...payload }),
     getPayload: payload => arg.type === 'patch' ? {
       patch: payload,
@@ -107,7 +107,7 @@ export const remove = <S, C, X extends C & Array<any>, T extends Trackability>(
   return processPayload({
     ...arg,
     updateOptions,
-    suffix: 'remove()',
+    cacheKeySuffix: 'remove()',
     payload,
     replacer: (old, payload) => { const res = Object.assign({}, old); delete (res as any)[payload]; return res; },
     getPayload: payload => ({
@@ -126,7 +126,7 @@ export const deepMerge = <S, C, X extends C & Array<any>, T extends Trackability
   return processPayload({
     ...arg,
     payload,
-    suffix: 'deepMerge()',
+    cacheKeySuffix: 'deepMerge()',
     updateOptions,
     replacer: (old, payload) => {
       const isObject = (item: any) => (item && typeof item === 'object' && !Array.isArray(item));
@@ -168,7 +168,7 @@ export const upsertMatching = <S, C, X extends C & Array<any>, T extends Trackab
       return processPayload({
         ...arg,
         updateOptions,
-        suffix: `upsertMatching(${segs.join('.')}).with()`,
+        cacheKeySuffix: `upsertMatching(${segs.join('.')}).with()`,
         payload,
         replacer: (old, payload) => {
           const payloadFrozenArray: X[0][] = Array.isArray(payload) ? payload : [payload];
@@ -207,7 +207,7 @@ export const replace = <S, C, X extends C & Array<any>, T extends Trackability>(
     return processPayload({
       ...arg,
       selector: arg.selector,
-      suffix: `${arg.name}()`,
+      cacheKeySuffix: `${arg.name}()`,
       updateOptions,
       actionName: !pathSegments.length ? `${arg.name}()` : `${pathSegments.join('.')}.${arg.name}()`,
       actionNameOverride: true,

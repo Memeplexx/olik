@@ -148,7 +148,7 @@ export const processPayload = <S, C, X extends C & Array<any>, T extends Trackab
     payload: any | (() => Promise<any>),
     storeResult: (selector?: (s: S) => C) => any,
     updateOptions: {} | void,
-    suffix: string,
+    cacheKeySuffix: string,
     actionName?: string,
     storeState: StoreState<S>,
     replacer: (newNode: DeepReadonly<X>, payload: C) => any,
@@ -160,7 +160,7 @@ export const processPayload = <S, C, X extends C & Array<any>, T extends Trackab
   }
 ) => {
   const updateState = (payload: C) => arg.updateState({
-    actionName: arg.actionName || arg.suffix,
+    actionName: arg.actionName || arg.cacheKeySuffix,
     replacer: old => arg.replacer(old, payload),
     selector: arg.selector,
     updateOptions: arg.updateOptions as any,
@@ -180,10 +180,7 @@ export const processPayload = <S, C, X extends C & Array<any>, T extends Trackab
     const asyncPayload = arg.payload as (() => Promise<C>);
     const segs = readSelector(arg.selector);
     const bypassPromiseFor = ((arg.updateOptions || {}) as any).bypassPromiseFor || 0;
-
-    const fullPath = segs.join('.') + (segs.length ? '.' : '') + arg.suffix;
-    // const fullPath = arg.actionName || (!segs.length ? `${arg.suffix}()` : `${segs.join('.')}.${arg.suffix}()`);
-
+    const fullPath = segs.join('.') + (segs.length ? '.' : '') + arg.cacheKeySuffix;
     if (arg.storeState.activeFutures[fullPath]) { // prevent duplicate simultaneous requests
       return arg.storeState.activeFutures[fullPath];
     }
