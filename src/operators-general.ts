@@ -204,23 +204,17 @@ export const replace = <S, C, X extends C & Array<any>, T extends Trackability>(
     validateSelector(arg);
     const pathSegments = readSelector(arg.selector);
     const segsCopy = pathSegments.slice(0, pathSegments.length - 1);
-    const selectorRevised = (((state: S) => {
-      let res = state as Record<any, any>;
-      segsCopy.forEach(seg => res = res[seg]);
-      return res;
-    })) as Selector<S, C, X>;
     return processPayload({
       ...arg,
       selector: arg.selector,
-      suffix: 'replace()',
+      suffix: `${arg.name}()`,
       updateOptions,
       actionName: !pathSegments.length ? `${arg.name}()` : `${pathSegments.join('.')}.${arg.name}()`,
       actionNameOverride: true,
       payload,
       pathSegments: segsCopy,
-      replacer: (oldd, payload) => {
+      replacer: (old, payload) => {
         if (!pathSegments.length) { return payload; }
-        const old = selectorRevised(arg.getCurrentState());
         const lastSeg = pathSegments[pathSegments.length - 1];
         if (Array.isArray(old)) { return (old as Array<any>).map((o, i) => i === +lastSeg ? payload : o); }
         return ({ ...old, [lastSeg]: payload });
