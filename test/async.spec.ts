@@ -587,7 +587,6 @@ describe('async', () => {
     expect(select().read().array).toEqual(optimisticValue);
   })
 
-
   it('should invalidate caches for replaceAll() independantly of replace()', done => {
     const select = createRootStore(initialState);
     const fetchTodos = () => new Promise<{ id: number, value: string }[]>(resolve => setTimeout(() => resolve([{ id: 1, value: 'test' }]), 10));

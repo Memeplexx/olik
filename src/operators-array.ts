@@ -8,7 +8,7 @@ import {
 } from './shapes-external';
 import { ArrayOperatorState } from './shapes-internal';
 import { errorMessages } from './shared-consts';
-import { deepFreeze, processAsyncPayload, readSelector, validateSelectorFn } from './shared-utils';
+import { deepFreeze, processPayload, readSelector, validateSelectorFn } from './shared-utils';
 import { transact } from './transact';
 
 export const andWhere = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
@@ -31,22 +31,17 @@ export const remove = <S, C, X extends C & Array<any>, F extends FindOrFilter, T
   arg: ArrayOperatorState<S, C, X, F, T>,
 ) => ((payload: any, updateOptions: any) => {
   const elementIndices = completeWhereClause(arg);
-  return processAsyncPayload({
+  return processPayload({
     ...arg,
     selector: ((s: any) => (arg.selector(s) as any)[arg.type]((e: any) => bundleCriteria(e, arg.whereClauseSpecs))) as any,
     payload,
     updateOptions,
-    suffix: arg.type + '(' + arg.whereClauseString + ').remove()',
-    processPayload: () => arg.updateState({
-      selector: arg.selector,
-      replacer: old => old.filter((o, i) => !elementIndices.includes(i)),
-      actionName: `${arg.type}().remove()`,
-      payload: {
-        where: arg.whereClauseStrings.join(' '),
-        toRemove: (arg.selector(arg.getCurrentState()) as X)[arg.type]((e, i) => elementIndices.includes(i)),
-      },
-      updateOptions: typeof payload === 'function' ? updateOptions : payload,
-    })
+    suffix: arg.type + '().remove()',
+    replacer: old => old.filter((o, i) => !elementIndices.includes(i)),
+    getPayload: payload => ({
+      where: arg.whereClauseStrings.join(' '),
+      toRemove: (arg.selector(arg.getCurrentState()) as X)[arg.type]((e, i) => elementIndices.includes(i)),
+    }),
   });
 }) as ArrayOfObjectsAction<X, F, T>['remove'];
 
@@ -54,50 +49,45 @@ export const patch = <S, C, X extends C & Array<any>, F extends FindOrFilter, T 
   arg: ArrayOperatorState<S, C, X, F, T>,
 ) => ((payload, updateOptions) => {
   const elementIndices = completeWhereClause(arg);
-  return processAsyncPayload({
+  const pathSegments = readSelector(arg.selector);
+  return processPayload({
     ...arg,
     selector: ((s: any) => (arg.selector(s) as any)[arg.type]((e: any) => bundleCriteria(e, arg.whereClauseSpecs))) as any,
     payload,
     updateOptions,
-    suffix: arg.type + '(' + arg.whereClauseString + ').patch()',
-    processPayload: (payload: Partial<C>) => {
-      arg.updateState({
-        selector: arg.selector,
-        replacer: old => old.map((o, i) => elementIndices.includes(i) ? { ...o, ...payload } : o),
-        actionName: `${arg.type}().patch()`,
-        payload: {
-          where: arg.whereClauseString,
-          patch: payload,
-        },
-        updateOptions: updateOptions as UpdateOptions<T, any>,
-      });
-    }
+    suffix: `${arg.type}(${arg.whereClauseString}).patch()`,
+    actionNameOverride: true,
+    actionName: !pathSegments.length ? `${arg.type}().patch()` : `${pathSegments.join('.')}.${arg.type}().patch()`,
+    replacer: (old, payload) => old.map((o, i) => elementIndices.includes(i) ? { ...o, ...payload } : o),
+    getPayload: payload => ({
+      where: arg.whereClauseString,
+      patch: payload,
+    })
   });
 }) as ArrayOfObjectsAction<X, F, T>['patch'];
 
 export const replace = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
   arg: ArrayOperatorState<S, C, X, F, T>,
 ) => ((payload, updateOptions) => {
-  return processAsyncPayload<S, C, X>({
+  const pathSegments = readSelector(arg.selector);
+  return processPayload<S, C, X, T>({
+    ...arg,
     selector: ((s: any) => (arg.selector(s) as any)[arg.type]((e: any) => bundleCriteria(e, arg.whereClauseSpecs))) as any,
     payload,
     storeResult: arg.storeResult,
     updateOptions,
-    suffix: arg.type + '(' + arg.whereClauseString + ').replace()',
+    suffix: `${arg.type}(${arg.whereClauseString}).replace()`,
+    actionNameOverride: true,
+    actionName: !pathSegments.length ? `${arg.type}().replace()` : `${pathSegments.join('.')}.${arg.type}().replace()`,
     storeState: arg.storeState,
-    processPayload: (payload: C) => {
+    replacer: (old, payload) => {
       const elementIndices = completeWhereClause(arg);
-      arg.updateState({
-        selector: arg.selector,
-        replacer: old => old.map((o, i) => elementIndices.includes(i) ? payload : o),
-        actionName: `${arg.type}().replace()`,
-        payload: {
-          where: arg.whereClauseString,
-          replacement: payload,
-        },
-        updateOptions: updateOptions as UpdateOptions<T, any>,
-      })
+      return old.map((o, i) => elementIndices.includes(i) ? payload : o);
     },
+    getPayload: (payload) => ({
+      where: arg.whereClauseString,
+      replacement: payload,
+    })
   });
 }) as ArrayOfElementsCommonAction<X, F, T>['replace'];
 

@@ -1,6 +1,6 @@
 import { augmentations } from './augmentations';
-import { Future, FutureState, Selector } from './shapes-external';
-import { StoreState } from './shapes-internal';
+import { DeepReadonly, Future, FutureState, Selector, Trackability } from './shapes-external';
+import { StoreState, UpdateStateFn } from './shapes-internal';
 import { errorMessages, expressionsNotAllowedInSelectorFunction } from './shared-consts';
 import { libState } from './shared-state';
 
@@ -142,21 +142,37 @@ export const toIsoString = (date: Date) => {
     ':' + pad(tzo % 60);
 }
 
-export const processAsyncPayload = <S, C, X extends C & Array<any>>(
+export const processPayload = <S, C, X extends C & Array<any>, T extends Trackability>(
   arg: {
     selector: Selector<S, C, X>,
     payload: any | (() => Promise<any>),
     storeResult: (selector?: (s: S) => C) => any,
-    processPayload: (payload: C) => void,
     updateOptions: {} | void,
     suffix: string,
+    actionName?: string,
     storeState: StoreState<S>,
+    replacer: (newNode: DeepReadonly<X>, payload: C) => any,
+    getPayload: (payload: C) => any,
+    getPayloadFn?: () => any,
+    updateState: UpdateStateFn<S, C, T, X>,
+    actionNameOverride?: boolean,
+    pathSegments?: string[],
   }
 ) => {
+  const updateState = (payload: C) => arg.updateState({
+    actionName: arg.actionName || arg.suffix,
+    replacer: old => arg.replacer(old, payload),
+    selector: arg.selector,
+    updateOptions: arg.updateOptions as any,
+    payload: arg.getPayload(payload),
+    getPayloadFn: arg.getPayloadFn,
+    actionNameOverride: arg.actionNameOverride,
+    pathSegments: arg.pathSegments,
+  })
   if (!!arg.payload && typeof (arg.payload) === 'function') {
     if (libState.transactionState !== 'none') {
       libState.transactionState = 'none';
-      throw new Error(errorMessages.PROMISES_NOT_ALLOWED_IN_TRANSACTIONS)
+      throw new Error(errorMessages.PROMISES_NOT_ALLOWED_IN_TRANSACTIONS);
     }
     if (['array', 'string', 'number', 'boolean'].some(t => t === typeof (arg.storeResult().read()))) {
       throw new Error(errorMessages.INVALID_CONTAINER_FOR_CACHED_DATA);
@@ -181,7 +197,7 @@ export const processAsyncPayload = <S, C, X extends C & Array<any>>(
     const { optimisticallyUpdateWith } = ((arg.updateOptions as any) || {});
     let snapshot = isEmpty(optimisticallyUpdateWith) ? null : arg.storeResult(arg.selector).read();
     if (!isEmpty(snapshot)) {
-      arg.processPayload(optimisticallyUpdateWith);
+      updateState(optimisticallyUpdateWith);
     }
     const promiseResult = () => {
       const promise = (augmentations.async ? augmentations.async(asyncPayload) : asyncPayload()) as Promise<C>;
@@ -191,7 +207,7 @@ export const processAsyncPayload = <S, C, X extends C & Array<any>>(
           if (involvesCaching) {
             libState.transactionState = 'started';
           }
-          arg.processPayload(res);
+          updateState(res);
           if (involvesCaching && bypassPromiseFor) {
             const cacheExpiry = toIsoString(new Date(new Date().getTime() + bypassPromiseFor));
             libState.transactionState = 'last';
@@ -216,7 +232,7 @@ export const processAsyncPayload = <S, C, X extends C & Array<any>>(
         }).catch(e => {
           // Revert optimistic update
           if (!isEmpty(snapshot)) {
-            arg.processPayload(snapshot);
+            updateState(snapshot);
           }
           throw e;
         }).finally(() => delete arg.storeState.activeFutures[fullPath]);
@@ -238,6 +254,6 @@ export const processAsyncPayload = <S, C, X extends C & Array<any>>(
     arg.storeState.activeFutures[fullPath] = result;
     return result
   } else {
-    arg.processPayload(arg.payload as C);
+    updateState(arg.payload as C);
   }
 }

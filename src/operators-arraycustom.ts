@@ -1,56 +1,53 @@
 import { ArrayOfElementsCommonAction, ArrayOfObjectsCommonAction, FindOrFilter, Trackability } from './shapes-external';
 import { ArrayCustomState } from './shapes-internal';
 import { errorMessages } from './shared-consts';
-import { deepFreeze, processAsyncPayload, readSelector } from './shared-utils';
+import { deepFreeze, processPayload, readSelector } from './shared-utils';
 import { transact } from './transact';
 
 export const replace = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
   arg: ArrayCustomState<S, C, X, T>,
 ) => ((payload, updateOptions) => {
-  return processAsyncPayload({
+  const pathSegments = readSelector(arg.selector);
+  return processPayload({
     ...arg,
     selector: ((s: any) => (arg.selector(s) as any)[arg.type]((e: any) => arg.predicate(e))) as any, 
     payload,
     updateOptions,
     suffix: `${arg.type}(${arg.predicate}).replace()`,
-    processPayload: (payload: C) => {
+    actionNameOverride: true,
+    actionName: !pathSegments.length ? `${arg.type}().replace()` : `${pathSegments.join('.')}.${arg.type}().replace()`,
+    replacer: (old, payload) => {
       const elementIndices = getElementIndices(arg);
-      arg.updateState({
-        selector: arg.selector,
-        replacer: old => old.map((o, i) => elementIndices.includes(i) ? payload : o),
-        actionName: `${arg.type}().replace()`,
-        payload: {
-          where: arg.predicate.toString(),
-          replacement: payload,
-        },
-        updateOptions,
-      });
+      return old.map((o: any, i: number) => elementIndices.includes(i) ? payload : o);
     },
+    getPayload: payload => ({
+      where: arg.predicate.toString(),
+      replacement: payload,
+    }),
   });
 }) as ArrayOfElementsCommonAction<X, F, T>['replace'];
 
 export const patch = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
   arg: ArrayCustomState<S, C, X, T>,
 ) => ((payload, updateOptions) => {
-  return processAsyncPayload({
+  const pathSegments = readSelector(arg.selector);
+  return processPayload({
     ...arg,
     selector: ((s: any) => (arg.selector(s) as any)[arg.type]((e: any) => arg.predicate(e))) as any,
     payload,
     updateOptions,
     suffix: `${arg.type}(${arg.predicate}).patch()`,
-    processPayload: (payload: C) => {
+    actionNameOverride: true,
+    actionName: !pathSegments.length ? `${arg.type}().patch()` : `${pathSegments.join('.')}.${arg.type}().patch()`,
+    replacer: (oldd, payload) => {
+      const old = arg.selector(arg.getCurrentState()) as any;
       const elementIndices = getElementIndices(arg);
-      arg.updateState({
-        selector: arg.selector,
-        replacer: old => old.map((o, i) => elementIndices.includes(i) ? { ...o, ...payload } : o),
-        actionName: `${arg.type}().patch()`,
-        payload: {
-          patch: payload,
-          where: arg.predicate.toString(),
-        },
-        updateOptions,
-      });
+      return old.map((o: any, i: number) => elementIndices.includes(i) ? { ...o, ...payload } : o);
     },
+    getPayload: (payload) => ({
+      patch: payload,
+      where: arg.predicate.toString(),
+    }),
   });
 }) as ArrayOfObjectsCommonAction<X, F, T>['patch'];
 
@@ -58,20 +55,15 @@ export const remove = <S, C, X extends C & Array<any>, F extends FindOrFilter, T
   arg: ArrayCustomState<S, C, X, T>,
 ) => ((payload: any, updateOptions: any) => {
   const elementIndices = getElementIndices(arg);
-  return processAsyncPayload({
+  return processPayload({
     ...arg,
     selector: ((s: any) => (arg.selector(s) as any)[arg.type]((e: any) => arg.predicate(e))) as any,
     payload,
     updateOptions,
-    suffix: `${arg.type}(${arg.predicate}).remove()`,
-    processPayload: () => arg.updateState({
-      selector: arg.selector,
-      replacer: old => old.filter((o, i) => !elementIndices.includes(i)),
-      actionName: `${arg.type}().remove()`,
-      payload: {
-        toRemove: (arg.selector(arg.getCurrentState()) as X)[arg.type]((e, i) => elementIndices.includes(i)), where: arg.predicate.toString(),
-      },
-      updateOptions: typeof payload === 'function' ? updateOptions : payload,
+    suffix: `${arg.type}().remove()`,
+    replacer: old => old.filter((o, i) => !elementIndices.includes(i)),
+    getPayload: () => ({
+      toRemove: (arg.selector(arg.getCurrentState()) as X)[arg.type]((e, i) => elementIndices.includes(i)), where: arg.predicate.toString(),
     })
   });
 }) as ArrayOfElementsCommonAction<X, F, T>['remove'];
