@@ -64,29 +64,28 @@ export const insertIntoArray = <S, C, X extends C & Array<any>, T extends Tracka
   arg: CoreActionsState<S, C, X, T>,
 ) => ((payload, updateOptions: UpdateAtIndex = {}) => {
   validateSelector(arg);
-  const processPayload = (payload: C) => {
-    arg.updateState({
-      selector: arg.selector,
-      replacer: old => {
-        const input = deepCopy(Array.isArray(payload) ? payload : [payload]);
-        return (!isEmpty(updateOptions.atIndex)) ? [...old.slice(0, updateOptions.atIndex), ...input, ...old.slice(updateOptions.atIndex)] : [...old, ...input];
-      },
-      actionName: 'insert()',
-      payload: (!isEmpty(updateOptions.atIndex)) ? {
-        insertion: payload,
-        atIndex: updateOptions.atIndex
-      } : {
-        insertion: payload,
-      },
-      updateOptions: updateOptions as UpdateOptions<T, any>,
-    });
-  }
   return processAsyncPayload<S, C, X>({
     ...arg,
-    processPayload,
     updateOptions,
     suffix: 'insert()',
     payload,
+    processPayload: (payload: C) => {
+      arg.updateState({
+        selector: arg.selector,
+        replacer: old => {
+          const input = deepCopy(Array.isArray(payload) ? payload : [payload]);
+          return (!isEmpty(updateOptions.atIndex)) ? [...old.slice(0, updateOptions.atIndex), ...input, ...old.slice(updateOptions.atIndex)] : [...old, ...input];
+        },
+        actionName: 'insert()',
+        payload: (!isEmpty(updateOptions.atIndex)) ? {
+          insertion: payload,
+          atIndex: updateOptions.atIndex
+        } : {
+          insertion: payload,
+        },
+        updateOptions: updateOptions as UpdateOptions<T, any>,
+      });
+    }
   });
 }) as StoreForAnArrayCommon<X, T>['insert'];
 
@@ -94,25 +93,24 @@ export const patchOrInsertIntoObject = <S, C, X extends C & Array<any>, T extend
   arg: CoreActionsState<S, C, X, T> & { type: 'patch' | 'insert', },
 ) => ((payload, updateOptions) => {
   validateSelector(arg);
-  const processPayload = (payload: Partial<C>) => {
-    arg.updateState({
-      selector: arg.selector,
-      replacer: old => ({ ...old, ...payload }),
-      actionName: `${arg.type}()`,
-      payload: arg.type === 'patch' ? {
-        patch: payload,
-      } : {
-        insertion: payload,
-      },
-      updateOptions,
-    });
-  }
   return processAsyncPayload({
     ...arg,
     payload,
-    processPayload,
     updateOptions,
     suffix: 'patch()',
+    processPayload: (payload: Partial<C>) => {
+      arg.updateState({
+        selector: arg.selector,
+        replacer: old => ({ ...old, ...payload }),
+        actionName: `${arg.type}()`,
+        payload: arg.type === 'patch' ? {
+          patch: payload,
+        } : {
+          insertion: payload,
+        },
+        updateOptions,
+      });
+    }
   });
 }) as StoreForAnObject<C, T>['patch'];
 
@@ -120,21 +118,20 @@ export const remove = <S, C, X extends C & Array<any>, T extends Trackability>(
   arg: CoreActionsState<S, C, X, T>,
 ) => ((payload, updateOptions) => {
   validateSelector(arg);
-  const processPayload = (payload: any) => arg.updateState({
-    selector: arg.selector,
-    replacer: old => { const res = Object.assign({}, old); delete (res as any)[payload]; return res; },
-    actionName: 'remove()',
-    payload: {
-      toRemove: payload,
-    },
-    updateOptions,
-  });
   return processAsyncPayload({
     ...arg,
-    processPayload,
     updateOptions,
     suffix: 'remove()',
     payload,
+    processPayload: (payload: any) => arg.updateState({
+      selector: arg.selector,
+      replacer: old => { const res = Object.assign({}, old); delete (res as any)[payload]; return res; },
+      actionName: 'remove()',
+      payload: {
+        toRemove: payload,
+      },
+      updateOptions,
+    })
   });
 }) as StoreForAnObject<C, T>['remove'];
 
@@ -145,41 +142,40 @@ export const deepMerge = <S, C, X extends C & Array<any>, T extends Trackability
   updateOptions: UpdateOptions<T, any>,
 ) => {
   validateSelector(arg);
-  const processPayload = (payload: any) => arg.updateState({
-    selector: arg.selector,
-    replacer: old => {
-      const isObject = <S>(item: S) => (item && typeof item === 'object' && !Array.isArray(item));
-      const mergeDeep = <S>(target: S, source: S) => {
-        let output = Object.assign({}, target);
-        if (isObject(target) && isObject(source)) {
-          (Object.keys(source) as Array<keyof S>).forEach(key => {
-            if (isObject(source[key])) {
-              if (!(key in target)) {
-                Object.assign(output, { [key]: source[key] });
-              } else {
-                output[key] = mergeDeep(target[key], source[key]);
-              }
-            } else {
-              Object.assign(output, { [key]: source[key] });
-            }
-          });
-        }
-        return output;
-      }
-      return mergeDeep(old, payload);
-    },
-    actionName: 'deepMerge()',
-    payload: {
-      toMerge: payload,
-    },
-    updateOptions,
-  });
   return processAsyncPayload({
     ...arg,
     payload,
-    processPayload,
     suffix: 'deepMerge()',
     updateOptions,
+    processPayload: (payload: any) => arg.updateState({
+      selector: arg.selector,
+      replacer: old => {
+        const isObject = <S>(item: S) => (item && typeof item === 'object' && !Array.isArray(item));
+        const mergeDeep = <S>(target: S, source: S) => {
+          let output = Object.assign({}, target);
+          if (isObject(target) && isObject(source)) {
+            (Object.keys(source) as Array<keyof S>).forEach(key => {
+              if (isObject(source[key])) {
+                if (!(key in target)) {
+                  Object.assign(output, { [key]: source[key] });
+                } else {
+                  output[key] = mergeDeep(target[key], source[key]);
+                }
+              } else {
+                Object.assign(output, { [key]: source[key] });
+              }
+            });
+          }
+          return output;
+        }
+        return mergeDeep(old, payload);
+      },
+      actionName: 'deepMerge()',
+      payload: {
+        toMerge: payload,
+      },
+      updateOptions,
+    })
   });
 }) as StoreForAnObject<C, T>['deepMerge'];
 
@@ -190,42 +186,41 @@ export const upsertMatching = <S, C, X extends C & Array<any>, T extends Trackab
   return {
     with: (payload, updateOptions) => {
       validateSelector(arg);
-      const processPayload = (payload: C) => {
-        const segs = !getProp ? [] : readSelector(getProp);
-        const payloadFrozenArray: X[0][] = Array.isArray(payload) ? payload : [payload];
-        let replacementCount = 0;
-        let insertionCount = 0;
-        arg.updateState({
-          selector: arg.selector,
-          replacer: old => {
-            const replacements = old.map(oe => {
-              const found = payloadFrozenArray.find(ne => !getProp ? oe === ne : getProp(oe) === getProp(ne));
-              if (found !== null && found !== undefined) { replacementCount++; }
-              return found || oe;
-            });
-            const insertions = payloadFrozenArray.filter(ne => !old.some(oe => !getProp ? oe === ne : getProp(oe) === getProp(ne)));
-            insertionCount = insertions.length;
-            return [
-              ...replacements,
-              ...insertions
-            ];
-          },
-          actionName: `upsertMatching(${segs.join('.')}).with()`,
-          payload: null,
-          getPayloadFn: () => ({
-            argument: payload,
-            replacementCount,
-            insertionCount,
-          }),
-          updateOptions: updateOptions as UpdateOptions<T, any>,
-        });
-      }
       return processAsyncPayload({
         ...arg,
-        processPayload,
         updateOptions,
         suffix: 'upsertMatching()',
         payload,
+        processPayload: (payload: C) => {
+          const segs = !getProp ? [] : readSelector(getProp);
+          const payloadFrozenArray: X[0][] = Array.isArray(payload) ? payload : [payload];
+          let replacementCount = 0;
+          let insertionCount = 0;
+          arg.updateState({
+            selector: arg.selector,
+            replacer: old => {
+              const replacements = old.map(oe => {
+                const found = payloadFrozenArray.find(ne => !getProp ? oe === ne : getProp(oe) === getProp(ne));
+                if (found !== null && found !== undefined) { replacementCount++; }
+                return found || oe;
+              });
+              const insertions = payloadFrozenArray.filter(ne => !old.some(oe => !getProp ? oe === ne : getProp(oe) === getProp(ne)));
+              insertionCount = insertions.length;
+              return [
+                ...replacements,
+                ...insertions
+              ];
+            },
+            actionName: `upsertMatching(${segs.join('.')}).with()`,
+            payload: null,
+            getPayloadFn: () => ({
+              argument: payload,
+              replacementCount,
+              insertionCount,
+            }),
+            updateOptions: updateOptions as UpdateOptions<T, any>,
+          });
+        }
       });
     }
   };

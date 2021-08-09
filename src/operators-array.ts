@@ -31,23 +31,22 @@ export const remove = <S, C, X extends C & Array<any>, F extends FindOrFilter, T
   arg: ArrayOperatorState<S, C, X, F, T>,
 ) => ((payload: any, updateOptions: any) => {
   const elementIndices = completeWhereClause(arg);
-  const processPayload = () => arg.updateState({
-    selector: arg.selector,
-    replacer: old => old.filter((o, i) => !elementIndices.includes(i)),
-    actionName: `${arg.type}().remove()`,
-    payload: {
-      where: arg.whereClauseStrings.join(' '),
-      toRemove: (arg.selector(arg.getCurrentState()) as X)[arg.type]((e, i) => elementIndices.includes(i)),
-    },
-    updateOptions: typeof payload === 'function' ? updateOptions : payload,
-  });
   return processAsyncPayload({
     ...arg,
     selector: ((s: any) => (arg.selector(s) as any)[arg.type]((e: any) => bundleCriteria(e, arg.whereClauseSpecs))) as any,
     payload,
-    processPayload,
     updateOptions,
     suffix: arg.type + '(' + arg.whereClauseString + ').remove()',
+    processPayload: () => arg.updateState({
+      selector: arg.selector,
+      replacer: old => old.filter((o, i) => !elementIndices.includes(i)),
+      actionName: `${arg.type}().remove()`,
+      payload: {
+        where: arg.whereClauseStrings.join(' '),
+        toRemove: (arg.selector(arg.getCurrentState()) as X)[arg.type]((e, i) => elementIndices.includes(i)),
+      },
+      updateOptions: typeof payload === 'function' ? updateOptions : payload,
+    })
   });
 }) as ArrayOfObjectsAction<X, F, T>['remove'];
 
@@ -55,52 +54,50 @@ export const patch = <S, C, X extends C & Array<any>, F extends FindOrFilter, T 
   arg: ArrayOperatorState<S, C, X, F, T>,
 ) => ((payload, updateOptions) => {
   const elementIndices = completeWhereClause(arg);
-  const processPayload = (payload: Partial<C>) => {
-    arg.updateState({
-      selector: arg.selector,
-      replacer: old => old.map((o, i) => elementIndices.includes(i) ? { ...o, ...payload } : o),
-      actionName: `${arg.type}().patch()`,
-      payload: {
-        where: arg.whereClauseString,
-        patch: payload,
-      },
-      updateOptions: updateOptions as UpdateOptions<T, any>,
-    });
-  }
   return processAsyncPayload({
     ...arg,
     selector: ((s: any) => (arg.selector(s) as any)[arg.type]((e: any) => bundleCriteria(e, arg.whereClauseSpecs))) as any,
     payload,
-    processPayload,
     updateOptions,
     suffix: arg.type + '(' + arg.whereClauseString + ').patch()',
+    processPayload: (payload: Partial<C>) => {
+      arg.updateState({
+        selector: arg.selector,
+        replacer: old => old.map((o, i) => elementIndices.includes(i) ? { ...o, ...payload } : o),
+        actionName: `${arg.type}().patch()`,
+        payload: {
+          where: arg.whereClauseString,
+          patch: payload,
+        },
+        updateOptions: updateOptions as UpdateOptions<T, any>,
+      });
+    }
   });
 }) as ArrayOfObjectsAction<X, F, T>['patch'];
 
 export const replace = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
   arg: ArrayOperatorState<S, C, X, F, T>,
 ) => ((payload, updateOptions) => {
-  const processPayload = (payload: C) => {
-    const elementIndices = completeWhereClause(arg);
-    arg.updateState({
-      selector: arg.selector,
-      replacer: old => old.map((o, i) => elementIndices.includes(i) ? payload : o),
-      actionName: `${arg.type}().replace()`,
-      payload: {
-        where: arg.whereClauseString,
-        replacement: payload,
-      },
-      updateOptions: updateOptions as UpdateOptions<T, any>,
-    })
-  }
   return processAsyncPayload<S, C, X>({
     selector: ((s: any) => (arg.selector(s) as any)[arg.type]((e: any) => bundleCriteria(e, arg.whereClauseSpecs))) as any,
     payload,
     storeResult: arg.storeResult,
-    processPayload,
     updateOptions,
     suffix: arg.type + '(' + arg.whereClauseString + ').replace()',
     storeState: arg.storeState,
+    processPayload: (payload: C) => {
+      const elementIndices = completeWhereClause(arg);
+      arg.updateState({
+        selector: arg.selector,
+        replacer: old => old.map((o, i) => elementIndices.includes(i) ? payload : o),
+        actionName: `${arg.type}().replace()`,
+        payload: {
+          where: arg.whereClauseString,
+          replacement: payload,
+        },
+        updateOptions: updateOptions as UpdateOptions<T, any>,
+      })
+    },
   });
 }) as ArrayOfElementsCommonAction<X, F, T>['replace'];
 

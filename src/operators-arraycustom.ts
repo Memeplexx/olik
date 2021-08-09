@@ -7,52 +7,50 @@ import { transact } from './transact';
 export const replace = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
   arg: ArrayCustomState<S, C, X, T>,
 ) => ((payload, updateOptions) => {
-  const processPayload = (payload: C) => {
-    const elementIndices = getElementIndices(arg);
-    arg.updateState({
-      selector: arg.selector,
-      replacer: old => old.map((o, i) => elementIndices.includes(i) ? payload : o),
-      actionName: `${arg.type}().replace()`,
-      payload: {
-        where: arg.predicate.toString(),
-        replacement: payload,
-      },
-      updateOptions,
-    });
-  }
   return processAsyncPayload({
     ...arg,
     selector: ((s: any) => (arg.selector(s) as any)[arg.type]((e: any) => arg.predicate(e))) as any, 
     payload,
-    processPayload,
     updateOptions,
     suffix: `${arg.type}(${arg.predicate}).replace()`,
+    processPayload: (payload: C) => {
+      const elementIndices = getElementIndices(arg);
+      arg.updateState({
+        selector: arg.selector,
+        replacer: old => old.map((o, i) => elementIndices.includes(i) ? payload : o),
+        actionName: `${arg.type}().replace()`,
+        payload: {
+          where: arg.predicate.toString(),
+          replacement: payload,
+        },
+        updateOptions,
+      });
+    },
   });
 }) as ArrayOfElementsCommonAction<X, F, T>['replace'];
 
 export const patch = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
   arg: ArrayCustomState<S, C, X, T>,
 ) => ((payload, updateOptions) => {
-  const processPayload = (payload: C) => {
-    const elementIndices = getElementIndices(arg);
-    arg.updateState({
-      selector: arg.selector,
-      replacer: old => old.map((o, i) => elementIndices.includes(i) ? { ...o, ...payload } : o),
-      actionName: `${arg.type}().patch()`,
-      payload: {
-        patch: payload,
-        where: arg.predicate.toString(),
-      },
-      updateOptions,
-    });
-  }
   return processAsyncPayload({
     ...arg,
     selector: ((s: any) => (arg.selector(s) as any)[arg.type]((e: any) => arg.predicate(e))) as any,
     payload,
-    processPayload,
     updateOptions,
     suffix: `${arg.type}(${arg.predicate}).patch()`,
+    processPayload: (payload: C) => {
+      const elementIndices = getElementIndices(arg);
+      arg.updateState({
+        selector: arg.selector,
+        replacer: old => old.map((o, i) => elementIndices.includes(i) ? { ...o, ...payload } : o),
+        actionName: `${arg.type}().patch()`,
+        payload: {
+          patch: payload,
+          where: arg.predicate.toString(),
+        },
+        updateOptions,
+      });
+    },
   });
 }) as ArrayOfObjectsCommonAction<X, F, T>['patch'];
 
@@ -60,22 +58,21 @@ export const remove = <S, C, X extends C & Array<any>, F extends FindOrFilter, T
   arg: ArrayCustomState<S, C, X, T>,
 ) => ((payload: any, updateOptions: any) => {
   const elementIndices = getElementIndices(arg);
-  const processPayload = () => arg.updateState({
-    selector: arg.selector,
-    replacer: old => old.filter((o, i) => !elementIndices.includes(i)),
-    actionName: `${arg.type}().remove()`,
-    payload: {
-      toRemove: (arg.selector(arg.getCurrentState()) as X)[arg.type]((e, i) => elementIndices.includes(i)), where: arg.predicate.toString(),
-    },
-    updateOptions: typeof payload === 'function' ? updateOptions : payload,
-  });
   return processAsyncPayload({
     ...arg,
     selector: ((s: any) => (arg.selector(s) as any)[arg.type]((e: any) => arg.predicate(e))) as any,
     payload,
-    processPayload,
     updateOptions,
     suffix: `${arg.type}(${arg.predicate}).remove()`,
+    processPayload: () => arg.updateState({
+      selector: arg.selector,
+      replacer: old => old.filter((o, i) => !elementIndices.includes(i)),
+      actionName: `${arg.type}().remove()`,
+      payload: {
+        toRemove: (arg.selector(arg.getCurrentState()) as X)[arg.type]((e, i) => elementIndices.includes(i)), where: arg.predicate.toString(),
+      },
+      updateOptions: typeof payload === 'function' ? updateOptions : payload,
+    })
   });
 }) as ArrayOfElementsCommonAction<X, F, T>['remove'];
 
