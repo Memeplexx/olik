@@ -10,15 +10,8 @@ import {
   UpdateAtIndex,
   UpdateOptions,
 } from './shapes-external';
-import { CoreActionsState, StoreState, UpdateStateFn } from './shapes-internal';
-import {
-  deepCopy,
-  deepFreeze,
-  isEmpty,
-  processPayload,
-  readSelector,
-  validateSelectorFn,
-} from './shared-utils';
+import { CoreActionsState, StoreState } from './shapes-internal';
+import { deepCopy, deepFreeze, isEmpty, processPayload, readSelector, validateSelectorFn } from './shared-utils';
 import { transact } from './transact';
 
 export const onChange = <S, C, X extends C & Array<any>>(
@@ -52,10 +45,11 @@ export const removeAll = <S, C, X extends C & Array<any>, T extends Trackability
   arg: CoreActionsState<S, C, X, T>,
 ) => (updateOptions => {
   validateSelector(arg);
+  const pathSegments = readSelector(arg.selector);
   arg.updateState({
     selector: arg.selector,
     replacer: () => [],
-    actionName: 'removeAll()',
+    actionName: `${!pathSegments.length ? '' : pathSegments.join('.') + '.'}removeAll()`,
     updateOptions,
   });
 }) as StoreForAnArrayCommon<X, T>['removeAll'];
@@ -68,6 +62,7 @@ export const insertIntoArray = <S, C, X extends C & Array<any>, T extends Tracka
     ...arg,
     updateOptions,
     cacheKeySuffix: 'insert()',
+    actionNameSuffix: `insert()`,
     payload,
     replacer: (old, payload) => {
       const input = deepCopy(Array.isArray(payload) ? payload : [payload]);
@@ -91,6 +86,7 @@ export const patchOrInsertIntoObject = <S, C, X extends C & Array<any>, T extend
     payload,
     updateOptions,
     cacheKeySuffix: `${arg.type}()`,
+    actionNameSuffix: `${arg.type}()`,
     replacer: (old, payload) => ({ ...old, ...payload }),
     getPayload: payload => arg.type === 'patch' ? {
       patch: payload,
@@ -108,6 +104,7 @@ export const remove = <S, C, X extends C & Array<any>, T extends Trackability>(
     ...arg,
     updateOptions,
     cacheKeySuffix: 'remove()',
+    actionNameSuffix: `remove()`,
     payload,
     replacer: (old, payload) => { const res = Object.assign({}, old); delete (res as any)[payload]; return res; },
     getPayload: payload => ({
@@ -127,6 +124,7 @@ export const deepMerge = <S, C, X extends C & Array<any>, T extends Trackability
     ...arg,
     payload,
     cacheKeySuffix: 'deepMerge()',
+    actionNameSuffix: `deepMerge()`,
     updateOptions,
     replacer: (old, payload) => {
       const isObject = (item: any) => (item && typeof item === 'object' && !Array.isArray(item));
@@ -169,6 +167,7 @@ export const upsertMatching = <S, C, X extends C & Array<any>, T extends Trackab
         ...arg,
         updateOptions,
         cacheKeySuffix: `upsertMatching(${segs.join('.')}).with()`,
+        actionNameSuffix: `upsertMatching(${segs.join('.')}).with()`,
         payload,
         replacer: (old, payload) => {
           const payloadFrozenArray: X[0][] = Array.isArray(payload) ? payload : [payload];
@@ -209,7 +208,7 @@ export const replace = <S, C, X extends C & Array<any>, T extends Trackability>(
       selector: arg.selector,
       cacheKeySuffix: `${arg.name}()`,
       updateOptions,
-      actionName: !pathSegments.length ? `${arg.name}()` : `${pathSegments.join('.')}.${arg.name}()`,
+      actionNameSuffix: `${arg.name}()`,
       actionNameOverride: true,
       payload,
       pathSegments: segsCopy,

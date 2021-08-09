@@ -7,7 +7,6 @@ import { transact } from './transact';
 export const replace = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
   arg: ArrayCustomState<S, C, X, T>,
 ) => ((payload, updateOptions) => {
-  const pathSegments = readSelector(arg.selector);
   return processPayload({
     ...arg,
     selector: ((s: any) => (arg.selector(s) as any)[arg.type]((e: any) => arg.predicate(e))) as any, 
@@ -15,7 +14,7 @@ export const replace = <S, C, X extends C & Array<any>, F extends FindOrFilter, 
     updateOptions,
     cacheKeySuffix: `${arg.type}(${arg.predicate}).replace()`,
     actionNameOverride: true,
-    actionName: !pathSegments.length ? `${arg.type}().replace()` : `${pathSegments.join('.')}.${arg.type}().replace()`,
+    actionNameSuffix: `${arg.type}().replace()`,
     replacer: (old, payload) => {
       const elementIndices = getElementIndices(arg);
       return old.map((o: any, i: number) => elementIndices.includes(i) ? payload : o);
@@ -30,7 +29,6 @@ export const replace = <S, C, X extends C & Array<any>, F extends FindOrFilter, 
 export const patch = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
   arg: ArrayCustomState<S, C, X, T>,
 ) => ((payload, updateOptions) => {
-  const pathSegments = readSelector(arg.selector);
   return processPayload({
     ...arg,
     selector: ((s: any) => (arg.selector(s) as any)[arg.type]((e: any) => arg.predicate(e))) as any,
@@ -38,7 +36,7 @@ export const patch = <S, C, X extends C & Array<any>, F extends FindOrFilter, T 
     updateOptions,
     cacheKeySuffix: `${arg.type}(${arg.predicate}).patch()`,
     actionNameOverride: true,
-    actionName: !pathSegments.length ? `${arg.type}().patch()` : `${pathSegments.join('.')}.${arg.type}().patch()`,
+    actionNameSuffix: `${arg.type}().patch()`,
     replacer: (oldd, payload) => {
       const old = arg.selector(arg.getCurrentState()) as any;
       const elementIndices = getElementIndices(arg);
@@ -61,6 +59,7 @@ export const remove = <S, C, X extends C & Array<any>, F extends FindOrFilter, T
     payload,
     updateOptions,
     cacheKeySuffix: `${arg.type}().remove()`,
+    actionNameSuffix: `${arg.type}().remove()`,
     replacer: old => old.filter((o, i) => !elementIndices.includes(i)),
     getPayload: () => ({
       toRemove: (arg.selector(arg.getCurrentState()) as X)[arg.type]((e, i) => elementIndices.includes(i)), where: arg.predicate.toString(),

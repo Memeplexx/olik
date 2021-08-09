@@ -205,7 +205,8 @@ export function createStoreCore<S, T extends Trackability>({
     currentState = result;
 
     // Construct action to dispatch
-    const actionType = specs.actionNameOverride ? specs.actionName : (pathSegments.join('.') + (pathSegments.length ? '.' : '') + specs.actionName);
+    // const actionType = specs.actionNameOverride ? specs.actionName : (pathSegments.join('.') + (pathSegments.length ? '.' : '') + specs.actionName);
+    const actionType = specs.actionName;
     const tag = (specs.updateOptions || {} as any).tag || '';
     const tagSanitized = tag && tagSanitizer ? tagSanitizer(tag) : tag;
     const payload = ((specs.getPayloadFn && (specs.getPayloadFn() !== undefined)) ? specs.getPayloadFn() : specs.payload);

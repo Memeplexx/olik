@@ -4,7 +4,6 @@ import {
   ArrayOfObjectsAction,
   FindOrFilter,
   Trackability,
-  UpdateOptions,
 } from './shapes-external';
 import { ArrayOperatorState } from './shapes-internal';
 import { errorMessages } from './shared-consts';
@@ -37,6 +36,7 @@ export const remove = <S, C, X extends C & Array<any>, F extends FindOrFilter, T
     payload,
     updateOptions,
     cacheKeySuffix: arg.type + '().remove()',
+    actionNameSuffix: `${arg.type}().remove()`,
     replacer: old => old.filter((o, i) => !elementIndices.includes(i)),
     getPayload: payload => ({
       where: arg.whereClauseStrings.join(' '),
@@ -49,7 +49,6 @@ export const patch = <S, C, X extends C & Array<any>, F extends FindOrFilter, T 
   arg: ArrayOperatorState<S, C, X, F, T>,
 ) => ((payload, updateOptions) => {
   const elementIndices = completeWhereClause(arg);
-  const pathSegments = readSelector(arg.selector);
   return processPayload({
     ...arg,
     selector: ((s: any) => (arg.selector(s) as any)[arg.type]((e: any) => bundleCriteria(e, arg.whereClauseSpecs))) as any,
@@ -57,7 +56,7 @@ export const patch = <S, C, X extends C & Array<any>, F extends FindOrFilter, T 
     updateOptions,
     cacheKeySuffix: `${arg.type}(${arg.whereClauseString}).patch()`,
     actionNameOverride: true,
-    actionName: !pathSegments.length ? `${arg.type}().patch()` : `${pathSegments.join('.')}.${arg.type}().patch()`,
+    actionNameSuffix: `${arg.type}().patch()`,
     replacer: (old, payload) => old.map((o, i) => elementIndices.includes(i) ? { ...o, ...payload } : o),
     getPayload: payload => ({
       where: arg.whereClauseString,
@@ -69,7 +68,6 @@ export const patch = <S, C, X extends C & Array<any>, F extends FindOrFilter, T 
 export const replace = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
   arg: ArrayOperatorState<S, C, X, F, T>,
 ) => ((payload, updateOptions) => {
-  const pathSegments = readSelector(arg.selector);
   return processPayload<S, C, X, T>({
     ...arg,
     selector: ((s: any) => (arg.selector(s) as any)[arg.type]((e: any) => bundleCriteria(e, arg.whereClauseSpecs))) as any,
@@ -78,7 +76,7 @@ export const replace = <S, C, X extends C & Array<any>, F extends FindOrFilter, 
     updateOptions,
     cacheKeySuffix: `${arg.type}(${arg.whereClauseString}).replace()`,
     actionNameOverride: true,
-    actionName: !pathSegments.length ? `${arg.type}().replace()` : `${pathSegments.join('.')}.${arg.type}().replace()`,
+    actionNameSuffix: `${arg.type}().replace()`,
     storeState: arg.storeState,
     replacer: (old, payload) => {
       const elementIndices = completeWhereClause(arg);

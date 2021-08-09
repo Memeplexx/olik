@@ -149,7 +149,7 @@ export const processPayload = <S, C, X extends C & Array<any>, T extends Trackab
     storeResult: (selector?: (s: S) => C) => any,
     updateOptions: {} | void,
     cacheKeySuffix: string,
-    actionName?: string,
+    actionNameSuffix: string,
     storeState: StoreState<S>,
     replacer: (newNode: DeepReadonly<X>, payload: C) => any,
     getPayload: (payload: C) => any,
@@ -159,8 +159,9 @@ export const processPayload = <S, C, X extends C & Array<any>, T extends Trackab
     pathSegments?: string[],
   }
 ) => {
+  const pathSegments = readSelector(arg.selector);
   const updateState = (payload: C) => arg.updateState({
-    actionName: arg.actionName || arg.cacheKeySuffix,
+    actionName: `${!pathSegments.length ? '' : (pathSegments.join('.') + '.')}${arg.actionNameSuffix}`,
     replacer: old => arg.replacer(old, payload),
     selector: arg.selector,
     updateOptions: arg.updateOptions as any,
@@ -178,13 +179,12 @@ export const processPayload = <S, C, X extends C & Array<any>, T extends Trackab
       throw new Error(errorMessages.INVALID_CONTAINER_FOR_CACHED_DATA);
     }
     const asyncPayload = arg.payload as (() => Promise<C>);
-    const segs = readSelector(arg.selector);
     const bypassPromiseFor = ((arg.updateOptions || {}) as any).bypassPromiseFor || 0;
-    const fullPath = segs.join('.') + (segs.length ? '.' : '') + arg.cacheKeySuffix;
-    if (arg.storeState.activeFutures[fullPath]) { // prevent duplicate simultaneous requests
-      return arg.storeState.activeFutures[fullPath];
+    const cacheKey = `${!pathSegments.length ? '' : (pathSegments.join('.') + '.')}${arg.cacheKeySuffix}`;
+    if (arg.storeState.activeFutures[cacheKey]) { // prevent duplicate simultaneous requests
+      return arg.storeState.activeFutures[cacheKey];
     }
-    const expirationDate = (arg.storeResult().read().promiseBypassTimes || {})[fullPath];
+    const expirationDate = (arg.storeResult().read().promiseBypassTimes || {})[cacheKey];
     if (expirationDate && (new Date(expirationDate).getTime() > new Date().getTime())) {
       const result = {
         read: () => arg.storeResult(arg.selector).read(),
@@ -213,16 +213,16 @@ export const processPayload = <S, C, X extends C & Array<any>, T extends Trackab
             libState.transactionState = 'last';
             if (!arg.storeResult().read().promiseBypassTimes) {
               arg.storeResult(s => (s as any).promiseBypassTimes).replace({
-                ...(arg.storeResult().read().promiseBypassTimes || { [fullPath]: cacheExpiry }),
+                ...(arg.storeResult().read().promiseBypassTimes || { [cacheKey]: cacheExpiry }),
               })
-            } else if (!arg.storeResult().read().promiseBypassTimes[fullPath]) {
-              arg.storeResult(s => (s as any).promiseBypassTimes).insert({ [fullPath]: cacheExpiry });
+            } else if (!arg.storeResult().read().promiseBypassTimes[cacheKey]) {
+              arg.storeResult(s => (s as any).promiseBypassTimes).insert({ [cacheKey]: cacheExpiry });
             } else {
-              arg.storeResult(s => (s as any).promiseBypassTimes[fullPath]).replace(cacheExpiry);
+              arg.storeResult(s => (s as any).promiseBypassTimes[cacheKey]).replace(cacheExpiry);
             }
             try {
               setTimeout(() => {
-                arg.storeResult(s => (s as any).promiseBypassTimes).remove(fullPath);
+                arg.storeResult(s => (s as any).promiseBypassTimes).remove(cacheKey);
               }, bypassPromiseFor);
             } catch (e) {
               // ignoring
@@ -235,7 +235,7 @@ export const processPayload = <S, C, X extends C & Array<any>, T extends Trackab
             updateState(snapshot);
           }
           throw e;
-        }).finally(() => delete arg.storeState.activeFutures[fullPath]);
+        }).finally(() => delete arg.storeState.activeFutures[cacheKey]);
     };
     const state = { storeValue: arg.storeResult(arg.selector).read(), error: null, isLoading: true, wasRejected: false, wasResolved: false } as FutureState<C>;
     const result = {
@@ -251,7 +251,7 @@ export const processPayload = <S, C, X extends C & Array<any>, T extends Trackab
       }
     } as Future<C>;
     Object.keys(augmentations.future).forEach(name => (result as any)[name] = augmentations.future[name](result));
-    arg.storeState.activeFutures[fullPath] = result;
+    arg.storeState.activeFutures[cacheKey] = result;
     return result
   } else {
     updateState(arg.payload as C);
