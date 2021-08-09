@@ -155,7 +155,6 @@ export const processPayload = <S, C, X extends C & Array<any>, T extends Trackab
     getPayload: (payload: C) => any,
     getPayloadFn?: () => any,
     updateState: UpdateStateFn<S, C, T, X>,
-    actionNameOverride?: boolean,
     pathSegments?: string[],
   }
 ) => {
@@ -167,7 +166,6 @@ export const processPayload = <S, C, X extends C & Array<any>, T extends Trackab
     updateOptions: arg.updateOptions as any,
     payload: arg.getPayload(payload),
     getPayloadFn: arg.getPayloadFn,
-    actionNameOverride: arg.actionNameOverride,
     pathSegments: arg.pathSegments,
   })
   if (!!arg.payload && typeof (arg.payload) === 'function') {

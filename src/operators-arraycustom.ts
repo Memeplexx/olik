@@ -13,7 +13,6 @@ export const replace = <S, C, X extends C & Array<any>, F extends FindOrFilter, 
     payload,
     updateOptions,
     cacheKeySuffix: `${arg.type}(${arg.predicate}).replace()`,
-    actionNameOverride: true,
     actionNameSuffix: `${arg.type}().replace()`,
     replacer: (old, payload) => {
       const elementIndices = getElementIndices(arg);
@@ -35,10 +34,8 @@ export const patch = <S, C, X extends C & Array<any>, F extends FindOrFilter, T 
     payload,
     updateOptions,
     cacheKeySuffix: `${arg.type}(${arg.predicate}).patch()`,
-    actionNameOverride: true,
     actionNameSuffix: `${arg.type}().patch()`,
-    replacer: (oldd, payload) => {
-      const old = arg.selector(arg.getCurrentState()) as any;
+    replacer: (old, payload) => {
       const elementIndices = getElementIndices(arg);
       return old.map((o: any, i: number) => elementIndices.includes(i) ? { ...o, ...payload } : o);
     },

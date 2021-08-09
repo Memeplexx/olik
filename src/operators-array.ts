@@ -35,10 +35,10 @@ export const remove = <S, C, X extends C & Array<any>, F extends FindOrFilter, T
     selector: ((s: any) => (arg.selector(s) as any)[arg.type]((e: any) => bundleCriteria(e, arg.whereClauseSpecs))) as any,
     payload,
     updateOptions,
-    cacheKeySuffix: arg.type + '().remove()',
+    cacheKeySuffix: `${arg.type}().remove()`,
     actionNameSuffix: `${arg.type}().remove()`,
     replacer: old => old.filter((o, i) => !elementIndices.includes(i)),
-    getPayload: payload => ({
+    getPayload: () => ({
       where: arg.whereClauseStrings.join(' '),
       toRemove: (arg.selector(arg.getCurrentState()) as X)[arg.type]((e, i) => elementIndices.includes(i)),
     }),
@@ -55,7 +55,6 @@ export const patch = <S, C, X extends C & Array<any>, F extends FindOrFilter, T 
     payload,
     updateOptions,
     cacheKeySuffix: `${arg.type}(${arg.whereClauseString}).patch()`,
-    actionNameOverride: true,
     actionNameSuffix: `${arg.type}().patch()`,
     replacer: (old, payload) => old.map((o, i) => elementIndices.includes(i) ? { ...o, ...payload } : o),
     getPayload: payload => ({
@@ -75,7 +74,6 @@ export const replace = <S, C, X extends C & Array<any>, F extends FindOrFilter, 
     storeResult: arg.storeResult,
     updateOptions,
     cacheKeySuffix: `${arg.type}(${arg.whereClauseString}).replace()`,
-    actionNameOverride: true,
     actionNameSuffix: `${arg.type}().replace()`,
     storeState: arg.storeState,
     replacer: (old, payload) => {

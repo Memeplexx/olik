@@ -20,7 +20,6 @@ export type UpdateStateArgs<S, C, T extends Trackability, X extends C = C> = {
   actionName: string,
   payload?: any,
   updateOptions: UpdateOptions<T, any>,
-  actionNameOverride?: boolean,
   getPayloadFn?: () => any,
 };
 

@@ -123,9 +123,9 @@ export const deepMerge = <S, C, X extends C & Array<any>, T extends Trackability
   return processPayload({
     ...arg,
     payload,
+    updateOptions,
     cacheKeySuffix: 'deepMerge()',
     actionNameSuffix: `deepMerge()`,
-    updateOptions,
     replacer: (old, payload) => {
       const isObject = (item: any) => (item && typeof item === 'object' && !Array.isArray(item));
       const mergeDeep = (target: any, source: any) => {
@@ -169,6 +169,12 @@ export const upsertMatching = <S, C, X extends C & Array<any>, T extends Trackab
         cacheKeySuffix: `upsertMatching(${segs.join('.')}).with()`,
         actionNameSuffix: `upsertMatching(${segs.join('.')}).with()`,
         payload,
+        getPayload: () => null,
+        getPayloadFn: () => ({
+          argument: payload,
+          replacementCount,
+          insertionCount,
+        }),
         replacer: (old, payload) => {
           const payloadFrozenArray: X[0][] = Array.isArray(payload) ? payload : [payload];
           const replacements = old.map(oe => {
@@ -183,12 +189,6 @@ export const upsertMatching = <S, C, X extends C & Array<any>, T extends Trackab
             ...insertions
           ];
         },
-        getPayload: () => null,
-        getPayloadFn: () => ({
-          argument: payload,
-          replacementCount,
-          insertionCount,
-        })
       });
     }
   };
@@ -206,19 +206,18 @@ export const replace = <S, C, X extends C & Array<any>, T extends Trackability>(
     return processPayload({
       ...arg,
       selector: arg.selector,
-      cacheKeySuffix: `${arg.name}()`,
       updateOptions,
+      cacheKeySuffix: `${arg.name}()`,
       actionNameSuffix: `${arg.name}()`,
-      actionNameOverride: true,
       payload,
       pathSegments: segsCopy,
+      getPayload: (payload) => ({ replacement: payload }),
       replacer: (old, payload) => {
         if (!pathSegments.length) { return payload; }
         const lastSeg = pathSegments[pathSegments.length - 1];
         if (Array.isArray(old)) { return (old as Array<any>).map((o, i) => i === +lastSeg ? payload : o); }
         return ({ ...old, [lastSeg]: payload });
       },
-      getPayload: (payload) => ({ replacement: payload })
     });
   };
 
