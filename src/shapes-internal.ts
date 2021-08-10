@@ -91,9 +91,6 @@ export type OptionsForCreatingInternalApplicationStore = {
   mergeIntoExistingStoreIfItExists?: boolean,
 };
 
-/**
- * An object which is capable of storing component stores
- */
 export type StoreWhichMayContainComponentStores<S, C, T extends Trackability> = {
   renew: (state: S) => void;
 } & StoreForAnObject<C, T> & StoreOrDerivation<C>;

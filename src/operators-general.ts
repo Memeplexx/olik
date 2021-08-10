@@ -51,9 +51,9 @@ export const removeAll = <S, C, X extends C & Array<any>, T extends Trackability
   performStateUpdate({
     ...arg,
     selector: arg.selector,
-      replacer: () => [],
-      actionName: `${!pathSegments.length ? '' : pathSegments.join('.') + '.'}removeAll()`,
-      updateOptions: updateOptions as {},
+    replacer: () => [],
+    actionName: `${!pathSegments.length ? '' : pathSegments.join('.') + '.'}removeAll()`,
+    updateOptions: updateOptions as {},
   });
 }) as StoreForAnArrayCommon<X, T>['removeAll'];
 
@@ -71,12 +71,9 @@ export const insertIntoArray = <S, C, X extends C & Array<any>, T extends Tracka
       const input = deepCopy(Array.isArray(payload) ? payload : [payload]);
       return (!isEmpty(updateOptions.atIndex)) ? [...old.slice(0, updateOptions.atIndex), ...input, ...old.slice(updateOptions.atIndex)] : [...old, ...input];
     },
-    getPayload: payload => (!isEmpty(updateOptions.atIndex)) ? {
-      insertion: payload,
-      atIndex: updateOptions.atIndex
-    } : {
-        insertion: payload,
-      },
+    getPayload: payload => (!isEmpty(updateOptions.atIndex))
+      ? { insertion: payload, atIndex: updateOptions.atIndex }
+      : { insertion: payload },
   });
 }) as StoreForAnArrayCommon<X, T>['insert'];
 
@@ -91,11 +88,9 @@ export const patchOrInsertIntoObject = <S, C, X extends C & Array<any>, T extend
     cacheKeySuffix: `${arg.type}()`,
     actionNameSuffix: `${arg.type}()`,
     replacer: (old, payload) => ({ ...old, ...payload }),
-    getPayload: payload => arg.type === 'patch' ? {
-      patch: payload,
-    } : {
-        insertion: payload,
-      }
+    getPayload: payload => arg.type === 'patch'
+      ? { patch: payload }
+      : { insertion: payload }
   });
 }) as StoreForAnObject<C, T>['patch'];
 
@@ -110,9 +105,7 @@ export const remove = <S, C, X extends C & Array<any>, T extends Trackability>(
     actionNameSuffix: `remove()`,
     payload,
     replacer: (old, payload) => { const res = Object.assign({}, old); delete (res as any)[payload]; return res; },
-    getPayload: payload => ({
-      toRemove: payload,
-    }),
+    getPayload: payload => ({ toRemove: payload }),
   });
 }) as StoreForAnObject<C, T>['remove'];
 
@@ -127,9 +120,7 @@ export const increment = <S, C, X extends C & Array<any>, T extends Trackability
     actionNameSuffix: `increment()`,
     payload,
     replacer: (old, payload) => (old as any as number) + (payload as any as number),
-    getPayload: payload => ({
-      incrementBy: payload,
-    }),
+    getPayload: payload => ({ incrementBy: payload }),
   });
 }) as StoreForANumber<T>['increment'];
 
