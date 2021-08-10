@@ -1,7 +1,7 @@
 import { OptionsForReduxDevtools, Store } from './shapes-external';
 import { StoreState, WindowAugmentedWithReduxDevtools } from './shapes-internal';
 import { errorMessages } from './shared-consts';
-import { libState, testState } from './shared-state';
+import { testState } from './shared-state';
 
 export function integrateStoreWithReduxDevtools<S, C = S>(
   store: (selector?: (state: S) => C) => Store<C, any>,

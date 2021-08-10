@@ -1,7 +1,7 @@
 import { augmentations } from './augmentations';
 import { integrateStoreWithReduxDevtools } from './devtools-integration';
 import * as array from './operators-array';
-import * as arrayCustom from './operators-arraycustom';
+import * as arrayCustom from './operators-array-returnstrue';
 import {
   deepMerge,
   increment,
