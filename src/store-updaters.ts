@@ -3,7 +3,7 @@ import { DeepReadonly, Future, FutureState, Selector } from './shapes-external';
 import { StoreState, UpdateStateArgs } from './shapes-internal';
 import { devtoolsDebounce, errorMessages } from './shared-consts';
 import { libState, testState } from './shared-state';
-import { copyObject, deepCopy, isEmpty, readSelector, toIsoString } from './shared-utils';
+import { copyObject, deepCopy, deepFreeze, isEmpty, readSelector, toIsoString } from './shared-utils';
 
 export const processStateUpdateRequest = <S, C, X extends C & Array<any>>(
   arg: {
@@ -122,6 +122,8 @@ export const performStateUpdate = <S, C, X extends C = C>(
   if (libState.transactionState === 'started') {
     arg.storeState.transactionStartState = arg.storeState.currentState
   }
+
+  deepFreeze(arg.payload);
 
   const previousState = arg.storeState.currentState;
   const pathSegments = arg.pathSegments || readSelector(arg.selector);

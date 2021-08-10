@@ -11,7 +11,7 @@ import {
   UpdateOptions,
 } from './shapes-external';
 import { CoreActionsState, StoreState } from './shapes-internal';
-import { deepCopy, deepFreeze, isEmpty, readSelector, validateSelectorFn } from './shared-utils';
+import { deepCopy, isEmpty, readSelector, validateSelectorFn } from './shared-utils';
 import { performStateUpdate, processStateUpdateRequest } from './store-updaters';
 import { transact } from './transact';
 
@@ -27,7 +27,7 @@ export const read = <S, C, X extends C & Array<any>>(
   selector: Selector<S, C, X>,
   currentState: () => S,
 ) => (
-  () => deepFreeze(selector(currentState()))
+  () => selector(currentState())
 ) as StoreOrDerivation<C>['read'];
 
 export const reset = <S, C, X extends C & Array<any>, T extends Trackability>(

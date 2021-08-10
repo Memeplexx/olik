@@ -7,7 +7,7 @@ import {
 } from './shapes-external';
 import { ArrayOperatorState } from './shapes-internal';
 import { errorMessages } from './shared-consts';
-import { deepFreeze, readSelector, validateSelectorFn } from './shared-utils';
+import { readSelector, validateSelectorFn } from './shared-utils';
 import { processStateUpdateRequest } from './store-updaters';
 import { transact } from './transact';
 
@@ -92,9 +92,9 @@ export const onChange = <S, C, X extends C & Array<any>, F extends FindOrFilter,
   arg: ArrayOperatorState<S, C, X, F, T>,
 ) => (performAction => {
   arg.whereClauseSpecs.push({ filter: o => arg.criteria(o, arg.fn), type: 'last' });
-  arg.storeState.changeListeners.set(performAction, nextState => deepFreeze(arg.type === 'find'
+  arg.storeState.changeListeners.set(performAction, nextState => arg.type === 'find'
     ? (arg.selector(nextState) as X).find(e => bundleCriteria(e, arg.whereClauseSpecs))
-    : { $filtered: (arg.selector(nextState) as X).map(e => bundleCriteria(e, arg.whereClauseSpecs) ? e : null).filter(e => e !== null) }));
+    : { $filtered: (arg.selector(nextState) as X).map(e => bundleCriteria(e, arg.whereClauseSpecs) ? e : null).filter(e => e !== null) });
   return { unsubscribe: () => arg.storeState.changeListeners.delete(performAction) };
 }) as ArrayOfElementsCommonAction<X, F, T>['onChange'];
 
@@ -102,9 +102,9 @@ export const read = <S, C, X extends C & Array<any>, F extends FindOrFilter, T e
   arg: ArrayOperatorState<S, C, X, F, T>,
 ) => (() => {
   arg.whereClauseSpecs.push({ filter: o => arg.criteria(o, arg.fn), type: 'last' });
-  return deepFreeze(arg.type === 'find'
+  return arg.type === 'find'
     ? (arg.selector(arg.getCurrentState()) as X).find(e => bundleCriteria(e, arg.whereClauseSpecs))
-    : (arg.selector(arg.getCurrentState()) as X).map(e => bundleCriteria(e, arg.whereClauseSpecs) ? e : null).filter(e => e != null));
+    : (arg.selector(arg.getCurrentState()) as X).map(e => bundleCriteria(e, arg.whereClauseSpecs) ? e : null).filter(e => e != null);
 }) as ArrayOfElementsCommonAction<X, F, T>['read'];
 
 export const stopBypassingPromises = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(

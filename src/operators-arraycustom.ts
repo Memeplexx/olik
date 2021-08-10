@@ -1,7 +1,7 @@
 import { ArrayOfElementsCommonAction, ArrayOfObjectsCommonAction, FindOrFilter, Trackability } from './shapes-external';
 import { ArrayCustomState } from './shapes-internal';
 import { errorMessages } from './shared-consts';
-import { deepFreeze, readSelector } from './shared-utils';
+import { readSelector } from './shared-utils';
 import { processStateUpdateRequest } from './store-updaters';
 import { transact } from './transact';
 
@@ -68,18 +68,18 @@ export const remove = <S, C, X extends C & Array<any>, F extends FindOrFilter, T
 export const onChange = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
   arg: ArrayCustomState<S, C, X, T>,
 ) => (performAction => {
-  arg.storeState.changeListeners.set(performAction, nextState => deepFreeze(arg.type === 'find'
+  arg.storeState.changeListeners.set(performAction, nextState => arg.type === 'find'
     ? (arg.selector(nextState) as X).find(e => arg.predicate(e))
-    : { $filtered: (arg.selector(nextState) as X).filter(e => arg.predicate(e)) }));
+    : { $filtered: (arg.selector(nextState) as X).filter(e => arg.predicate(e)) });
   return { unsubscribe: () => arg.storeState.changeListeners.delete(performAction) };
 }) as ArrayOfElementsCommonAction<X, F, T>['onChange'];
 
 export const read = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
   arg: ArrayCustomState<S, C, X, T>,
 ) => (() => {
-  return deepFreeze(arg.type === 'find'
+  return arg.type === 'find'
     ? (arg.selector(arg.getCurrentState()) as X).find(e => arg.predicate(e))
-    : (arg.selector(arg.getCurrentState()) as X).map(e => arg.predicate(e) ? e : null).filter(e => e != null))
+    : (arg.selector(arg.getCurrentState()) as X).map(e => arg.predicate(e) ? e : null).filter(e => e != null)
 }) as ArrayOfElementsCommonAction<X, F, T>['read'];
 
 export const stopBypassingPromises = <S, C, X extends C & Array<any>, T extends Trackability>(
