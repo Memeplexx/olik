@@ -33,6 +33,18 @@ describe('array', () => {
     expect(select().read().array).toEqual(payload);
   });
 
+  it('should patchAll()', () => {
+    const select = createApplicationStore(initialState);
+    const payload = { value: 'another' };
+    select(s => s.array)
+      .patchAll(payload);
+    expect(testState.currentAction).toEqual({
+      type: 'array.patchAll()',
+      patch: payload,
+    });
+    expect(select().read().array).toEqual(initialState.array.map(e => ({ ...e, ...payload })));
+  });
+
   it('should reset()', () => {
     const select = createApplicationStore(initialState);
     select(s => s.array)

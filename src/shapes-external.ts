@@ -366,17 +366,24 @@ export type StoreForAnArrayCommon<X extends DeepReadonlyArray<any>, T extends Tr
   /**
    * Removes all elements from the array
    * @example
-   * ...
-   * .removeAll();
+   * select(s => s.todos)
+   *   .removeAll();
    */
   removeAll: (options: ActionOptions<T>) => void,
   /**
    * Substitute all elements with a new array of elements
    * @example
-   * ...
-   * .replaceAll(newTodos);
+   * select(s => s.todos)
+   *   .replaceAll(newTodos);
    */
   replaceAll: <H extends X | (() => AnyAsync<X>) >(replacement: H, options: UpdateOptions<T, H>) => H extends (() => AnyAsync<X>) ? Future<X> : void,
+  /**
+   * Partially update all existing elements
+   * @example
+   * select(s => s.todos)
+   *   .patchAll({ done: true });
+   */
+  patchAll: <H extends Partial<X[0]> | (() => AnyAsync<Partial<X[0]>>) >(replacement: H, options: UpdateOptions<T, H>) => H extends (() => AnyAsync<X>) ? Future<X> : void,
 }
 
 /**
@@ -387,9 +394,9 @@ export type StoreForAnArrayOfPrimitives<X extends DeepReadonlyArray<any>, T exte
    * Specify a where clause to find many elements.
    * @example
    * ```
-   * ...
-   * .filterWhere(t => t.status).isEqualTo('done')
-   * ...
+   * select(s => s.todos)
+   *   .filterWhere(t => t.status).isEqualTo('done')
+   *   .remove();
    * ```
    */
   filterWhere: PredicateFunctionPrimitive<X, 'filter', T>,

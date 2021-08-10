@@ -43,6 +43,21 @@ export const replaceAll = <S, C, X extends C & Array<any>, T extends Trackabilit
   (replacement, updateOptions) => replace({ ...context, name: 'replaceAll' })(replacement as X, updateOptions as UpdateOptions<T, any>)
 ) as StoreForAnArrayCommon<X, T>['replaceAll'];
 
+export const patchAll = <S, C, X extends C & Array<any>, T extends Trackability>(
+  arg: CoreActionsState<S, C, X, T>,
+) => ((payload, updateOptions) => {
+  validateSelector(arg);
+  return processStateUpdateRequest<S, C, X>({
+    ...arg,
+    updateOptions,
+    cacheKeySuffix: 'patchAll()',
+    actionNameSuffix: `patchAll()`,
+    payload,
+    replacer: (old, payload) => old.map(o => ({...o, ...payload})),
+    getPayload: payload => ({ patch: payload }),
+  });
+}) as StoreForAnArrayCommon<X, T>['patchAll'];
+
 export const removeAll = <S, C, X extends C & Array<any>, T extends Trackability>(
   arg: CoreActionsState<S, C, X, T>,
 ) => (updateOptions => {
