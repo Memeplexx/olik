@@ -20,6 +20,7 @@ export type UpdateStateArgs<S, C, X extends C = C> = {
   payload?: any,
   updateOptions: {} | void,
   getPayloadFn?: () => any,
+  storeState: StoreState<S>,
 };
 
 export type StoreForAComponentInternal<S, C> = Store<C, 'untagged'> & {

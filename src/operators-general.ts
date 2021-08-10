@@ -46,14 +46,13 @@ export const removeAll = <S, C, X extends C & Array<any>, T extends Trackability
 ) => (updateOptions => {
   validateSelector(arg);
   const pathSegments = readSelector(arg.selector);
-  performStateUpdate(
-    arg.storeState, {
-      selector: arg.selector,
+  performStateUpdate({
+    ...arg,
+    selector: arg.selector,
       replacer: () => [],
       actionName: `${!pathSegments.length ? '' : pathSegments.join('.') + '.'}removeAll()`,
       updateOptions: updateOptions as {},
-    }
-  );
+  });
 }) as StoreForAnArrayCommon<X, T>['removeAll'];
 
 export const insertIntoArray = <S, C, X extends C & Array<any>, T extends Trackability>(
