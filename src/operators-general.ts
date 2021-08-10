@@ -11,7 +11,8 @@ import {
   UpdateOptions,
 } from './shapes-external';
 import { CoreActionsState, StoreState } from './shapes-internal';
-import { deepCopy, deepFreeze, isEmpty, processPayload, readSelector, performStateUpdate, validateSelectorFn } from './shared-utils';
+import { deepCopy, deepFreeze, isEmpty, readSelector, validateSelectorFn } from './shared-utils';
+import { performStateUpdate, processStateUpdateRequest } from './store-updaters';
 import { transact } from './transact';
 
 export const onChange = <S, C, X extends C & Array<any>>(
@@ -59,7 +60,7 @@ export const insertIntoArray = <S, C, X extends C & Array<any>, T extends Tracka
   arg: CoreActionsState<S, C, X, T>,
 ) => ((payload, updateOptions: UpdateAtIndex = {}) => {
   validateSelector(arg);
-  return processPayload<S, C, X>({
+  return processStateUpdateRequest<S, C, X>({
     ...arg,
     updateOptions,
     cacheKeySuffix: 'insert()',
@@ -82,7 +83,7 @@ export const patchOrInsertIntoObject = <S, C, X extends C & Array<any>, T extend
   arg: CoreActionsState<S, C, X, T> & { type: 'patch' | 'insert', },
 ) => ((payload, updateOptions) => {
   validateSelector(arg);
-  return processPayload({
+  return processStateUpdateRequest({
     ...arg,
     payload,
     updateOptions,
@@ -101,7 +102,7 @@ export const remove = <S, C, X extends C & Array<any>, T extends Trackability>(
   arg: CoreActionsState<S, C, X, T>,
 ) => ((payload, updateOptions) => {
   validateSelector(arg);
-  return processPayload({
+  return processStateUpdateRequest({
     ...arg,
     updateOptions,
     cacheKeySuffix: 'remove()',
@@ -121,7 +122,7 @@ export const deepMerge = <S, C, X extends C & Array<any>, T extends Trackability
   updateOptions: UpdateOptions<T, any>,
 ) => {
   validateSelector(arg);
-  return processPayload({
+  return processStateUpdateRequest({
     ...arg,
     payload,
     updateOptions,
@@ -164,7 +165,7 @@ export const upsertMatching = <S, C, X extends C & Array<any>, T extends Trackab
       const segs = !getProp ? [] : readSelector(getProp);
       let replacementCount = 0;
       let insertionCount = 0;
-      return processPayload({
+      return processStateUpdateRequest({
         ...arg,
         updateOptions,
         cacheKeySuffix: `upsertMatching(${segs.join('.')}).with()`,
@@ -204,7 +205,7 @@ export const replace = <S, C, X extends C & Array<any>, T extends Trackability>(
     validateSelector(arg);
     const pathSegments = readSelector(arg.selector);
     const segsCopy = pathSegments.slice(0, pathSegments.length - 1);
-    return processPayload({
+    return processStateUpdateRequest({
       ...arg,
       selector: arg.selector,
       updateOptions,

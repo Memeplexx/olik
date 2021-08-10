@@ -1,13 +1,14 @@
 import { ArrayOfElementsCommonAction, ArrayOfObjectsCommonAction, FindOrFilter, Trackability } from './shapes-external';
 import { ArrayCustomState } from './shapes-internal';
 import { errorMessages } from './shared-consts';
-import { deepFreeze, processPayload, readSelector } from './shared-utils';
+import { deepFreeze, readSelector } from './shared-utils';
+import { processStateUpdateRequest } from './store-updaters';
 import { transact } from './transact';
 
 export const replace = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
   arg: ArrayCustomState<S, C, X, T>,
 ) => ((payload, updateOptions) => {
-  return processPayload({
+  return processStateUpdateRequest({
     ...arg,
     selector: ((s: any) => (arg.selector(s) as any)[arg.type]((e: any) => arg.predicate(e))) as any, 
     payload,
@@ -28,7 +29,7 @@ export const replace = <S, C, X extends C & Array<any>, F extends FindOrFilter, 
 export const patch = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
   arg: ArrayCustomState<S, C, X, T>,
 ) => ((payload, updateOptions) => {
-  return processPayload({
+  return processStateUpdateRequest({
     ...arg,
     selector: ((s: any) => (arg.selector(s) as any)[arg.type]((e: any) => arg.predicate(e))) as any,
     payload,
@@ -50,7 +51,7 @@ export const remove = <S, C, X extends C & Array<any>, F extends FindOrFilter, T
   arg: ArrayCustomState<S, C, X, T>,
 ) => ((payload: any, updateOptions: any) => {
   const elementIndices = getElementIndices(arg);
-  return processPayload({
+  return processStateUpdateRequest({
     ...arg,
     selector: ((s: any) => (arg.selector(s) as any)[arg.type]((e: any) => arg.predicate(e))) as any,
     payload,

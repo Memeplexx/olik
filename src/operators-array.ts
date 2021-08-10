@@ -7,7 +7,8 @@ import {
 } from './shapes-external';
 import { ArrayOperatorState } from './shapes-internal';
 import { errorMessages } from './shared-consts';
-import { deepFreeze, processPayload, readSelector, validateSelectorFn } from './shared-utils';
+import { deepFreeze, readSelector, validateSelectorFn } from './shared-utils';
+import { processStateUpdateRequest } from './store-updaters';
 import { transact } from './transact';
 
 export const andWhere = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
@@ -30,7 +31,7 @@ export const remove = <S, C, X extends C & Array<any>, F extends FindOrFilter, T
   arg: ArrayOperatorState<S, C, X, F, T>,
 ) => ((payload: any, updateOptions: any) => {
   const elementIndices = completeWhereClause(arg);
-  return processPayload({
+  return processStateUpdateRequest({
     ...arg,
     selector: ((s: any) => (arg.selector(s) as any)[arg.type]((e: any) => bundleCriteria(e, arg.whereClauseSpecs))) as any,
     payload,
@@ -49,7 +50,7 @@ export const patch = <S, C, X extends C & Array<any>, F extends FindOrFilter, T 
   arg: ArrayOperatorState<S, C, X, F, T>,
 ) => ((payload, updateOptions) => {
   const elementIndices = completeWhereClause(arg);
-  return processPayload({
+  return processStateUpdateRequest({
     ...arg,
     selector: ((s: any) => (arg.selector(s) as any)[arg.type]((e: any) => bundleCriteria(e, arg.whereClauseSpecs))) as any,
     payload,
@@ -67,7 +68,7 @@ export const patch = <S, C, X extends C & Array<any>, F extends FindOrFilter, T 
 export const replace = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
   arg: ArrayOperatorState<S, C, X, F, T>,
 ) => ((payload, updateOptions) => {
-  return processPayload<S, C, X>({
+  return processStateUpdateRequest<S, C, X>({
     ...arg,
     selector: ((s: any) => (arg.selector(s) as any)[arg.type]((e: any) => bundleCriteria(e, arg.whereClauseSpecs))) as any,
     payload,

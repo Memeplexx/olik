@@ -21,13 +21,15 @@ import {
   DeepReadonly,
   FindOrFilter,
   OptionsForReduxDevtools,
+  PredicateCustom,
   PredicateOptionsCommon,
   PredicateOptionsForBoolean,
   PredicateOptionsForNumber,
   PredicateOptionsForString,
   Selector,
-  StoreForAComponent,
+  StoreForAnArrayCommon,
   StoreForAnArrayOfObjects,
+  StoreForAnObject,
   StoreOrDerivation,
   Trackability,
 } from './shapes-external';
@@ -186,8 +188,14 @@ export function createStoreCore<S, T extends Trackability>({
         (initState: C, innerSelector) => () => replace({ ...getCoreActionsState(), name: 'reset' })(!innerSelector ? initState : innerSelector(initState), undefined as any)
       ) as StoreForAComponentInternal<S, C>['defineReset'],
       renew: (state => storeState.currentState = deepFreeze(state)) as StoreWhichMayContainComponentStores<S, C, T>['renew'],
-      changeListeners: storeState.changeListeners,
-    } as unknown as StoreForAComponent<C>;
+      storeState,
+    } as PredicateCustom<X, FindOrFilter, T>
+      | ArrayOfObjectsAction<X, FindOrFilter, T>
+      | StoreForAnArrayCommon<X, T>
+      | StoreForAnObject<C, T>
+      | StoreForAComponentInternal<S, C>
+      | StoreForAnArrayOfObjects<X, T>
+      | StoreWhichMayContainComponentStores<S, C, T>;
     Object.keys(augmentations.selection).forEach(name => (coreActions as any)[name] = augmentations.selection[name](coreActions as StoreOrDerivation<C>));
     return coreActions;
   };

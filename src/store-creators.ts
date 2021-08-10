@@ -89,7 +89,7 @@ export function createComponentStore<L>(
         createComponentStoreInternal(select().read(), { ...options, instanceName });
         options.instanceName = instanceName;
         // get all changeListeners from component store and set them on container store
-        Array.from(((nStore() as any).changeListeners as Map<(ar: any) => any, (arg: any) => any>).entries())
+        Array.from(((nStore() as any).storeState.changeListeners as Map<(ar: any) => any, (arg: any) => any>).entries())
           .forEach(([performAction, selector]) =>
             libState.applicationStore!(s => selector(s.components[options.componentName][options.instanceName])).onChange(performAction))
       }
