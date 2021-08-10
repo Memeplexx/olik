@@ -457,6 +457,15 @@ export type StoreForAnObjectOrPrimitive<C, T extends Trackability> = {
   replace: <H extends C | (() => AnyAsync<C>) >(replacement: H, options: UpdateOptions<T, H>) => H extends (() => AnyAsync<any>) ? Future<C> : void,
 }
 
+export type StoreForANumber<T extends Trackability> = {
+  /**
+   * Increment the value by the specified amount
+   * @example
+   * select(s => s.user.age).increment(1);
+   */
+  increment: <H extends number | (() => AnyAsync<number>) >(incrementBy: number, options: UpdateOptions<T, H>) => H extends (() => AnyAsync<any>) ? Future<number> : void,
+} & StoreForAnObjectOrPrimitive<number, T>;
+
 /**
  * An object which is capable of storing and updating state which is in the shape of an object
  */
@@ -543,6 +552,7 @@ export type StoreWhichIsResettable<C, T extends Trackability> = {
 export type Store<C, T extends Trackability> = ([C] extends undefined ? any :
   [C] extends [DeepReadonlyArray<object>] ? StoreForAnArrayOfObjects<[C][0], T> :
   [C] extends [DeepReadonlyArray<any>] ? StoreForAnArrayOfPrimitives<[C][0], T> :
+  [C] extends [number] ? StoreForANumber<T> :
   [C] extends [object] ? StoreForAnObject<C, T> : StoreForAnObjectOrPrimitive<C, T>)
   & StoreWhichIsResettable<C, T>;
 

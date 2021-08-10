@@ -4,6 +4,7 @@ import {
   StoreForAnArrayCommon,
   StoreForAnArrayOfObjects,
   StoreForAnObject,
+  StoreForANumber,
   StoreOrDerivation,
   StoreWhichIsResettable,
   Trackability,
@@ -114,6 +115,23 @@ export const remove = <S, C, X extends C & Array<any>, T extends Trackability>(
     }),
   });
 }) as StoreForAnObject<C, T>['remove'];
+
+export const increment = <S, C, X extends C & Array<any>, T extends Trackability>(
+  arg: CoreActionsState<S, C, X, T>,
+) => ((payload, updateOptions) => {
+  validateSelector(arg);
+  return processStateUpdateRequest({
+    ...arg,
+    updateOptions,
+    cacheKeySuffix: 'increment()',
+    actionNameSuffix: `increment()`,
+    payload,
+    replacer: (old, payload) => (old as any as number) + (payload as any as number),
+    getPayload: payload => ({
+      incrementBy: payload,
+    }),
+  });
+}) as StoreForANumber<T>['increment'];
 
 export const deepMerge = <S, C, X extends C & Array<any>, T extends Trackability>(
   arg: CoreActionsState<S, C, X, T>,

@@ -4,6 +4,7 @@ import * as array from './operators-array';
 import * as arrayCustom from './operators-arraycustom';
 import {
   deepMerge,
+  increment,
   insertIntoArray,
   onChange,
   patchOrInsertIntoObject,
@@ -30,6 +31,7 @@ import {
   StoreForAnArrayCommon,
   StoreForAnArrayOfObjects,
   StoreForAnObject,
+  StoreForANumber,
   StoreOrDerivation,
   Trackability,
 } from './shapes-external';
@@ -188,6 +190,7 @@ export function createStoreCore<S, T extends Trackability>({
         (initState: C, innerSelector) => () => replace({ ...getCoreActionsState(), name: 'reset' })(!innerSelector ? initState : innerSelector(initState), undefined as any)
       ) as StoreForAComponentInternal<S, C>['defineReset'],
       renew: (state => storeState.currentState = deepFreeze(state)) as StoreWhichMayContainComponentStores<S, C, T>['renew'],
+      increment: increment(getCoreActionsState()),
       storeState,
     } as PredicateCustom<X, FindOrFilter, T>
       | ArrayOfObjectsAction<X, FindOrFilter, T>
@@ -195,7 +198,8 @@ export function createStoreCore<S, T extends Trackability>({
       | StoreForAnObject<C, T>
       | StoreForAComponentInternal<S, C>
       | StoreForAnArrayOfObjects<X, T>
-      | StoreWhichMayContainComponentStores<S, C, T>;
+      | StoreWhichMayContainComponentStores<S, C, T>
+      | StoreForANumber<T>;
     Object.keys(augmentations.selection).forEach(name => (coreActions as any)[name] = augmentations.selection[name](coreActions as StoreOrDerivation<C>));
     return coreActions;
   };
