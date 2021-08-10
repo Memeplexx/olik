@@ -1,5 +1,5 @@
 import { testState } from '../src/shared-state';
-import { createRootStore } from '../src/store-creators';
+import { createApplicationStore } from '../src/store-creators';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
 describe('array.find().read()', () => {
@@ -12,7 +12,7 @@ describe('array.find().read()', () => {
   };
 
   it('should read()', () => {
-    const select = createRootStore(initialState);
+    const select = createApplicationStore(initialState);
     const read = select(s => s.array)
       .findWhere(e => e.id).eq(2)
       .read();
@@ -20,7 +20,7 @@ describe('array.find().read()', () => {
   })
 
   it('should onChange()', () => {
-    const select = createRootStore(initialState);
+    const select = createApplicationStore(initialState);
     let changeCount = 0;
     select(s => s.array)
       .findWhere(e => e.id).eq(3)

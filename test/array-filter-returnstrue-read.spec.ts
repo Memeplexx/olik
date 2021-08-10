@@ -1,5 +1,5 @@
 import { testState } from '../src/shared-state';
-import { createRootStore } from '../src/store-creators';
+import { createApplicationStore } from '../src/store-creators';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
 describe('array.filterCustom().read()', () => {
@@ -12,7 +12,7 @@ describe('array.filterCustom().read()', () => {
   };
 
   it('should read()', () => {
-    const select = createRootStore(initialState);
+    const select = createApplicationStore(initialState);
     const read = select(s => s.array)
       .filterWhere(e => e.id === 2).returnsTrue()
       .read();
@@ -20,7 +20,7 @@ describe('array.filterCustom().read()', () => {
   })
 
   it('should onChange()', () => {
-    const select = createRootStore(initialState);
+    const select = createApplicationStore(initialState);
     let changeCount = 0;
     select(s => s.array)
       .filterWhere(e => e.id === 3).returnsTrue()

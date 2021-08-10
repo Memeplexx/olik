@@ -1,5 +1,5 @@
 import { testState } from '../src/shared-state';
-import { createRootStore } from '../src/store-creators';
+import { createApplicationStore } from '../src/store-creators';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
 describe('Object', () => {
@@ -11,7 +11,7 @@ describe('Object', () => {
   };
 
   it('should replace()', () => {
-    const select = createRootStore(initialState);
+    const select = createApplicationStore(initialState);
     const payload = 'hey';
     select(s => s.object.property)
       .replace(payload);
@@ -24,7 +24,7 @@ describe('Object', () => {
   })
 
   it('should patch()', () => {
-    const select = createRootStore(initialState);
+    const select = createApplicationStore(initialState);
     const payload = { property: 'xxx' };
     select(s => s.object)
       .patch(payload);
@@ -37,7 +37,7 @@ describe('Object', () => {
   })
 
   it('should reset()', () => {
-    const select = createRootStore(initialState);
+    const select = createApplicationStore(initialState);
     select(s => s.object.property)
       .replace('hey');
     expect(select().read().object.property).toEqual('hey');
@@ -55,7 +55,7 @@ describe('Object', () => {
   })
 
   it('should be able to add a new property onto an object', () => {
-    const select = createRootStore({} as { [key: string]: string });
+    const select = createApplicationStore({} as { [key: string]: string });
     const payload = { hello: 'world' };
     select().patch(payload);
     expect(testState.currentAction).toEqual({
@@ -66,7 +66,7 @@ describe('Object', () => {
   })
 
   it('should be able to remove a key', () => {
-    const select = createRootStore({ hello: 'one', world: 'two', another: 'three' });
+    const select = createApplicationStore({ hello: 'one', world: 'two', another: 'three' });
     const payload = 'world';
     select().remove(payload);
     expect(testState.currentAction).toEqual({
@@ -78,7 +78,7 @@ describe('Object', () => {
 
   it('should be able to insert properties', () => {
     const initState = { one: 'one' };
-    const select = createRootStore(initState);
+    const select = createApplicationStore(initState);
     const insertion = { hello: 'test', another: 'testy' };
     select().insert(insertion);
     expect(testState.currentAction).toEqual({

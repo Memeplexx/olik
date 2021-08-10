@@ -1,5 +1,5 @@
 import { testState } from '../src/shared-state';
-import { createRootStore } from '../src/store-creators';
+import { createApplicationStore } from '../src/store-creators';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
 describe('array.filterCustom().remove()', () => {
@@ -12,7 +12,7 @@ describe('array.filterCustom().remove()', () => {
   };
 
   it('should eq()', () => {
-    const select = createRootStore(initialState);
+    const select = createApplicationStore(initialState);
     const where = (e: typeof initialState['array'][0]) => e.id === 2;
     select(s => s.array)
       .filterWhere(where).returnsTrue()
@@ -26,7 +26,7 @@ describe('array.filterCustom().remove()', () => {
   })
 
   it('should ne()', () => {
-    const select = createRootStore(initialState);
+    const select = createApplicationStore(initialState);
     const where = (e: typeof initialState['array'][0]) => e.id !== 2;
     select(s => s.array)
       .filterWhere(where).returnsTrue()
@@ -40,7 +40,7 @@ describe('array.filterCustom().remove()', () => {
   })
 
   it('should gt()', () => {
-    const select = createRootStore(initialState);
+    const select = createApplicationStore(initialState);
     const where = (e: typeof initialState['array'][0]) => e.id > 1;
     select(s => s.array)
       .filterWhere(where).returnsTrue()
@@ -54,7 +54,7 @@ describe('array.filterCustom().remove()', () => {
   })
 
   it('should lt()', () => {
-    const select = createRootStore(initialState);
+    const select = createApplicationStore(initialState);
     const where = (e: typeof initialState['array'][0]) => e.id < 2;
     select(s => s.array)
       .filterWhere(where).returnsTrue()
@@ -68,7 +68,7 @@ describe('array.filterCustom().remove()', () => {
   })
 
   it('should in()', () => {
-    const select = createRootStore(initialState);
+    const select = createApplicationStore(initialState);
     const where = (e: typeof initialState['array'][0]) => [1, 2].includes(e.id);
     select(s => s.array)
       .filterWhere(where).returnsTrue()
@@ -82,7 +82,7 @@ describe('array.filterCustom().remove()', () => {
   })
 
   it('should ni()', () => {
-    const select = createRootStore(initialState);
+    const select = createApplicationStore(initialState);
     const where = (e: typeof initialState['array'][0]) => ![1, 2].includes(e.id);
     select(s => s.array)
       .filterWhere(where).returnsTrue()
@@ -96,7 +96,7 @@ describe('array.filterCustom().remove()', () => {
   })
 
   it('should match()', () => {
-    const select = createRootStore(initialState);
+    const select = createApplicationStore(initialState);
     const where = (e: typeof initialState['array'][0]) => /^t/.test(e.value);
     select(s => s.array)
       .filterWhere(where).returnsTrue()

@@ -1,6 +1,6 @@
 import { deriveFrom } from '../src/derive-from';
 import { testState } from '../src/shared-state';
-import { createRootStore, createRootStoreEnforcingTags } from '../src/store-creators';
+import { createApplicationStore, createApplicationStoreEnforcingTags } from '../src/store-creators';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
 describe('Memoize', () => {
@@ -8,7 +8,7 @@ describe('Memoize', () => {
   beforeAll(() => testState.windowObject = windowAugmentedWithReduxDevtoolsImpl);
 
   it('should deriveFrom() corrrectly', () => {
-    const select = createRootStore({
+    const select = createApplicationStore({
       array: ['1', '2'],
       counter: 3,
     });
@@ -23,7 +23,7 @@ describe('Memoize', () => {
   })
 
   it('should deriveFrom() and cache correctly', () => {
-    const select = createRootStore({
+    const select = createApplicationStore({
       array: new Array<string>(),
       counter: 3,
     });
@@ -58,7 +58,7 @@ describe('Memoize', () => {
   })
 
   it('should deriveFrom() and emit events only when required', () => {
-    const select = createRootStore({
+    const select = createApplicationStore({
       array: new Array<string>(),
       counter: 3,
       string: '',
@@ -81,7 +81,7 @@ describe('Memoize', () => {
   })
 
   it('should deriveFrom() and correctly unsubscribe', () => {
-    const select = createRootStore({
+    const select = createApplicationStore({
       one: 'x',
       two: 0,
     });
@@ -103,7 +103,7 @@ describe('Memoize', () => {
   })
 
   it('should deriveFrom() on specific array element', () => {
-    const select = createRootStore({
+    const select = createApplicationStore({
       array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
       object: { hello: 'world' },
     });
@@ -126,7 +126,7 @@ describe('Memoize', () => {
   })
 
   it('should deriveFrom() using dispatcher tags', () => {
-    const select = createRootStoreEnforcingTags({
+    const select = createApplicationStoreEnforcingTags({
       array: ['1', '2'],
       counter: 3,
     });
@@ -141,7 +141,7 @@ describe('Memoize', () => {
   })
 
   it('should be able to derive from using a derivation as an argument', () => {
-    const select = createRootStore({ num: 0, str: 'x' });
+    const select = createApplicationStore({ num: 0, str: 'x' });
     let originalMemoCalcCount = 0;
     const mem = deriveFrom(
       select(s => s.num),
@@ -161,7 +161,7 @@ describe('Memoize', () => {
   })
 
   it('should deriveFrom() including a filter()', () => {
-    const select = createRootStore({
+    const select = createApplicationStore({
       array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
     });
     let memoCalcCount = 0;
@@ -181,7 +181,7 @@ describe('Memoize', () => {
   })
 
   it('should deriveFrom() including an ordinary filter()', () => {
-    const select = createRootStore({
+    const select = createApplicationStore({
       array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
     });
     let memoCalcCount = 0;

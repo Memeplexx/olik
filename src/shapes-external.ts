@@ -473,7 +473,7 @@ export type StoreForAnObject<C, T extends Trackability> = {
    * ***WARNING***: invoking this has the potentional to contradict the type-system.
    * Only use this to remove a property from an object of type of `{ [key: string]: any }` and NOT to remove a property from an object with statically defined properties eg `{ str: '', num: 0 }`
    * @example
-   * const select = createRootStore({ skillpoints: {} as {[name: string]: number} });
+   * const select = createApplicationStore({ skillpoints: {} as {[name: string]: number} });
    * 
    * select(s => s.skillpoints)
    *   .remove('archery')
@@ -484,7 +484,7 @@ export type StoreForAnObject<C, T extends Trackability> = {
    * ***WARNING***: invoking this has the potentional to contradict the type-system.
    * Only use this to add properties to an object of type of `{ [key: string]: any }` and NOT to add properties with statically defined properties eg `{ str: '', num: 0 }`
    * @example
-   * const select = createRootStore({ skillpoints: {} as {[name: string]: number} });
+   * const select = createApplicationStore({ skillpoints: {} as {[name: string]: number} });
    * 
    * select(s => s.skillpoints)
    *   .insert({ archery: 3, sorcery: 5 })
@@ -493,7 +493,7 @@ export type StoreForAnObject<C, T extends Trackability> = {
   /**
    * Deep-merges the existing object with the supplied object.
    * @example
-   * const select = createRootStore({ obj: { hello: 'foo' } });
+   * const select = createApplicationStore({ obj: { hello: 'foo' } });
    * 
    * select(s => s.obj).deepMerge({ hello: 'bar', arr: [1, 2, 3] });
    * console.log(select().read()); // { obj: { hello: 'bar', arr: [1, 2, 3] } }
@@ -559,7 +559,7 @@ export type StoreWhichEnforcesTags<C> = Store<C, 'tagged'>;
 /**
  * An object which is capable of managing state for a component
  */
-export type StoreForAComponent<C> = Store<C, 'untagged'> & { detachFromRootStore: () => void, setInstanceName: (instanceName: string) => void };
+export type StoreForAComponent<C> = Store<C, 'untagged'> & { detachFromApplicationStore: () => void, setInstanceName: (instanceName: string) => void };
 
 /**
  * A function which selects from the store
@@ -568,7 +568,7 @@ export type Selector<S, C, X = C> = X extends C & ReadonlyArray<any> ? (s: S) =>
 
 export type SelectorReader<S, U> = { get: U, read: () => DeepReadonly<S> };
 
-export type SelectorReaderComponent<S, U> = SelectorReader<S, U> & { detachFromRootStore: () => void, setInstanceName: (instanceName: string) => void };
+export type SelectorReaderComponent<S, U> = SelectorReader<S, U> & { detachFromApplicationStore: () => void, setInstanceName: (instanceName: string) => void };
 
 /**
  * A function which selects from a component store
@@ -606,7 +606,7 @@ export type DerivationCalculationInputs<T extends Array<StoreOrDerivation<any>>>
 /**
  * An object representing options which are supplied when creating a standard store
  */
-export type OptionsForMakingARootStore = {
+export type OptionsForMakingAnApplicationStore = {
   /**
    * Specifications for the Redux Devtools Extension. Pass `false` if you do not want your store to be tracked within the Redux Devtools extension.
    * See https://github.com/zalmoxisus/redux-devtools-extension/blob/master/docs/API/Arguments.md for more info

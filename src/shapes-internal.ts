@@ -84,7 +84,7 @@ export type PreviousAction = {
   debounceTimeout: number,
 };
 
-export type OptionsForCreatingInternalRootStore = {
+export type OptionsForCreatingInternalApplicationStore = {
   devtools?: OptionsForReduxDevtools | false,
   tagSanitizer?: (tag: string) => string,
   tagsToAppearInType?: boolean,

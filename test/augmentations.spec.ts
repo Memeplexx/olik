@@ -2,7 +2,7 @@ import { Observable } from 'rxjs';
 import { augment } from '../src/augmentations';
 
 import { libState, testState } from '../src/shared-state';
-import { createRootStore } from '../src/store-creators';
+import { createApplicationStore } from '../src/store-creators';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 import { deriveFrom } from '../src/derive-from';
 
@@ -10,7 +10,7 @@ describe('augmentations', () => {
 
   beforeAll(() => testState.windowObject = windowAugmentedWithReduxDevtoolsImpl);
 
-  beforeEach(() => libState.rootStore = null);
+  beforeEach(() => libState.applicationStore = null);
 
   afterAll(() => {
     augment({
@@ -25,7 +25,7 @@ describe('augmentations', () => {
         myThing: selection => () => selection.read(),
       }
     })
-    const select = createRootStore({ num: 42 });
+    const select = createApplicationStore({ num: 42 });
     const res = (select(s => s.num) as any).myThing();
     expect(res).toEqual(42);
   })
@@ -36,7 +36,7 @@ describe('augmentations', () => {
         myThing: selection => () => selection.read(),
       }
     })
-    const select = createRootStore({ array: [42] });
+    const select = createApplicationStore({ array: [42] });
     const res = (select(s => s.array) as any).myThing();
     expect(res).toEqual([42]);
   })
@@ -47,7 +47,7 @@ describe('augmentations', () => {
         myThing: selection => () => selection.read(),
       }
     })
-    const select = createRootStore({ array: [42] });
+    const select = createApplicationStore({ array: [42] });
     const res = (select(s => s.array).findWhere().eq(42) as any).myThing();
     expect(res).toEqual(42);
   })
@@ -58,7 +58,7 @@ describe('augmentations', () => {
         myThing: selection => () => selection.asPromise(),
       }
     })
-    const select = createRootStore({ num: 42 });
+    const select = createApplicationStore({ num: 42 });
     const fetch = () => new Promise(resolve => setTimeout(() => resolve(43), 5))
     const res = (select(s => s.num) as any).replace(fetch).myThing();
     res.then((r: any) => {
@@ -73,7 +73,7 @@ describe('augmentations', () => {
         myThing: selection => () => selection.asPromise(),
       }
     })
-    const select = createRootStore({ array: [42] });
+    const select = createApplicationStore({ array: [42] });
     const fetch = () => new Promise(resolve => setTimeout(() => resolve([43]), 5))
     const res = (select(s => s.array) as any).replace(fetch).myThing();
     res.then((r: any) => {
@@ -89,7 +89,7 @@ describe('augmentations', () => {
       }
     })
     testState.logLevel = 'DEBUG';
-    const select = createRootStore({ array: [42] });
+    const select = createApplicationStore({ array: [42] });
     const fetch = () => new Promise(resolve => setTimeout(() => resolve(43), 5))
     const res = (select(s => s.array) as any).findWhere().eq(42).replace(fetch).myThing();
     testState.logLevel = 'NONE';
@@ -103,7 +103,7 @@ describe('augmentations', () => {
     augment({
       async: fnReturningFutureAugmentation => fnReturningFutureAugmentation().toPromise(),
     })
-    const select = createRootStore({ thing: '' });
+    const select = createApplicationStore({ thing: '' });
     const fetch = () => new Observable(observer => {
       observer.next('test');
       observer.complete();
@@ -120,7 +120,7 @@ describe('augmentations', () => {
         myThing: derviation => () => derviation.read()
       }
     })
-    const select = createRootStore({ one: 'abc', two: false });
+    const select = createApplicationStore({ one: 'abc', two: false });
     const result = (deriveFrom(
       select(s => s.one),
       select(s => s.two),

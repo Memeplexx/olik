@@ -1,6 +1,6 @@
 import { errorMessages } from '../src/shared-consts';
 import { testState } from '../src/shared-state';
-import { createRootStore } from '../src/store-creators';
+import { createApplicationStore } from '../src/store-creators';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
 describe('Devtools', () => {
@@ -12,7 +12,7 @@ describe('Devtools', () => {
   beforeEach( () => spyWarn.mockReset());
 
   it('should correctly respond to devtools dispatches where the state is an object', () => {
-    const select = createRootStore({ x: 0, y: 0 }, { tagsToAppearInType: true });
+    const select = createApplicationStore({ x: 0, y: 0 }, { tagsToAppearInType: true });
     select(s => s.x)
       .replace(3);
     expect(select().read()).toEqual({ x: 3, y: 0 });
@@ -23,7 +23,7 @@ describe('Devtools', () => {
   });
 
   it('should correctly respond to devtools dispatches where the state is an array', () => {
-    const select = createRootStore(['a', 'b', 'c'], { tagsToAppearInType: true });
+    const select = createApplicationStore(['a', 'b', 'c'], { tagsToAppearInType: true });
     select().replaceAll(['d', 'e', 'f']);
     expect(select().read()).toEqual(['d', 'e', 'f']);
     const state = ['g', 'h'];
@@ -33,12 +33,12 @@ describe('Devtools', () => {
   });
 
   it('should handle a COMMIT without throwing an error', () => {
-    createRootStore({ hello: '' });
+    createApplicationStore({ hello: '' });
     testState.windowObject?.__REDUX_DEVTOOLS_EXTENSION__._mockInvokeSubscription({ type: 'DISPATCH', payload: { type: 'COMMIT' }, source: '@devtools-extension' });
   });
 
   it('should handle a RESET correctly', () => {
-    const select = createRootStore({ hello: '' });
+    const select = createApplicationStore({ hello: '' });
     select(s => s.hello)
       .replace('world');
     expect(select().read().hello).toEqual('world');
@@ -47,7 +47,7 @@ describe('Devtools', () => {
   });
 
   it('should handle a ROLLBACK correctly', () => {
-    const select = createRootStore({ num: 0 });
+    const select = createApplicationStore({ num: 0 });
     select(s => s.num)
       .replace(1);
     expect(select().read().num).toEqual(1);
@@ -59,35 +59,35 @@ describe('Devtools', () => {
   });
 
   it('should throw an error should a devtools dispatch contain invalid JSON', () => {
-    createRootStore({ hello: 0 });
+    createApplicationStore({ hello: 0 });
     expect(() => testState.windowObject?.__REDUX_DEVTOOLS_EXTENSION__
       ._mockInvokeSubscription({ type: 'ACTION', source: '@devtools-extension', payload: "{'type': 'hello.replace', 'payload': 2}" }))
       .toThrow(errorMessages.DEVTOOL_DISPATCHED_INVALID_JSON);
   });
 
   it('should throw an error should a devtools dispatch not contain parenthesis', () => {
-    createRootStore({ hello: 0 });
+    createApplicationStore({ hello: 0 });
     expect(() => testState.windowObject?.__REDUX_DEVTOOLS_EXTENSION__
       ._mockInvokeSubscription({ type: 'ACTION', source: '@devtools-extension', payload: '{"type": "hello.replace", "payload": 2}' }))
       .toThrow(errorMessages.DEVTOOL_DISPATCHED_WITH_NO_ACTION('hello.replace'));
   });
 
   it('should throw an error should a devtools dispatch not contain parenthesis', () => {
-    createRootStore({ hello: 0 });
+    createApplicationStore({ hello: 0 });
     expect(() => testState.windowObject?.__REDUX_DEVTOOLS_EXTENSION__
       ._mockInvokeSubscription({ type: 'ACTION', source: '@devtools-extension', payload: '{"type": "hello.replace", "payload": 2}' }))
       .toThrow(errorMessages.DEVTOOL_DISPATCHED_WITH_NO_ACTION('hello.replace'));
   });
 
   it('should correctly devtools dispatch made by user', () => {
-    const select = createRootStore({ hello: 0 });
+    const select = createApplicationStore({ hello: 0 });
     testState.windowObject?.__REDUX_DEVTOOLS_EXTENSION__
       ._mockInvokeSubscription({ type: 'ACTION', source: '@devtools-extension', payload: '{"type": "hello.replace()", "payload": 2}' });
     expect(select().read().hello).toEqual(2);
   })
 
   it('should throttle tightly packed updates', done => {
-    const store = createRootStore({ test: 0 });
+    const store = createApplicationStore({ test: 0 });
     const payload: number[] = [];
     for (let i = 0; i < 100; i++) {
       store(s => s.test).replace(i);
@@ -108,7 +108,7 @@ describe('Devtools', () => {
 
   it('should log an error if no devtools extension could be found', () => {
     testState.windowObject = null;
-    createRootStore(new Array<string>());
+    createApplicationStore(new Array<string>());
     expect( spyWarn ).toHaveBeenCalledWith(errorMessages.DEVTOOL_CANNOT_FIND_EXTENSION);
   })
 

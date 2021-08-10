@@ -1,7 +1,7 @@
 import { Deferred } from '../src/shapes-external';
 import { errorMessages } from '../src/shared-consts';
 import { libState, testState } from '../src/shared-state';
-import { createRootStore, createComponentStore } from '../src/store-creators';
+import { createApplicationStore, createComponentStore } from '../src/store-creators';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
 describe('Component stores', () => {
@@ -24,7 +24,7 @@ describe('Component stores', () => {
     const initialStateComp = {
       one: ''
     };
-    const select = createRootStore(initialState);
+    const select = createApplicationStore(initialState);
     const componentName = 'myComp';
     const instanceName = '0';
     createComponentStore(initialStateComp, { componentName, instanceName });
@@ -36,7 +36,7 @@ describe('Component stores', () => {
       test: '',
       components: {},
     };
-    createRootStore(initialState);
+    createApplicationStore(initialState);
     const componentName = 'myComp';
     const instanceName = '0';
     const componentStore1 = createComponentStore({ one: '' }, { componentName, instanceName });
@@ -54,7 +54,7 @@ describe('Component stores', () => {
       test: '',
       components: {} as { myComp: { [key: string]: { one: string } } },
     };
-    const parent = createRootStore(initialState);
+    const parent = createApplicationStore(initialState);
     const componentName = 'myComp';
     const instanceName = '0';
     const componentStore1 = createComponentStore({ one: '' }, { componentName, instanceName });
@@ -67,12 +67,12 @@ describe('Component stores', () => {
     const initialState = {
       test: '',
     };
-    const select = createRootStore(initialState);
+    const select = createApplicationStore(initialState);
     const componentName = 'myComp';
     const instanceName = '0';
     const component1 = createComponentStore({ one: '' }, { componentName, instanceName });
     expect(select().read()).toEqual({ test: '', components: { [componentName]: { 0: { one: '' } } } });
-    component1().detachFromRootStore();
+    component1().detachFromApplicationStore();
     expect(select().read()).toEqual({ test: '', components: {} });
   })
 
@@ -80,14 +80,14 @@ describe('Component stores', () => {
     const initialState = {
       test: '',
     };
-    const select = createRootStore(initialState);
+    const select = createApplicationStore(initialState);
     const componentName = 'myComp';
     const component1 = createComponentStore({ one: '' }, { componentName, instanceName: '0' });
     const component2 = createComponentStore({ one: '' }, { componentName, instanceName: '1' });
     expect(select().read()).toEqual({ test: '', components: { [componentName]: { '0': { one: '' }, '1': { one: '' } } } });
-    component1().detachFromRootStore();
+    component1().detachFromApplicationStore();
     expect(select().read()).toEqual({ test: '', components: { [componentName]: { '1': { one: '' } } } });
-    component2().detachFromRootStore();
+    component2().detachFromApplicationStore();
     expect(select().read()).toEqual({ test: '', components: {} });
   })
 
@@ -95,7 +95,7 @@ describe('Component stores', () => {
     const initialState = {
       test: '',
     };
-    const select = createRootStore(initialState);
+    const select = createApplicationStore(initialState);
     const componentName = 'myComp';
     const component1 = createComponentStore({ one: '' }, { componentName, instanceName: '0' });
     component1(s => s.one).replace('test1');
@@ -108,7 +108,7 @@ describe('Component stores', () => {
     const initialState = {
       test: '',
     };
-    const select = createRootStore(initialState);
+    const select = createApplicationStore(initialState);
     const componentName = 'myComp';
     const instanceName = '0';
     const component = createComponentStore(new Array<string>(), { componentName, instanceName });
@@ -120,7 +120,7 @@ describe('Component stores', () => {
     const initialState = {
       test: '',
     };
-    const select = createRootStore(initialState);
+    const select = createApplicationStore(initialState);
     const componentName = 'myComp';
     const instanceName = '0';
     const component = createComponentStore(0, { componentName, instanceName });
@@ -132,7 +132,7 @@ describe('Component stores', () => {
     const initialState = {
       test: '',
     };
-    const select = createRootStore(initialState);
+    const select = createApplicationStore(initialState);
     const componentName = 'myComp';
     const instanceName = '0';
     createComponentStore(0, { componentName, instanceName });
@@ -142,12 +142,12 @@ describe('Component stores', () => {
   })
 
   it('should throw an error if the containing stores state is a primitive', () => {
-    createRootStore(0);
+    createApplicationStore(0);
     expect(() => createComponentStore(0, { componentName: 'test', instanceName: '0' })).toThrowError(errorMessages.INVALID_CONTAINER_FOR_COMPONENT_STORES);
   })
 
   it('should throw an error if the containing stores state is an array', () => {
-    createRootStore(new Array<string>());
+    createApplicationStore(new Array<string>());
     expect(() => createComponentStore(0, { componentName: 'test', instanceName: '0' })).toThrowError(errorMessages.INVALID_CONTAINER_FOR_COMPONENT_STORES);
   })
 
@@ -155,7 +155,7 @@ describe('Component stores', () => {
     const initialState = {
       test: '',
     };
-    const select = createRootStore(initialState);
+    const select = createApplicationStore(initialState);
     const instanceName = '0';
     const componentName = 'myComp';
     createComponentStore(0, { componentName, instanceName });
@@ -169,7 +169,7 @@ describe('Component stores', () => {
     const initialState = {
       test: '',
     };
-    const select = createRootStore(initialState);
+    const select = createApplicationStore(initialState);
     const componentName = 'myComp';
     const instanceName = '0';
     const component = createComponentStore(0, { componentName, instanceName });
@@ -182,7 +182,7 @@ describe('Component stores', () => {
   })
 
   it('should work without a container store', () => {
-    libState.rootStore = null;
+    libState.applicationStore = null;
     const component = createComponentStore({
       object: { property: 'a' },
       array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
@@ -190,11 +190,11 @@ describe('Component stores', () => {
     }, { componentName: 'dd', instanceName: '0', dontTrackWithDevtools: true });
     component(s => s.object.property).replace('test');
     expect(component().read().object.property).toEqual('test');
-    component().detachFromRootStore();
+    component().detachFromApplicationStore();
   });
 
   it('should be able to support a custom instance name', () => {
-    const parent = createRootStore({ hello: '' });
+    const parent = createApplicationStore({ hello: '' });
     const componentName = 'MyComponent';
     const instanceName = 'test';
     createComponentStore({ num: 0 }, { componentName, instanceName });
@@ -202,7 +202,7 @@ describe('Component stores', () => {
   })
 
   it('should be able to reset a component store inner property', () => {
-    const parent = createRootStore({ test: '' });
+    const parent = createApplicationStore({ test: '' });
     parent(s => s.test).replace('test');
     const component = createComponentStore({ array: new Array<string>() }, { componentName: 'test', instanceName: '0' });
     component(s => s.array).insert('test');
@@ -224,7 +224,7 @@ describe('Component stores', () => {
     const initialRootState = { hello: 'hey' };
     const componentName = 'MyComponent';
     const instanceName = 'MyInstance';
-    const root = createRootStore(initialRootState);
+    const root = createApplicationStore(initialRootState);
     const child = createComponentStore({ val: 0 }, { componentName, instanceName: Deferred });
     let count = 0;
     child().onChange(val => {
@@ -258,7 +258,7 @@ describe('Component stores', () => {
     const initialRootState = { hello: 'hey' };
     const componentName = 'MyComponent';
     const instanceName = 'MyInstance';
-    const root = createRootStore(initialRootState);
+    const root = createApplicationStore(initialRootState);
     const child = createComponentStore({ val: 0 }, { componentName, instanceName: Deferred });
     let count = 0;
     child(s => s.val).onChange(val => {

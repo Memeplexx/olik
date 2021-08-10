@@ -1,6 +1,6 @@
 import { errorMessages } from '../src/shared-consts';
 import { libState, testState } from '../src/shared-state';
-import { createComponentStore, createRootStore, createRootStoreEnforcingTags } from '../src/store-creators';
+import { createComponentStore, createApplicationStore, createApplicationStoreEnforcingTags } from '../src/store-creators';
 import { transact } from '../src/transact';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
@@ -8,7 +8,7 @@ describe('async', () => {
 
   beforeAll(() => testState.windowObject = windowAugmentedWithReduxDevtoolsImpl);
 
-  beforeEach(() => libState.rootStore = null);
+  beforeEach(() => libState.applicationStore = null);
 
   const initialState = {
     object: { property: '', property2: '' },
@@ -18,7 +18,7 @@ describe('async', () => {
   }; 3
 
   it('should work with replaceAll()', async done => {
-    const select = createRootStore(initialState);
+    const select = createApplicationStore(initialState);
     const payload = [{ id: 1, value: 'test' }];
     select(s => s.array)
       .replaceAll(() => new Promise(resolve => setTimeout(() => resolve(payload), 10)), { bypassPromiseFor: 1000 }).asPromise()
@@ -42,7 +42,7 @@ describe('async', () => {
   })
 
   it('should work with insert()', done => {
-    const select = createRootStore(initialState);
+    const select = createApplicationStore(initialState);
     const payload = { id: 1, value: 'test' };
     select(s => s.array)
       .insert(() => new Promise(resolve => setTimeout(() => resolve(payload), 10)), { bypassPromiseFor: 1000 }).asPromise()
@@ -66,7 +66,7 @@ describe('async', () => {
   })
 
   it('should work with replace()', done => {
-    const select = createRootStore(initialState);
+    const select = createApplicationStore(initialState);
     const payload = { property: 'xxx', property2: 'yyy' };
     select(s => s.object)
       .replace(() => new Promise(resolve => setTimeout(() => resolve(payload), 10)), { bypassPromiseFor: 1000 }).asPromise()
@@ -90,7 +90,7 @@ describe('async', () => {
   })
 
   it('should work with patch()', done => {
-    const select = createRootStore(initialState);
+    const select = createApplicationStore(initialState);
     const payload = { property: 'xxx' };
     select(s => s.object)
       .patch(() => new Promise(resolve => setTimeout(() => resolve(payload), 10)), { bypassPromiseFor: 1000 }).asPromise()
@@ -114,7 +114,7 @@ describe('async', () => {
   })
 
   it('should work with remove()', done => {
-    const select = createRootStore(initialState);
+    const select = createApplicationStore(initialState);
     select(s => s.object)
       .remove(() => new Promise(resolve => setTimeout(() => resolve('property2'), 10))).asPromise()
       .then(res => {
@@ -125,7 +125,7 @@ describe('async', () => {
   })
 
   it('should work with upsertMatching()', done => {
-    const select = createRootStore(initialState);
+    const select = createApplicationStore(initialState);
     const payload = { id: 1, value: 'test' };
     select(s => s.array)
       .upsertMatching(s => s.id)
@@ -152,7 +152,7 @@ describe('async', () => {
   })
 
   it('should work with findWhere().replace()', done => {
-    const select = createRootStore(initialState);
+    const select = createApplicationStore(initialState);
     const payload = { id: 2, value: 'twooo' };
     select(s => s.array)
       .findWhere(s => s.id).eq(2)
@@ -181,7 +181,7 @@ describe('async', () => {
   })
 
   it('should work with findWhere().patch()', done => {
-    const select = createRootStore(initialState);
+    const select = createApplicationStore(initialState);
     const payload = { value: 'twooo' };
     select(s => s.array)
       .findWhere(s => s.id).eq(2)
@@ -210,7 +210,7 @@ describe('async', () => {
   })
 
   it('should work with findWhere().remove()', done => {
-    const select = createRootStore(initialState);
+    const select = createApplicationStore(initialState);
     select(s => s.array)
       .findWhere(s => s.id).eq(2)
       .remove(() => new Promise(resolve => setTimeout(() => resolve(null), 10))).asPromise()
@@ -222,7 +222,7 @@ describe('async', () => {
   })
 
   it('should work with filterWhere().replace()', done => {
-    const select = createRootStore(initialState);
+    const select = createApplicationStore(initialState);
     const payload = { id: 2, value: 'twooo' };
     select(s => s.array)
       .filterWhere(s => s.id).eq(2)
@@ -251,7 +251,7 @@ describe('async', () => {
   })
 
   it('should work with filterWhere().patch()', done => {
-    const select = createRootStore(initialState);
+    const select = createApplicationStore(initialState);
     const payload = { value: 'twooo' };
     select(s => s.array)
       .filterWhere(s => s.id).eq(2)
@@ -280,7 +280,7 @@ describe('async', () => {
   })
 
   it('should work with filterWhere().remove()', done => {
-    const select = createRootStore(initialState);
+    const select = createApplicationStore(initialState);
     select(s => s.array)
       .filterWhere(s => s.id).eq(2)
       .remove(() => new Promise(resolve => setTimeout(() => resolve(null), 10))).asPromise()
@@ -292,7 +292,7 @@ describe('async', () => {
   })
 
   it('should work with findWhere().returnsTrue().replace()', done => {
-    const select = createRootStore(initialState);
+    const select = createApplicationStore(initialState);
     const payload = { id: 2, value: 'twooo' };
     select(s => s.array)
       .findWhere(s => s.id === 2).returnsTrue()
@@ -321,7 +321,7 @@ describe('async', () => {
   })
 
   it('should work with filterWhere().returnsTrue().replace()', done => {
-    const select = createRootStore(initialState);
+    const select = createApplicationStore(initialState);
     const payload = { id: 2, value: 'twooo' };
     select(s => s.array)
       .filterWhere(s => s.id === 2).returnsTrue()
@@ -350,7 +350,7 @@ describe('async', () => {
   })
 
   it('should work with findWhere().returnsTrue().patch()', done => {
-    const select = createRootStore(initialState);
+    const select = createApplicationStore(initialState);
     const payload = { value: 'twooo' };
     select(s => s.array)
       .findWhere(s => s.id === 2).returnsTrue()
@@ -379,7 +379,7 @@ describe('async', () => {
   })
 
   it('should work with filterWhere().returnsTrue().patch()', done => {
-    const select = createRootStore(initialState);
+    const select = createApplicationStore(initialState);
     const payload = { value: 'twooo' };
     select(s => s.array)
       .filterWhere(s => s.id === 2).returnsTrue()
@@ -408,7 +408,7 @@ describe('async', () => {
   })
 
   it('should work with findWhere().returnsTrue().remove()', done => {
-    const select = createRootStore(initialState);
+    const select = createApplicationStore(initialState);
     select(s => s.array)
       .findWhere(s => s.id === 2).returnsTrue()
       .remove(() => new Promise(resolve => setTimeout(() => resolve(null), 10))).asPromise()
@@ -420,7 +420,7 @@ describe('async', () => {
   })
 
   it('should work with filterWhere().returnsTrue().remove()', done => {
-    const select = createRootStore(initialState);
+    const select = createApplicationStore(initialState);
     select(s => s.array)
       .filterWhere(s => s.id === 2).returnsTrue()
       .remove(() => new Promise(resolve => setTimeout(() => resolve(null), 10))).asPromise()
@@ -432,7 +432,7 @@ describe('async', () => {
   })
 
   it('should handle a promise rejection', done => {
-    const select = createRootStore(initialState);
+    const select = createApplicationStore(initialState);
     const rejection = 'test';
     select(s => s.array)
       .replaceAll(() => new Promise((resolve, reject) => setTimeout(() => reject(rejection), 10)), { bypassPromiseFor: 1000 }).asPromise()
@@ -443,7 +443,7 @@ describe('async', () => {
   })
 
   it('should support tags in type', done => {
-    const select = createRootStore(initialState, { tagsToAppearInType: true });
+    const select = createApplicationStore(initialState, { tagsToAppearInType: true });
     const replacement = [{ id: 1, value: 'one' }];
     const tag = 'MyComponent';
     select(s => s.array)
@@ -458,7 +458,7 @@ describe('async', () => {
   })
 
   it('should support tags in payload', done => {
-    const select = createRootStoreEnforcingTags(initialState);
+    const select = createApplicationStoreEnforcingTags(initialState);
     const replacement = [{ id: 1, value: 'one' }];
     const tag = 'MyComponent';
     select(s => s.array)
@@ -474,20 +474,20 @@ describe('async', () => {
   })
 
   it('should not be able to support transactions', () => {
-    const select = createRootStore(initialState);
+    const select = createApplicationStore(initialState);
     expect(() => transact(
       () => select(s => s.array).replaceAll(() => new Promise(resolve => setTimeout(() => resolve([]), 10))),
     )).toThrowError(errorMessages.PROMISES_NOT_ALLOWED_IN_TRANSACTIONS);
   })
 
   it('should not be able to support top-level stores', () => {
-    const select = createRootStore(0);
+    const select = createApplicationStore(0);
     expect(() => select().replace(() => new Promise(resolve => setTimeout(() => resolve(1), 10)), { bypassPromiseFor: 1000 }))
       .toThrowError(errorMessages.INVALID_CONTAINER_FOR_CACHED_DATA);
   })
 
   it('should automatically clear up expired cache keys', done => {
-    const select = createRootStore(initialState);
+    const select = createApplicationStore(initialState);
     const payload = [{ id: 1, value: 'test' }];
     select(s => s.object)
       .replace(() => new Promise(resolve => setTimeout(() => resolve({ property: 'fdfd', property2: 'fdfd' }), 10)), { bypassPromiseFor: 1000 }).asPromise();
@@ -502,7 +502,7 @@ describe('async', () => {
   })
 
   it('should work with nested stores', done => {
-    const select = createRootStore(initialState);
+    const select = createApplicationStore(initialState);
     const nested = createComponentStore({ prop: '' }, { componentName: 'hello', instanceName: 'test' });
     const payload = 'test';
     nested(s => s.prop)
@@ -514,7 +514,7 @@ describe('async', () => {
   })
 
   it('should de-duplicate simultaneous requests', done => {
-    const select = createRootStore(initialState);
+    const select = createApplicationStore(initialState);
     select(s => s.array)
       .replaceAll(() => new Promise(resolve => setTimeout(() => resolve([{ id: 1, value: 'test' }]), 10)));
     setTimeout(() => {
@@ -529,7 +529,7 @@ describe('async', () => {
 
   it('should be able to paginate', done => {
     const todos = new Array(50).fill(null).map((e, i) => ({ id: i + 1, value: `value ${i + 1}` }));
-    const select = createRootStore(initialState);
+    const select = createApplicationStore(initialState);
     select(s => s.paginated[0])
       .replaceAll(() => new Promise(resolve => setTimeout(() => resolve(todos.slice(0, 10))))).asPromise()
       .then(() => {
@@ -547,7 +547,7 @@ describe('async', () => {
   })
 
   it('should not bypass a promise if it has been rejected', done => {
-    const select = createRootStore(initialState);
+    const select = createApplicationStore(initialState);
     const payload = [{ id: 1, value: 'one' }];
     select(s => s.array)
       .replaceAll(() => new Promise((resolve, reject) => setTimeout(() => reject('test'), 10)), { bypassPromiseFor: 1000 }).asPromise()
@@ -563,7 +563,7 @@ describe('async', () => {
   })
 
   it('should be able to perform an optimistic update', done => {
-    const select = createRootStore(initialState);
+    const select = createApplicationStore(initialState);
     const optimisticValue = [{ id: 6, value: 'six' }];
     const resolvedValue = [{ id: 7, value: 'seven' }];
     select(s => s.array)
@@ -576,7 +576,7 @@ describe('async', () => {
   })
 
   it('should revert an optimistic update if there is an error', done => {
-    const select = createRootStore(initialState);
+    const select = createApplicationStore(initialState);
     const optimisticValue = [{ id: 6, value: 'six' }];
     select(s => s.array)
       .replaceAll(() => new Promise((resolve, reject) => reject('test')), { optimisticallyUpdateWith: optimisticValue }).asPromise()
@@ -588,7 +588,7 @@ describe('async', () => {
   })
 
   it('should invalidate caches for replaceAll() independantly of replace()', done => {
-    const select = createRootStore(initialState);
+    const select = createApplicationStore(initialState);
     const fetchTodos = () => new Promise<{ id: number, value: string }[]>(resolve => setTimeout(() => resolve([{ id: 1, value: 'test' }]), 10));
     const fetchTodo = () => new Promise<{ id: number, value: string }>(resolve => setTimeout(() => resolve({ id: 1, value: 'testy' })));
     const fetchTodo2 = () => new Promise<{ id: number, value: string }>(resolve => setTimeout(() => resolve({ id: 1, value: 'testyy' })));

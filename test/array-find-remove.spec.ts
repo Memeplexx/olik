@@ -1,5 +1,5 @@
 import { testState } from '../src/shared-state';
-import { createRootStore } from '../src/store-creators';
+import { createApplicationStore } from '../src/store-creators';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
 describe('array.find().remove()', () => {
@@ -12,7 +12,7 @@ describe('array.find().remove()', () => {
   };
 
   it('should eq()', () => {
-    const select = createRootStore(initialState);
+    const select = createApplicationStore(initialState);
     select(s => s.array)
       .findWhere(e => e.id).eq(2)
       .remove();
@@ -25,7 +25,7 @@ describe('array.find().remove()', () => {
   })
 
   it('should ne()', () => {
-    const select = createRootStore(initialState);
+    const select = createApplicationStore(initialState);
     select(s => s.array)
       .findWhere(e => e.id).ne(2)
       .remove();
@@ -38,7 +38,7 @@ describe('array.find().remove()', () => {
   })
 
   it('should gt()', () => {
-    const select = createRootStore(initialState);
+    const select = createApplicationStore(initialState);
     select(s => s.array)
       .findWhere(e => e.id).gt(1)
       .remove();
@@ -51,7 +51,7 @@ describe('array.find().remove()', () => {
   })
 
   it('should gte()', () => {
-    const select = createRootStore(initialState);
+    const select = createApplicationStore(initialState);
     select(s => s.array)
       .findWhere(e => e.id).gte(1)
       .remove();
@@ -64,7 +64,7 @@ describe('array.find().remove()', () => {
   })
 
   it('should lt()', () => {
-    const select = createRootStore(initialState);
+    const select = createApplicationStore(initialState);
     select(s => s.array)
       .findWhere(e => e.id).lt(2)
       .remove();
@@ -77,7 +77,7 @@ describe('array.find().remove()', () => {
   })
 
   it('should lte()', () => {
-    const select = createRootStore(initialState);
+    const select = createApplicationStore(initialState);
     select(s => s.array)
       .findWhere(e => e.id).lte(2)
       .remove();
@@ -90,7 +90,7 @@ describe('array.find().remove()', () => {
   })
 
   it('should in()', () => {
-    const select = createRootStore(initialState);
+    const select = createApplicationStore(initialState);
     select(s => s.array)
       .findWhere(e => e.id).in([1, 2])
       .remove();
@@ -103,7 +103,7 @@ describe('array.find().remove()', () => {
   })
 
   it('should ni()', () => {
-    const select = createRootStore(initialState);
+    const select = createApplicationStore(initialState);
     select(s => s.array)
       .findWhere(e => e.id).ni([1, 2])
       .remove();
@@ -116,7 +116,7 @@ describe('array.find().remove()', () => {
   })
 
   it('should match()', () => {
-    const select = createRootStore(initialState);
+    const select = createApplicationStore(initialState);
     select(s => s.array)
       .findWhere(e => e.value).matches(/^t/)
       .remove();

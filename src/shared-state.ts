@@ -1,7 +1,7 @@
 import { ComponentContainerStore, WindowAugmentedWithReduxDevtools } from './shapes-internal';
 
 export const libState = {
-  rootStore: null as null | ComponentContainerStore,
+  applicationStore: null as null | ComponentContainerStore,
   transactionState: 'none' as 'none' | 'started' | 'last',
 }
 
