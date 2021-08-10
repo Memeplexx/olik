@@ -531,7 +531,7 @@ export interface StoreOrDerivation<C> {
    *   subscription.unSubscribe();
    * }
    */
-  onChange: (callbackFn: (node: DeepReadonly<C>) => any) => Unsubscribable,
+  onChange: (callbackFn: (node: C) => any) => Unsubscribable,
   /**
    * @returns the current state
    */

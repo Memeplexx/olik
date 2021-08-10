@@ -19,7 +19,7 @@ describe('array.filter().and().or()', () => {
       .remove();
     expect(testState.currentAction).toEqual({
       type: 'array.filter().remove()',
-      toRemove: [ initialState.array[1] ],
+      toRemove: [initialState.array[1]],
       where: 'id === 2 && value === two',
     });
     expect(select().read().array).toEqual([initialState.array[0], initialState.array[2]]);
