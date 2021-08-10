@@ -6,7 +6,6 @@ import { libState, testState } from './shared-state';
 export function integrateStoreWithReduxDevtools<S, C = S>(
   store: (selector?: (state: S) => C) => Store<C, any>,
   options: OptionsForReduxDevtools,
-  setDevtoolsDispatchListener: (listener: (action: { type: string, payload?: any }) => any) => any,
   storeState: StoreState<S>,
 ) {
   let windowObj = window as any as WindowAugmentedWithReduxDevtools;
@@ -22,9 +21,9 @@ export function integrateStoreWithReduxDevtools<S, C = S>(
   }
   const devTools = windowObj.__REDUX_DEVTOOLS_EXTENSION__.connect(options);
   devTools.init(store().read());
-  setDevtoolsDispatchListener(action => {
+  storeState.devtoolsDispatchListener = action => {
     devTools.send(action, store().read());
-  });
+  };
   devTools.subscribe((message: any) => {
     if (message.type === 'ACTION' && message.source === '@devtools-extension') {
       let messagePayload: { type: string, payload: any };

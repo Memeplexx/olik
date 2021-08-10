@@ -11,7 +11,7 @@ import {
   UpdateOptions,
 } from './shapes-external';
 import { CoreActionsState, StoreState } from './shapes-internal';
-import { deepCopy, deepFreeze, isEmpty, processPayload, readSelector, validateSelectorFn } from './shared-utils';
+import { deepCopy, deepFreeze, isEmpty, processPayload, readSelector, performStateUpdate, validateSelectorFn } from './shared-utils';
 import { transact } from './transact';
 
 export const onChange = <S, C, X extends C & Array<any>>(
@@ -46,19 +46,21 @@ export const removeAll = <S, C, X extends C & Array<any>, T extends Trackability
 ) => (updateOptions => {
   validateSelector(arg);
   const pathSegments = readSelector(arg.selector);
-  arg.updateState({
-    selector: arg.selector,
-    replacer: () => [],
-    actionName: `${!pathSegments.length ? '' : pathSegments.join('.') + '.'}removeAll()`,
-    updateOptions,
-  });
+  performStateUpdate(
+    arg.storeState, {
+      selector: arg.selector,
+      replacer: () => [],
+      actionName: `${!pathSegments.length ? '' : pathSegments.join('.') + '.'}removeAll()`,
+      updateOptions: updateOptions as {},
+    }
+  );
 }) as StoreForAnArrayCommon<X, T>['removeAll'];
 
 export const insertIntoArray = <S, C, X extends C & Array<any>, T extends Trackability>(
   arg: CoreActionsState<S, C, X, T>,
 ) => ((payload, updateOptions: UpdateAtIndex = {}) => {
   validateSelector(arg);
-  return processPayload<S, C, X, T>({
+  return processPayload<S, C, X>({
     ...arg,
     updateOptions,
     cacheKeySuffix: 'insert()',
@@ -238,7 +240,6 @@ const validateSelector = <S, C, X extends C & Array<any>>(
     storeState: StoreState<S>
   },
 ) => {
-  arg.storeState.selector = arg.selector;
   if (arg.isComponentStore()) { arg.storeState.bypassSelectorFunctionCheck = true; }
   validateSelectorFn('get', arg.storeState, arg.selector);
   if (arg.isComponentStore()) { arg.storeState.bypassSelectorFunctionCheck = false; }

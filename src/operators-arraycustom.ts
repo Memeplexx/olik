@@ -67,10 +67,10 @@ export const remove = <S, C, X extends C & Array<any>, F extends FindOrFilter, T
 export const onChange = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
   arg: ArrayCustomState<S, C, X, T>,
 ) => (performAction => {
-  arg.changeListeners.set(performAction, nextState => deepFreeze(arg.type === 'find'
+  arg.storeState.changeListeners.set(performAction, nextState => deepFreeze(arg.type === 'find'
     ? (arg.selector(nextState) as X).find(e => arg.predicate(e))
     : { $filtered: (arg.selector(nextState) as X).filter(e => arg.predicate(e)) }));
-  return { unsubscribe: () => arg.changeListeners.delete(performAction) };
+  return { unsubscribe: () => arg.storeState.changeListeners.delete(performAction) };
 }) as ArrayOfElementsCommonAction<X, F, T>['onChange'];
 
 export const read = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(

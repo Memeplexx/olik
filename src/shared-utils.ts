@@ -1,8 +1,8 @@
 import { augmentations } from './augmentations';
 import { DeepReadonly, Future, FutureState, Selector, Trackability } from './shapes-external';
-import { StoreState, UpdateStateFn } from './shapes-internal';
-import { errorMessages, expressionsNotAllowedInSelectorFunction } from './shared-consts';
-import { libState } from './shared-state';
+import { StoreState, UpdateStateArgs } from './shapes-internal';
+import { devtoolsDebounce, errorMessages, expressionsNotAllowedInSelectorFunction } from './shared-consts';
+import { libState, testState } from './shared-state';
 
 export function deepFreeze<T extends Object>(o: T): T {
   Object.freeze(o);
@@ -87,9 +87,9 @@ export function readSelector(selector: (state: any) => any) {
       return null as any;
     }
     return new Proxy(s, {
-      get: function(target, prop: any) {
+      get: function (target, prop: any) {
         if (prop === 'find' || prop === 'filter') {
-          (target as any)[prop] = (e: any) => {};
+          (target as any)[prop] = (e: any) => { };
         }
         if (!(target as any)[prop]) {
           (target as any)[prop] = {};
@@ -99,7 +99,7 @@ export function readSelector(selector: (state: any) => any) {
           pathSegments.push(prop);
           return initialize(val);
         } else if (typeof val === 'function') {
-          return function(...args: any[]) {};
+          return function (...args: any[]) { };
         }
         pathSegments.push(prop);
         return val;
@@ -142,7 +142,7 @@ export const toIsoString = (date: Date) => {
     ':' + pad(tzo % 60);
 }
 
-export const processPayload = <S, C, X extends C & Array<any>, T extends Trackability>(
+export const processPayload = <S, C, X extends C & Array<any>>(
   arg: {
     selector: Selector<S, C, X>,
     payload: any | (() => Promise<any>),
@@ -154,20 +154,17 @@ export const processPayload = <S, C, X extends C & Array<any>, T extends Trackab
     replacer: (newNode: DeepReadonly<X>, payload: C) => any,
     getPayload: (payload: C) => any,
     getPayloadFn?: () => any,
-    updateState: UpdateStateFn<S, C, T, X>,
     pathSegments?: string[],
   }
 ) => {
   const pathSegments = readSelector(arg.selector);
-  const updateState = (payload: C) => arg.updateState({
-    actionName: `${!pathSegments.length ? '' : (pathSegments.join('.') + '.')}${arg.actionNameSuffix}`,
-    replacer: old => arg.replacer(old, payload),
-    selector: arg.selector,
-    updateOptions: arg.updateOptions as any,
-    payload: arg.getPayload(payload),
-    getPayloadFn: arg.getPayloadFn,
-    pathSegments: arg.pathSegments,
-  })
+  const updateState = (payload: C) => performStateUpdate(
+    arg.storeState, {
+      ...arg,
+      actionName: `${!pathSegments.length ? '' : (pathSegments.join('.') + '.')}${arg.actionNameSuffix}`,
+      replacer: old => arg.replacer(old, payload),
+      payload: arg.getPayload(payload),
+    })
   if (!!arg.payload && typeof (arg.payload) === 'function') {
     if (libState.transactionState !== 'none') {
       libState.transactionState = 'none';
@@ -254,4 +251,101 @@ export const processPayload = <S, C, X extends C & Array<any>, T extends Trackab
   } else {
     updateState(arg.payload as C);
   }
+}
+
+export const performStateUpdate = <S, C, X extends C = C>(
+  storeState: StoreState<S>,
+  updateState: UpdateStateArgs<S, C, X>,
+) => {
+  if (libState.transactionState === 'started') {
+    storeState.transactionStartState = storeState.currentState
+  }
+
+  const previousState = storeState.currentState;
+  const pathSegments = updateState.pathSegments || readSelector(updateState.selector);
+  const result = Object.freeze(copyObject(storeState.currentState, { ...storeState.currentState }, pathSegments.slice(), updateState.replacer));
+  storeState.currentState = result;
+
+  // Construct action to dispatch
+  const actionType = updateState.actionName;
+  const tag = (updateState.updateOptions || {} as any).tag || '';
+  const tagSanitized = tag && storeState.tagSanitizer ? storeState.tagSanitizer(tag) : tag;
+  const payload = ((updateState.getPayloadFn && (updateState.getPayloadFn() !== undefined)) ? updateState.getPayloadFn() : updateState.payload);
+  const payloadWithTag = (!tag || storeState.tagsToAppearInType) ? { ...payload } : { ...payload, tag: tagSanitized };
+  const typeWithTag = actionType + (storeState.tagsToAppearInType && tag ? ` [${tagSanitized}]` : '')
+  let actionToDispatch = {
+    type: typeWithTag,
+    ...payloadWithTag,
+  };
+
+  // Cater for transactions
+  if (libState.transactionState === 'started') {
+    storeState.transactionActions.push(actionToDispatch);
+    return;
+  }
+  if (libState.transactionState === 'last') {
+    storeState.transactionActions.push(actionToDispatch);
+    notifySubscribers(storeState.changeListeners, storeState.transactionStartState, result);
+    libState.transactionState = 'none';
+    storeState.transactionStartState = null;
+    actionToDispatch = {
+      type: storeState.transactionActions.map(action => action.type).join(', '),
+      actions: deepCopy(storeState.transactionActions),
+    }
+    storeState.transactionActions.length = 0;
+  } else if (libState.transactionState === 'none') {
+    notifySubscribers(storeState.changeListeners, previousState, result);
+  }
+
+  // Dispatch to devtools
+  testState.currentAction = actionToDispatch;
+  const { type, ...actionPayload } = actionToDispatch;
+  if (storeState.devtoolsDispatchListener && (!updateState.updateOptions || ((updateState.updateOptions || {} as any).tag !== 'dontTrackWithDevtools'))) {
+    const dispatchToDevtools = (payload?: any[]) => {
+      const action = payload ? { ...actionToDispatch, batched: payload } : actionToDispatch;
+      testState.currentActionForDevtools = action;
+      storeState.devtoolsDispatchListener!(action);
+    }
+    if (storeState.previousAction.debounceTimeout) {
+      window.clearTimeout(storeState.previousAction.debounceTimeout);
+      storeState.previousAction.debounceTimeout = 0;
+    }
+    if (storeState.previousAction.type !== type) {
+      storeState.previousAction.type = type;
+      storeState.previousAction.payloads = [actionPayload];
+      dispatchToDevtools();
+      storeState.previousAction.debounceTimeout = window.setTimeout(() => {
+        storeState.previousAction.type = '';
+        storeState.previousAction.payloads = [];
+      }, devtoolsDebounce);
+    } else {
+      if (storeState.previousAction.timestamp < (Date.now() - devtoolsDebounce)) {
+        storeState.previousAction.payloads = [actionPayload];
+      } else {
+        storeState.previousAction.payloads.push(actionPayload);
+      }
+      storeState.previousAction.timestamp = Date.now();
+      storeState.previousAction.debounceTimeout = window.setTimeout(() => {
+        dispatchToDevtools(storeState.previousAction.payloads.slice(0, storeState.previousAction.payloads.length - 1));
+        storeState.previousAction.type = '';
+        storeState.previousAction.payloads = [];
+      }, devtoolsDebounce);
+    }
+  }
+}
+
+function notifySubscribers<S>(changeListeners: Map<(ar: any) => any, (arg: S) => any>, oldState: S, newState: S) {
+  changeListeners.forEach((selector, subscriber) => {
+    let selectedNewState: any;
+    try { selectedNewState = selector(newState); } catch (e) { /* A component store may have been detatched and state changes are being subscribed to inside component. Ignore */ }
+    const selectedOldState = selector(oldState);
+    if (selectedOldState && selectedOldState.$filtered && selectedNewState && selectedNewState.$filtered) {
+      if ((selectedOldState.$filtered.length !== selectedNewState.$filtered.length)
+        || !(selectedOldState.$filtered as Array<any>).every(element => selectedNewState.$filtered.includes(element))) {
+        subscriber(selectedNewState.$filtered);
+      }
+    } else if (selectedOldState !== selectedNewState) {
+      subscriber(selectedNewState);
+    }
+  })
 }

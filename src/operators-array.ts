@@ -67,7 +67,7 @@ export const patch = <S, C, X extends C & Array<any>, F extends FindOrFilter, T 
 export const replace = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
   arg: ArrayOperatorState<S, C, X, F, T>,
 ) => ((payload, updateOptions) => {
-  return processPayload<S, C, X, T>({
+  return processPayload<S, C, X>({
     ...arg,
     selector: ((s: any) => (arg.selector(s) as any)[arg.type]((e: any) => bundleCriteria(e, arg.whereClauseSpecs))) as any,
     payload,
@@ -91,10 +91,10 @@ export const onChange = <S, C, X extends C & Array<any>, F extends FindOrFilter,
   arg: ArrayOperatorState<S, C, X, F, T>,
 ) => (performAction => {
   arg.whereClauseSpecs.push({ filter: o => arg.criteria(o, arg.fn), type: 'last' });
-  arg.changeListeners.set(performAction, nextState => deepFreeze(arg.type === 'find'
+  arg.storeState.changeListeners.set(performAction, nextState => deepFreeze(arg.type === 'find'
     ? (arg.selector(nextState) as X).find(e => bundleCriteria(e, arg.whereClauseSpecs))
     : { $filtered: (arg.selector(nextState) as X).map(e => bundleCriteria(e, arg.whereClauseSpecs) ? e : null).filter(e => e !== null) }));
-  return { unsubscribe: () => arg.changeListeners.delete(performAction) };
+  return { unsubscribe: () => arg.storeState.changeListeners.delete(performAction) };
 }) as ArrayOfElementsCommonAction<X, F, T>['onChange'];
 
 export const read = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
@@ -125,7 +125,6 @@ const completeWhereClause = <S, C, X extends C & Array<any>, F extends FindOrFil
     ? [(arg.selector(arg.getCurrentState()) as X).findIndex(e => bundleCriteria(e, arg.whereClauseSpecs))]
     : (arg.selector(arg.getCurrentState()) as X).map((e, i) => bundleCriteria(e, arg.whereClauseSpecs) ? i : null).filter(i => i !== null) as number[];
   if (arg.type === 'find' && elementIndices[0] === -1) { throw new Error(errorMessages.NO_ARRAY_ELEMENT_FOUND); }
-  arg.storeState.selector = (state: S) => (arg.selector(state) as X)[arg.type]((e, i) => elementIndices.includes(i));
   return elementIndices;
 }
 

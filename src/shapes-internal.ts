@@ -6,24 +6,21 @@ import {
   PredicateFunctionObject,
   Selector,
   Store,
+  StoreForAComponent,
   StoreForAnObject,
   StoreOrDerivation,
-  StoreForAComponent,
   Trackability,
-  UpdateOptions,
 } from './shapes-external';
 
-export type UpdateStateArgs<S, C, T extends Trackability, X extends C = C> = {
+export type UpdateStateArgs<S, C, X extends C = C> = {
   selector: Selector<S, C, X>,
   replacer: (newNode: DeepReadonly<X>) => any,
   pathSegments?: string[],
   actionName: string,
   payload?: any,
-  updateOptions: UpdateOptions<T, any>,
+  updateOptions: {} | void,
   getPayloadFn?: () => any,
 };
-
-export type UpdateStateFn<S, C, T extends Trackability, X extends C = C> = (specs: UpdateStateArgs<S, C, T, X>) => void;
 
 export type StoreForAComponentInternal<S, C> = Store<C, 'untagged'> & {
   defineReset: (initState: S, selector?: (arg: any) => C) => () => any;
@@ -56,27 +53,22 @@ export type ArrayOperatorState<S, C, X extends C & Array<any>, F extends FindOrF
   recurseWhere: PredicateFunctionObject<X, F, T>,
   fn: (e: X[0]) => boolean,
   selector: Selector<S, C, X>,
-  updateState: UpdateStateFn<S, C, T, X>,
   type: FindOrFilter,
-  changeListeners: Map<(ar: any) => any, (arg: S) => any>,
   storeResult: (selector?: (s: S) => C) => any,
   storeState: StoreState<S>,
 };
 
 export type ArrayCustomState<S, C, X extends C & Array<any>, T extends Trackability> = {
   type: FindOrFilter,
-  updateState: UpdateStateFn<S, C, T, X>,
   selector: Selector<S, C, X>,
   getCurrentState: () => S,
   predicate: (element: DeepReadonly<X[0]>) => boolean,
-  changeListeners: Map<(ar: any) => any, (arg: S) => any>,
   storeResult: (selector?: (s: S) => C) => any,
   storeState: StoreState<S>,
 }
 
 export type CoreActionsState<S, C, X extends C & Array<any>, T extends Trackability> = {
   selector: Selector<S, C, X>,
-  updateState: UpdateStateFn<S, C, T, X>,
   isComponentStore: () => boolean,
   storeState: StoreState<S>,
   storeResult: (selector?: (s: S) => C) => any,
@@ -108,9 +100,15 @@ export type StoreWhichMayContainComponentStores<S, C, T extends Trackability> = 
 export type ComponentContainerStore = ((selector?: ((s: any) => any) | undefined) => StoreWhichMayContainComponentStores<any, any, any>) | undefined;
 
 export type StoreState<S> = {
-  selector: (arg: S) => any,
   bypassSelectorFunctionCheck: boolean,
   activeFutures: { [key: string]: Future<any> },
   transactionActions: Array<{ type: string }>,
   transactionStartState: any,
+  devtoolsDispatchListener?: (action: { type: string, payload?: any }) => any,
+  tagsToAppearInType: boolean,
+  tagSanitizer?: (tag: string) => string,
+  changeListeners: Map<(ar: any) => any, (arg: S) => any>,
+  previousAction: PreviousAction,
+  currentState: S,
+  initialState: S,
 }
