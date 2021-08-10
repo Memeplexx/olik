@@ -2,7 +2,7 @@ import { testState } from '../src/shared-state';
 import { createApplicationStore } from '../src/store-creators';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
-describe('array.filterCustom().patch()', () => {
+describe('array.filter().returnsTrue().patch()', () => {
 
   beforeAll(() => testState.windowObject = windowAugmentedWithReduxDevtoolsImpl);
 

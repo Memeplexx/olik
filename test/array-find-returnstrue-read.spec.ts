@@ -2,7 +2,7 @@ import { testState } from '../src/shared-state';
 import { createApplicationStore } from '../src/store-creators';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
-describe('array.findCustom().read()', () => {
+describe('array.find().returnsTrue().read()', () => {
 
   beforeAll(() => testState.windowObject = windowAugmentedWithReduxDevtoolsImpl);
 

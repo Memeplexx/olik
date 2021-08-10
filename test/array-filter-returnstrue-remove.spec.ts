@@ -2,7 +2,7 @@ import { testState } from '../src/shared-state';
 import { createApplicationStore } from '../src/store-creators';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
-describe('array.filterCustom().remove()', () => {
+describe('array.filter().returnsTrue().remove()', () => {
 
   beforeAll(() => testState.windowObject = windowAugmentedWithReduxDevtoolsImpl);
 
