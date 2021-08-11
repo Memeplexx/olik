@@ -15,7 +15,7 @@ describe('array.filter().remove()', () => {
     const select = createApplicationStore(initialState);
     select(s => s.array)
       .filterWhere(e => e.id).eq(2)
-      .remove({  });
+      .remove();
     expect(testState.currentAction).toEqual({
       type: 'array.filter().remove()',
       toRemove: [initialState.array[1]],

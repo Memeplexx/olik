@@ -88,6 +88,7 @@ export type OptionsForCreatingInternalApplicationStore = {
   devtools?: OptionsForReduxDevtools | false,
   tagSanitizer?: (tag: string) => string,
   tagsToAppearInType?: boolean,
+  whereClausesToAppearInType?: boolean,
   mergeIntoExistingStoreIfItExists?: boolean,
 };
 
@@ -104,6 +105,7 @@ export type StoreState<S> = {
   transactionStartState: any,
   devtoolsDispatchListener?: (action: { type: string, payload?: any }) => any,
   tagsToAppearInType: boolean,
+  whereClausesToAppearInType: boolean,
   tagSanitizer?: (tag: string) => string,
   changeListeners: Map<(ar: any) => any, (arg: S) => any>,
   previousAction: PreviousAction,

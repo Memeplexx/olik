@@ -644,6 +644,10 @@ export type OptionsForMakingAnApplicationStore = {
    */
   tagsToAppearInType?: boolean;
   /**
+   * If set to true, then where clauses appear in the action type as apposed to inside the payload (which is the default)
+   */
+  whereClausesToAppearInType?: boolean;
+  /**
    * If set to true, then this store will be merged into the existing application store. 
    * The default behavior is that this store will replace the existing application store.
    */

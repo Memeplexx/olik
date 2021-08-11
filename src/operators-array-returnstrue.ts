@@ -8,19 +8,20 @@ import { transact } from './transact';
 export const replace = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
   arg: ArrayCustomState<S, C, X, T>,
 ) => ((payload, updateOptions) => {
+  const where = arg.predicate.toString();
   return processStateUpdateRequest({
     ...arg,
     selector: ((s: any) => (arg.selector(s) as any)[arg.type]((e: any) => arg.predicate(e))) as any, 
     payload,
     updateOptions,
-    cacheKeySuffix: `${arg.type}(${arg.predicate}).replace()`,
-    actionNameSuffix: `${arg.type}().replace()`,
+    cacheKeySuffix: `${arg.type}(${where}).replace()`,
+    actionNameSuffix: `${arg.type}(${arg.storeState.whereClausesToAppearInType ? where : ''}).replace()`,
     replacer: (old, payload) => {
       const elementIndices = getElementIndices(arg);
       return old.map((o: any, i: number) => elementIndices.includes(i) ? payload : o);
     },
     getPayload: payload => ({
-      where: arg.predicate.toString(),
+      where,
       replacement: payload,
     }),
   });
@@ -29,20 +30,21 @@ export const replace = <S, C, X extends C & Array<any>, F extends FindOrFilter, 
 export const patch = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
   arg: ArrayCustomState<S, C, X, T>,
 ) => ((payload, updateOptions) => {
+  const where = arg.predicate.toString();
   return processStateUpdateRequest({
     ...arg,
     selector: ((s: any) => (arg.selector(s) as any)[arg.type]((e: any) => arg.predicate(e))) as any,
     payload,
     updateOptions,
-    cacheKeySuffix: `${arg.type}(${arg.predicate}).patch()`,
-    actionNameSuffix: `${arg.type}().patch()`,
+    cacheKeySuffix: `${arg.type}(${where}).patch()`,
+    actionNameSuffix: `${arg.type}(${arg.storeState.whereClausesToAppearInType ? where : ''}).patch()`,
     replacer: (old, payload) => {
       const elementIndices = getElementIndices(arg);
       return old.map((o: any, i: number) => elementIndices.includes(i) ? { ...o, ...payload } : o);
     },
     getPayload: (payload) => ({
+      where,
       patch: payload,
-      where: arg.predicate.toString(),
     }),
   });
 }) as ArrayOfObjectsCommonAction<X, F, T>['patch'];
@@ -50,18 +52,25 @@ export const patch = <S, C, X extends C & Array<any>, F extends FindOrFilter, T 
 export const remove = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
   arg: ArrayCustomState<S, C, X, T>,
 ) => ((payload: any, updateOptions: any) => {
-  const elementIndices = getElementIndices(arg);
+  const where = arg.predicate.toString();
   return processStateUpdateRequest({
     ...arg,
     selector: ((s: any) => (arg.selector(s) as any)[arg.type]((e: any) => arg.predicate(e))) as any,
     payload,
     updateOptions,
-    cacheKeySuffix: `${arg.type}().remove()`,
-    actionNameSuffix: `${arg.type}().remove()`,
-    replacer: old => old.filter((o, i) => !elementIndices.includes(i)),
-    getPayload: () => ({
-      toRemove: (arg.selector(arg.getCurrentState()) as X)[arg.type]((e, i) => elementIndices.includes(i)), where: arg.predicate.toString(),
-    })
+    cacheKeySuffix: `${arg.type}(${where}).remove()`,
+    actionNameSuffix: `${arg.type}(${arg.storeState.whereClausesToAppearInType ? where : ''}).remove()`,
+    replacer: old => {
+      const elementIndices = getElementIndices(arg);
+      return old.filter((o, i) => !elementIndices.includes(i));
+    },
+    getPayload: () => {
+      const elementIndices = getElementIndices(arg);
+      return {
+        where,
+        toRemove: (arg.selector(arg.getCurrentState()) as X)[arg.type]((e, i) => elementIndices.includes(i)),
+      };
+    }
   });
 }) as ArrayOfElementsCommonAction<X, F, T>['remove'];
 
