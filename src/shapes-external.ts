@@ -265,7 +265,7 @@ export type TaggedUpdate<T extends Trackability> = T extends 'untagged' ? {
    * 
    * This tag is optional because your store was initialized using `store()` instead of `storeEnforcingTags()`.
    *   
-   * If, when initializing your store, you did **not** pass `tagsToAppearInType: true` inside the options object, then your tag will appear in the action payload as follows:
+   * If, when initializing your store, you passed `actionTypesToIncludeTag: true` inside the options object, then your tag will appear in the action payload as follows:
    * ```
    * {
    *   type: 'some.value.replace()',
@@ -273,7 +273,7 @@ export type TaggedUpdate<T extends Trackability> = T extends 'untagged' ? {
    *   ...
    * }
    * ```
-   * If, when initializing your store, you passed `tagsToAppearInType: true` inside the options object, then your tag will appear as a suffix to the action type, for example:  
+   * If, when initializing your store, you did not passe `actionTypesToIncludeTag: true` inside the options object, then your tag will appear as a suffix to the action type, for example:  
    * ```
    * {
    *   type: 'some.value.replace() [YourTag]',
@@ -288,7 +288,7 @@ export type TaggedUpdate<T extends Trackability> = T extends 'untagged' ? {
    * 
    * This tag is required because your store was initialized using `storeEnforcingTags()` instead of `store()`.    
    *   
-   * If, when initializing your store, you did **not** pass `tagsToAppearInType: true` inside the options object, then your tag will appear in the action payload as follows:
+   * If, when initializing your store, you passed `actionTypesToIncludeTag: true` inside the options object, then your tag will appear in the action payload as follows:
    * ```
    * {
    *   type: 'some.value.replace()',
@@ -296,7 +296,7 @@ export type TaggedUpdate<T extends Trackability> = T extends 'untagged' ? {
    *   ...
    * }
    * ```
-   * If, when initializing your store, you passed `tagsToAppearInType: true` inside the options object, then your tag will appear as a suffix to the action type, for example:  
+   * If, when initializing your store, you did not pass `actionTypesToIncludeTag: true` inside the options object, then your tag will appear as a suffix to the action type, for example:  
    * ```
    * {
    *   type: 'some.value.replace() [YourTag]',
@@ -640,13 +640,13 @@ export type OptionsForMakingAnApplicationStore = {
    */
   tagSanitizer?: (tag: string) => string;
   /**
-   * If set to true, then tags will appear in the action type as apposed to inside the payload (which is the default)
+   * If set to false, then tags will not appear in the action type. Default is true.
    */
-  tagsToAppearInType?: boolean;
+  actionTypesToIncludeTag?: boolean;
   /**
-   * If set to true, then where clauses appear in the action type as apposed to inside the payload (which is the default)
+   * If set to false, then where clauses will not appear in the action type. Default is true.
    */
-  whereClausesToAppearInType?: boolean;
+  actionTypesToIncludeWhereClause?: boolean;
   /**
    * If set to true, then this store will be merged into the existing application store. 
    * The default behavior is that this store will replace the existing application store.

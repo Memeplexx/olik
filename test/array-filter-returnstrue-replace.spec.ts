@@ -19,7 +19,7 @@ describe('array.filter().returnsTrue().replace()', () => {
       .filterWhere(where).returnsTrue()
       .replace(payload);
     expect(testState.currentAction).toEqual({
-      type: 'array.filter().replace()',
+      type: `array.filter(${where}).replace()`,
       replacement: payload,
       where: where.toString(),
     });
@@ -34,7 +34,7 @@ describe('array.filter().returnsTrue().replace()', () => {
       .filterWhere(where).returnsTrue()
       .replace(payload);
     expect(testState.currentAction).toEqual({
-      type: 'array.filter().replace()',
+      type: `array.filter(${where}).replace()`,
       replacement: payload,
       where: where.toString(),
     });
@@ -49,7 +49,7 @@ describe('array.filter().returnsTrue().replace()', () => {
       .filterWhere(where).returnsTrue()
       .replace(payload);
     expect(testState.currentAction).toEqual({
-      type: 'array.filter().replace()',
+      type: `array.filter(${where}).replace()`,
       replacement: payload,
       where: where.toString(),
     });
@@ -64,7 +64,7 @@ describe('array.filter().returnsTrue().replace()', () => {
       .filterWhere(e => e.id < 2).returnsTrue()
       .replace(payload);
     expect(testState.currentAction).toEqual({
-      type: 'array.filter().replace()',
+      type: `array.filter(${where}).replace()`,
       replacement: payload,
       where: where.toString(),
     });
@@ -79,7 +79,7 @@ describe('array.filter().returnsTrue().replace()', () => {
       .filterWhere(where).returnsTrue()
       .replace(payload);
     expect(testState.currentAction).toEqual({
-      type: 'array.filter().replace()',
+      type: `array.filter(${where}).replace()`,
       replacement: payload,
       where: where.toString(),
     });
@@ -94,7 +94,7 @@ describe('array.filter().returnsTrue().replace()', () => {
       .filterWhere(e => ![1, 2].includes(e.id)).returnsTrue()
       .replace(payload);
     expect(testState.currentAction).toEqual({
-      type: 'array.filter().replace()',
+      type: `array.filter(${where}).replace()`,
       replacement: payload,
       where: where.toString(),
     });
@@ -109,7 +109,7 @@ describe('array.filter().returnsTrue().replace()', () => {
       .filterWhere(where).returnsTrue()
       .replace(payload);
     expect(testState.currentAction).toEqual({
-      type: 'array.filter().replace()',
+      type: `array.filter(${where}).replace()`,
       replacement: payload,
       where: where.toString(),
     });

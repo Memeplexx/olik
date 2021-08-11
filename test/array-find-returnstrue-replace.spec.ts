@@ -19,7 +19,7 @@ describe('array.find().returnsTrue().replace()', () => {
       .findWhere(where).returnsTrue()
       .replace(payload);
     expect(testState.currentAction).toEqual({
-      type: 'array.find().replace()',
+      type: `array.find(${where}).replace()`,
       replacement: payload,
       where: where.toString(),
     });
@@ -34,7 +34,7 @@ describe('array.find().returnsTrue().replace()', () => {
       .findWhere(where).returnsTrue()
       .replace(payload);
     expect(testState.currentAction).toEqual({
-      type: 'array.find().replace()',
+      type: `array.find(${where}).replace()`,
       replacement: payload,
       where: where.toString(),
     });
@@ -49,7 +49,7 @@ describe('array.find().returnsTrue().replace()', () => {
       .findWhere(where).returnsTrue()
       .replace(payload);
     expect(testState.currentAction).toEqual({
-      type: 'array.find().replace()',
+      type: `array.find(${where}).replace()`,
       replacement: payload,
       where: where.toString(),
     });
@@ -64,7 +64,7 @@ describe('array.find().returnsTrue().replace()', () => {
       .findWhere(where).returnsTrue()
       .replace(payload);
     expect(testState.currentAction).toEqual({
-      type: 'array.find().replace()',
+      type: `array.find(${where}).replace()`,
       replacement: payload,
       where: where.toString(),
     });
@@ -79,7 +79,7 @@ describe('array.find().returnsTrue().replace()', () => {
       .findWhere(where).returnsTrue()
       .replace(payload);
     expect(testState.currentAction).toEqual({
-      type: 'array.find().replace()',
+      type: `array.find(${where}).replace()`,
       replacement: payload,
       where: where.toString(),
     });
@@ -94,7 +94,7 @@ describe('array.find().returnsTrue().replace()', () => {
       .findWhere(where).returnsTrue()
       .replace(payload);
     expect(testState.currentAction).toEqual({
-      type: 'array.find().replace()',
+      type: `array.find(${where}).replace()`,
       replacement: payload,
       where: where.toString(),
     });
@@ -109,7 +109,7 @@ describe('array.find().returnsTrue().replace()', () => {
       .findWhere(where).returnsTrue()
       .replace(payload);
     expect(testState.currentAction).toEqual({
-      type: 'array.find().replace()',
+      type: `array.find(${where}).replace()`,
       replacement: payload,
       where: where.toString(),
     });

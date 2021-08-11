@@ -11,7 +11,7 @@ describe('tags', () => {
     const tag = 'mytag';
     const select = createApplicationStoreEnforcingTags({
       object: { property: 'one', property2: 'two' },
-    }, { tagsToAppearInType: true });
+    }, { actionTypesToIncludeTag: true });
     select(s => s.object.property)
       .replace(payload, { tag });
     expect(testState.currentAction).toEqual({
@@ -26,7 +26,7 @@ describe('tags', () => {
       test: '',
     }, {
       tagSanitizer: (tag) => tag + 'x',
-      tagsToAppearInType: true,
+      actionTypesToIncludeTag: true,
     });
     const tag = 'mytag';
     const payload = 'test';
@@ -39,7 +39,7 @@ describe('tags', () => {
   })
 
   it('should accept optional tags', () => {
-    const select = createApplicationStore({ prop: '' }, { tagsToAppearInType: true });
+    const select = createApplicationStore({ prop: '' }, { actionTypesToIncludeTag: true });
     const tag = 'mytag';
     const payload = 'test';
     select(s => s.prop)
@@ -51,7 +51,7 @@ describe('tags', () => {
   })
 
   it('should, by default, place tags in the payload', () => {
-    const select = createApplicationStoreEnforcingTags({ prop: '' });
+    const select = createApplicationStoreEnforcingTags({ prop: '' }, { actionTypesToIncludeTag: false });
     const tag = 'mytag';
     const payload = 'test';
     select(s => s.prop)

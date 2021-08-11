@@ -443,7 +443,7 @@ describe('async', () => {
   })
 
   it('should support tags in type', done => {
-    const select = createApplicationStore(initialState, { tagsToAppearInType: true });
+    const select = createApplicationStore(initialState, { actionTypesToIncludeTag: true });
     const replacement = [{ id: 1, value: 'one' }];
     const tag = 'MyComponent';
     select(s => s.array)
@@ -458,7 +458,7 @@ describe('async', () => {
   })
 
   it('should support tags in payload', done => {
-    const select = createApplicationStoreEnforcingTags(initialState);
+    const select = createApplicationStoreEnforcingTags(initialState, { actionTypesToIncludeTag: false });
     const replacement = [{ id: 1, value: 'one' }];
     const tag = 'MyComponent';
     select(s => s.array)

@@ -37,7 +37,7 @@ export const remove = <S, C, X extends C & Array<any>, F extends FindOrFilter, T
     payload,
     updateOptions,
     cacheKeySuffix: `${arg.type}(${where}).remove()`,
-    actionNameSuffix: `${arg.type}(${arg.storeState.whereClausesToAppearInType ? where : ''}).remove()`,
+    actionNameSuffix: `${arg.type}(${arg.storeState.actionTypesToIncludeWhereClause ? where : ''}).remove()`,
     replacer: old => {
       const elementIndices = getElementIndices(arg);
       return old.filter((o, i) => !elementIndices.includes(i));
@@ -62,7 +62,7 @@ export const patch = <S, C, X extends C & Array<any>, F extends FindOrFilter, T 
     payload,
     updateOptions,
     cacheKeySuffix: `${arg.type}(${where}).patch()`,
-    actionNameSuffix: `${arg.type}(${arg.storeState.whereClausesToAppearInType ? where : ''}).patch()`,
+    actionNameSuffix: `${arg.type}(${arg.storeState.actionTypesToIncludeWhereClause ? where : ''}).patch()`,
     replacer: (old, payload) => {
       const elementIndices = getElementIndices(arg);
       return old.map((o, i) => elementIndices.includes(i) ? { ...o, ...payload } : o);
@@ -85,7 +85,7 @@ export const replace = <S, C, X extends C & Array<any>, F extends FindOrFilter, 
     storeResult: arg.storeResult,
     updateOptions,
     cacheKeySuffix: `${arg.type}(${where}).replace()`,
-    actionNameSuffix: `${arg.type}(${arg.storeState.whereClausesToAppearInType ? where : ''}).replace()`,
+    actionNameSuffix: `${arg.type}(${arg.storeState.actionTypesToIncludeWhereClause ? where : ''}).replace()`,
     replacer: (old, payload) => {
       const elementIndices = getElementIndices(arg);
       return old.map((o, i) => elementIndices.includes(i) ? payload : o);

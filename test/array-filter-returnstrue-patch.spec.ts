@@ -19,7 +19,7 @@ describe('array.filter().returnsTrue().patch()', () => {
       .filterWhere(where).returnsTrue()
       .patch(payload);
     expect(testState.currentAction).toEqual({
-      type: 'array.filter().patch()',
+      type: `array.filter(${where}).patch()`,
       patch: payload,
       where: where.toString(),
     });
@@ -34,7 +34,7 @@ describe('array.filter().returnsTrue().patch()', () => {
       .filterWhere(where).returnsTrue()
       .patch(payload);
     expect(testState.currentAction).toEqual({
-      type: 'array.filter().patch()',
+      type: `array.filter(${where}).patch()`,
       patch: payload,
       where: where.toString(),
     });
@@ -49,7 +49,7 @@ describe('array.filter().returnsTrue().patch()', () => {
       .filterWhere(where).returnsTrue()
       .patch(payload);
     expect(testState.currentAction).toEqual({
-      type: 'array.filter().patch()',
+      type: `array.filter(${where}).patch()`,
       patch: payload,
       where: where.toString(),
     });
@@ -64,7 +64,7 @@ describe('array.filter().returnsTrue().patch()', () => {
       .filterWhere(where).returnsTrue()
       .patch(payload);
     expect(testState.currentAction).toEqual({
-      type: 'array.filter().patch()',
+      type: `array.filter(${where}).patch()`,
       patch: payload,
       where: where.toString(),
     });
@@ -79,7 +79,7 @@ describe('array.filter().returnsTrue().patch()', () => {
       .filterWhere(where).returnsTrue()
       .patch(payload);
     expect(testState.currentAction).toEqual({
-      type: 'array.filter().patch()',
+      type: `array.filter(${where}).patch()`,
       patch: payload,
       where: where.toString(),
     });
@@ -94,7 +94,7 @@ describe('array.filter().returnsTrue().patch()', () => {
       .filterWhere(where).returnsTrue()
       .patch(payload);
     expect(testState.currentAction).toEqual({
-      type: 'array.filter().patch()',
+      type: `array.filter(${where}).patch()`,
       patch: payload,
       where: where.toString(),
     });
@@ -109,7 +109,7 @@ describe('array.filter().returnsTrue().patch()', () => {
       .filterWhere(where).returnsTrue()
       .patch(payload);
     expect(testState.currentAction).toEqual({
-      type: 'array.filter().patch()',
+      type: `array.filter(${where}).patch()`,
       patch: payload,
       where: where.toString(),
     });

@@ -122,8 +122,8 @@ function createApplicationStoreInternal<S, T extends Trackability>(
     state,
     devtools,
     tagSanitizer: options.tagSanitizer,
-    tagsToAppearInType: options.tagsToAppearInType,
-    whereClausesToAppearInType: options.whereClausesToAppearInType,
+    actionTypesToIncludeTag: options.actionTypesToIncludeTag,
+    actionTypesToIncludeWhereClause: options.actionTypesToIncludeWhereClause,
   });
   libState.applicationStore = select;
   return select;

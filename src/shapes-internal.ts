@@ -87,8 +87,8 @@ export type PreviousAction = {
 export type OptionsForCreatingInternalApplicationStore = {
   devtools?: OptionsForReduxDevtools | false,
   tagSanitizer?: (tag: string) => string,
-  tagsToAppearInType?: boolean,
-  whereClausesToAppearInType?: boolean,
+  actionTypesToIncludeTag?: boolean,
+  actionTypesToIncludeWhereClause?: boolean,
   mergeIntoExistingStoreIfItExists?: boolean,
 };
 
@@ -104,8 +104,8 @@ export type StoreState<S> = {
   transactionActions: Array<{ type: string }>,
   transactionStartState: any,
   devtoolsDispatchListener?: (action: { type: string, payload?: any }) => any,
-  tagsToAppearInType: boolean,
-  whereClausesToAppearInType: boolean,
+  actionTypesToIncludeTag: boolean,
+  actionTypesToIncludeWhereClause: boolean,
   tagSanitizer?: (tag: string) => string,
   changeListeners: Map<(ar: any) => any, (arg: S) => any>,
   previousAction: PreviousAction,

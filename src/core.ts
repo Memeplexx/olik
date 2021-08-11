@@ -50,14 +50,14 @@ export function createStoreCore<S, T extends Trackability>({
   state,
   devtools,
   tagSanitizer,
-  tagsToAppearInType,
-  whereClausesToAppearInType,
+  actionTypesToIncludeTag = true,
+  actionTypesToIncludeWhereClause = true,
 }: {
   state: S,
   devtools: OptionsForReduxDevtools | false,
   tagSanitizer?: (tag: string) => string,
-  tagsToAppearInType?: boolean,
-  whereClausesToAppearInType?: boolean,
+  actionTypesToIncludeTag?: boolean,
+  actionTypesToIncludeWhereClause?: boolean,
 }) {
   validateState(state);
   const storeState = {
@@ -69,8 +69,8 @@ export function createStoreCore<S, T extends Trackability>({
     transactionState: 'none',
     transactionStartState: null,
     devtoolsDispatchListener: undefined,
-    tagsToAppearInType,
-    whereClausesToAppearInType,
+    actionTypesToIncludeTag,
+    actionTypesToIncludeWhereClause,
     tagSanitizer,
     changeListeners: new Map<(ar: any) => any, (arg: S) => any>(),
     previousAction: {
