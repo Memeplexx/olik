@@ -138,4 +138,3 @@ export const toIsoString = (date: Date) => {
     dif + pad(tzo / 60) +
     ':' + pad(tzo % 60);
 }
-

@@ -36,7 +36,7 @@ describe('array.filter().patch()', () => {
     expect(testState.currentAction).toEqual({
       type: `array.filter(${where}).patch()`,
       patch: payload,
-      where: 'id !== 2',
+      where,
     });
     expect(select().read().array).toEqual([{ ...initialState.array[0], ...payload }, initialState.array[1], { ...initialState.array[2], ...payload }]);
   })
