@@ -2,7 +2,6 @@ import {
   DeepReadonly,
   FindOrFilter,
   Future,
-  OptionsForReduxDevtools,
   PredicateFunctionObject,
   Selector,
   Store,
@@ -37,9 +36,9 @@ export type DevtoolsInstance = {
 
 export type WindowAugmentedWithReduxDevtools = {
   __REDUX_DEVTOOLS_EXTENSION__: {
-    connect: (options: OptionsForReduxDevtools) => DevtoolsInstance;
+    connect: (options: { name: string }) => DevtoolsInstance;
     disconnect: () => any;
-    send: (action: { type: string, payload?: any }, state: any, options: OptionsForReduxDevtools) => any;
+    send: (action: { type: string, payload?: any }, state: any, options: { name: string }) => any;
     _mockInvokeSubscription: (message: { type: string, payload: any, state?: any, source: any }) => any,
     _subscribers: Array<(message: { type: string, payload: any, state?: any, source: any }) => any>,
   }
@@ -85,11 +84,12 @@ export type PreviousAction = {
 };
 
 export type OptionsForCreatingInternalApplicationStore = {
-  devtools?: OptionsForReduxDevtools | false,
+  registerWithReduxDevtoolsExtension?: boolean,
+  name?: string;
   tagSanitizer?: (tag: string) => string,
   actionTypesToIncludeTag?: boolean,
   actionTypesToIncludeWhereClause?: boolean,
-  replaceIntoExistingStoreIfItExists?: boolean,
+  replaceExistingStoreIfItExists?: boolean,
 };
 
 export type StoreWhichMayContainComponentStores<S, C, T extends Trackability> = {

@@ -625,10 +625,14 @@ export type DerivationCalculationInputs<T extends Array<StoreOrDerivation<any>>>
  */
 export type OptionsForMakingAnApplicationStore = {
   /**
-   * Specifications for the Redux Devtools Extension. Pass `false` if you do not want your store to be tracked within the Redux Devtools extension.
-   * See https://github.com/zalmoxisus/redux-devtools-extension/blob/master/docs/API/Arguments.md for more info
+   * The name that will distinguish your store from other stores within the Redux Devtools Extension.
    */
-  devtools?: OptionsForReduxDevtools | false;
+  name?: string;
+  /**
+   * If set to `true`, then your store will be visible from within the Redux Devtools extension.
+   * The default value for this option is `true`.
+   */
+  useReduxDevtoolsExtension?: boolean;
   /**
    * If supplied, this function can transform all tags passed in when updating state.
    * This is of use if, for example, you are using the `__filename` node variable as a tag, and you would like the abbreviate the file path to something more readable.
@@ -654,7 +658,7 @@ export type OptionsForMakingAnApplicationStore = {
    * If set to `false`, this store will be merged into the existing application store.
    * The default value for this option is `false`.
    */
-  replaceIntoExistingStoreIfItExists?: boolean;
+  replaceExistingStoreIfItExists?: boolean;
 }
 
 export const Deferred = Symbol('deferred');
@@ -664,9 +668,9 @@ export const Deferred = Symbol('deferred');
  */
 export type OptionsForMakingAComponentStore = {
   /**
-   * Pass `true` if you do not want your store to be tracked inside the devtools. Default is false.
+   * Pass `false` if you do not want your store to be tracked inside the devtools. Default is `true`.
    */
-  dontTrackWithDevtools?: boolean,
+  registerWithReduxDevtoolsExtension?: boolean,
   /**
    * The name that will distinguish this component store from others within the state tree
    */
@@ -676,53 +680,6 @@ export type OptionsForMakingAComponentStore = {
    */
   instanceName: string | number | typeof Deferred;
 };
-
-/**
- * An object representing options which the Redux Ddevtools extension accepts
- */
-export type OptionsForReduxDevtools = {
-  /**
-   * the instance name to be showed on the monitor page. Default value is `document.title`.
-   * If not specified and there's no document title, it will consist of `tabId` and `instanceId`.
-   */
-  name?: string;
-  /**
-   * If you want to restrict the extension, specify the features you allow.
-   * If not specified, all of the features are enabled. When set as an object, only those included as `true` will be allowed.
-   * Note that except `true`/`false`, `import` and `export` can be set as `custom` (which is by default for Redux enhancer), meaning that the importing/exporting occurs on the client-side.
-   * Otherwise, you'll get/set the data right from the monitor part.
-   */
-  features?: {
-    /**
-     * start/pause recording of dispatched actions
-     */
-    pause?: boolean;
-    /**
-     * persist states on page reloading
-     */
-    persist?: boolean;
-    /**
-     * export history of actions in a file
-     */
-    export?: boolean | 'custom';
-    /**
-     * import history of actions from a file
-     */
-    import?: boolean | 'custom';
-    /**
-     * jump back and forth (time traveling
-     */
-    jump?: boolean;
-    /**
-     * skip (cancel) actions
-     */
-    skip?: boolean;
-    /**
-     * dispatch custom actions or action creators
-     */
-    dispatch?: boolean;
-  };
-}
 
 /**
  * An object representing derived state

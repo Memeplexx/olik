@@ -76,9 +76,8 @@ export function createComponentStore<L>(
   if (options.instanceName === Deferred) {
     const nStore = createStoreCore<L, 'untagged'>({
       state,
-      devtools: (!libState.applicationStore || options.dontTrackWithDevtools) ? false : {
-        name: options.componentName
-      }
+      registerWithReduxDevtoolsExtension: !libState.applicationStore && options.registerWithReduxDevtoolsExtension,
+      name: options.componentName,
     });
     const select = (<C = L>(selector?: (arg: L) => C) => {
       const cStore: StoreForAComponentInternal<L, C> = selector ? nStore(selector as any) : nStore();
@@ -113,14 +112,14 @@ function createApplicationStoreInternal<S, T extends Trackability>(
   state: S,
   options: OptionsForCreatingInternalApplicationStore,
 ) {
-  const devtools = options.devtools === undefined ? {} : options.devtools;
-  if (!options.replaceIntoExistingStoreIfItExists && libState.applicationStore) {
+  if (!options.replaceExistingStoreIfItExists && libState.applicationStore) {
     libState.applicationStore().deepMerge(state);
     return libState.applicationStore;
   }
   const select = createStoreCore<S, T>({
     state,
-    devtools,
+    registerWithReduxDevtoolsExtension: options.registerWithReduxDevtoolsExtension,
+    name: options.name,
     tagSanitizer: options.tagSanitizer,
     actionTypesToIncludeTag: options.actionTypesToIncludeTag,
     actionTypesToIncludeWhereClause: options.actionTypesToIncludeWhereClause,
@@ -158,9 +157,8 @@ function createDetatchedComponentStore<L>(
 ) {
   const nStore = createStoreCore<L, 'untagged'>({
     state,
-    devtools: options.dontTrackWithDevtools ? false : {
-      name: options.componentName + ' : ' + (options.instanceName as string)
-    }
+    registerWithReduxDevtoolsExtension: options.registerWithReduxDevtoolsExtension,
+    name: `${options.componentName} : ${options.instanceName as string}`
   });
   const get = (<C = L>(selector?: (arg: DeepReadonly<L>) => C) => {
     const cStore = selector ? nStore(selector) : nStore();

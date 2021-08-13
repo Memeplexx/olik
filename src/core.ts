@@ -22,7 +22,6 @@ import {
   ArrayOfObjectsAction,
   DeepReadonly,
   FindOrFilter,
-  OptionsForReduxDevtools,
   PredicateCustom,
   PredicateOptionsCommon,
   PredicateOptionsForBoolean,
@@ -44,20 +43,25 @@ import {
   StoreState,
   StoreWhichMayContainComponentStores,
 } from './shapes-internal';
+import { libState } from './shared-state';
 import { deepFreeze, readSelector, validateSelectorFn, validateState } from './shared-utils';
 
 export function createStoreCore<S, T extends Trackability>({
   state,
-  devtools,
   tagSanitizer,
+  name = document.title,
+  registerWithReduxDevtoolsExtension = true,
   actionTypesToIncludeTag = true,
   actionTypesToIncludeWhereClause = true,
+  replaceExistingStoreIfItExists = true,
 }: {
   state: S,
-  devtools: OptionsForReduxDevtools | false,
+  name?: string,
+  registerWithReduxDevtoolsExtension?: boolean,
   tagSanitizer?: (tag: string) => string,
   actionTypesToIncludeTag?: boolean,
   actionTypesToIncludeWhereClause?: boolean,
+  replaceExistingStoreIfItExists?: boolean,
 }) {
   validateState(state);
   const storeState = {
@@ -215,8 +219,8 @@ export function createStoreCore<S, T extends Trackability>({
     return action<C, X>(selectorMod) as any;
   };
 
-  if (devtools !== false) {
-    integrateStoreWithReduxDevtools<S>(storeResult as any, devtools, storeState);
+  if (registerWithReduxDevtoolsExtension && (!libState.applicationStore || replaceExistingStoreIfItExists)) {
+    integrateStoreWithReduxDevtools({ store: storeResult as any, storeState, name })
   }
 
   return storeResult;
