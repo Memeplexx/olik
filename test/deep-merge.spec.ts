@@ -17,7 +17,7 @@ describe('DeepMerge', () => {
   it('should deepMerge stores', () => {
     libState.applicationStore = null;
     const select1 = createApplicationStore({ some: { val: 'test' } });
-    const select2 = createApplicationStore({ another: '' }, { mergeIntoExistingStoreIfItExists: true });
+    const select2 = createApplicationStore({ another: '' });
     expect(testState.currentAction).toEqual({ type: 'deepMerge()', toMerge: { another: '' } });
     expect(select1().read()).toEqual(select2().read());
     select2(s => s.another).replace('hello');

@@ -114,7 +114,7 @@ function createApplicationStoreInternal<S, T extends Trackability>(
   options: OptionsForCreatingInternalApplicationStore,
 ) {
   const devtools = options.devtools === undefined ? {} : options.devtools;
-  if (options.mergeIntoExistingStoreIfItExists && libState.applicationStore) {
+  if (!options.replaceIntoExistingStoreIfItExists && libState.applicationStore) {
     libState.applicationStore().deepMerge(state);
     return libState.applicationStore;
   }

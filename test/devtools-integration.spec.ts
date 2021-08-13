@@ -1,5 +1,5 @@
 import { errorMessages } from '../src/shared-consts';
-import { testState } from '../src/shared-state';
+import { libState, testState } from '../src/shared-state';
 import { createApplicationStore } from '../src/store-creators';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
@@ -7,12 +7,17 @@ describe('Devtools', () => {
 
   const spyWarn = jest.spyOn(console, 'warn');
 
-  beforeAll(() => testState.windowObject = windowAugmentedWithReduxDevtoolsImpl);
-  
-  beforeEach( () => spyWarn.mockReset());
+  beforeAll(() => {
+    testState.windowObject = windowAugmentedWithReduxDevtoolsImpl;
+  });
+
+  beforeEach(() => {
+    spyWarn.mockReset();
+    libState.applicationStore = null;
+  });
 
   it('should correctly respond to devtools dispatches where the state is an object', () => {
-    const select = createApplicationStore({ x: 0, y: 0 }, { tagsToAppearInType: true });
+    const select = createApplicationStore({ x: 0, y: 0 });
     select(s => s.x)
       .replace(3);
     expect(select().read()).toEqual({ x: 3, y: 0 });
@@ -23,7 +28,7 @@ describe('Devtools', () => {
   });
 
   it('should correctly respond to devtools dispatches where the state is an array', () => {
-    const select = createApplicationStore(['a', 'b', 'c'], { tagsToAppearInType: true });
+    const select = createApplicationStore(['a', 'b', 'c']);
     select().replaceAll(['d', 'e', 'f']);
     expect(select().read()).toEqual(['d', 'e', 'f']);
     const state = ['g', 'h'];
@@ -109,7 +114,7 @@ describe('Devtools', () => {
   it('should log an error if no devtools extension could be found', () => {
     testState.windowObject = null;
     createApplicationStore(new Array<string>());
-    expect( spyWarn ).toHaveBeenCalledWith(errorMessages.DEVTOOL_CANNOT_FIND_EXTENSION);
+    expect(spyWarn).toHaveBeenCalledWith(errorMessages.DEVTOOL_CANNOT_FIND_EXTENSION);
   })
 
 });

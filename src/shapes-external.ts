@@ -640,18 +640,21 @@ export type OptionsForMakingAnApplicationStore = {
    */
   tagSanitizer?: (tag: string) => string;
   /**
-   * If set to false, then tags will not appear in the action type. Default is true.
+   * If set to `false`, then tags will **not** appear in the action type.
+   * The default value for this option is `true`.
    */
   actionTypesToIncludeTag?: boolean;
   /**
-   * If set to false, then where clauses will not appear in the action type. Default is true.
+   * If set to `false`, then where clauses will **not** appear in the action type.
+   * The default value for this option is `true`.
    */
   actionTypesToIncludeWhereClause?: boolean;
   /**
-   * If set to true, then this store will be merged into the existing application store. 
-   * The default behavior is that this store will replace the existing application store.
+   * If set to `true`, then this store will replace any existing application store. 
+   * If set to `false`, this store will be merged into the existing application store.
+   * The default value for this option is `false`.
    */
-  mergeIntoExistingStoreIfItExists?: boolean;
+  replaceIntoExistingStoreIfItExists?: boolean;
 }
 
 export const Deferred = Symbol('deferred');

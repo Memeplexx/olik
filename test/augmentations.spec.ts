@@ -8,9 +8,13 @@ import { deriveFrom } from '../src/derive-from';
 
 describe('augmentations', () => {
 
-  beforeAll(() => testState.windowObject = windowAugmentedWithReduxDevtoolsImpl);
+  beforeAll(() => {
+    testState.windowObject = windowAugmentedWithReduxDevtoolsImpl;
+  });
 
-  beforeEach(() => libState.applicationStore = null);
+  beforeEach(() => {
+    libState.applicationStore = null;
+  });
 
   afterAll(() => {
     augment({

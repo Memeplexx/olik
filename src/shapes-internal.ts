@@ -89,7 +89,7 @@ export type OptionsForCreatingInternalApplicationStore = {
   tagSanitizer?: (tag: string) => string,
   actionTypesToIncludeTag?: boolean,
   actionTypesToIncludeWhereClause?: boolean,
-  mergeIntoExistingStoreIfItExists?: boolean,
+  replaceIntoExistingStoreIfItExists?: boolean,
 };
 
 export type StoreWhichMayContainComponentStores<S, C, T extends Trackability> = {

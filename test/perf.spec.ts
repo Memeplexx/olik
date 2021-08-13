@@ -1,13 +1,19 @@
 import { produce } from 'immer';
 import { fromJS } from 'immutable';
 
-import { testState } from '../src/shared-state';
+import { libState, testState } from '../src/shared-state';
 import { createApplicationStore } from '../src/store-creators';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
 describe.skip('Perf', () => {
 
-  beforeAll(() => testState.windowObject = windowAugmentedWithReduxDevtoolsImpl);
+  beforeAll(() => {
+    testState.windowObject = windowAugmentedWithReduxDevtoolsImpl;
+  });
+
+  beforeEach(() => {
+    libState.applicationStore = null;
+  });
 
   it('should test native perf', () => {
     const object = {

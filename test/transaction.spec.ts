@@ -1,10 +1,16 @@
 import { createApplicationStore, transact } from '../src';
-import { testState } from '../src/shared-state';
+import { libState, testState } from '../src/shared-state';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
 describe('Transact', () => {
 
-  beforeAll(() => testState.windowObject = windowAugmentedWithReduxDevtoolsImpl);
+  beforeAll(() => {
+    testState.windowObject = windowAugmentedWithReduxDevtoolsImpl;
+  });
+
+  beforeEach(() => {
+    libState.applicationStore = null;
+  })
 
   it('should perform a transaction', () => {
     const select = createApplicationStore({ hello: '', world: new Array<string>(), some: { deep: { val: false } } });

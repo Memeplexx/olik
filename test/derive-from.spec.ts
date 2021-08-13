@@ -1,11 +1,17 @@
 import { deriveFrom } from '../src/derive-from';
-import { testState } from '../src/shared-state';
+import { libState, testState } from '../src/shared-state';
 import { createApplicationStore, createApplicationStoreEnforcingTags } from '../src/store-creators';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
 describe('Memoize', () => {
 
-  beforeAll(() => testState.windowObject = windowAugmentedWithReduxDevtoolsImpl);
+  beforeAll(() => {
+    testState.windowObject = windowAugmentedWithReduxDevtoolsImpl;
+  });
+
+  beforeEach(() => {
+    libState.applicationStore = null;
+  })
 
   it('should deriveFrom() corrrectly', () => {
     const select = createApplicationStore({

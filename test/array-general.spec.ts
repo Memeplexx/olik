@@ -1,10 +1,16 @@
-import { testState } from '../src/shared-state';
+import { libState, testState } from '../src/shared-state';
 import { createApplicationStore } from '../src/store-creators';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
 describe('array', () => {
 
-  beforeAll(() => testState.windowObject = windowAugmentedWithReduxDevtoolsImpl);
+  beforeAll(() => {
+    testState.windowObject = windowAugmentedWithReduxDevtoolsImpl;
+  });
+
+  beforeEach(() => {
+    libState.applicationStore = null;
+  });
 
   const initialState = {
     array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],

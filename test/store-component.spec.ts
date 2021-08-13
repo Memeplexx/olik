@@ -14,6 +14,7 @@ describe('Component stores', () => {
 
   beforeEach(() => {
     spyInfo.mockReset();
+    libState.applicationStore = null;
   });
 
   it('should attach a lib store correctly', () => {
@@ -254,7 +255,7 @@ describe('Component stores', () => {
     child(s => s.val).replace(2);
   })
 
-  it('should be able to set a deferred instanceName with a getor function', (done) => {
+  it('should be able to set a deferred instanceName with a getter function', (done) => {
     const initialRootState = { hello: 'hey' };
     const componentName = 'MyComponent';
     const instanceName = 'MyInstance';

@@ -1,10 +1,16 @@
-import { testState } from '../src/shared-state';
+import { libState, testState } from '../src/shared-state';
 import { createApplicationStore } from '../src/store-creators';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
 describe('Object', () => {
 
-  beforeAll(() => testState.windowObject = windowAugmentedWithReduxDevtoolsImpl);
+  beforeAll(() => {
+    testState.windowObject = windowAugmentedWithReduxDevtoolsImpl;
+  });
+
+  beforeEach(() => {
+    libState.applicationStore = null;
+  })
 
   const initialState = {
     object: { property: 'one', property2: 'two' },

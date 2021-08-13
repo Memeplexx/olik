@@ -6,9 +6,13 @@ import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
 describe('async', () => {
 
-  beforeAll(() => testState.windowObject = windowAugmentedWithReduxDevtoolsImpl);
+  beforeAll(() => {
+    testState.windowObject = windowAugmentedWithReduxDevtoolsImpl;
+  });
 
-  beforeEach(() => libState.applicationStore = null);
+  beforeEach(() => {
+    libState.applicationStore = null;
+  });
 
   const initialState = {
     object: { property: '', property2: '' },
