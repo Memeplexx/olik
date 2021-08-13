@@ -15,7 +15,7 @@ import {
   replace,
   replaceAll,
   reset,
-  stopBypassingPromises,
+  invalidateCache,
   upsertMatching,
 } from './operators-general';
 import {
@@ -120,7 +120,7 @@ export function createStoreCore<S, T extends Trackability>({
             remove: array.remove(context),
             onChange: array.onChange(context),
             read: array.read(context),
-            stopBypassingPromises: () => array.stopBypassingPromises(context),
+            invalidateCache: () => array.invalidateCache(context),
           } as ArrayOfObjectsAction<X, FindOrFilter, T>;
           Object.keys(augmentations.selection).forEach(name => (arrayActions as any)[name] = augmentations.selection[name](arrayActions as StoreOrDerivation<C>));
           return arrayActions;
@@ -149,7 +149,7 @@ export function createStoreCore<S, T extends Trackability>({
                 patch: arrayCustom.patch(context),
                 onChange: arrayCustom.onChange(context),
                 read: arrayCustom.read(context),
-                stopBypassingPromises: () => arrayCustom.stopBypassingPromises(context),
+                invalidateCache: () => arrayCustom.invalidateCache(context),
               };
               Object.keys(augmentations.selection).forEach(name => (elementActions as any)[name] = augmentations.selection[name](elementActions as StoreOrDerivation<C>));
               return elementActions;
@@ -193,7 +193,7 @@ export function createStoreCore<S, T extends Trackability>({
       findWhere: where('find'),
       onChange: onChange(selector, storeState.changeListeners),
       read: read(selector, () => storeState.currentState),
-      stopBypassingPromises: () => stopBypassingPromises(selector, storeResult),
+      invalidateCache: () => invalidateCache(selector, storeResult),
       readInitial: () => selector(storeState.initialState),
       defineReset: (
         (initState: C, innerSelector) => () => replace({ ...getCoreActionsState(), name: 'reset' })(!innerSelector ? initState : innerSelector(initState), undefined as any)

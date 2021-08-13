@@ -91,13 +91,13 @@ export const read = <S, C, X extends C & Array<any>, F extends FindOrFilter, T e
     : (arg.selector(arg.getCurrentState()) as X).map(e => arg.predicate(e) ? e : null).filter(e => e != null)
 }) as ArrayOfElementsCommonAction<X, F, T>['read'];
 
-export const stopBypassingPromises = <S, C, X extends C & Array<any>, T extends Trackability>(
+export const invalidateCache = <S, C, X extends C & Array<any>, T extends Trackability>(
   arg: ArrayCustomState<S, C, X, T>,
 ) => {
   const segs = readSelector(arg.selector);
   const pathSegs = segs.join('.') + (segs.length ? '.' : '') + arg.type + '(' + arg.predicate + ')';
-  transact(...Object.keys(arg.storeResult().read().promiseBypassTimes).filter(key => key.startsWith(pathSegs))
-    .map(key => () => arg.storeResult(s => (s as any).promiseBypassTimes).remove(key)));
+  transact(...Object.keys(arg.storeResult().read().cacheTTLs).filter(key => key.startsWith(pathSegs))
+    .map(key => () => arg.storeResult(s => (s as any).cacheTTLs).remove(key)));
 }
 
 const getElementIndices = <S, C, X extends C & Array<any>, T extends Trackability>(

@@ -246,7 +246,7 @@ export interface ArrayOfElementsCommonAction<X extends DeepReadonlyArray<any>, F
   /**
    * Ensures that fresh data is retrieved the next time any promises are used to populate this node of the state tree (or child nodes of this node of the state tree).
    */
-  stopBypassingPromises: () => void,
+   invalidateCache: () => void,
 }
 
 export type ArrayOfObjectsCommonAction<X extends DeepReadonlyArray<any>, F extends FindOrFilter, T extends Trackability> = {
@@ -310,13 +310,13 @@ export type TaggedUpdate<T extends Trackability> = T extends 'untagged' ? {
 export type PromisableUpdate<H> = H extends () => AnyAsync<any> ? {
   /**
    * Avoid unnecessary promise invocations by supplying the number of milliseconds that should elapse before the promise is invoked again.
-   * To un-do this, you can call `stopBypassingPromises()` on the node of the state tree, for example
+   * To un-do this, you can call `invalidateCache()` on the node of the state tree, for example
    * @example
-   * select(s => s.todos).stopBypassingPromises();
+   * select(s => s.todos).invalidateCache();
    * @example
-   * select(s => s.todos).findWhere(s => s.id).isEqualTo(2).stopBypassingPromises();
+   * select(s => s.todos).findWhere(s => s.id).isEqualTo(2).invalidateCache();
    */
-  bypassPromiseFor?: number;
+   cacheFor?: number;
   /**
    * Allows you to set an initial value to update the store with.
    * If the promise is rejected, this value will be reverted to what it was before the promise was invoked.
@@ -550,7 +550,7 @@ export type StoreWhichIsResettable<C, T extends Trackability> = {
   /**
    * Ensures that fresh data is retrieved the next time any promises are used to populate this node (or any descendant nodes) of the state tree.
    */
-  stopBypassingPromises: () => void,
+   invalidateCache: () => void,
 } & StoreOrDerivation<C>;
 
 /**

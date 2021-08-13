@@ -116,27 +116,15 @@ export const read = <S, C, X extends C & Array<any>, F extends FindOrFilter, T e
     : (arg.selector(arg.getCurrentState()) as X).map(e => bundleCriteria(e, arg.whereClauseSpecs) ? e : null).filter(e => e != null);
 }) as ArrayOfElementsCommonAction<X, F, T>['read'];
 
-export const stopBypassingPromises = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
+export const invalidateCache = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
   arg: ArrayOperatorState<S, C, X, F, T>,
 ) => {
   const segs = readSelector(arg.selector);
   const pathSegs = segs.join('.') + (segs.length ? '.' : '') + arg.type + '(' + arg.whereClauseString + ')';
-  transact(...Object.keys(arg.storeResult().read().promiseBypassTimes).filter(key => key.startsWith(pathSegs))
-    .map(key => () => arg.storeResult(s => (s as any).promiseBypassTimes).remove(key)));
+  transact(...Object.keys(arg.storeResult().read().cacheTTLs).filter(key => key.startsWith(pathSegs))
+    .map(key => () => arg.storeResult(s => (s as any).cacheTTLs).remove(key)));
 }
 
-// const completeWhereClause = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
-//   arg: ArrayOperatorState<S, C, X, F, T>,
-// ) => {
-//   arg.whereClauseStrings.push(arg.whereClauseString);
-//   arg.whereClauseSpecs.push({ filter: o => arg.criteria(o, arg.fn), type: 'last' });
-//   validateSelectorFn('get', arg.storeState, arg.selector);
-//   const elementIndices = arg.type === 'find'
-//     ? [(arg.selector(arg.getCurrentState()) as X).findIndex(e => bundleCriteria(e, arg.whereClauseSpecs))]
-//     : (arg.selector(arg.getCurrentState()) as X).map((e, i) => bundleCriteria(e, arg.whereClauseSpecs) ? i : null).filter(i => i !== null) as number[];
-//   if (arg.type === 'find' && elementIndices[0] === -1) { throw new Error(errorMessages.NO_ARRAY_ELEMENT_FOUND); }
-//   return elementIndices;
-// }
 const completeWhereClause = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
   arg: ArrayOperatorState<S, C, X, F, T>,
 ) => {

@@ -247,14 +247,14 @@ export const replace = <S, C, X extends C & Array<any>, T extends Trackability>(
     });
   };
 
-export function stopBypassingPromises<S, C, X extends C & Array<any>>(
+export function invalidateCache<S, C, X extends C & Array<any>>(
   selector: Selector<S, C, X>,
   storeResult: (selector?: (s: DeepReadonly<S>) => C) => any,
 ) {
   const segs = readSelector(selector);
   const pathSegs = segs.join('.');
-  transact(...Object.keys(storeResult().read().promiseBypassTimes).filter(key => key.startsWith(pathSegs))
-    .map(key => () => storeResult(s => (s as any).promiseBypassTimes).remove(key)));
+  transact(...Object.keys(storeResult().read().cacheTTLs).filter(key => key.startsWith(pathSegs))
+    .map(key => () => storeResult(s => (s as any).cacheTTLs).remove(key)));
 }
 
 const validateSelector = <S, C, X extends C & Array<any>>(

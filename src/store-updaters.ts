@@ -36,12 +36,12 @@ export const processStateUpdateRequest = <S, C, X extends C & Array<any>>(
       throw new Error(errorMessages.INVALID_CONTAINER_FOR_CACHED_DATA);
     }
     const asyncPayload = arg.payload as (() => Promise<C>);
-    const bypassPromiseFor = ((arg.updateOptions || {}) as any).bypassPromiseFor || 0;
+    const cacheFor = ((arg.updateOptions || {}) as any).cacheFor || 0;
     const cacheKey = `${!pathSegments.length ? '' : (pathSegments.join('.') + '.')}${arg.cacheKeySuffix}`;
     if (arg.storeState.activeFutures[cacheKey]) { // prevent duplicate simultaneous requests
       return arg.storeState.activeFutures[cacheKey];
     }
-    const expirationDate = (arg.storeResult().read().promiseBypassTimes || {})[cacheKey];
+    const expirationDate = (arg.storeResult().read().cacheTTLs || {})[cacheKey];
     if (expirationDate && (new Date(expirationDate).getTime() > new Date().getTime())) {
       const result = {
         read: () => arg.storeResult(arg.selector).read(),
@@ -60,27 +60,27 @@ export const processStateUpdateRequest = <S, C, X extends C & Array<any>>(
       const promise = (augmentations.async ? augmentations.async(asyncPayload) : asyncPayload()) as Promise<C>;
       return promise
         .then(res => {
-          const involvesCaching = !!arg.updateOptions && !(typeof (arg.updateOptions) === 'string') && bypassPromiseFor;
+          const involvesCaching = !!arg.updateOptions && !(typeof (arg.updateOptions) === 'string') && cacheFor;
           if (involvesCaching) {
             libState.transactionState = 'started';
           }
           updateState(res);
-          if (involvesCaching && bypassPromiseFor) {
-            const cacheExpiry = toIsoString(new Date(new Date().getTime() + bypassPromiseFor));
+          if (involvesCaching && cacheFor) {
+            const cacheExpiry = toIsoString(new Date(new Date().getTime() + cacheFor));
             libState.transactionState = 'last';
-            if (!arg.storeResult().read().promiseBypassTimes) {
-              arg.storeResult(s => (s as any).promiseBypassTimes).replace({
-                ...(arg.storeResult().read().promiseBypassTimes || { [cacheKey]: cacheExpiry }),
+            if (!arg.storeResult().read().cacheTTLs) {
+              arg.storeResult(s => (s as any).cacheTTLs).replace({
+                ...(arg.storeResult().read().cacheTTLs || { [cacheKey]: cacheExpiry }),
               })
-            } else if (!arg.storeResult().read().promiseBypassTimes[cacheKey]) {
-              arg.storeResult(s => (s as any).promiseBypassTimes).insert({ [cacheKey]: cacheExpiry });
+            } else if (!arg.storeResult().read().cacheTTLs[cacheKey]) {
+              arg.storeResult(s => (s as any).cacheTTLs).insert({ [cacheKey]: cacheExpiry });
             } else {
-              arg.storeResult(s => (s as any).promiseBypassTimes[cacheKey]).replace(cacheExpiry);
+              arg.storeResult(s => (s as any).cacheTTLs[cacheKey]).replace(cacheExpiry);
             }
             try {
               setTimeout(() => {
-                arg.storeResult(s => (s as any).promiseBypassTimes).remove(cacheKey);
-              }, bypassPromiseFor);
+                arg.storeResult(s => (s as any).cacheTTLs).remove(cacheKey);
+              }, cacheFor);
             } catch (e) {
               // ignoring
             }
