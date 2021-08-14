@@ -7,7 +7,7 @@ import {
 } from './shapes-external';
 import { ArrayOperatorState } from './shapes-internal';
 import { errorMessages } from './shared-consts';
-import { readSelector, validateSelectorFn } from './shared-utils';
+import { readSelector } from './shared-utils';
 import { processStateUpdateRequest } from './store-updaters';
 import { transact } from './transact';
 

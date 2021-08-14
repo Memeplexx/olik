@@ -80,7 +80,6 @@ export function readSelector(selector: (state: any) => any) {
   const pathSegments = new Array<string>();
   const initialize = (s: any): any => {
     if (typeof s !== 'object') {
-      // may happen if we have a top-level primitive
       return null as any;
     }
     return new Proxy(s, {
@@ -138,3 +137,7 @@ export const toIsoString = (date: Date) => {
     dif + pad(tzo / 60) +
     ':' + pad(tzo % 60);
 }
+
+// export const abbrev = (str: string) => {
+//   return str.length > 7 ? (str.substring(0, 7) + '...') : str;
+// }
