@@ -188,7 +188,7 @@ describe('Component stores', () => {
       object: { property: 'a' },
       array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
       string: 'b',
-    }, { componentName: 'dd', instanceName: '0', registerWithReduxDevtoolsExtension: false });
+    }, { componentName: 'dd', instanceName: '0', devtoolsEnabled: false });
     component(s => s.object.property).replace('test');
     expect(component().read().object.property).toEqual('test');
     component().detachFromApplicationStore();

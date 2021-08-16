@@ -133,7 +133,7 @@ export const performStateUpdate = <S, C, X extends C = C>(
   // Construct action to dispatch
   const actionType = arg.actionName;
   const tag = (arg.updateOptions || {} as any).tag || '';
-  const tagSanitized = tag && arg.storeState.tagSanitizer ? arg.storeState.tagSanitizer(tag) : tag;
+  const tagSanitized = tag && arg.storeState.actionTypeTagAbbreviator ? arg.storeState.actionTypeTagAbbreviator(tag) : tag;
   const payload = ((arg.getPayloadFn && (arg.getPayloadFn() !== undefined)) ? arg.getPayloadFn() : arg.payload);
   const payloadWithTag = (!tag || arg.storeState.actionTypesToIncludeTag) ? { ...payload } : { ...payload, tag: tagSanitized };
   const typeWithTag = actionType + (arg.storeState.actionTypesToIncludeTag && tag ? ` [${tagSanitized}]` : '')

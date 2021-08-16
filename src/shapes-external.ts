@@ -246,7 +246,7 @@ export interface ArrayOfElementsCommonAction<X extends DeepReadonlyArray<any>, F
   /**
    * Ensures that fresh data is retrieved the next time any promises are used to populate this node of the state tree (or child nodes of this node of the state tree).
    */
-   invalidateCache: () => void,
+  invalidateCache: () => void,
 }
 
 export type ArrayOfObjectsCommonAction<X extends DeepReadonlyArray<any>, F extends FindOrFilter, T extends Trackability> = {
@@ -316,7 +316,7 @@ export type PromisableUpdate<H> = H extends () => AnyAsync<any> ? {
    * @example
    * select(s => s.todos).findWhere(s => s.id).isEqualTo(2).invalidateCache();
    */
-   cacheFor?: number;
+  cacheFor?: number;
   /**
    * Allows you to set an initial value to update the store with.
    * If the promise is rejected, this value will be reverted to what it was before the promise was invoked.
@@ -550,7 +550,7 @@ export type StoreWhichIsResettable<C, T extends Trackability> = {
   /**
    * Ensures that fresh data is retrieved the next time any promises are used to populate this node (or any descendant nodes) of the state tree.
    */
-   invalidateCache: () => void,
+  invalidateCache: () => void,
 } & StoreOrDerivation<C>;
 
 /**
@@ -625,40 +625,111 @@ export type DerivationCalculationInputs<T extends Array<StoreOrDerivation<any>>>
  */
 export type OptionsForMakingAnApplicationStore = {
   /**
+   * Whether or not you would like your store to be registered within the Redux Devtools Extension.
+   * The default value for this property is `true`.
+   */
+  devtoolsEnabled?: boolean;
+  /**
    * The name that will distinguish your store from other stores within the Redux Devtools Extension.
+   * The default value for this property is your `document.title`
    */
-  name?: string;
+  devtoolsStoreName?: string,
   /**
-   * If set to `true`, then your store will be visible from within the Redux Devtools extension.
-   * The default value for this option is `true`.
+   * Whether or not your action types (as seen from within the Redux Devtools Extension) should include 'tags'.
+   * Tags are strings which can be supplied when performing any state update.
+   * They are mostly useful in identifying the source of a state update (eg. from which component / file an update was made).
+   * Note that if this option is not set to `true`, tags can still be visible within your action payloads.
+   * The default value for this property is `true`.
    */
-  useReduxDevtoolsExtension?: boolean;
+  actionTypesToIncludeTag?: boolean,
   /**
-   * If supplied, this function can transform all tags passed in when updating state.
-   * This is of use if, for example, you are using the `__filename` node variable as a tag, and you would like the abbreviate the file path to something more readable.
-   * The following example does just that:
-   * @example
-   * tagSanitizer: tag
-   *  .replace(/^.*[\\\/]/, '')   // convert full path to file name
-   *  .replace(/.ts/, '')         // remove extension
+   * As a supplement to the `actionTypesToIncludeTag` argument, this property accepts a function which
+   * will allow you to abbreviate your tags so that they do not make your action types too long.
+   * This can be particularly useful if you are using the node `__filename` as the 'tag'.
+   * 
+   * The following example illustrates the problem this property is meant to solve:
+   * 
+   * ---
+   * 
+   * Consider the following state update:
+   * ```
+   * select(s => s.todos).replaceAll(newTodosArray, { tag: __filename });
+   * ```
+   * By default, the above action type will look like this:
+   * ```
+   * todos.replaceAll() [src/components/views/todos.ts]
+   * ```
+   * This is where this `actionTypeTagAbbreviator` becomes useful:
+   * ```
+   * actionTypeTagAbbreviator: tag => tag
+   *   .replace(/^.*[\\\/]/, '')   // convert full path to file name
+   *   .replace(/.ts/, '')         // remove extension
+   * ```
+   * Now your action type will look like this
+   * ```
+   * todos.replaceAll() [todos]
+   * ```
    */
-  tagSanitizer?: (tag: string) => string;
+  actionTypeTagAbbreviator?: (tag: string) => string,
   /**
-   * If set to `false`, then tags will **not** appear in the action type.
-   * The default value for this option is `true`.
+   * Whether or not where clauses should be included in your action type.  
+   * 
+   * ---
+   * 
+   * For example, the following state update:
+   * ```
+   * select(s => s.todos).findWhere(s => s.id).eq(2).replace(newTodo);
+   * ```
+   * will, if this `actionTypesToIncludeWhereClause` property is set to `true`, result in an action type will be:
+   * ```
+   * todos.find(id === 2).replace()
+   * ```
+   * However, if this `actionTypesToIncludeWhereClause` property is set to `false` then the action type will be:
+   * ```
+   * todos.find().replace()
+   * ```
+   * The default value for this property is `true`.
    */
-  actionTypesToIncludeTag?: boolean;
+  actionTypesToIncludeWhereClause?: boolean,
   /**
-   * If set to `false`, then where clauses will **not** appear in the action type.
-   * The default value for this option is `true`.
+   * As a supplement to the `actionTypesToIncludeWhereClause` property, this property accepts a function which
+   * will allow you to abbreviate your where clauses so that they do not make your action types too long.
+    * The following example illustrates the problem this property is meant to solve:
+   * 
+   * ---
+   * 
+   * Consider the following state update:
+   * ```
+   * select(s => s.todos)
+   *   .filterWhere(s => s.urgency).lt(2)
+   *   .and(s => s.completed).eq(false)
+   *   .remove();
+   * ```
+   * By default, the above action type will look like this:
+   * ```
+   * todos.find(urgency < 2 && completed === false).remove()
+   * ```
+   * This is where this `actionTypeWhereClauseAbbreviator` becomes useful:
+   * ```
+   * actionTypeWhereClauseAbbreviator: s => {
+   *   const maxLength = 15;
+   *   return s.length > maxLength
+   *     ? (s.substring(0, maxLength + 3) + '...')
+   *     : s;
+   * }
+   * ```
+   * Now your action type will look like this
+   * ```
+   * todos.find(urgency < 2 &&...).remove()
+   * ```
    */
-  actionTypesToIncludeWhereClause?: boolean;
+  actionTypeWhereClauseAbbreviator?: (tag: string) => string,
   /**
    * If set to `true`, then this store will replace any existing application store. 
    * If set to `false`, this store will be merged into the existing application store.
-   * The default value for this option is `false`.
+   * The default value for this property is `false`.
    */
-  replaceExistingStoreIfItExists?: boolean;
+  replaceExistingStoreIfItExists?: boolean,
 }
 
 export const Deferred = Symbol('deferred');
@@ -670,7 +741,7 @@ export type OptionsForMakingAComponentStore = {
   /**
    * Pass `false` if you do not want your store to be tracked inside the devtools. Default is `true`.
    */
-  registerWithReduxDevtoolsExtension?: boolean,
+  devtoolsEnabled?: boolean,
   /**
    * The name that will distinguish this component store from others within the state tree
    */

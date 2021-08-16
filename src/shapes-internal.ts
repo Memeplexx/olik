@@ -84,11 +84,12 @@ export type PreviousAction = {
 };
 
 export type OptionsForCreatingInternalApplicationStore = {
-  registerWithReduxDevtoolsExtension?: boolean,
-  name?: string;
-  tagSanitizer?: (tag: string) => string,
+  devtoolsEnabled?: boolean,
+  devtoolsStoreName?: string;
   actionTypesToIncludeTag?: boolean,
+  actionTypeTagAbbreviator?: (tag: string) => string,
   actionTypesToIncludeWhereClause?: boolean,
+  actionTypeWhereClauseAbbreviator?: (tag: string) => string,
   replaceExistingStoreIfItExists?: boolean,
 };
 
@@ -105,8 +106,8 @@ export type StoreState<S> = {
   transactionStartState: any,
   devtoolsDispatchListener?: (action: { type: string, payload?: any }) => any,
   actionTypesToIncludeTag: boolean,
+  actionTypeTagAbbreviator?: (tag: string) => string,
   actionTypesToIncludeWhereClause: boolean,
-  tagSanitizer?: (tag: string) => string,
   changeListeners: Map<(ar: any) => any, (arg: S) => any>,
   previousAction: PreviousAction,
   currentState: S,

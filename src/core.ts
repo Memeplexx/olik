@@ -48,19 +48,21 @@ import { deepFreeze, readSelector, validateSelectorFn, validateState } from './s
 
 export function createStoreCore<S, T extends Trackability>({
   state,
-  tagSanitizer,
-  name = document.title,
-  registerWithReduxDevtoolsExtension = true,
+  devtoolsEnabled = true,
+  devtoolsStoreName = document.title,
   actionTypesToIncludeTag = true,
+  actionTypeTagAbbreviator = s => s,
   actionTypesToIncludeWhereClause = true,
+  actionTypeWhereClauseAbbreviator = s => s,
   replaceExistingStoreIfItExists = true,
 }: {
   state: S,
-  name?: string,
-  registerWithReduxDevtoolsExtension?: boolean,
-  tagSanitizer?: (tag: string) => string,
+  devtoolsEnabled?: boolean,
+  devtoolsStoreName?: string,
   actionTypesToIncludeTag?: boolean,
+  actionTypeTagAbbreviator?: (tag: string) => string,
   actionTypesToIncludeWhereClause?: boolean,
+  actionTypeWhereClauseAbbreviator?: (tag: string) => string,
   replaceExistingStoreIfItExists?: boolean,
 }) {
   validateState(state);
@@ -75,7 +77,7 @@ export function createStoreCore<S, T extends Trackability>({
     devtoolsDispatchListener: undefined,
     actionTypesToIncludeTag,
     actionTypesToIncludeWhereClause,
-    tagSanitizer,
+    actionTypeTagAbbreviator,
     changeListeners: new Map<(ar: any) => any, (arg: S) => any>(),
     previousAction: {
       type: '',
@@ -131,6 +133,7 @@ export function createStoreCore<S, T extends Trackability>({
             ne: val => constructActions(`${getSegsAndCriteria().segs.join('.') || 'element'} !== ${val}`, e => e !== val),
             in: val => constructActions(`[${val.join(', ')}].includes(${getSegsAndCriteria().segs.join('.') || 'element'})`, e => val.includes(e)),
             ni: val => constructActions(`![${val.join(', ')}].includes(${getSegsAndCriteria().segs.join('.') || 'element'})`, e => !val.includes(e)),
+            // ni: val => constructActions(`${getSegsAndCriteria().segs.join('.') || 'element'}).in(${val.join(', ')}`, e => !val.includes(e)),
           } as PredicateOptionsCommon<X, any, FindOrFilter, T>,
           ...{
             returnsTrue: () => {
@@ -219,8 +222,8 @@ export function createStoreCore<S, T extends Trackability>({
     return action<C, X>(selectorMod) as any;
   };
 
-  if (registerWithReduxDevtoolsExtension && (!libState.applicationStore || replaceExistingStoreIfItExists)) {
-    integrateStoreWithReduxDevtools({ store: storeResult as any, storeState, name })
+  if (devtoolsEnabled && (!libState.applicationStore || replaceExistingStoreIfItExists)) {
+    integrateStoreWithReduxDevtools({ store: storeResult as any, storeState, name: devtoolsStoreName })
   }
 
   return storeResult;

@@ -76,8 +76,8 @@ export function createComponentStore<L>(
   if (options.instanceName === Deferred) {
     const nStore = createStoreCore<L, 'untagged'>({
       state,
-      registerWithReduxDevtoolsExtension: !libState.applicationStore && options.registerWithReduxDevtoolsExtension,
-      name: options.componentName,
+      devtoolsEnabled: !libState.applicationStore && options.devtoolsEnabled,
+      devtoolsStoreName: options.componentName,
     });
     const select = (<C = L>(selector?: (arg: L) => C) => {
       const cStore: StoreForAComponentInternal<L, C> = selector ? nStore(selector as any) : nStore();
@@ -118,9 +118,9 @@ function createApplicationStoreInternal<S, T extends Trackability>(
   }
   const select = createStoreCore<S, T>({
     state,
-    registerWithReduxDevtoolsExtension: options.registerWithReduxDevtoolsExtension,
-    name: options.name,
-    tagSanitizer: options.tagSanitizer,
+    devtoolsEnabled: options.devtoolsEnabled,
+    devtoolsStoreName: options.devtoolsStoreName,
+    actionTypeTagAbbreviator: options.actionTypeTagAbbreviator,
     actionTypesToIncludeTag: options.actionTypesToIncludeTag,
     actionTypesToIncludeWhereClause: options.actionTypesToIncludeWhereClause,
   });
@@ -157,8 +157,8 @@ function createDetatchedComponentStore<L>(
 ) {
   const nStore = createStoreCore<L, 'untagged'>({
     state,
-    registerWithReduxDevtoolsExtension: options.registerWithReduxDevtoolsExtension,
-    name: `${options.componentName} : ${options.instanceName as string}`
+    devtoolsEnabled: options.devtoolsEnabled,
+    devtoolsStoreName: `${options.componentName} : ${options.instanceName as string}`
   });
   const get = (<C = L>(selector?: (arg: DeepReadonly<L>) => C) => {
     const cStore = selector ? nStore(selector) : nStore();

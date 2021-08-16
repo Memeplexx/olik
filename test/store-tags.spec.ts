@@ -31,7 +31,7 @@ describe('tags', () => {
     const select = createApplicationStoreEnforcingTags({
       test: '',
     }, {
-      tagSanitizer: (tag) => tag + 'x',
+      actionTypeTagAbbreviator: (tag) => tag + 'x',
       actionTypesToIncludeTag: true,
     });
     const tag = 'mytag';
