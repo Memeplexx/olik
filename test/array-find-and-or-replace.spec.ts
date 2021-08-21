@@ -21,14 +21,16 @@ describe('array.find().and().or()', () => {
   it('should eq().andWhere().eq()', () => {
     const select = createApplicationStore(initialState);
     const payload = { id: 4, value: 'four' };
-    const where = 'id === 2 && value === two';
     select(s => s.array)
       .findWhere(s => s.id).eq(2)
       .andWhere(s => s.value).eq('two')
       .replace(payload);
     expect(testState.currentAction).toEqual({
-      type: `array.find(${where}).replace()`,
-      where,
+      type: `array.find(id).eq(2).and(value).eq(two).replace()`,
+      where: [
+        { 'id.eq': 2 },
+        { 'and.value.eq': 'two' }
+      ],
       replacement: payload,
     });
     expect(select().read().array).toEqual([initialState.array[0], payload, initialState.array[2]]);
@@ -37,14 +39,16 @@ describe('array.find().and().or()', () => {
   it('should eq().orWhere().eq()', () => {
     const select = createApplicationStore(initialState);
     const payload = { id: 4, value: 'four' };
-    const where = 'id === 1 || value === two';
     select(s => s.array)
       .findWhere(s => s.id).eq(1)
       .orWhere(s => s.value).eq('two')
       .replace(payload);
     expect(testState.currentAction).toEqual({
-      type: `array.find(${where}).replace()`,
-      where,
+      type: `array.find(id).eq(1).or(value).eq(two).replace()`,
+      where: [
+        { 'id.eq': 1 },
+        { 'or.value.eq': 'two' }
+      ],
       replacement: payload,
     });
     expect(select().read().array).toEqual([payload, initialState.array[1], initialState.array[2]]);
@@ -70,8 +74,12 @@ describe('array.find().and().or()', () => {
       .orWhere(e => e.id).eq(3)
       .replace(payload);
     expect(testState.currentAction).toEqual({
-      type: `array.find(${where}).replace()`,
-      where,
+      type: `array.find(id).eq(1).and(id).eq(2).or(id).eq(3).replace()`,
+      where: [
+        { 'id.eq': 1 },
+        { 'and.id.eq': 2 },
+        { 'or.id.eq': 3 }
+      ],
       replacement: payload,
     });
     expect(select().read().array).toEqual([initialState.array[0], initialState.array[1], payload]);
@@ -80,15 +88,18 @@ describe('array.find().and().or()', () => {
   it('should eq().orWhere().eq().andWhere().eq()', () => {
     const select = createApplicationStore(initialState);
     const payload = { id: 4, value: 'four' };
-    const where = 'id === 4 || id === 3 && value === three';
     select(s => s.array)
       .findWhere(e => e.id).eq(4)
       .orWhere(e => e.id).eq(3)
       .andWhere(e => e.value).eq('three')
       .replace(payload);
     expect(testState.currentAction).toEqual({
-      type: `array.find(${where}).replace()`,
-      where,
+      type: `array.find(id).eq(4).or(id).eq(3).and(value).eq(three).replace()`,
+      where: [
+        { 'id.eq': 4 },
+        { 'or.id.eq': 3 },
+        { 'and.value.eq': 'three' }
+      ],
       replacement: payload,
     });
     expect(select().read().array).toEqual([initialState.array[0], initialState.array[1], payload]);
@@ -97,7 +108,6 @@ describe('array.find().and().or()', () => {
   it('should eq().andWhere().eq().orWhere().eq().andWhere().eq()', () => {
     const select = createApplicationStore(initialState);
     const payload = { id: 4, value: 'four' };
-    const where = 'id === 1 && value === one || id === 3 && value === three';
     select(s => s.array)
       .findWhere(e => e.id).eq(1)
       .andWhere(e => e.value).eq('one')
@@ -105,8 +115,13 @@ describe('array.find().and().or()', () => {
       .andWhere(e => e.value).eq('three')
       .replace(payload);
     expect(testState.currentAction).toEqual({
-      type: `array.find(${where}).replace()`,
-      where,
+      type: `array.find(id).eq(1).and(value).eq(one).or(id).eq(3).and(value).eq(three).replace()`,
+      where: [
+        { 'id.eq': 1 },
+        { 'and.value.eq': 'one' },
+        { 'or.id.eq': 3 },
+        { 'and.value.eq': 'three' }
+      ],
       replacement: payload,
     });
     expect(select().read().array).toEqual([payload, initialState.array[1], initialState.array[2]]);

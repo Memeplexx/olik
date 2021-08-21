@@ -244,7 +244,7 @@ export interface ArrayOfElementsCommonAction<X extends DeepReadonlyArray<any>, F
    */
   read: () => DeepReadonly<F extends 'find' ? X[0] : X>;
   /**
-   * Ensures that fresh data is retrieved the next time any promises are used to populate this node of the state tree (or child nodes of this node of the state tree).
+   * Ensures that fresh data is retrieved the next time any promises are used to populate this node of the state tree.
    */
   invalidateCache: () => void,
 }

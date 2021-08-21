@@ -89,6 +89,7 @@ export function createStoreCore<S, T extends Trackability>({
   const action = <C, X extends C & Array<any>>(selector: Selector<S, C, X>) => {
     const where = (type: FindOrFilter) => {
       const whereClauseSpecs = Array<{ filter: (arg: X[0]) => boolean, type: 'and' | 'or' | 'last' }>();
+      const payloadWhereClauses = new Array<any>();
       const whereClauseStrings = Array<string>();
       const recurseWhere = (getProp => {
         const getSegsAndCriteria = () => {
@@ -113,6 +114,7 @@ export function createStoreCore<S, T extends Trackability>({
             type,
             storeResult,
             storeState,
+            payloadWhereClauses,
           } as ArrayOperatorState<S, C, X, FindOrFilter, T>;
           const arrayActions = {
             andWhere: array.andWhere(context),
@@ -129,11 +131,26 @@ export function createStoreCore<S, T extends Trackability>({
         };
         return {
           ...{
-            eq: val => constructActions(`${getSegsAndCriteria().segs.join('.') || 'element'} === ${val}`, e => e === val),
-            ne: val => constructActions(`${getSegsAndCriteria().segs.join('.') || 'element'} !== ${val}`, e => e !== val),
-            in: val => constructActions(`[${val.join(', ')}].includes(${getSegsAndCriteria().segs.join('.') || 'element'})`, e => val.includes(e)),
-            ni: val => constructActions(`![${val.join(', ')}].includes(${getSegsAndCriteria().segs.join('.') || 'element'})`, e => !val.includes(e)),
-            // ni: val => constructActions(`${getSegsAndCriteria().segs.join('.') || 'element'}).in(${val.join(', ')}`, e => !val.includes(e)),
+            eq: val => {
+              const el = getSegsAndCriteria().segs.join('.') || 'element';
+              payloadWhereClauses.push({ [(!whereClauseSpecs.length ? '' : whereClauseSpecs[whereClauseSpecs.length - 1].type + '.') + el + '.eq']: val });
+              return constructActions(`${el}).eq(${val}`, e => e === val);
+            },
+            ne: val => {
+              const el = getSegsAndCriteria().segs.join('.') || 'element';
+              payloadWhereClauses.push({ [(!whereClauseSpecs.length ? '' : whereClauseSpecs[whereClauseSpecs.length - 1].type + '.') + el + '.ne']: val });
+              return constructActions(`${el}).ne(${val}`, e => e !== val);
+            },
+            in: val => {
+              const el = getSegsAndCriteria().segs.join('.') || 'element';
+              payloadWhereClauses.push({ [(!whereClauseSpecs.length ? '' : whereClauseSpecs[whereClauseSpecs.length - 1].type + '.') + el + '.in']: val });
+              return constructActions(`${el}).in(${val.join(',')}`, e => val.includes(e));
+            },
+            ni: val => {
+              const el = getSegsAndCriteria().segs.join('.') || 'element';
+              payloadWhereClauses.push({ [(!whereClauseSpecs.length ? '' : whereClauseSpecs[whereClauseSpecs.length - 1].type + '.') + el + '.ni']: val });
+              return constructActions(`${el}).ni(${val.join(',')}`, e => !val.includes(e));
+            },
           } as PredicateOptionsCommon<X, any, FindOrFilter, T>,
           ...{
             returnsTrue: () => {
@@ -159,13 +176,33 @@ export function createStoreCore<S, T extends Trackability>({
             }
           } as PredicateOptionsForBoolean<X, FindOrFilter, T>,
           ...{
-            gt: val => constructActions(`${getSegsAndCriteria().segs.join('.') || 'element'} > ${val}`, e => e > val),
-            lt: val => constructActions(`${getSegsAndCriteria().segs.join('.') || 'element'} < ${val}`, e => e < val),
-            gte: val => constructActions(`${getSegsAndCriteria().segs.join('.') || 'element'} >= ${val}`, e => e >= val),
-            lte: val => constructActions(`${getSegsAndCriteria().segs.join('.') || 'element'} <= ${val}`, e => e <= val),
+            gt: val => {
+              const el = getSegsAndCriteria().segs.join('.') || 'element';
+              payloadWhereClauses.push({ [(!whereClauseSpecs.length ? '' : whereClauseSpecs[whereClauseSpecs.length - 1].type + '.') + el + '.gt']: val });
+              return constructActions(`${el}).gt(${val}`, e => e > val);
+            },
+            lt: val => {
+              const el = getSegsAndCriteria().segs.join('.') || 'element';
+              payloadWhereClauses.push({ [(!whereClauseSpecs.length ? '' : whereClauseSpecs[whereClauseSpecs.length - 1].type + '.') + el + '.lt']: val });
+              return constructActions(`${el}).lt(${val}`, e => e < val);
+            },
+            gte: val => {
+              const el = getSegsAndCriteria().segs.join('.') || 'element';
+              payloadWhereClauses.push({ [(!whereClauseSpecs.length ? '' : whereClauseSpecs[whereClauseSpecs.length - 1].type + '.') + el + '.gte']: val });
+              return constructActions(`${el}).gte(${val}`, e => e >= val);
+            },
+            lte: val => {
+              const el = getSegsAndCriteria().segs.join('.') || 'element';
+              payloadWhereClauses.push({ [(!whereClauseSpecs.length ? '' : whereClauseSpecs[whereClauseSpecs.length - 1].type + '.') + el + '.lte']: val });
+              return constructActions(`${el}).lte(${val}`, e => e <= val);
+            },
           } as PredicateOptionsForNumber<X, any, FindOrFilter, T>,
           ...{
-            matches: val => constructActions(`${getSegsAndCriteria().segs.join('.') || 'element'}.match(${val})`, e => e.match(val)),
+            matches: val => {
+              const el = getSegsAndCriteria().segs.join('.') || 'element';
+              payloadWhereClauses.push({ [(!whereClauseSpecs.length ? '' : whereClauseSpecs[whereClauseSpecs.length - 1].type + '.') + el + '.match']: val });
+              return constructActions(`${el}).match(${val}`, e => e.match(val));
+            },
           } as PredicateOptionsForString<X, any, FindOrFilter, T>,
         };
       }) as StoreForAnArrayOfObjects<X, T>['filterWhere'];

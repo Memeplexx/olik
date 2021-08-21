@@ -56,6 +56,7 @@ export type ArrayOperatorState<S, C, X extends C & Array<any>, F extends FindOrF
   type: FindOrFilter,
   storeResult: (selector?: (s: S) => C) => any,
   storeState: StoreState<S>,
+  payloadWhereClauses: Array<any>,
 };
 
 export type ArrayCustomState<S, C, X extends C & Array<any>, T extends Trackability> = {

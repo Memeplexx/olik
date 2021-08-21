@@ -14,7 +14,7 @@ import { transact } from './transact';
 export const andWhere = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
   arg: ArrayOperatorState<S, C, X, F, T>,
 ) => (prop => {
-  arg.whereClauseStrings.push(`${arg.whereClauseString} &&`);
+  arg.whereClauseStrings.push(`${arg.whereClauseString}).and(`);
   arg.whereClauseSpecs.push({ filter: o => arg.criteria(o, arg.fn), type: 'and' });
   return arg.recurseWhere(prop);
 }) as ArrayOfElementsAction<X, F, T>['andWhere'];
@@ -22,7 +22,7 @@ export const andWhere = <S, C, X extends C & Array<any>, F extends FindOrFilter,
 export const orWhere = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
   arg: ArrayOperatorState<S, C, X, F, T>,
 ) => (prop => {
-  arg.whereClauseStrings.push(`${arg.whereClauseString} ||`);
+  arg.whereClauseStrings.push(`${arg.whereClauseString}).or(`);
   arg.whereClauseSpecs.push({ filter: o => arg.criteria(o, arg.fn), type: 'or' });
   return arg.recurseWhere(prop);
 }) as ArrayOfElementsAction<X, F, T>['orWhere'];
@@ -45,7 +45,7 @@ export const remove = <S, C, X extends C & Array<any>, F extends FindOrFilter, T
     getPayload: () => {
       const elementIndices = getElementIndices(arg);
       return {
-        where,
+        where: arg.payloadWhereClauses,
         toRemove: (arg.selector(arg.getCurrentState()) as X)[arg.type]((e, i) => elementIndices.includes(i)),
       };
     },
@@ -68,7 +68,7 @@ export const patch = <S, C, X extends C & Array<any>, F extends FindOrFilter, T 
       return old.map((o, i) => elementIndices.includes(i) ? { ...o, ...payload } : o);
     },
     getPayload: payload => ({
-      where,
+      where: arg.payloadWhereClauses,
       patch: payload,
     })
   });
@@ -91,7 +91,7 @@ export const replace = <S, C, X extends C & Array<any>, F extends FindOrFilter, 
       return old.map((o, i) => elementIndices.includes(i) ? payload : o);
     },
     getPayload: (payload) => ({
-      where,
+      where: arg.payloadWhereClauses,
       replacement: payload,
     }),
   });
@@ -130,7 +130,7 @@ const completeWhereClause = <S, C, X extends C & Array<any>, F extends FindOrFil
 ) => {
   arg.whereClauseStrings.push(arg.whereClauseString);
   arg.whereClauseSpecs.push({ filter: o => arg.criteria(o, arg.fn), type: 'last' });
-  return arg.whereClauseStrings.join(' ');
+  return arg.whereClauseStrings.join('');
 }
 
 const getElementIndices = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(

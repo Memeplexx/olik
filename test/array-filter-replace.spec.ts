@@ -20,14 +20,15 @@ describe('array.filter().replace()', () => {
   it('should eq()', () => {
     const select = createApplicationStore(initialState);
     const payload = { id: 4, value: 'four' };
-    const where = 'id === 2';
     select(s => s.array)
       .filterWhere(e => e.id).eq(2)
       .replace(payload);
     expect(testState.currentAction).toEqual({
-      type: `array.filter(${where}).replace()`,
+      type: `array.filter(id).eq(2).replace()`,
       replacement: payload,
-      where,
+      where: [
+        { 'id.eq': 2 }
+      ],
     });
     expect(select().read().array).toEqual([initialState.array[0], payload, initialState.array[2]]);
   })
@@ -35,14 +36,15 @@ describe('array.filter().replace()', () => {
   it('should ne()', () => {
     const select = createApplicationStore(initialState);
     const payload = { id: 4, value: 'four' };
-    const where = 'id !== 2';
     select(s => s.array)
       .filterWhere(e => e.id).ne(2)
       .replace(payload);
     expect(testState.currentAction).toEqual({
-      type: `array.filter(${where}).replace()`,
+      type: `array.filter(id).ne(2).replace()`,
       replacement: payload,
-      where,
+      where: [
+        { 'id.ne': 2 }
+      ],
     });
     expect(select().read().array).toEqual([payload, initialState.array[1], payload]);
   })
@@ -50,14 +52,15 @@ describe('array.filter().replace()', () => {
   it('should gt()', () => {
     const select = createApplicationStore(initialState);
     const payload = { id: 4, value: 'four' };
-    const where = 'id > 1';
     select(s => s.array)
       .filterWhere(e => e.id).gt(1)
       .replace(payload);
     expect(testState.currentAction).toEqual({
-      type: `array.filter(${where}).replace()`,
+      type: `array.filter(id).gt(1).replace()`,
       replacement: payload,
-      where,
+      where: [
+        { 'id.gt': 1 }
+      ],
     });
     expect(select().read().array).toEqual([initialState.array[0], payload, payload]);
   })
@@ -65,14 +68,15 @@ describe('array.filter().replace()', () => {
   it('should gte()', () => {
     const select = createApplicationStore(initialState);
     const payload = { id: 4, value: 'four' };
-    const where = 'id >= 1';
     select(s => s.array)
       .filterWhere(e => e.id).gte(1)
       .replace(payload);
     expect(testState.currentAction).toEqual({
-      type: `array.filter(${where}).replace()`,
+      type: `array.filter(id).gte(1).replace()`,
       replacement: payload,
-      where,
+      where: [
+        { 'id.gte': 1 }
+      ],
     });
     expect(select().read().array).toEqual([payload, payload, payload]);
   })
@@ -80,14 +84,15 @@ describe('array.filter().replace()', () => {
   it('should lt()', () => {
     const select = createApplicationStore(initialState);
     const payload = { id: 4, value: 'four' };
-    const where = 'id < 2';
     select(s => s.array)
       .filterWhere(e => e.id).lt(2)
       .replace(payload);
     expect(testState.currentAction).toEqual({
-      type: `array.filter(${where}).replace()`,
+      type: `array.filter(id).lt(2).replace()`,
       replacement: payload,
-      where,
+      where: [
+        { 'id.lt': 2 }
+      ],
     });
     expect(select().read().array).toEqual([payload, initialState.array[1], initialState.array[2]]);
   })
@@ -95,14 +100,15 @@ describe('array.filter().replace()', () => {
   it('should lte()', () => {
     const select = createApplicationStore(initialState);
     const payload = { id: 4, value: 'four' };
-    const where = 'id <= 2';
     select(s => s.array)
       .filterWhere(e => e.id).lte(2)
       .replace(payload);
     expect(testState.currentAction).toEqual({
-      type: `array.filter(${where}).replace()`,
+      type: `array.filter(id).lte(2).replace()`,
       replacement: payload,
-      where,
+      where: [
+        { 'id.lte': 2 }
+      ],
     });
     expect(select().read().array).toEqual([payload, payload, initialState.array[2]]);
   })
@@ -110,14 +116,15 @@ describe('array.filter().replace()', () => {
   it('should in()', () => {
     const select = createApplicationStore(initialState);
     const payload = { id: 4, value: 'four' };
-    const where = '[1, 2].includes(id)';
     select(s => s.array)
       .filterWhere(e => e.id).in([1, 2])
       .replace(payload);
     expect(testState.currentAction).toEqual({
-      type: `array.filter(${where}).replace()`,
+      type: `array.filter(id).in(1,2).replace()`,
       replacement: payload,
-      where,
+      where: [
+        { 'id.in': [1, 2] }
+      ],
     });
     expect(select().read().array).toEqual([payload, payload, initialState.array[2]]);
   })
@@ -125,14 +132,15 @@ describe('array.filter().replace()', () => {
   it('should ni()', () => {
     const select = createApplicationStore(initialState);
     const payload = { id: 4, value: 'four' };
-    const where = '![1, 2].includes(id)';
     select(s => s.array)
       .filterWhere(e => e.id).ni([1, 2])
       .replace(payload);
     expect(testState.currentAction).toEqual({
-      type: `array.filter(${where}).replace()`,
+      type: `array.filter(id).ni(1,2).replace()`,
       replacement: payload,
-      where,
+      where: [
+        { 'id.ni': [1, 2] }
+      ],
     });
     expect(select().read().array).toEqual([initialState.array[0], initialState.array[1], payload]);
   })
@@ -140,14 +148,15 @@ describe('array.filter().replace()', () => {
   it('should match()', () => {
     const select = createApplicationStore(initialState);
     const payload = { id: 4, value: 'four' };
-    const where = 'value.match(/^t/)';
     select(s => s.array)
       .filterWhere(e => e.value).matches(/^t/)
       .replace(payload);
     expect(testState.currentAction).toEqual({
-      type: `array.filter(${where}).replace()`,
+      type: `array.filter(value).match(/^t/).replace()`,
       replacement: payload,
-      where,
+      where: [
+        { 'value.match': /^t/ }
+      ],
     });
     expect(select().read().array).toEqual([initialState.array[0], payload, payload]);
   })
