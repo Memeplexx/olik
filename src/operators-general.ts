@@ -7,7 +7,7 @@ import {
   StoreForANumber,
   StoreOrDerivation,
   StoreWhichIsResettable,
-  Trackability,
+  ShapesExt,
   UpdateAtIndex,
   UpdateOptions,
 } from './shapes-external';
@@ -31,19 +31,19 @@ export const read = <S, C, X extends C & Array<any>>(
   () => selector(currentState())
 ) as StoreOrDerivation<C>['read'];
 
-export const reset = <S, C, X extends C & Array<any>, T extends Trackability>(
+export const reset = <S, C, X extends C & Array<any>, T extends ShapesExt>(
   context: CoreActionsState<S, C, X, T>,
 ) => (
   updateOptions => replace({ ...context, name: 'reset' })(context.selector(context.initialState), updateOptions as UpdateOptions<T, any>)
 ) as StoreWhichIsResettable<C, T>['reset'];
 
-export const replaceAll = <S, C, X extends C & Array<any>, T extends Trackability>(
+export const replaceAll = <S, C, X extends C & Array<any>, T extends ShapesExt>(
   context: CoreActionsState<S, C, X, T>,
 ) => (
   (replacement, updateOptions) => replace({ ...context, name: 'replaceAll' })(replacement as X, updateOptions as UpdateOptions<T, any>)
 ) as StoreForAnArrayCommon<X, T>['replaceAll'];
 
-export const patchAll = <S, C, X extends C & Array<any>, T extends Trackability>(
+export const patchAll = <S, C, X extends C & Array<any>, T extends ShapesExt>(
   arg: CoreActionsState<S, C, X, T>,
 ) => ((payload, updateOptions) => {
   validateSelector(arg);
@@ -58,7 +58,7 @@ export const patchAll = <S, C, X extends C & Array<any>, T extends Trackability>
   });
 }) as StoreForAnArrayCommon<X, T>['patchAll'];
 
-export const removeAll = <S, C, X extends C & Array<any>, T extends Trackability>(
+export const removeAll = <S, C, X extends C & Array<any>, T extends ShapesExt>(
   arg: CoreActionsState<S, C, X, T>,
 ) => (updateOptions => {
   validateSelector(arg);
@@ -72,7 +72,7 @@ export const removeAll = <S, C, X extends C & Array<any>, T extends Trackability
   });
 }) as StoreForAnArrayCommon<X, T>['removeAll'];
 
-export const insertIntoArray = <S, C, X extends C & Array<any>, T extends Trackability>(
+export const insertIntoArray = <S, C, X extends C & Array<any>, T extends ShapesExt>(
   arg: CoreActionsState<S, C, X, T>,
 ) => ((payload, updateOptions: UpdateAtIndex = {}) => {
   validateSelector(arg);
@@ -92,7 +92,7 @@ export const insertIntoArray = <S, C, X extends C & Array<any>, T extends Tracka
   });
 }) as StoreForAnArrayCommon<X, T>['insert'];
 
-export const patchOrInsertIntoObject = <S, C, X extends C & Array<any>, T extends Trackability>(
+export const patchOrInsertIntoObject = <S, C, X extends C & Array<any>, T extends ShapesExt>(
   arg: CoreActionsState<S, C, X, T> & { type: 'patch' | 'insert', },
 ) => ((payload, updateOptions) => {
   validateSelector(arg);
@@ -109,7 +109,7 @@ export const patchOrInsertIntoObject = <S, C, X extends C & Array<any>, T extend
   });
 }) as StoreForAnObject<C, T>['patch'];
 
-export const remove = <S, C, X extends C & Array<any>, T extends Trackability>(
+export const remove = <S, C, X extends C & Array<any>, T extends ShapesExt>(
   arg: CoreActionsState<S, C, X, T>,
 ) => ((payload, updateOptions) => {
   validateSelector(arg);
@@ -124,7 +124,7 @@ export const remove = <S, C, X extends C & Array<any>, T extends Trackability>(
   });
 }) as StoreForAnObject<C, T>['remove'];
 
-export const increment = <S, C, X extends C & Array<any>, T extends Trackability>(
+export const increment = <S, C, X extends C & Array<any>, T extends ShapesExt>(
   arg: CoreActionsState<S, C, X, T>,
 ) => ((payload, updateOptions) => {
   validateSelector(arg);
@@ -139,7 +139,7 @@ export const increment = <S, C, X extends C & Array<any>, T extends Trackability
   });
 }) as StoreForANumber<T>['increment'];
 
-export const deepMerge = <S, C, X extends C & Array<any>, T extends Trackability>(
+export const deepMerge = <S, C, X extends C & Array<any>, T extends ShapesExt>(
   arg: CoreActionsState<S, C, X, T>,
 ) => ((
   payload: C | (() => Promise<C>),
@@ -179,7 +179,7 @@ export const deepMerge = <S, C, X extends C & Array<any>, T extends Trackability
   });
 }) as StoreForAnObject<C, T>['deepMerge'];
 
-export const upsertMatching = <S, C, X extends C & Array<any>, T extends Trackability>(
+export const upsertMatching = <S, C, X extends C & Array<any>, T extends ShapesExt>(
   arg: CoreActionsState<S, C, X, T>
 ) => (getProp => {
   validateSelector(arg);
@@ -220,7 +220,7 @@ export const upsertMatching = <S, C, X extends C & Array<any>, T extends Trackab
   };
 }) as StoreForAnArrayOfObjects<X, T>['upsertMatching'];
 
-export const replace = <S, C, X extends C & Array<any>, T extends Trackability>(
+export const replace = <S, C, X extends C & Array<any>, T extends ShapesExt>(
   arg: CoreActionsState<S, C, X, T> & { name: string },
 ) => (
   payload: C | (() => Promise<C>),

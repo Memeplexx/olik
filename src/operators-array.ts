@@ -3,7 +3,7 @@ import {
   ArrayOfElementsCommonAction,
   ArrayOfObjectsAction,
   FindOrFilter,
-  Trackability,
+  ShapesExt,
 } from './shapes-external';
 import { ArrayOperatorState } from './shapes-internal';
 import { errorMessages } from './shared-consts';
@@ -11,7 +11,7 @@ import { readSelector } from './shared-utils';
 import { processStateUpdateRequest } from './store-updaters';
 import { transact } from './transact';
 
-export const and = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
+export const and = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends ShapesExt>(
   arg: ArrayOperatorState<S, C, X, F, T>,
 ) => (prop => {
   arg.whereClauseStrings.push(`${arg.whereClauseString}).and(`);
@@ -19,7 +19,7 @@ export const and = <S, C, X extends C & Array<any>, F extends FindOrFilter, T ex
   return arg.recurseWhere(prop);
 }) as ArrayOfElementsAction<X, F, T>['and'];
 
-export const or = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
+export const or = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends ShapesExt>(
   arg: ArrayOperatorState<S, C, X, F, T>,
 ) => (prop => {
   arg.whereClauseStrings.push(`${arg.whereClauseString}).or(`);
@@ -27,7 +27,7 @@ export const or = <S, C, X extends C & Array<any>, F extends FindOrFilter, T ext
   return arg.recurseWhere(prop);
 }) as ArrayOfElementsAction<X, F, T>['or'];
 
-export const remove = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
+export const remove = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends ShapesExt>(
   arg: ArrayOperatorState<S, C, X, F, T>,
 ) => ((payload: any, updateOptions: any) => {
   const where = completeWhereClause(arg);
@@ -52,7 +52,7 @@ export const remove = <S, C, X extends C & Array<any>, F extends FindOrFilter, T
   });
 }) as ArrayOfObjectsAction<X, F, T>['remove'];
 
-export const patch = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
+export const patch = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends ShapesExt>(
   arg: ArrayOperatorState<S, C, X, F, T>,
 ) => ((payload, updateOptions) => {
   const where = completeWhereClause(arg);
@@ -74,7 +74,7 @@ export const patch = <S, C, X extends C & Array<any>, F extends FindOrFilter, T 
   });
 }) as ArrayOfObjectsAction<X, F, T>['patch'];
 
-export const replace = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
+export const replace = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends ShapesExt>(
   arg: ArrayOperatorState<S, C, X, F, T>,
 ) => ((payload, updateOptions) => {
   const where = completeWhereClause(arg);
@@ -97,7 +97,7 @@ export const replace = <S, C, X extends C & Array<any>, F extends FindOrFilter, 
   });
 }) as ArrayOfElementsCommonAction<X, F, T>['replace'];
 
-export const onChange = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
+export const onChange = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends ShapesExt>(
   arg: ArrayOperatorState<S, C, X, F, T>,
 ) => (performAction => {
   arg.whereClauseSpecs.push({ filter: o => arg.criteria(o, arg.comparator), type: 'last' });
@@ -107,7 +107,7 @@ export const onChange = <S, C, X extends C & Array<any>, F extends FindOrFilter,
   return { unsubscribe: () => arg.storeState.changeListeners.delete(performAction) };
 }) as ArrayOfElementsCommonAction<X, F, T>['onChange'];
 
-export const read = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
+export const read = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends ShapesExt>(
   arg: ArrayOperatorState<S, C, X, F, T>,
 ) => (() => {
   arg.whereClauseSpecs.push({ filter: o => arg.criteria(o, arg.comparator), type: 'last' });
@@ -116,7 +116,7 @@ export const read = <S, C, X extends C & Array<any>, F extends FindOrFilter, T e
     : (arg.selector(arg.getCurrentState()) as X).map(e => bundleCriteria(e, arg.whereClauseSpecs) ? e : null).filter(e => e != null);
 }) as ArrayOfElementsCommonAction<X, F, T>['read'];
 
-export const invalidateCache = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
+export const invalidateCache = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends ShapesExt>(
   arg: ArrayOperatorState<S, C, X, F, T>,
 ) => {
   const segs = readSelector(arg.selector);
@@ -125,7 +125,7 @@ export const invalidateCache = <S, C, X extends C & Array<any>, F extends FindOr
     .map(key => () => arg.storeResult(s => (s as any).cacheTTLs).remove(key)));
 }
 
-const completeWhereClause = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
+const completeWhereClause = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends ShapesExt>(
   arg: ArrayOperatorState<S, C, X, F, T>,
 ) => {
   arg.whereClauseStrings.push(arg.whereClauseString);
@@ -133,7 +133,7 @@ const completeWhereClause = <S, C, X extends C & Array<any>, F extends FindOrFil
   return arg.whereClauseStrings.join('');
 }
 
-const getElementIndices = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
+const getElementIndices = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends ShapesExt>(
   arg: ArrayOperatorState<S, C, X, F, T>,
 ) => {
   const elementIndices = arg.type === 'find'

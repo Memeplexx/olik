@@ -1,10 +1,10 @@
 /**
  * Whether updates to the store requires tags or not
  */
-export type Trackability = 'tagged' | 'untagged';
+export type ShapesExt = 'tagged' | 'untagged';
 
 /**
- * Whether this predicate is for a filterWhere() or a find()
+ * Whether this predicate is for a filter() or a find()
  */
 export type FindOrFilter = 'find' | 'filter';
 
@@ -48,18 +48,18 @@ export type DeepWritable<E> =
   E extends DeepReadonlyObject<infer R> ? R :
   never;
 
-export type PredicateAction<X extends DeepReadonlyArray<any>, F extends FindOrFilter, T extends Trackability> = X[0] extends object
+export type PredicateAction<X extends DeepReadonlyArray<any>, F extends FindOrFilter, T extends ShapesExt> = X[0] extends object
   ? ArrayOfObjectsAction<X, F, T>
   : ArrayOfElementsAction<X, F, T>;
 
-export type PredicateCustom<X extends DeepReadonlyArray<any>, F extends FindOrFilter, T extends Trackability> = X[0] extends object
+export type PredicateCustom<X extends DeepReadonlyArray<any>, F extends FindOrFilter, T extends ShapesExt> = X[0] extends object
   ? ArrayOfObjectsCommonAction<X, F, T>
   : ArrayOfElementsCommonAction<X, F, T>;
 
 /**
  * Query options common to all datatypes
  */
-export type PredicateOptionsCommon<X extends DeepReadonlyArray<any>, P, F extends FindOrFilter, T extends Trackability> = {
+export type PredicateOptionsCommon<X extends DeepReadonlyArray<any>, P, F extends FindOrFilter, T extends ShapesExt> = {
   /**
    * Searches for array element(s) where the previously selected property **equals** the supplied value
    * @example
@@ -97,7 +97,7 @@ export type PredicateOptionsCommon<X extends DeepReadonlyArray<any>, P, F extend
 /**
  * Query options for boolean
  */
-export type PredicateOptionsForBoolean<X extends DeepReadonlyArray<any>, F extends FindOrFilter, T extends Trackability> = {
+export type PredicateOptionsForBoolean<X extends DeepReadonlyArray<any>, F extends FindOrFilter, T extends ShapesExt> = {
   /**
    * Checks whether the previously supplied function returns true.
    * It is advised to only use this if your filtering criteria is too complicated to express using the operators supplied by this library.
@@ -113,7 +113,7 @@ export type PredicateOptionsForBoolean<X extends DeepReadonlyArray<any>, F exten
 /**
  * Query options for number
  */
-export type PredicateOptionsForNumber<X extends DeepReadonlyArray<any>, E, F extends FindOrFilter, T extends Trackability> = {
+export type PredicateOptionsForNumber<X extends DeepReadonlyArray<any>, E, F extends FindOrFilter, T extends ShapesExt> = {
   /**
    * Searches for array element(s) where the previously selected property **is greater than** the supplied value
    * @example
@@ -151,7 +151,7 @@ export type PredicateOptionsForNumber<X extends DeepReadonlyArray<any>, E, F ext
 /**
  * Query options for a string
  */
-export type PredicateOptionsForString<X extends DeepReadonlyArray<any>, E, F extends FindOrFilter, T extends Trackability> = {
+export type PredicateOptionsForString<X extends DeepReadonlyArray<any>, E, F extends FindOrFilter, T extends ShapesExt> = {
   /**
    * Searches for array element(s) where the previously selected property **matches** the supplied regular expression
    * @param pattern any regular expression
@@ -166,7 +166,7 @@ export type PredicateOptionsForString<X extends DeepReadonlyArray<any>, E, F ext
 /**
  * Query options
  */
-export type Predicate<X extends DeepReadonlyArray<any>, P, F extends FindOrFilter, T extends Trackability> =
+export type Predicate<X extends DeepReadonlyArray<any>, P, F extends FindOrFilter, T extends ShapesExt> =
   [P] extends [boolean] ? PredicateOptionsForBoolean<X, F, T>
   : [P] extends [number] ? PredicateOptionsForNumber<X, P, F, T>
   : [P] extends [string] ? PredicateOptionsForString<X, P, F, T>
@@ -175,7 +175,7 @@ export type Predicate<X extends DeepReadonlyArray<any>, P, F extends FindOrFilte
 /**
  * Actions which can be applied to any array
  */
-export type ArrayOfElementsAction<X extends DeepReadonlyArray<any>, F extends FindOrFilter, T extends Trackability> = {
+export type ArrayOfElementsAction<X extends DeepReadonlyArray<any>, F extends FindOrFilter, T extends ShapesExt> = {
   /**
    * Append more criteria with which to find/filter the array
    * @param getProp a function which selects the array element property to compare
@@ -199,7 +199,7 @@ export type ArrayOfElementsAction<X extends DeepReadonlyArray<any>, F extends Fi
 /**
  * Actions which can be applied to an array of objects
  */
-export type ArrayOfObjectsAction<X extends DeepReadonlyArray<any>, F extends FindOrFilter, T extends Trackability> = {
+export type ArrayOfObjectsAction<X extends DeepReadonlyArray<any>, F extends FindOrFilter, T extends ShapesExt> = {
   /**
    * Partially updates each selected array element allowing you to omit those properties which should not change
    * @param patch the partially filled object to be used as a patch
@@ -212,7 +212,7 @@ export type ArrayOfObjectsAction<X extends DeepReadonlyArray<any>, F extends Fin
   // get: <P>(getProp: (element: X[0]) => P) => Store<P, T>,
 } & ArrayOfElementsAction<X, F, T>;
 
-export interface ArrayOfElementsCommonAction<X extends DeepReadonlyArray<any>, F extends FindOrFilter, T extends Trackability> {
+export interface ArrayOfElementsCommonAction<X extends DeepReadonlyArray<any>, F extends FindOrFilter, T extends ShapesExt> {
   /**
    * Replaces the selected element(s)
    * @example
@@ -249,7 +249,7 @@ export interface ArrayOfElementsCommonAction<X extends DeepReadonlyArray<any>, F
   invalidateCache: () => void,
 }
 
-export type ArrayOfObjectsCommonAction<X extends DeepReadonlyArray<any>, F extends FindOrFilter, T extends Trackability> = {
+export type ArrayOfObjectsCommonAction<X extends DeepReadonlyArray<any>, F extends FindOrFilter, T extends ShapesExt> = {
   /**
    * Partially updates array elements allowing you to omit those properties which should not change
    * @example
@@ -259,7 +259,7 @@ export type ArrayOfObjectsCommonAction<X extends DeepReadonlyArray<any>, F exten
   patch: <H extends Partial<X[0]> | (() => AnyAsync<Partial<X[0]>>) >(replacement: H, options: UpdateOptions<T, H>) => H extends (() => AnyAsync<any>) ? Future<void> : void,
 } & ArrayOfElementsCommonAction<X, F, T>;
 
-export type TaggedUpdate<T extends Trackability> = T extends 'untagged' ? {
+export type TaggedUpdate<T extends ShapesExt> = T extends 'untagged' ? {
   /**
    * Any string which may be used to identify the origin of a state update.    
    * 
@@ -337,16 +337,16 @@ export type UpdateAtIndex = {
   atIndex?: number
 };
 
-export type ActionOptions<T extends Trackability> = T extends 'untagged' ? (TaggedUpdate<'untagged'> | void) : TaggedUpdate<'tagged'>;
+export type ActionOptions<T extends ShapesExt> = T extends 'untagged' ? (TaggedUpdate<'untagged'> | void) : TaggedUpdate<'tagged'>;
 
-export type UpdateOptions<T extends Trackability, H> = T extends 'untagged' ? (TaggedUpdate<'untagged'> & PromisableUpdate<H> | void) : TaggedUpdate<'tagged'> & PromisableUpdate<H>;
+export type UpdateOptions<T extends ShapesExt, H> = T extends 'untagged' ? (TaggedUpdate<'untagged'> & PromisableUpdate<H> | void) : TaggedUpdate<'tagged'> & PromisableUpdate<H>;
 
-export type InsertOptions<T extends Trackability, H> = UpdateOptions<T, H> & (UpdateAtIndex | void);
+export type InsertOptions<T extends ShapesExt, H> = UpdateOptions<T, H> & (UpdateAtIndex | void);
 
 /**
  * An object which is capable of storing and updating state which is in the shape of an array of primitives
  */
-export type StoreForAnArrayCommon<X extends DeepReadonlyArray<any>, T extends Trackability> = {
+export type StoreForAnArrayCommon<X extends DeepReadonlyArray<any>, T extends ShapesExt> = {
   /**
    * Appends one or more elements onto the the array
    * @example
@@ -389,7 +389,7 @@ export type StoreForAnArrayCommon<X extends DeepReadonlyArray<any>, T extends Tr
 /**
  * An object which is capable of storing and updating state which is in the shape of an array of primitives
  */
-export type StoreForAnArrayOfPrimitives<X extends DeepReadonlyArray<any>, T extends Trackability> = {
+export type StoreForAnArrayOfPrimitives<X extends DeepReadonlyArray<any>, T extends ShapesExt> = {
   /**
    * Specify a where clause to find many elements.
    * @example
@@ -410,7 +410,7 @@ export type StoreForAnArrayOfPrimitives<X extends DeepReadonlyArray<any>, T exte
   find: PredicateFunctionPrimitive<X, 'find', T>,
 } & StoreForAnArrayCommon<X, T>;
 
-export type StoreForAnArrayOfObjects<X extends DeepReadonlyArray<any>, T extends Trackability> = {
+export type StoreForAnArrayOfObjects<X extends DeepReadonlyArray<any>, T extends ShapesExt> = {
   /**
    * Insert element(s) into the store array (if they do not already exist) or update them (if they do)
    * @example
@@ -445,17 +445,17 @@ export type StoreForAnArrayOfObjects<X extends DeepReadonlyArray<any>, T extends
 /**
  * A function which accepts another function to select a property from an array element
  */
-export type PredicateFunctionObject<X extends DeepReadonlyArray<any>, F extends FindOrFilter, T extends Trackability> = <P>(getProp: (element: DeepReadonly<X[0]>) => P) => Predicate<X, P, F, T>;
+export type PredicateFunctionObject<X extends DeepReadonlyArray<any>, F extends FindOrFilter, T extends ShapesExt> = <P>(getProp: (element: DeepReadonly<X[0]>) => P) => Predicate<X, P, F, T>;
 
 /**
  * A function which accepts another function to select a property from an array element
  */
-export type PredicateFunctionPrimitive<X extends DeepReadonlyArray<any>, F extends FindOrFilter, T extends Trackability> = () => Predicate<X, X[0], F, T>;
+export type PredicateFunctionPrimitive<X extends DeepReadonlyArray<any>, F extends FindOrFilter, T extends ShapesExt> = () => Predicate<X, X[0], F, T>;
 
 /**
  * An object which is capable of storing and updating state which is in the shape of a primitive
  */
-export type StoreForAnObjectOrPrimitive<C, T extends Trackability> = {
+export type StoreForAnObjectOrPrimitive<C, T extends ShapesExt> = {
   /**
    * Substitutes this primitive value
    * @example
@@ -464,7 +464,7 @@ export type StoreForAnObjectOrPrimitive<C, T extends Trackability> = {
   replace: <H extends C | (() => AnyAsync<C>) >(replacement: H, options: UpdateOptions<T, H>) => H extends (() => AnyAsync<any>) ? Future<C> : void,
 }
 
-export type StoreForANumber<T extends Trackability> = {
+export type StoreForANumber<T extends ShapesExt> = {
   /**
    * Increment the value by the specified amount
    * @example
@@ -476,7 +476,7 @@ export type StoreForANumber<T extends Trackability> = {
 /**
  * An object which is capable of storing and updating state which is in the shape of an object
  */
-export type StoreForAnObject<C, T extends Trackability> = {
+export type StoreForAnObject<C, T extends ShapesExt> = {
   /**
    * Partially updates this object
    * @example
@@ -541,7 +541,7 @@ export interface StoreOrDerivation<C> {
 /**
  * An object which is capable of resetting its internal state
  */
-export type StoreWhichIsResettable<C, T extends Trackability> = {
+export type StoreWhichIsResettable<C, T extends ShapesExt> = {
   /**
    * Reverts the current state to how it was when the store was initialized.
    * Beware that all component stores will also be removed.
@@ -556,7 +556,7 @@ export type StoreWhichIsResettable<C, T extends Trackability> = {
 /**
  * An object which is capable of managing states of various shapes
  */
-export type Store<C, T extends Trackability> = ([C] extends undefined ? any :
+export type Store<C, T extends ShapesExt> = ([C] extends undefined ? any :
   [C] extends [DeepReadonlyArray<object>] ? StoreForAnArrayOfObjects<[C][0], T> :
   [C] extends [DeepReadonlyArray<any>] ? StoreForAnArrayOfPrimitives<[C][0], T> :
   [C] extends [number] ? StoreForANumber<T> :

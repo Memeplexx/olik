@@ -1,11 +1,11 @@
-import { ArrayOfElementsCommonAction, ArrayOfObjectsCommonAction, FindOrFilter, Trackability } from './shapes-external';
+import { ArrayOfElementsCommonAction, ArrayOfObjectsCommonAction, FindOrFilter, ShapesExt } from './shapes-external';
 import { ArrayCustomState } from './shapes-internal';
 import { errorMessages } from './shared-consts';
 import { readSelector } from './shared-utils';
 import { processStateUpdateRequest } from './store-updaters';
 import { transact } from './transact';
 
-export const replace = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
+export const replace = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends ShapesExt>(
   arg: ArrayCustomState<S, C, X, T>,
 ) => ((payload, updateOptions) => {
   const where = arg.predicate.toString();
@@ -27,7 +27,7 @@ export const replace = <S, C, X extends C & Array<any>, F extends FindOrFilter, 
   });
 }) as ArrayOfElementsCommonAction<X, F, T>['replace'];
 
-export const patch = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
+export const patch = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends ShapesExt>(
   arg: ArrayCustomState<S, C, X, T>,
 ) => ((payload, updateOptions) => {
   const where = arg.predicate.toString();
@@ -49,7 +49,7 @@ export const patch = <S, C, X extends C & Array<any>, F extends FindOrFilter, T 
   });
 }) as ArrayOfObjectsCommonAction<X, F, T>['patch'];
 
-export const remove = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
+export const remove = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends ShapesExt>(
   arg: ArrayCustomState<S, C, X, T>,
 ) => ((payload: any, updateOptions: any) => {
   const where = arg.predicate.toString();
@@ -74,7 +74,7 @@ export const remove = <S, C, X extends C & Array<any>, F extends FindOrFilter, T
   });
 }) as ArrayOfElementsCommonAction<X, F, T>['remove'];
 
-export const onChange = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
+export const onChange = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends ShapesExt>(
   arg: ArrayCustomState<S, C, X, T>,
 ) => (performAction => {
   arg.storeState.changeListeners.set(performAction, nextState => arg.type === 'find'
@@ -83,7 +83,7 @@ export const onChange = <S, C, X extends C & Array<any>, F extends FindOrFilter,
   return { unsubscribe: () => arg.storeState.changeListeners.delete(performAction) };
 }) as ArrayOfElementsCommonAction<X, F, T>['onChange'];
 
-export const read = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
+export const read = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends ShapesExt>(
   arg: ArrayCustomState<S, C, X, T>,
 ) => (() => {
   return arg.type === 'find'
@@ -91,7 +91,7 @@ export const read = <S, C, X extends C & Array<any>, F extends FindOrFilter, T e
     : (arg.selector(arg.getCurrentState()) as X).map(e => arg.predicate(e) ? e : null).filter(e => e != null)
 }) as ArrayOfElementsCommonAction<X, F, T>['read'];
 
-export const invalidateCache = <S, C, X extends C & Array<any>, T extends Trackability>(
+export const invalidateCache = <S, C, X extends C & Array<any>, T extends ShapesExt>(
   arg: ArrayCustomState<S, C, X, T>,
 ) => {
   const segs = readSelector(arg.selector);
@@ -100,7 +100,7 @@ export const invalidateCache = <S, C, X extends C & Array<any>, T extends Tracka
     .map(key => () => arg.storeResult(s => (s as any).cacheTTLs).remove(key)));
 }
 
-const getElementIndices = <S, C, X extends C & Array<any>, T extends Trackability>(
+const getElementIndices = <S, C, X extends C & Array<any>, T extends ShapesExt>(
   arg: ArrayCustomState<S, C, X, T>,
 ) => {
   const elementIndices = arg.type === 'find'

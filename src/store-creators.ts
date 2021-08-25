@@ -7,7 +7,7 @@ import {
   SelectorFromAStore,
   SelectorFromAStoreEnforcingTags,
   StoreForAComponent,
-  Trackability,
+  ShapesExt,
   DeepReadonly,
 } from './shapes-external';
 import { OptionsForCreatingInternalApplicationStore, StoreForAComponentInternal } from './shapes-internal';
@@ -108,7 +108,7 @@ export function createComponentStore<L>(
   return createComponentStoreInternal(state, options as OptionsForMakingAComponentStore);
 }
 
-function createApplicationStoreInternal<S, T extends Trackability>(
+function createApplicationStoreInternal<S, T extends ShapesExt>(
   state: S,
   options: OptionsForCreatingInternalApplicationStore,
 ) {
