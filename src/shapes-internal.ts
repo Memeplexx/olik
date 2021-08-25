@@ -51,7 +51,7 @@ export type ArrayOperatorState<S, C, X extends C & Array<any>, F extends FindOrF
   whereClauseString: string,
   criteria: (arg: X[0], fn: (arg: X[0]) => boolean) => boolean,
   recurseWhere: PredicateFunctionObject<X, F, T>,
-  fn: (e: X[0]) => boolean,
+  comparator: (e: X[0]) => boolean,
   selector: Selector<S, C, X>,
   type: FindOrFilter,
   storeResult: (selector?: (s: S) => C) => any,

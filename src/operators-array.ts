@@ -15,7 +15,7 @@ export const and = <S, C, X extends C & Array<any>, F extends FindOrFilter, T ex
   arg: ArrayOperatorState<S, C, X, F, T>,
 ) => (prop => {
   arg.whereClauseStrings.push(`${arg.whereClauseString}).and(`);
-  arg.whereClauseSpecs.push({ filter: o => arg.criteria(o, arg.fn), type: 'and' });
+  arg.whereClauseSpecs.push({ filter: o => arg.criteria(o, arg.comparator), type: 'and' });
   return arg.recurseWhere(prop);
 }) as ArrayOfElementsAction<X, F, T>['and'];
 
@@ -23,7 +23,7 @@ export const or = <S, C, X extends C & Array<any>, F extends FindOrFilter, T ext
   arg: ArrayOperatorState<S, C, X, F, T>,
 ) => (prop => {
   arg.whereClauseStrings.push(`${arg.whereClauseString}).or(`);
-  arg.whereClauseSpecs.push({ filter: o => arg.criteria(o, arg.fn), type: 'or' });
+  arg.whereClauseSpecs.push({ filter: o => arg.criteria(o, arg.comparator), type: 'or' });
   return arg.recurseWhere(prop);
 }) as ArrayOfElementsAction<X, F, T>['or'];
 
@@ -100,7 +100,7 @@ export const replace = <S, C, X extends C & Array<any>, F extends FindOrFilter, 
 export const onChange = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
   arg: ArrayOperatorState<S, C, X, F, T>,
 ) => (performAction => {
-  arg.whereClauseSpecs.push({ filter: o => arg.criteria(o, arg.fn), type: 'last' });
+  arg.whereClauseSpecs.push({ filter: o => arg.criteria(o, arg.comparator), type: 'last' });
   arg.storeState.changeListeners.set(performAction, nextState => arg.type === 'find'
     ? (arg.selector(nextState) as X).find(e => bundleCriteria(e, arg.whereClauseSpecs))
     : { $filtered: (arg.selector(nextState) as X).map(e => bundleCriteria(e, arg.whereClauseSpecs) ? e : null).filter(e => e !== null) });
@@ -110,7 +110,7 @@ export const onChange = <S, C, X extends C & Array<any>, F extends FindOrFilter,
 export const read = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
   arg: ArrayOperatorState<S, C, X, F, T>,
 ) => (() => {
-  arg.whereClauseSpecs.push({ filter: o => arg.criteria(o, arg.fn), type: 'last' });
+  arg.whereClauseSpecs.push({ filter: o => arg.criteria(o, arg.comparator), type: 'last' });
   return arg.type === 'find'
     ? (arg.selector(arg.getCurrentState()) as X).find(e => bundleCriteria(e, arg.whereClauseSpecs))
     : (arg.selector(arg.getCurrentState()) as X).map(e => bundleCriteria(e, arg.whereClauseSpecs) ? e : null).filter(e => e != null);
@@ -129,7 +129,7 @@ const completeWhereClause = <S, C, X extends C & Array<any>, F extends FindOrFil
   arg: ArrayOperatorState<S, C, X, F, T>,
 ) => {
   arg.whereClauseStrings.push(arg.whereClauseString);
-  arg.whereClauseSpecs.push({ filter: o => arg.criteria(o, arg.fn), type: 'last' });
+  arg.whereClauseSpecs.push({ filter: o => arg.criteria(o, arg.comparator), type: 'last' });
   return arg.whereClauseStrings.join('');
 }
 

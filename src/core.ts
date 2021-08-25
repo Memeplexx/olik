@@ -101,14 +101,14 @@ export function createStoreCore<S, T extends Trackability>({
           };
           return { segs, criteria };
         }
-        const constructActions = (whereClauseString: string, fn: (e: X[0]) => boolean) => {
+        const constructActions = (whereClauseString: string, comparator: (e: X[0]) => boolean) => {
           const context = {
             whereClauseSpecs,
             whereClauseStrings,
             getCurrentState: () => storeState.currentState,
             criteria: getSegsAndCriteria().criteria,
             recurseWhere,
-            fn,
+            comparator,
             whereClauseString,
             selector,
             type,
