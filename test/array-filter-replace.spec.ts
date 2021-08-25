@@ -21,7 +21,7 @@ describe('array.filter().replace()', () => {
     const select = createApplicationStore(initialState);
     const payload = { id: 4, value: 'four' };
     select(s => s.array)
-      .filterWhere(e => e.id).eq(2)
+      .filter(e => e.id).eq(2)
       .replace(payload);
     expect(testState.currentAction).toEqual({
       type: `array.filter(id).eq(2).replace()`,
@@ -37,7 +37,7 @@ describe('array.filter().replace()', () => {
     const select = createApplicationStore(initialState);
     const payload = { id: 4, value: 'four' };
     select(s => s.array)
-      .filterWhere(e => e.id).ne(2)
+      .filter(e => e.id).ne(2)
       .replace(payload);
     expect(testState.currentAction).toEqual({
       type: `array.filter(id).ne(2).replace()`,
@@ -53,7 +53,7 @@ describe('array.filter().replace()', () => {
     const select = createApplicationStore(initialState);
     const payload = { id: 4, value: 'four' };
     select(s => s.array)
-      .filterWhere(e => e.id).gt(1)
+      .filter(e => e.id).gt(1)
       .replace(payload);
     expect(testState.currentAction).toEqual({
       type: `array.filter(id).gt(1).replace()`,
@@ -69,7 +69,7 @@ describe('array.filter().replace()', () => {
     const select = createApplicationStore(initialState);
     const payload = { id: 4, value: 'four' };
     select(s => s.array)
-      .filterWhere(e => e.id).gte(1)
+      .filter(e => e.id).gte(1)
       .replace(payload);
     expect(testState.currentAction).toEqual({
       type: `array.filter(id).gte(1).replace()`,
@@ -85,7 +85,7 @@ describe('array.filter().replace()', () => {
     const select = createApplicationStore(initialState);
     const payload = { id: 4, value: 'four' };
     select(s => s.array)
-      .filterWhere(e => e.id).lt(2)
+      .filter(e => e.id).lt(2)
       .replace(payload);
     expect(testState.currentAction).toEqual({
       type: `array.filter(id).lt(2).replace()`,
@@ -101,7 +101,7 @@ describe('array.filter().replace()', () => {
     const select = createApplicationStore(initialState);
     const payload = { id: 4, value: 'four' };
     select(s => s.array)
-      .filterWhere(e => e.id).lte(2)
+      .filter(e => e.id).lte(2)
       .replace(payload);
     expect(testState.currentAction).toEqual({
       type: `array.filter(id).lte(2).replace()`,
@@ -117,7 +117,7 @@ describe('array.filter().replace()', () => {
     const select = createApplicationStore(initialState);
     const payload = { id: 4, value: 'four' };
     select(s => s.array)
-      .filterWhere(e => e.id).in([1, 2])
+      .filter(e => e.id).in([1, 2])
       .replace(payload);
     expect(testState.currentAction).toEqual({
       type: `array.filter(id).in(1,2).replace()`,
@@ -133,7 +133,7 @@ describe('array.filter().replace()', () => {
     const select = createApplicationStore(initialState);
     const payload = { id: 4, value: 'four' };
     select(s => s.array)
-      .filterWhere(e => e.id).ni([1, 2])
+      .filter(e => e.id).ni([1, 2])
       .replace(payload);
     expect(testState.currentAction).toEqual({
       type: `array.filter(id).ni(1,2).replace()`,
@@ -149,7 +149,7 @@ describe('array.filter().replace()', () => {
     const select = createApplicationStore(initialState);
     const payload = { id: 4, value: 'four' };
     select(s => s.array)
-      .filterWhere(e => e.value).matches(/^t/)
+      .filter(e => e.value).matches(/^t/)
       .replace(payload);
     expect(testState.currentAction).toEqual({
       type: `array.filter(value).match(/^t/).replace()`,

@@ -27,14 +27,14 @@ describe('Immutability', () => {
   it('should not be able to modify an array element payload', () => {
     const select = createApplicationStore(initialState);
     const payload = { id: 2, name: 'hey' };
-    select(s => s.arr).findWhere(s => s.id).eq(1).replace(payload);
+    select(s => s.arr).find(s => s.id).eq(1).replace(payload);
     expect(() => payload.name = 'XXX').toThrow();
   })
 
   it('should not be able to modify the payload root', () => {
     const select = createApplicationStore(initialState);
     const payload = { id: 2, name: 'hey' };
-    select(s => s.arr).findWhere(s => s.id).eq(1).replace(payload);
+    select(s => s.arr).find(s => s.id).eq(1).replace(payload);
     expect(() => (select().read() as any).arr = []).toThrow();
   })
 

@@ -20,7 +20,7 @@ describe('array.filter().remove()', () => {
   it('should eq()', () => {
     const select = createApplicationStore(initialState);
     select(s => s.array)
-      .filterWhere(e => e.id).eq(2)
+      .filter(e => e.id).eq(2)
       .remove();
     expect(testState.currentAction).toEqual({
       type: `array.filter(id).eq(2).remove()`,
@@ -35,7 +35,7 @@ describe('array.filter().remove()', () => {
   it('should ne()', () => {
     const select = createApplicationStore(initialState);
     select(s => s.array)
-      .filterWhere(e => e.id).ne(2)
+      .filter(e => e.id).ne(2)
       .remove();
     expect(testState.currentAction).toEqual({
       type: `array.filter(id).ne(2).remove()`,
@@ -50,7 +50,7 @@ describe('array.filter().remove()', () => {
   it('should gt()', () => {
     const select = createApplicationStore(initialState);
     select(s => s.array)
-      .filterWhere(e => e.id).gt(1)
+      .filter(e => e.id).gt(1)
       .remove();
     expect(testState.currentAction).toEqual({
       type: `array.filter(id).gt(1).remove()`,
@@ -65,7 +65,7 @@ describe('array.filter().remove()', () => {
   it('should gte()', () => {
     const select = createApplicationStore(initialState);
     select(s => s.array)
-      .filterWhere(e => e.id).gte(2)
+      .filter(e => e.id).gte(2)
       .remove();
     expect(testState.currentAction).toEqual({
       type: `array.filter(id).gte(2).remove()`,
@@ -81,7 +81,7 @@ describe('array.filter().remove()', () => {
     const select = createApplicationStore(initialState);
     const where = 'id < 2';
     select(s => s.array)
-      .filterWhere(e => e.id).lt(2)
+      .filter(e => e.id).lt(2)
       .remove();
     expect(testState.currentAction).toEqual({
       type: `array.filter(id).lt(2).remove()`,
@@ -96,7 +96,7 @@ describe('array.filter().remove()', () => {
   it('should lte()', () => {
     const select = createApplicationStore(initialState);
     select(s => s.array)
-      .filterWhere(e => e.id).lte(2)
+      .filter(e => e.id).lte(2)
       .remove();
     expect(testState.currentAction).toEqual({
       type: `array.filter(id).lte(2).remove()`,
@@ -111,7 +111,7 @@ describe('array.filter().remove()', () => {
   it('should in()', () => {
     const select = createApplicationStore(initialState);
     select(s => s.array)
-      .filterWhere(e => e.id).in([1, 2])
+      .filter(e => e.id).in([1, 2])
       .remove();
     expect(testState.currentAction).toEqual({
       type: `array.filter(id).in(1,2).remove()`,
@@ -126,7 +126,7 @@ describe('array.filter().remove()', () => {
   it('should ni()', () => {
     const select = createApplicationStore(initialState);
     select(s => s.array)
-      .filterWhere(e => e.id).ni([1, 2])
+      .filter(e => e.id).ni([1, 2])
       .remove();
     expect(testState.currentAction).toEqual({
       type: `array.filter(id).ni(1,2).remove()`,
@@ -141,7 +141,7 @@ describe('array.filter().remove()', () => {
   it('should match()', () => {
     const select = createApplicationStore(initialState);
     select(s => s.array)
-      .filterWhere(e => e.value).matches(/^t/)
+      .filter(e => e.value).matches(/^t/)
       .remove();
     expect(testState.currentAction).toEqual({
       type: `array.filter(value).match(/^t/).remove()`,

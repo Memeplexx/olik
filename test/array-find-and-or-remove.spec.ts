@@ -18,11 +18,11 @@ describe('array.find().and().or()', () => {
     array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
   };
 
-  it('should eq().andWhere().eq()', () => {
+  it('should eq().and().eq()', () => {
     const select = createApplicationStore(initialState);
     select(s => s.array)
-      .findWhere(s => s.id).eq(2)
-      .andWhere(s => s.value).eq('two')
+      .find(s => s.id).eq(2)
+      .and(s => s.value).eq('two')
       .remove();
     expect(testState.currentAction).toEqual({
       type: `array.find(id).eq(2).and(value).eq(two).remove()`,
@@ -35,11 +35,11 @@ describe('array.find().and().or()', () => {
     expect(select().read().array).toEqual([initialState.array[0], initialState.array[2]]);
   })
 
-  it('should eq().orWhere().eq()', () => {
+  it('should eq().or().eq()', () => {
     const select = createApplicationStore(initialState);
     select(s => s.array)
-      .findWhere(s => s.id).eq(1)
-      .orWhere(s => s.value).eq('two')
+      .find(s => s.id).eq(1)
+      .or(s => s.value).eq('two')
       .remove();
     expect(testState.currentAction).toEqual({
       type: `array.find(id).eq(1).or(value).eq(two).remove()`,
@@ -52,21 +52,21 @@ describe('array.find().and().or()', () => {
     expect(select().read().array).toEqual([initialState.array[1], initialState.array[2]]);
   })
 
-  it('should eq().andWhere().eq() not matching throw', () => {
+  it('should eq().and().eq() not matching throw', () => {
     const select = createApplicationStore(initialState);
     expect(() => select(s => s.array)
-      .findWhere(s => s.id).eq(1)
-      .andWhere(s => s.id).eq(2)
+      .find(s => s.id).eq(1)
+      .and(s => s.id).eq(2)
       .remove()
     ).toThrowError(errorMessages.NO_ARRAY_ELEMENT_FOUND);
   })
 
-  it('should eq().andWhere().eq().or().eq()', () => {
+  it('should eq().and().eq().or().eq()', () => {
     const select = createApplicationStore(initialState);
     select(s => s.array)
-      .findWhere(e => e.id).eq(1)
-      .andWhere(e => e.id).eq(2)
-      .orWhere(e => e.id).eq(3)
+      .find(e => e.id).eq(1)
+      .and(e => e.id).eq(2)
+      .or(e => e.id).eq(3)
       .remove();
     expect(testState.currentAction).toEqual({
       type: `array.find(id).eq(1).and(id).eq(2).or(id).eq(3).remove()`,
@@ -80,12 +80,12 @@ describe('array.find().and().or()', () => {
     expect(select().read().array).toEqual([initialState.array[0], initialState.array[1]]);
   })
 
-  it('should eq().orWhere().eq().andWhere().eq()', () => {
+  it('should eq().or().eq().and().eq()', () => {
     const select = createApplicationStore(initialState);
     select(s => s.array)
-      .findWhere(e => e.id).eq(4)
-      .orWhere(e => e.id).eq(3)
-      .andWhere(e => e.value).eq('three')
+      .find(e => e.id).eq(4)
+      .or(e => e.id).eq(3)
+      .and(e => e.value).eq('three')
       .remove();
     expect(testState.currentAction).toEqual({
       type: `array.find(id).eq(4).or(id).eq(3).and(value).eq(three).remove()`,
@@ -99,13 +99,13 @@ describe('array.find().and().or()', () => {
     expect(select().read().array).toEqual([initialState.array[0], initialState.array[1]]);
   })
 
-  it('should eq().andWhere().eq().orWhere().eq().andWhere().eq()', () => {
+  it('should eq().and().eq().or().eq().and().eq()', () => {
     const select = createApplicationStore(initialState);
     select(s => s.array)
-      .findWhere(e => e.id).eq(1)
-      .andWhere(e => e.value).eq('one')
-      .orWhere(e => e.id).eq(3)
-      .andWhere(e => e.value).eq('three')
+      .find(e => e.id).eq(1)
+      .and(e => e.value).eq('one')
+      .or(e => e.id).eq(3)
+      .and(e => e.value).eq('three')
       .remove();
     expect(testState.currentAction).toEqual({
       type: `array.find(id).eq(1).and(value).eq(one).or(id).eq(3).and(value).eq(three).remove()`,

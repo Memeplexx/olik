@@ -155,26 +155,26 @@ describe('async', () => {
       })
   })
 
-  it('should work with findWhere().replace()', done => {
+  it('should work with find().replace()', done => {
     const select = createApplicationStore(initialState);
     const payload = { id: 2, value: 'twooo' };
     select(s => s.array)
-      .findWhere(s => s.id).eq(2)
+      .find(s => s.id).eq(2)
       .replace(() => new Promise(resolve => setTimeout(() => resolve(payload), 10)), { cacheFor: 1000 }).asPromise()
       .then(res => {
         expect(res).toEqual(select().read().array.find(e => e.id === 2));
         expect(select().read().array).toEqual([initialState.array[0], payload, initialState.array[2]]);
         const payload2 = { id: 2, value: 'twooo' };
         select(s => s.array)
-          .findWhere(s => s.id).eq(2)
+          .find(s => s.id).eq(2)
           .replace(() => new Promise(resolve => setTimeout(() => resolve(payload2), 10))).asPromise()
           .then(() => {
             expect(select().read().array).toEqual([initialState.array[0], payload, initialState.array[2]]);
             select(s => s.array)
-              .findWhere(s => s.id).eq(2)
+              .find(s => s.id).eq(2)
               .invalidateCache();
             select(s => s.array)
-              .findWhere(s => s.id).eq(2)
+              .find(s => s.id).eq(2)
               .replace(() => new Promise(resolve => setTimeout(() => resolve(payload2), 10))).asPromise()
               .then(() => {
                 expect(select().read().array).toEqual([initialState.array[0], payload2, initialState.array[2]]);
@@ -184,26 +184,26 @@ describe('async', () => {
       })
   })
 
-  it('should work with findWhere().patch()', done => {
+  it('should work with find().patch()', done => {
     const select = createApplicationStore(initialState);
     const payload = { value: 'twooo' };
     select(s => s.array)
-      .findWhere(s => s.id).eq(2)
+      .find(s => s.id).eq(2)
       .patch(() => new Promise(resolve => setTimeout(() => resolve(payload), 10)), { cacheFor: 1000 }).asPromise()
       .then(res => {
         expect(res).toEqual(select().read().array.find(e => e.id === 2));
         expect(select().read().array).toEqual([initialState.array[0], { ...initialState.array[1], ...payload }, initialState.array[2]]);
         const payload2 = { value: 'twoooz' };
         select(s => s.array)
-          .findWhere(s => s.id).eq(2)
+          .find(s => s.id).eq(2)
           .patch(() => new Promise(resolve => setTimeout(() => resolve(payload2), 10))).asPromise()
           .then(() => {
             expect(select().read().array).toEqual([initialState.array[0], { ...initialState.array[1], ...payload }, initialState.array[2]]);
             select(s => s.array)
-              .findWhere(s => s.id).eq(2)
+              .find(s => s.id).eq(2)
               .invalidateCache();
             select(s => s.array)
-              .findWhere(s => s.id).eq(2)
+              .find(s => s.id).eq(2)
               .patch(() => new Promise(resolve => setTimeout(() => resolve(payload2), 10))).asPromise()
               .then(() => {
                 expect(select().read().array).toEqual([initialState.array[0], { ...initialState.array[1], ...payload2 }, initialState.array[2]]);
@@ -213,10 +213,10 @@ describe('async', () => {
       })
   })
 
-  it('should work with findWhere().remove()', done => {
+  it('should work with find().remove()', done => {
     const select = createApplicationStore(initialState);
     select(s => s.array)
-      .findWhere(s => s.id).eq(2)
+      .find(s => s.id).eq(2)
       .remove(() => new Promise(resolve => setTimeout(() => resolve(null), 10))).asPromise()
       .then(res => {
         expect(res).toEqual(select().read().array.find(e => e.id === 2));
@@ -225,26 +225,26 @@ describe('async', () => {
       })
   })
 
-  it('should work with filterWhere().replace()', done => {
+  it('should work with filter().replace()', done => {
     const select = createApplicationStore(initialState);
     const payload = { id: 2, value: 'twooo' };
     select(s => s.array)
-      .filterWhere(s => s.id).eq(2)
+      .filter(s => s.id).eq(2)
       .replace(() => new Promise(resolve => setTimeout(() => resolve(payload), 10)), { cacheFor: 1000 }).asPromise()
       .then(res => {
         expect(res).toEqual(select().read().array.filter(e => e.id === 2));
         expect(select().read().array).toEqual([initialState.array[0], payload, initialState.array[2]]);
         const payload2 = { id: 2, value: 'twooo' };
         select(s => s.array)
-          .filterWhere(s => s.id).eq(2)
+          .filter(s => s.id).eq(2)
           .replace(() => new Promise(resolve => setTimeout(() => resolve(payload2), 10))).asPromise()
           .then(() => {
             expect(select().read().array).toEqual([initialState.array[0], payload, initialState.array[2]]);
             select(s => s.array)
-              .filterWhere(s => s.id).eq(2)
+              .filter(s => s.id).eq(2)
               .invalidateCache();
             select(s => s.array)
-              .filterWhere(s => s.id).eq(2)
+              .filter(s => s.id).eq(2)
               .replace(() => new Promise(resolve => setTimeout(() => resolve(payload2), 10))).asPromise()
               .then(() => {
                 expect(select().read().array).toEqual([initialState.array[0], payload2, initialState.array[2]]);
@@ -254,26 +254,26 @@ describe('async', () => {
       })
   })
 
-  it('should work with filterWhere().patch()', done => {
+  it('should work with filter().patch()', done => {
     const select = createApplicationStore(initialState);
     const payload = { value: 'twooo' };
     select(s => s.array)
-      .filterWhere(s => s.id).eq(2)
+      .filter(s => s.id).eq(2)
       .patch(() => new Promise(resolve => setTimeout(() => resolve(payload), 10)), { cacheFor: 1000 }).asPromise()
       .then(res => {
         expect(res).toEqual(select().read().array.filter(e => e.id === 2));
         expect(select().read().array).toEqual([initialState.array[0], { ...initialState.array[1], ...payload }, initialState.array[2]]);
         const payload2 = { value: 'twoooz' };
         select(s => s.array)
-          .filterWhere(s => s.id).eq(2)
+          .filter(s => s.id).eq(2)
           .patch(() => new Promise(resolve => setTimeout(() => resolve(payload2), 10))).asPromise()
           .then(() => {
             expect(select().read().array).toEqual([initialState.array[0], { ...initialState.array[1], ...payload }, initialState.array[2]]);
             select(s => s.array)
-              .filterWhere(s => s.id).eq(2)
+              .filter(s => s.id).eq(2)
               .invalidateCache();
             select(s => s.array)
-              .filterWhere(s => s.id).eq(2)
+              .filter(s => s.id).eq(2)
               .patch(() => new Promise(resolve => setTimeout(() => resolve(payload2), 10))).asPromise()
               .then(() => {
                 expect(select().read().array).toEqual([initialState.array[0], { ...initialState.array[1], ...payload2 }, initialState.array[2]]);
@@ -283,10 +283,10 @@ describe('async', () => {
       })
   })
 
-  it('should work with filterWhere().remove()', done => {
+  it('should work with filter().remove()', done => {
     const select = createApplicationStore(initialState);
     select(s => s.array)
-      .filterWhere(s => s.id).eq(2)
+      .filter(s => s.id).eq(2)
       .remove(() => new Promise(resolve => setTimeout(() => resolve(null), 10))).asPromise()
       .then(res => {
         expect(res).toEqual([]);
@@ -295,26 +295,26 @@ describe('async', () => {
       })
   })
 
-  it('should work with findWhere().returnsTrue().replace()', done => {
+  it('should work with find().returnsTrue().replace()', done => {
     const select = createApplicationStore(initialState);
     const payload = { id: 2, value: 'twooo' };
     select(s => s.array)
-      .findWhere(s => s.id === 2).returnsTrue()
+      .find(s => s.id === 2).returnsTrue()
       .replace(() => new Promise(resolve => setTimeout(() => resolve(payload), 10)), { cacheFor: 1000 }).asPromise()
       .then(res => {
         expect(res).toEqual(select().read().array.find(e => e.id === 2));
         expect(select().read().array).toEqual([initialState.array[0], payload, initialState.array[2]]);
         const payload2 = { id: 2, value: 'twooo' };
         select(s => s.array)
-          .findWhere(s => s.id === 2).returnsTrue()
+          .find(s => s.id === 2).returnsTrue()
           .replace(() => new Promise(resolve => setTimeout(() => resolve(payload2), 10))).asPromise()
           .then(() => {
             expect(select().read().array).toEqual([initialState.array[0], payload, initialState.array[2]]);
             select(s => s.array)
-              .findWhere(s => s.id === 2).returnsTrue()
+              .find(s => s.id === 2).returnsTrue()
               .invalidateCache();
             select(s => s.array)
-              .findWhere(s => s.id === 2).returnsTrue()
+              .find(s => s.id === 2).returnsTrue()
               .replace(() => new Promise(resolve => setTimeout(() => resolve(payload2), 10))).asPromise()
               .then(() => {
                 expect(select().read().array).toEqual([initialState.array[0], payload2, initialState.array[2]]);
@@ -324,26 +324,26 @@ describe('async', () => {
       })
   })
 
-  it('should work with filterWhere().returnsTrue().replace()', done => {
+  it('should work with filter().returnsTrue().replace()', done => {
     const select = createApplicationStore(initialState);
     const payload = { id: 2, value: 'twooo' };
     select(s => s.array)
-      .filterWhere(s => s.id === 2).returnsTrue()
+      .filter(s => s.id === 2).returnsTrue()
       .replace(() => new Promise(resolve => setTimeout(() => resolve(payload), 10)), { cacheFor: 1000 }).asPromise()
       .then(res => {
         expect(res).toEqual(select().read().array.filter(e => e.id === 2));
         expect(select().read().array).toEqual([initialState.array[0], payload, initialState.array[2]]);
         const payload2 = { id: 2, value: 'twooo' };
         select(s => s.array)
-          .filterWhere(s => s.id === 2).returnsTrue()
+          .filter(s => s.id === 2).returnsTrue()
           .replace(() => new Promise(resolve => setTimeout(() => resolve(payload2), 10))).asPromise()
           .then(() => {
             expect(select().read().array).toEqual([initialState.array[0], payload, initialState.array[2]]);
             select(s => s.array)
-              .filterWhere(s => s.id === 2).returnsTrue()
+              .filter(s => s.id === 2).returnsTrue()
               .invalidateCache();
             select(s => s.array)
-              .filterWhere(s => s.id === 2).returnsTrue()
+              .filter(s => s.id === 2).returnsTrue()
               .replace(() => new Promise(resolve => setTimeout(() => resolve(payload2), 10))).asPromise()
               .then(() => {
                 expect(select().read().array).toEqual([initialState.array[0], payload2, initialState.array[2]]);
@@ -353,26 +353,26 @@ describe('async', () => {
       })
   })
 
-  it('should work with findWhere().returnsTrue().patch()', done => {
+  it('should work with find().returnsTrue().patch()', done => {
     const select = createApplicationStore(initialState);
     const payload = { value: 'twooo' };
     select(s => s.array)
-      .findWhere(s => s.id === 2).returnsTrue()
+      .find(s => s.id === 2).returnsTrue()
       .patch(() => new Promise(resolve => setTimeout(() => resolve(payload), 10)), { cacheFor: 1000 }).asPromise()
       .then(res => {
         expect(res).toEqual(select().read().array.find(e => e.id === 2));
         expect(select().read().array).toEqual([initialState.array[0], { ...initialState.array[1], ...payload }, initialState.array[2]]);
         const payload2 = { value: 'twoooz' };
         select(s => s.array)
-          .findWhere(s => s.id === 2).returnsTrue()
+          .find(s => s.id === 2).returnsTrue()
           .patch(() => new Promise(resolve => setTimeout(() => resolve(payload2), 10))).asPromise()
           .then(() => {
             expect(select().read().array).toEqual([initialState.array[0], { ...initialState.array[1], ...payload }, initialState.array[2]]);
             select(s => s.array)
-              .findWhere(s => s.id === 2).returnsTrue()
+              .find(s => s.id === 2).returnsTrue()
               .invalidateCache();
             select(s => s.array)
-              .findWhere(s => s.id === 2).returnsTrue()
+              .find(s => s.id === 2).returnsTrue()
               .patch(() => new Promise(resolve => setTimeout(() => resolve(payload2), 10))).asPromise()
               .then(() => {
                 expect(select().read().array).toEqual([initialState.array[0], { ...initialState.array[1], ...payload2 }, initialState.array[2]]);
@@ -382,26 +382,26 @@ describe('async', () => {
       })
   })
 
-  it('should work with filterWhere().returnsTrue().patch()', done => {
+  it('should work with filter().returnsTrue().patch()', done => {
     const select = createApplicationStore(initialState);
     const payload = { value: 'twooo' };
     select(s => s.array)
-      .filterWhere(s => s.id === 2).returnsTrue()
+      .filter(s => s.id === 2).returnsTrue()
       .patch(() => new Promise(resolve => setTimeout(() => resolve(payload), 10)), { cacheFor: 1000 }).asPromise()
       .then(res => {
         expect(res).toEqual(select().read().array.filter(e => e.id === 2));
         expect(select().read().array).toEqual([initialState.array[0], { ...initialState.array[1], ...payload }, initialState.array[2]]);
         const payload2 = { value: 'twoooz' };
         select(s => s.array)
-          .filterWhere(s => s.id === 2).returnsTrue()
+          .filter(s => s.id === 2).returnsTrue()
           .patch(() => new Promise(resolve => setTimeout(() => resolve(payload2), 10))).asPromise()
           .then(() => {
             expect(select().read().array).toEqual([initialState.array[0], { ...initialState.array[1], ...payload }, initialState.array[2]]);
             select(s => s.array)
-              .filterWhere(s => s.id === 2).returnsTrue()
+              .filter(s => s.id === 2).returnsTrue()
               .invalidateCache();
             select(s => s.array)
-              .filterWhere(s => s.id === 2).returnsTrue()
+              .filter(s => s.id === 2).returnsTrue()
               .patch(() => new Promise(resolve => setTimeout(() => resolve(payload2), 10))).asPromise()
               .then(() => {
                 expect(select().read().array).toEqual([initialState.array[0], { ...initialState.array[1], ...payload2 }, initialState.array[2]]);
@@ -411,10 +411,10 @@ describe('async', () => {
       })
   })
 
-  it('should work with findWhere().returnsTrue().remove()', done => {
+  it('should work with find().returnsTrue().remove()', done => {
     const select = createApplicationStore(initialState);
     select(s => s.array)
-      .findWhere(s => s.id === 2).returnsTrue()
+      .find(s => s.id === 2).returnsTrue()
       .remove(() => new Promise(resolve => setTimeout(() => resolve(null), 10))).asPromise()
       .then(res => {
         expect(res).toEqual(undefined);
@@ -423,10 +423,10 @@ describe('async', () => {
       })
   })
 
-  it('should work with filterWhere().returnsTrue().remove()', done => {
+  it('should work with filter().returnsTrue().remove()', done => {
     const select = createApplicationStore(initialState);
     select(s => s.array)
-      .filterWhere(s => s.id === 2).returnsTrue()
+      .filter(s => s.id === 2).returnsTrue()
       .remove(() => new Promise(resolve => setTimeout(() => resolve(null), 10))).asPromise()
       .then(res => {
         expect(res).toEqual([]);
@@ -598,13 +598,13 @@ describe('async', () => {
     const fetchTodo2 = () => new Promise<{ id: number, value: string }>(resolve => setTimeout(() => resolve({ id: 1, value: 'testyy' })));
     select(s => s.array)
       .replaceAll(fetchTodos, { cacheFor: 1000 }).asPromise()
-      .then(() => select(s => s.array).filterWhere(s => s.id).eq(1).replace(fetchTodo, { cacheFor: 1000 }).asPromise())
+      .then(() => select(s => s.array).filter(s => s.id).eq(1).replace(fetchTodo, { cacheFor: 1000 }).asPromise())
       .then(() => select(s => s.array).replaceAll(fetchTodos).asPromise())
-      .then(() => select(s => s.array).filterWhere(s => s.id).eq(1).replace(fetchTodo2).asPromise())
+      .then(() => select(s => s.array).filter(s => s.id).eq(1).replace(fetchTodo2).asPromise())
       .then(() => {
         expect(select().read().array).toEqual([{ id: 1, value: 'testy' }]);
-        select(s => s.array).filterWhere(s => s.id).eq(1).invalidateCache();
-      }).then(() => select(s => s.array).filterWhere(s => s.id).eq(1).replace(fetchTodo2).asPromise())
+        select(s => s.array).filter(s => s.id).eq(1).invalidateCache();
+      }).then(() => select(s => s.array).filter(s => s.id).eq(1).replace(fetchTodo2).asPromise())
       .then(() => {
         expect(select().read().array).toEqual([{ id: 1, value: 'testyy' }]);
         done();

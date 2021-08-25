@@ -117,8 +117,8 @@ export function createStoreCore<S, T extends Trackability>({
             payloadWhereClauses,
           } as ArrayOperatorState<S, C, X, FindOrFilter, T>;
           const arrayActions = {
-            andWhere: array.andWhere(context),
-            orWhere: array.orWhere(context),
+            and: array.and(context),
+            or: array.or(context),
             replace: array.replace(context),
             patch: array.patch(context),
             remove: array.remove(context),
@@ -205,7 +205,7 @@ export function createStoreCore<S, T extends Trackability>({
             },
           } as PredicateOptionsForString<X, any, FindOrFilter, T>,
         };
-      }) as StoreForAnArrayOfObjects<X, T>['filterWhere'];
+      }) as StoreForAnArrayOfObjects<X, T>['filter'];
       return recurseWhere;
     };
     const getCoreActionsState = () => ({
@@ -229,8 +229,8 @@ export function createStoreCore<S, T extends Trackability>({
       reset: reset(getCoreActionsState()),
       replace: replace({ ...getCoreActionsState(), name: 'replace' }),
       upsertMatching: upsertMatching(getCoreActionsState()),
-      filterWhere: where('filter'),
-      findWhere: where('find'),
+      filter: where('filter'),
+      find: where('find'),
       onChange: onChange(selector, storeState.changeListeners),
       read: read(selector, () => storeState.currentState),
       invalidateCache: () => invalidateCache(selector, storeResult),

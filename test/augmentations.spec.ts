@@ -52,7 +52,7 @@ describe('augmentations', () => {
       }
     })
     const select = createApplicationStore({ array: [42] });
-    const res = (select(s => s.array).findWhere().eq(42) as any).myThing();
+    const res = (select(s => s.array).find().eq(42) as any).myThing();
     expect(res).toEqual(42);
   })
 
@@ -94,7 +94,7 @@ describe('augmentations', () => {
     })
     const select = createApplicationStore({ array: [42] });
     const fetch = () => new Promise(resolve => setTimeout(() => resolve(43), 5))
-    const res = (select(s => s.array) as any).findWhere().eq(42).replace(fetch).myThing();
+    const res = (select(s => s.array) as any).find().eq(42).replace(fetch).myThing();
     res.then((r: any) => {
       expect(r).toEqual(undefined);
       done();

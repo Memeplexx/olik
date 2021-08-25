@@ -20,7 +20,7 @@ describe('array.find().returnsTrue().read()', () => {
   it('should read()', () => {
     const select = createApplicationStore(initialState);
     const read = select(s => s.array)
-      .findWhere(e => e.id === 2).returnsTrue()
+      .find(e => e.id === 2).returnsTrue()
       .read();
     expect(read).toEqual(initialState.array[1]);
   })
@@ -29,16 +29,16 @@ describe('array.find().returnsTrue().read()', () => {
     const select = createApplicationStore(initialState);
     let changeCount = 0;
     select(s => s.array)
-      .findWhere(e => e.id === 3).returnsTrue()
+      .find(e => e.id === 3).returnsTrue()
       .onChange(e => {
         changeCount++;
         expect(e.value).toEqual('three x');
       });
     select(s => s.array)
-      .findWhere(e => e.id === 3).returnsTrue()
+      .find(e => e.id === 3).returnsTrue()
       .patch({ value: 'three x' });
     select(s => s.array)
-      .findWhere(e => e.id === 1).returnsTrue()
+      .find(e => e.id === 1).returnsTrue()
       .patch({ value: 'one x' });
     expect(changeCount).toEqual(1);
   })

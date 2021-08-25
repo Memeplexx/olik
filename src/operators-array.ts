@@ -11,21 +11,21 @@ import { readSelector } from './shared-utils';
 import { processStateUpdateRequest } from './store-updaters';
 import { transact } from './transact';
 
-export const andWhere = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
+export const and = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
   arg: ArrayOperatorState<S, C, X, F, T>,
 ) => (prop => {
   arg.whereClauseStrings.push(`${arg.whereClauseString}).and(`);
   arg.whereClauseSpecs.push({ filter: o => arg.criteria(o, arg.fn), type: 'and' });
   return arg.recurseWhere(prop);
-}) as ArrayOfElementsAction<X, F, T>['andWhere'];
+}) as ArrayOfElementsAction<X, F, T>['and'];
 
-export const orWhere = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
+export const or = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
   arg: ArrayOperatorState<S, C, X, F, T>,
 ) => (prop => {
   arg.whereClauseStrings.push(`${arg.whereClauseString}).or(`);
   arg.whereClauseSpecs.push({ filter: o => arg.criteria(o, arg.fn), type: 'or' });
   return arg.recurseWhere(prop);
-}) as ArrayOfElementsAction<X, F, T>['orWhere'];
+}) as ArrayOfElementsAction<X, F, T>['or'];
 
 export const remove = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
   arg: ArrayOperatorState<S, C, X, F, T>,

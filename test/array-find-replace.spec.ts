@@ -21,10 +21,10 @@ describe('array.find().replace()', () => {
     const select = createApplicationStore(initialState);
     const payload = { id: 4, value: 'four' };
     select(s => s.array)
-      .findWhere(e => e.id).eq(2)
+      .find(e => e.id).eq(2)
       .replace(payload);
     expect(testState.currentAction).toEqual({
-      type: `array.findW(id).eq(2).replace()`,
+      type: `array.find(id).eq(2).replace()`,
       replacement: payload,
       where: [
         { 'id.eq': 2 }
@@ -37,7 +37,7 @@ describe('array.find().replace()', () => {
     const select = createApplicationStore(initialState);
     const payload = { id: 4, value: 'four' };
     select(s => s.array)
-      .findWhere(e => e.id).ne(2)
+      .find(e => e.id).ne(2)
       .replace(payload);
     expect(testState.currentAction).toEqual({
       type: `array.find(id).ne(2).replace()`,
@@ -53,7 +53,7 @@ describe('array.find().replace()', () => {
     const select = createApplicationStore(initialState);
     const payload = { id: 4, value: 'four' };
     select(s => s.array)
-      .findWhere(e => e.id).gt(1)
+      .find(e => e.id).gt(1)
       .replace(payload);
     expect(testState.currentAction).toEqual({
       type: `array.find(id).gt(1).replace()`,
@@ -69,7 +69,7 @@ describe('array.find().replace()', () => {
     const select = createApplicationStore(initialState);
     const payload = { id: 4, value: 'four' };
     select(s => s.array)
-      .findWhere(e => e.id).gte(1)
+      .find(e => e.id).gte(1)
       .replace(payload);
     expect(testState.currentAction).toEqual({
       type: `array.find(id).gte(1).replace()`,
@@ -85,7 +85,7 @@ describe('array.find().replace()', () => {
     const select = createApplicationStore(initialState);
     const payload = { id: 4, value: 'four' };
     select(s => s.array)
-      .findWhere(e => e.id).lt(2)
+      .find(e => e.id).lt(2)
       .replace(payload);
     expect(testState.currentAction).toEqual({
       type: `array.find(id).lt(2).replace()`,
@@ -101,7 +101,7 @@ describe('array.find().replace()', () => {
     const select = createApplicationStore(initialState);
     const payload = { id: 4, value: 'four' };
     select(s => s.array)
-      .findWhere(e => e.id).lte(2)
+      .find(e => e.id).lte(2)
       .replace(payload);
     expect(testState.currentAction).toEqual({
       type: `array.find(id).lte(2).replace()`,
@@ -117,7 +117,7 @@ describe('array.find().replace()', () => {
     const select = createApplicationStore(initialState);
     const payload = { id: 4, value: 'four' };
     select(s => s.array)
-      .findWhere(e => e.id).in([1, 2])
+      .find(e => e.id).in([1, 2])
       .replace(payload);
     expect(testState.currentAction).toEqual({
       type: `array.find(id).in(1,2).replace()`,
@@ -133,7 +133,7 @@ describe('array.find().replace()', () => {
     const select = createApplicationStore(initialState);
     const payload = { id: 4, value: 'four' };
     select(s => s.array)
-      .findWhere(e => e.id).ni([1, 2])
+      .find(e => e.id).ni([1, 2])
       .replace(payload);
     expect(testState.currentAction).toEqual({
       type: `array.find(id).ni(1,2).replace()`,
@@ -149,7 +149,7 @@ describe('array.find().replace()', () => {
     const select = createApplicationStore(initialState);
     const payload = { id: 4, value: 'four' };
     select(s => s.array)
-      .findWhere(e => e.value).matches(/^t/)
+      .find(e => e.value).matches(/^t/)
       .replace(payload);
     expect(testState.currentAction).toEqual({
       type: `array.find(value).match(/^t/).replace()`,

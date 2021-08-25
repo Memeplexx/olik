@@ -4,7 +4,7 @@
 export type Trackability = 'tagged' | 'untagged';
 
 /**
- * Whether this predicate is for a filterWhere() or a findWhere()
+ * Whether this predicate is for a filterWhere() or a find()
  */
 export type FindOrFilter = 'find' | 'filter';
 
@@ -184,7 +184,7 @@ export type ArrayOfElementsAction<X extends DeepReadonlyArray<any>, F extends Fi
    * .and(e => e.status).isEqualTo('todo')
    * ...
    */
-  andWhere: X[0] extends object ? <P>(getProp: (element: DeepReadonly<X[0]>) => P) => Predicate<X, P, F, T> : () => Predicate<X, X[0], F, T>,
+  and: X[0] extends object ? <P>(getProp: (element: DeepReadonly<X[0]>) => P) => Predicate<X, P, F, T> : () => Predicate<X, X[0], F, T>,
   /**
    * Append more criteria with which to find/filter the array
    * @param getProp a function which selects the array element property to compare
@@ -193,7 +193,7 @@ export type ArrayOfElementsAction<X extends DeepReadonlyArray<any>, F extends Fi
    * .or(t => t.status).isEqualTo('todo')
    * ...
    */
-  orWhere: X[0] extends object ? <P>(getProp: (element: DeepReadonly<X[0]>) => P) => Predicate<X, P, F, T> : () => Predicate<X, X[0], F, T>,
+  or: X[0] extends object ? <P>(getProp: (element: DeepReadonly<X[0]>) => P) => Predicate<X, P, F, T> : () => Predicate<X, X[0], F, T>,
 } & ArrayOfElementsCommonAction<X, F, T>;
 
 /**
@@ -314,7 +314,7 @@ export type PromisableUpdate<H> = H extends () => AnyAsync<any> ? {
    * @example
    * select(s => s.todos).invalidateCache();
    * @example
-   * select(s => s.todos).findWhere(s => s.id).isEqualTo(2).invalidateCache();
+   * select(s => s.todos).find(s => s.id).isEqualTo(2).invalidateCache();
    */
   cacheFor?: number;
   /**
@@ -395,19 +395,19 @@ export type StoreForAnArrayOfPrimitives<X extends DeepReadonlyArray<any>, T exte
    * @example
    * ```
    * select(s => s.todos)
-   *   .filterWhere(t => t.status).isEqualTo('done')
+   *   .filter(t => t.status).isEqualTo('done')
    *   .remove();
    * ```
    */
-  filterWhere: PredicateFunctionPrimitive<X, 'filter', T>,
+  filter: PredicateFunctionPrimitive<X, 'filter', T>,
   /**
    * Specify a where clause to find one element.  
    * @example
    * ...
-   * .findWhere(t => t.id).isEqualTo(3)
+   * .find(t => t.id).isEqualTo(3)
    * ...
    */
-  findWhere: PredicateFunctionPrimitive<X, 'find', T>,
+  find: PredicateFunctionPrimitive<X, 'find', T>,
 } & StoreForAnArrayCommon<X, T>;
 
 export type StoreForAnArrayOfObjects<X extends DeepReadonlyArray<any>, T extends Trackability> = {
@@ -427,19 +427,19 @@ export type StoreForAnArrayOfObjects<X extends DeepReadonlyArray<any>, T extends
    * @example
    * ```
    * ...
-   * .filterWhere(t => t.status).isEqualTo('done')
+   * .filter(t => t.status).isEqualTo('done')
    * ...
    * ```
    */
-  filterWhere: PredicateFunctionObject<X, 'filter', T>,
+  filter: PredicateFunctionObject<X, 'filter', T>,
   /**
    * Specify a where clause to find one element.  
    * @example
    * ...
-   * .findWhere(t => t.id).isEqualTo(3)
+   * .find(t => t.id).isEqualTo(3)
    * ...
    */
-  findWhere: PredicateFunctionObject<X, 'find', T>,
+  find: PredicateFunctionObject<X, 'find', T>,
 } & StoreForAnArrayCommon<X, T>;
 
 /**
@@ -470,7 +470,7 @@ export type StoreForANumber<T extends Trackability> = {
    * @example
    * select(s => s.user.age).increment(1);
    */
-  increment: <H extends number | (() => AnyAsync<number>) >(incrementBy: number, options: UpdateOptions<T, H>) => H extends (() => AnyAsync<any>) ? Future<number> : void,
+  increment: <H extends number | (() => AnyAsync<number>) >(incrementBy: H, options: UpdateOptions<T, H>) => H extends (() => AnyAsync<any>) ? Future<number> : void,
 } & StoreForAnObjectOrPrimitive<number, T>;
 
 /**
@@ -678,7 +678,7 @@ export type OptionsForMakingAnApplicationStore = {
    * 
    * For example, the following state update:
    * ```
-   * select(s => s.todos).findWhere(s => s.id).eq(2).replace(newTodo);
+   * select(s => s.todos).find(s => s.id).eq(2).replace(newTodo);
    * ```
    * will, if this `actionTypesToIncludeWhereClause` property is set to `true`, result in an action type will be:
    * ```
@@ -701,7 +701,7 @@ export type OptionsForMakingAnApplicationStore = {
    * Consider the following state update:
    * ```
    * select(s => s.todos)
-   *   .filterWhere(s => s.urgency).lt(2)
+   *   .filter(s => s.urgency).lt(2)
    *   .and(s => s.completed).eq(false)
    *   .remove();
    * ```

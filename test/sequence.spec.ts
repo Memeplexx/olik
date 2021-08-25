@@ -23,9 +23,9 @@ describe('Sequence', () => {
     select(s => s.propOne.subPropOne).replace('hey');
     select(s => s.propOne).patch({ subPropOne: 'xxx' });
     select(s => s.propTwo).insert([{ id: 1, value: 'one' }]);
-    select(s => s.propTwo).findWhere(e => e.id === 1).returnsTrue().patch({ value: 'test' });
+    select(s => s.propTwo).find(e => e.id === 1).returnsTrue().patch({ value: 'test' });
     select(s => s.propTwo).upsertMatching(s => s.id).with({ id: 1, value: 'xxx' });
-    select(s => s.propTwo).findWhere(s => s.id === 1).returnsTrue().remove();
+    select(s => s.propTwo).find(s => s.id === 1).returnsTrue().remove();
     select(s => s.propTwo).removeAll();
   })
 
@@ -33,9 +33,9 @@ describe('Sequence', () => {
     const initialState = new Array<{ id: number, value: string }>();
     const select = createApplicationStore(initialState);
     select().insert([{ id: 1, value: 'one' }]);
-    select().findWhere(e => e.id === 1).returnsTrue().patch({ value: 'test' });
+    select().find(e => e.id === 1).returnsTrue().patch({ value: 'test' });
     select().upsertMatching(s => s.id).with({ id: 1, value: 'test' });
-    select().findWhere(s => s.id === 1).returnsTrue().remove();
+    select().find(s => s.id === 1).returnsTrue().remove();
     select().removeAll();
   })
 

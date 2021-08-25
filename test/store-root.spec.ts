@@ -106,7 +106,7 @@ describe('Root', () => {
     const select = createApplicationStore(['one', 'two', 'three']);
     const payload = 'twoo';
     select()
-      .findWhere().eq('two')
+      .find().eq('two')
       .replace(payload);
     expect(testState.currentAction).toEqual({
       type: `find(element).eq(two).replace()`,
@@ -130,7 +130,7 @@ describe('Root', () => {
 
   it('find().replace()', () => {
     const select = createApplicationStore(['hello']);
-    select().findWhere().matches(/^h/).replace('another')
+    select().find().matches(/^h/).replace('another')
     expect(testState.currentAction).toEqual({
       type: `find(element).match(/^h/).replace()`,
       replacement: 'another',
