@@ -54,7 +54,7 @@ export type ArrayOperatorState<S, C, X extends C & Array<any>, F extends FindOrF
   comparator: (e: X[0]) => boolean,
   selector: Selector<S, C, X>,
   type: FindOrFilter,
-  storeResult: (selector?: (s: S) => C) => any,
+  select: (selector?: (s: S) => C) => any,
   storeState: StoreState<S>,
   payloadWhereClauses: Array<any>,
 };
@@ -64,7 +64,7 @@ export type ArrayCustomState<S, C, X extends C & Array<any>, T extends ShapesExt
   selector: Selector<S, C, X>,
   getCurrentState: () => S,
   predicate: (element: DeepReadonly<X[0]>) => boolean,
-  storeResult: (selector?: (s: S) => C) => any,
+  select: (selector?: (s: S) => C) => any,
   storeState: StoreState<S>,
 }
 
@@ -72,7 +72,7 @@ export type CoreActionsState<S, C, X extends C & Array<any>, T extends ShapesExt
   selector: Selector<S, C, X>,
   isComponentStore: () => boolean,
   storeState: StoreState<S>,
-  storeResult: (selector?: (s: S) => C) => any,
+  select: (selector?: (s: S) => C) => any,
   initialState: S,
   getCurrentState: () => S,
 }

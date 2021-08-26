@@ -71,7 +71,7 @@ export function createStoreCore<S, T extends ShapesExt.ShapesExt>({
             whereClauseString,
             selector,
             type,
-            storeResult,
+            select,
             storeState,
             payloadWhereClauses,
           } as ShapesInt.ArrayOperatorState<S, C, X, ShapesExt.FindOrFilter, T>;
@@ -103,7 +103,7 @@ export function createStoreCore<S, T extends ShapesExt.ShapesExt>({
                 selector,
                 predicate,
                 getCurrentState: () => storeState.currentState,
-                storeResult,
+                select,
                 storeState,
               } as ShapesInt.ArrayCustomState<S, C, X, T>;
               const elementActions = {
@@ -135,7 +135,7 @@ export function createStoreCore<S, T extends ShapesExt.ShapesExt>({
       selector,
       isComponentStore: () => !!(coreActions as any).isComponentStore,
       storeState,
-      storeResult,
+      select,
       initialState: storeState.initialState,
       getCurrentState: () => storeState.currentState,
     } as ShapesInt.CoreActionsState<S, C, X, T>)
@@ -156,7 +156,7 @@ export function createStoreCore<S, T extends ShapesExt.ShapesExt>({
       find: where('find'),
       onChange: general.onChange(selector, storeState.changeListeners),
       read: general.read(selector, () => storeState.currentState),
-      invalidateCache: () => general.invalidateCache(selector, storeResult),
+      invalidateCache: () => general.invalidateCache(selector, select),
       readInitial: () => selector(storeState.initialState),
       defineReset: (
         (initState: C, innerSelector) => () => general.replace({ ...getCoreActionsState(), name: 'reset' })(!innerSelector ? initState : innerSelector(initState), undefined as any)
@@ -176,15 +176,15 @@ export function createStoreCore<S, T extends ShapesExt.ShapesExt>({
     return coreActions;
   };
 
-  const storeResult = <X extends C & Array<any>, C = S>(selector: ((s: ShapesExt.DeepReadonly<S>) => C) = (s => s as any as C)) => {
+  const select = <X extends C & Array<any>, C = S>(selector: ((s: ShapesExt.DeepReadonly<S>) => C) = (s => s as any as C)) => {
     const selectorMod = selector as ShapesExt.Selector<S, C, X>;
     selectorMod(storeState.currentState);
     return action<C, X>(selectorMod) as any;
   };
 
   if (devtoolsEnabled && (!libState.applicationStore || replaceExistingStoreIfItExists)) {
-    integrateStoreWithReduxDevtools({ store: storeResult as any, storeState, name: devtoolsStoreName })
+    integrateStoreWithReduxDevtools({ store: select as any, storeState, name: devtoolsStoreName })
   }
 
-  return storeResult;
+  return select;
 }

@@ -82,7 +82,6 @@ export const replace = <S, C, X extends C & Array<any>, F extends FindOrFilter, 
     ...arg,
     selector: ((s: any) => (arg.selector(s) as any)[arg.type]((e: any) => bundleCriteria(e, arg.whereClauseSpecs))) as any,
     payload,
-    storeResult: arg.storeResult,
     updateOptions,
     cacheKeySuffix: `${arg.type}(${where}).replace()`,
     actionNameSuffix: `${arg.type}(${arg.storeState.actionTypesToIncludeWhereClause ? where : ''}).replace()`,
@@ -121,8 +120,8 @@ export const invalidateCache = <S, C, X extends C & Array<any>, F extends FindOr
 ) => {
   const segs = readSelector(arg.selector);
   const pathSegs = segs.join('.') + (segs.length ? '.' : '') + arg.type + '(' + arg.whereClauseString + ')';
-  transact(...Object.keys(arg.storeResult().read().cacheTTLs).filter(key => key.startsWith(pathSegs))
-    .map(key => () => arg.storeResult(s => (s as any).cacheTTLs).remove(key)));
+  transact(...Object.keys(arg.select().read().cacheTTLs).filter(key => key.startsWith(pathSegs))
+    .map(key => () => arg.select(s => (s as any).cacheTTLs).remove(key)));
 }
 
 const completeWhereClause = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends ShapesExt>(

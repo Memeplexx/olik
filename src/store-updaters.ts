@@ -9,7 +9,7 @@ export const processStateUpdateRequest = <S, C, X extends C & Array<any>>(
   arg: {
     selector: Selector<S, C, X>,
     payload: any | (() => Promise<any>),
-    storeResult: (selector?: (s: S) => C) => any,
+    select: (selector?: (s: S) => C) => any,
     updateOptions: {} | void,
     cacheKeySuffix: string,
     actionNameSuffix: string,
@@ -32,7 +32,7 @@ export const processStateUpdateRequest = <S, C, X extends C & Array<any>>(
       libState.transactionState = 'none';
       throw new Error(errorMessages.PROMISES_NOT_ALLOWED_IN_TRANSACTIONS);
     }
-    if (['array', 'string', 'number', 'boolean'].some(t => t === typeof (arg.storeResult().read()))) {
+    if (['array', 'string', 'number', 'boolean'].some(t => t === typeof (arg.select().read()))) {
       throw new Error(errorMessages.INVALID_CONTAINER_FOR_CACHED_DATA);
     }
     const asyncPayload = arg.payload as (() => Promise<C>);
@@ -41,18 +41,18 @@ export const processStateUpdateRequest = <S, C, X extends C & Array<any>>(
     if (arg.storeState.activeFutures[cacheKey]) { // prevent duplicate simultaneous requests
       return arg.storeState.activeFutures[cacheKey];
     }
-    const expirationDate = (arg.storeResult().read().cacheTTLs || {})[cacheKey];
+    const expirationDate = (arg.select().read().cacheTTLs || {})[cacheKey];
     if (expirationDate && (new Date(expirationDate).getTime() > new Date().getTime())) {
       const result = {
-        read: () => arg.storeResult(arg.selector).read(),
-        asPromise: () => Promise.resolve(arg.storeResult(arg.selector).read()),
-        onChange: (fn) => fn({ storeValue: arg.storeResult(arg.selector).read(), error: null, wasResolved: true, isLoading: false, wasRejected: false } as FutureState<C>),
+        read: () => arg.select(arg.selector).read(),
+        asPromise: () => Promise.resolve(arg.select(arg.selector).read()),
+        onChange: (fn) => fn({ storeValue: arg.select(arg.selector).read(), error: null, wasResolved: true, isLoading: false, wasRejected: false } as FutureState<C>),
       } as Future<C>;
       Object.keys(augmentations.future).forEach(name => (result as any)[name] = augmentations.future[name](result));
       return result;
     }
     const { optimisticallyUpdateWith } = ((arg.updateOptions as any) || {});
-    let snapshot = isEmpty(optimisticallyUpdateWith) ? null : arg.storeResult(arg.selector).read();
+    let snapshot = isEmpty(optimisticallyUpdateWith) ? null : arg.select(arg.selector).read();
     if (!isEmpty(snapshot)) {
       updateState(optimisticallyUpdateWith);
     }
@@ -68,24 +68,24 @@ export const processStateUpdateRequest = <S, C, X extends C & Array<any>>(
           if (involvesCaching && cacheFor) {
             const cacheExpiry = toIsoString(new Date(new Date().getTime() + cacheFor));
             libState.transactionState = 'last';
-            if (!arg.storeResult().read().cacheTTLs) {
-              arg.storeResult(s => (s as any).cacheTTLs).replace({
-                ...(arg.storeResult().read().cacheTTLs || { [cacheKey]: cacheExpiry }),
+            if (!arg.select().read().cacheTTLs) {
+              arg.select(s => (s as any).cacheTTLs).replace({
+                ...(arg.select().read().cacheTTLs || { [cacheKey]: cacheExpiry }),
               })
-            } else if (!arg.storeResult().read().cacheTTLs[cacheKey]) {
-              arg.storeResult(s => (s as any).cacheTTLs).insert({ [cacheKey]: cacheExpiry });
+            } else if (!arg.select().read().cacheTTLs[cacheKey]) {
+              arg.select(s => (s as any).cacheTTLs).insert({ [cacheKey]: cacheExpiry });
             } else {
-              arg.storeResult(s => (s as any).cacheTTLs[cacheKey]).replace(cacheExpiry);
+              arg.select(s => (s as any).cacheTTLs[cacheKey]).replace(cacheExpiry);
             }
             try {
               setTimeout(() => {
-                arg.storeResult(s => (s as any).cacheTTLs).remove(cacheKey);
+                arg.select(s => (s as any).cacheTTLs).remove(cacheKey);
               }, cacheFor);
             } catch (e) {
               // ignoring
             }
           }
-          return arg.storeResult(arg.selector).read();
+          return arg.select(arg.selector).read();
         }).catch(e => {
           // Revert optimistic update
           if (!isEmpty(snapshot)) {
@@ -94,9 +94,9 @@ export const processStateUpdateRequest = <S, C, X extends C & Array<any>>(
           throw e;
         }).finally(() => delete arg.storeState.activeFutures[cacheKey]);
     };
-    const state = { storeValue: arg.storeResult(arg.selector).read(), error: null, isLoading: true, wasRejected: false, wasResolved: false } as FutureState<C>;
+    const state = { storeValue: arg.select(arg.selector).read(), error: null, isLoading: true, wasRejected: false, wasResolved: false } as FutureState<C>;
     const result = {
-      read: () => arg.storeResult(arg.selector).read(),
+      read: () => arg.select(arg.selector).read(),
       asPromise: () => promiseResult(),
       onChange: (fn) => {
         let subscribed = true;

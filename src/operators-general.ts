@@ -249,12 +249,12 @@ export const replace = <S, C, X extends C & Array<any>, T extends ShapesExt>(
 
 export function invalidateCache<S, C, X extends C & Array<any>>(
   selector: Selector<S, C, X>,
-  storeResult: (selector?: (s: DeepReadonly<S>) => C) => any,
+  select: (selector?: (s: DeepReadonly<S>) => C) => any,
 ) {
   const segs = readSelector(selector);
   const pathSegs = segs.join('.');
-  transact(...Object.keys(storeResult().read().cacheTTLs).filter(key => key.startsWith(pathSegs))
-    .map(key => () => storeResult(s => (s as any).cacheTTLs).remove(key)));
+  transact(...Object.keys(select().read().cacheTTLs).filter(key => key.startsWith(pathSegs))
+    .map(key => () => select(s => (s as any).cacheTTLs).remove(key)));
 }
 
 const validateSelector = <S, C, X extends C & Array<any>>(

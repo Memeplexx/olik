@@ -96,8 +96,8 @@ export const invalidateCache = <S, C, X extends C & Array<any>, T extends Shapes
 ) => {
   const segs = readSelector(arg.selector);
   const pathSegs = segs.join('.') + (segs.length ? '.' : '') + arg.type + '(' + arg.predicate + ')';
-  transact(...Object.keys(arg.storeResult().read().cacheTTLs).filter(key => key.startsWith(pathSegs))
-    .map(key => () => arg.storeResult(s => (s as any).cacheTTLs).remove(key)));
+  transact(...Object.keys(arg.select().read().cacheTTLs).filter(key => key.startsWith(pathSegs))
+    .map(key => () => arg.select(s => (s as any).cacheTTLs).remove(key)));
 }
 
 const getElementIndices = <S, C, X extends C & Array<any>, T extends ShapesExt>(
