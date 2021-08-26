@@ -628,7 +628,7 @@ export type OptionsForMakingAnApplicationStore = {
   /**
    * As a supplement to the `actionTypesToIncludeTag` argument, this property accepts a function which
    * will allow you to abbreviate your tags so that they do not make your action types too long.
-   * This can be particularly useful if you are using the node `__filename` as the 'tag'.
+   * This can be particularly useful if you are using the node `__filename` as your tag.
    * 
    * The following example illustrates the problem this property is meant to solve:
    * 
@@ -655,58 +655,19 @@ export type OptionsForMakingAnApplicationStore = {
    */
   actionTypeTagAbbreviator?: (tag: string) => string,
   /**
-   * Whether or not where clauses should be included in your action type.  
-   * 
-   * ---
-   * 
-   * For example, the following state update:
+   * The maximum length of variables in your where clause.
+   * By default, this library limits the length of variables in your where clause, so
    * ```
-   * select(s => s.todos).find(s => s.id).eq(2).replace(newTodo);
+   * select(s => s.todos).find(id).eq(d55bd15c-0675-11ec-9a03-0242ac130003).remove()
    * ```
-   * will, if this `actionTypesToIncludeWhereClause` property is set to `true`, result in an action type will be:
+   * will be abbreviated to
    * ```
-   * todos.find(id === 2).replace()
+   * select(s => s.todos).find(id).eq(d55bd1).remove()
    * ```
-   * However, if this `actionTypesToIncludeWhereClause` property is set to `false` then the action type will be:
-   * ```
-   * todos.find().replace()
-   * ```
-   * The default value for this property is `true`.
+   * This is done in order to prevent needlessly long action types.
+   * You can override the default max length of variables by supplying a number here.
    */
-  actionTypesToIncludeWhereClause?: boolean,
-  /**
-   * As a supplement to the `actionTypesToIncludeWhereClause` property, this property accepts a function which
-   * will allow you to abbreviate your where clauses so that they do not make your action types too long.
-    * The following example illustrates the problem this property is meant to solve:
-   * 
-   * ---
-   * 
-   * Consider the following state update:
-   * ```
-   * select(s => s.todos)
-   *   .filter(s => s.urgency).lt(2)
-   *   .and(s => s.completed).eq(false)
-   *   .remove();
-   * ```
-   * By default, the above action type will look like this:
-   * ```
-   * todos.find(urgency < 2 && completed === false).remove()
-   * ```
-   * This is where this `actionTypeWhereClauseAbbreviator` becomes useful:
-   * ```
-   * actionTypeWhereClauseAbbreviator: s => {
-   *   const maxLength = 15;
-   *   return s.length > maxLength
-   *     ? (s.substring(0, maxLength + 3) + '...')
-   *     : s;
-   * }
-   * ```
-   * Now your action type will look like this
-   * ```
-   * todos.find(urgency < 2 &&...).remove()
-   * ```
-   */
-  actionTypeWhereClauseAbbreviator?: (tag: string) => string,
+  actionTypeWhereClauseMaxValueLength?: number,
   /**
    * If set to `true`, then this store will replace any existing application store. 
    * If set to `false`, this store will be merged into the existing application store.

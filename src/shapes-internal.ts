@@ -108,7 +108,7 @@ export type StoreState<S> = {
   devtoolsDispatchListener?: (action: { type: string, payload?: any }) => any,
   actionTypesToIncludeTag: boolean,
   actionTypeTagAbbreviator?: (tag: string) => string,
-  actionTypesToIncludeWhereClause: boolean,
+  actionTypeWhereClauseMaxValueLength: number,
   changeListeners: Map<(ar: any) => any, (arg: S) => any>,
   previousAction: PreviousAction,
   currentState: S,

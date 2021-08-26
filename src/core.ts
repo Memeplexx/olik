@@ -1,7 +1,6 @@
 import { augmentations } from './augmentations';
 import { integrateStoreWithReduxDevtools } from './devtools-integration';
 import * as array from './operators-array';
-// import * as arrayCustom from './operators-array-returnstrue';
 import * as general from './operators-general';
 import * as ShapesExt from './shapes-external';
 import * as ShapesInt from './shapes-internal';
@@ -14,8 +13,7 @@ export function createStoreCore<S, T extends ShapesExt.ShapesExt>({
   devtoolsStoreName = document.title,
   actionTypesToIncludeTag = true,
   actionTypeTagAbbreviator = s => s,
-  actionTypesToIncludeWhereClause = true,
-  actionTypeWhereClauseAbbreviator = s => s,
+  actionTypeWhereClauseMaxValueLength = 6,
   replaceExistingStoreIfItExists = true,
 }: {
   state: S,
@@ -24,7 +22,7 @@ export function createStoreCore<S, T extends ShapesExt.ShapesExt>({
   actionTypesToIncludeTag?: boolean,
   actionTypeTagAbbreviator?: (tag: string) => string,
   actionTypesToIncludeWhereClause?: boolean,
-  actionTypeWhereClauseAbbreviator?: (tag: string) => string,
+  actionTypeWhereClauseMaxValueLength?: number,
   replaceExistingStoreIfItExists?: boolean,
 }) {
   shared.validateState(state);
@@ -38,7 +36,7 @@ export function createStoreCore<S, T extends ShapesExt.ShapesExt>({
     transactionStartState: null,
     devtoolsDispatchListener: undefined,
     actionTypesToIncludeTag,
-    actionTypesToIncludeWhereClause,
+    actionTypeWhereClauseMaxValueLength,
     actionTypeTagAbbreviator,
     changeListeners: new Map<(ar: any) => any, (arg: S) => any>(),
     previousAction: {
@@ -60,7 +58,7 @@ export function createStoreCore<S, T extends ShapesExt.ShapesExt>({
           const criteria = (arg: X[0], comparator: (arg: X[0]) => boolean) => { segs.forEach(seg => arg = arg[seg]); return comparator(arg); };
           const el = segs.join('.') || 'element';
           payloadWhereClauses.push({ [(!whereClauseSpecs.length ? '' : whereClauseSpecs[whereClauseSpecs.length - 1].type + '.') + el + '.' + key]: val });
-          const whereClauseString = `${el}).${key}(${val}`;
+          const whereClauseString = `${el}).${key}(${val.toString().substring(0, actionTypeWhereClauseMaxValueLength)}`;
           const context = {
             whereClauseSpecs,
             whereClauseStrings,
