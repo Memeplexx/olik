@@ -95,22 +95,6 @@ export type PredicateOptionsCommon<X extends DeepReadonlyArray<any>, P, F extend
 }
 
 /**
- * Query options for boolean
- */
-export type PredicateOptionsForBoolean<X extends DeepReadonlyArray<any>, F extends FindOrFilter, T extends ShapesExt> = {
-  /**
-   * Checks whether the previously supplied expression returns true.
-   * It is advised to only use this if your search criteria is too complicated to express using the operators supplied by this library.
-   * Using this function will mean that useful information will not show up in the devtools
-   * @example
-   * ...
-   * find(s => s.id === 3 || s.status === 'completed').ex()
-   * ...
-   */
-  ex: () => PredicateCustom<X, F, T>,
-} & PredicateOptionsCommon<X, boolean, F, T>;
-
-/**
  * Query options for number
  */
 export type PredicateOptionsForNumber<X extends DeepReadonlyArray<any>, E, F extends FindOrFilter, T extends ShapesExt> = {
@@ -157,18 +141,17 @@ export type PredicateOptionsForString<X extends DeepReadonlyArray<any>, E, F ext
    * @param pattern any regular expression
    * @example
    * ...
-   * .matches(/^hello/)
+   * .match(/^hello/)
    * ...
    */
-  matches: (pattern: RegExp) => PredicateAction<X, F, T>,
+  match: (pattern: RegExp) => PredicateAction<X, F, T>,
 } & PredicateOptionsForNumber<X, E, F, T>;
 
 /**
  * Query options
  */
 export type Predicate<X extends DeepReadonlyArray<any>, P, F extends FindOrFilter, T extends ShapesExt> =
-  [P] extends [boolean] ? PredicateOptionsForBoolean<X, F, T>
-  : [P] extends [number] ? PredicateOptionsForNumber<X, P, F, T>
+  [P] extends [number] ? PredicateOptionsForNumber<X, P, F, T>
   : [P] extends [string] ? PredicateOptionsForString<X, P, F, T>
   : PredicateOptionsCommon<X, P, F, T>;
 

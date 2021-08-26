@@ -149,7 +149,7 @@ describe('array.find().patch()', () => {
     const select = createApplicationStore(initialState);
     const payload = { value: 'four' };
     select(s => s.array)
-      .find(e => e.value).matches(/^t/)
+      .find(e => e.value).match(/^t/)
       .patch(payload);
     expect(testState.currentAction).toEqual({
       type: `array.find(value).match(/^t/).patch()`,

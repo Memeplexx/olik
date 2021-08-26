@@ -130,7 +130,7 @@ describe('Root', () => {
 
   it('find().replace()', () => {
     const select = createApplicationStore(['hello']);
-    select().find().matches(/^h/).replace('another')
+    select().find().match(/^h/).replace('another')
     expect(testState.currentAction).toEqual({
       type: `find(element).match(/^h/).replace()`,
       replacement: 'another',

@@ -149,7 +149,7 @@ describe('array.find().replace()', () => {
     const select = createApplicationStore(initialState);
     const payload = { id: 4, value: 'four' };
     select(s => s.array)
-      .find(e => e.value).matches(/^t/)
+      .find(e => e.value).match(/^t/)
       .replace(payload);
     expect(testState.currentAction).toEqual({
       type: `array.find(value).match(/^t/).replace()`,

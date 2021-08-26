@@ -1,7 +1,7 @@
 import { augmentations } from './augmentations';
 import { integrateStoreWithReduxDevtools } from './devtools-integration';
 import * as array from './operators-array';
-import * as arrayCustom from './operators-array-returnstrue';
+// import * as arrayCustom from './operators-array-returnstrue';
 import * as general from './operators-general';
 import * as ShapesExt from './shapes-external';
 import * as ShapesInt from './shapes-internal';
@@ -96,36 +96,13 @@ export function createStoreCore<S, T extends ShapesExt.ShapesExt>({
             ni: val => constructActions('ni', val, e => !val.includes(e)),
           } as ShapesExt.PredicateOptionsCommon<X, any, ShapesExt.FindOrFilter, T>,
           ...{
-            ex: () => {
-              const predicate = getProp as any as (element: ShapesExt.DeepReadonly<X[0]>) => boolean;
-              const context = {
-                type,
-                selector,
-                predicate,
-                getCurrentState: () => storeState.currentState,
-                select,
-                storeState,
-              } as ShapesInt.ArrayCustomState<S, C, X, T>;
-              const elementActions = {
-                remove: arrayCustom.remove(context),
-                replace: arrayCustom.replace(context),
-                patch: arrayCustom.patch(context),
-                onChange: arrayCustom.onChange(context),
-                read: arrayCustom.read(context),
-                invalidateCache: () => arrayCustom.invalidateCache(context),
-              };
-              Object.keys(augmentations.selection).forEach(name => (elementActions as any)[name] = augmentations.selection[name](elementActions as ShapesExt.StoreOrDerivation<C>));
-              return elementActions;
-            }
-          } as ShapesExt.PredicateOptionsForBoolean<X, ShapesExt.FindOrFilter, T>,
-          ...{
             gt: val => constructActions('gt', val, e => e > val),
             lt: val => constructActions('lt', val, e => e < val),
             gte: val => constructActions('gte', val, e => e >= val),
             lte: val => constructActions('lte', val, e => e <= val),
           } as ShapesExt.PredicateOptionsForNumber<X, any, ShapesExt.FindOrFilter, T>,
           ...{
-            matches: val => constructActions('match', val, e => e.match(val)),
+            match: val => constructActions('match', val, e => e.match(val)),
           } as ShapesExt.PredicateOptionsForString<X, any, ShapesExt.FindOrFilter, T>,
         };
       }) as ShapesExt.StoreForAnArrayOfObjects<X, T>['filter'];

@@ -150,7 +150,7 @@ describe('array.filter().patch()', () => {
     const select = createApplicationStore(initialState);
     const payload = { value: 'four' };
     select(s => s.array)
-      .filter(e => e.value).matches(/^t/)
+      .filter(e => e.value).match(/^t/)
       .patch(payload);
     expect(testState.currentAction).toEqual({
       type: `array.filter(value).match(/^t/).patch()`,

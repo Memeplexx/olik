@@ -140,7 +140,7 @@ describe('array.find().remove()', () => {
   it('should match()', () => {
     const select = createApplicationStore(initialState);
     select(s => s.array)
-      .find(e => e.value).matches(/^t/)
+      .find(e => e.value).match(/^t/)
       .remove();
     expect(testState.currentAction).toEqual({
       type: `array.find(value).match(/^t/).remove()`,
