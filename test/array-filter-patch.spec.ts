@@ -36,7 +36,6 @@ describe('array.filter().patch()', () => {
   it('should ne()', () => {
     const select = createApplicationStore(initialState);
     const payload = { value: 'four' };
-    const where = 'id !== 2';
     select(s => s.array)
       .filter(e => e.id).ne(2)
       .patch(payload);

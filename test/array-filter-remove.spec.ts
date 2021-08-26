@@ -79,7 +79,6 @@ describe('array.filter().remove()', () => {
 
   it('should lt()', () => {
     const select = createApplicationStore(initialState);
-    const where = 'id < 2';
     select(s => s.array)
       .filter(e => e.id).lt(2)
       .remove();
