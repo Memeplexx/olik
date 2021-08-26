@@ -137,7 +137,3 @@ export const toIsoString = (date: Date) => {
     dif + pad(tzo / 60) +
     ':' + pad(tzo % 60);
 }
-
-// export const abbrev = (str: string) => {
-//   return str.length > 7 ? (str.substring(0, 7) + '...') : str;
-// }
