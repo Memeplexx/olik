@@ -25,7 +25,7 @@ describe('array.filter().ex().replace()', () => {
       .filter(where).ex()
       .replace(payload);
     expect(testState.currentAction).toEqual({
-      type: `array.filter(${where}).replace()`,
+      type: `array.filter(ex).replace()`,
       replacement: payload,
       where: where.toString(),
     });
@@ -40,7 +40,7 @@ describe('array.filter().ex().replace()', () => {
       .filter(where).ex()
       .replace(payload);
     expect(testState.currentAction).toEqual({
-      type: `array.filter(${where}).replace()`,
+      type: `array.filter(ex).replace()`,
       replacement: payload,
       where: where.toString(),
     });
@@ -55,7 +55,7 @@ describe('array.filter().ex().replace()', () => {
       .filter(where).ex()
       .replace(payload);
     expect(testState.currentAction).toEqual({
-      type: `array.filter(${where}).replace()`,
+      type: `array.filter(ex).replace()`,
       replacement: payload,
       where: where.toString(),
     });
@@ -70,7 +70,7 @@ describe('array.filter().ex().replace()', () => {
       .filter(e => e.id < 2).ex()
       .replace(payload);
     expect(testState.currentAction).toEqual({
-      type: `array.filter(${where}).replace()`,
+      type: `array.filter(ex).replace()`,
       replacement: payload,
       where: where.toString(),
     });
@@ -85,7 +85,7 @@ describe('array.filter().ex().replace()', () => {
       .filter(where).ex()
       .replace(payload);
     expect(testState.currentAction).toEqual({
-      type: `array.filter(${where}).replace()`,
+      type: `array.filter(ex).replace()`,
       replacement: payload,
       where: where.toString(),
     });
@@ -100,7 +100,7 @@ describe('array.filter().ex().replace()', () => {
       .filter(e => ![1, 2].includes(e.id)).ex()
       .replace(payload);
     expect(testState.currentAction).toEqual({
-      type: `array.filter(${where}).replace()`,
+      type: `array.filter(ex).replace()`,
       replacement: payload,
       where: where.toString(),
     });
@@ -115,7 +115,7 @@ describe('array.filter().ex().replace()', () => {
       .filter(where).ex()
       .replace(payload);
     expect(testState.currentAction).toEqual({
-      type: `array.filter(${where}).replace()`,
+      type: `array.filter(ex).replace()`,
       replacement: payload,
       where: where.toString(),
     });

@@ -24,7 +24,7 @@ describe('array.filter().ex().remove()', () => {
       .filter(where).ex()
       .remove();
     expect(testState.currentAction).toEqual({
-      type: `array.filter(${where}).remove()`,
+      type: `array.filter(ex).remove()`,
       toRemove: [initialState.array[1]],
       where: where.toString(),
     });
@@ -38,7 +38,7 @@ describe('array.filter().ex().remove()', () => {
       .filter(where).ex()
       .remove();
     expect(testState.currentAction).toEqual({
-      type: `array.filter(${where}).remove()`,
+      type: `array.filter(ex).remove()`,
       toRemove: [initialState.array[0], initialState.array[2]],
       where: where.toString(),
     });
@@ -52,7 +52,7 @@ describe('array.filter().ex().remove()', () => {
       .filter(where).ex()
       .remove();
     expect(testState.currentAction).toEqual({
-      type: `array.filter(${where}).remove()`,
+      type: `array.filter(ex).remove()`,
       toRemove: [initialState.array[1], initialState.array[2]],
       where: where.toString(),
     });
@@ -66,7 +66,7 @@ describe('array.filter().ex().remove()', () => {
       .filter(where).ex()
       .remove();
     expect(testState.currentAction).toEqual({
-      type: `array.filter(${where}).remove()`,
+      type: `array.filter(ex).remove()`,
       toRemove: [initialState.array[0]],
       where: where.toString(),
     });
@@ -80,7 +80,7 @@ describe('array.filter().ex().remove()', () => {
       .filter(where).ex()
       .remove();
     expect(testState.currentAction).toEqual({
-      type: `array.filter(${where}).remove()`,
+      type: `array.filter(ex).remove()`,
       toRemove: [initialState.array[0], initialState.array[1]],
       where: where.toString(),
     });
@@ -94,7 +94,7 @@ describe('array.filter().ex().remove()', () => {
       .filter(where).ex()
       .remove();
     expect(testState.currentAction).toEqual({
-      type: `array.filter(${where}).remove()`,
+      type: `array.filter(ex).remove()`,
       toRemove: [initialState.array[2]],
       where: where.toString(),
     });
@@ -108,7 +108,7 @@ describe('array.filter().ex().remove()', () => {
       .filter(where).ex()
       .remove();
     expect(testState.currentAction).toEqual({
-      type: `array.filter(${where}).remove()`,
+      type: `array.filter(ex).remove()`,
       toRemove: [initialState.array[1], initialState.array[2]],
       where: where.toString(),
     });

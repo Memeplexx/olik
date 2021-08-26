@@ -25,7 +25,7 @@ describe('array.find().ex().patch()', () => {
       .find(where).ex()
       .patch(payload);
     expect(testState.currentAction).toEqual({
-      type: `array.find(${where}).patch()`,
+      type: `array.find(ex).patch()`,
       patch: payload,
       where: where.toString(),
     });
@@ -40,7 +40,7 @@ describe('array.find().ex().patch()', () => {
       .find(where).ex()
       .patch(payload);
     expect(testState.currentAction).toEqual({
-      type: `array.find(${where}).patch()`,
+      type: `array.find(ex).patch()`,
       patch: payload,
       where: where.toString(),
     });
@@ -55,7 +55,7 @@ describe('array.find().ex().patch()', () => {
       .find(where).ex()
       .patch(payload);
     expect(testState.currentAction).toEqual({
-      type: `array.find(${where}).patch()`,
+      type: `array.find(ex).patch()`,
       patch: payload,
       where: where.toString(),
     });
@@ -70,7 +70,7 @@ describe('array.find().ex().patch()', () => {
       .find(where).ex()
       .patch(payload);
     expect(testState.currentAction).toEqual({
-      type: `array.find(${where}).patch()`,
+      type: `array.find(ex).patch()`,
       patch: payload,
       where: where.toString(),
     });
@@ -85,7 +85,7 @@ describe('array.find().ex().patch()', () => {
       .find(where).ex()
       .patch(payload);
     expect(testState.currentAction).toEqual({
-      type: `array.find(${where}).patch()`,
+      type: `array.find(ex).patch()`,
       patch: payload,
       where: where.toString(),
     });
@@ -100,7 +100,7 @@ describe('array.find().ex().patch()', () => {
       .find(where).ex()
       .patch(payload);
     expect(testState.currentAction).toEqual({
-      type: `array.find(${where}).patch()`,
+      type: `array.find(ex).patch()`,
       patch: payload,
       where: where.toString(),
     });
@@ -115,7 +115,7 @@ describe('array.find().ex().patch()', () => {
       .find(where).ex()
       .patch(payload);
     expect(testState.currentAction).toEqual({
-      type: `array.find(${where}).patch()`,
+      type: `array.find(ex).patch()`,
       patch: payload,
       where: where.toString(),
     });
