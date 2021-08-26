@@ -2,7 +2,7 @@ import { libState, testState } from '../src/shared-state';
 import { createApplicationStore } from '../src/store-creators';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
-describe('array.find().returnsTrue().read()', () => {
+describe('array.find().ex().read()', () => {
 
   beforeAll(() => {
     testState.windowObject = windowAugmentedWithReduxDevtoolsImpl;
@@ -20,7 +20,7 @@ describe('array.find().returnsTrue().read()', () => {
   it('should read()', () => {
     const select = createApplicationStore(initialState);
     const read = select(s => s.array)
-      .find(e => e.id === 2).returnsTrue()
+      .find(e => e.id === 2).ex()
       .read();
     expect(read).toEqual(initialState.array[1]);
   })
@@ -29,16 +29,16 @@ describe('array.find().returnsTrue().read()', () => {
     const select = createApplicationStore(initialState);
     let changeCount = 0;
     select(s => s.array)
-      .find(e => e.id === 3).returnsTrue()
+      .find(e => e.id === 3).ex()
       .onChange(e => {
         changeCount++;
         expect(e.value).toEqual('three x');
       });
     select(s => s.array)
-      .find(e => e.id === 3).returnsTrue()
+      .find(e => e.id === 3).ex()
       .patch({ value: 'three x' });
     select(s => s.array)
-      .find(e => e.id === 1).returnsTrue()
+      .find(e => e.id === 1).ex()
       .patch({ value: 'one x' });
     expect(changeCount).toEqual(1);
   })

@@ -2,7 +2,7 @@ import { libState, testState } from '../src/shared-state';
 import { createApplicationStore } from '../src/store-creators';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
-describe('array.filter().returnsTrue().patch()', () => {
+describe('array.filter().ex().patch()', () => {
 
   beforeAll(() => {
     testState.windowObject = windowAugmentedWithReduxDevtoolsImpl;
@@ -22,7 +22,7 @@ describe('array.filter().returnsTrue().patch()', () => {
     const payload = { value: 'new' };
     const where = (e: typeof initialState['array'][0]) => e.id === 2;
     select(s => s.array)
-      .filter(where).returnsTrue()
+      .filter(where).ex()
       .patch(payload);
     expect(testState.currentAction).toEqual({
       type: `array.filter(${where}).patch()`,
@@ -37,7 +37,7 @@ describe('array.filter().returnsTrue().patch()', () => {
     const payload = { value: 'four' };
     const where = (e: typeof initialState['array'][0]) => e.id !== 2;
     select(s => s.array)
-      .filter(where).returnsTrue()
+      .filter(where).ex()
       .patch(payload);
     expect(testState.currentAction).toEqual({
       type: `array.filter(${where}).patch()`,
@@ -52,7 +52,7 @@ describe('array.filter().returnsTrue().patch()', () => {
     const payload = { value: 'four' };
     const where = (e: typeof initialState['array'][0]) => e.id > 1;
     select(s => s.array)
-      .filter(where).returnsTrue()
+      .filter(where).ex()
       .patch(payload);
     expect(testState.currentAction).toEqual({
       type: `array.filter(${where}).patch()`,
@@ -67,7 +67,7 @@ describe('array.filter().returnsTrue().patch()', () => {
     const payload = { value: 'four' };
     const where = (e: typeof initialState['array'][0]) => e.id < 2;
     select(s => s.array)
-      .filter(where).returnsTrue()
+      .filter(where).ex()
       .patch(payload);
     expect(testState.currentAction).toEqual({
       type: `array.filter(${where}).patch()`,
@@ -82,7 +82,7 @@ describe('array.filter().returnsTrue().patch()', () => {
     const payload = { id: 4, value: 'four' };
     const where = (e: typeof initialState['array'][0]) => [1, 2].includes(e.id);
     select(s => s.array)
-      .filter(where).returnsTrue()
+      .filter(where).ex()
       .patch(payload);
     expect(testState.currentAction).toEqual({
       type: `array.filter(${where}).patch()`,
@@ -97,7 +97,7 @@ describe('array.filter().returnsTrue().patch()', () => {
     const payload = { value: 'four' };
     const where = (e: typeof initialState['array'][0]) => ![1, 2].includes(e.id);
     select(s => s.array)
-      .filter(where).returnsTrue()
+      .filter(where).ex()
       .patch(payload);
     expect(testState.currentAction).toEqual({
       type: `array.filter(${where}).patch()`,
@@ -112,7 +112,7 @@ describe('array.filter().returnsTrue().patch()', () => {
     const payload = { value: 'four' };
     const where = (e: typeof initialState['array'][0]) => /^t/.test(e.value);
     select(s => s.array)
-      .filter(where).returnsTrue()
+      .filter(where).ex()
       .patch(payload);
     expect(testState.currentAction).toEqual({
       type: `array.filter(${where}).patch()`,

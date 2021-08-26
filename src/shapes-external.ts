@@ -99,15 +99,15 @@ export type PredicateOptionsCommon<X extends DeepReadonlyArray<any>, P, F extend
  */
 export type PredicateOptionsForBoolean<X extends DeepReadonlyArray<any>, F extends FindOrFilter, T extends ShapesExt> = {
   /**
-   * Checks whether the previously supplied function returns true.
-   * It is advised to only use this if your filtering criteria is too complicated to express using the operators supplied by this library.
+   * Checks whether the previously supplied expression returns true.
+   * It is advised to only use this if your search criteria is too complicated to express using the operators supplied by this library.
    * Using this function will mean that useful information will not show up in the devtools
    * @example
    * ...
-   * .returnsTrue()
+   * find(s => s.id === 3 || s.status === 'completed').ex()
    * ...
    */
-  returnsTrue: () => PredicateCustom<X, F, T>,
+  ex: () => PredicateCustom<X, F, T>,
 } & PredicateOptionsCommon<X, boolean, F, T>;
 
 /**

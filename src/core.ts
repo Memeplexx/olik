@@ -96,7 +96,7 @@ export function createStoreCore<S, T extends ShapesExt.ShapesExt>({
             ni: val => constructActions('ni', val, e => !val.includes(e)),
           } as ShapesExt.PredicateOptionsCommon<X, any, ShapesExt.FindOrFilter, T>,
           ...{
-            returnsTrue: () => {
+            ex: () => {
               const predicate = getProp as any as (element: ShapesExt.DeepReadonly<X[0]>) => boolean;
               const context = {
                 type,

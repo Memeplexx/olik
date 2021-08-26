@@ -116,16 +116,16 @@ describe('Memoize', () => {
     let recalculating = 0;
     const mem = deriveFrom(
       select(s => s.array)
-        .find(e => e.id === 2).returnsTrue()
+        .find(e => e.id === 2).ex()
     ).usingExpensiveCalc(val => {
       recalculating++;
     });
     select(s => s.array)
-      .find(s => s.id === 2).returnsTrue()
+      .find(s => s.id === 2).ex()
       .patch({ value: 'twoo' });
     mem.read();
     select(s => s.array)
-      .find(s => s.id === 1).returnsTrue()
+      .find(s => s.id === 1).ex()
       .patch({ value: 'onee' });
     mem.read();
     expect(recalculating).toEqual(1);

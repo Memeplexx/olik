@@ -2,7 +2,7 @@ import { libState, testState } from '../src/shared-state';
 import { createApplicationStore } from '../src/store-creators';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
-describe('array.find().returnsTrue().remove()', () => {
+describe('array.find().ex().remove()', () => {
 
   beforeAll(() => {
     testState.windowObject = windowAugmentedWithReduxDevtoolsImpl
@@ -21,7 +21,7 @@ describe('array.find().returnsTrue().remove()', () => {
     const select = createApplicationStore(initialState);
     const where = (e: typeof initialState.array[0]) => e.id === 2;
     select(s => s.array)
-      .find(where).returnsTrue()
+      .find(where).ex()
       .remove();
     expect(testState.currentAction).toEqual({
       type: `array.find(${where}).remove()`,
@@ -35,7 +35,7 @@ describe('array.find().returnsTrue().remove()', () => {
     const select = createApplicationStore(initialState);
     const where = (e: typeof initialState.array[0]) => e.id !== 2;
     select(s => s.array)
-      .find(where).returnsTrue()
+      .find(where).ex()
       .remove();
     expect(testState.currentAction).toEqual({
       type: `array.find(${where}).remove()`,
@@ -49,7 +49,7 @@ describe('array.find().returnsTrue().remove()', () => {
     const select = createApplicationStore(initialState);
     const where = (e: typeof initialState.array[0]) => e.id > 1;
     select(s => s.array)
-      .find(where).returnsTrue()
+      .find(where).ex()
       .remove();
     expect(testState.currentAction).toEqual({
       type: `array.find(${where}).remove()`,
@@ -63,7 +63,7 @@ describe('array.find().returnsTrue().remove()', () => {
     const select = createApplicationStore(initialState);
     const where = (e: typeof initialState.array[0]) => e.id < 2;
     select(s => s.array)
-      .find(where).returnsTrue()
+      .find(where).ex()
       .remove();
     expect(testState.currentAction).toEqual({
       type: `array.find(${where}).remove()`,
@@ -77,7 +77,7 @@ describe('array.find().returnsTrue().remove()', () => {
     const select = createApplicationStore(initialState);
     const where = (e: typeof initialState.array[0]) => [1, 2].includes(e.id);
     select(s => s.array)
-      .find(where).returnsTrue()
+      .find(where).ex()
       .remove();
     expect(testState.currentAction).toEqual({
       type: `array.find(${where}).remove()`,
@@ -91,7 +91,7 @@ describe('array.find().returnsTrue().remove()', () => {
     const select = createApplicationStore(initialState);
     const where = (e: typeof initialState.array[0]) => ![1, 2].includes(e.id);
     select(s => s.array)
-      .find(where).returnsTrue()
+      .find(where).ex()
       .remove();
     expect(testState.currentAction).toEqual({
       type: `array.find(${where}).remove()`,
@@ -105,7 +105,7 @@ describe('array.find().returnsTrue().remove()', () => {
     const select = createApplicationStore(initialState);
     const where = (e: typeof initialState.array[0]) => /^t/.test(e.value);
     select(s => s.array)
-      .find(where).returnsTrue()
+      .find(where).ex()
       .remove();
     expect(testState.currentAction).toEqual({
       type: `array.find(${where}).remove()`,

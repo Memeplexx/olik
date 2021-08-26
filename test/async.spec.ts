@@ -295,26 +295,26 @@ describe('async', () => {
       })
   })
 
-  it('should work with find().returnsTrue().replace()', done => {
+  it('should work with find().ex().replace()', done => {
     const select = createApplicationStore(initialState);
     const payload = { id: 2, value: 'twooo' };
     select(s => s.array)
-      .find(s => s.id === 2).returnsTrue()
+      .find(s => s.id === 2).ex()
       .replace(() => new Promise(resolve => setTimeout(() => resolve(payload), 10)), { cacheFor: 1000 }).asPromise()
       .then(res => {
         expect(res).toEqual(select().read().array.find(e => e.id === 2));
         expect(select().read().array).toEqual([initialState.array[0], payload, initialState.array[2]]);
         const payload2 = { id: 2, value: 'twooo' };
         select(s => s.array)
-          .find(s => s.id === 2).returnsTrue()
+          .find(s => s.id === 2).ex()
           .replace(() => new Promise(resolve => setTimeout(() => resolve(payload2), 10))).asPromise()
           .then(() => {
             expect(select().read().array).toEqual([initialState.array[0], payload, initialState.array[2]]);
             select(s => s.array)
-              .find(s => s.id === 2).returnsTrue()
+              .find(s => s.id === 2).ex()
               .invalidateCache();
             select(s => s.array)
-              .find(s => s.id === 2).returnsTrue()
+              .find(s => s.id === 2).ex()
               .replace(() => new Promise(resolve => setTimeout(() => resolve(payload2), 10))).asPromise()
               .then(() => {
                 expect(select().read().array).toEqual([initialState.array[0], payload2, initialState.array[2]]);
@@ -324,26 +324,26 @@ describe('async', () => {
       })
   })
 
-  it('should work with filter().returnsTrue().replace()', done => {
+  it('should work with filter().ex().replace()', done => {
     const select = createApplicationStore(initialState);
     const payload = { id: 2, value: 'twooo' };
     select(s => s.array)
-      .filter(s => s.id === 2).returnsTrue()
+      .filter(s => s.id === 2).ex()
       .replace(() => new Promise(resolve => setTimeout(() => resolve(payload), 10)), { cacheFor: 1000 }).asPromise()
       .then(res => {
         expect(res).toEqual(select().read().array.filter(e => e.id === 2));
         expect(select().read().array).toEqual([initialState.array[0], payload, initialState.array[2]]);
         const payload2 = { id: 2, value: 'twooo' };
         select(s => s.array)
-          .filter(s => s.id === 2).returnsTrue()
+          .filter(s => s.id === 2).ex()
           .replace(() => new Promise(resolve => setTimeout(() => resolve(payload2), 10))).asPromise()
           .then(() => {
             expect(select().read().array).toEqual([initialState.array[0], payload, initialState.array[2]]);
             select(s => s.array)
-              .filter(s => s.id === 2).returnsTrue()
+              .filter(s => s.id === 2).ex()
               .invalidateCache();
             select(s => s.array)
-              .filter(s => s.id === 2).returnsTrue()
+              .filter(s => s.id === 2).ex()
               .replace(() => new Promise(resolve => setTimeout(() => resolve(payload2), 10))).asPromise()
               .then(() => {
                 expect(select().read().array).toEqual([initialState.array[0], payload2, initialState.array[2]]);
@@ -353,26 +353,26 @@ describe('async', () => {
       })
   })
 
-  it('should work with find().returnsTrue().patch()', done => {
+  it('should work with find().ex().patch()', done => {
     const select = createApplicationStore(initialState);
     const payload = { value: 'twooo' };
     select(s => s.array)
-      .find(s => s.id === 2).returnsTrue()
+      .find(s => s.id === 2).ex()
       .patch(() => new Promise(resolve => setTimeout(() => resolve(payload), 10)), { cacheFor: 1000 }).asPromise()
       .then(res => {
         expect(res).toEqual(select().read().array.find(e => e.id === 2));
         expect(select().read().array).toEqual([initialState.array[0], { ...initialState.array[1], ...payload }, initialState.array[2]]);
         const payload2 = { value: 'twoooz' };
         select(s => s.array)
-          .find(s => s.id === 2).returnsTrue()
+          .find(s => s.id === 2).ex()
           .patch(() => new Promise(resolve => setTimeout(() => resolve(payload2), 10))).asPromise()
           .then(() => {
             expect(select().read().array).toEqual([initialState.array[0], { ...initialState.array[1], ...payload }, initialState.array[2]]);
             select(s => s.array)
-              .find(s => s.id === 2).returnsTrue()
+              .find(s => s.id === 2).ex()
               .invalidateCache();
             select(s => s.array)
-              .find(s => s.id === 2).returnsTrue()
+              .find(s => s.id === 2).ex()
               .patch(() => new Promise(resolve => setTimeout(() => resolve(payload2), 10))).asPromise()
               .then(() => {
                 expect(select().read().array).toEqual([initialState.array[0], { ...initialState.array[1], ...payload2 }, initialState.array[2]]);
@@ -382,26 +382,26 @@ describe('async', () => {
       })
   })
 
-  it('should work with filter().returnsTrue().patch()', done => {
+  it('should work with filter().ex().patch()', done => {
     const select = createApplicationStore(initialState);
     const payload = { value: 'twooo' };
     select(s => s.array)
-      .filter(s => s.id === 2).returnsTrue()
+      .filter(s => s.id === 2).ex()
       .patch(() => new Promise(resolve => setTimeout(() => resolve(payload), 10)), { cacheFor: 1000 }).asPromise()
       .then(res => {
         expect(res).toEqual(select().read().array.filter(e => e.id === 2));
         expect(select().read().array).toEqual([initialState.array[0], { ...initialState.array[1], ...payload }, initialState.array[2]]);
         const payload2 = { value: 'twoooz' };
         select(s => s.array)
-          .filter(s => s.id === 2).returnsTrue()
+          .filter(s => s.id === 2).ex()
           .patch(() => new Promise(resolve => setTimeout(() => resolve(payload2), 10))).asPromise()
           .then(() => {
             expect(select().read().array).toEqual([initialState.array[0], { ...initialState.array[1], ...payload }, initialState.array[2]]);
             select(s => s.array)
-              .filter(s => s.id === 2).returnsTrue()
+              .filter(s => s.id === 2).ex()
               .invalidateCache();
             select(s => s.array)
-              .filter(s => s.id === 2).returnsTrue()
+              .filter(s => s.id === 2).ex()
               .patch(() => new Promise(resolve => setTimeout(() => resolve(payload2), 10))).asPromise()
               .then(() => {
                 expect(select().read().array).toEqual([initialState.array[0], { ...initialState.array[1], ...payload2 }, initialState.array[2]]);
@@ -411,10 +411,10 @@ describe('async', () => {
       })
   })
 
-  it('should work with find().returnsTrue().remove()', done => {
+  it('should work with find().ex().remove()', done => {
     const select = createApplicationStore(initialState);
     select(s => s.array)
-      .find(s => s.id === 2).returnsTrue()
+      .find(s => s.id === 2).ex()
       .remove(() => new Promise(resolve => setTimeout(() => resolve(null), 10))).asPromise()
       .then(res => {
         expect(res).toEqual(undefined);
@@ -423,10 +423,10 @@ describe('async', () => {
       })
   })
 
-  it('should work with filter().returnsTrue().remove()', done => {
+  it('should work with filter().ex().remove()', done => {
     const select = createApplicationStore(initialState);
     select(s => s.array)
-      .filter(s => s.id === 2).returnsTrue()
+      .filter(s => s.id === 2).ex()
       .remove(() => new Promise(resolve => setTimeout(() => resolve(null), 10))).asPromise()
       .then(res => {
         expect(res).toEqual([]);
