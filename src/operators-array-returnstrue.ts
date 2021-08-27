@@ -1,12 +1,12 @@
-import { ArrayOfElementsCommonAction, ArrayOfObjectsCommonAction, FindOrFilter, ShapesExt } from './shapes-external';
+import { ArrayOfElementsCommonAction, ArrayOfObjectsCommonAction, FindOrFilter, Trackability } from './shapes-external';
 import { ArrayCustomState } from './shapes-internal';
 import { errorMessages } from './shared-consts';
 import { readSelector } from './shared-utils';
 import { processStateUpdateRequest } from './store-updaters';
 import { transact } from './transact';
 
-export const replace = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends ShapesExt>(
-  arg: ArrayCustomState<S, C, X, T>,
+export const replace = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
+  arg: ArrayCustomState<S, C, X>,
 ) => ((payload, updateOptions) => {
   return processStateUpdateRequest({
     ...arg,
@@ -26,8 +26,8 @@ export const replace = <S, C, X extends C & Array<any>, F extends FindOrFilter, 
   });
 }) as ArrayOfElementsCommonAction<X, F, T>['replace'];
 
-export const patch = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends ShapesExt>(
-  arg: ArrayCustomState<S, C, X, T>,
+export const patch = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
+  arg: ArrayCustomState<S, C, X>,
 ) => ((payload, updateOptions) => {
   return processStateUpdateRequest({
     ...arg,
@@ -47,8 +47,8 @@ export const patch = <S, C, X extends C & Array<any>, F extends FindOrFilter, T 
   });
 }) as ArrayOfObjectsCommonAction<X, F, T>['patch'];
 
-export const remove = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends ShapesExt>(
-  arg: ArrayCustomState<S, C, X, T>,
+export const remove = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
+  arg: ArrayCustomState<S, C, X>,
 ) => ((payload: any, updateOptions: any) => {
   return processStateUpdateRequest({
     ...arg,
@@ -71,8 +71,8 @@ export const remove = <S, C, X extends C & Array<any>, F extends FindOrFilter, T
   });
 }) as ArrayOfElementsCommonAction<X, F, T>['remove'];
 
-export const onChange = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends ShapesExt>(
-  arg: ArrayCustomState<S, C, X, T>,
+export const onChange = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
+  arg: ArrayCustomState<S, C, X>,
 ) => (performAction => {
   arg.storeState.changeListeners.set(performAction, nextState => arg.type === 'find'
     ? (arg.selector(nextState) as X).find(e => arg.predicate(e))
@@ -80,16 +80,16 @@ export const onChange = <S, C, X extends C & Array<any>, F extends FindOrFilter,
   return { unsubscribe: () => arg.storeState.changeListeners.delete(performAction) };
 }) as ArrayOfElementsCommonAction<X, F, T>['onChange'];
 
-export const read = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends ShapesExt>(
-  arg: ArrayCustomState<S, C, X, T>,
+export const read = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
+  arg: ArrayCustomState<S, C, X>,
 ) => (() => {
   return arg.type === 'find'
     ? (arg.selector(arg.getCurrentState()) as X).find(e => arg.predicate(e))
     : (arg.selector(arg.getCurrentState()) as X).map(e => arg.predicate(e) ? e : null).filter(e => e != null)
 }) as ArrayOfElementsCommonAction<X, F, T>['read'];
 
-export const invalidateCache = <S, C, X extends C & Array<any>, T extends ShapesExt>(
-  arg: ArrayCustomState<S, C, X, T>,
+export const invalidateCache = <S, C, X extends C & Array<any>>(
+  arg: ArrayCustomState<S, C, X>,
 ) => {
   const segs = readSelector(arg.selector);
   const pathSegs = segs.join('.') + (segs.length ? '.' : '') + arg.type + '(' + arg.predicate + ')';
@@ -97,8 +97,8 @@ export const invalidateCache = <S, C, X extends C & Array<any>, T extends Shapes
     .map(key => () => arg.select(s => (s as any).cacheTTLs).remove(key)));
 }
 
-const getElementIndices = <S, C, X extends C & Array<any>, T extends ShapesExt>(
-  arg: ArrayCustomState<S, C, X, T>,
+const getElementIndices = <S, C, X extends C & Array<any>>(
+  arg: ArrayCustomState<S, C, X>,
 ) => {
   const elementIndices = arg.type === 'find'
     ? [(arg.selector(arg.getCurrentState()) as X).findIndex(e => arg.predicate(e))]

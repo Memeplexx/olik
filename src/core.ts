@@ -7,7 +7,7 @@ import * as ShapesInt from './shapes-internal';
 import { libState } from './shared-state';
 import * as shared from './shared-utils';
 
-export function createStoreCore<S, T extends ShapesExt.ShapesExt>({
+export function createStoreCore<S, T extends ShapesExt.Trackability>({
   state,
   devtoolsEnabled = true,
   devtoolsStoreName = document.title,
@@ -113,7 +113,7 @@ export function createStoreCore<S, T extends ShapesExt.ShapesExt>({
       select,
       initialState: storeState.initialState,
       getCurrentState: () => storeState.currentState,
-    } as ShapesInt.CoreActionsState<S, C, X, T>)
+    } as ShapesInt.CoreActionsState<S, C, X>)
     const coreActions = {
       deepMerge: general.deepMerge(getCoreActionsState()),
       remove: general.remove(getCoreActionsState()),

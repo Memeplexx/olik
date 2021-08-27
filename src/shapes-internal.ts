@@ -8,7 +8,7 @@ import {
   StoreForAComponent,
   StoreForAnObject,
   StoreOrDerivation,
-  ShapesExt,
+  Trackability,
 } from './shapes-external';
 
 export type UpdateStateArgs<S, C, X extends C = C> = {
@@ -44,7 +44,7 @@ export type WindowAugmentedWithReduxDevtools = {
   }
 }
 
-export type ArrayOperatorState<S, C, X extends C & Array<any>, F extends FindOrFilter, T extends ShapesExt> = {
+export type ArrayOperatorState<S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability> = {
   whereClauseSpecs: Array<{ filter: (arg: X[0]) => boolean, type: 'and' | 'or' | 'last' }>,
   whereClauseStrings: Array<string>,
   getCurrentState: () => S,
@@ -59,7 +59,7 @@ export type ArrayOperatorState<S, C, X extends C & Array<any>, F extends FindOrF
   payloadWhereClauses: Array<any>,
 };
 
-export type ArrayCustomState<S, C, X extends C & Array<any>, T extends ShapesExt> = {
+export type ArrayCustomState<S, C, X extends C & Array<any>> = {
   type: FindOrFilter,
   selector: Selector<S, C, X>,
   getCurrentState: () => S,
@@ -68,7 +68,7 @@ export type ArrayCustomState<S, C, X extends C & Array<any>, T extends ShapesExt
   storeState: StoreState<S>,
 }
 
-export type CoreActionsState<S, C, X extends C & Array<any>, T extends ShapesExt> = {
+export type CoreActionsState<S, C, X extends C & Array<any>> = {
   selector: Selector<S, C, X>,
   isComponentStore: () => boolean,
   storeState: StoreState<S>,
@@ -94,7 +94,7 @@ export type OptionsForCreatingInternalApplicationStore = {
   replaceExistingStoreIfItExists?: boolean,
 };
 
-export type StoreWhichMayContainComponentStores<S, C, T extends ShapesExt> = {
+export type StoreWhichMayContainComponentStores<S, C, T extends Trackability> = {
   renew: (state: S) => void;
 } & StoreForAnObject<C, T> & StoreOrDerivation<C>;
 
