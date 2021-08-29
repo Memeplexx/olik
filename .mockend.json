@@ -1,7 +1,7 @@
 {
   "Todo": {
     "id": {
-      "number": {
+      "int": {
         "min": 1,
         "max": 1000000
       }
@@ -13,7 +13,7 @@
       "boolean": {}
     },
     "urgency": {
-      "number": {
+      "int": {
         "min": 0,
         "max": 5
       }
