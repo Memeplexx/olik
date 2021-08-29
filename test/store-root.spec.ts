@@ -109,10 +109,10 @@ describe('Root', () => {
       .find().eq('two')
       .replace(payload);
     expect(testState.currentAction).toEqual({
-      type: `find(element).eq(two).replace()`,
+      type: `find().eq(two).replace()`,
       replacement: payload,
       where: [
-        { 'element.eq': 'two' }
+        { 'eq': 'two' }
       ],
     })
     expect(select().read()).toEqual(['one', 'twoo', 'three']);
@@ -132,10 +132,10 @@ describe('Root', () => {
     const select = createApplicationStore(['hello']);
     select().find().match(/^h/).replace('another')
     expect(testState.currentAction).toEqual({
-      type: `find(element).match(/^h/).replace()`,
+      type: `find().match(/^h/).replace()`,
       replacement: 'another',
       where: [
-        { 'element.match': /^h/ }
+        { 'match': /^h/ }
       ],
     });
     expect(select().read()).toEqual(['another']);

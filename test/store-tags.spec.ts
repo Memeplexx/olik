@@ -69,4 +69,13 @@ describe('tags', () => {
     });
   })
 
+  it('should support tags even when removing an array element', () => {
+    const select = createApplicationStore({ arr: [1, 2, 3] });
+    const tag = 'mytag';
+    select(s => s.arr).find().eq(2).remove({ tag })
+    expect(testState.currentAction.type).toEqual(
+      `arr.find().eq(2).remove() [${tag}]`
+    )
+  })
+
 });

@@ -192,7 +192,6 @@ export type ArrayOfObjectsAction<X extends DeepReadonlyArray<any>, F extends Fin
    * .patch({ done: true })
    */
   patch: <H extends Partial<X[0]> | (() => AnyAsync<Partial<X[0]>>) >(patch: H, options: UpdateOptions<T, H>) => H extends (() => AnyAsync<any>) ? Future<F extends 'find' ? H : H[]> : void,
-  // get: <P>(getProp: (element: X[0]) => P) => Store<P, T>,
 } & ArrayOfElementsAction<X, F, T>;
 
 export interface ArrayOfElementsCommonAction<X extends DeepReadonlyArray<any>, F extends FindOrFilter, T extends Trackability> {

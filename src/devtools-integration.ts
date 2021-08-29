@@ -21,7 +21,7 @@ export function integrateStoreWithReduxDevtools<S, C = S>(
   if (!arg.name) {
     arg.name = document.title;
   }
-  const devTools = windowObj.__REDUX_DEVTOOLS_EXTENSION__.connect({ name });
+  const devTools = windowObj.__REDUX_DEVTOOLS_EXTENSION__.connect({ name: arg.name });
   devTools.init(arg.store().read());
   arg.storeState.devtoolsDispatchListener = action => {
     devTools.send(action, arg.store().read());

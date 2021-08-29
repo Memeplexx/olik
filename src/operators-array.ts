@@ -1,4 +1,6 @@
 import {
+  ActionOptions,
+  AnyAsync,
   ArrayOfElementsAction,
   ArrayOfElementsCommonAction,
   ArrayOfObjectsAction,
@@ -29,13 +31,13 @@ export const or = <S, C, X extends C & Array<any>, F extends FindOrFilter, T ext
 
 export const remove = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
   arg: ArrayOperatorState<S, C, X, F, T>,
-) => ((payload: any, updateOptions: any) => {
+) => ((payloadOrUpdateOptions?: (() => AnyAsync<any>) | ActionOptions<T>, updateOptionsAsync?: ActionOptions<T>) => {
   const where = completeWhereClause(arg);
   return processStateUpdateRequest({
     ...arg,
     selector: ((s: any) => (arg.selector(s) as any)[arg.type]((e: any) => bundleCriteria(e, arg.whereClauseSpecs))) as any,
-    payload,
-    updateOptions,
+    payload: payloadOrUpdateOptions,
+    updateOptions: updateOptionsAsync || payloadOrUpdateOptions,
     cacheKeySuffix: `${arg.type}(${where}).remove()`,
     actionNameSuffix: `${arg.type}(${where}).remove()`,
     replacer: old => {
@@ -50,7 +52,7 @@ export const remove = <S, C, X extends C & Array<any>, F extends FindOrFilter, T
       };
     },
   });
-}) as ArrayOfObjectsAction<X, F, T>['remove'];
+}) as ArrayOfElementsCommonAction<X, F, T>['remove'];
 
 export const patch = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
   arg: ArrayOperatorState<S, C, X, F, T>,

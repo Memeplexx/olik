@@ -56,8 +56,8 @@ export function createStoreCore<S, T extends ShapesExt.Trackability>({
           shared.validateSelectorFn('getProp', storeState, getProp);
           const segs = !getProp ? [] : shared.readSelector(getProp);
           const criteria = (arg: X[0], comparator: (arg: X[0]) => boolean) => { segs.forEach(seg => arg = arg[seg]); return comparator(arg); };
-          const el = segs.join('.') || 'element';
-          payloadWhereClauses.push({ [(!whereClauseSpecs.length ? '' : whereClauseSpecs[whereClauseSpecs.length - 1].type + '.') + el + '.' + key]: val });
+          const el = segs.join('.') || '';
+          payloadWhereClauses.push({ [(!whereClauseSpecs.length ? '' : whereClauseSpecs[whereClauseSpecs.length - 1].type + '.') + (el ? el + '.' : '') + key]: val });
           const whereClauseString = `${el}).${key}(${val.toString().substring(0, actionTypeWhereClauseMaxValueLength)}`;
           const context = {
             whereClauseSpecs,

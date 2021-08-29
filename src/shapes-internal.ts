@@ -57,6 +57,7 @@ export type ArrayOperatorState<S, C, X extends C & Array<any>, F extends FindOrF
   select: (selector?: (s: S) => C) => any,
   storeState: StoreState<S>,
   payloadWhereClauses: Array<any>,
+  where?: string;
 };
 
 export type ArrayCustomState<S, C, X extends C & Array<any>> = {
