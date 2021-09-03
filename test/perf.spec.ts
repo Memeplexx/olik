@@ -48,7 +48,7 @@ describe.skip('Perf', () => {
       array: new Array(200).fill(null).map(e => ({
         hello: "fddf fdffd dffdffddf",
         one: 1,
-        two: "heyyyyyy",
+        two: "test",
         more: "hey",
         yetMore: "another",
         someNum: 1,
@@ -58,7 +58,7 @@ describe.skip('Perf', () => {
       array2: new Array(200).fill(null).map(e => ({
         hello: "fddf fdffd dffdffddf",
         one: 1,
-        two: "heyyyyyy",
+        two: "test",
         more: "hey",
         yetMore: "another",
         someNum: 1,
@@ -68,7 +68,7 @@ describe.skip('Perf', () => {
       array3: new Array(200).fill(null).map(e => ({
         hello: "fddf fdffd dffdffddf",
         one: 1,
-        two: "heyyyyyy",
+        two: "test",
         more: "hey",
         yetMore: "another",
         someNum: 1,

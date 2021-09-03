@@ -221,14 +221,12 @@ export const replace = <S, C, X extends C & Array<any>, T extends Trackability>(
   ) => {
     validateSelector(arg);
     const pathSegments = readSelector(arg.selector);
-    const segsCopy = pathSegments.slice(0, pathSegments.length - 1);
     return processStateUpdateRequest({
       ...arg,
-      selector: arg.selector,
       updateOptions,
       actionNameSuffix: `${arg.name}()`,
       payload,
-      pathSegments: segsCopy,
+      pathSegments: pathSegments.slice(0, pathSegments.length - 1),
       getPayload: (payload) => ({ replacement: payload }),
       replacer: (old, payload) => {
         if (!pathSegments.length) { return payload; }
