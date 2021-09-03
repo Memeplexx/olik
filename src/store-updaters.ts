@@ -11,7 +11,6 @@ export const processStateUpdateRequest = <S, C, X extends C & Array<any>>(
     payload: any | (() => Promise<any>),
     select: (selector?: (s: S) => C) => any,
     updateOptions: {} | void,
-    cacheKeySuffix: string,
     actionNameSuffix: string,
     storeState: StoreState<S>,
     replacer: (newNode: DeepReadonly<X>, payload: C) => any,
@@ -37,7 +36,7 @@ export const processStateUpdateRequest = <S, C, X extends C & Array<any>>(
     }
     const asyncPayload = arg.payload as (() => Promise<C>);
     const cacheFor = ((arg.updateOptions || {}) as any).cacheFor || 0;
-    const cacheKey = `${!pathSegments.length ? '' : (pathSegments.join('.') + '.')}${arg.cacheKeySuffix}`;
+    const cacheKey = `${!pathSegments.length ? '' : (pathSegments.join('.') + '.')}${arg.actionNameSuffix}`;
     if (arg.storeState.activeFutures[cacheKey]) { // prevent duplicate simultaneous requests
       return arg.storeState.activeFutures[cacheKey];
     }

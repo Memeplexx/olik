@@ -50,7 +50,6 @@ export const patchAll = <S, C, X extends C & Array<any>, T extends Trackability>
   return processStateUpdateRequest<S, C, X>({
     ...arg,
     updateOptions,
-    cacheKeySuffix: 'patchAll()',
     actionNameSuffix: `patchAll()`,
     payload,
     replacer: (old, payload) => old.map(o => ({...o, ...payload})),
@@ -79,7 +78,6 @@ export const insertIntoArray = <S, C, X extends C & Array<any>, T extends Tracka
   return processStateUpdateRequest<S, C, X>({
     ...arg,
     updateOptions,
-    cacheKeySuffix: 'insert()',
     actionNameSuffix: `insert()`,
     payload,
     replacer: (old, payload) => {
@@ -100,7 +98,6 @@ export const patchOrInsertIntoObject = <S, C, X extends C & Array<any>, T extend
     ...arg,
     payload,
     updateOptions,
-    cacheKeySuffix: `${arg.type}()`,
     actionNameSuffix: `${arg.type}()`,
     replacer: (old, payload) => ({ ...old, ...payload }),
     getPayload: payload => arg.type === 'patch'
@@ -116,7 +113,6 @@ export const remove = <S, C, X extends C & Array<any>, T extends Trackability>(
   return processStateUpdateRequest({
     ...arg,
     updateOptions,
-    cacheKeySuffix: 'remove()',
     actionNameSuffix: `remove()`,
     payload,
     replacer: (old, payload) => { const res = Object.assign({}, old); delete (res as any)[payload]; return res; },
@@ -131,7 +127,6 @@ export const increment = <S, C, X extends C & Array<any>, T extends Trackability
   return processStateUpdateRequest({
     ...arg,
     updateOptions,
-    cacheKeySuffix: 'increment()',
     actionNameSuffix: `increment()`,
     payload,
     replacer: (old, payload) => (old as any as number) + (payload as any as number),
@@ -150,7 +145,6 @@ export const deepMerge = <S, C, X extends C & Array<any>, T extends Trackability
     ...arg,
     payload,
     updateOptions,
-    cacheKeySuffix: 'deepMerge()',
     actionNameSuffix: `deepMerge()`,
     replacer: (old, payload) => {
       const isObject = (item: any) => (item && typeof item === 'object' && !Array.isArray(item));
@@ -192,7 +186,6 @@ export const upsertMatching = <S, C, X extends C & Array<any>, T extends Trackab
       return processStateUpdateRequest({
         ...arg,
         updateOptions,
-        cacheKeySuffix: `upsertMatching(${segs.join('.')}).with()`,
         actionNameSuffix: `upsertMatching(${segs.join('.')}).with()`,
         payload,
         getPayload: () => null,
@@ -233,7 +226,6 @@ export const replace = <S, C, X extends C & Array<any>, T extends Trackability>(
       ...arg,
       selector: arg.selector,
       updateOptions,
-      cacheKeySuffix: `${arg.name}()`,
       actionNameSuffix: `${arg.name}()`,
       payload,
       pathSegments: segsCopy,

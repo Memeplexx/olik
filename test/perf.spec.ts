@@ -34,7 +34,7 @@ describe.skip('Perf', () => {
     console.log(`Native: ${performance.now() - before}`);
   })
 
-  it('should test outlik perf', () => {
+  it('should test olik perf', () => {
     const select = createApplicationStore({
       anotherProp: {
         some: {
