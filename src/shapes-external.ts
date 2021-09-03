@@ -734,8 +734,7 @@ export type FutureState<C> = {
 
 export interface Future<C> {
   asPromise: () => Promise<C>;
-  onChange: (fn: (state: FutureState<C>) => any) => Unsubscribable;
-  read: () => C;
+  getStatus: () => FutureState<C>,
 }
 
 export interface Async<C> {

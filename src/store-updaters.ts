@@ -44,9 +44,8 @@ export const processStateUpdateRequest = <S, C, X extends C & Array<any>>(
     const expirationDate = (arg.select().read().cacheTTLs || {})[cacheKey];
     if (expirationDate && (new Date(expirationDate).getTime() > new Date().getTime())) {
       const result = {
-        read: () => arg.select(arg.selector).read(),
         asPromise: () => Promise.resolve(arg.select(arg.selector).read()),
-        onChange: (fn) => fn({ storeValue: arg.select(arg.selector).read(), error: null, wasResolved: true, isLoading: false, wasRejected: false } as FutureState<C>),
+        getStatus: () => ({ storeValue: arg.select(arg.selector).read(), error: null, wasResolved: true, isLoading: false, wasRejected: false } as FutureState<C>),
       } as Future<C>;
       Object.keys(augmentations.future).forEach(name => (result as any)[name] = augmentations.future[name](result));
       return result;
@@ -56,10 +55,13 @@ export const processStateUpdateRequest = <S, C, X extends C & Array<any>>(
     if (!isEmpty(snapshot)) {
       updateState(optimisticallyUpdateWith);
     }
+    let state = { storeValue: arg.select(arg.selector).read(), error: null, isLoading: true, wasRejected: false, wasResolved: false } as FutureState<C>;
     const promiseResult = () => {
+      arg.storeState.activeFutures[cacheKey] = result;
       const promise = (augmentations.async ? augmentations.async(asyncPayload) : asyncPayload()) as Promise<C>;
       return promise
         .then(res => {
+          state = { ...state, wasResolved: true, isLoading: false, storeValue: arg.select(arg.selector).read() };
           const involvesCaching = !!arg.updateOptions && !(typeof (arg.updateOptions) === 'string') && cacheFor;
           if (involvesCaching) {
             libState.transactionState = 'started';
@@ -86,29 +88,20 @@ export const processStateUpdateRequest = <S, C, X extends C & Array<any>>(
             }
           }
           return arg.select(arg.selector).read();
-        }).catch(e => {
+        }).catch(error => {
+          state = { ...state, wasRejected: true, isLoading: false, error }
           // Revert optimistic update
           if (!isEmpty(snapshot)) {
             updateState(snapshot);
           }
-          throw e;
+          throw error;
         }).finally(() => delete arg.storeState.activeFutures[cacheKey]);
     };
-    const state = { storeValue: arg.select(arg.selector).read(), error: null, isLoading: true, wasRejected: false, wasResolved: false } as FutureState<C>;
     const result = {
-      read: () => arg.select(arg.selector).read(),
       asPromise: () => promiseResult(),
-      onChange: (fn) => {
-        let subscribed = true;
-        fn(state)
-        promiseResult()
-          .then(storeValue => { if (subscribed) { fn({ ...state, wasResolved: true, isLoading: false, storeValue }) } })
-          .catch(error => { if (subscribed) { fn({ ...state, wasRejected: true, isLoading: false, error }) } })
-        return { unsubscribe: () => { subscribed = false; } };
-      }
+      getStatus: () => state,
     } as Future<C>;
     Object.keys(augmentations.future).forEach(name => (result as any)[name] = augmentations.future[name](result));
-    arg.storeState.activeFutures[cacheKey] = result;
     return result
   } else {
     updateState(arg.payload as C);
