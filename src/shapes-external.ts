@@ -735,6 +735,7 @@ export type FutureState<C> = {
 export interface Future<C> {
   asPromise: () => Promise<C>;
   getStatus: () => FutureState<C>,
+  read: () => DeepReadonly<C>,
 }
 
 export interface Async<C> {

@@ -99,6 +99,7 @@ export const processStateUpdateRequest = <S, C, X extends C & Array<any>>(
     const result = {
       asPromise: () => promiseResult(),
       getStatus: () => state,
+      read: () => arg.select(arg.selector).read(),
     } as Future<C>;
     Object.keys(augmentations.future).forEach(name => (result as any)[name] = augmentations.future[name](result));
     return result
