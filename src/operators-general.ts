@@ -1,4 +1,6 @@
 import {
+  ActionOptions,
+  AnyAsync,
   DeepReadonly,
   Selector,
   StoreForAnArrayCommon,
@@ -52,7 +54,7 @@ export const patchAll = <S, C, X extends C & Array<any>, T extends Trackability>
     updateOptions,
     actionNameSuffix: `patchAll()`,
     payload,
-    replacer: (old, payload) => old.map(o => ({...o, ...payload})),
+    replacer: (old, payload) => old.map(o => ({ ...o, ...payload })),
     getPayload: payload => ({ patch: payload }),
   });
 }) as StoreForAnArrayCommon<X, T>['patchAll'];
@@ -90,35 +92,19 @@ export const insertIntoArray = <S, C, X extends C & Array<any>, T extends Tracka
   });
 }) as StoreForAnArrayCommon<X, T>['insert'];
 
-export const patchOrInsertIntoObject = <S, C, X extends C & Array<any>, T extends Trackability>(
-  arg: CoreActionsState<S, C, X> & { type: 'patch' | 'insert', },
-) => ((payload, updateOptions) => {
-  validateSelector(arg);
-  return processStateUpdateRequest({
-    ...arg,
-    payload,
-    updateOptions,
-    actionNameSuffix: `${arg.type}()`,
-    replacer: (old, payload) => ({ ...old, ...payload }),
-    getPayload: payload => arg.type === 'patch'
-      ? { patch: payload }
-      : { insertion: payload }
-  });
-}) as StoreForAnObject<C, T>['patch'];
-
-export const remove = <S, C, X extends C & Array<any>, T extends Trackability>(
+export const patch = <S, C, X extends C & Array<any>, T extends Trackability>(
   arg: CoreActionsState<S, C, X>,
 ) => ((payload, updateOptions) => {
   validateSelector(arg);
   return processStateUpdateRequest({
     ...arg,
-    updateOptions,
-    actionNameSuffix: `remove()`,
     payload,
-    replacer: (old, payload) => { const res = Object.assign({}, old); delete (res as any)[payload]; return res; },
-    getPayload: payload => ({ toRemove: payload }),
+    updateOptions,
+    actionNameSuffix: `patch()`,
+    replacer: (old, payload) => ({ ...old, ...payload }),
+    getPayload: payload => ({ patch: payload })
   });
-}) as StoreForAnObject<C, T>['remove'];
+}) as StoreForAnObject<C, T>['patch'];
 
 export const increment = <S, C, X extends C & Array<any>, T extends Trackability>(
   arg: CoreActionsState<S, C, X>,
@@ -212,6 +198,28 @@ export const upsertMatching = <S, C, X extends C & Array<any>, T extends Trackab
     }
   };
 }) as StoreForAnArrayOfObjects<X, T>['upsertMatching'];
+
+export const remove = <S, C, X extends C & Array<any>, T extends Trackability>(
+  arg: CoreActionsState<S, C, X>,
+) => (
+  payloadOrUpdateOptions?: (() => AnyAsync<any>) | ActionOptions<T>, updateOptionsAsync?: ActionOptions<T>
+  ) => {
+    validateSelector(arg);
+    const pathSegments = readSelector(arg.selector);
+    return processStateUpdateRequest({
+      ...arg,
+      payload: payloadOrUpdateOptions,
+      updateOptions: updateOptionsAsync || payloadOrUpdateOptions,
+      actionNameSuffix: `remove()`,
+      pathSegments: pathSegments.slice(0, pathSegments.length - 1),
+      getPayload: () => null,
+      replacer: (old) => {
+        const lastSeg: any = pathSegments[pathSegments.length - 1];
+        const { [lastSeg]: value, ...otherValues } = old;
+        return otherValues;
+      },
+    });
+  }
 
 export const replace = <S, C, X extends C & Array<any>, T extends Trackability>(
   arg: CoreActionsState<S, C, X> & { name: string },

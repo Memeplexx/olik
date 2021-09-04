@@ -467,28 +467,6 @@ export type StoreForAnObject<C, T extends Trackability> = {
    */
   patch: <H extends (Partial<C> | (() => AnyAsync<Partial<C>>)) >(partial: H, options: UpdateOptions<T, H>) => H extends (() => AnyAsync<Partial<C>>) ? Future<C> : void,
   /**
-   * Removes the specified key from this object.  
-   * ***WARNING***: invoking this has the potentional to contradict the type-system.
-   * Only use this to remove a property from an object of type of `{ [key: string]: any }` and NOT to remove a property from an object with statically defined properties eg `{ str: '', num: 0 }`
-   * @example
-   * const select = createApplicationStore({ skillpoints: {} as {[name: string]: number} });
-   * 
-   * select(s => s.skillpoints)
-   *   .remove('archery')
-   */
-  remove: <H extends (keyof C | (() => AnyAsync<keyof C>)) >(key: H, options: ActionOptions<T>) => H extends (() => AnyAsync<keyof C>) ? Future<C> : void,
-  /**
-   * Adds one or more key-value-pairs to this object.  
-   * ***WARNING***: invoking this has the potentional to contradict the type-system.
-   * Only use this to add properties to an object of type of `{ [key: string]: any }` and NOT to add properties with statically defined properties eg `{ str: '', num: 0 }`
-   * @example
-   * const select = createApplicationStore({ skillpoints: {} as {[name: string]: number} });
-   * 
-   * select(s => s.skillpoints)
-   *   .insert({ archery: 3, sorcery: 5 })
-   */
-  insert: <H extends { [key: string]: any } | (() => AnyAsync<{ [key: string]: any }>) >(insertion: H) => H extends (() => AnyAsync<{ [key: string]: any }>) ? Future<{ [key: string]: any }> : void,
-  /**
    * Deep-merges the existing object with the supplied object.
    * @example
    * const select = createApplicationStore({ obj: { hello: 'foo' } });
@@ -535,6 +513,21 @@ export type StoreWhichIsResettable<C, T extends Trackability> = {
   invalidateCache: () => void,
 } & StoreOrDerivation<C>;
 
+export type StoreWhichAllowsRemoving<T extends Trackability> = {
+  /**
+   * Removes the selected property from it's parent node.  
+   * ***WARNING***: invoking this has the potentional to contradict the type-system.
+   * Ideally you should only use this to remove a property from a node with dynamic keys, eg `{ [key: string]: any }` and NOT from a node with statically defined keys, eg `{ str: '', num: 0 }`
+   * @example
+   * const select = createApplicationStore({ skillpoints: {} as {[name: string]: number} });
+   * 
+   * select(s => s.skillpoints.archery)
+   *   .remove()
+   */
+  remove(asyncRemover: () => AnyAsync<any>, options: ActionOptions<T>): Future<any>;
+  remove(options: ActionOptions<T>): void;
+}
+
 /**
  * An object which is capable of managing states of various shapes
  */
@@ -574,21 +567,21 @@ export type SelectorReaderComponent<S, U> = SelectorReader<S, U> & { detachFromA
  */
 export type SelectorFromAComponentStore<S> = [S] extends [Array<any>] | [number] | [string] | [boolean]
   ? () => StoreForAComponent<S>
-  : <C = DeepReadonly<S>>(selector?: (arg: DeepReadonly<S>) => C) => StoreForAComponent<C>;
+  : <C = DeepReadonly<S>>(selector?: (arg: DeepReadonly<S>) => C) => StoreForAComponent<C> & (C extends S ? {} : StoreWhichAllowsRemoving<'untagged'>);
 
 /**
  * A function which selects from a store
  */
 export type SelectorFromAStore<S> = [S] extends [Array<any>] | [number] | [string] | [boolean]
   ? () => StoreWhichDoesntEnforceTags<S>
-  : <C = DeepReadonly<S>>(selector?: (arg: DeepReadonly<S>) => C) => StoreWhichDoesntEnforceTags<C>;
+  : <C = DeepReadonly<S>>(selector?: (arg: DeepReadonly<S>) => C) => StoreWhichDoesntEnforceTags<C> & (C extends S ? {} : StoreWhichAllowsRemoving<'untagged'>);
 
 /**
  * A function which selects from a store which enforces the use of tags when performing a state update
  */
 export type SelectorFromAStoreEnforcingTags<S> = [S] extends [Array<any>] | [number] | [string] | [boolean]
   ? () => StoreWhichEnforcesTags<S>
-  : <C = DeepReadonly<S>>(selector?: (arg: DeepReadonly<S>) => C) => StoreWhichEnforcesTags<C>;
+  : <C = DeepReadonly<S>>(selector?: (arg: DeepReadonly<S>) => C) => StoreWhichEnforcesTags<C> & (C extends S ? {} : StoreWhichAllowsRemoving<'tagged'>);
 
 /**
  * An input for a derivation

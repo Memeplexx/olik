@@ -69,18 +69,10 @@ export const processStateUpdateRequest = <S, C, X extends C & Array<any>>(
           if (involvesCaching && cacheFor) {
             const cacheExpiry = toIsoString(new Date(new Date().getTime() + cacheFor));
             libState.transactionState = 'last';
-            if (!arg.select().read().cacheTTLs) {
-              arg.select(s => (s as any).cacheTTLs).replace({
-                ...(arg.select().read().cacheTTLs || { [cacheKey]: cacheExpiry }),
-              })
-            } else if (!arg.select().read().cacheTTLs[cacheKey]) {
-              arg.select(s => (s as any).cacheTTLs).insert({ [cacheKey]: cacheExpiry });
-            } else {
-              arg.select(s => (s as any).cacheTTLs[cacheKey]).replace(cacheExpiry);
-            }
+            arg.select(s => (s as any).cacheTTLs[cacheKey]).replace(cacheExpiry);
             try {
               setTimeout(() => {
-                arg.select(s => (s as any).cacheTTLs).remove(cacheKey);
+                arg.select(s => (s as any).cacheTTLs[cacheKey]).remove();
               }, cacheFor);
             } catch (e) {
               // ignoring

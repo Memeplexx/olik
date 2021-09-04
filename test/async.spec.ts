@@ -131,11 +131,10 @@ describe('async', () => {
 
   it('should work with remove()', done => {
     const select = createApplicationStore(initialState);
-    select(s => s.object)
-      .remove(() => new Promise(resolve => setTimeout(() => resolve('property2'), 10)))
+    select(s => s.object.property2)
+      .remove(() => new Promise(resolve => setTimeout(() => resolve(), 10)))
       .asPromise()
-      .then(res => {
-        expect(res).toEqual({ property: '' });
+      .then(() => {
         expect(select().read().object).toEqual({ property: '' });
         done();
       })
@@ -385,6 +384,7 @@ describe('async', () => {
   it('should automatically clear up expired cache keys', done => {
     const select = createApplicationStore(initialState);
     const payload = [{ id: 1, value: 'test' }];
+    testState.logLevel = 'DEBUG';
     select(s => s.object)
       .replace(() => new Promise(resolve => setTimeout(() => resolve({ property: 'fdfd', property2: 'fdfd' }), 10)), { cacheFor: 1000 })
       .asPromise();
@@ -394,7 +394,9 @@ describe('async', () => {
       .then(() => {
         setTimeout(() => {
           expect(Object.keys(select().read().cacheTTLs)).toEqual(['object.replace()']);
+          expect(testState.currentAction).toEqual({ type: 'cacheTTLs.array.replaceAll().remove()' });
           done();
+          testState.logLevel = 'NONE';
         }, 100);
       });
   })

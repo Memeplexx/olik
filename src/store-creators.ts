@@ -143,9 +143,9 @@ function getComponentStoreWithinContainerStore<L, C = L>(
     if (!libState.applicationStore) { return; }
     const state = libState.applicationStore().read().components[options.componentName];
     if ((Object.keys(state).length === 1) && state[options.instanceName!]) {
-      libState.applicationStore(s => s.components).remove(options.componentName);
+      libState.applicationStore(s => s.components[options.componentName]).remove();
     } else {
-      libState.applicationStore(s => s.components[options.componentName]).remove(options.instanceName!);
+      libState.applicationStore(s => s.components[options.componentName][options.instanceName]).remove();
     }
   }
   return cStore as StoreForAComponent<C>;

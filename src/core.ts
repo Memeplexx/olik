@@ -115,12 +115,10 @@ export function createStoreCore<S, T extends ShapesExt.Trackability>({
       getCurrentState: () => storeState.currentState,
     } as ShapesInt.CoreActionsState<S, C, X>)
     const coreActions = {
-      deepMerge: general.deepMerge(getCoreActionsState()),
       remove: general.remove(getCoreActionsState()),
-      patch: general.patchOrInsertIntoObject({ ...getCoreActionsState(), type: 'patch' }),
-      insert: Array.isArray(selector(storeState.currentState))
-        ? general.insertIntoArray(getCoreActionsState())
-        : general.patchOrInsertIntoObject({ ...getCoreActionsState(), type: 'insert' }),
+      deepMerge: general.deepMerge(getCoreActionsState()),
+      patch: general.patch(getCoreActionsState()),
+      insert: general.insertIntoArray(getCoreActionsState()),
       removeAll: general.removeAll(getCoreActionsState()),
       replaceAll: general.replaceAll(getCoreActionsState()),
       patchAll: general.patchAll(getCoreActionsState()),

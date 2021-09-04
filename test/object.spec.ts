@@ -71,27 +71,13 @@ describe('Object', () => {
     expect(select().read()).toEqual({ hello: 'world' });
   })
 
-  it('should be able to remove a key', () => {
+  it('should remove a value', () => {
     const select = createApplicationStore({ hello: 'one', world: 'two', another: 'three' });
-    const payload = 'world';
-    select().remove(payload);
+    select(s => s.another).remove();
     expect(testState.currentAction).toEqual({
-      type: 'remove()',
-      toRemove: payload,
+      type: 'another.remove()',
     });
-    expect(select().read()).toEqual({ hello: 'one', another: 'three' });
-  })
-
-  it('should be able to insert properties', () => {
-    const initState = { one: 'one' };
-    const select = createApplicationStore(initState);
-    const insertion = { hello: 'test', another: 'testy' };
-    select().insert(insertion);
-    expect(testState.currentAction).toEqual({
-      type: 'insert()',
-      insertion,
-    });
-    expect(select().read()).toEqual({ ...initState, ...insertion });
+    expect(select().read()).toEqual({ hello: 'one', world: 'two' });
   })
 
 });
