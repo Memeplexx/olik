@@ -729,7 +729,7 @@ export type FutureState<C> = {
   wasRejected: boolean,
   wasResolved: boolean,
   error: any,
-  storeValue: DeepReadonly<C>,
+  storeValue: C,
 };
 
 export interface Future<C> {
