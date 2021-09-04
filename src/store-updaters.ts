@@ -44,7 +44,7 @@ export const processStateUpdateRequest = <S, C, X extends C & Array<any>>(
     if (expirationDate && (new Date(expirationDate).getTime() > new Date().getTime())) {
       const result = {
         asPromise: () => Promise.resolve(arg.select(arg.selector).read()),
-        getStatus: () => ({ storeValue: arg.select(arg.selector).read(), error: null, wasResolved: true, isLoading: false, wasRejected: false } as FutureState<C>),
+        getFutureState: () => ({ storeValue: arg.select(arg.selector).read(), error: null, wasResolved: true, isLoading: false, wasRejected: false } as FutureState<C>),
       } as Future<C>;
       Object.keys(augmentations.future).forEach(name => (result as any)[name] = augmentations.future[name](result));
       return result;
@@ -60,12 +60,12 @@ export const processStateUpdateRequest = <S, C, X extends C & Array<any>>(
       const promise = (augmentations.async ? augmentations.async(asyncPayload) : asyncPayload()) as Promise<C>;
       return promise
         .then(res => {
-          state = { ...state, wasResolved: true, isLoading: false, storeValue: arg.select(arg.selector).read() };
           const involvesCaching = !!arg.updateOptions && !(typeof (arg.updateOptions) === 'string') && cacheFor;
           if (involvesCaching) {
             libState.transactionState = 'started';
           }
           updateState(res);
+          state = { ...state, wasResolved: true, wasRejected: false, isLoading: false, storeValue: arg.select(arg.selector).read() };
           if (involvesCaching && cacheFor) {
             const cacheExpiry = toIsoString(new Date(new Date().getTime() + cacheFor));
             libState.transactionState = 'last';
@@ -88,18 +88,17 @@ export const processStateUpdateRequest = <S, C, X extends C & Array<any>>(
           }
           return arg.select(arg.selector).read();
         }).catch(error => {
-          state = { ...state, wasRejected: true, isLoading: false, error }
           // Revert optimistic update
           if (!isEmpty(snapshot)) {
             updateState(snapshot);
           }
+          state = { ...state, wasRejected: true, wasResolved: false, isLoading: false, error };
           throw error;
         }).finally(() => delete arg.storeState.activeFutures[cacheKey]);
     };
     const result = {
       asPromise: () => promiseResult(),
-      getStatus: () => state,
-      read: () => arg.select(arg.selector).read(),
+      getFutureState: () => state,
     } as Future<C>;
     Object.keys(augmentations.future).forEach(name => (result as any)[name] = augmentations.future[name](result));
     return result

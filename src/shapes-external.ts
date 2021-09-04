@@ -729,13 +729,18 @@ export type FutureState<C> = {
   wasRejected: boolean,
   wasResolved: boolean,
   error: any,
-  storeValue: C,
+  storeValue: DeepReadonly<C>,
 };
 
 export interface Future<C> {
+  /**
+   * Calls the promise you used to update your state
+   */
   asPromise: () => Promise<C>;
-  getStatus: () => FutureState<C>,
-  read: () => DeepReadonly<C>,
+  /**
+   * Gets the current status for the UI to consume
+   */
+  getFutureState: () => FutureState<C>,
 }
 
 export interface Async<C> {
