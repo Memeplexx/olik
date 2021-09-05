@@ -203,7 +203,7 @@ export const remove = <S, C, X extends C & Array<any>, T extends Trackability>(
   arg: CoreActionsState<S, C, X>,
 ) => (
   payloadOrUpdateOptions?: (() => AnyAsync<any>) | ActionOptions<T>, updateOptionsAsync?: ActionOptions<T>
-  ) => {
+) => {
     validateSelector(arg);
     const pathSegments = readSelector(arg.selector);
     return processStateUpdateRequest({
@@ -252,7 +252,7 @@ export function invalidateCache<S, C, X extends C & Array<any>>(
   const segs = readSelector(selector);
   const pathSegs = segs.join('.');
   transact(...Object.keys(select().read().cacheTTLs).filter(key => key.startsWith(pathSegs))
-    .map(key => () => select(s => (s as any).cacheTTLs).remove(key)));
+    .map(key => () => select(s => (s as any).cacheTTLs[key]).remove()));
 }
 
 const validateSelector = <S, C, X extends C & Array<any>>(

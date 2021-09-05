@@ -372,6 +372,7 @@ describe('async', () => {
     const select = createApplicationStore(initialState);
     expect(() => transact(
       () => select(s => s.array).replaceAll(() => new Promise(resolve => setTimeout(() => resolve([]), 10))),
+      () => select(s => s.array).find(s => s.id).eq(1).replace(() => new Promise(resolve => setTimeout(() => resolve({ id: 1, value: 'XXX' }), 10))),
     )).toThrowError(errorMessages.PROMISES_NOT_ALLOWED_IN_TRANSACTIONS);
   })
 

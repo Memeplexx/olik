@@ -109,9 +109,9 @@ export const invalidateCache = <S, C, X extends C & Array<any>, F extends FindOr
   arg: ArrayOperatorState<S, C, X, F, T>,
 ) => {
   const segs = readSelector(arg.selector);
-  const pathSegs = segs.join('.') + (segs.length ? '.' : '') + arg.type + '(' + arg.whereClauseString + ')';
+  const pathSegs = segs.join('.') + (segs.length ? '.' : '') + arg.type + '(' + completeWhereClause(arg) + ')';
   transact(...Object.keys(arg.select().read().cacheTTLs).filter(key => key.startsWith(pathSegs))
-    .map(key => () => arg.select(s => (s as any).cacheTTLs).remove(key)));
+    .map(key => () => arg.select(s => (s as any).cacheTTLs[key]).remove()));
 }
 
 const completeWhereClause = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
