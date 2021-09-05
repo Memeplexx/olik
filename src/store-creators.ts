@@ -1,14 +1,14 @@
 import { createStoreCore } from './core';
 import {
+  DeepReadonly,
   Deferred,
-  OptionsForMakingAnApplicationStore,
   OptionsForMakingAComponentStore,
+  OptionsForMakingAnApplicationStore,
   SelectorFromAComponentStore,
   SelectorFromAStore,
   SelectorFromAStoreEnforcingTags,
   StoreForAComponent,
   Trackability,
-  DeepReadonly,
 } from './shapes-external';
 import { OptionsForCreatingInternalApplicationStore, StoreForAComponentInternal } from './shapes-internal';
 import { errorMessages } from './shared-consts';
@@ -183,55 +183,10 @@ function createComponentStoreInternal<L>(
     || isEmpty(wrapperState.components[options.componentName])
     || isEmpty(wrapperState.components[options.componentName][options.instanceName!])
   if (thisComponentStoreHasNotBeenAttachedToTheAppStoreYet) {
-    if (!wrapperState.components) {
-      if (['number', 'boolean', 'string'].some(type => typeof (wrapperState) === type) || Array.isArray(wrapperState)) {
-        throw new Error(errorMessages.INVALID_CONTAINER_FOR_COMPONENT_STORES);
-      }
-      containerStore.patch({
-        components: {
-          [options.componentName]: {
-            [options.instanceName!]: state
-          }
-        }
-      });
-      containerStore.renew({
-        ...wrapperState,
-        components: {
-          [options.componentName]: {
-            [options.instanceName!]: state
-          }
-        }
-      });
-    } else if (!wrapperState.components[options.componentName]) {
-      libState.applicationStore!(s => s.components).patch({
-        [options.componentName]: {
-          [options.instanceName!]: state
-        }
-      });
-      containerStore.renew({
-        ...wrapperState,
-        components: {
-          ...wrapperState.components,
-          [options.componentName]: {
-            [options.instanceName!]: state
-          }
-        }
-      });
-    } else {
-      libState.applicationStore!(s => s.components[options.componentName]).patch({
-        [options.instanceName!]: state
-      });
-      containerStore.renew({
-        ...wrapperState,
-        components: {
-          ...wrapperState.components,
-          [options.componentName]: {
-            ...wrapperState.components[options.componentName],
-            [options.instanceName!]: state
-          }
-        }
-      });
+    if (['number', 'boolean', 'string'].some(type => typeof (wrapperState) === type) || Array.isArray(wrapperState)) {
+      throw new Error(errorMessages.INVALID_CONTAINER_FOR_COMPONENT_STORES);
     }
+    libState.applicationStore!(s => s.components[options.componentName][options.instanceName]).replace(state);
   }
   return (<C = L>(selector?: (arg: L) => C) => getComponentStoreWithinContainerStore(state, options, selector)) as SelectorFromAComponentStore<L>;
 }

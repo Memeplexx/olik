@@ -18,7 +18,7 @@ describe('async', () => {
     object: { property: '', property2: '' },
     array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
     paginated: {} as { [key: string]: [{ id: number, value: string }] },
-    cacheTTLs: {} as { [key: string]: string },
+    // cacheTTLs: {} as { [key: string]: string },
   };
 
   it('should work with replaceAll()', async done => {
@@ -384,7 +384,6 @@ describe('async', () => {
   it('should automatically clear up expired cache keys', done => {
     const select = createApplicationStore(initialState);
     const payload = [{ id: 1, value: 'test' }];
-    testState.logLevel = 'DEBUG';
     select(s => s.object)
       .replace(() => new Promise(resolve => setTimeout(() => resolve({ property: 'fdfd', property2: 'fdfd' }), 10)), { cacheFor: 1000 })
       .asPromise();
@@ -393,10 +392,8 @@ describe('async', () => {
       .asPromise()
       .then(() => {
         setTimeout(() => {
-          expect(Object.keys(select().read().cacheTTLs)).toEqual(['object.replace()']);
           expect(testState.currentAction).toEqual({ type: 'cacheTTLs.array.replaceAll().remove()' });
           done();
-          testState.logLevel = 'NONE';
         }, 100);
       });
   })

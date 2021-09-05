@@ -96,7 +96,6 @@ export type OptionsForCreatingInternalApplicationStore = {
 };
 
 export type StoreWhichMayContainComponentStores<S, C, T extends Trackability> = {
-  renew: (state: S) => void;
   remove: () => any;
 } & StoreForAnObject<C, T> & StoreOrDerivation<C>;
 

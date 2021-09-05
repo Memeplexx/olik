@@ -134,7 +134,6 @@ export function createStoreCore<S, T extends ShapesExt.Trackability>({
       defineReset: (
         (initState: C, innerSelector) => () => general.replace({ ...getCoreActionsState(), name: 'reset' })(!innerSelector ? initState : innerSelector(initState), undefined as any)
       ) as ShapesInt.StoreForAComponentInternal<S, C>['defineReset'],
-      renew: (state => storeState.currentState = shared.deepFreeze(state)) as ShapesInt.StoreWhichMayContainComponentStores<S, C, T>['renew'],
       increment: general.increment(getCoreActionsState()),
       storeState,
     } as ShapesExt.PredicateCustom<X, ShapesExt.FindOrFilter, T>
@@ -149,10 +148,8 @@ export function createStoreCore<S, T extends ShapesExt.Trackability>({
     return coreActions;
   };
 
-  const select = <X extends C & Array<any>, C = S>(selector: ((s: ShapesExt.DeepReadonly<S>) => C) = (s => s as any as C)) => {
-    const selectorMod = selector as ShapesExt.Selector<S, C, X>;
-    selectorMod(storeState.currentState);
-    return action<C, X>(selectorMod) as any;
+  const select = <C = S>(selector: ((s: ShapesExt.DeepReadonly<S>) => C) = (s => s as any as C)) => {
+    return action(selector as any) as any;
   };
 
   if (devtoolsEnabled && (!libState.applicationStore || replaceExistingStoreIfItExists)) {

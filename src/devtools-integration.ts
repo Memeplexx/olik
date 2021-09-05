@@ -1,4 +1,4 @@
-import {  Store } from './shapes-external';
+import { Store } from './shapes-external';
 import { StoreState, WindowAugmentedWithReduxDevtools } from './shapes-internal';
 import { errorMessages } from './shared-consts';
 import { testState } from './shared-state';
@@ -54,13 +54,11 @@ export function integrateStoreWithReduxDevtools<S, C = S>(
         { replaceAll: (state: S, options: { tag: string }) => any }
       ) & { read: () => any, readInitial: () => any };
       const setState = (state: any) => {
-        arg.storeState.bypassSelectorFunctionCheck = true;
         if (Array.isArray(selection.read())) {
           selection.replaceAll(state, { tag: 'dontTrackWithDevtools' });
         } else {
           selection.replace(state, { tag: 'dontTrackWithDevtools' });
         }
-        arg.storeState.bypassSelectorFunctionCheck = false;
       }
       switch (message.payload.type) {
         case 'JUMP_TO_STATE':

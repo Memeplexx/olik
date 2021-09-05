@@ -20,7 +20,6 @@ describe('Component stores', () => {
   it('should attach a lib store correctly', () => {
     const initialState = {
       test: '',
-      components: {},
     };
     const initialStateComp = {
       one: ''
@@ -29,7 +28,7 @@ describe('Component stores', () => {
     const componentName = 'myComp';
     const instanceName = '0';
     createComponentStore(initialStateComp, { componentName, instanceName });
-    expect(select().read()).toEqual({ ...initialState, components: { [componentName]: { 0: initialStateComp } } });
+    expect(select().read()).toEqual({ ...initialState, components: { [componentName]: { [instanceName]: initialStateComp } } });
   })
 
   it('should be able to update a lib store correctly', () => {

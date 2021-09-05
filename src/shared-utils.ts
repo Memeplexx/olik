@@ -67,10 +67,10 @@ export function copyObject<T>(oldObj: T, newObj: T, segs: string[], action: (new
   if (seg) {
     if (Array.isArray(oldObj)) {
       return (oldObj as any as any[]).map((e, i) => +seg === i
-        ? { ...(oldObj as any)[i], ...copyObject((oldObj as any)[i], (newObj as any)[i], segs, action) }
+        ? { ...(oldObj as any)[i], ...copyObject((oldObj as any)[i] || {}, (newObj as any)[i] || {}, segs, action) }
         : e);
     }
-    return { ...oldObj, [seg]: copyObject(oldObj[seg], newObj[seg], segs, action) };
+    return { ...oldObj, [seg]: copyObject(((oldObj as any) || {})[seg], ((newObj as any) || {})[seg], segs, action) };
   } else {
     return action(oldObj);
   }

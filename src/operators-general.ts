@@ -259,7 +259,7 @@ const validateSelector = <S, C, X extends C & Array<any>>(
   arg: {
     selector: Selector<S, C, X>,
     isComponentStore: () => boolean,
-    storeState: StoreState<S>
+    storeState: StoreState<S>,
   },
 ) => {
   if (arg.isComponentStore()) { arg.storeState.bypassSelectorFunctionCheck = true; }
