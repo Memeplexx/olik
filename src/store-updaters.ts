@@ -49,14 +49,15 @@ export const processStateUpdateRequest = <S, C, X extends C & Array<any>>(
       Object.keys(augmentations.future).forEach(name => (result as any)[name] = augmentations.future[name](result));
       return result;
     }
-    const { optimisticallyUpdateWith } = ((arg.updateOptions as any) || {});
-    const noSnapshot = Symbol();
-    let snapshot = isEmpty(optimisticallyUpdateWith) ? noSnapshot : arg.select(arg.selector).read();
-    if (!isEmpty(optimisticallyUpdateWith)) {
-      updateState(optimisticallyUpdateWith);
-    }
     let state = { storeValue: arg.select(arg.selector).read(), error: null, isLoading: true, wasRejected: false, wasResolved: false } as FutureState<C>;
     const promiseResult = () => {
+      const { optimisticallyUpdateWith } = ((arg.updateOptions as any) || {});
+      const noSnapshot = Symbol();
+      let snapshot = isEmpty(optimisticallyUpdateWith) ? noSnapshot : arg.select(arg.selector).read();
+      if (!isEmpty(optimisticallyUpdateWith)) {
+        updateState(optimisticallyUpdateWith);
+      }
+      state = { ...state, storeValue: arg.select(arg.selector).read() };
       arg.storeState.activeFutures[cacheKey] = result;
       const promise = (augmentations.async ? augmentations.async(asyncPayload) : asyncPayload()) as Promise<C>;
       return promise
