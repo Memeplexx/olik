@@ -40,7 +40,7 @@ export const processStateUpdateRequest = <S, C, X extends C & Array<any>>(
     if (arg.storeState.activeFutures[cacheKey]) { // prevent duplicate simultaneous requests
       return arg.storeState.activeFutures[cacheKey];
     }
-    const expirationDate = (arg.select().read().cacheTTLs || {})[cacheKey];
+    const expirationDate = (arg.select().read().cache || {})[cacheKey];
     if (expirationDate && (new Date(expirationDate).getTime() > new Date().getTime())) {
       const result = {
         asPromise: () => Promise.resolve(arg.select(arg.selector).read()),
@@ -50,7 +50,8 @@ export const processStateUpdateRequest = <S, C, X extends C & Array<any>>(
       return result;
     }
     const { optimisticallyUpdateWith } = ((arg.updateOptions as any) || {});
-    let snapshot = isEmpty(optimisticallyUpdateWith) ? null : arg.select(arg.selector).read();
+    const noSnapshot = Symbol();
+    let snapshot = isEmpty(optimisticallyUpdateWith) ? noSnapshot : arg.select(arg.selector).read();
     if (!isEmpty(optimisticallyUpdateWith)) {
       updateState(optimisticallyUpdateWith);
     }
@@ -69,20 +70,16 @@ export const processStateUpdateRequest = <S, C, X extends C & Array<any>>(
           if (involvesCaching && cacheFor) {
             const cacheExpiry = toIsoString(new Date(new Date().getTime() + cacheFor));
             libState.transactionState = 'last';
-            arg.select(s => (s as any).cacheTTLs[cacheKey]).replace(cacheExpiry);
-            try {
-              setTimeout(() => {
-                arg.select(s => (s as any).cacheTTLs[cacheKey]).remove();
-              }, cacheFor);
-            } catch (e) {
-              // ignoring
-            }
+            arg.select(s => (s as any).cache[cacheKey]).replace(cacheExpiry);
+            setTimeout(() => {
+              arg.select(s => (s as any).cache[cacheKey]).remove();
+            }, cacheFor);
           }
           return arg.select(arg.selector).read();
         }).catch(error => {
           // Revert optimistic update
-          if (!isEmpty(snapshot)) {
-            updateState(snapshot);
+          if (snapshot !== noSnapshot) {
+            updateState(snapshot || null); // snapshot may be 'undefined'. Ensure we do not dispatch that to the store
           }
           state = { ...state, wasRejected: true, wasResolved: false, isLoading: false, error };
           throw error;

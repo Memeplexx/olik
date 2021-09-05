@@ -18,7 +18,7 @@ describe('async', () => {
     object: { property: '', property2: '' },
     array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
     paginated: {} as { [key: string]: [{ id: number, value: string }] },
-    // cacheTTLs: {} as { [key: string]: string },
+    // cache: {} as { [key: string]: string },
   };
 
   it('should work with replaceAll()', async done => {
@@ -393,7 +393,7 @@ describe('async', () => {
       .asPromise()
       .then(() => {
         setTimeout(() => {
-          expect(testState.currentAction).toEqual({ type: 'cacheTTLs.array.replaceAll().remove()' });
+          expect(testState.currentAction).toEqual({ type: 'cache.array.replaceAll().remove()' });
           done();
         }, 100);
       });
@@ -524,6 +524,18 @@ describe('async', () => {
         expect(select().read().array).toEqual([{ id: 1, value: 'testyy' }]);
         done();
       });
+  })
+
+  it('should recover correctly when an error is thrown and an optimistic update is set and store value is none', done => {
+    const select = createApplicationStore({ value: {} as {[key: string]: string} });
+    select(s => s.value[0])
+      .replace(() => new Promise((resolve, reject) => setTimeout(() => reject(), 10)), { optimisticallyUpdateWith: 'X' })
+      .asPromise()
+      .catch(() => {
+        expect(select(s => s.value[0]).read()).toEqual(null);
+        done();
+      });
+    expect(select(s => s.value[0]).read()).toEqual('X');
   })
 
 });

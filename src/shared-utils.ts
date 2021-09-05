@@ -42,8 +42,8 @@ export function deepCopy(o: any): any {
 }
 
 export function validateState(state: any) {
-  const throwError = () => {
-    throw new Error(errorMessages.INVALID_STATE_INPUT);
+  const throwError = (illegal: any) => {
+    throw new Error(errorMessages.INVALID_STATE_INPUT(illegal));
   };
   if (
     state !== null
@@ -51,11 +51,11 @@ export function validateState(state: any) {
   ) {
     if (!Array.isArray(state)) {
       if (typeof state !== "object") {
-        throwError();
+        throwError(state);
       }
       const proto = Object.getPrototypeOf(state);
       if (proto != null && proto !== Object.prototype) {
-        throwError();
+        throwError(state);
       }
     }
     Object.keys(state).forEach(key => validateState(state[key]));
@@ -108,7 +108,7 @@ export function readSelector(selector: (state: any) => any) {
 }
 
 export const validateSelectorFn = (
-  functionName: 'get' | 'getProp',
+  functionName: 'select' | 'getProp',
   storeState: StoreState<any>,
   selector?: (element: any) => any,
 ) => {

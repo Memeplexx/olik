@@ -251,8 +251,8 @@ export function invalidateCache<S, C, X extends C & Array<any>>(
 ) {
   const segs = readSelector(selector);
   const pathSegs = segs.join('.');
-  transact(...Object.keys(select().read().cacheTTLs).filter(key => key.startsWith(pathSegs))
-    .map(key => () => select(s => (s as any).cacheTTLs[key]).remove()));
+  transact(...Object.keys(select().read().cache).filter(key => key.startsWith(pathSegs))
+    .map(key => () => select(s => (s as any).cache[key]).remove()));
 }
 
 const validateSelector = <S, C, X extends C & Array<any>>(
@@ -263,6 +263,6 @@ const validateSelector = <S, C, X extends C & Array<any>>(
   },
 ) => {
   if (arg.isComponentStore()) { arg.storeState.bypassSelectorFunctionCheck = true; }
-  validateSelectorFn('get', arg.storeState, arg.selector);
+  validateSelectorFn('select', arg.storeState, arg.selector);
   if (arg.isComponentStore()) { arg.storeState.bypassSelectorFunctionCheck = false; }
 }
