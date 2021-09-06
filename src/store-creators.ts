@@ -116,10 +116,7 @@ function createApplicationStoreInternal<S, T extends Trackability>(
   }
   const select = createStoreCore<S, T>({
     state,
-    devtools: options.devtools,
-    actionTypeTagAbbreviator: options.actionTypeTagAbbreviator,
-    actionTypesToIncludeTag: options.actionTypesToIncludeTag,
-    actionTypesToIncludeWhereClause: options.actionTypesToIncludeWhereClause,
+    ...options,
   });
   libState.applicationStore = select;
   return select;

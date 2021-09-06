@@ -20,6 +20,7 @@ export type UpdateStateArgs<S, C, X extends C = C> = {
   updateOptions: {} | void,
   getPayloadFn?: () => any,
   storeState: StoreState<S>,
+  stack?: any,
 };
 
 export type StoreForAComponentInternal<S, C> = Store<C, 'untagged'> & {
@@ -58,6 +59,7 @@ export type ArrayOperatorState<S, C, X extends C & Array<any>, F extends FindOrF
   storeState: StoreState<S>,
   payloadWhereClauses: Array<any>,
   where?: string;
+  stack?: any,
 };
 
 export type ArrayCustomState<S, C, X extends C & Array<any>> = {
@@ -76,6 +78,7 @@ export type CoreActionsState<S, C, X extends C & Array<any>> = {
   select: (selector?: (s: S) => C) => any,
   initialState: S,
   getCurrentState: () => S,
+  stack?: any,
 }
 
 export type PreviousAction = {
@@ -92,6 +95,7 @@ export type OptionsForCreatingInternalApplicationStore = {
   actionTypesToIncludeWhereClause?: boolean,
   actionTypeWhereClauseAbbreviator?: (tag: string) => string,
   replaceExistingStoreIfItExists?: boolean,
+  traceActions?: boolean,
 };
 
 export type StoreWhichMayContainComponentStores<S, C, T extends Trackability> = {

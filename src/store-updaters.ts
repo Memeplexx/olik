@@ -151,6 +151,13 @@ export const performStateUpdate = <S, C, X extends C = C>(
     });
   }
 
+  if (arg.stack) {
+    console.groupCollapsed(actionToDispatch.type);
+    console.log(payloadWithTag);
+    console.log(arg.stack);
+    console.groupEnd();
+  }
+
   // Dispatch to devtools
   testState.currentAction = actionToDispatch;
   const { type, ...actionPayload } = actionToDispatch;

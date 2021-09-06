@@ -661,6 +661,8 @@ export type OptionsForMakingAnApplicationStore = {
    * The default value for this property is `false`.
    */
   replaceExistingStoreIfItExists?: boolean,
+
+  traceActions?: boolean,
 }
 
 export const Deferred = Symbol('deferred');
@@ -683,6 +685,8 @@ export type OptionsForMakingAComponentStore = {
    * @see https://github.com/zalmoxisus/redux-devtools-extension/blob/master/docs/API/Arguments.md
    */
   devtools?: any,
+
+  traceActions?: boolean,
 };
 
 /**

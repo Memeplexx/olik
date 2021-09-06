@@ -14,6 +14,7 @@ export function createStoreCore<S, T extends ShapesExt.Trackability>({
   actionTypeWhereClauseMaxValueLength = 6,
   replaceExistingStoreIfItExists = true,
   devtools,
+  traceActions = false,
 }: {
   state: S,
   actionTypesToIncludeTag?: boolean,
@@ -22,6 +23,7 @@ export function createStoreCore<S, T extends ShapesExt.Trackability>({
   actionTypeWhereClauseMaxValueLength?: number,
   replaceExistingStoreIfItExists?: boolean,
   devtools?: any,
+  traceActions?: boolean,
 }) {
   shared.validateState(state);
   const storeState = {
@@ -36,6 +38,7 @@ export function createStoreCore<S, T extends ShapesExt.Trackability>({
     actionTypesToIncludeTag,
     actionTypeWhereClauseMaxValueLength,
     actionTypeTagAbbreviator,
+    traceActions,
     changeListeners: new Map<(ar: any) => any, (arg: S) => any>(),
     previousAction: {
       type: '',
@@ -44,6 +47,7 @@ export function createStoreCore<S, T extends ShapesExt.Trackability>({
       debounceTimeout: 0,
     },
   } as ShapesInt.StoreState<S>;
+  let stack: any;
   const action = <C, X extends C & Array<any>>(selector: ShapesExt.Selector<S, C, X>) => {
     const where = (type: ShapesExt.FindOrFilter) => {
       const whereClauseSpecs = Array<{ filter: (arg: X[0]) => boolean, type: 'and' | 'or' | 'last' }>();
@@ -70,6 +74,7 @@ export function createStoreCore<S, T extends ShapesExt.Trackability>({
             select,
             storeState,
             payloadWhereClauses,
+            stack,
           } as ShapesInt.ArrayOperatorState<S, C, X, ShapesExt.FindOrFilter, T>;
           const arrayActions = {
             and: array.and(context),
@@ -111,6 +116,7 @@ export function createStoreCore<S, T extends ShapesExt.Trackability>({
       select,
       initialState: storeState.initialState,
       getCurrentState: () => storeState.currentState,
+      stack,
     } as ShapesInt.CoreActionsState<S, C, X>)
     const coreActions = {
       remove: general.remove(getCoreActionsState()),
@@ -147,6 +153,10 @@ export function createStoreCore<S, T extends ShapesExt.Trackability>({
   };
 
   const select = <C = S>(selector: ((s: ShapesExt.DeepReadonly<S>) => C) = (s => s as any as C)) => {
+    if (traceActions) {
+      const stackRaw = new Error().stack!.split('\n');
+      stack = [stackRaw[0], ...stackRaw.slice(2)].join('\n');
+    }
     return action(selector as any) as any;
   };
 
