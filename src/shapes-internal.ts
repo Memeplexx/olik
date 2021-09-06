@@ -36,7 +36,7 @@ export type DevtoolsInstance = {
 
 export type WindowAugmentedWithReduxDevtools = {
   __REDUX_DEVTOOLS_EXTENSION__: {
-    connect: (options: { name: string }) => DevtoolsInstance;
+    connect: (options?: any) => DevtoolsInstance;
     disconnect: () => any;
     send: (action: { type: string, payload?: any }, state: any, options: { name: string }) => any;
     _mockInvokeSubscription: (message: { type: string, payload: any, state?: any, source: any }) => any,
@@ -86,8 +86,7 @@ export type PreviousAction = {
 };
 
 export type OptionsForCreatingInternalApplicationStore = {
-  devtoolsEnabled?: boolean,
-  devtoolsStoreName?: string;
+  devtools?: any;
   actionTypesToIncludeTag?: boolean,
   actionTypeTagAbbreviator?: (tag: string) => string,
   actionTypesToIncludeWhereClause?: boolean,

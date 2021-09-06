@@ -9,21 +9,19 @@ import * as shared from './shared-utils';
 
 export function createStoreCore<S, T extends ShapesExt.Trackability>({
   state,
-  devtoolsEnabled = true,
-  devtoolsStoreName = document.title,
   actionTypesToIncludeTag = true,
   actionTypeTagAbbreviator = s => s,
   actionTypeWhereClauseMaxValueLength = 6,
   replaceExistingStoreIfItExists = true,
+  devtools,
 }: {
   state: S,
-  devtoolsEnabled?: boolean,
-  devtoolsStoreName?: string,
   actionTypesToIncludeTag?: boolean,
   actionTypeTagAbbreviator?: (tag: string) => string,
   actionTypesToIncludeWhereClause?: boolean,
   actionTypeWhereClauseMaxValueLength?: number,
   replaceExistingStoreIfItExists?: boolean,
+  devtools?: any,
 }) {
   shared.validateState(state);
   const storeState = {
@@ -152,8 +150,8 @@ export function createStoreCore<S, T extends ShapesExt.Trackability>({
     return action(selector as any) as any;
   };
 
-  if (devtoolsEnabled && (!libState.applicationStore || replaceExistingStoreIfItExists)) {
-    integrateStoreWithReduxDevtools({ store: select as any, storeState, name: devtoolsStoreName })
+  if (!libState.applicationStore || replaceExistingStoreIfItExists) {
+    integrateStoreWithReduxDevtools({ store: select as any, storeState, devtools })
   }
 
   return select;

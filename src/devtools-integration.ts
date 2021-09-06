@@ -6,8 +6,8 @@ import { testState } from './shared-state';
 export function integrateStoreWithReduxDevtools<S, C = S>(
   arg: {
     store: (selector?: (state: S) => C) => Store<C, any>,
-    name: string,
     storeState: StoreState<S>,
+    devtools?: any,
   },
 ) {
   let windowObj = window as any as WindowAugmentedWithReduxDevtools;
@@ -15,13 +15,9 @@ export function integrateStoreWithReduxDevtools<S, C = S>(
     windowObj = testState.windowObject as WindowAugmentedWithReduxDevtools;
   }
   if (!windowObj.__REDUX_DEVTOOLS_EXTENSION__) {
-    console.warn(errorMessages.DEVTOOL_CANNOT_FIND_EXTENSION);
     return;
   }
-  if (!arg.name) {
-    arg.name = document.title;
-  }
-  const devTools = windowObj.__REDUX_DEVTOOLS_EXTENSION__.connect({ name: arg.name });
+  const devTools = windowObj.__REDUX_DEVTOOLS_EXTENSION__.connect(arg.devtools);
   devTools.init(arg.store().read());
   arg.storeState.devtoolsDispatchListener = action => {
     devTools.send(action, arg.store().read());

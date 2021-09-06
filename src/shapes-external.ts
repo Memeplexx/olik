@@ -600,15 +600,10 @@ export type DerivationCalculationInputs<T extends Array<StoreOrDerivation<any>>>
  */
 export type OptionsForMakingAnApplicationStore = {
   /**
-   * Whether or not you would like your store to be registered within the Redux Devtools Extension.
-   * The default value for this property is `true`.
+   * Options for the Redux Devtools extension.
+   * @see https://github.com/zalmoxisus/redux-devtools-extension/blob/master/docs/API/Arguments.md
    */
-  devtoolsEnabled?: boolean;
-  /**
-   * The name that will distinguish your store from other stores within the Redux Devtools Extension.
-   * The default value for this property is your `document.title`
-   */
-  devtoolsStoreName?: string,
+  devtools?: any,
   /**
    * Whether or not your action types (as seen from within the Redux Devtools Extension) should include 'tags'.
    * Tags are strings which can be supplied when performing any state update.
@@ -675,10 +670,6 @@ export const Deferred = Symbol('deferred');
  */
 export type OptionsForMakingAComponentStore = {
   /**
-   * Pass `false` if you do not want your store to be tracked inside the devtools. Default is `true`.
-   */
-  devtoolsEnabled?: boolean,
-  /**
    * The name that will distinguish this component store from others within the state tree
    */
   componentName: string;
@@ -686,6 +677,12 @@ export type OptionsForMakingAComponentStore = {
    * The string that will distinguish different instances of the same component store.
    */
   instanceName: string | number | typeof Deferred;
+  /**
+   * Options for the Redux Devtools extension. Note that this configuration is ignored if your component store was
+   * automatically nested inside a pre-existing application store
+   * @see https://github.com/zalmoxisus/redux-devtools-extension/blob/master/docs/API/Arguments.md
+   */
+  devtools?: any,
 };
 
 /**

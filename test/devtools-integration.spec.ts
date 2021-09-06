@@ -111,11 +111,5 @@ describe('Devtools', () => {
     }, 300);
   })
 
-  it('should log an error if no devtools extension could be found', () => {
-    testState.windowObject = null;
-    createApplicationStore(new Array<string>());
-    expect(spyWarn).toHaveBeenCalledWith(errorMessages.DEVTOOL_CANNOT_FIND_EXTENSION);
-  })
-
 });
 

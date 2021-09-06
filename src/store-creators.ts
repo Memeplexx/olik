@@ -76,8 +76,6 @@ export function createComponentStore<L>(
   if (options.instanceName === Deferred) {
     const nStore = createStoreCore<L, 'untagged'>({
       state,
-      devtoolsEnabled: !libState.applicationStore && options.devtoolsEnabled,
-      devtoolsStoreName: options.componentName,
     });
     const select = (<C = L>(selector?: (arg: L) => C) => {
       const cStore: StoreForAComponentInternal<L, C> = selector ? nStore(selector as any) : nStore();
@@ -118,8 +116,7 @@ function createApplicationStoreInternal<S, T extends Trackability>(
   }
   const select = createStoreCore<S, T>({
     state,
-    devtoolsEnabled: options.devtoolsEnabled,
-    devtoolsStoreName: options.devtoolsStoreName,
+    devtools: options.devtools,
     actionTypeTagAbbreviator: options.actionTypeTagAbbreviator,
     actionTypesToIncludeTag: options.actionTypesToIncludeTag,
     actionTypesToIncludeWhereClause: options.actionTypesToIncludeWhereClause,
@@ -155,10 +152,10 @@ function createDetatchedComponentStore<L>(
   state: L,
   options: OptionsForMakingAComponentStore,
 ) {
+  const devtoolsStoreName = `${options.componentName} : ${options.instanceName as string}`;
   const nStore = createStoreCore<L, 'untagged'>({
     state,
-    devtoolsEnabled: options.devtoolsEnabled,
-    devtoolsStoreName: `${options.componentName} : ${options.instanceName as string}`
+    devtools: options.devtools ? { ...options.devtools, name: options.devtools.name || devtoolsStoreName } : { name: devtoolsStoreName },
   });
   const get = (<C = L>(selector?: (arg: DeepReadonly<L>) => C) => {
     const cStore = selector ? nStore(selector) : nStore();
