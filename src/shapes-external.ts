@@ -255,7 +255,7 @@ export type TaggedUpdate<T extends Trackability> = T extends 'untagged' ? {
    *   ...
    * }
    * ```
-   * If, when initializing your store, you did not passe `actionTypesToIncludeTag: true` inside the options object, then your tag will appear as a suffix to the action type, for example:  
+   * If, when initializing your store, you did not pass `actionTypesToIncludeTag: true` inside the options object, then your tag will appear as a suffix to the action type, for example:  
    * ```
    * {
    *   type: 'some.value.replace() [YourTag]',
@@ -661,7 +661,10 @@ export type OptionsForMakingAnApplicationStore = {
    * The default value for this property is `false`.
    */
   replaceExistingStoreIfItExists?: boolean,
-
+  /**
+   * Whether or not action stack-traces should be logged to the console.
+   * Internally, this makes use of `new Error().stack` to take advantage of sourcemaps
+   */
   traceActions?: boolean,
 }
 
@@ -685,7 +688,10 @@ export type OptionsForMakingAComponentStore = {
    * @see https://github.com/zalmoxisus/redux-devtools-extension/blob/master/docs/API/Arguments.md
    */
   devtools?: any,
-
+  /**
+   * Whether or not action stack-traces should be logged to the console.
+   * Internally, this makes use of `new Error().stack` to take advantage of sourcemaps
+   */
   traceActions?: boolean,
 };
 

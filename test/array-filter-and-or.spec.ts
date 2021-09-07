@@ -18,7 +18,7 @@ describe('array.filter().and().or()', () => {
   };
 
   it('should eq().and().eq()', () => {
-    const select = createApplicationStore(initialState);
+    const select = createApplicationStore(initialState, {  });
     select(s => s.array)
       .filter(s => s.id).eq(2)
       .and(s => s.value).eq('two')
