@@ -1,7 +1,7 @@
 import { Store } from './shapes-external';
 import { StoreState, WindowAugmentedWithReduxDevtools } from './shapes-internal';
 import { errorMessages } from './shared-consts';
-import { testState } from './shared-state';
+import { libState, testState } from './shared-state';
 
 export function integrateStoreWithReduxDevtools<S, C = S>(
   arg: {
@@ -14,11 +14,26 @@ export function integrateStoreWithReduxDevtools<S, C = S>(
   if (testState.windowObject) {
     windowObj = testState.windowObject as WindowAugmentedWithReduxDevtools;
   }
+
+  // If user does not have devtools installed or enabled, do nothing.
   if (!windowObj.__REDUX_DEVTOOLS_EXTENSION__) {
     return;
   }
-  const devTools = windowObj.__REDUX_DEVTOOLS_EXTENSION__.connect(arg.devtools);
+
+  // If a devtools instance has already been registered, do not re-create that instance.
+  // This problem really only presents its self when saving code in codesandbox (probably due to hot-reloading)
+  const storeName = arg.devtools?.name || document.title;
+  let devTools = libState.devtoolsRegistry[storeName];
+  if (devTools) {
+    return;
+  }
+
+  // Register devtools extension
+  devTools = windowObj.__REDUX_DEVTOOLS_EXTENSION__.connect(arg.devtools);
   devTools.init(arg.store().read());
+  libState.devtoolsRegistry[storeName] = devTools;
+
+  // Ensure that the store responds to events emitted from the devtools extension
   arg.storeState.devtoolsDispatchListener = action => {
     devTools.send(action, arg.store().read());
   };
@@ -78,7 +93,6 @@ export function integrateStoreWithReduxDevtools<S, C = S>(
       }
     }
   });
-  return devTools;
 }
 
 let onDispatchListener = () => null;
