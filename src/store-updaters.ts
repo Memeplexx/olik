@@ -51,7 +51,7 @@ export const processStateUpdateRequest = <S, C, X extends C & Array<any>>(
     }
     let state = { storeValue: arg.select(arg.selector).read(), error: null, isLoading: true, wasRejected: false, wasResolved: false } as FutureState<C>;
     const promiseResult = () => {
-      const { optimisticallyUpdateWith } = ((arg.updateOptions as any) || {});
+      const { optimisticallyUpdateWith } = ((arg.updateOptions as any) || { optimisticallyUpdateWith: undefined });
       const noSnapshot = Symbol();
       let snapshot = isEmpty(optimisticallyUpdateWith) ? noSnapshot : arg.select(arg.selector).read();
       if (!isEmpty(optimisticallyUpdateWith)) {

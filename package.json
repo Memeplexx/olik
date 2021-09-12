@@ -1,6 +1,6 @@
 {
   "name": "olik",
-  "version": "0.0.62",
+  "version": "0.0.63",
   "description": "Declarative state-management. Free of inaccurate actions & convoluted reducers. All in-line.",
   "license": "MIT",
   "homepage": "https://memeplexx.github.io/Olik/",
@@ -52,7 +52,7 @@
     "rollup-plugin-typescript2": "^0.30.0",
     "rxjs": "~6.5.4",
     "ts-jest": "^26.4.4",
-    "typescript": "3.2"
+    "typescript": "3.8"
   },
   "jest": {
     "transform": {

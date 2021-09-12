@@ -36,7 +36,7 @@ export const read = <S, C, X extends C & Array<any>>(
 export const reset = <S, C, X extends C & Array<any>, T extends Trackability>(
   context: CoreActionsState<S, C, X>,
 ) => (
-  updateOptions => replace({ ...context, name: 'reset' })(context.selector(context.initialState), updateOptions as UpdateOptions<T, any>)
+  updateOptions => replace({ ...context, name: 'reset' })((context.selector as any)(context.initialState), updateOptions as UpdateOptions<T, any>)
 ) as StoreWhichIsResettable<C, T>['reset'];
 
 export const replaceAll = <S, C, X extends C & Array<any>, T extends Trackability>(
