@@ -25,10 +25,12 @@
       }
     }
   },
-  "Answer": {
-    "int": {
-      "min": 42,
-      "max": 42
+  "Question": {
+    "Answer": {
+      "int": {
+        "min": 42,
+        "max": 42
+      }
     }
   }
 }
