@@ -22,7 +22,7 @@ export function integrateStoreWithReduxDevtools<S, C = S>(
 
   // If a devtools instance has already been registered, do not re-create that instance.
   // This problem really only presents its self when saving code in codesandbox (probably due to hot-reloading)
-  const storeName = arg.devtools?.name || document.title;
+  const storeName = (arg.devtools && arg.devtools.name) ? arg.devtools.name : document.title;
   let devTools = libState.devtoolsRegistry[storeName];
   if (devTools) {
     return;

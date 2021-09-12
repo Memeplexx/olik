@@ -14,6 +14,7 @@ describe('Devtools', () => {
   beforeEach(() => {
     spyWarn.mockReset();
     libState.applicationStore = null;
+    libState.devtoolsRegistry = {};
   });
 
   it('should correctly respond to devtools dispatches where the state is an object', () => {
@@ -22,7 +23,7 @@ describe('Devtools', () => {
       .replace(3);
     expect(select().read()).toEqual({ x: 3, y: 0 });
     const state = { x: 1, y: 0 };
-    testState.windowObject?.__REDUX_DEVTOOLS_EXTENSION__._mockInvokeSubscription({ type: 'DISPATCH', state: JSON.stringify(state), payload: { type: 'JUMP_TO_ACTION' }, source: '@devtools-extension' });
+    testState.windowObject!.__REDUX_DEVTOOLS_EXTENSION__._mockInvokeSubscription({ type: 'DISPATCH', state: JSON.stringify(state), payload: { type: 'JUMP_TO_ACTION' }, source: '@devtools-extension' });
     expect(select().read()).toEqual(state);
     expect(testState.currentAction.type).toEqual('replace() [dontTrackWithDevtools]');
   });
@@ -32,14 +33,14 @@ describe('Devtools', () => {
     select().replaceAll(['d', 'e', 'f']);
     expect(select().read()).toEqual(['d', 'e', 'f']);
     const state = ['g', 'h'];
-    testState.windowObject?.__REDUX_DEVTOOLS_EXTENSION__._mockInvokeSubscription({ type: 'DISPATCH', state: JSON.stringify(state), payload: { type: 'JUMP_TO_ACTION' }, source: '@devtools-extension' });
+    testState.windowObject!.__REDUX_DEVTOOLS_EXTENSION__._mockInvokeSubscription({ type: 'DISPATCH', state: JSON.stringify(state), payload: { type: 'JUMP_TO_ACTION' }, source: '@devtools-extension' });
     expect(select().read()).toEqual(state);
     expect(testState.currentAction.type).toEqual('replaceAll() [dontTrackWithDevtools]');
   });
 
   it('should handle a COMMIT without throwing an error', () => {
     createApplicationStore({ hello: '' });
-    testState.windowObject?.__REDUX_DEVTOOLS_EXTENSION__._mockInvokeSubscription({ type: 'DISPATCH', payload: { type: 'COMMIT' }, source: '@devtools-extension' });
+    testState.windowObject!.__REDUX_DEVTOOLS_EXTENSION__._mockInvokeSubscription({ type: 'DISPATCH', payload: { type: 'COMMIT' }, source: '@devtools-extension' });
   });
 
   it('should handle a RESET correctly', () => {
@@ -47,7 +48,7 @@ describe('Devtools', () => {
     select(s => s.hello)
       .replace('world');
     expect(select().read().hello).toEqual('world');
-    testState.windowObject?.__REDUX_DEVTOOLS_EXTENSION__._mockInvokeSubscription({ type: 'DISPATCH', payload: { type: 'RESET' }, source: '@devtools-extension' });
+    testState.windowObject!.__REDUX_DEVTOOLS_EXTENSION__._mockInvokeSubscription({ type: 'DISPATCH', payload: { type: 'RESET' }, source: '@devtools-extension' });
     expect(select().read().hello).toEqual('');
   });
 
@@ -59,34 +60,34 @@ describe('Devtools', () => {
     select(s => s.num)
       .replace(2);
     expect(select().read().num).toEqual(2);
-    testState.windowObject?.__REDUX_DEVTOOLS_EXTENSION__._mockInvokeSubscription({ type: 'DISPATCH', payload: { type: 'ROLLBACK' }, source: '@devtools-extension', state: '{ "num": 1 }' });
+    testState.windowObject!.__REDUX_DEVTOOLS_EXTENSION__._mockInvokeSubscription({ type: 'DISPATCH', payload: { type: 'ROLLBACK' }, source: '@devtools-extension', state: '{ "num": 1 }' });
     expect(select().read().num).toEqual(1);
   });
 
   it('should throw an error should a devtools dispatch contain invalid JSON', () => {
     createApplicationStore({ hello: 0 });
-    expect(() => testState.windowObject?.__REDUX_DEVTOOLS_EXTENSION__
+    expect(() => testState.windowObject!.__REDUX_DEVTOOLS_EXTENSION__
       ._mockInvokeSubscription({ type: 'ACTION', source: '@devtools-extension', payload: "{'type': 'hello.replace', 'payload': 2}" }))
       .toThrow(errorMessages.DEVTOOL_DISPATCHED_INVALID_JSON);
   });
 
   it('should throw an error should a devtools dispatch not contain parenthesis', () => {
     createApplicationStore({ hello: 0 });
-    expect(() => testState.windowObject?.__REDUX_DEVTOOLS_EXTENSION__
+    expect(() => testState.windowObject!.__REDUX_DEVTOOLS_EXTENSION__
       ._mockInvokeSubscription({ type: 'ACTION', source: '@devtools-extension', payload: '{"type": "hello.replace", "payload": 2}' }))
       .toThrow(errorMessages.DEVTOOL_DISPATCHED_WITH_NO_ACTION('hello.replace'));
   });
 
   it('should throw an error should a devtools dispatch not contain parenthesis', () => {
     createApplicationStore({ hello: 0 });
-    expect(() => testState.windowObject?.__REDUX_DEVTOOLS_EXTENSION__
+    expect(() => testState.windowObject!.__REDUX_DEVTOOLS_EXTENSION__
       ._mockInvokeSubscription({ type: 'ACTION', source: '@devtools-extension', payload: '{"type": "hello.replace", "payload": 2}' }))
       .toThrow(errorMessages.DEVTOOL_DISPATCHED_WITH_NO_ACTION('hello.replace'));
   });
 
   it('should correctly devtools dispatch made by user', () => {
     const select = createApplicationStore({ hello: 0 });
-    testState.windowObject?.__REDUX_DEVTOOLS_EXTENSION__
+    testState.windowObject!.__REDUX_DEVTOOLS_EXTENSION__
       ._mockInvokeSubscription({ type: 'ACTION', source: '@devtools-extension', payload: '{"type": "hello.replace()", "payload": 2}' });
     expect(select().read().hello).toEqual(2);
   })
