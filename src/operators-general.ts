@@ -15,7 +15,7 @@ import {
 } from './shapes-external';
 import { CoreActionsState, StoreState } from './shapes-internal';
 import { deepCopy, isEmpty, readSelector, validateSelectorFn } from './shared-utils';
-import { performStateUpdate, processStateUpdateRequest } from './store-updaters';
+import { processStateUpdateRequest } from './store-updaters';
 import { transact } from './transact';
 
 export const onChange = <S, C, X extends C & Array<any>>(
@@ -47,14 +47,14 @@ export const replaceAll = <S, C, X extends C & Array<any>, T extends Trackabilit
 
 export const patchAll = <S, C, X extends C & Array<any>, T extends Trackability>(
   arg: CoreActionsState<S, C, X>,
-) => ((payload, updateOptions) => {
+) => ((argument, updateOptions) => {
   validateSelector(arg);
   return processStateUpdateRequest<S, C, X>({
     ...arg,
     updateOptions,
     actionNameSuffix: `patchAll()`,
-    payload,
-    replacer: (old, payload) => old.map(o => ({ ...o, ...payload })),
+    argument,
+    replacer: (old, argument) => old.map(o => ({ ...o, ...argument })),
     getPayload: payload => ({ patch: payload }),
   });
 }) as StoreForAnArrayCommon<X, T>['patchAll'];
@@ -62,13 +62,13 @@ export const patchAll = <S, C, X extends C & Array<any>, T extends Trackability>
 export const removeAll = <S, C, X extends C & Array<any>, T extends Trackability>(
   arg: CoreActionsState<S, C, X>,
 ) => ((
-  payloadOrUpdateOptions?: (() => AnyAsync<any>) | ActionOptions<T>, updateOptionsAsync?: ActionOptions<T>
+  argumentOrUpdateOptions?: (() => AnyAsync<any>) | ActionOptions<T>, updateOptionsAsync?: ActionOptions<T>
 ) => {
   validateSelector(arg);
   return processStateUpdateRequest<S, C, X>({
     ...arg,
-    payload: payloadOrUpdateOptions,
-    updateOptions: updateOptionsAsync || payloadOrUpdateOptions,
+    argument: argumentOrUpdateOptions,
+    updateOptions: updateOptionsAsync || argumentOrUpdateOptions,
     actionNameSuffix: `removeAll()`,
     getPayload: () => null,
     replacer: () => [],
@@ -77,13 +77,13 @@ export const removeAll = <S, C, X extends C & Array<any>, T extends Trackability
 
 export const insertIntoArray = <S, C, X extends C & Array<any>, T extends Trackability>(
   arg: CoreActionsState<S, C, X>,
-) => ((payload, updateOptions: UpdateAtIndex = {}) => {
+) => ((argument, updateOptions: UpdateAtIndex = {}) => {
   validateSelector(arg);
   return processStateUpdateRequest<S, C, X>({
     ...arg,
     updateOptions,
     actionNameSuffix: `insert()`,
-    payload,
+    argument,
     replacer: (old, payload) => {
       const input = deepCopy(Array.isArray(payload) ? payload : [payload]);
       return (!isEmpty(updateOptions.atIndex)) ? [...old.slice(0, updateOptions.atIndex), ...input, ...old.slice(updateOptions.atIndex)] : [...old, ...input];
@@ -96,11 +96,11 @@ export const insertIntoArray = <S, C, X extends C & Array<any>, T extends Tracka
 
 export const patch = <S, C, X extends C & Array<any>, T extends Trackability>(
   arg: CoreActionsState<S, C, X>,
-) => ((payload, updateOptions) => {
+) => ((argument, updateOptions) => {
   validateSelector(arg);
   return processStateUpdateRequest({
     ...arg,
-    payload,
+    argument,
     updateOptions,
     actionNameSuffix: `patch()`,
     replacer: (old, payload) => ({ ...old, ...payload }),
@@ -110,13 +110,13 @@ export const patch = <S, C, X extends C & Array<any>, T extends Trackability>(
 
 export const increment = <S, C, X extends C & Array<any>, T extends Trackability>(
   arg: CoreActionsState<S, C, X>,
-) => ((payload, updateOptions) => {
+) => ((argument, updateOptions) => {
   validateSelector(arg);
   return processStateUpdateRequest({
     ...arg,
     updateOptions,
     actionNameSuffix: `increment()`,
-    payload,
+    argument,
     replacer: (old, payload) => (old as any as number) + (payload as any as number),
     getPayload: payload => ({ incrementBy: payload }),
   });
@@ -125,13 +125,13 @@ export const increment = <S, C, X extends C & Array<any>, T extends Trackability
 export const deepMerge = <S, C, X extends C & Array<any>, T extends Trackability>(
   arg: CoreActionsState<S, C, X>,
 ) => ((
-  payload: C | (() => Promise<C>),
+  argument: C | (() => Promise<C>),
   updateOptions: UpdateOptions<T, any>,
 ) => {
   validateSelector(arg);
   return processStateUpdateRequest({
     ...arg,
-    payload,
+    argument,
     updateOptions,
     actionNameSuffix: `deepMerge()`,
     replacer: (old, payload) => {
@@ -166,7 +166,7 @@ export const upsertMatching = <S, C, X extends C & Array<any>, T extends Trackab
 ) => (getProp => {
   validateSelector(arg);
   return {
-    with: (payload, updateOptions) => {
+    with: (argument, updateOptions) => {
       validateSelector(arg);
       const segs = !getProp ? [] : readSelector(getProp);
       let replacementCount = 0;
@@ -175,10 +175,10 @@ export const upsertMatching = <S, C, X extends C & Array<any>, T extends Trackab
         ...arg,
         updateOptions,
         actionNameSuffix: `upsertMatching(${segs.join('.')}).with()`,
-        payload,
+        argument,
         getPayload: () => null,
         getPayloadFn: () => ({
-          argument: payload,
+          argument,
           replacementCount,
           insertionCount,
         }),
@@ -204,14 +204,14 @@ export const upsertMatching = <S, C, X extends C & Array<any>, T extends Trackab
 export const remove = <S, C, X extends C & Array<any>, T extends Trackability>(
   arg: CoreActionsState<S, C, X>,
 ) => (
-  payloadOrUpdateOptions?: (() => AnyAsync<any>) | ActionOptions<T>, updateOptionsAsync?: ActionOptions<T>
+  argumentOrUpdateOptions?: (() => AnyAsync<any>) | ActionOptions<T>, updateOptionsAsync?: ActionOptions<T>
 ) => {
     validateSelector(arg);
     const pathSegments = readSelector(arg.selector);
     return processStateUpdateRequest({
       ...arg,
-      payload: payloadOrUpdateOptions,
-      updateOptions: updateOptionsAsync || payloadOrUpdateOptions,
+      argument: argumentOrUpdateOptions,
+      updateOptions: updateOptionsAsync || argumentOrUpdateOptions,
       actionNameSuffix: `remove()`,
       pathSegments: pathSegments.slice(0, pathSegments.length - 1),
       getPayload: () => null,
@@ -226,7 +226,7 @@ export const remove = <S, C, X extends C & Array<any>, T extends Trackability>(
 export const replace = <S, C, X extends C & Array<any>, T extends Trackability>(
   arg: CoreActionsState<S, C, X> & { name: string },
 ) => (
-  payload: C | (() => Promise<C>),
+  argument: C | (() => Promise<C>),
   updateOptions: UpdateOptions<T, any>,
   ) => {
     validateSelector(arg);
@@ -235,7 +235,7 @@ export const replace = <S, C, X extends C & Array<any>, T extends Trackability>(
       ...arg,
       updateOptions,
       actionNameSuffix: `${arg.name}()`,
-      payload,
+      argument,
       pathSegments: pathSegments.slice(0, pathSegments.length - 1),
       getPayload: (payload) => ({ replacement: payload }),
       replacer: (old, payload) => {

@@ -8,25 +8,25 @@ import { copyObject, deepCopy, deepFreeze, isEmpty, readSelector, toIsoString } 
 export const processStateUpdateRequest = <S, C, X extends C & Array<any>>(
   arg: {
     selector: Selector<S, C, X>,
-    payload: any | (() => Promise<any>),
+    argument: any | (() => Promise<any>),
     select: (selector?: (s: S) => C) => any,
     updateOptions: {} | void,
     actionNameSuffix: string,
     storeState: StoreState<S>,
-    replacer: (newNode: DeepReadonly<X>, payload: C) => any,
-    getPayload: (payload: C) => any,
+    replacer: (newNode: DeepReadonly<X>, argument: C) => any,
+    getPayload: (argument: C) => any,
     getPayloadFn?: () => any,
     pathSegments?: string[],
   }
 ) => {
   const pathSegments = readSelector(arg.selector);
-  const updateState = (payload: C) => performStateUpdate({
+  const updateState = (argument: C) => performStateUpdate({
     ...arg,
     actionName: `${!pathSegments.length ? '' : (pathSegments.join('.') + '.')}${arg.actionNameSuffix}`,
-    replacer: old => arg.replacer(old, payload),
-    payload: arg.getPayload(payload),
+    replacer: old => arg.replacer(old, argument),
+    payload: arg.getPayload(argument),
   })
-  if (!!arg.payload && typeof (arg.payload) === 'function') {
+  if (!!arg.argument && typeof (arg.argument) === 'function') {
     if (libState.transactionState !== 'none') {
       libState.transactionState = 'none';
       throw new Error(errorMessages.PROMISES_NOT_ALLOWED_IN_TRANSACTIONS);
@@ -34,7 +34,7 @@ export const processStateUpdateRequest = <S, C, X extends C & Array<any>>(
     if (['array', 'string', 'number', 'boolean'].some(t => t === typeof (arg.select().read()))) {
       throw new Error(errorMessages.INVALID_CONTAINER_FOR_CACHED_DATA);
     }
-    const asyncPayload = arg.payload as (() => Promise<C>);
+    const asyncPayload = arg.argument as (() => Promise<C>);
     const cacheFor = ((arg.updateOptions || {}) as any).cacheFor || 0;
     const cacheKey = `${!pathSegments.length ? '' : (pathSegments.join('.') + '.')}${arg.actionNameSuffix}`;
     if (arg.storeState.activeFutures[cacheKey]) { // prevent duplicate simultaneous requests
@@ -93,10 +93,9 @@ export const processStateUpdateRequest = <S, C, X extends C & Array<any>>(
     Object.keys(augmentations.future).forEach(name => (result as any)[name] = augmentations.future[name](result));
     return result
   } else {
-    updateState(arg.payload as C);
+    updateState(arg.argument as C);
   }
 }
-
 
 export const performStateUpdate = <S, C, X extends C = C>(
   arg: UpdateStateArgs<S, C, X>,

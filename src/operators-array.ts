@@ -31,11 +31,11 @@ export const or = <S, C, X extends C & Array<any>, F extends FindOrFilter, T ext
 
 export const remove = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
   arg: ArrayOperatorState<S, C, X, F, T>,
-) => ((payloadOrUpdateOptions?: (() => AnyAsync<any>) | ActionOptions<T>, updateOptionsAsync?: ActionOptions<T>) => processStateUpdateRequest({
+) => ((argumentOrUpdateOptions?: (() => AnyAsync<any>) | ActionOptions<T>, updateOptionsAsync?: ActionOptions<T>) => processStateUpdateRequest({
   ...arg,
   selector: ((s: any) => (arg.selector(s) as any)[arg.type]((e: any) => bundleCriteria(e, arg.whereClauseSpecs))) as any,
-  payload: payloadOrUpdateOptions,
-  updateOptions: updateOptionsAsync || payloadOrUpdateOptions,
+  argument: argumentOrUpdateOptions,
+  updateOptions: updateOptionsAsync || argumentOrUpdateOptions,
   actionNameSuffix: `${arg.type}(${completeWhereClause(arg)}).remove()`,
   replacer: old => {
     const elementIndices = getElementIndices(arg);
@@ -52,15 +52,15 @@ export const remove = <S, C, X extends C & Array<any>, F extends FindOrFilter, T
 
 export const patch = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
   arg: ArrayOperatorState<S, C, X, F, T>,
-) => ((payload, updateOptions) => processStateUpdateRequest({
+) => ((argument, updateOptions) => processStateUpdateRequest({
   ...arg,
   selector: ((s: any) => (arg.selector(s) as any)[arg.type]((e: any) => bundleCriteria(e, arg.whereClauseSpecs))) as any,
-  payload,
+  argument,
   updateOptions,
   actionNameSuffix: `${arg.type}(${completeWhereClause(arg)}).patch()`,
-  replacer: (old, payload) => {
+  replacer: (old, argument) => {
     const elementIndices = getElementIndices(arg);
-    return old.map((o, i) => elementIndices.includes(i) ? { ...o, ...payload } : o);
+    return old.map((o, i) => elementIndices.includes(i) ? { ...o, ...argument } : o);
   },
   getPayload: payload => ({
     where: arg.payloadWhereClauses,
@@ -70,15 +70,15 @@ export const patch = <S, C, X extends C & Array<any>, F extends FindOrFilter, T 
 
 export const replace = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
   arg: ArrayOperatorState<S, C, X, F, T>,
-) => ((payload, updateOptions) => processStateUpdateRequest<S, C, X>({
+) => ((argument, updateOptions) => processStateUpdateRequest<S, C, X>({
   ...arg,
   selector: ((s: any) => (arg.selector(s) as any)[arg.type]((e: any) => bundleCriteria(e, arg.whereClauseSpecs))) as any,
-  payload,
+  argument,
   updateOptions,
   actionNameSuffix: `${arg.type}(${completeWhereClause(arg)}).replace()`,
-  replacer: (old, payload) => {
+  replacer: (old, argument) => {
     const elementIndices = getElementIndices(arg);
-    return old.map((o, i) => elementIndices.includes(i) ? payload : o);
+    return old.map((o, i) => elementIndices.includes(i) ? argument : o);
   },
   getPayload: (payload) => ({
     where: arg.payloadWhereClauses,
