@@ -48,6 +48,18 @@ describe('async', () => {
       });
   })
 
+  it('should work with removeAll()', async done => {
+    const select = createApplicationStore(initialState);
+    select(s => s.array)
+      .removeAll(() => new Promise(resolve => setTimeout(() => resolve(), 10)))
+      .asPromise()
+      .then(res => {
+        expect(res).toEqual(select().read().array);
+        expect(select().read().array).toEqual([]);
+        done();
+      });
+  })
+
   it('should work with insert()', done => {
     const select = createApplicationStore(initialState);
     const payload = { id: 1, value: 'test' };

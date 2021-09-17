@@ -351,7 +351,8 @@ export type StoreForAnArrayCommon<X extends DeepReadonlyArray<any>, T extends Tr
    * select(s => s.todos)
    *   .removeAll();
    */
-  removeAll: (options: ActionOptions<T>) => void,
+  removeAll(asyncRemover: () => AnyAsync<any>, options: ActionOptions<T>): Future<any>;
+  removeAll(options: ActionOptions<T>): void;
   /**
    * Substitute all elements with a new array of elements
    * @example
@@ -483,9 +484,8 @@ export interface StoreOrDerivation<C> {
    * @returns a subscription which will need to be unsubscribed from to prevent a memory leak
    * 
    * @example
-   * const subscription =
-   * ...
-   * .onChange(todos => console.log(todos));
+   * const subscription = select(s => s.todos)
+   *   .onChange(todos => console.log(todos));
    * 
    * onComponentDestroyed() {
    *   subscription.unSubscribe();

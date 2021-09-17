@@ -61,15 +61,17 @@ export const patchAll = <S, C, X extends C & Array<any>, T extends Trackability>
 
 export const removeAll = <S, C, X extends C & Array<any>, T extends Trackability>(
   arg: CoreActionsState<S, C, X>,
-) => (updateOptions => {
+) => ((
+  payloadOrUpdateOptions?: (() => AnyAsync<any>) | ActionOptions<T>, updateOptionsAsync?: ActionOptions<T>
+) => {
   validateSelector(arg);
-  const pathSegments = readSelector(arg.selector);
-  performStateUpdate({
+  return processStateUpdateRequest<S, C, X>({
     ...arg,
-    selector: arg.selector,
+    payload: payloadOrUpdateOptions,
+    updateOptions: updateOptionsAsync || payloadOrUpdateOptions,
+    actionNameSuffix: `removeAll()`,
+    getPayload: () => null,
     replacer: () => [],
-    actionName: `${!pathSegments.length ? '' : pathSegments.join('.') + '.'}removeAll()`,
-    updateOptions: updateOptions as {},
   });
 }) as StoreForAnArrayCommon<X, T>['removeAll'];
 
