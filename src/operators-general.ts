@@ -237,7 +237,7 @@ export const replace = <S, C, X extends C & Array<any>, T extends Trackability>(
       actionNameSuffix: `${arg.name}()`,
       argument,
       pathSegments: pathSegments.slice(0, pathSegments.length - 1),
-      getPayload: (payload) => ({ replacement: payload }),
+      getPayload: (argument) => ({ replacement: argument }),
       replacer: (old, payload) => {
         if (!pathSegments.length) { return payload; }
         const lastSeg = pathSegments[pathSegments.length - 1];

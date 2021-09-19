@@ -7,7 +7,17 @@
       }
     },
     "title": {
-      "regexp": "[A-Z][a-z]{5,10}"
+      "string": [
+        "Preheat the oven",
+        "Mix the softened butter into the sugar in globs",
+        "Mix in the eggs one at a time",
+        "Measure and mix in the vanilla, salt, and baking soda",
+        "Add the flour all at once",
+        "Add the chocolate chips all at once and use a folding motion to incorporate them into the batter",
+        "Scoop the batter onto your baking sheet, spacing the balls of dough roughly 2 inches apart",
+        "Bake the cookies for 9-11 minutes",
+        "Transfer the cookies to a rack to finish cooling completely"
+      ]
     },
     "done": {
       "boolean": {}
