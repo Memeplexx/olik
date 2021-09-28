@@ -63,32 +63,32 @@ export type PredicateOptionsCommon<X extends DeepReadonlyArray<any>, P, F extend
   /**
    * Searches for array element(s) where the previously selected property **equals** the supplied value
    * @example
-   * ...
-   * .eq(1)
+   * select(s => s.todos)
+   *  .find(s => s.id).eq(1)
    * ...
    */
   eq: (value: P) => PredicateAction<X, F, T>,
   /**
    * Searches for array element(s) where the previously selected property **does not equal** the supplied value
    * @example
-   * ...
-   * .ne(1)
+   * select(s => s.todos)
+   *  .filter(s => s.priority).ne(1)
    * ...
    */
   ne: (value: P) => PredicateAction<X, F, T>,
   /**
    * Searches for array element(s) where the previously selected property **is in** the supplied array
    * @example
-   * ...
-   * in([1, 2])
+   * select(s => s.todos)
+   *  .filter(s => s.priority).in([1, 2])
    * ...
    */
   in: (value: P[]) => PredicateAction<X, F, T>,
   /**
    * Searches for array element(s) where the previously selected property **is not in** the supplied array
    * @example
-   * ...
-   * .ni([1, 2])
+   * select(s => s.todos)
+   *  .filter(s => s.priority).ni([1, 2])
    * ...
    */
   ni: (value: P[]) => PredicateAction<X, F, T>,
@@ -101,33 +101,33 @@ export type PredicateOptionsForNumber<X extends DeepReadonlyArray<any>, E, F ext
   /**
    * Searches for array element(s) where the previously selected property **is greater than** the supplied value
    * @example
-   * ...
-   * .gt(2)
+   * select(s => s.todos)
+   *  .filter(s => s.priority).gt(2)
    * ...
    */
   gt: (value: E) => PredicateAction<X, F, T>,
   /**
    * Searches for array element(s) where the previously selected property **is greater than or equal to** the supplied value
    * @example
-   * ...
-   * .gte(2)
+   * select(s => s.todos)
+   *  .filter(s => s.priority).gte(2)
    * ...
    */
   gte: (value: E) => PredicateAction<X, F, T>,
   /**
    * Searches for array element(s) where the previously selected property **is less than** the supplied value
    * @example
-   * ...
-   * .lt(2)
+   * select(s => s.todos)
+   *  .filter(s => s.priority).lt(2)
    * ...
    */
   lt: (value: E) => PredicateAction<X, F, T>,
   /**
    * Searches for array element(s) where the previously selected property **is less than or equal to** the supplied value
    * @example
-   * ...
-   * .lte(2)
-   * ...
+   * select(s => s.todos)
+   *  .filter(s => s.priority).lte(2)
+   *  ...
    */
   lte: (value: E) => PredicateAction<X, F, T>,
 } & PredicateOptionsCommon<X, E, F, T>;
@@ -140,9 +140,9 @@ export type PredicateOptionsForString<X extends DeepReadonlyArray<any>, E, F ext
    * Searches for array element(s) where the previously selected property **matches** the supplied regular expression
    * @param pattern any regular expression
    * @example
-   * ...
-   * .match(/^hello/)
-   * ...
+   * select(s => s.todos)
+   *  .filter(s => s.title).match(/^hello/)
+   *  ...
    */
   match: (pattern: RegExp) => PredicateAction<X, F, T>,
 } & PredicateOptionsForNumber<X, E, F, T>;
@@ -163,18 +163,18 @@ export type ArrayOfElementsAction<X extends DeepReadonlyArray<any>, F extends Fi
    * Append more criteria with which to find/filter the array
    * @param getProp a function which selects the array element property to compare
    * @example
-   * ...
-   * .and(e => e.status).isEqualTo('todo')
-   * ...
+   * select(s => s.todos)
+   *  .and(e => e.status).eq('todo')
+   *  ...
    */
   and: X[0] extends object ? <P>(getProp: (element: DeepReadonly<X[0]>) => P) => Predicate<X, P, F, T> : () => Predicate<X, X[0], F, T>,
   /**
    * Append more criteria with which to find/filter the array
    * @param getProp a function which selects the array element property to compare
    * @example
-   * ...
-   * .or(t => t.status).isEqualTo('todo')
-   * ...
+   * select(s => s.todos)
+   *  .or(t => t.status).eq('todo')
+   *  ...
    */
   or: X[0] extends object ? <P>(getProp: (element: DeepReadonly<X[0]>) => P) => Predicate<X, P, F, T> : () => Predicate<X, X[0], F, T>,
 } & ArrayOfElementsCommonAction<X, F, T>;
@@ -188,8 +188,8 @@ export type ArrayOfObjectsAction<X extends DeepReadonlyArray<any>, F extends Fin
    * @param patch the partially filled object to be used as a patch
    * @param updateOptions
    * @example
-   * ...
-   * .patch({ done: true })
+   * select(s => s.todos)
+   *  .patch({ done: true })
    */
   patch: <H extends Partial<X[0]> | (() => AnyAsync<Partial<X[0]>>) >(patch: H, options: UpdateOptions<T, H>) => H extends (() => AnyAsync<any>) ? Future<F extends 'find' ? H : H[]> : void,
 } & ArrayOfElementsAction<X, F, T>;
@@ -198,24 +198,23 @@ export interface ArrayOfElementsCommonAction<X extends DeepReadonlyArray<any>, F
   /**
    * Replaces the selected element(s)
    * @example
-   * ...
-   * .replace({ id: 1, text: 'bake cookies' })
+   * select(s => s.todos)
+   *  .replace({ id: 1, text: 'bake cookies' })
    */
   replace: <H extends X[0] | (() => AnyAsync<X[0]>) >(replacement: H, options: UpdateOptions<T, H>) => H extends (() => AnyAsync<X[0]>) ? Future<F extends 'find' ? X[0] : X> : void,
   /**
    * Removes any elements that were found in the search clause
    * @example
-   * ...
-   * .remove()
+   * select(s => s.todos)
+   *  .remove()
    */
   remove(asyncRemover: () => AnyAsync<any>, options: ActionOptions<T>): Future<any>;
   remove(options: ActionOptions<T>): void;
   /**
    * Will be called any time the selected node changes.
    * @example
-   * const subscription = 
-   * ...
-   * onChange(value => console.log(value));
+   * const subscription = select(s => s.todos)
+   *  .onChange(value => console.log(value));
    * 
    * // don't forget to unsubscribe to prevent a memory leak
    * subscription.unsubscribe(); 
@@ -235,8 +234,8 @@ export type ArrayOfObjectsCommonAction<X extends DeepReadonlyArray<any>, F exten
   /**
    * Partially updates array elements allowing you to omit those properties which should not change
    * @example
-   * ...
-   * .patch({ done: true })
+   * select(s => s.todos)
+   *  .patch({ done: true })
    */
   patch: <H extends Partial<X[0]> | (() => AnyAsync<Partial<X[0]>>) >(replacement: H, options: UpdateOptions<T, H>) => H extends (() => AnyAsync<any>) ? Future<void> : void,
 } & ArrayOfElementsCommonAction<X, F, T>;
@@ -330,23 +329,23 @@ export type InsertOptions<T extends Trackability, H> = UpdateOptions<T, H> & (Up
  */
 export type StoreForAnArrayCommon<X extends DeepReadonlyArray<any>, T extends Trackability> = {
   /**
-   * Appends one or more elements onto the the array
+   * Add one or more elements into the existing array
    * @example
-   * ...
-   * .insert(newTodo);
+   * select(s => s.todos)
+   *  .insert(newTodo);
    * @example
-   * ...
-   * .insert(newArrayOfTodos);
+   * select(s => s.todos)
+   *  .insert(newArrayOfTodos);
    * @example
-   * ...
-   * .insert(() => getTodosFromApi())
+   * select(s => s.todos)
+   *  .insert(() => getTodosFromApi())
    * @example
-   * ...
-   * .insert(newArrayOfTodos, { atIndex: 0 });
+   * select(s => s.todos)
+   *  .insert(newArrayOfTodos, { atIndex: 0 });
    */
   insert: <H extends (X | X[0] | (() => AnyAsync<X | X[0]>)) >(insertion: H, options: InsertOptions<T, H>) => H extends (() => AnyAsync<any>) ? Future<X> : void,
   /**
-   * Removes all elements from the array
+   * Removes all elements from the existing array
    * @example
    * select(s => s.todos)
    *   .removeAll();
@@ -354,7 +353,7 @@ export type StoreForAnArrayCommon<X extends DeepReadonlyArray<any>, T extends Tr
   removeAll(asyncRemover: () => AnyAsync<any>, options: ActionOptions<T>): Future<any>;
   removeAll(options: ActionOptions<T>): void;
   /**
-   * Substitute all elements with a new array of elements
+   * Substitute all existing elements with a new array of elements
    * @example
    * select(s => s.todos)
    *   .replaceAll(newTodos);
@@ -386,9 +385,9 @@ export type StoreForAnArrayOfPrimitives<X extends DeepReadonlyArray<any>, T exte
   /**
    * Specify a where clause to find one element.  
    * @example
-   * ...
-   * .find(t => t.id).isEqualTo(3)
-   * ...
+   * select(s => s.todos)
+   *  .find(t => t.id).isEqualTo(3)
+   *  ...
    */
   find: PredicateFunctionPrimitive<X, 'find', T>,
 } & StoreForAnArrayCommon<X, T>;
@@ -397,9 +396,9 @@ export type StoreForAnArrayOfObjects<X extends DeepReadonlyArray<any>, T extends
   /**
    * Insert element(s) into the store array (if they do not already exist) or update them (if they do)
    * @example
-   * ...
-   * .upsertMatching(s => s.id) // get the property that uniquely identifies each array element
-   * .with(elementOrArrayOfElements) // pass in an element or array of elements to be upserted
+   * select(s => s.users)
+   *  .upsertMatching(s => s.id) // get the property that uniquely identifies each array element
+   *  .with(elementOrArrayOfElements) // pass in an element or array of elements to be upserted
    * ...
    */
   upsertMatching: <P>(getProp: (element: DeepReadonly<X[0]>) => P) => {
@@ -409,18 +408,18 @@ export type StoreForAnArrayOfObjects<X extends DeepReadonlyArray<any>, T extends
    * Specify a where clause to find many elements.
    * @example
    * ```
-   * ...
-   * .filter(t => t.status).isEqualTo('done')
-   * ...
+   * select(s => s.todos)
+   *  .filter(t => t.status).isEqualTo('done')
+   *  ...
    * ```
    */
   filter: PredicateFunctionObject<X, 'filter', T>,
   /**
    * Specify a where clause to find one element.  
    * @example
-   * ...
-   * .find(t => t.id).isEqualTo(3)
-   * ...
+   * select(s => s.users)
+   *  .find(t => t.id).isEqualTo(3)
+   *  ...
    */
   find: PredicateFunctionObject<X, 'find', T>,
 } & StoreForAnArrayCommon<X, T>;
@@ -463,7 +462,7 @@ export type StoreForAnObject<C, T extends Trackability> = {
   /**
    * Partially updates this object
    * @example
-   * ...
+   * select(s => s.user)
    *  .patch({ firstName: 'James', age: 33 })
    */
   patch: <H extends (Partial<C> | (() => AnyAsync<Partial<C>>)) >(partial: H, options: UpdateOptions<T, H>) => H extends (() => AnyAsync<Partial<C>>) ? Future<C> : void,
