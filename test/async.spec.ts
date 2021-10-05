@@ -21,6 +21,30 @@ describe('async', () => {
     // cache: {} as { [key: string]: string },
   };
 
+  it('should only invoke promise functions once if caching is involved', async done => {
+    const select = createApplicationStore(initialState);
+    const payload = [{ id: 1, value: 'test' }];
+    let promiseCount = 0;
+    const promise = () => {
+      promiseCount++;
+      return new Promise(resolve => setTimeout(() => resolve(payload), 10));
+    }
+    await select(s => s.array)
+      .replaceAll(promise, { cacheFor: 1000 })
+      .asPromise();
+    await select(s => s.array)
+      .replaceAll(promise)
+      .asPromise();
+    expect(promiseCount).toEqual(1);
+    done();
+  })
+
+  it('should be able to invalidate a cache even if once does not yet exist', () => {
+    const select = createApplicationStore(initialState);
+    select(s => s.array)
+      .invalidateCache();
+  })
+
   it('should work with replaceAll()', async done => {
     const select = createApplicationStore(initialState);
     const payload = [{ id: 1, value: 'test' }];
@@ -539,7 +563,7 @@ describe('async', () => {
   })
 
   it('should recover correctly when an error is thrown and an optimistic update is set and store value is none', done => {
-    const select = createApplicationStore({ value: {} as {[key: string]: string} });
+    const select = createApplicationStore({ value: {} as { [key: string]: string } });
     select(s => s.value[0])
       .replace(() => new Promise((resolve, reject) => setTimeout(() => reject(), 10)), { optimisticallyUpdateWith: 'X' })
       .asPromise()

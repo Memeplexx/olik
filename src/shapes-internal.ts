@@ -1,7 +1,6 @@
 import {
   DeepReadonly,
   FindOrFilter,
-  Future,
   PredicateFunctionObject,
   Selector,
   Store,
@@ -106,7 +105,7 @@ export type ComponentContainerStore = ((selector?: ((s: any) => any) | undefined
 
 export type StoreState<S> = {
   bypassSelectorFunctionCheck: boolean,
-  activeFutures: { [key: string]: Future<any> },
+  activePromises: { [key: string]: Promise<any> },
   transactionActions: Array<{ type: string }>,
   transactionStartState: any,
   devtoolsDispatchListener?: (action: { type: string, payload?: any }) => any,

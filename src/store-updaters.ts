@@ -37,9 +37,6 @@ export const processStateUpdateRequest = <S, C, X extends C & Array<any>>(
     const asyncPayload = arg.argument as (() => Promise<C>);
     const cacheFor = ((arg.updateOptions || {}) as any).cacheFor || 0;
     const cacheKey = `${!pathSegments.length ? '' : (pathSegments.join('.') + '.')}${arg.actionNameSuffix}`;
-    if (arg.storeState.activeFutures[cacheKey]) { // prevent duplicate simultaneous requests
-      return arg.storeState.activeFutures[cacheKey];
-    }
     const expirationDate = (arg.select().read().cache || {})[cacheKey];
     if (expirationDate && (new Date(expirationDate).getTime() > new Date().getTime())) {
       const result = {
@@ -51,6 +48,9 @@ export const processStateUpdateRequest = <S, C, X extends C & Array<any>>(
     }
     let state = { storeValue: arg.select(arg.selector).read(), error: null, isLoading: true, wasRejected: false, wasResolved: false } as FutureState<C>;
     const promiseResult = () => {
+      if (arg.storeState.activePromises[cacheKey]) { // prevent duplicate simultaneous requests
+        return arg.storeState.activePromises[cacheKey];
+      }
       const { optimisticallyUpdateWith } = ((arg.updateOptions as any) || { optimisticallyUpdateWith: undefined });
       const noSnapshot = Symbol();
       let snapshot = isEmpty(optimisticallyUpdateWith) ? noSnapshot : arg.select(arg.selector).read();
@@ -58,8 +58,8 @@ export const processStateUpdateRequest = <S, C, X extends C & Array<any>>(
         updateState(optimisticallyUpdateWith);
       }
       state = { ...state, storeValue: arg.select(arg.selector).read() };
-      arg.storeState.activeFutures[cacheKey] = result;
       const promise = (augmentations.async ? augmentations.async(asyncPayload) : asyncPayload()) as Promise<C>;
+      arg.storeState.activePromises[cacheKey] = promise;
       return promise
         .then(res => {
           const involvesCaching = !!arg.updateOptions && !(typeof (arg.updateOptions) === 'string') && cacheFor;
@@ -73,7 +73,9 @@ export const processStateUpdateRequest = <S, C, X extends C & Array<any>>(
             libState.transactionState = 'last';
             arg.select(s => (s as any).cache[cacheKey]).replace(cacheExpiry);
             setTimeout(() => {
-              arg.select(s => (s as any).cache[cacheKey]).remove();
+              if (arg.select().read().cache && arg.select().read().cache[cacheKey]) {
+                arg.select(s => (s as any).cache[cacheKey]).remove();
+              }
             }, cacheFor);
           }
           return arg.select(arg.selector).read();
@@ -84,7 +86,7 @@ export const processStateUpdateRequest = <S, C, X extends C & Array<any>>(
           }
           state = { ...state, wasRejected: true, wasResolved: false, isLoading: false, error };
           throw error;
-        }).finally(() => delete arg.storeState.activeFutures[cacheKey]);
+        }).finally(() => delete arg.storeState.activePromises[cacheKey]);
     };
     const result = {
       asPromise: () => promiseResult(),

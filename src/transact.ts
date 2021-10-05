@@ -1,6 +1,9 @@
 import { libState } from './shared-state';
 
 export function transact(...operations: (() => void)[]) {
+  if (!operations.length) {
+    return;
+  }
   if (operations.length === 1) {
     operations[0]();
     return;

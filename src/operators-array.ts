@@ -110,7 +110,7 @@ export const invalidateCache = <S, C, X extends C & Array<any>, F extends FindOr
 ) => {
   const segs = readSelector(arg.selector);
   const pathSegs = segs.join('.') + (segs.length ? '.' : '') + arg.type + '(' + completeWhereClause(arg) + ')';
-  transact(...Object.keys(arg.select().read().cache).filter(key => key.startsWith(pathSegs))
+  transact(...Object.keys(arg.select().read().cache || []).filter(key => key.startsWith(pathSegs))
     .map(key => () => arg.select(s => (s as any).cache[key]).remove()));
 }
 

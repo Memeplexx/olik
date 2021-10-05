@@ -30,7 +30,7 @@ export function createStoreCore<S, T extends ShapesExt.Trackability>({
     currentState: shared.deepFreeze(state) as S,
     initialState: shared.deepFreeze(state) as S,
     bypassSelectorFunctionCheck: false,
-    activeFutures: {},
+    activePromises: {},
     transactionActions: [],
     transactionState: 'none',
     transactionStartState: null,
