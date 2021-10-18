@@ -48,7 +48,7 @@ export const processStateUpdateRequest = <S, C, X extends C & Array<any>>(
     }
     let state = { storeValue: arg.select(arg.selector).read(), error: null, isLoading: true, wasRejected: false, wasResolved: false } as FutureState<C>;
     const promiseResult = () => {
-      if (arg.storeState.activePromises[cacheKey]) { // prevent duplicate simultaneous requests
+      if (cacheKey in arg.storeState.activePromises) { // prevent duplicate simultaneous requests
         return arg.storeState.activePromises[cacheKey];
       }
       const { optimisticallyUpdateWith } = ((arg.updateOptions as any) || { optimisticallyUpdateWith: undefined });
