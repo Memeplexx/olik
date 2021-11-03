@@ -295,7 +295,7 @@ export type PromisableUpdate<H> = H extends () => AnyAsync<any> ? {
    * @example
    * select(s => s.todos).invalidateCache();
    * @example
-   * select(s => s.todos).find(s => s.id).isEqualTo(2).invalidateCache();
+   * select(s => s.todos).find(s => s.id).eq(2).invalidateCache();
    */
   cacheFor?: number;
   /**
@@ -377,7 +377,7 @@ export type StoreForAnArrayOfPrimitives<X extends DeepReadonlyArray<any>, T exte
    * @example
    * ```
    * select(s => s.todos)
-   *   .filter(t => t.status).isEqualTo('done')
+   *   .filter(t => t.status).eq('done')
    *   .remove();
    * ```
    */
@@ -386,7 +386,7 @@ export type StoreForAnArrayOfPrimitives<X extends DeepReadonlyArray<any>, T exte
    * Specify a where clause to find one element.  
    * @example
    * select(s => s.todos)
-   *  .find(t => t.id).isEqualTo(3)
+   *  .find(t => t.id).eq(3)
    *  ...
    */
   find: PredicateFunctionPrimitive<X, 'find', T>,
@@ -409,7 +409,7 @@ export type StoreForAnArrayOfObjects<X extends DeepReadonlyArray<any>, T extends
    * @example
    * ```
    * select(s => s.todos)
-   *  .filter(t => t.status).isEqualTo('done')
+   *  .filter(t => t.status).eq('done')
    *  ...
    * ```
    */
@@ -418,7 +418,7 @@ export type StoreForAnArrayOfObjects<X extends DeepReadonlyArray<any>, T extends
    * Specify a where clause to find one element.  
    * @example
    * select(s => s.users)
-   *  .find(t => t.id).isEqualTo(3)
+   *  .find(t => t.id).eq(3)
    *  ...
    */
   find: PredicateFunctionObject<X, 'find', T>,
