@@ -4,6 +4,9 @@ import { createComponentStore, createApplicationStore, createApplicationStoreEnf
 import { transact } from '../src/transact';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
+const resolve = <T>(data: T, timeout = 10) => () => new Promise<T>(resolve => setTimeout(() => resolve(data), timeout));
+const reject = (rejection: any, timeout = 10) => () => new Promise((resolve, reject) => setTimeout(() => reject(rejection), timeout));
+
 describe('async', () => {
 
   beforeAll(() => {
@@ -12,6 +15,7 @@ describe('async', () => {
 
   beforeEach(() => {
     libState.applicationStore = null;
+    libState.cacheInvalidators = {};
   });
 
   const initialState = {
@@ -48,360 +52,295 @@ describe('async', () => {
   it('should work with replaceAll()', async done => {
     const select = createApplicationStore(initialState);
     const payload = [{ id: 1, value: 'test' }];
-    select(s => s.array)
-      .replaceAll(() => new Promise(resolve => setTimeout(() => resolve(payload), 10)), { cacheFor: 1000 })
+    const res = await select(s => s.array)
+      .replaceAll(resolve(payload), { cacheFor: 1000 })
+      .asPromise();
+    expect(res).toEqual(select().read().array);
+    expect(select().read().array).toEqual(payload);
+    const payload2 = [{ id: 1, value: 'testy' }];
+    await select(s => s.array)
+      .replaceAll(resolve(payload2))
       .asPromise()
-      .then(res => {
-        expect(res).toEqual(select().read().array);
-        expect(select().read().array).toEqual(payload);
-        const payload2 = [{ id: 1, value: 'testy' }];
-        select(s => s.array)
-          .replaceAll(() => new Promise(resolve => setTimeout(() => resolve(payload2), 10)))
-          .asPromise()
-          .then(() => {
-            expect(select().read().array).toEqual(payload);
-            select(s => s.array).invalidateCache();
-            select(s => s.array)
-              .replaceAll(() => new Promise(resolve => setTimeout(() => resolve(payload2), 10)))
-              .asPromise()
-              .then(() => {
-                expect(select().read().array).toEqual(payload2);
-                done();
-              })
-          })
-      });
+    expect(select().read().array).toEqual(payload);
+    select(s => s.array).invalidateCache();
+    await select(s => s.array)
+      .replaceAll(resolve(payload2))
+      .asPromise();
+    expect(select().read().array).toEqual(payload2);
+    done();
   })
 
   it('should work with removeAll()', async done => {
     const select = createApplicationStore(initialState);
-    select(s => s.array)
-      .removeAll(() => new Promise(resolve => setTimeout(() => resolve(), 10)))
-      .asPromise()
-      .then(res => {
-        expect(res).toEqual(select().read().array);
-        expect(select().read().array).toEqual([]);
-        done();
-      });
+    const res = await select(s => s.array)
+      .removeAll(resolve(null))
+      .asPromise();
+    expect(res).toEqual(select().read().array);
+    expect(select().read().array).toEqual([]);
+    done();
   })
 
-  it('should work with insert()', done => {
+  it('should work with insert()', async done => {
     const select = createApplicationStore(initialState);
     const payload = { id: 1, value: 'test' };
-    select(s => s.array)
-      .insert(() => new Promise(resolve => setTimeout(() => resolve(payload), 10)), { cacheFor: 1000 })
-      .asPromise()
-      .then(res => {
-        expect(res).toEqual(select().read().array);
-        expect(select().read().array).toEqual([...initialState.array, payload]);
-        const payload2 = { id: 1, value: 'testy' };
-        select(s => s.array)
-          .insert(() => new Promise(resolve => setTimeout(() => resolve(payload2), 10)))
-          .asPromise()
-          .then(() => {
-            expect(select().read().array).toEqual([...initialState.array, payload]);
-            select(s => s.array).invalidateCache();
-            select(s => s.array)
-              .insert(() => new Promise(resolve => setTimeout(() => resolve(payload2), 10)))
-              .asPromise()
-              .then(() => {
-                expect(select().read().array).toEqual([...initialState.array, payload, payload2]);
-                done();
-              })
-          })
-      });
+    const res = await select(s => s.array)
+      .insert(resolve(payload), { cacheFor: 1000 })
+      .asPromise();
+    expect(res).toEqual(select().read().array);
+    expect(select().read().array).toEqual([...initialState.array, payload]);
+    const payload2 = { id: 1, value: 'testy' };
+    await select(s => s.array)
+      .insert(resolve(payload2))
+      .asPromise();
+    expect(select().read().array).toEqual([...initialState.array, payload]);
+    select(s => s.array).invalidateCache();
+    await select(s => s.array)
+      .insert(resolve(payload2))
+      .asPromise();
+    expect(select().read().array).toEqual([...initialState.array, payload, payload2]);
+    done();
   })
 
-  it('should work with replace()', done => {
+  it('should work with replace()', async done => {
     const select = createApplicationStore(initialState);
     const payload = { property: 'xxx', property2: 'yyy' };
-    select(s => s.object)
+    const res = await select(s => s.object)
       .replace(() => new Promise(resolve => setTimeout(() => resolve(payload), 10)), { cacheFor: 1000 })
       .asPromise()
-      .then(res => {
-        expect(res).toEqual(select().read().object);
-        expect(select().read().object).toEqual(payload);
-        const payload2 = { property: 'xxx2', property2: 'yyy2' };
-        select(s => s.object)
-          .replace(() => new Promise(resolve => setTimeout(() => resolve(payload2), 10)))
-          .asPromise()
-          .then(() => {
-            expect(select().read().object).toEqual(payload);
-            select(s => s.object).invalidateCache();
-            select(s => s.object)
-              .replace(() => new Promise(resolve => setTimeout(() => resolve(payload2), 10)))
-              .asPromise()
-              .then(() => {
-                expect(select().read().object).toEqual(payload2);
-                done();
-              })
-          })
-      })
+    expect(res).toEqual(select().read().object);
+    expect(select().read().object).toEqual(payload);
+    const payload2 = { property: 'xxx2', property2: 'yyy2' };
+    await select(s => s.object)
+      .replace(() => new Promise(resolve => setTimeout(() => resolve(payload2), 10)))
+      .asPromise()
+    expect(select().read().object).toEqual(payload);
+    select(s => s.object).invalidateCache();
+    await select(s => s.object)
+      .replace(() => new Promise(resolve => setTimeout(() => resolve(payload2), 10)))
+      .asPromise()
+    expect(select().read().object).toEqual(payload2);
+    done();
   })
 
-  it('should work with patch()', done => {
+  it('should work with patch()', async done => {
     const select = createApplicationStore(initialState);
     const payload = { property: 'xxx' };
-    select(s => s.object)
+    const res = await select(s => s.object)
       .patch(() => new Promise(resolve => setTimeout(() => resolve(payload), 10)), { cacheFor: 1000 })
       .asPromise()
-      .then(res => {
-        expect(res).toEqual(select().read().object);
-        expect(select().read().object).toEqual({ ...initialState.object, ...payload });
-        const payload2 = { property: 'yyy' };
-        select(s => s.object)
-          .patch(() => new Promise(resolve => setTimeout(() => resolve(payload2), 10)))
-          .asPromise()
-          .then(() => {
-            expect(select().read().object).toEqual({ ...initialState.object, ...payload });
-            select(s => s.object).invalidateCache();
-            select(s => s.object)
-              .patch(() => new Promise(resolve => setTimeout(() => resolve(payload2), 10)))
-              .asPromise()
-              .then(() => {
-                expect(select().read().object).toEqual({ ...initialState.object, ...payload2 });
-                done();
-              })
-          })
-      });
+    expect(res).toEqual(select().read().object);
+    expect(select().read().object).toEqual({ ...initialState.object, ...payload });
+    const payload2 = { property: 'yyy' };
+    await select(s => s.object)
+      .patch(() => new Promise(resolve => setTimeout(() => resolve(payload2), 10)))
+      .asPromise()
+    expect(select().read().object).toEqual({ ...initialState.object, ...payload });
+    select(s => s.object).invalidateCache();
+    await select(s => s.object)
+      .patch(() => new Promise(resolve => setTimeout(() => resolve(payload2), 10)))
+      .asPromise()
+    expect(select().read().object).toEqual({ ...initialState.object, ...payload2 });
+    done();
   })
 
-  it('should work with remove()', done => {
+  it('should work with remove()', async done => {
     const select = createApplicationStore(initialState);
-    select(s => s.object.property2)
+    await select(s => s.object.property2)
       .remove(() => new Promise(resolve => setTimeout(() => resolve(), 10)))
       .asPromise()
-      .then(() => {
-        expect(select().read().object).toEqual({ property: '' });
-        done();
-      })
+    expect(select().read().object).toEqual({ property: '' });
+    done();
   })
 
-  it('should work with upsertMatching()', done => {
+  it('should work with upsertMatching()', async done => {
     const select = createApplicationStore(initialState);
     const payload = { id: 1, value: 'test' };
-    select(s => s.array)
+    const res = await select(s => s.array)
       .upsertMatching(s => s.id)
       .with(() => new Promise(resolve => setTimeout(() => resolve(payload), 10)), { cacheFor: 1000 })
       .asPromise()
-      .then(res => {
-        expect(res).toEqual(select().read().array);
-        expect(select().read().array).toEqual([payload, initialState.array[1], initialState.array[2]]);
-        const payload2 = { id: 1, value: 'testt' };
-        select(s => s.array)
-          .upsertMatching(s => s.id)
-          .with(() => new Promise(resolve => setTimeout(() => resolve(payload2), 10)))
-          .asPromise()
-          .then(() => {
-            expect(select().read().array).toEqual([payload, initialState.array[1], initialState.array[2]]);
-            select(s => s.array).invalidateCache();
-            select(s => s.array)
-              .upsertMatching(s => s.id)
-              .with(() => new Promise(resolve => setTimeout(() => resolve(payload2), 10)))
-              .asPromise()
-              .then(() => {
-                expect(select().read().array).toEqual([payload2, initialState.array[1], initialState.array[2]]);
-                done();
-              })
-          })
-      })
+    expect(res).toEqual(select().read().array);
+    expect(select().read().array).toEqual([payload, initialState.array[1], initialState.array[2]]);
+    const payload2 = { id: 1, value: 'testt' };
+    await select(s => s.array)
+      .upsertMatching(s => s.id)
+      .with(() => new Promise(resolve => setTimeout(() => resolve(payload2), 10)))
+      .asPromise()
+    expect(select().read().array).toEqual([payload, initialState.array[1], initialState.array[2]]);
+    select(s => s.array).invalidateCache();
+    await select(s => s.array)
+      .upsertMatching(s => s.id)
+      .with(() => new Promise(resolve => setTimeout(() => resolve(payload2), 10)))
+      .asPromise()
+    expect(select().read().array).toEqual([payload2, initialState.array[1], initialState.array[2]]);
+    done();
   })
 
-  it('should work with find().replace()', done => {
+  it('should work with find().replace()', async done => {
     const select = createApplicationStore(initialState);
     const payload = { id: 2, value: 'twooo' };
-    select(s => s.array)
+    const res = await select(s => s.array)
       .find(s => s.id).eq(2)
       .replace(() => new Promise(resolve => setTimeout(() => resolve(payload), 10)), { cacheFor: 1000 })
       .asPromise()
-      .then(res => {
-        expect(res).toEqual(select().read().array.find(e => e.id === 2));
-        expect(select().read().array).toEqual([initialState.array[0], payload, initialState.array[2]]);
-        const payload2 = { id: 2, value: 'twooo' };
-        select(s => s.array)
-          .find(s => s.id).eq(2)
-          .replace(() => new Promise(resolve => setTimeout(() => resolve(payload2), 10)))
-          .asPromise()
-          .then(() => {
-            expect(select().read().array).toEqual([initialState.array[0], payload, initialState.array[2]]);
-            select(s => s.array)
-              .find(s => s.id).eq(2)
-              .invalidateCache();
-            select(s => s.array)
-              .find(s => s.id).eq(2)
-              .replace(() => new Promise(resolve => setTimeout(() => resolve(payload2), 10)))
-              .asPromise()
-              .then(() => {
-                expect(select().read().array).toEqual([initialState.array[0], payload2, initialState.array[2]]);
-                done();
-              })
-          })
-      })
+    expect(res).toEqual(select().read().array.find(e => e.id === 2));
+    expect(select().read().array).toEqual([initialState.array[0], payload, initialState.array[2]]);
+    const payload2 = { id: 2, value: 'twooo' };
+    await select(s => s.array)
+      .find(s => s.id).eq(2)
+      .replace(() => new Promise(resolve => setTimeout(() => resolve(payload2), 10)))
+      .asPromise()
+    expect(select().read().array).toEqual([initialState.array[0], payload, initialState.array[2]]);
+    select(s => s.array)
+      .find(s => s.id).eq(2)
+      .invalidateCache();
+    await select(s => s.array)
+      .find(s => s.id).eq(2)
+      .replace(() => new Promise(resolve => setTimeout(() => resolve(payload2), 10)))
+      .asPromise()
+    expect(select().read().array).toEqual([initialState.array[0], payload2, initialState.array[2]]);
+    done();
   })
 
-  it('should work with find().patch()', done => {
+  it('should work with find().patch()', async done => {
     const select = createApplicationStore(initialState);
     const payload = { value: 'twooo' };
-    select(s => s.array)
+    const res = await select(s => s.array)
       .find(s => s.id).eq(2)
       .patch(() => new Promise(resolve => setTimeout(() => resolve(payload), 10)), { cacheFor: 1000 })
       .asPromise()
-      .then(res => {
-        expect(res).toEqual(select().read().array.find(e => e.id === 2));
-        expect(select().read().array).toEqual([initialState.array[0], { ...initialState.array[1], ...payload }, initialState.array[2]]);
-        const payload2 = { value: 'twoooz' };
-        select(s => s.array)
-          .find(s => s.id).eq(2)
-          .patch(() => new Promise(resolve => setTimeout(() => resolve(payload2), 10)))
-          .asPromise()
-          .then(() => {
-            expect(select().read().array).toEqual([initialState.array[0], { ...initialState.array[1], ...payload }, initialState.array[2]]);
-            select(s => s.array)
-              .find(s => s.id).eq(2)
-              .invalidateCache();
-            select(s => s.array)
-              .find(s => s.id).eq(2)
-              .patch(() => new Promise(resolve => setTimeout(() => resolve(payload2), 10)))
-              .asPromise()
-              .then(() => {
-                expect(select().read().array).toEqual([initialState.array[0], { ...initialState.array[1], ...payload2 }, initialState.array[2]]);
-                done();
-              })
-          })
-      })
+    expect(res).toEqual(select().read().array.find(e => e.id === 2));
+    expect(select().read().array).toEqual([initialState.array[0], { ...initialState.array[1], ...payload }, initialState.array[2]]);
+    const payload2 = { value: 'twoooz' };
+    await select(s => s.array)
+      .find(s => s.id).eq(2)
+      .patch(() => new Promise(resolve => setTimeout(() => resolve(payload2), 10)))
+      .asPromise()
+    expect(select().read().array).toEqual([initialState.array[0], { ...initialState.array[1], ...payload }, initialState.array[2]]);
+    select(s => s.array)
+      .find(s => s.id).eq(2)
+      .invalidateCache();
+    await select(s => s.array)
+      .find(s => s.id).eq(2)
+      .patch(() => new Promise(resolve => setTimeout(() => resolve(payload2), 10)))
+      .asPromise()
+    expect(select().read().array).toEqual([initialState.array[0], { ...initialState.array[1], ...payload2 }, initialState.array[2]]);
+    done();
   })
 
-  it('should work with find().remove()', done => {
+  it('should work with find().remove()', async done => {
     const select = createApplicationStore(initialState);
-    select(s => s.array)
+    const res = await select(s => s.array)
       .find(s => s.id).eq(2)
       .remove(() => new Promise(resolve => setTimeout(() => resolve(null), 10)))
       .asPromise()
-      .then(res => {
-        expect(res).toEqual(select().read().array.find(e => e.id === 2));
-        expect(select().read().array).toEqual([initialState.array[0], initialState.array[2]]);
-        done();
-      })
+    expect(res).toEqual(select().read().array.find(e => e.id === 2));
+    expect(select().read().array).toEqual([initialState.array[0], initialState.array[2]]);
+    done();
   })
 
-  it('should work with filter().replace()', done => {
+  it('should work with filter().replace()', async done => {
     const select = createApplicationStore(initialState);
     const payload = { id: 2, value: 'twooo' };
-    select(s => s.array)
+    const res = await select(s => s.array)
       .filter(s => s.id).eq(2)
       .replace(() => new Promise(resolve => setTimeout(() => resolve(payload), 10)), { cacheFor: 1000 })
       .asPromise()
-      .then(res => {
-        expect(res).toEqual(select().read().array.filter(e => e.id === 2));
-        expect(select().read().array).toEqual([initialState.array[0], payload, initialState.array[2]]);
-        const payload2 = { id: 2, value: 'twooo' };
-        select(s => s.array)
-          .filter(s => s.id).eq(2)
-          .replace(() => new Promise(resolve => setTimeout(() => resolve(payload2), 10)))
-          .asPromise()
-          .then(() => {
-            expect(select().read().array).toEqual([initialState.array[0], payload, initialState.array[2]]);
-            select(s => s.array)
-              .filter(s => s.id).eq(2)
-              .invalidateCache();
-            select(s => s.array)
-              .filter(s => s.id).eq(2)
-              .replace(() => new Promise(resolve => setTimeout(() => resolve(payload2), 10)))
-              .asPromise()
-              .then(() => {
-                expect(select().read().array).toEqual([initialState.array[0], payload2, initialState.array[2]]);
-                done();
-              })
-          })
-      })
+    expect(res).toEqual(select().read().array.filter(e => e.id === 2));
+    expect(select().read().array).toEqual([initialState.array[0], payload, initialState.array[2]]);
+    const payload2 = { id: 2, value: 'twooo' };
+    await select(s => s.array)
+      .filter(s => s.id).eq(2)
+      .replace(() => new Promise(resolve => setTimeout(() => resolve(payload2), 10)))
+      .asPromise()
+    expect(select().read().array).toEqual([initialState.array[0], payload, initialState.array[2]]);
+    select(s => s.array)
+      .filter(s => s.id).eq(2)
+      .invalidateCache();
+    await select(s => s.array)
+      .filter(s => s.id).eq(2)
+      .replace(() => new Promise(resolve => setTimeout(() => resolve(payload2), 10)))
+      .asPromise()
+    expect(select().read().array).toEqual([initialState.array[0], payload2, initialState.array[2]]);
+    done();
   })
 
-  it('should work with filter().patch()', done => {
+  it('should work with filter().patch()', async done => {
     const select = createApplicationStore(initialState);
     const payload = { value: 'twooo' };
-    select(s => s.array)
+    const res = await select(s => s.array)
       .filter(s => s.id).eq(2)
       .patch(() => new Promise(resolve => setTimeout(() => resolve(payload), 10)), { cacheFor: 1000 })
       .asPromise()
-      .then(res => {
-        expect(res).toEqual(select().read().array.filter(e => e.id === 2));
-        expect(select().read().array).toEqual([initialState.array[0], { ...initialState.array[1], ...payload }, initialState.array[2]]);
-        const payload2 = { value: 'twoooz' };
-        select(s => s.array)
-          .filter(s => s.id).eq(2)
-          .patch(() => new Promise(resolve => setTimeout(() => resolve(payload2), 10)))
-          .asPromise()
-          .then(() => {
-            expect(select().read().array).toEqual([initialState.array[0], { ...initialState.array[1], ...payload }, initialState.array[2]]);
-            select(s => s.array)
-              .filter(s => s.id).eq(2)
-              .invalidateCache();
-            select(s => s.array)
-              .filter(s => s.id).eq(2)
-              .patch(() => new Promise(resolve => setTimeout(() => resolve(payload2), 10)))
-              .asPromise()
-              .then(() => {
-                expect(select().read().array).toEqual([initialState.array[0], { ...initialState.array[1], ...payload2 }, initialState.array[2]]);
-                done();
-              })
-          })
-      })
-  })
-
-  it('should work with filter().remove()', done => {
-    const select = createApplicationStore(initialState);
+    expect(res).toEqual(select().read().array.filter(e => e.id === 2));
+    expect(select().read().array).toEqual([initialState.array[0], { ...initialState.array[1], ...payload }, initialState.array[2]]);
+    const payload2 = { value: 'twoooz' };
+    await select(s => s.array)
+      .filter(s => s.id).eq(2)
+      .patch(() => new Promise(resolve => setTimeout(() => resolve(payload2), 10)))
+      .asPromise()
+    expect(select().read().array).toEqual([initialState.array[0], { ...initialState.array[1], ...payload }, initialState.array[2]]);
     select(s => s.array)
       .filter(s => s.id).eq(2)
-      .remove(() => new Promise(resolve => setTimeout(() => resolve(null), 10))).asPromise()
-      .then(res => {
-        expect(res).toEqual([]);
-        expect(select().read().array).toEqual([initialState.array[0], initialState.array[2]]);
-        done();
-      })
+      .invalidateCache();
+    await select(s => s.array)
+      .filter(s => s.id).eq(2)
+      .patch(() => new Promise(resolve => setTimeout(() => resolve(payload2), 10)))
+      .asPromise()
+    expect(select().read().array).toEqual([initialState.array[0], { ...initialState.array[1], ...payload2 }, initialState.array[2]]);
+    done();
   })
 
-  it('should handle a promise rejection', done => {
+  it('should work with filter().remove()', async done => {
+    const select = createApplicationStore(initialState);
+    const res = await select(s => s.array)
+      .filter(s => s.id).eq(2)
+      .remove(() => new Promise(resolve => setTimeout(() => resolve(null), 10))).asPromise()
+    expect(res).toEqual([]);
+    expect(select().read().array).toEqual([initialState.array[0], initialState.array[2]]);
+    done();
+  })
+
+  it('should handle a promise rejection', async done => {
     const select = createApplicationStore(initialState);
     const rejection = 'test';
-    select(s => s.array)
-      .replaceAll(() => new Promise((resolve, reject) => setTimeout(() => reject(rejection), 10)), { cacheFor: 1000 })
-      .asPromise()
-      .catch(err => {
-        expect(err).toEqual(rejection);
-        done();
-      });
+    try {
+      await select(s => s.array)
+        .replaceAll(() => new Promise((resolve, reject) => setTimeout(() => reject(rejection), 10)), { cacheFor: 1000 })
+        .asPromise()
+    } catch (err) {
+      expect(err).toEqual(rejection);
+      done();
+    }
   })
 
-  it('should support tags in type', done => {
+  it('should support tags in type', async done => {
     const select = createApplicationStore(initialState, { actionTypesToIncludeTag: true });
     const replacement = [{ id: 1, value: 'one' }];
     const tag = 'MyComponent';
-    select(s => s.array)
+    await select(s => s.array)
       .replaceAll(() => new Promise(resolve => setTimeout(() => resolve(replacement))), { tag })
       .asPromise()
-      .then(() => {
-        expect(testState.currentAction).toEqual({
-          type: `array.replaceAll() [${tag}]`,
-          replacement,
-        });
-        done();
-      });
+    expect(testState.currentAction).toEqual({
+      type: `array.replaceAll() [${tag}]`,
+      replacement,
+    });
+    done();
   })
 
-  it('should support tags in payload', done => {
+  it('should support tags in payload', async done => {
     const select = createApplicationStoreEnforcingTags(initialState, { actionTypesToIncludeTag: false });
     const replacement = [{ id: 1, value: 'one' }];
     const tag = 'MyComponent';
-    select(s => s.array)
+    await select(s => s.array)
       .replaceAll(() => new Promise(resolve => setTimeout(() => resolve(replacement))), { tag })
       .asPromise()
-      .then(() => {
-        expect(testState.currentAction).toEqual({
-          type: 'array.replaceAll()',
-          replacement,
-          tag
-        });
-        done();
-      });
+    expect(testState.currentAction).toEqual({
+      type: 'array.replaceAll()',
+      replacement,
+      tag
+    });
+    done();
   })
 
   it('should not be able to support transactions', () => {
@@ -418,53 +357,47 @@ describe('async', () => {
       .toThrowError(errorMessages.INVALID_CONTAINER_FOR_CACHED_DATA);
   })
 
-  it('should automatically clear up expired cache keys', done => {
+  it('should automatically clear up expired cache keys', async done => {
     const select = createApplicationStore(initialState);
     const payload = [{ id: 1, value: 'test' }];
     select(s => s.object)
       .replace(() => new Promise(resolve => setTimeout(() => resolve({ property: 'fdfd', property2: 'fdfd' }), 10)), { cacheFor: 1000 })
       .asPromise();
-    select(s => s.array)
+    await select(s => s.array)
       .replaceAll(() => new Promise(resolve => setTimeout(() => resolve(payload), 10)), { cacheFor: 10 })
       .asPromise()
-      .then(() => {
-        setTimeout(() => {
-          expect(testState.currentAction).toEqual({ type: 'cache.array.replaceAll().remove()' });
-          done();
-        }, 100);
-      });
+    setTimeout(() => {
+      expect(testState.currentAction).toEqual({ type: 'cache.array.replaceAll().remove()' });
+      done();
+    }, 100);
   })
 
-  it('should work with nested stores', done => {
+  it('should work with nested stores', async done => {
     const select = createApplicationStore(initialState);
     const nested = createComponentStore({ prop: '' }, { componentName: 'hello', instanceName: 'test' });
     const payload = 'test';
-    nested(s => s.prop)
+    await nested(s => s.prop)
       .replace(() => new Promise(resolve => setTimeout(() => resolve(payload), 10)), { cacheFor: 1000 })
       .asPromise()
-      .then(() => {
-        expect(nested().read().prop).toEqual(payload);
-        done();
-      });
+    expect(nested().read().prop).toEqual(payload);
+    done();
   })
 
-  it('should de-duplicate simultaneous requests', done => {
+  it('should de-duplicate simultaneous requests', async done => {
     const select = createApplicationStore(initialState);
     select(s => s.array)
       .replaceAll(() => new Promise(resolve => setTimeout(() => resolve([{ id: 1, value: 'test' }]), 10)))
       .asPromise();
-    setTimeout(() => {
-      select(s => s.array)
+    setTimeout(async () => {
+      await select(s => s.array)
         .replaceAll(() => new Promise(resolve => setTimeout(() => resolve([{ id: 2, value: 'testy' }]), 10)))
         .asPromise()
-        .then(() => {
-          expect(select().read().array).toEqual([{ id: 1, value: 'test' }]);
-          done();
-        });
+      expect(select().read().array).toEqual([{ id: 1, value: 'test' }]);
+      done();
     }, 5)
   })
 
-  it('should be able to paginate', done => {
+  it('should be able to paginate', async done => {
     const todos = new Array(50).fill(null).map((e, i) => ({ id: i + 1, value: `value ${i + 1}` }));
     const select = createApplicationStore(initialState);
     select(s => s.paginated[0])
@@ -485,25 +418,24 @@ describe('async', () => {
       })
   })
 
-  it('should not bypass a promise if it has been rejected', done => {
+  it('should not bypass a promise if it has been rejected', async done => {
     const select = createApplicationStore(initialState);
     const payload = [{ id: 1, value: 'one' }];
-    select(s => s.array)
-      .replaceAll(() => new Promise((resolve, reject) => setTimeout(() => reject('test'), 10)), { cacheFor: 1000 })
-      .asPromise()
-      .catch(error => {
-        select(s => s.array)
-          .replaceAll(() => new Promise(resolve => setTimeout(() => resolve(payload), 10)), { cacheFor: 1000 })
-          .asPromise()
-          .then(res => {
-            expect(res).toEqual(select().read().array);
-            expect(select().read().array).toEqual(payload);
-            done();
-          });
-      });
+    try {
+      await select(s => s.array)
+        .replaceAll(() => new Promise((resolve, reject) => setTimeout(() => reject('test'), 10)), { cacheFor: 1000 })
+        .asPromise()
+    } catch (error) {
+      const res = await select(s => s.array)
+        .replaceAll(() => new Promise(resolve => setTimeout(() => resolve(payload), 10)), { cacheFor: 1000 })
+        .asPromise()
+      expect(res).toEqual(select().read().array);
+      expect(select().read().array).toEqual(payload);
+      done();
+    }
   })
 
-  it('should be able to perform an optimistic update', done => {
+  it('should be able to perform an optimistic update', async done => {
     const select = createApplicationStore(initialState);
     const optimisticValue = [{ id: 6, value: 'six' }];
     const resolvedValue = [{ id: 7, value: 'seven' }];
@@ -517,7 +449,7 @@ describe('async', () => {
     expect(select().read().array).toEqual(optimisticValue);
   })
 
-  it('should revert an optimistic update if there is an error', done => {
+  it('should revert an optimistic update if there is an error', async done => {
     const select = createApplicationStore(initialState);
     const optimisticValue = [{ id: 6, value: 'six' }];
     select(s => s.array)
@@ -530,7 +462,7 @@ describe('async', () => {
     expect(select().read().array).toEqual(optimisticValue);
   })
 
-  it('should invalidate caches for replaceAll() independantly of replace()', done => {
+  it('should invalidate caches for replaceAll() independantly of replace()', async done => {
     const select = createApplicationStore(initialState);
     const fetchTodos = () => new Promise<{ id: number, value: string }[]>(resolve => setTimeout(() => resolve([{ id: 1, value: 'test' }]), 10));
     const fetchTodo = () => new Promise<{ id: number, value: string }>(resolve => setTimeout(() => resolve({ id: 1, value: 'testy' })));

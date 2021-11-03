@@ -72,11 +72,14 @@ export const processStateUpdateRequest = <S, C, X extends C & Array<any>>(
             const cacheExpiry = toIsoString(new Date(new Date().getTime() + cacheFor));
             libState.transactionState = 'last';
             arg.select(s => (s as any).cache[cacheKey]).replace(cacheExpiry);
-            setTimeout(() => {
-              if (arg.select().read().cache && arg.select().read().cache[cacheKey]) {
-                arg.select(s => (s as any).cache[cacheKey]).remove();
-              }
-            }, cacheFor);
+            if (!libState.cacheInvalidators[cacheKey]) {
+              libState.cacheInvalidators[cacheKey] = window.setTimeout(() => {
+                if (arg.select().read().cache && arg.select().read().cache[cacheKey]) {
+                  arg.select(s => (s as any).cache[cacheKey]).remove();
+                }
+                delete libState.cacheInvalidators[cacheKey];
+              }, cacheFor);
+            }
           }
           return arg.select(arg.selector).read();
         }).catch(error => {
