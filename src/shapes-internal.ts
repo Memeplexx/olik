@@ -5,9 +5,9 @@ import {
   Selector,
   Store,
   StoreForAComponent,
-  StoreForAnObject,
   StoreOrDerivation,
   Trackability,
+  Replace,
 } from './shapes-external';
 
 export type UpdateStateArgs<S, C, X extends C = C> = {
@@ -99,7 +99,7 @@ export type OptionsForCreatingInternalApplicationStore = {
 
 export type StoreWhichMayContainComponentStores<S, C, T extends Trackability> = {
   remove: () => any;
-} & StoreForAnObject<C, T> & StoreOrDerivation<C>;
+} & Replace<C, T> & StoreOrDerivation<C>;
 
 export type ComponentContainerStore = ((selector?: ((s: any) => any) | undefined) => StoreWhichMayContainComponentStores<any, any, any>) | undefined;
 

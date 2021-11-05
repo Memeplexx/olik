@@ -1,11 +1,17 @@
 import {
   ActionOptions,
   AnyAsync,
-  ArrayOfElementsAction,
-  ArrayOfElementsCommonAction,
-  ArrayOfObjectsAction,
   FindOrFilter,
   Trackability,
+  Patch,
+  RemoveAll,
+  And,
+  Or,
+  PatchAllElements,
+  OnChange,
+  Read,
+  RemoveObjectElement,
+  ReplaceObjectElements,
 } from './shapes-external';
 import { ArrayOperatorState } from './shapes-internal';
 import { errorMessages } from './shared-consts';
@@ -19,7 +25,7 @@ export const and = <S, C, X extends C & Array<any>, F extends FindOrFilter, T ex
   arg.whereClauseStrings.push(`${arg.whereClauseString}).and(`);
   arg.whereClauseSpecs.push({ filter: o => arg.criteria(o, arg.comparator), type: 'and' });
   return arg.recurseWhere(prop);
-}) as ArrayOfElementsAction<X, F, T>['and'];
+}) as And<X, F, T>['and'];
 
 export const or = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
   arg: ArrayOperatorState<S, C, X, F, T>,
@@ -27,16 +33,16 @@ export const or = <S, C, X extends C & Array<any>, F extends FindOrFilter, T ext
   arg.whereClauseStrings.push(`${arg.whereClauseString}).or(`);
   arg.whereClauseSpecs.push({ filter: o => arg.criteria(o, arg.comparator), type: 'or' });
   return arg.recurseWhere(prop);
-}) as ArrayOfElementsAction<X, F, T>['or'];
+}) as Or<X, F, T>['or'];
 
-export const remove = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
+export const removeOrRemoveAll = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
   arg: ArrayOperatorState<S, C, X, F, T>,
 ) => ((argumentOrUpdateOptions?: (() => AnyAsync<any>) | ActionOptions<T>, updateOptionsAsync?: ActionOptions<T>) => processStateUpdateRequest({
   ...arg,
   selector: ((s: any) => (arg.selector(s) as any)[arg.type]((e: any) => bundleCriteria(e, arg.whereClauseSpecs))) as any,
   argument: argumentOrUpdateOptions,
   updateOptions: updateOptionsAsync || argumentOrUpdateOptions,
-  actionNameSuffix: `${arg.type}(${completeWhereClause(arg)}).remove()`,
+  actionNameSuffix: `${arg.type}(${completeWhereClause(arg)}).remove${arg.type === 'filter' ? 'All' : ''}()`,
   replacer: old => {
     const elementIndices = getElementIndices(arg);
     return old.filter((o, i) => !elementIndices.includes(i));
@@ -48,16 +54,16 @@ export const remove = <S, C, X extends C & Array<any>, F extends FindOrFilter, T
       toRemove: (arg.selector(arg.getCurrentState()) as X)[arg.type]((e, i) => elementIndices.includes(i)),
     };
   },
-})) as ArrayOfElementsCommonAction<X, F, T>['remove'];
+})) as RemoveObjectElement<T>['remove'] | RemoveAll<T>;
 
-export const patch = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
+export const patchOrPatchAll = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
   arg: ArrayOperatorState<S, C, X, F, T>,
 ) => ((argument, updateOptions) => processStateUpdateRequest({
   ...arg,
   selector: ((s: any) => (arg.selector(s) as any)[arg.type]((e: any) => bundleCriteria(e, arg.whereClauseSpecs))) as any,
   argument,
   updateOptions,
-  actionNameSuffix: `${arg.type}(${completeWhereClause(arg)}).patch()`,
+  actionNameSuffix: `${arg.type}(${completeWhereClause(arg)}).patch${arg.type === 'filter' ? 'All' : ''}()`,
   replacer: (old, argument) => {
     const elementIndices = getElementIndices(arg);
     return old.map((o, i) => elementIndices.includes(i) ? { ...o, ...argument } : o);
@@ -66,7 +72,7 @@ export const patch = <S, C, X extends C & Array<any>, F extends FindOrFilter, T 
     where: arg.payloadWhereClauses,
     patch: payload,
   })
-})) as ArrayOfObjectsAction<X, F, T>['patch'];
+})) as PatchAllElements<X, F, T>['patchAll'] | Patch<X[0], T>['patch'];
 
 export const replace = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
   arg: ArrayOperatorState<S, C, X, F, T>,
@@ -84,7 +90,7 @@ export const replace = <S, C, X extends C & Array<any>, F extends FindOrFilter, 
     where: arg.payloadWhereClauses,
     replacement: payload,
   }),
-})) as ArrayOfElementsCommonAction<X, F, T>['replace'];
+})) as ReplaceObjectElements<X, T>['replace'];
 
 export const onChange = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
   arg: ArrayOperatorState<S, C, X, F, T>,
@@ -94,7 +100,7 @@ export const onChange = <S, C, X extends C & Array<any>, F extends FindOrFilter,
     ? (arg.selector(nextState) as X).find(e => bundleCriteria(e, arg.whereClauseSpecs))
     : { $filtered: (arg.selector(nextState) as X).map(e => bundleCriteria(e, arg.whereClauseSpecs) ? e : null).filter(e => e !== null) });
   return { unsubscribe: () => arg.storeState.changeListeners.delete(performAction) };
-}) as ArrayOfElementsCommonAction<X, F, T>['onChange'];
+}) as OnChange<X, F>['onChange'];
 
 export const read = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
   arg: ArrayOperatorState<S, C, X, F, T>,
@@ -103,7 +109,7 @@ export const read = <S, C, X extends C & Array<any>, F extends FindOrFilter, T e
   return arg.type === 'find'
     ? (arg.selector(arg.getCurrentState()) as X).find(e => bundleCriteria(e, arg.whereClauseSpecs))
     : (arg.selector(arg.getCurrentState()) as X).map(e => bundleCriteria(e, arg.whereClauseSpecs) ? e : null).filter(e => e != null);
-}) as ArrayOfElementsCommonAction<X, F, T>['read'];
+}) as Read<X, F>['read'];
 
 export const invalidateCache = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
   arg: ArrayOperatorState<S, C, X, F, T>,

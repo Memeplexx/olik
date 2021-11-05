@@ -21,9 +21,9 @@ describe('array.filter().remove()', () => {
     const select = createApplicationStore(initialState);
     select(s => s.array)
       .filter(e => e.id).eq(2)
-      .remove();
+      .removeAll();
     expect(testState.currentAction).toEqual({
-      type: `array.filter(id).eq(2).remove()`,
+      type: `array.filter(id).eq(2).removeAll()`,
       toRemove: [initialState.array[1]],
       where: [
         { 'id.eq': 2 }
@@ -36,9 +36,9 @@ describe('array.filter().remove()', () => {
     const select = createApplicationStore(initialState);
     select(s => s.array)
       .filter(e => e.id).ne(2)
-      .remove();
+      .removeAll();
     expect(testState.currentAction).toEqual({
-      type: `array.filter(id).ne(2).remove()`,
+      type: `array.filter(id).ne(2).removeAll()`,
       toRemove: [initialState.array[0], initialState.array[2]],
       where: [
         { 'id.ne': 2 }
@@ -51,9 +51,9 @@ describe('array.filter().remove()', () => {
     const select = createApplicationStore(initialState);
     select(s => s.array)
       .filter(e => e.id).gt(1)
-      .remove();
+      .removeAll();
     expect(testState.currentAction).toEqual({
-      type: `array.filter(id).gt(1).remove()`,
+      type: `array.filter(id).gt(1).removeAll()`,
       toRemove: [initialState.array[1], initialState.array[2]],
       where: [
         { 'id.gt': 1 }
@@ -66,9 +66,9 @@ describe('array.filter().remove()', () => {
     const select = createApplicationStore(initialState);
     select(s => s.array)
       .filter(e => e.id).gte(2)
-      .remove();
+      .removeAll();
     expect(testState.currentAction).toEqual({
-      type: `array.filter(id).gte(2).remove()`,
+      type: `array.filter(id).gte(2).removeAll()`,
       toRemove: [initialState.array[1], initialState.array[2]],
       where: [
         { 'id.gte': 2 }
@@ -81,9 +81,9 @@ describe('array.filter().remove()', () => {
     const select = createApplicationStore(initialState);
     select(s => s.array)
       .filter(e => e.id).lt(2)
-      .remove();
+      .removeAll();
     expect(testState.currentAction).toEqual({
-      type: `array.filter(id).lt(2).remove()`,
+      type: `array.filter(id).lt(2).removeAll()`,
       toRemove: [initialState.array[0]],
       where: [
         { 'id.lt': 2 }
@@ -96,9 +96,9 @@ describe('array.filter().remove()', () => {
     const select = createApplicationStore(initialState);
     select(s => s.array)
       .filter(e => e.id).lte(2)
-      .remove();
+      .removeAll();
     expect(testState.currentAction).toEqual({
-      type: `array.filter(id).lte(2).remove()`,
+      type: `array.filter(id).lte(2).removeAll()`,
       toRemove: [initialState.array[0], initialState.array[1]],
       where: [
         { 'id.lte': 2 }
@@ -111,9 +111,9 @@ describe('array.filter().remove()', () => {
     const select = createApplicationStore(initialState);
     select(s => s.array)
       .filter(e => e.id).in([1, 2])
-      .remove();
+      .removeAll();
     expect(testState.currentAction).toEqual({
-      type: `array.filter(id).in(1,2).remove()`,
+      type: `array.filter(id).in(1,2).removeAll()`,
       toRemove: [initialState.array[0], initialState.array[1]],
       where: [
         { 'id.in': [1, 2] }
@@ -126,9 +126,9 @@ describe('array.filter().remove()', () => {
     const select = createApplicationStore(initialState);
     select(s => s.array)
       .filter(e => e.id).ni([1, 2])
-      .remove();
+      .removeAll();
     expect(testState.currentAction).toEqual({
-      type: `array.filter(id).ni(1,2).remove()`,
+      type: `array.filter(id).ni(1,2).removeAll()`,
       toRemove: [initialState.array[2]],
       where: [
         { 'id.ni': [1, 2] }
@@ -141,9 +141,9 @@ describe('array.filter().remove()', () => {
     const select = createApplicationStore(initialState);
     select(s => s.array)
       .filter(e => e.value).match(/^t/)
-      .remove();
+      .removeAll();
     expect(testState.currentAction).toEqual({
-      type: `array.filter(value).match(/^t/).remove()`,
+      type: `array.filter(value).match(/^t/).removeAll()`,
       toRemove: [initialState.array[1], initialState.array[2]],
       where: [
         { 'value.match': /^t/ }

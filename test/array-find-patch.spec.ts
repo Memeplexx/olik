@@ -15,6 +15,7 @@ describe('array.find().patch()', () => {
   const initialState = {
     object: { property: '' },
     array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
+    arr2: [1, 2]
   };
 
   it('should eq()', () => {

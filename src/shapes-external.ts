@@ -1,428 +1,18 @@
-/**
- * Whether updates to the store requires tags or not
- */
-export type Trackability = 'tagged' | 'untagged';
-
-/**
- * Whether this predicate is for a filter() or a find()
- */
-export type FindOrFilter = 'find' | 'filter';
-
-/**
- * An object which can be unsubscribed from
- */
-export interface Unsubscribable {
-  /**
-   * Unsubscribes from this listener thereby preventing a memory leak.
-   */
-  unsubscribe: () => any,
-}
-
-/**
- * An array which cannot be mutated
- */
-export interface DeepReadonlyArray<T> extends ReadonlyArray<DeepReadonly<T>> {
-}
-
-/**
- * An object which cannot be mutated
- */
-export type DeepReadonlyObject<T> = {
-  readonly [P in keyof T]: DeepReadonly<T[P]>;
-};
-
-/**
- * An object or an array which cannot be mutated
- */
-export type DeepReadonly<T> =
-  T extends (infer R)[] ? DeepReadonlyArray<R> :
-  T extends object ? DeepReadonlyObject<T> :
-  T;
-
-/**
- * Un-does the work done by the DeepReadonly type. In other words, this makes an object wrapped with DeepReadonly mutable.
- */
-export type DeepWritable<E> =
-  E extends (string | number | boolean) ? E :
-  E extends DeepReadonlyArray<infer R> ? Array<R> :
-  E extends DeepReadonlyObject<infer R> ? R :
-  never;
-
 export type PredicateAction<X extends DeepReadonlyArray<any>, F extends FindOrFilter, T extends Trackability> = X[0] extends object
-  ? ArrayOfObjectsAction<X, F, T>
-  : ArrayOfElementsAction<X, F, T>;
-
-export type PredicateCustom<X extends DeepReadonlyArray<any>, F extends FindOrFilter, T extends Trackability> = X[0] extends object
-  ? ArrayOfObjectsCommonAction<X, F, T>
-  : ArrayOfElementsCommonAction<X, F, T>;
-
-/**
- * Query options common to all datatypes
- */
-export type PredicateOptionsCommon<X extends DeepReadonlyArray<any>, P, F extends FindOrFilter, T extends Trackability> = {
-  /**
-   * Searches for array element(s) where the previously selected property **equals** the supplied value
-   * @example
-   * select(s => s.todos)
-   *  .find(s => s.id).eq(1)
-   * ...
-   */
-  eq: (value: P) => PredicateAction<X, F, T>,
-  /**
-   * Searches for array element(s) where the previously selected property **does not equal** the supplied value
-   * @example
-   * select(s => s.todos)
-   *  .filter(s => s.priority).ne(1)
-   * ...
-   */
-  ne: (value: P) => PredicateAction<X, F, T>,
-  /**
-   * Searches for array element(s) where the previously selected property **is in** the supplied array
-   * @example
-   * select(s => s.todos)
-   *  .filter(s => s.priority).in([1, 2])
-   * ...
-   */
-  in: (value: P[]) => PredicateAction<X, F, T>,
-  /**
-   * Searches for array element(s) where the previously selected property **is not in** the supplied array
-   * @example
-   * select(s => s.todos)
-   *  .filter(s => s.priority).ni([1, 2])
-   * ...
-   */
-  ni: (value: P[]) => PredicateAction<X, F, T>,
-}
-
-/**
- * Query options for number
- */
-export type PredicateOptionsForNumber<X extends DeepReadonlyArray<any>, E, F extends FindOrFilter, T extends Trackability> = {
-  /**
-   * Searches for array element(s) where the previously selected property **is greater than** the supplied value
-   * @example
-   * select(s => s.todos)
-   *  .filter(s => s.priority).gt(2)
-   * ...
-   */
-  gt: (value: E) => PredicateAction<X, F, T>,
-  /**
-   * Searches for array element(s) where the previously selected property **is greater than or equal to** the supplied value
-   * @example
-   * select(s => s.todos)
-   *  .filter(s => s.priority).gte(2)
-   * ...
-   */
-  gte: (value: E) => PredicateAction<X, F, T>,
-  /**
-   * Searches for array element(s) where the previously selected property **is less than** the supplied value
-   * @example
-   * select(s => s.todos)
-   *  .filter(s => s.priority).lt(2)
-   * ...
-   */
-  lt: (value: E) => PredicateAction<X, F, T>,
-  /**
-   * Searches for array element(s) where the previously selected property **is less than or equal to** the supplied value
-   * @example
-   * select(s => s.todos)
-   *  .filter(s => s.priority).lte(2)
-   *  ...
-   */
-  lte: (value: E) => PredicateAction<X, F, T>,
-} & PredicateOptionsCommon<X, E, F, T>;
-
-/**
- * Query options for a string
- */
-export type PredicateOptionsForString<X extends DeepReadonlyArray<any>, E, F extends FindOrFilter, T extends Trackability> = {
-  /**
-   * Searches for array element(s) where the previously selected property **matches** the supplied regular expression
-   * @param pattern any regular expression
-   * @example
-   * select(s => s.todos)
-   *  .filter(s => s.title).match(/^hello/)
-   *  ...
-   */
-  match: (pattern: RegExp) => PredicateAction<X, F, T>,
-} & PredicateOptionsForNumber<X, E, F, T>;
+  ? (F extends 'find'
+    ? (PatchElement<X[0], T> & DeepMergeElement<X[0], T> & ReplaceObjectElement<X[0], T> & RemoveObjectElement<T> & OnChangeObjectElement<X[0]> & InvalidateCache & Read<X, F> & And<X, F, T> & Or<X, F, T>)
+    : (PatchAllElements<X, F, T> & ReplaceObjectElements<X[0], T> & RemoveAllObjectElements<T> & OnChangeObjectElements<X> & InvalidateCache & Read<X, F> & And<X, F, T> & Or<X, F, T>))
+  : (F extends 'find'
+    ? (ReplacePrimitiveElement<X[0], T> & RemovePrimitiveElement<T> & OnChangePrimitiveElement<X> & InvalidateCache & Read<X, F> & And<X, F, T> & Or<X, F, T>)
+    : (ReplacePrimitiveElements<X[0], F, T> & RemoveAllPrimitiveElements<T> & OnChangePrimitiveElements<X> & InvalidateCache & Read<X, F> & And<X, F, T> & Or<X, F, T>));
 
 /**
  * Query options
  */
 export type Predicate<X extends DeepReadonlyArray<any>, P, F extends FindOrFilter, T extends Trackability> =
-  [P] extends [number] ? PredicateOptionsForNumber<X, P, F, T>
-  : [P] extends [string] ? PredicateOptionsForString<X, P, F, T>
-  : PredicateOptionsCommon<X, P, F, T>;
-
-/**
- * Actions which can be applied to any array
- */
-export type ArrayOfElementsAction<X extends DeepReadonlyArray<any>, F extends FindOrFilter, T extends Trackability> = {
-  /**
-   * Append more criteria with which to find/filter the array
-   * @param getProp a function which selects the array element property to compare
-   * @example
-   * select(s => s.todos)
-   *  .and(e => e.status).eq('todo')
-   *  ...
-   */
-  and: X[0] extends object ? <P>(getProp: (element: DeepReadonly<X[0]>) => P) => Predicate<X, P, F, T> : () => Predicate<X, X[0], F, T>,
-  /**
-   * Append more criteria with which to find/filter the array
-   * @param getProp a function which selects the array element property to compare
-   * @example
-   * select(s => s.todos)
-   *  .or(t => t.status).eq('todo')
-   *  ...
-   */
-  or: X[0] extends object ? <P>(getProp: (element: DeepReadonly<X[0]>) => P) => Predicate<X, P, F, T> : () => Predicate<X, X[0], F, T>,
-} & ArrayOfElementsCommonAction<X, F, T>;
-
-/**
- * Actions which can be applied to an array of objects
- */
-export type ArrayOfObjectsAction<X extends DeepReadonlyArray<any>, F extends FindOrFilter, T extends Trackability> = {
-  /**
-   * Partially updates each selected array element allowing you to omit those properties which should not change
-   * @param patch the partially filled object to be used as a patch
-   * @param updateOptions
-   * @example
-   * select(s => s.todos)
-   *  .patch({ done: true })
-   */
-  patch: <H extends Partial<X[0]> | (() => AnyAsync<Partial<X[0]>>) >(patch: H, options: UpdateOptions<T, H>) => H extends (() => AnyAsync<any>) ? Future<F extends 'find' ? H : H[]> : void,
-} & ArrayOfElementsAction<X, F, T>;
-
-export interface ArrayOfElementsCommonAction<X extends DeepReadonlyArray<any>, F extends FindOrFilter, T extends Trackability> {
-  /**
-   * Replaces the selected element(s)
-   * @example
-   * select(s => s.todos)
-   *  .replace({ id: 1, text: 'bake cookies' })
-   */
-  replace: <H extends X[0] | (() => AnyAsync<X[0]>) >(replacement: H, options: UpdateOptions<T, H>) => H extends (() => AnyAsync<X[0]>) ? Future<F extends 'find' ? X[0] : X> : void,
-  /**
-   * Removes any elements that were found in the search clause
-   * @example
-   * select(s => s.todos)
-   *  .remove()
-   */
-  remove(asyncRemover: () => AnyAsync<any>, options: ActionOptions<T>): Future<any>;
-  remove(options: ActionOptions<T>): void;
-  /**
-   * Will be called any time the selected node changes.
-   * @example
-   * const subscription = select(s => s.todos)
-   *  .onChange(value => console.log(value));
-   * 
-   * // don't forget to unsubscribe to prevent a memory leak
-   * subscription.unsubscribe(); 
-   */
-  onChange: (listener: (state: DeepReadonly<F extends 'find' ? X[0] : X>) => void) => Unsubscribable;
-  /**
-   * Returns the current value of the selected node.
-   */
-  read: () => DeepReadonly<F extends 'find' ? X[0] : X>;
-  /**
-   * Ensures that fresh data is retrieved the next time any promises are used to populate this node of the state tree.
-   */
-  invalidateCache: () => void,
-}
-
-export type ArrayOfObjectsCommonAction<X extends DeepReadonlyArray<any>, F extends FindOrFilter, T extends Trackability> = {
-  /**
-   * Partially updates array elements allowing you to omit those properties which should not change
-   * @example
-   * select(s => s.todos)
-   *  .patch({ done: true })
-   */
-  patch: <H extends Partial<X[0]> | (() => AnyAsync<Partial<X[0]>>) >(replacement: H, options: UpdateOptions<T, H>) => H extends (() => AnyAsync<any>) ? Future<void> : void,
-} & ArrayOfElementsCommonAction<X, F, T>;
-
-export type TaggedUpdate<T extends Trackability> = T extends 'untagged' ? {
-  /**
-   * Any string which may be used to identify the origin of a state update.    
-   * 
-   * This tag is optional because your store was initialized using `store()` instead of `storeEnforcingTags()`.
-   *   
-   * If, when initializing your store, you passed `actionTypesToIncludeTag: true` inside the options object, then your tag will appear in the action payload as follows:
-   * ```
-   * {
-   *   type: 'some.value.replace()',
-   *   tag: 'YourTag'
-   *   ...
-   * }
-   * ```
-   * If, when initializing your store, you did not pass `actionTypesToIncludeTag: true` inside the options object, then your tag will appear as a suffix to the action type, for example:  
-   * ```
-   * {
-   *   type: 'some.value.replace() [YourTag]',
-   *   ...
-   * }
-   * ```
-   */
-  tag?: string
-} : {
-  /**
-   * Any string which may be used to identify the origin of a state update.  
-   * 
-   * This tag is required because your store was initialized using `storeEnforcingTags()` instead of `store()`.    
-   *   
-   * If, when initializing your store, you passed `actionTypesToIncludeTag: true` inside the options object, then your tag will appear in the action payload as follows:
-   * ```
-   * {
-   *   type: 'some.value.replace()',
-   *   tag: 'YourTag'
-   *   ...
-   * }
-   * ```
-   * If, when initializing your store, you did not pass `actionTypesToIncludeTag: true` inside the options object, then your tag will appear as a suffix to the action type, for example:  
-   * ```
-   * {
-   *   type: 'some.value.replace() [YourTag]',
-   *   ...
-   * }
-   * ```
-   */
-  tag: string
-}
-
-export type PromisableUpdate<H> = H extends () => AnyAsync<any> ? {
-  /**
-   * Avoid unnecessary promise invocations by supplying the number of milliseconds that should elapse before the promise is invoked again.
-   * To un-do this, you can call `invalidateCache()` on the node of the state tree, for example
-   * @example
-   * select(s => s.todos).invalidateCache();
-   * @example
-   * select(s => s.todos).find(s => s.id).eq(2).invalidateCache();
-   */
-  cacheFor?: number;
-  /**
-   * Allows you to set an initial value to update the store with.
-   * If the promise is rejected, this value will be reverted to what it was before the promise was invoked.
-   * @example
-   * const newUsername = 'Jeff';
-   * select(s => s.username)
-   *   .replace(() => updateUsernameOnApi(newUsername), { optimisticallyUpdateWith: newUsername })
-   *   .catch(err => notifyUserOfError(err))
-   */
-  optimisticallyUpdateWith?: H extends () => AnyAsync<infer W> ? W : never,
-} : {};
-
-export type UpdateAtIndex = {
-  /**
-   * The index where new elements should be inserted.  
-   * The default insertion behavior is that new elements will be appended to the end of the existing array
-   */
-  atIndex?: number
-};
-
-export type ActionOptions<T extends Trackability> = T extends 'untagged' ? (TaggedUpdate<'untagged'> | void) : TaggedUpdate<'tagged'>;
-
-export type UpdateOptions<T extends Trackability, H> = T extends 'untagged' ? (TaggedUpdate<'untagged'> & PromisableUpdate<H> | void) : TaggedUpdate<'tagged'> & PromisableUpdate<H>;
-
-export type InsertOptions<T extends Trackability, H> = UpdateOptions<T, H> & (UpdateAtIndex | void);
-
-/**
- * An object which is capable of storing and updating state which is in the shape of an array of primitives
- */
-export type StoreForAnArrayCommon<X extends DeepReadonlyArray<any>, T extends Trackability> = {
-  /**
-   * Add one or more elements into the existing array
-   * @example
-   * select(s => s.todos)
-   *  .insert(newTodo);
-   * @example
-   * select(s => s.todos)
-   *  .insert(newArrayOfTodos);
-   * @example
-   * select(s => s.todos)
-   *  .insert(() => getTodosFromApi())
-   * @example
-   * select(s => s.todos)
-   *  .insert(newArrayOfTodos, { atIndex: 0 });
-   */
-  insert: <H extends (X | X[0] | (() => AnyAsync<X | X[0]>)) >(insertion: H, options: InsertOptions<T, H>) => H extends (() => AnyAsync<any>) ? Future<X> : void,
-  /**
-   * Removes all elements from the existing array
-   * @example
-   * select(s => s.todos)
-   *   .removeAll();
-   */
-  removeAll(asyncRemover: () => AnyAsync<any>, options: ActionOptions<T>): Future<any>;
-  removeAll(options: ActionOptions<T>): void;
-  /**
-   * Substitute all existing elements with a new array of elements
-   * @example
-   * select(s => s.todos)
-   *   .replaceAll(newTodos);
-   */
-  replaceAll: <H extends X | (() => AnyAsync<X>) >(replacement: H, options: UpdateOptions<T, H>) => H extends (() => AnyAsync<X>) ? Future<X> : void,
-  /**
-   * Partially update all existing elements
-   * @example
-   * select(s => s.todos)
-   *   .patchAll({ done: true });
-   */
-  patchAll: <H extends Partial<X[0]> | (() => AnyAsync<Partial<X[0]>>) >(replacement: H, options: UpdateOptions<T, H>) => H extends (() => AnyAsync<X>) ? Future<X> : void,
-}
-
-/**
- * An object which is capable of storing and updating state which is in the shape of an array of primitives
- */
-export type StoreForAnArrayOfPrimitives<X extends DeepReadonlyArray<any>, T extends Trackability> = {
-  /**
-   * Specify a where clause to find many elements.
-   * @example
-   * ```
-   * select(s => s.todos)
-   *   .filter(t => t.status).eq('done')
-   *   .remove();
-   * ```
-   */
-  filter: PredicateFunctionPrimitive<X, 'filter', T>,
-  /**
-   * Specify a where clause to find one element.  
-   * @example
-   * select(s => s.todos)
-   *  .find(t => t.id).eq(3)
-   *  ...
-   */
-  find: PredicateFunctionPrimitive<X, 'find', T>,
-} & StoreForAnArrayCommon<X, T>;
-
-export type StoreForAnArrayOfObjects<X extends DeepReadonlyArray<any>, T extends Trackability> = {
-  /**
-   * Insert element(s) into the store array (if they do not already exist) or update them (if they do)
-   * @example
-   * select(s => s.users)
-   *  .upsertMatching(s => s.id) // get the property that uniquely identifies each array element
-   *  .with(elementOrArrayOfElements) // pass in an element or array of elements to be upserted
-   * ...
-   */
-  upsertMatching: <P>(getProp: (element: DeepReadonly<X[0]>) => P) => {
-    with: <H extends X | (X[0] | X | (() => AnyAsync<X | X[0]>)) >(elementOrArray: H, options: UpdateOptions<T, H>) => H extends (() => AnyAsync<any>) ? Future<X> : void,
-  }
-  /**
-   * Specify a where clause to find many elements.
-   * @example
-   * ```
-   * select(s => s.todos)
-   *  .filter(t => t.status).eq('done')
-   *  ...
-   * ```
-   */
-  filter: PredicateFunctionObject<X, 'filter', T>,
-  /**
-   * Specify a where clause to find one element.  
-   * @example
-   * select(s => s.users)
-   *  .find(t => t.id).eq(3)
-   *  ...
-   */
-  find: PredicateFunctionObject<X, 'find', T>,
-} & StoreForAnArrayCommon<X, T>;
+  [P] extends [number] ? Gt<X, P, F, T> & Gte<X, P, F, T> & Lt<X, P, F, T> & Lte<X, P, F, T> & Eq<X, P, F, T> & Ne<X, P, F, T> & In<X, P, F, T> & Ni<X, P, F, T>
+  : [P] extends [string] ? Gt<X, P, F, T> & Gte<X, P, F, T> & Lt<X, P, F, T> & Lte<X, P, F, T> & Match<X, F, T> & Eq<X, P, F, T> & Ne<X, P, F, T> & In<X, P, F, T> & Ni<X, P, F, T>
+  : (Eq<X, P, F, T> & Ne<X, P, F, T> & In<X, P, F, T> & Ni<X, P, F, T>);
 
 /**
  * A function which accepts another function to select a property from an array element
@@ -433,49 +23,6 @@ export type PredicateFunctionObject<X extends DeepReadonlyArray<any>, F extends 
  * A function which accepts another function to select a property from an array element
  */
 export type PredicateFunctionPrimitive<X extends DeepReadonlyArray<any>, F extends FindOrFilter, T extends Trackability> = () => Predicate<X, X[0], F, T>;
-
-/**
- * An object which is capable of storing and updating state which is in the shape of a primitive
- */
-export type StoreForAnObjectOrPrimitive<C, T extends Trackability> = {
-  /**
-   * Substitutes this primitive value
-   * @example
-   * select(s => s.user.age).replace(33);
-   */
-  replace: <H extends C | (() => AnyAsync<C>) >(replacement: H, options: UpdateOptions<T, H>) => H extends (() => AnyAsync<any>) ? Future<C> : void,
-}
-
-export type StoreForANumber<T extends Trackability> = {
-  /**
-   * Increment the value by the specified amount
-   * @example
-   * select(s => s.user.age).increment(1);
-   */
-  increment: <H extends number | (() => AnyAsync<number>) >(incrementBy: H, options: UpdateOptions<T, H>) => H extends (() => AnyAsync<any>) ? Future<number> : void,
-} & StoreForAnObjectOrPrimitive<number, T>;
-
-/**
- * An object which is capable of storing and updating state which is in the shape of an object
- */
-export type StoreForAnObject<C, T extends Trackability> = {
-  /**
-   * Partially updates this object
-   * @example
-   * select(s => s.user)
-   *  .patch({ firstName: 'James', age: 33 })
-   */
-  patch: <H extends (Partial<C> | (() => AnyAsync<Partial<C>>)) >(partial: H, options: UpdateOptions<T, H>) => H extends (() => AnyAsync<Partial<C>>) ? Future<C> : void,
-  /**
-   * Deep-merges the existing object with the supplied object.
-   * @example
-   * const select = createApplicationStore({ obj: { hello: 'foo' } });
-   * 
-   * select(s => s.obj).deepMerge({ hello: 'bar', arr: [1, 2, 3] });
-   * console.log(select().read()); // { obj: { hello: 'bar', arr: [1, 2, 3] } }
-   */
-  deepMerge: <K extends Partial<C>, H extends K | (() => AnyAsync<K>) >(state: H) => H extends (() => AnyAsync<C>) ? Future<C> : void,
-} & StoreForAnObjectOrPrimitive<C, T>;
 
 export interface StoreOrDerivation<C> {
   /**
@@ -514,9 +61,9 @@ export type StoreWhichIsResettable<C, T extends Trackability> = {
 
 export type StoreWhichAllowsRemoving<T extends Trackability> = {
   /**
-   * Removes the selected property from it's parent node.  
+   * Removes the selected node from it's parent node.  
    * ***WARNING***: invoking this has the potentional to contradict the type-system.
-   * Ideally you should only use this to remove a property from a node with dynamic keys, eg `{ [key: string]: any }` and NOT from a node with statically defined keys, eg `{ str: '', num: 0 }`
+   * Ideally you should only use this to remove a property from a node with dynamically typed properties, eg `{ [key: string]: any }` and NOT from a node with statically typed properties, eg `{ str: '', num: 0 }`
    * @example
    * const select = createApplicationStore({ skillpoints: {} as {[name: string]: number} });
    * 
@@ -531,10 +78,10 @@ export type StoreWhichAllowsRemoving<T extends Trackability> = {
  * An object which is capable of managing states of various shapes
  */
 export type Store<C, T extends Trackability> = ([C] extends undefined ? any :
-  [C] extends [DeepReadonlyArray<object>] ? StoreForAnArrayOfObjects<[C][0], T> :
-  [C] extends [DeepReadonlyArray<any>] ? StoreForAnArrayOfPrimitives<[C][0], T> :
-  [C] extends [number] ? StoreForANumber<T> :
-  [C] extends [object] ? StoreForAnObject<C, T> : StoreForAnObjectOrPrimitive<C, T>)
+  [C] extends [DeepReadonlyArray<object>] ? (FilterObjects<[C][0], T> & FindObject<[C][0], T> & Insert<[C][0], T> & RemoveAll<T> & PatchAll<[C][0], T> & ReplaceAll<[C][0], T> & UpsertMatching<[C][0], T>) :
+  [C] extends [DeepReadonlyArray<any>] ? (FilterPrimitives<[C][0], T> & FindPrimitive<[C][0], T> & Insert<[C][0], T> & RemoveAll<T> & ReplaceAll<[C][0], T>) :
+  [C] extends [number] ? (Replace<C, T> & Increment<T>) :
+  [C] extends [object] ? (Patch<C, T> & DeepMerge<C, T> & Replace<C, T>) : Replace<C, T>)
   & StoreWhichIsResettable<C, T>;
 
 /**
@@ -723,6 +270,97 @@ export type Augmentations = {
   async: <C>(fnReturningFutureAugmentation: () => any) => Promise<C>;
 }
 
+/**
+ * Whether updates to the store requires tags or not
+ */
+export type Trackability = 'tagged' | 'untagged';
+
+/**
+ * Whether this predicate is for a filter() or a find()
+ */
+export type FindOrFilter = 'find' | 'filter';
+
+/**
+ * An object which can be unsubscribed from
+ */
+export interface Unsubscribable {
+  /**
+   * Unsubscribes from this listener thereby preventing a memory leak.
+   */
+  unsubscribe: () => any,
+}
+
+/**
+ * An array which cannot be mutated
+ */
+export interface DeepReadonlyArray<T> extends ReadonlyArray<DeepReadonly<T>> {
+}
+
+/**
+ * An object which cannot be mutated
+ */
+export type DeepReadonlyObject<T> = {
+  readonly [P in keyof T]: DeepReadonly<T[P]>;
+};
+
+/**
+ * An object or an array which cannot be mutated
+ */
+export type DeepReadonly<T> =
+  T extends (infer R)[] ? DeepReadonlyArray<R> :
+  T extends object ? DeepReadonlyObject<T> :
+  T;
+
+/**
+ * Un-does the work done by the DeepReadonly type. In other words, this makes an object wrapped with DeepReadonly mutable.
+ */
+export type DeepWritable<E> =
+  E extends (string | number | boolean) ? E :
+  E extends DeepReadonlyArray<infer R> ? Array<R> :
+  E extends DeepReadonlyObject<infer R> ? R :
+  never;
+
+export interface Async<C> {
+}
+
+export type AnyAsync<C> = Async<C> | Promise<C>;
+
+export type ActionOptions<T extends Trackability> = T extends 'untagged' ? (TaggedUpdate<'untagged'> | void) : TaggedUpdate<'tagged'>;
+
+export type UpdateOptions<T extends Trackability, H> = T extends 'untagged' ? (TaggedUpdate<'untagged'> & PromisableUpdate<H> | void) : TaggedUpdate<'tagged'> & PromisableUpdate<H>;
+
+export type InsertOptions<T extends Trackability, H> = UpdateOptions<T, H> & (UpdateAtIndex | void);
+
+export type UpdateAtIndex = {
+  /**
+   * The index where new elements should be inserted.  
+   * The default insertion behavior is that new elements will be appended to the end of the existing array
+   */
+  atIndex?: number
+};
+
+export type PromisableUpdate<H> = H extends () => AnyAsync<any> ? {
+  /**
+   * Avoid unnecessary promise invocations by supplying the number of milliseconds that should elapse before the promise is invoked again.
+   * To un-do this, you can call `invalidateCache()` on the node of the state tree, for example
+   * @example
+   * select(s => s.todos).invalidateCache();
+   * @example
+   * select(s => s.todos).find(s => s.id).eq(2).invalidateCache();
+   */
+  cacheFor?: number;
+  /**
+   * Allows you to set an initial value to update the store with.
+   * If the promise is rejected, this value will be reverted to what it was before the promise was invoked.
+   * @example
+   * const newUsername = 'Jeff';
+   * select(s => s.username)
+   *   .replace(() => updateUsernameOnApi(newUsername), { optimisticallyUpdateWith: newUsername })
+   *   .catch(err => notifyUserOfError(err))
+   */
+  optimisticallyUpdateWith?: H extends () => AnyAsync<infer W> ? W : never,
+} : {};
+
 export type FutureState<C> = {
   isLoading: boolean,
   wasRejected: boolean,
@@ -742,7 +380,536 @@ export interface Future<C> {
   getFutureState: () => FutureState<C>,
 }
 
-export interface Async<C> {
+export interface And<X extends DeepReadonlyArray<any>, F extends FindOrFilter, T extends Trackability> {
+  /**
+   * Append more criteria with which to find/filter the array
+   * @param getProp a function which selects the array element property to compare
+   * @example
+   * select(s => s.todos)
+   *  .and(e => e.status).eq('todo')
+   *  ...
+   */
+  and: X[0] extends object ? <P>(getProp: (element: DeepReadonly<X[0]>) => P) => Predicate<X, P, F, T> : () => Predicate<X, X[0], F, T>,
 }
 
-export type AnyAsync<C> = Async<C> | Promise<C>;
+export interface Or<X extends DeepReadonlyArray<any>, F extends FindOrFilter, T extends Trackability> {
+  /**
+   * Append more criteria with which to find/filter the array
+   * @param getProp a function which selects the array element property to compare
+   * @example
+   * select(s => s.todos)
+   *  .or(t => t.status).eq('todo')
+   *  ...
+   */
+  or: X[0] extends object ? <P>(getProp: (element: DeepReadonly<X[0]>) => P) => Predicate<X, P, F, T> : () => Predicate<X, X[0], F, T>,
+}
+
+export interface FilterPrimitives<X extends DeepReadonlyArray<any>, T extends Trackability> {
+  /**
+   * Specify a where clause to find many elements.
+   * @example
+   * ```
+   * select(s => s.todos)
+   *  .filter().eq('done')
+   *  ...
+   * ```
+   */
+  filter: PredicateFunctionPrimitive<X, 'filter', T>,
+}
+
+export interface FindPrimitive<X extends DeepReadonlyArray<any>, T extends Trackability> {
+  /**
+   * Specify a where clause to find one element.  
+   * @example
+   * select(s => s.todos)
+   *  .find().eq(3)
+   *  ...
+   */
+  find: PredicateFunctionPrimitive<X, 'find', T>,
+}
+
+export interface FilterObjects<X extends DeepReadonlyArray<any>, T extends Trackability> {
+  /**
+   * Specify a where clause to find 0 or more array elements.
+   * @example
+   * ```
+   * select(s => s.todos)
+   *   .filter(t => t.status).eq('done')
+   *   ...
+   * ```
+   */
+  filter: PredicateFunctionObject<X, 'filter', T>,
+}
+
+export interface FindObject<X extends DeepReadonlyArray<any>, T extends Trackability> {
+  /**
+   * Specify a where clause to find precisely one array element.  
+   * @example
+   * select(s => s.todos)
+   *  .find(t => t.id).eq(3)
+   *  ...
+   */
+  find: PredicateFunctionObject<X, 'find', T>,
+}
+
+export interface UpsertMatching<X extends DeepReadonlyArray<any>, T extends Trackability> {
+  /**
+   * Insert element(s) into the store array (if they do not already exist) or update them (if they do)
+   * @example
+   * select(s => s.users)
+   *  .upsertMatching(s => s.id) // get the property that uniquely identifies each array element
+   *  .with(elementOrArrayOfElements) // pass in an element or array of elements to be upserted
+   * ...
+   */
+  upsertMatching: <P>(getProp: (element: DeepReadonly<X[0]>) => P) => {
+    with: <H extends X | (X[0] | X | (() => AnyAsync<X | X[0]>)) >(elementOrArray: H, options: UpdateOptions<T, H>) => H extends (() => AnyAsync<any>) ? Future<X> : void,
+  };
+}
+
+export interface Insert<X extends DeepReadonlyArray<any>, T extends Trackability> {
+  /**
+   * Add one or more elements into the existing array
+   * @example
+   * select(s => s.todos)
+   *  .insert(newTodo);
+   * @example
+   * select(s => s.todos)
+   *  .insert(newArrayOfTodos);
+   * @example
+   * select(s => s.todos)
+   *  .insert(() => getTodosFromApi())
+   * @example
+   * select(s => s.todos)
+   *  .insert(newArrayOfTodos, { atIndex: 0 });
+   */
+  insert: <H extends (X | X[0] | (() => AnyAsync<X | X[0]>)) >(insertion: H, options: InsertOptions<T, H>) => H extends (() => AnyAsync<any>) ? Future<X> : void,
+}
+
+export interface ReplaceObjectElements<X extends DeepReadonlyArray<any>, T extends Trackability> {
+  /**
+   * Replaces the selected elements
+   * @example
+   * select(s => s.todos)
+   *  .filter(s => s.status).eq('done')
+   *  .replace({ id: 1, text: 'bake cookies' })
+   */
+  replace: <H extends X[0] | (() => AnyAsync<X[0]>) >(replacement: H, options: UpdateOptions<T, H>) => H extends (() => AnyAsync<X[0]>) ? Future<X> : void,
+}
+
+export interface ReplacePrimitiveElements<X extends DeepReadonlyArray<any>, F extends FindOrFilter, T extends Trackability> {
+  /**
+   * Replaces the selected elements
+   * @example
+   * select(s => s.numbers)
+   *  .filter().gt(3)
+   *  .replace(0)
+   */
+  replace: <H extends X[0] | (() => AnyAsync<X[0]>) >(replacement: H, options: UpdateOptions<T, H>) => H extends (() => AnyAsync<X[0]>) ? Future<F extends 'find' ? X[0] : X> : void,
+}
+
+export interface ReplacePrimitiveElement<C, T extends Trackability> {
+  /**
+   * Replaces the selected element(s)
+   * @example
+   * select(s => s.numbers)
+   *  .find().eq(3)
+   *  .replace(6)
+   */
+  replace: <H extends C | (() => AnyAsync<C>) >(replacement: H, options: UpdateOptions<T, H>) => H extends (() => AnyAsync<C>) ? Future<C> : void,
+}
+
+export interface ReplaceObjectElement<C, T extends Trackability> {
+  /**
+   * Replaces the selected element(s)
+   * @example
+   * select(s => s.todos)
+   *  .find(s => s.id).eq(3)
+   *  .replace({ id: 1, title: 'bake cookies' })
+   */
+  replace: <H extends C | (() => AnyAsync<C>) >(replacement: H, options: UpdateOptions<T, H>) => H extends (() => AnyAsync<C>) ? Future<C> : void,
+}
+
+export interface Replace<C, T extends Trackability> {
+  /**
+   * Substitutes this primitive value
+   * @example
+   * select(s => s.user.age).replace(33);
+   */
+  replace: <H extends C | (() => AnyAsync<C>) >(replacement: H, options: UpdateOptions<T, H>) => H extends (() => AnyAsync<any>) ? Future<C> : void,
+}
+
+export interface ReplaceAll<X extends DeepReadonlyArray<any>, T extends Trackability> {
+  /**
+  * Substitute all existing elements with a new array of elements
+  * @example
+  * select(s => s.todos)
+  *   .replaceAll(newTodos);
+  */
+  replaceAll: <H extends X | (() => AnyAsync<X>) >(replacement: H, options: UpdateOptions<T, H>) => H extends (() => AnyAsync<X>) ? Future<X> : void,
+}
+
+export interface RemoveObjectElement<T extends Trackability> {
+  /**
+   * Removes the element that was found in the `find()` clause
+   * @example
+   * select(s => s.todos)
+   *  .find(s => s.id).eq(3)
+   *  .remove()
+   */
+  remove(asyncRemover: () => AnyAsync<any>, options: ActionOptions<T>): Future<any>;
+  remove(options: ActionOptions<T>): void;
+}
+
+export interface RemovePrimitiveElement<T extends Trackability> {
+  /**
+   * Removes the element that was found in the `find()` clause
+   * @example
+   * select(s => s.numbers)
+   *  .find().eq(3)
+   *  .remove()
+   */
+  remove(asyncRemover: () => AnyAsync<any>, options: ActionOptions<T>): Future<any>;
+  remove(options: ActionOptions<T>): void;
+}
+
+export interface RemoveAll<T extends Trackability> {
+  /**
+  * Removes all elements from the existing array
+  * @example
+  * select(s => s.todos)
+  *  .removeAll();
+  */
+  removeAll(asyncRemover: () => AnyAsync<any>, options: ActionOptions<T>): Future<any>;
+  removeAll(options: ActionOptions<T>): void;
+}
+
+export interface RemoveAllObjectElements<T extends Trackability> {
+  /**
+  * Removes all elements from the existing array
+  * @example
+  * select(s => s.todos)
+  *  .filter(s => s.status).eq('done')
+  *  .removeAll();
+  */
+  removeAll(asyncRemover: () => AnyAsync<any>, options: ActionOptions<T>): Future<any>;
+  removeAll(options: ActionOptions<T>): void;
+}
+
+export interface RemoveAllPrimitiveElements<T extends Trackability> {
+  /**
+  * Removes all elements from the existing array
+  * @example
+  * select(s => s.numbers)
+  *  .filter().gt(3)
+  *  .removeAll();
+  */
+  removeAll(asyncRemover: () => AnyAsync<any>, options: ActionOptions<T>): Future<any>;
+  removeAll(options: ActionOptions<T>): void;
+}
+
+export interface Increment<T extends Trackability> {
+  /**
+   * Increment the value by the specified amount
+   * @example
+   * select(s => s.user.age)
+   *  .increment(1);
+   */
+  increment: <H extends number | (() => AnyAsync<number>) >(incrementBy: H, options: UpdateOptions<T, H>) => H extends (() => AnyAsync<any>) ? Future<number> : void,
+}
+
+export interface OnChange<X extends DeepReadonlyArray<any>, F extends FindOrFilter> {
+  /**
+   * Will be called any time the selected node changes.
+   * @example
+   * const subscription = select(s => s.todos)
+   *  .onChange(value => console.log(value));
+   * 
+   * // don't forget to unsubscribe to prevent a memory leak
+   * subscription.unsubscribe(); 
+   */
+  onChange: (listener: (state: DeepReadonly<F extends 'find' ? X[0] : X>) => void) => Unsubscribable;
+}
+
+export interface OnChangeObjectElements<X extends DeepReadonlyArray<any>> {
+  /**
+   * Will be called any time the selected node changes.
+   * @example
+   * const subscription = select(s => s.todos)
+   *  .filter(s => s.status).eq('done')
+   *  .onChange(value => console.log(value));
+   * 
+   * // don't forget to unsubscribe to prevent a memory leak
+   * subscription.unsubscribe(); 
+   */
+  onChange: (listener: (state: DeepReadonly<X>) => void) => Unsubscribable;
+}
+
+export interface OnChangePrimitiveElements<X extends DeepReadonlyArray<any>> {
+  /**
+   * Will be called any time the selected node changes.
+   * @example
+   * const subscription = select(s => s.numbers)
+   *  .filter().gt(3)
+   *  .onChange(value => console.log(value));
+   * 
+   * // don't forget to unsubscribe to prevent a memory leak
+   * subscription.unsubscribe(); 
+   */
+  onChange: (listener: (state: DeepReadonly<X>) => void) => Unsubscribable;
+}
+
+export interface OnChangeObjectElement<C> {
+  /**
+   * Will be called any time the selected node changes.
+   * @example
+   * const subscription = select(s => s.todos)
+   *  .find(s => s.id).eq(3)
+   *  .onChange(value => console.log(value));
+   * 
+   * // don't forget to unsubscribe to prevent a memory leak
+   * subscription.unsubscribe(); 
+   */
+  onChange: (listener: (state: DeepReadonly<C>) => void) => Unsubscribable;
+}
+
+export interface OnChangePrimitiveElement<C> {
+  /**
+   * Will be called any time the selected node changes.
+   * @example
+   * const subscription = select(s => s.numbers)
+   *  .find().eq(3)
+   *  .onChange(value => console.log(value));
+   * 
+   * // don't forget to unsubscribe to prevent a memory leak
+   * subscription.unsubscribe(); 
+   */
+  onChange: (listener: (state: DeepReadonly<C>) => void) => Unsubscribable;
+}
+
+export interface Read<X extends DeepReadonlyArray<any>, F extends FindOrFilter> {
+  /**
+   * Returns the current value of the selected node.
+   */
+  read: () => DeepReadonly<F extends 'find' ? X[0] : X>;
+}
+
+export interface InvalidateCache {
+  /**
+   * Ensures that fresh data is retrieved the next time any promises are used to populate this node of the state tree.
+   */
+  invalidateCache: () => void,
+}
+
+export interface PatchAllElements<X extends DeepReadonlyArray<any>, F extends FindOrFilter, T extends Trackability> {
+  /**
+   * Partially updates each selected array element allowing you to omit those properties which should not change
+   * @param patch the partially filled object to be used as a patch
+   * @param updateOptions
+   * @example
+   * select(s => s.todos)
+   *  .patch({ done: true })
+   */
+  patchAll: <H extends Partial<X[0]> | (() => AnyAsync<Partial<X[0]>>) >(patch: H, options: UpdateOptions<T, H>) => H extends (() => AnyAsync<any>) ? Future<F extends 'find' ? H : H[]> : void,
+}
+
+export interface PatchAll<X extends DeepReadonlyArray<any>, T extends Trackability> {
+  /**
+   * ...
+   */
+  patchAll: <H extends Partial<X[0]> | (() => AnyAsync<Partial<X[0]>>) >(patch: H, options: UpdateOptions<T, H>) => H extends (() => AnyAsync<any>) ? Future<H[]> : void,
+}
+
+export interface Patch<C, T extends Trackability> {
+  /**
+   * Partially updates this object
+   * @example
+   * select(s => s.user)
+   *  .patch({ firstName: 'James', age: 33 })
+   */
+  patch: <H extends (Partial<C> | (() => AnyAsync<Partial<C>>)) >(partial: H, options: UpdateOptions<T, H>) => H extends (() => AnyAsync<Partial<C>>) ? Future<C> : void,
+};
+
+export interface PatchElement<C, T extends Trackability> {
+  /**
+   * Partially updates this object
+   * @example
+   * select(s => s.todos)
+   *  .find(s => s.id).eq(3)
+   *  .patch({ status: 'done', priority: 1 })
+   */
+  patch: <H extends (Partial<C> | (() => AnyAsync<Partial<C>>)) >(partial: H, options: UpdateOptions<T, H>) => H extends (() => AnyAsync<Partial<C>>) ? Future<C> : void,
+};
+
+export interface DeepMerge<C, T extends Trackability> {
+  /**
+   * Deep-merges the existing object with the supplied object.
+   * This is similar to `patch()` insofar that it partially updates the selected object, but dissimilar to `patch()` insofar as the object passed in may be arbitrarily deep.
+   * @example
+   * select(s => s.user)
+   *  .deepMerge({ lastName: 'Brown', employeeProfile: { company: 'Google' } });
+   */
+  deepMerge: <K extends Partial<C>, H extends K | (() => AnyAsync<K>) >(state: H, options: UpdateOptions<T, H>) => H extends (() => AnyAsync<C>) ? Future<C> : void,
+};
+
+export interface DeepMergeElement<C, T extends Trackability> {
+  /**
+   * Deep-merges the existing object with the supplied object.
+   * This is similar to `patch()` insofar that it partially updates the selected object, but dissimilar to `patch()` insofar as the object passed in may be arbitrarily deep.
+   * @example
+   * select(s => s.todos)
+   *  .find(s => s.id).eq(3)
+   *  .deepMerge({ status: 'done', relatedTodoIds: [1, 2, 3] });
+   */
+  deepMerge: <K extends Partial<C>, H extends K | (() => AnyAsync<K>) >(state: H, options: UpdateOptions<T, H>) => H extends (() => AnyAsync<C>) ? Future<C> : void,
+};
+
+export interface Eq<X extends DeepReadonlyArray<any>, P, F extends FindOrFilter, T extends Trackability> {
+  /**
+   * Searches for array element(s) where the previously selected property **equals** the supplied value
+   * @example
+   * select(s => s.todos)
+   *  .find(s => s.id).eq(1)
+   * ...
+   */
+  eq: (value: P) => PredicateAction<X, F, T>,
+}
+
+export interface Ne<X extends DeepReadonlyArray<any>, P, F extends FindOrFilter, T extends Trackability> {
+  /**
+   * Searches for array element(s) where the previously selected property **does not equal** the supplied value
+   * @example
+   * select(s => s.todos)
+   *  .filter(s => s.priority).ne(1)
+   * ...
+   */
+  ne: (value: P) => PredicateAction<X, F, T>,
+}
+
+export interface In<X extends DeepReadonlyArray<any>, P, F extends FindOrFilter, T extends Trackability> {
+  /**
+   * Searches for array element(s) where the previously selected property **is in** the supplied array
+   * @example
+   * select(s => s.todos)
+   *  .filter(s => s.priority).in([1, 2])
+   * ...
+   */
+  in: (value: P[]) => PredicateAction<X, F, T>,
+}
+
+export interface Ni<X extends DeepReadonlyArray<any>, P, F extends FindOrFilter, T extends Trackability> {
+  /**
+   * Searches for array element(s) where the previously selected property **is not in** the supplied array
+   * @example
+   * select(s => s.todos)
+   *  .filter(s => s.priority).ni([1, 2])
+   * ...
+   */
+  ni: (value: P[]) => PredicateAction<X, F, T>,
+}
+
+export interface Gt<X extends DeepReadonlyArray<any>, E, F extends FindOrFilter, T extends Trackability> {
+  /**
+   * Searches for array element(s) where the previously selected property **is greater than** the supplied value
+   * @example
+   * select(s => s.todos)
+   *  .filter(s => s.priority).gt(2)
+   * ...
+   */
+  gt: (value: E) => PredicateAction<X, F, T>,
+}
+
+export interface Gte<X extends DeepReadonlyArray<any>, E, F extends FindOrFilter, T extends Trackability> {
+  /**
+   * Searches for array element(s) where the previously selected property **is greater than or equal to** the supplied value
+   * @example
+   * select(s => s.todos)
+   *  .filter(s => s.priority).gte(2)
+   * ...
+   */
+  gte: (value: E) => PredicateAction<X, F, T>,
+}
+
+export interface Lt<X extends DeepReadonlyArray<any>, E, F extends FindOrFilter, T extends Trackability> {
+  /**
+   * Searches for array element(s) where the previously selected property **is less than** the supplied value
+   * @example
+   * select(s => s.todos)
+   *  .filter(s => s.priority).lt(2)
+   * ...
+   */
+  lt: (value: E) => PredicateAction<X, F, T>,
+}
+
+export interface Lte<X extends DeepReadonlyArray<any>, E, F extends FindOrFilter, T extends Trackability> {
+  /**
+   * Searches for array element(s) where the previously selected property **is less than or equal to** the supplied value
+   * @example
+   * select(s => s.todos)
+   *  .filter(s => s.priority).lte(2)
+   *  ...
+   */
+  lte: (value: E) => PredicateAction<X, F, T>,
+}
+
+export interface Match<X extends DeepReadonlyArray<any>, F extends FindOrFilter, T extends Trackability> {
+  /**
+   * Searches for array element(s) where the previously selected property **matches** the supplied regular expression
+   * @param pattern any regular expression
+   * @example
+   * select(s => s.todos)
+   *  .filter(s => s.title).match(/^hello/)
+   *  ...
+   */
+  match: (pattern: RegExp) => PredicateAction<X, F, T>,
+}
+
+
+export type TaggedUpdate<T extends Trackability> = T extends 'untagged' ? {
+  /**
+   * Any string which may be used to identify the origin of a state update.    
+   * 
+   * This tag is optional because your store was initialized using `store()` instead of `storeEnforcingTags()`.
+   *   
+   * If, when initializing your store, you passed `actionTypesToIncludeTag: true` inside the options object, then your tag will appear in the action payload as follows:
+   * ```
+   * {
+   *   type: 'some.value.replace()',
+   *   tag: 'YourTag'
+   *   ...
+   * }
+   * ```
+   * If, when initializing your store, you did not pass `actionTypesToIncludeTag: true` inside the options object, then your tag will appear as a suffix to the action type, for example:  
+   * ```
+   * {
+   *   type: 'some.value.replace() [YourTag]',
+   *   ...
+   * }
+   * ```
+   */
+  tag?: string
+} : {
+  /**
+   * Any string which may be used to identify the origin of a state update.  
+   * 
+   * This tag is required because your store was initialized using `storeEnforcingTags()` instead of `store()`.    
+   *   
+   * If, when initializing your store, you passed `actionTypesToIncludeTag: true` inside the options object, then your tag will appear in the action payload as follows:
+   * ```
+   * {
+   *   type: 'some.value.replace()',
+   *   tag: 'YourTag'
+   *   ...
+   * }
+   * ```
+   * If, when initializing your store, you did not pass `actionTypesToIncludeTag: true` inside the options object, then your tag will appear as a suffix to the action type, for example:  
+   * ```
+   * {
+   *   type: 'some.value.replace() [YourTag]',
+   *   ...
+   * }
+   * ```
+   */
+  tag: string
+}
+
+

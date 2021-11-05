@@ -3,15 +3,19 @@ import {
   AnyAsync,
   DeepReadonly,
   Selector,
-  StoreForAnArrayCommon,
-  StoreForAnArrayOfObjects,
-  StoreForAnObject,
-  StoreForANumber,
   StoreOrDerivation,
   StoreWhichIsResettable,
   Trackability,
   UpdateAtIndex,
   UpdateOptions,
+  ReplaceAll,
+  Patch,
+  Increment,
+  DeepMerge,
+  Insert,
+  RemoveAll,
+  PatchAll,
+  UpsertMatching,
 } from './shapes-external';
 import { CoreActionsState, StoreState } from './shapes-internal';
 import { deepCopy, isEmpty, readSelector, validateSelectorFn } from './shared-utils';
@@ -43,7 +47,7 @@ export const replaceAll = <S, C, X extends C & Array<any>, T extends Trackabilit
   context: CoreActionsState<S, C, X>,
 ) => (
   (replacement, updateOptions) => replace({ ...context, name: 'replaceAll' })(replacement as X, updateOptions as UpdateOptions<T, any>)
-) as StoreForAnArrayCommon<X, T>['replaceAll'];
+) as ReplaceAll<X, T>['replaceAll'];
 
 export const patchAll = <S, C, X extends C & Array<any>, T extends Trackability>(
   arg: CoreActionsState<S, C, X>,
@@ -57,7 +61,7 @@ export const patchAll = <S, C, X extends C & Array<any>, T extends Trackability>
     replacer: (old, argument) => old.map(o => ({ ...o, ...argument })),
     getPayload: payload => ({ patch: payload }),
   });
-}) as StoreForAnArrayCommon<X, T>['patchAll'];
+}) as PatchAll<X, T>['patchAll'];
 
 export const removeAll = <S, C, X extends C & Array<any>, T extends Trackability>(
   arg: CoreActionsState<S, C, X>,
@@ -73,7 +77,7 @@ export const removeAll = <S, C, X extends C & Array<any>, T extends Trackability
     getPayload: () => null,
     replacer: () => [],
   });
-}) as StoreForAnArrayCommon<X, T>['removeAll'];
+}) as RemoveAll<T>['removeAll'];
 
 export const insertIntoArray = <S, C, X extends C & Array<any>, T extends Trackability>(
   arg: CoreActionsState<S, C, X>,
@@ -92,7 +96,7 @@ export const insertIntoArray = <S, C, X extends C & Array<any>, T extends Tracka
       ? { insertion: payload, atIndex: updateOptions.atIndex }
       : { insertion: payload },
   });
-}) as StoreForAnArrayCommon<X, T>['insert'];
+}) as Insert<X, T>['insert'];
 
 export const patch = <S, C, X extends C & Array<any>, T extends Trackability>(
   arg: CoreActionsState<S, C, X>,
@@ -106,7 +110,7 @@ export const patch = <S, C, X extends C & Array<any>, T extends Trackability>(
     replacer: (old, payload) => ({ ...old, ...payload }),
     getPayload: payload => ({ patch: payload })
   });
-}) as StoreForAnObject<C, T>['patch'];
+}) as Patch<C, T>['patch'];
 
 export const increment = <S, C, X extends C & Array<any>, T extends Trackability>(
   arg: CoreActionsState<S, C, X>,
@@ -120,7 +124,7 @@ export const increment = <S, C, X extends C & Array<any>, T extends Trackability
     replacer: (old, payload) => (old as any as number) + (payload as any as number),
     getPayload: payload => ({ incrementBy: payload }),
   });
-}) as StoreForANumber<T>['increment'];
+}) as Increment<T>['increment'];
 
 export const deepMerge = <S, C, X extends C & Array<any>, T extends Trackability>(
   arg: CoreActionsState<S, C, X>,
@@ -159,7 +163,7 @@ export const deepMerge = <S, C, X extends C & Array<any>, T extends Trackability
       toMerge: payload,
     }),
   });
-}) as StoreForAnObject<C, T>['deepMerge'];
+}) as DeepMerge<C, T>['deepMerge'];
 
 export const upsertMatching = <S, C, X extends C & Array<any>, T extends Trackability>(
   arg: CoreActionsState<S, C, X>
@@ -199,7 +203,7 @@ export const upsertMatching = <S, C, X extends C & Array<any>, T extends Trackab
       });
     }
   };
-}) as StoreForAnArrayOfObjects<X, T>['upsertMatching'];
+}) as UpsertMatching<X, T>['upsertMatching'];
 
 export const remove = <S, C, X extends C & Array<any>, T extends Trackability>(
   arg: CoreActionsState<S, C, X>,

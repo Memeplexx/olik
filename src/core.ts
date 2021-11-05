@@ -80,33 +80,45 @@ export function createStoreCore<S, T extends ShapesExt.Trackability>({
             and: array.and(context),
             or: array.or(context),
             replace: array.replace(context),
-            patch: array.patch(context),
-            remove: array.remove(context),
+            patch: array.patchOrPatchAll(context),
+            patchAll: array.patchOrPatchAll(context),
+            remove: array.removeOrRemoveAll(context),
+            removeAll: array.removeOrRemoveAll(context),
             onChange: array.onChange(context),
             read: array.read(context),
             invalidateCache: () => array.invalidateCache(context),
-          } as ShapesExt.ArrayOfObjectsAction<X, ShapesExt.FindOrFilter, T>;
-          Object.keys(augmentations.selection).forEach(name => (arrayActions as any)[name] = augmentations.selection[name](arrayActions as ShapesExt.StoreOrDerivation<C>));
+          } as ShapesExt.And<X, ShapesExt.FindOrFilter, T>
+            & ShapesExt.Or<X, ShapesExt.FindOrFilter, T>
+            & ShapesExt.ReplaceObjectElements<X, T>
+            & ShapesExt.PatchAllElements<X, ShapesExt.FindOrFilter, T>
+            & ShapesExt.RemoveObjectElement<T>
+            & ShapesExt.RemoveAll<T>
+            & ShapesExt.OnChange<X, ShapesExt.FindOrFilter>
+            & ShapesExt.Read<X, ShapesExt.FindOrFilter>
+            & ShapesExt.InvalidateCache;
+          Object.keys(augmentations.selection).forEach(name => (arrayActions as any)[name] = augmentations.selection[name](arrayActions as any));
           return arrayActions;
         };
         return {
-          ...{
-            eq: val => constructActions('eq', val, e => e === val),
-            ne: val => constructActions('ne', val, e => e !== val),
-            in: val => constructActions('in', val, e => val.includes(e)),
-            ni: val => constructActions('ni', val, e => !val.includes(e)),
-          } as ShapesExt.PredicateOptionsCommon<X, any, ShapesExt.FindOrFilter, T>,
-          ...{
-            gt: val => constructActions('gt', val, e => e > val),
-            lt: val => constructActions('lt', val, e => e < val),
-            gte: val => constructActions('gte', val, e => e >= val),
-            lte: val => constructActions('lte', val, e => e <= val),
-          } as ShapesExt.PredicateOptionsForNumber<X, any, ShapesExt.FindOrFilter, T>,
-          ...{
-            match: val => constructActions('match', val, e => e.match(val)),
-          } as ShapesExt.PredicateOptionsForString<X, any, ShapesExt.FindOrFilter, T>,
-        };
-      }) as ShapesExt.StoreForAnArrayOfObjects<X, T>['filter'];
+          eq: val => constructActions('eq', val, e => e === val),
+          ne: val => constructActions('ne', val, e => e !== val),
+          in: val => constructActions('in', val, e => val.includes(e)),
+          ni: val => constructActions('ni', val, e => !val.includes(e)),
+          gt: val => constructActions('gt', val, e => e > val),
+          lt: val => constructActions('lt', val, e => e < val),
+          gte: val => constructActions('gte', val, e => e >= val),
+          lte: val => constructActions('lte', val, e => e <= val),
+          match: val => constructActions('match', val, e => e.match(val)),
+        } as ShapesExt.Eq<X, any, ShapesExt.FindOrFilter, T>
+          & ShapesExt.Ne<X, any, ShapesExt.FindOrFilter, T>
+          & ShapesExt.In<X, any, ShapesExt.FindOrFilter, T>
+          & ShapesExt.Ni<X, any, ShapesExt.FindOrFilter, T>
+          & ShapesExt.Gt<X, any, ShapesExt.FindOrFilter, T>
+          & ShapesExt.Gte<X, any, ShapesExt.FindOrFilter, T>
+          & ShapesExt.Lt<X, any, ShapesExt.FindOrFilter, T>
+          & ShapesExt.Lte<X, any, ShapesExt.FindOrFilter, T>
+          & ShapesExt.Match<X, ShapesExt.FindOrFilter, T>;
+      }) as ShapesExt.PredicateFunctionObject<X, ShapesExt.FindOrFilter, T>;
       return recurseWhere;
     };
     const getCoreActionsState = () => ({
@@ -140,14 +152,13 @@ export function createStoreCore<S, T extends ShapesExt.Trackability>({
       ) as ShapesInt.StoreForAComponentInternal<S, C>['defineReset'],
       increment: general.increment(getCoreActionsState()),
       storeState,
-    } as ShapesExt.PredicateCustom<X, ShapesExt.FindOrFilter, T>
-      | ShapesExt.ArrayOfObjectsAction<X, ShapesExt.FindOrFilter, T>
-      | ShapesExt.StoreForAnArrayCommon<X, T>
-      | ShapesExt.StoreForAnObject<C, T>
+    } as ShapesExt.RemovePrimitiveElement<T>
+      | ShapesExt.RemoveObjectElement<T>
+      | ShapesExt.DeepMergeElement<C, T>
+      | ShapesExt.RemoveAll<T>
+      | ShapesExt.Patch<C, T>
       | ShapesInt.StoreForAComponentInternal<S, C>
-      | ShapesExt.StoreForAnArrayOfObjects<X, T>
-      | ShapesInt.StoreWhichMayContainComponentStores<S, C, T>
-      | ShapesExt.StoreForANumber<T>;
+      | ShapesInt.StoreWhichMayContainComponentStores<S, C, T>;
     Object.keys(augmentations.selection).forEach(name => (coreActions as any)[name] = augmentations.selection[name](coreActions as ShapesExt.StoreOrDerivation<C>));
     return coreActions;
   };

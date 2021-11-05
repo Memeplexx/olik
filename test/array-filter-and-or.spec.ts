@@ -22,9 +22,9 @@ describe('array.filter().and().or()', () => {
     select(s => s.array)
       .filter(s => s.id).eq(2)
       .and(s => s.value).eq('two')
-      .remove();
+      .removeAll();
     expect(testState.currentAction).toEqual({
-      type: `array.filter(id).eq(2).and(value).eq(two).remove()`,
+      type: `array.filter(id).eq(2).and(value).eq(two).removeAll()`,
       toRemove: [initialState.array[1]],
       where: [
         { 'id.eq': 2 },
@@ -39,9 +39,9 @@ describe('array.filter().and().or()', () => {
     select(s => s.array)
       .filter(s => s.id).eq(1)
       .or(s => s.value).eq('two')
-      .remove();
+      .removeAll();
     expect(testState.currentAction).toEqual({
-      type: `array.filter(id).eq(1).or(value).eq(two).remove()`,
+      type: `array.filter(id).eq(1).or(value).eq(two).removeAll()`,
       toRemove: [initialState.array[0], initialState.array[1]],
       where: [
         { 'id.eq': 1 },
@@ -56,9 +56,9 @@ describe('array.filter().and().or()', () => {
     select(s => s.array)
       .filter(s => s.id).eq(1)
       .and(s => s.id).eq(2)
-      .remove();
+      .removeAll();
     expect(testState.currentAction).toEqual({
-      type: `array.filter(id).eq(1).and(id).eq(2).remove()`,
+      type: `array.filter(id).eq(1).and(id).eq(2).removeAll()`,
       toRemove: [],
       where: [
         { 'id.eq': 1 },
@@ -74,9 +74,9 @@ describe('array.filter().and().or()', () => {
       .filter(e => e.id).eq(1)
       .and(e => e.id).eq(2)
       .or(e => e.id).eq(3)
-      .remove();
+      .removeAll();
     expect(testState.currentAction).toEqual({
-      type: `array.filter(id).eq(1).and(id).eq(2).or(id).eq(3).remove()`,
+      type: `array.filter(id).eq(1).and(id).eq(2).or(id).eq(3).removeAll()`,
       toRemove: [initialState.array[2]],
       where: [
         { 'id.eq': 1 },
@@ -93,9 +93,9 @@ describe('array.filter().and().or()', () => {
       .filter(e => e.id).eq(4)
       .or(e => e.id).eq(3)
       .and(e => e.value).eq('three')
-      .remove();
+      .removeAll();
     expect(testState.currentAction).toEqual({
-      type: `array.filter(id).eq(4).or(id).eq(3).and(value).eq(three).remove()`,
+      type: `array.filter(id).eq(4).or(id).eq(3).and(value).eq(three).removeAll()`,
       toRemove: [initialState.array[2]],
       where: [
         { 'id.eq': 4 },
@@ -113,9 +113,9 @@ describe('array.filter().and().or()', () => {
       .and(e => e.value).eq('one')
       .or(e => e.id).eq(3)
       .and(e => e.value).eq('three')
-      .remove();
+      .removeAll();
     expect(testState.currentAction).toEqual({
-      type: `array.filter(id).eq(1).and(value).eq(one).or(id).eq(3).and(value).eq(three).remove()`,
+      type: `array.filter(id).eq(1).and(value).eq(one).or(id).eq(3).and(value).eq(three).removeAll()`,
       toRemove: [initialState.array[0], initialState.array[2]],
       where: [
         { 'id.eq': 1 },

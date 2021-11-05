@@ -270,14 +270,14 @@ describe('async', () => {
     const payload = { value: 'twooo' };
     const res = await select(s => s.array)
       .filter(s => s.id).eq(2)
-      .patch(() => new Promise(resolve => setTimeout(() => resolve(payload), 10)), { cacheFor: 1000 })
+      .patchAll(() => new Promise(resolve => setTimeout(() => resolve(payload), 10)), { cacheFor: 1000 })
       .asPromise()
     expect(res).toEqual(select().read().array.filter(e => e.id === 2));
     expect(select().read().array).toEqual([initialState.array[0], { ...initialState.array[1], ...payload }, initialState.array[2]]);
     const payload2 = { value: 'twoooz' };
     await select(s => s.array)
       .filter(s => s.id).eq(2)
-      .patch(() => new Promise(resolve => setTimeout(() => resolve(payload2), 10)))
+      .patchAll(() => new Promise(resolve => setTimeout(() => resolve(payload2), 10)))
       .asPromise()
     expect(select().read().array).toEqual([initialState.array[0], { ...initialState.array[1], ...payload }, initialState.array[2]]);
     select(s => s.array)
@@ -285,7 +285,7 @@ describe('async', () => {
       .invalidateCache();
     await select(s => s.array)
       .filter(s => s.id).eq(2)
-      .patch(() => new Promise(resolve => setTimeout(() => resolve(payload2), 10)))
+      .patchAll(() => new Promise(resolve => setTimeout(() => resolve(payload2), 10)))
       .asPromise()
     expect(select().read().array).toEqual([initialState.array[0], { ...initialState.array[1], ...payload2 }, initialState.array[2]]);
     done();
@@ -295,7 +295,7 @@ describe('async', () => {
     const select = createApplicationStore(initialState);
     const res = await select(s => s.array)
       .filter(s => s.id).eq(2)
-      .remove(() => new Promise(resolve => setTimeout(() => resolve(null), 10))).asPromise()
+      .removeAll(() => new Promise(resolve => setTimeout(() => resolve(null), 10))).asPromise()
     expect(res).toEqual([]);
     expect(select().read().array).toEqual([initialState.array[0], initialState.array[2]]);
     done();
