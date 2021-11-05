@@ -170,39 +170,41 @@ export const upsertMatching = <S, C, X extends C & Array<any>, T extends Trackab
   arg: CoreActionsState<S, C, X>
 ) => (getProp => {
   validateSelector(arg);
-  return {
-    with: (argument, updateOptions) => {
-      validateSelector(arg);
-      const segs = !getProp ? [] : readSelector(getProp);
-      let replacementCount = 0;
-      let insertionCount = 0;
-      return processStateUpdateRequest({
-        ...arg,
-        updateOptions,
-        actionNameSuffix: `upsertMatching(${segs.join('.')}).with()`,
+  const fn = (type: 'One' | 'Many') => ((argument, updateOptions) => {
+    validateSelector(arg);
+    const segs = !getProp ? [] : readSelector(getProp);
+    let replacementCount = 0;
+    let insertionCount = 0;
+    return processStateUpdateRequest({
+      ...arg,
+      updateOptions,
+      actionNameSuffix: `upsertMatching(${segs.join('.')}).with${type}()`,
+      argument,
+      getPayload: () => null,
+      getPayloadFn: () => ({
         argument,
-        getPayload: () => null,
-        getPayloadFn: () => ({
-          argument,
-          replacementCount,
-          insertionCount,
-        }),
-        replacer: (old, payload) => {
-          const payloadFrozenArray: X[0][] = Array.isArray(payload) ? payload : [payload];
-          const replacements = old.map(oe => {
-            const found = payloadFrozenArray.find(ne => !getProp ? oe === ne : getProp(oe) === getProp(ne));
-            if (found !== null && found !== undefined) { replacementCount++; }
-            return found || oe;
-          });
-          const insertions = payloadFrozenArray.filter(ne => !old.some(oe => !getProp ? oe === ne : getProp(oe) === getProp(ne)));
-          insertionCount = insertions.length;
-          return [
-            ...replacements,
-            ...insertions
-          ];
-        },
-      });
-    }
+        replacementCount,
+        insertionCount,
+      }),
+      replacer: (old, payload) => {
+        const payloadFrozenArray: X[0][] = Array.isArray(payload) ? payload : [payload];
+        const replacements = old.map(oe => {
+          const found = payloadFrozenArray.find(ne => !getProp ? oe === ne : getProp(oe) === getProp(ne));
+          if (found !== null && found !== undefined) { replacementCount++; }
+          return found || oe;
+        });
+        const insertions = payloadFrozenArray.filter(ne => !old.some(oe => !getProp ? oe === ne : getProp(oe) === getProp(ne)));
+        insertionCount = insertions.length;
+        return [
+          ...replacements,
+          ...insertions
+        ];
+      },
+    });
+  }) as ReturnType<UpsertMatching<X, T>['upsertMatching']>['withMany']
+  return {
+    withOne: fn('One'),
+    withMany: fn('Many'),
   };
 }) as UpsertMatching<X, T>['upsertMatching'];
 

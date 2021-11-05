@@ -458,11 +458,16 @@ export interface UpsertMatching<X extends DeepReadonlyArray<any>, T extends Trac
    * @example
    * select(s => s.users)
    *  .upsertMatching(s => s.id) // get the property that uniquely identifies each array element
-   *  .with(elementOrArrayOfElements) // pass in an element or array of elements to be upserted
-   * ...
+   *  .withOne(element) // pass in an element to be upserted
+   * 
+   * @example
+   * select(s => s.users)
+   *  .upsertMatching(s => s.id) // get the property that uniquely identifies each array element
+   *  .withMany(element) // pass in the elements to be upserted
    */
   upsertMatching: <P>(getProp: (element: DeepReadonly<X[0]>) => P) => {
-    with: <H extends X | (X[0] | X | (() => AnyAsync<X | X[0]>)) >(elementOrArray: H, options: UpdateOptions<T, H>) => H extends (() => AnyAsync<any>) ? Future<X> : void,
+    withOne: <H extends (X[0] | (() => AnyAsync<X[0]>)) >(element: H, options: UpdateOptions<T, H>) => H extends (() => AnyAsync<any>) ? Future<X[0]> : void,
+    withMany: <H extends (X | (() => AnyAsync<X>)) >(array: H, options: UpdateOptions<T, H>) => H extends (() => AnyAsync<any>) ? Future<X> : void,
   };
 }
 

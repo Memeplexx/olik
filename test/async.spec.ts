@@ -152,25 +152,25 @@ describe('async', () => {
     done();
   })
 
-  it('should work with upsertMatching()', async done => {
+  it('should work with upsertMatching().withOne()', async done => {
     const select = createApplicationStore(initialState);
     const payload = { id: 1, value: 'test' };
     const res = await select(s => s.array)
       .upsertMatching(s => s.id)
-      .with(() => new Promise(resolve => setTimeout(() => resolve(payload), 10)), { cacheFor: 1000 })
+      .withOne(() => new Promise(resolve => setTimeout(() => resolve(payload), 10)), { cacheFor: 1000 })
       .asPromise()
     expect(res).toEqual(select().read().array);
     expect(select().read().array).toEqual([payload, initialState.array[1], initialState.array[2]]);
     const payload2 = { id: 1, value: 'testt' };
     await select(s => s.array)
       .upsertMatching(s => s.id)
-      .with(() => new Promise(resolve => setTimeout(() => resolve(payload2), 10)))
+      .withOne(() => new Promise(resolve => setTimeout(() => resolve(payload2), 10)))
       .asPromise()
     expect(select().read().array).toEqual([payload, initialState.array[1], initialState.array[2]]);
     select(s => s.array).invalidateCache();
     await select(s => s.array)
       .upsertMatching(s => s.id)
-      .with(() => new Promise(resolve => setTimeout(() => resolve(payload2), 10)))
+      .withOne(() => new Promise(resolve => setTimeout(() => resolve(payload2), 10)))
       .asPromise()
     expect(select().read().array).toEqual([payload2, initialState.array[1], initialState.array[2]]);
     done();

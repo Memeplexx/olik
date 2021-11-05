@@ -112,14 +112,14 @@ describe('array', () => {
     expect(select().read().array).toEqual([initialState.array[0], ...payload, initialState.array[1], initialState.array[2]]);
   })
 
-  it('should be able to upsertMatching() with multiple elements, replacing and inserting', () => {
+  it('should be able to upsertMatching().withMany() with multiple elements, replacing and inserting', () => {
     const select = createApplicationStore(initialState);
     const payload = [{ id: 2, value: 'twoo' }, { id: 3, value: 'threee' }, { id: 4, value: 'four' }];
     select(s => s.array)
       .upsertMatching(s => s.id)
-      .with(payload);
+      .withMany(payload);
     expect(testState.currentAction).toEqual({
-      type: 'array.upsertMatching(id).with()',
+      type: 'array.upsertMatching(id).withMany()',
       argument: payload,
       replacementCount: 2,
       insertionCount: 1,
@@ -127,14 +127,14 @@ describe('array', () => {
     expect(select().read().array).toEqual([{ id: 1, value: 'one' }, { id: 2, value: 'twoo' }, { id: 3, value: 'threee' }, { id: 4, value: 'four' }]);
   });
 
-  it('should upsertMatching() with one element replacing', () => {
+  it('should upsertMatching().withOne() with one element replacing', () => {
     const select = createApplicationStore(initialState);
     const payload = { id: 2, value: 'two updated' };
     select(s => s.array)
       .upsertMatching(s => s.id)
-      .with(payload);
+      .withOne(payload);
     expect(testState.currentAction).toEqual({
-      type: 'array.upsertMatching(id).with()',
+      type: 'array.upsertMatching(id).withOne()',
       argument: payload,
       insertionCount: 0,
       replacementCount: 1,
@@ -142,14 +142,14 @@ describe('array', () => {
     expect(select().read().array).toEqual([initialState.array[0], payload, initialState.array[2]]);
   });
 
-  it('should upsertMatching() with one element inserting', () => {
+  it('should upsertMatching().withOne() with one element inserting', () => {
     const select = createApplicationStore(initialState);
     const payload = { id: 4, value: 'four inserted' };
     select(s => s.array)
       .upsertMatching(s => s.id)
-      .with(payload);
+      .withOne(payload);
     expect(testState.currentAction).toEqual({
-      type: 'array.upsertMatching(id).with()',
+      type: 'array.upsertMatching(id).withOne()',
       argument: payload,
       insertionCount: 1,
       replacementCount: 0,
