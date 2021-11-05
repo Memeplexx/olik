@@ -112,7 +112,7 @@ describe('Component stores', () => {
     const componentName = 'myComp';
     const instanceName = '0';
     const component = createComponentStore(new Array<string>(), { componentName, instanceName });
-    component().insert('test');
+    component().insertOne('test');
     expect(select().read()).toEqual({ test: '', components: { [componentName]: { 0: ['test'] } } });
   })
 
@@ -205,7 +205,7 @@ describe('Component stores', () => {
     const parent = createApplicationStore({ test: '' });
     parent(s => s.test).replace('test');
     const component = createComponentStore({ array: new Array<string>() }, { componentName: 'test', instanceName: '0' });
-    component(s => s.array).insert('test');
+    component(s => s.array).insertOne('test');
     expect(parent().read()).toEqual({ test: 'test', components: { test: { '0': { array: ['test'] } } } });
     component(s => s.array).reset();
     expect(parent().read()).toEqual({ test: 'test', components: { test: { '0': { array: [] } } } });

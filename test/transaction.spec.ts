@@ -18,21 +18,21 @@ describe('Transact', () => {
     select().onChange(s => changeCount++);
     transact(
       () => select(s => s.hello).replace('test'),
-      () => select(s => s.world).insert('hey'),
+      () => select(s => s.world).insertOne('hey'),
       () => select(s => s.some.deep.val).replace(true),
     );
     expect(changeCount).toEqual(1);
     const expectedState = { hello: 'test', world: ['hey'], some: { deep: { val: true } } };
     expect(select().read()).toEqual(expectedState);
     expect(testState.currentAction).toEqual({
-      type: 'hello.replace(), world.insert(), some.deep.val.replace()',
+      type: 'hello.replace(), world.insertOne(), some.deep.val.replace()',
       actions: [
         {
           type: 'hello.replace()',
           replacement: 'test',
         },
         {
-          type: 'world.insert()',
+          type: 'world.insertOne()',
           insertion: 'hey',
         },
         {

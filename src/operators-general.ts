@@ -12,7 +12,8 @@ import {
   Patch,
   Increment,
   DeepMerge,
-  Insert,
+  InsertOne,
+  InsertMany,
   RemoveAll,
   PatchAll,
   UpsertMatching,
@@ -80,13 +81,13 @@ export const removeAll = <S, C, X extends C & Array<any>, T extends Trackability
 }) as RemoveAll<T>['removeAll'];
 
 export const insertIntoArray = <S, C, X extends C & Array<any>, T extends Trackability>(
-  arg: CoreActionsState<S, C, X>,
+  arg: CoreActionsState<S, C, X> & { type: 'One' | 'Many' },
 ) => ((argument, updateOptions: UpdateAtIndex = {}) => {
   validateSelector(arg);
   return processStateUpdateRequest<S, C, X>({
     ...arg,
     updateOptions,
-    actionNameSuffix: `insert()`,
+    actionNameSuffix: `insert${arg.type}()`,
     argument,
     replacer: (old, payload) => {
       const input = deepCopy(Array.isArray(payload) ? payload : [payload]);
@@ -96,7 +97,7 @@ export const insertIntoArray = <S, C, X extends C & Array<any>, T extends Tracka
       ? { insertion: payload, atIndex: updateOptions.atIndex }
       : { insertion: payload },
   });
-}) as Insert<X, T>['insert'];
+}) as InsertOne<X, T>['insertOne'] | InsertMany<X, T>['insertMany'];
 
 export const patch = <S, C, X extends C & Array<any>, T extends Trackability>(
   arg: CoreActionsState<S, C, X>,

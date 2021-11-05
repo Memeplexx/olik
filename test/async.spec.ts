@@ -80,22 +80,22 @@ describe('async', () => {
     done();
   })
 
-  it('should work with insert()', async done => {
+  it('should work with insertOne()', async done => {
     const select = createApplicationStore(initialState);
     const payload = { id: 1, value: 'test' };
     const res = await select(s => s.array)
-      .insert(resolve(payload), { cacheFor: 1000 })
+      .insertOne(resolve(payload), { cacheFor: 1000 })
       .asPromise();
     expect(res).toEqual(select().read().array);
     expect(select().read().array).toEqual([...initialState.array, payload]);
     const payload2 = { id: 1, value: 'testy' };
     await select(s => s.array)
-      .insert(resolve(payload2))
+      .insertOne(resolve(payload2))
       .asPromise();
     expect(select().read().array).toEqual([...initialState.array, payload]);
     select(s => s.array).invalidateCache();
     await select(s => s.array)
-      .insert(resolve(payload2))
+      .insertOne(resolve(payload2))
       .asPromise();
     expect(select().read().array).toEqual([...initialState.array, payload, payload2]);
     done();

@@ -35,12 +35,12 @@ describe('Root', () => {
     })
   })
 
-  it('array.insert()', () => {
+  it('array.insertMany()', () => {
     const select = createApplicationStore(new Array<{ id: number, text: string }>());
     const payload = [{ id: 1, text: 'hello' }];
-    select().insert(payload);
+    select().insertMany(payload);
     expect(testState.currentAction).toEqual({
-      type: 'insert()',
+      type: 'insertMany()',
       insertion: payload,
     })
     expect(select().read()).toEqual([{ id: 1, text: 'hello' }]);
@@ -118,11 +118,11 @@ describe('Root', () => {
     expect(select().read()).toEqual(['one', 'twoo', 'three']);
   })
 
-  it('insert()', () => {
+  it('insertOne()', () => {
     const select = createApplicationStore(['one']);
-    select().insert('two');
+    select().insertOne('two');
     expect(testState.currentAction).toEqual({
-      type: 'insert()',
+      type: 'insertOne()',
       insertion: 'two'
     });
     expect(select().read()).toEqual(['one', 'two']);

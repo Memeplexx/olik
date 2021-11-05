@@ -4,7 +4,7 @@ export type PredicateAction<X extends DeepReadonlyArray<any>, F extends FindOrFi
     : (PatchAllElements<X, F, T> & ReplaceObjectElements<X[0], T> & RemoveAllObjectElements<T> & OnChangeObjectElements<X> & InvalidateCache & Read<X, F> & And<X, F, T> & Or<X, F, T>))
   : (F extends 'find'
     ? (ReplacePrimitiveElement<X[0], T> & RemovePrimitiveElement<T> & OnChangePrimitiveElement<X> & InvalidateCache & Read<X, F> & And<X, F, T> & Or<X, F, T>)
-    : (ReplacePrimitiveElements<X[0], F, T> & RemoveAllPrimitiveElements<T> & OnChangePrimitiveElements<X> & InvalidateCache & Read<X, F> & And<X, F, T> & Or<X, F, T>));
+    : (ReplacePrimitiveElements<X[0], T> & RemoveAllPrimitiveElements<T> & OnChangePrimitiveElements<X> & InvalidateCache & Read<X, F> & And<X, F, T> & Or<X, F, T>));
 
 /**
  * Query options
@@ -78,8 +78,8 @@ export type StoreWhichAllowsRemoving<T extends Trackability> = {
  * An object which is capable of managing states of various shapes
  */
 export type Store<C, T extends Trackability> = ([C] extends undefined ? any :
-  [C] extends [DeepReadonlyArray<object>] ? (FilterObjects<[C][0], T> & FindObject<[C][0], T> & Insert<[C][0], T> & RemoveAll<T> & PatchAll<[C][0], T> & ReplaceAll<[C][0], T> & UpsertMatching<[C][0], T>) :
-  [C] extends [DeepReadonlyArray<any>] ? (FilterPrimitives<[C][0], T> & FindPrimitive<[C][0], T> & Insert<[C][0], T> & RemoveAll<T> & ReplaceAll<[C][0], T>) :
+  [C] extends [DeepReadonlyArray<object>] ? (FilterObjects<[C][0], T> & FindObject<[C][0], T> & InsertOne<C[0], T> & InsertMany<C, T> & RemoveAll<T> & PatchAll<[C][0], T> & ReplaceAll<[C][0], T> & UpsertMatching<[C][0], T>) :
+  [C] extends [DeepReadonlyArray<any>] ? (FilterPrimitives<[C][0], T> & FindPrimitive<[C][0], T> & InsertOne<C[0], T> & InsertMany<C, T> & RemoveAll<T> & ReplaceAll<[C][0], T>) :
   [C] extends [number] ? (Replace<C, T> & Increment<T>) :
   [C] extends [object] ? (Patch<C, T> & DeepMerge<C, T> & Replace<C, T>) : Replace<C, T>)
   & StoreWhichIsResettable<C, T>;
@@ -466,12 +466,25 @@ export interface UpsertMatching<X extends DeepReadonlyArray<any>, T extends Trac
   };
 }
 
-export interface Insert<X extends DeepReadonlyArray<any>, T extends Trackability> {
+export interface InsertOne<C, T extends Trackability> {
   /**
    * Add one or more elements into the existing array
    * @example
    * select(s => s.todos)
    *  .insert(newTodo);
+   * @example
+   * select(s => s.todos)
+   *  .insert(() => getTodoFromApi())
+   * @example
+   * select(s => s.todos)
+   *  .insert(todo, { atIndex: 5 });
+   */
+  insertOne: <H extends (C | (() => AnyAsync<C>)) >(insertion: H, options: InsertOptions<T, H>) => H extends (() => AnyAsync<any>) ? Future<C> : void,
+}
+
+export interface InsertMany<X extends DeepReadonlyArray<any>, T extends Trackability> {
+  /**
+   * Add one or more elements into the existing array
    * @example
    * select(s => s.todos)
    *  .insert(newArrayOfTodos);
@@ -480,9 +493,9 @@ export interface Insert<X extends DeepReadonlyArray<any>, T extends Trackability
    *  .insert(() => getTodosFromApi())
    * @example
    * select(s => s.todos)
-   *  .insert(newArrayOfTodos, { atIndex: 0 });
+   *  .insert(todos, { atIndex: 5 });
    */
-  insert: <H extends (X | X[0] | (() => AnyAsync<X | X[0]>)) >(insertion: H, options: InsertOptions<T, H>) => H extends (() => AnyAsync<any>) ? Future<X> : void,
+  insertMany: <H extends (X | (() => AnyAsync<X>)) >(insertion: H, options: InsertOptions<T, H>) => H extends (() => AnyAsync<any>) ? Future<X> : void,
 }
 
 export interface ReplaceObjectElements<X extends DeepReadonlyArray<any>, T extends Trackability> {
@@ -496,7 +509,7 @@ export interface ReplaceObjectElements<X extends DeepReadonlyArray<any>, T exten
   replace: <H extends X[0] | (() => AnyAsync<X[0]>) >(replacement: H, options: UpdateOptions<T, H>) => H extends (() => AnyAsync<X[0]>) ? Future<X> : void,
 }
 
-export interface ReplacePrimitiveElements<X extends DeepReadonlyArray<any>, F extends FindOrFilter, T extends Trackability> {
+export interface ReplacePrimitiveElements<X extends DeepReadonlyArray<any>, T extends Trackability> {
   /**
    * Replaces the selected elements
    * @example
@@ -504,7 +517,7 @@ export interface ReplacePrimitiveElements<X extends DeepReadonlyArray<any>, F ex
    *  .filter().gt(3)
    *  .replace(0)
    */
-  replace: <H extends X[0] | (() => AnyAsync<X[0]>) >(replacement: H, options: UpdateOptions<T, H>) => H extends (() => AnyAsync<X[0]>) ? Future<F extends 'find' ? X[0] : X> : void,
+  replace: <H extends X[0] | (() => AnyAsync<X[0]>) >(replacement: H, options: UpdateOptions<T, H>) => H extends (() => AnyAsync<X[0]>) ? Future<X> : void,
 }
 
 export interface ReplacePrimitiveElement<C, T extends Trackability> {

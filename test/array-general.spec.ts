@@ -62,50 +62,50 @@ describe('array', () => {
     expect(select().read().array).toEqual(initialState.array);
   });
 
-  it('should insert() one', () => {
+  it('should insertOne()', () => {
     const select = createApplicationStore(initialState);
     const payload = { id: 4, value: 'four' };
     select(s => s.array)
-      .insert(payload);
+      .insertOne(payload);
     expect(testState.currentAction).toEqual({
-      type: 'array.insert()',
+      type: 'array.insertOne()',
       insertion: payload,
     });
     expect(select().read().array).toEqual([...initialState.array, payload]);
   })
 
-  it('should insert() one at index', () => {
+  it('should insertOne() one at index', () => {
     const select = createApplicationStore(initialState);
     const payload = { id: 4, value: 'four' };
     select(s => s.array)
-      .insert(payload, { atIndex: 1 });
+      .insertOne(payload, { atIndex: 1 });
     expect(testState.currentAction).toEqual({
-      type: 'array.insert()',
+      type: 'array.insertOne()',
       insertion: payload,
       atIndex: 1
     });
     expect(select().read().array).toEqual([initialState.array[0], payload, initialState.array[1], initialState.array[2]]);
   })
 
-  it('should insert() many', () => {
+  it('should insertMany()', () => {
     const select = createApplicationStore(initialState);
     const payload = [{ id: 4, value: 'four' }, { id: 5, value: 'five' }];
     select(s => s.array)
-      .insert(payload);
+      .insertMany(payload);
     expect(testState.currentAction).toEqual({
-      type: 'array.insert()',
+      type: 'array.insertMany()',
       insertion: payload,
     });
     expect(select().read().array).toEqual([...initialState.array, ...payload]);
   })
 
-  it('should insert() many at index', () => {
+  it('should insertMany() at index', () => {
     const select = createApplicationStore(initialState);
     const payload = [{ id: 4, value: 'four' }, { id: 5, value: 'five' }];
     select(s => s.array)
-      .insert(payload, { atIndex: 1 });
+      .insertMany(payload, { atIndex: 1 });
     expect(testState.currentAction).toEqual({
-      type: 'array.insert()',
+      type: 'array.insertMany()',
       insertion: payload,
       atIndex: 1
     });
