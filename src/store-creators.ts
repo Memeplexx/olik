@@ -111,7 +111,7 @@ function createApplicationStoreInternal<S, T extends Trackability>(
   options: OptionsForCreatingInternalApplicationStore,
 ) {
   if (!options.replaceExistingStoreIfItExists && libState.applicationStore) {
-    libState.applicationStore().deepMerge(state);
+    (libState.applicationStore() as any).deepMerge(state);
     return libState.applicationStore;
   }
   const select = createStoreCore<S, T>({
