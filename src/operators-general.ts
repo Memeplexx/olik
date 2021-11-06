@@ -11,7 +11,6 @@ import {
   ReplaceAll,
   Patch,
   Increment,
-  DeepMerge,
   InsertOne,
   InsertMany,
   RemoveAll,
@@ -19,7 +18,7 @@ import {
   UpsertMatching,
 } from './shapes-external';
 import { CoreActionsState, StoreState } from './shapes-internal';
-import { deepCopy, isEmpty, readSelector, validateSelectorFn } from './shared-utils';
+import { deepCopy, isEmpty, readSelector, validateSelectorFn, deepMerge } from './shared-utils';
 import { processStateUpdateRequest } from './store-updaters';
 import { transact } from './transact';
 
@@ -99,17 +98,17 @@ export const insertIntoArray = <S, C, X extends C & Array<any>, T extends Tracka
   });
 }) as InsertOne<X, T>['insertOne'] | InsertMany<X, T>['insertMany'];
 
-export const patch = <S, C, X extends C & Array<any>, T extends Trackability>(
-  arg: CoreActionsState<S, C, X>,
+export const patchOrDeepMerge = <S, C, X extends C & Array<any>, T extends Trackability>(
+  arg: CoreActionsState<S, C, X> & { type: 'patch' | 'deepMerge' },
 ) => ((argument, updateOptions) => {
   validateSelector(arg);
   return processStateUpdateRequest({
     ...arg,
     argument,
     updateOptions,
-    actionNameSuffix: `patch()`,
-    replacer: (old, payload) => ({ ...old, ...payload }),
-    getPayload: payload => ({ patch: payload })
+    actionNameSuffix: `${arg.type}()`,
+    replacer: (old, payload) => arg.type === 'patch' ? ({ ...old, ...payload }) : deepMerge(old, payload),
+    getPayload: payload => ({ [arg.type === 'patch' ? 'patch' : 'toMerge']: payload })
   });
 }) as Patch<C, T>['patch'];
 
@@ -126,45 +125,6 @@ export const increment = <S, C, X extends C & Array<any>, T extends Trackability
     getPayload: payload => ({ incrementBy: payload }),
   });
 }) as Increment<T>['increment'];
-
-export const deepMerge = <S, C, X extends C & Array<any>, T extends Trackability>(
-  arg: CoreActionsState<S, C, X>,
-) => ((
-  argument: C | (() => Promise<C>),
-  updateOptions: UpdateOptions<T, any>,
-) => {
-  validateSelector(arg);
-  return processStateUpdateRequest({
-    ...arg,
-    argument,
-    updateOptions,
-    actionNameSuffix: `deepMerge()`,
-    replacer: (old, payload) => {
-      const isObject = (item: any) => (item && typeof item === 'object' && !Array.isArray(item));
-      const mergeDeep = (target: any, source: any) => {
-        let output = Object.assign({}, target);
-        if (isObject(target) && isObject(source)) {
-          Object.keys(source).forEach(key => {
-            if (isObject(source[key])) {
-              if (!(key in target)) {
-                Object.assign(output, { [key]: source[key] });
-              } else {
-                output[key] = mergeDeep(target[key], source[key]);
-              }
-            } else {
-              Object.assign(output, { [key]: source[key] });
-            }
-          });
-        }
-        return output;
-      }
-      return mergeDeep(old, payload);
-    },
-    getPayload: payload => ({
-      toMerge: payload,
-    }),
-  });
-}) as DeepMerge<C, T>['deepMerge'];
 
 export const upsertMatching = <S, C, X extends C & Array<any>, T extends Trackability>(
   arg: CoreActionsState<S, C, X>

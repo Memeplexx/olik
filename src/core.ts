@@ -79,9 +79,11 @@ export function createStoreCore<S, T extends ShapesExt.Trackability>({
           const arrayActions = {
             and: array.and(context),
             or: array.or(context),
-            replace: array.replace(context),
-            patch: array.patchOrPatchAll(context),
-            patchAll: array.patchOrPatchAll(context),
+            replace: array.replaceOrReplaceAll({ ...context, replaceAll: false }),
+            replaceAll: array.replaceOrReplaceAll({ ...context, replaceAll: true }),
+            patch: array.patchOrPatchAllOrDeepMerge({ ...context, deepMerge: false }),
+            patchAll: array.patchOrPatchAllOrDeepMerge({ ...context, deepMerge: false }),
+            deepMerge: array.patchOrPatchAllOrDeepMerge({ ...context, deepMerge: true }),
             remove: array.removeOrRemoveAll(context),
             removeAll: array.removeOrRemoveAll(context),
             onChange: array.onChange(context),
@@ -132,8 +134,8 @@ export function createStoreCore<S, T extends ShapesExt.Trackability>({
     } as ShapesInt.CoreActionsState<S, C, X>)
     const coreActions = {
       remove: general.remove(getCoreActionsState()),
-      deepMerge: general.deepMerge(getCoreActionsState()),
-      patch: general.patch(getCoreActionsState()),
+      deepMerge: general.patchOrDeepMerge({ ...getCoreActionsState(), type: 'deepMerge' }),
+      patch: general.patchOrDeepMerge({ ...getCoreActionsState(), type: 'patch' }),
       insertOne: general.insertIntoArray({ ...getCoreActionsState(), type: 'One' }),
       insertMany: general.insertIntoArray({ ...getCoreActionsState(), type: 'Many' }),
       removeAll: general.removeAll(getCoreActionsState()),

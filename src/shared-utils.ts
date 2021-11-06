@@ -107,6 +107,28 @@ export function readSelector(selector: (state: any) => any) {
   return pathSegments;
 }
 
+export const deepMerge = (old: any, payload: any) => {
+  const isObject = (item: any) => (item && typeof item === 'object' && !Array.isArray(item));
+  const mergeDeep = (target: any, source: any) => {
+    let output = Object.assign({}, target);
+    if (isObject(target) && isObject(source)) {
+      Object.keys(source).forEach(key => {
+        if (isObject(source[key])) {
+          if (!(key in target)) {
+            Object.assign(output, { [key]: source[key] });
+          } else {
+            output[key] = mergeDeep(target[key], source[key]);
+          }
+        } else {
+          Object.assign(output, { [key]: source[key] });
+        }
+      });
+    }
+    return output;
+  }
+  return mergeDeep(old, payload);
+}
+
 export const validateSelectorFn = (
   functionName: 'select' | 'getProp',
   storeState: StoreState<any>,

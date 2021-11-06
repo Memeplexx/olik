@@ -15,7 +15,7 @@ import {
 } from './shapes-external';
 import { ArrayOperatorState } from './shapes-internal';
 import { errorMessages } from './shared-consts';
-import { readSelector } from './shared-utils';
+import { readSelector, deepMerge } from './shared-utils';
 import { processStateUpdateRequest } from './store-updaters';
 import { transact } from './transact';
 
@@ -54,34 +54,34 @@ export const removeOrRemoveAll = <S, C, X extends C & Array<any>, F extends Find
       toRemove: (arg.selector(arg.getCurrentState()) as X)[arg.type]((e, i) => elementIndices.includes(i)),
     };
   },
-})) as RemoveObjectElement<T>['remove'] | RemoveAll<T>;
+})) as RemoveObjectElement<T>['remove'] | RemoveAll<T>['removeAll'];
 
-export const patchOrPatchAll = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
-  arg: ArrayOperatorState<S, C, X, F, T>,
+export const patchOrPatchAllOrDeepMerge = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
+  arg: ArrayOperatorState<S, C, X, F, T> & { deepMerge: boolean },
 ) => ((argument, updateOptions) => processStateUpdateRequest({
   ...arg,
   selector: ((s: any) => (arg.selector(s) as any)[arg.type]((e: any) => bundleCriteria(e, arg.whereClauseSpecs))) as any,
   argument,
   updateOptions,
-  actionNameSuffix: `${arg.type}(${completeWhereClause(arg)}).patch${arg.type === 'filter' ? 'All' : ''}()`,
+  actionNameSuffix: `${arg.type}(${completeWhereClause(arg)}).${arg.deepMerge ? 'deepMerge' : 'patch'}${arg.type === 'filter' ? 'All' : ''}()`,
   replacer: (old, argument) => {
     const elementIndices = getElementIndices(arg);
-    return old.map((o, i) => elementIndices.includes(i) ? { ...o, ...argument } : o);
+    return old.map((o, i) => elementIndices.includes(i) ? (arg.deepMerge ? deepMerge(o, argument) : { ...o, ...argument }) : o);
   },
   getPayload: payload => ({
     where: arg.payloadWhereClauses,
-    patch: payload,
+    [arg.deepMerge ? 'toMerge' : 'patch']: payload,
   })
 })) as PatchAllElements<X, F, T>['patchAll'] | Patch<X[0], T>['patch'];
 
-export const replace = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
-  arg: ArrayOperatorState<S, C, X, F, T>,
+export const replaceOrReplaceAll = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
+  arg: ArrayOperatorState<S, C, X, F, T> & { replaceAll: boolean },
 ) => ((argument, updateOptions) => processStateUpdateRequest<S, C, X>({
   ...arg,
   selector: ((s: any) => (arg.selector(s) as any)[arg.type]((e: any) => bundleCriteria(e, arg.whereClauseSpecs))) as any,
   argument,
   updateOptions,
-  actionNameSuffix: `${arg.type}(${completeWhereClause(arg)}).replace()`,
+  actionNameSuffix: `${arg.type}(${completeWhereClause(arg)}).replace${arg.replaceAll ? 'All' : ''}()`,
   replacer: (old, argument) => {
     const elementIndices = getElementIndices(arg);
     return old.map((o, i) => elementIndices.includes(i) ? argument : o);
@@ -90,7 +90,7 @@ export const replace = <S, C, X extends C & Array<any>, F extends FindOrFilter, 
     where: arg.payloadWhereClauses,
     replacement: payload,
   }),
-})) as ReplaceObjectElements<X, T>['replace'];
+})) as ReplaceObjectElements<X, T>['replaceAll'];
 
 export const onChange = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
   arg: ArrayOperatorState<S, C, X, F, T>,

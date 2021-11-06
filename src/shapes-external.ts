@@ -1,7 +1,7 @@
 export type PredicateAction<X extends DeepReadonlyArray<any>, F extends FindOrFilter, T extends Trackability> = X[0] extends object
   ? (F extends 'find'
     ? (PatchElement<X[0], T> & DeepMergeElement<X[0], T> & ReplaceObjectElement<X[0], T> & RemoveObjectElement<T> & OnChangeObjectElement<X[0]> & InvalidateCache & Read<X, F> & And<X, F, T> & Or<X, F, T>)
-    : (PatchAllElements<X, F, T> & ReplaceObjectElements<X[0], T> & RemoveAllObjectElements<T> & OnChangeObjectElements<X> & InvalidateCache & Read<X, F> & And<X, F, T> & Or<X, F, T>))
+    : (PatchAllElements<X, F, T> & DeepMergeAllElements<X, T> & ReplaceObjectElements<X[0], T> & RemoveAllObjectElements<T> & OnChangeObjectElements<X> & InvalidateCache & Read<X, F> & And<X, F, T> & Or<X, F, T>))
   : (F extends 'find'
     ? (ReplacePrimitiveElement<X[0], T> & RemovePrimitiveElement<T> & OnChangePrimitiveElement<X> & InvalidateCache & Read<X, F> & And<X, F, T> & Or<X, F, T>)
     : (ReplacePrimitiveElements<X[0], T> & RemoveAllPrimitiveElements<T> & OnChangePrimitiveElements<X> & InvalidateCache & Read<X, F> & And<X, F, T> & Or<X, F, T>));
@@ -511,7 +511,7 @@ export interface ReplaceObjectElements<X extends DeepReadonlyArray<any>, T exten
    *  .filter(s => s.status).eq('done')
    *  .replace({ id: 1, text: 'bake cookies' })
    */
-  replace: <H extends X[0] | (() => AnyAsync<X[0]>) >(replacement: H, options: UpdateOptions<T, H>) => H extends (() => AnyAsync<X[0]>) ? Future<X> : void,
+  replaceAll: <H extends X[0] | (() => AnyAsync<X[0]>) >(replacement: H, options: UpdateOptions<T, H>) => H extends (() => AnyAsync<X[0]>) ? Future<X> : void,
 }
 
 export interface ReplacePrimitiveElements<X extends DeepReadonlyArray<any>, T extends Trackability> {
@@ -771,7 +771,7 @@ export interface DeepMerge<C, T extends Trackability> {
 
 export interface DeepMergeElement<C, T extends Trackability> {
   /**
-   * Deep-merges the existing object with the supplied object.
+   * Deep-merges the selected element with the supplied object.
    * This is similar to `patch()` insofar that it partially updates the selected object, but dissimilar to `patch()` insofar as the object passed in may be arbitrarily deep.
    * @example
    * select(s => s.todos)
@@ -779,6 +779,18 @@ export interface DeepMergeElement<C, T extends Trackability> {
    *  .deepMerge({ status: 'done', relatedTodoIds: [1, 2, 3] });
    */
   deepMerge: <K extends Partial<C>, H extends K | (() => AnyAsync<K>) >(state: H, options: UpdateOptions<T, H>) => H extends (() => AnyAsync<C>) ? Future<C> : void,
+};
+
+export interface DeepMergeAllElements<X extends DeepReadonlyArray<any>, T extends Trackability> {
+  /**
+   * Deep-merges each of the selected elements with the supplied object.
+   * This is similar to `patch()` insofar that it partially updates the selected object, but dissimilar to `patch()` insofar as the object passed in may be arbitrarily deep.
+   * @example
+   * select(s => s.todos)
+   *  .filter(s => s.status).eq('done')
+   *  .deepMerge({ status: 'todo', relatedTodoIds: [1, 2, 3] });
+   */
+  deepMerge: <K extends Partial<X>, H extends K | (() => AnyAsync<K>) >(state: H, options: UpdateOptions<T, H>) => H extends (() => AnyAsync<X>) ? Future<X> : void,
 };
 
 export interface Eq<X extends DeepReadonlyArray<any>, P, F extends FindOrFilter, T extends Trackability> {
