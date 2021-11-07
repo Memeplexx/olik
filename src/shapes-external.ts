@@ -369,7 +369,7 @@ export type FutureState<C> = {
   storeValue: C,
 };
 
-export interface Future<C> {
+export interface Future<C> extends Promise<C> {
   /**
    * Calls the promise you used to update your state
    */
