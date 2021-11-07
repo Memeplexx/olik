@@ -2,7 +2,6 @@ import { Store } from './shapes-external';
 import { StoreState, WindowAugmentedWithReduxDevtools } from './shapes-internal';
 import { errorMessages } from './shared-consts';
 import { libState, testState } from './shared-state';
-import { EnhancerOptions } from 'redux-devtools-extension';
 
 export function integrateStoreWithReduxDevtools<S, C = S>(
   arg: {

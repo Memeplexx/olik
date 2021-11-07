@@ -31,7 +31,6 @@
     "test:watch": "cross-env NODE_ENV=test jest --watchAll --verbose false"
   },
   "dependencies": {
-    "redux-devtools-extension": "^2.13.9"
   },
   "devDependencies": {
     "@types/immutable": "^3.8.7",
