@@ -214,7 +214,7 @@ describe.skip('Perf', () => {
     const select = createApplicationStore(['one', 'two']);
     const before = performance.now();
     for (let i = 0; i < 100; i++) {
-      select().insert(['three']);
+      select().insertOne('three');
     }
     console.log(`Olik array push: ${performance.now() - before}`);
   });

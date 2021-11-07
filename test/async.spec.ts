@@ -244,14 +244,14 @@ describe('async', () => {
     const payload = { id: 2, value: 'twooo' };
     const res = await select(s => s.array)
       .filter(s => s.id).eq(2)
-      .replace(() => new Promise(resolve => setTimeout(() => resolve(payload), 10)), { cacheFor: 1000 })
+      .replaceAll(() => new Promise(resolve => setTimeout(() => resolve(payload), 10)), { cacheFor: 1000 })
       .asPromise()
     expect(res).toEqual(select().read().array.filter(e => e.id === 2));
     expect(select().read().array).toEqual([initialState.array[0], payload, initialState.array[2]]);
     const payload2 = { id: 2, value: 'twooo' };
     await select(s => s.array)
       .filter(s => s.id).eq(2)
-      .replace(() => new Promise(resolve => setTimeout(() => resolve(payload2), 10)))
+      .replaceAll(() => new Promise(resolve => setTimeout(() => resolve(payload2), 10)))
       .asPromise()
     expect(select().read().array).toEqual([initialState.array[0], payload, initialState.array[2]]);
     select(s => s.array)
@@ -259,7 +259,7 @@ describe('async', () => {
       .invalidateCache();
     await select(s => s.array)
       .filter(s => s.id).eq(2)
-      .replace(() => new Promise(resolve => setTimeout(() => resolve(payload2), 10)))
+      .replaceAll(() => new Promise(resolve => setTimeout(() => resolve(payload2), 10)))
       .asPromise()
     expect(select().read().array).toEqual([initialState.array[0], payload2, initialState.array[2]]);
     done();
@@ -470,22 +470,22 @@ describe('async', () => {
     select(s => s.array)
       .replaceAll(fetchTodos, { cacheFor: 1000 }).asPromise()
       .then(() => select(s => s.array)
-        .filter(s => s.id).eq(1)
+        .find(s => s.id).eq(1)
         .replace(fetchTodo, { cacheFor: 1000 })
         .asPromise())
       .then(() => select(s => s.array)
         .replaceAll(fetchTodos)
         .asPromise())
       .then(() => select(s => s.array)
-        .filter(s => s.id).eq(1).replace(fetchTodo2)
+        .find(s => s.id).eq(1).replace(fetchTodo2)
         .asPromise())
       .then(() => {
         expect(select().read().array).toEqual([{ id: 1, value: 'testy' }]);
         select(s => s.array)
-          .filter(s => s.id).eq(1)
+          .find(s => s.id).eq(1)
           .invalidateCache();
       }).then(() => select(s => s.array)
-        .filter(s => s.id).eq(1)
+        .find(s => s.id).eq(1)
         .replace(fetchTodo2)
         .asPromise())
       .then(() => {
