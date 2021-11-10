@@ -59,7 +59,7 @@ describe('augmentations', () => {
   it('should be able to augment a future on a core action', done => {
     augment({
       future: {
-        myThing: selection => () => selection.asPromise(),
+        myThing: selection => () => selection,
       }
     })
     const select = createApplicationStore({ num: 42 });
@@ -74,7 +74,7 @@ describe('augmentations', () => {
   it('should be able to augment a future on an array action', done => {
     augment({
       future: {
-        myThing: selection => () => selection.asPromise(),
+        myThing: selection => () => selection,
       }
     })
     const select = createApplicationStore({ array: [42] });
@@ -89,7 +89,7 @@ describe('augmentations', () => {
   it('should be able to augment a future on an array element action', done => {
     augment({
       future: {
-        myThing: selection => () => selection.asPromise(),
+        myThing: selection => () => selection,
       }
     })
     const select = createApplicationStore({ array: [42] });
@@ -111,7 +111,7 @@ describe('augmentations', () => {
       observer.complete();
     });
     const res = select(s => s.thing).replace(fetch as any as () => Promise<string>);
-    res.asPromise().then((r: any) => {
+    res.then((r: any) => {
       done();
     });
   })

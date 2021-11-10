@@ -78,8 +78,8 @@ export type StoreWhichAllowsRemoving<T extends Trackability> = {
  * An object which is capable of managing states of various shapes
  */
 export type Store<C, T extends Trackability> = ([C] extends undefined ? any :
-  [C] extends [DeepReadonlyArray<object>] ? (FilterObjects<[C][0], T> & FindObject<[C][0], T> & InsertOne<C[0], T> & InsertMany<C, T> & RemoveAll<T> & PatchAll<[C][0], T> & ReplaceAll<[C][0], T> & UpsertMatching<[C][0], T>) :
-  [C] extends [DeepReadonlyArray<any>] ? (FilterPrimitives<[C][0], T> & FindPrimitive<[C][0], T> & InsertOne<C[0], T> & InsertMany<C, T> & RemoveAll<T> & ReplaceAll<[C][0], T>) :
+  [C] extends [DeepReadonlyArray<object>] ? (FilterObjects<[C][0], T> & FindObject<[C][0], T> & InsertOne<C, T> & InsertMany<C, T> & RemoveAll<C, T> & PatchAll<[C][0], T> & ReplaceAll<[C][0], T> & UpsertMatching<[C][0], T>) :
+  [C] extends [DeepReadonlyArray<any>] ? (FilterPrimitives<[C][0], T> & FindPrimitive<[C][0], T> & InsertOne<C[0], T> & InsertMany<C, T> & RemoveAll<C, T> & ReplaceAll<[C][0], T>) :
   [C] extends [number] ? (Replace<C, T> & Increment<T>) :
   [C] extends [object] ? (Patch<C, T> & DeepMerge<C, T> & Replace<C, T>) : Replace<C, T>)
   & StoreWhichIsResettable<C, T>;
@@ -369,11 +369,11 @@ export type FutureState<C> = {
   storeValue: C,
 };
 
-export interface Future<C> {
+export interface Future<C> extends Promise<C> {
   /**
    * Calls the promise you used to update your state
    */
-  asPromise: () => Promise<C>;
+  // asPromise: () => Promise<C>;
   /**
    * Gets the current status for the UI to consume
    */
@@ -471,7 +471,7 @@ export interface UpsertMatching<X extends DeepReadonlyArray<any>, T extends Trac
   };
 }
 
-export interface InsertOne<C, T extends Trackability> {
+export interface InsertOne<X extends DeepReadonlyArray<any>, T extends Trackability> {
   /**
    * Add one or more elements into the existing array
    * @example
@@ -484,7 +484,7 @@ export interface InsertOne<C, T extends Trackability> {
    * select(s => s.todos)
    *  .insert(todo, { atIndex: 5 });
    */
-  insertOne: <H extends (C | (() => AnyAsync<C>)) >(insertion: H, options: InsertOptions<T, H>) => H extends (() => AnyAsync<any>) ? Future<C> : void,
+  insertOne: <H extends (X[0] | (() => AnyAsync<X[0]>)) >(insertion: H, options: InsertOptions<T, H>) => H extends (() => AnyAsync<any>) ? Future<X> : void,
 }
 
 export interface InsertMany<X extends DeepReadonlyArray<any>, T extends Trackability> {
@@ -590,14 +590,14 @@ export interface RemovePrimitiveElement<T extends Trackability> {
   remove(options: ActionOptions<T>): void;
 }
 
-export interface RemoveAll<T extends Trackability> {
+export interface RemoveAll<X extends DeepReadonlyArray<any>, T extends Trackability> {
   /**
   * Removes all elements from the existing array
   * @example
   * select(s => s.todos)
   *  .removeAll();
   */
-  removeAll(asyncRemover: () => AnyAsync<any>, options: ActionOptions<T>): Future<any>;
+  removeAll(asyncRemover: () => AnyAsync<any>, options: ActionOptions<T>): Future<X>;
   removeAll(options: ActionOptions<T>): void;
 }
 
@@ -720,21 +720,27 @@ export interface InvalidateCache {
 
 export interface PatchAllElements<X extends DeepReadonlyArray<any>, F extends FindOrFilter, T extends Trackability> {
   /**
-   * Partially updates each selected array element allowing you to omit those properties which should not change
+   * Partially updates each element of the selected array allowing you to omit those properties which should not change
    * @param patch the partially filled object to be used as a patch
    * @param updateOptions
    * @example
    * select(s => s.todos)
-   *  .patch({ done: true })
+   *  .filter(s => s.status).eq('done')
+   *  .patchAll({ done: true })
    */
-  patchAll: <H extends Partial<X[0]> | (() => AnyAsync<Partial<X[0]>>) >(patch: H, options: UpdateOptions<T, H>) => H extends (() => AnyAsync<any>) ? Future<F extends 'find' ? H : H[]> : void,
+  patchAll: <H extends Partial<X[0]> | (() => AnyAsync<Partial<X[0]>>) >(patch: H, options: UpdateOptions<T, H>) => H extends (() => AnyAsync<any>) ? Future<F extends 'find' ? X[0] : X[]> : void,
 }
 
 export interface PatchAll<X extends DeepReadonlyArray<any>, T extends Trackability> {
   /**
-   * ...
+   * Partially updates each element of the selected array allowing you to omit those properties which should not change
+   * @param patch the partially filled object to be used as a patch
+   * @param updateOptions
+   * @example
+   * select(s => s.todos)
+   *  .patchAll({ done: true })
    */
-  patchAll: <H extends Partial<X[0]> | (() => AnyAsync<Partial<X[0]>>) >(patch: H, options: UpdateOptions<T, H>) => H extends (() => AnyAsync<any>) ? Future<H[]> : void,
+  patchAll: <H extends Partial<X[0]> | (() => AnyAsync<Partial<X[0]>>) >(patch: H, options: UpdateOptions<T, H>) => H extends (() => AnyAsync<any>) ? Future<X> : void,
 }
 
 export interface Patch<C, T extends Trackability> {

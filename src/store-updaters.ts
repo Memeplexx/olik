@@ -39,10 +39,23 @@ export const processStateUpdateRequest = <S, C, X extends C & Array<any>>(
     const cacheKey = `${!pathSegments.length ? '' : (pathSegments.join('.') + '.')}${arg.actionNameSuffix}`;
     const expirationDate = (arg.select().read().cache || {})[cacheKey];
     if (expirationDate && (new Date(expirationDate).getTime() > new Date().getTime())) {
-      const result = {
-        asPromise: () => Promise.resolve(arg.select(arg.selector).read()),
-        getFutureState: () => ({ storeValue: arg.select(arg.selector).read(), error: null, wasResolved: true, isLoading: false, wasRejected: false } as FutureState<C>),
-      } as Future<C>;
+      // const result = {
+      //   asPromise: () => Promise.resolve(arg.select(arg.selector).read()),
+      //   getFutureState: () => ({ storeValue: arg.select(arg.selector).read(), error: null, wasResolved: true, isLoading: false, wasRejected: false } as FutureState<C>),
+      // } as Future<C>;
+
+      const result = new Proxy(new Promise<any>(resolve => resolve(arg.select(arg.selector).read())), {
+        get: function (target: any, prop: any) {
+          if (prop === 'then' || prop === 'catch' || prop === 'finally') {
+            const t = Promise.resolve(arg.select(arg.selector).read());
+            return (t as any)[prop].bind(t);
+          } else if (prop === 'getFutureState') {
+            return () => ({ storeValue: arg.select(arg.selector).read(), error: null, wasResolved: true, isLoading: false, wasRejected: false } as FutureState<C>);
+          } else {
+            return (...args: any[]) => target[prop].apply(target, args);
+          }
+        }
+      });
       Object.keys(augmentations.future).forEach(name => (result as any)[name] = augmentations.future[name](result));
       return result;
     }
@@ -91,10 +104,30 @@ export const processStateUpdateRequest = <S, C, X extends C & Array<any>>(
           throw error;
         }).finally(() => delete arg.storeState.activePromises[cacheKey]);
     };
-    const result = {
-      asPromise: () => promiseResult(),
-      getFutureState: () => state,
-    } as Future<C>;
+    // const result = {
+    //   asPromise: () => promiseResult(),
+    //   getFutureState: () => state,
+    // } as Future<C>;
+    let promiseWasChained = false;
+    const result: any = new Proxy(new Promise<any>(resolve => {
+      setTimeout(() => {
+        if (!promiseWasChained) {
+          promiseResult().then((r) => resolve(r));
+        }
+      });
+    }), {
+      get: function (target: any, prop: any) {
+        if (prop === 'then' || prop === 'catch' || prop === 'finally') {
+          promiseWasChained = true;
+          const t = promiseResult();
+          return (t as any)[prop].bind(t);
+        } else if (prop === 'getFutureState') {
+          return () => state;
+        } else {
+          return (...args: any[]) => target[prop].apply(target, args);
+        }
+      }
+    })
     Object.keys(augmentations.future).forEach(name => (result as any)[name] = augmentations.future[name](result));
     return result
   } else {

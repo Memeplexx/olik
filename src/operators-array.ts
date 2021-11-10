@@ -54,7 +54,7 @@ export const removeOrRemoveAll = <S, C, X extends C & Array<any>, F extends Find
       toRemove: (arg.selector(arg.getCurrentState()) as X)[arg.type]((e, i) => elementIndices.includes(i)),
     };
   },
-})) as RemoveObjectElement<T>['remove'] | RemoveAll<T>['removeAll'];
+})) as RemoveObjectElement<T>['remove'] | RemoveAll<X, T>['removeAll'];
 
 export const patchOrPatchAllOrDeepMerge = <S, C, X extends C & Array<any>, F extends FindOrFilter, T extends Trackability>(
   arg: ArrayOperatorState<S, C, X, F, T> & { deepMerge: boolean },

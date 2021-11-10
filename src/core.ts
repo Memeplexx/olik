@@ -94,7 +94,7 @@ export function createStoreCore<S, T extends ShapesExt.Trackability>({
             & ShapesExt.ReplaceObjectElements<X, T>
             & ShapesExt.PatchAllElements<X, ShapesExt.FindOrFilter, T>
             & ShapesExt.RemoveObjectElement<T>
-            & ShapesExt.RemoveAll<T>
+            & ShapesExt.RemoveAll<X, T>
             & ShapesExt.OnChange<X, ShapesExt.FindOrFilter>
             & ShapesExt.Read<X, ShapesExt.FindOrFilter>
             & ShapesExt.InvalidateCache;
@@ -158,7 +158,7 @@ export function createStoreCore<S, T extends ShapesExt.Trackability>({
     } as ShapesExt.RemovePrimitiveElement<T>
       | ShapesExt.RemoveObjectElement<T>
       | ShapesExt.DeepMergeElement<C, T>
-      | ShapesExt.RemoveAll<T>
+      | ShapesExt.RemoveAll<X, T>
       | ShapesExt.Patch<C, T>
       | ShapesInt.StoreForAComponentInternal<S, C>
       | ShapesInt.StoreWhichMayContainComponentStores<S, C, T>;

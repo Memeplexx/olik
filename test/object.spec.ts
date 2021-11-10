@@ -14,6 +14,7 @@ describe('Object', () => {
 
   const initialState = {
     object: { property: 'one', property2: 'two' },
+    array: [{ id: 1, value: 'one' }]
   };
 
   it('should replace()', () => {
@@ -50,8 +51,8 @@ describe('Object', () => {
     select(s => s.object.property)
       .reset();
     expect(select().read().object.property).toEqual('one');
-    select().replace({ object: { property: 'xx', property2: 'yy' } });
-    expect(select().read()).toEqual({ object: { property: 'xx', property2: 'yy' } });
+    select().replace({ object: { property: 'xx', property2: 'yy' }, array: [] });
+    expect(select().read()).toEqual({ object: { property: 'xx', property2: 'yy' }, array: [] });
     select().reset();
     expect(testState.currentAction).toEqual({
       type: 'reset()',
@@ -78,6 +79,22 @@ describe('Object', () => {
       type: 'another.remove()',
     });
     expect(select().read()).toEqual({ hello: 'one', world: 'two' });
+  })
+
+  it('should patchAll()', () => {
+    const select = createApplicationStore(initialState);
+    const payload = [{ id: 2, value: 'two' }, { id: 3, value: 'three' }];
+    select(s => s.array)
+      .replaceAll(payload);
+    expect(select(s => s.array).read()).toEqual(payload);
+  })
+
+  it('should patchAll()', () => {
+    const select = createApplicationStore({ array: [{ id: 2, value: 'two' }, { id: 3, value: 'three' }] });
+    const payload = { value: 'xxx' };
+    select(s => s.array)
+      .patchAll(payload);
+    expect(select(s => s.array).read()).toEqual([{ id: 2, value: 'xxx' }, { id: 3, value: 'xxx' }]);
   })
 
 });

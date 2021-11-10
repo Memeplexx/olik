@@ -77,7 +77,7 @@ export const removeAll = <S, C, X extends C & Array<any>, T extends Trackability
     getPayload: () => null,
     replacer: () => [],
   });
-}) as RemoveAll<T>['removeAll'];
+}) as RemoveAll<X, T>['removeAll'];
 
 export const insertIntoArray = <S, C, X extends C & Array<any>, T extends Trackability>(
   arg: CoreActionsState<S, C, X> & { type: 'One' | 'Many' },
@@ -96,7 +96,7 @@ export const insertIntoArray = <S, C, X extends C & Array<any>, T extends Tracka
       ? { insertion: payload, atIndex: updateOptions.atIndex }
       : { insertion: payload },
   });
-}) as InsertOne<X, T>['insertOne'] | InsertMany<X, T>['insertMany'];
+}) as InsertOne<X, T>['insertOne'];
 
 export const patchOrDeepMerge = <S, C, X extends C & Array<any>, T extends Trackability>(
   arg: CoreActionsState<S, C, X> & { type: 'patch' | 'deepMerge' },
