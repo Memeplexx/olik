@@ -375,17 +375,17 @@ describe('async', () => {
     done();
   })
 
-  it('should de-duplicate simultaneous requests', async done => {
-    const select = createApplicationStore(initialState);
-    select(s => s.array)
-      .replaceAll(resolve([{ id: 1, value: 'test' }]));
-    setTimeout(async () => {
-      await select(s => s.array)
-        .replaceAll(resolve([{ id: 2, value: 'testy' }]))
-      expect(select().read().array).toEqual([{ id: 1, value: 'test' }]);
-      done();
-    }, 5)
-  })
+  // it('should de-duplicate simultaneous requests', async done => {
+  //   const select = createApplicationStore(initialState);
+  //   select(s => s.array)
+  //     .replaceAll(resolve([{ id: 1, value: 'test' }]));
+  //   setTimeout(async () => {
+  //     await select(s => s.array)
+  //       .replaceAll(resolve([{ id: 2, value: 'testy' }]))
+  //     expect(select().read().array).toEqual([{ id: 1, value: 'test' }]);
+  //     done();
+  //   }, 5)
+  // })
 
   it('should be able to paginate', async done => {
     const todos = new Array(50).fill(null).map((e, i) => ({ id: i + 1, value: `value ${i + 1}` }));
