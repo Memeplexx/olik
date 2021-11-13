@@ -97,16 +97,12 @@ export type StoreWhichEnforcesTags<C> = Store<C, 'tagged'>;
 /**
  * An object which is capable of managing state for a component
  */
-export type StoreForAComponent<C> = Store<C, 'untagged'> & { detachFromApplicationStore: () => void, setInstanceName: (instanceName: string) => void };
+export type StoreForAComponent<C> = Store<C, 'untagged'> & { detachFromApplicationStore: () => void, attachToApplicationStore: (options?: { instanceName: string | number }) => void };
 
 /**
  * A function which selects from the store
  */
 export type Selector<S, C, X = C> = X extends C & ReadonlyArray<any> ? (s: S) => X : (s: S) => C;
-
-export type SelectorReader<S, U> = { get: U, read: () => DeepReadonly<S> };
-
-export type SelectorReaderComponent<S, U> = SelectorReader<S, U> & { detachFromApplicationStore: () => void, setInstanceName: (instanceName: string) => void };
 
 /**
  * A function which selects from a component store

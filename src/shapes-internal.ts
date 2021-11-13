@@ -4,7 +4,6 @@ import {
   PredicateFunctionObject,
   Selector,
   Store,
-  StoreForAComponent,
   StoreOrDerivation,
   Trackability,
   Replace,
@@ -25,7 +24,7 @@ export type UpdateStateArgs<S, C, X extends C = C> = {
 export type StoreForAComponentInternal<S, C> = Store<C, 'untagged'> & {
   defineReset: (initState: S, selector?: (arg: any) => C) => () => any;
   isComponentStore: boolean;
-} & StoreForAComponent<C>;
+} & Store<C, 'untagged'>;
 
 export type DevtoolsInstance = {
   init: (state: any) => any,

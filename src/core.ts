@@ -174,7 +174,7 @@ export function createStoreCore<S, T extends ShapesExt.Trackability>({
     return action(selector as any) as any;
   };
 
-  if (!libState.applicationStore || replaceExistingStoreIfItExists) {
+  if ((!libState.applicationStore || replaceExistingStoreIfItExists) && devtools !== false) {
     integrateStoreWithReduxDevtools({ store: select as any, storeState, devtools })
   }
 

@@ -8,6 +8,7 @@ export const errorMessages = {
   ILLEGAL_CHARACTERS_WITHIN_SELECTOR: (functionName: 'select' | 'getProp') => `Illegal characters detected in your ${functionName}() function. If you are attempting to find or filter array elements, then you can do so as follows: 'select(s => s.some.array).find(s => s.id).eq(3)'`,
   NO_ARRAY_ELEMENT_FOUND: `Could not find array element`,
   CANNOT_CHANGE_INSTANCE_NAME: 'Cannot change instanceName if one has already been set',
+  MUST_SUPPLY_INSTANCE_NAME_WITH_DEFERRED_INSTANCE_NAMES: 'Your ComponentStore was initialized with an "instanceName" of "Deferred", therefor you must supply a valid instanceName (string or number) when invoking attachToApplicationStore()',
 };
 
 export const devtoolsDebounce = 200;

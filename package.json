@@ -1,6 +1,6 @@
 {
   "name": "olik",
-  "version": "0.0.71",
+  "version": "0.0.72",
   "description": "Declarative state-management. Free of inaccurate actions & convoluted reducers. All in-line.",
   "license": "MIT",
   "homepage": "https://memeplexx.github.io/Olik/",
