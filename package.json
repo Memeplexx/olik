@@ -23,8 +23,7 @@
   "sideEffects": false,
   "scripts": {
     "clean": "rimraf dist coverage",
-    "typings": "node node_modules/gulp/bin/gulp.js",
-    "build": "rollup -c && tsc",
+    "build": "rimraf dist && tsc && rollup -c rollup.config.js && rimraf out-tsc",
     "dev": "rollup -c --watch",
     "test": "cross-env NODE_ENV=test jest --coverage --coverageReporters=text-lcov | coveralls",
     "test:cov": "cross-env NODE_ENV=test npm test --coverage --collectCoverageFrom=src/**/*.{ts}",
@@ -39,7 +38,6 @@
     "coveralls": "^3.1.0",
     "cross-env": "^7.0.2",
     "del": "^5.1.0",
-    "gulp": "^4.0.2",
     "immer": "^7.0.7",
     "immutable": "^4.0.0-rc.12",
     "jest": "^26.1.0",

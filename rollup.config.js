@@ -6,7 +6,7 @@ import resolve from 'rollup-plugin-node-resolve';
 import commonJS from 'rollup-plugin-commonjs'
 
 export default {
-  input: `src/index.ts`,
+  input: `./out-tsc/index.js`,
   output: [
     {
       file: pkg.main,
@@ -32,4 +32,8 @@ export default {
       typescript: require('typescript'),
     }),
   ],
+  onwarn: function(warning) {
+    if ( warning.code === 'THIS_IS_UNDEFINED' ) { /* skip this benign warning */ return; }
+    console.warn( warning.message );
+  }
 };
