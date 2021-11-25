@@ -27,7 +27,8 @@ export const readSelector = (storeName: string) => {
         if (['replace', 'patch', 'remove', 'increment', 'removeAll', 'replaceAll', 'incrementAll'].includes(prop)) {
           return (arg: any) => {
             stateActions.push({ type: () => 'action', name: prop, arg, actionType: `${prop}()` });
-            libState.appStates[storeName] = writeState(libState.appStates[storeName], { ...libState.appStates[storeName] }, stateActions);
+            libState.appStates[storeName] = writeState(libState.appStates[storeName], { ...libState.appStates[storeName] }, stateActions.slice());
+            // console.log(stateActions.map(s => s.actionType).join('.'))
           }
         } else if ('read' === prop) {
           return () => {
@@ -103,9 +104,6 @@ export const writeState = (oldObj: any, newObj: any, stateActions: StateAction[]
       return { ...oldObj, [action.name]: writeState((oldObj || {})[action.name], ((newObj as any) || {})[action.name], stateActions.slice()) };
     }
   } else if (action.name === 'replace') {
-    if (Array.isArray(oldObj)) {
-      return oldObj.map(e => action.arg);
-    }
     return action.arg;
   } else if (action.name === 'patch') {
     return { ...oldObj, ...(action.arg as any) }

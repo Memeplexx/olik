@@ -32,12 +32,6 @@ describe('Top-level', () => {
     expect(select.read()).toEqual(1);
   })
 
-  // it('should get all elements from a top-level array of primitives and then replace them', () => {
-  //   const select = createApplicationStore([1, 2, 3]);
-  //   select
-  //     .replace(1);
-  //   expect(select.read()).toEqual([1, 1, 1]);
-  // })
 
   it('should get all elements from a top-level array of primitives and then replace them', () => {
     const select = createApplicationStore([1, 2, 3]);
