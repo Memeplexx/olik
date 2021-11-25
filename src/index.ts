@@ -150,12 +150,9 @@ export const readSelector = (storeName: string) => {
           (target as any)[prop] = {};
         }
         const val = (target as any)[prop];
-        if (val !== null && typeof val === 'object') {
+        if (typeof val === 'object') {
           stateActions.push({ type: (state) => (Array.isArray(state) && ['find', 'filter'].includes(prop)) ? 'search' : 'property', name: prop, arg: null, actionType: prop });
           return initialize(val, false, stateActions);
-        } else {
-          stateActions.push({ type: () => 'property', name: prop, arg: null, actionType: prop });
-          return val;
         }
       }
     });
