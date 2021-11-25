@@ -132,27 +132,24 @@ export const readSelector = (storeName: string) => {
         if (topLevel) {
           stateActions = new Array<StateAction>();
         }
-        if (['eq', 'ne', 'in', 'ni', 'remove', 'replace', 'patch', 'read', 'increment', 'removeAll', 'replaceAll', 'incrementAll'].includes(prop)) {
-          return (e: any) => {
-            if (['replace', 'patch', 'remove', 'increment', 'removeAll', 'replaceAll', 'incrementAll'].includes(prop)) {
-              stateActions.push({ type: () => 'action', name: prop, arg: e, actionType: `${prop}()` });
-              libState.appStates[storeName] = writeState(libState.appStates[storeName], { ...libState.appStates[storeName] }, stateActions);
-            } else if ('read' === prop) {
-              stateActions.push({ type: () => 'action', name: prop, arg: null, actionType: null });
-              return readState(libState.appStates[storeName], stateActions);
-            } else {
-              stateActions.push({ type: () => 'comparator', name: prop, arg: e, actionType: `${prop}(${e})` });
-              return initialize({}, false, stateActions);
-            }
+        if (['replace', 'patch', 'remove', 'increment', 'removeAll', 'replaceAll', 'incrementAll'].includes(prop)) {
+          return (arg: any) => {
+            stateActions.push({ type: () => 'action', name: prop, arg, actionType: `${prop}()` });
+            libState.appStates[storeName] = writeState(libState.appStates[storeName], { ...libState.appStates[storeName] }, stateActions);
           }
-        }
-        if (!(target as any)[prop]) {
-          (target as any)[prop] = {};
-        }
-        const val = (target as any)[prop];
-        if (typeof val === 'object') {
+        } else if ('read' === prop) {
+          return () => {
+            stateActions.push({ type: () => 'action', name: prop, arg: null, actionType: null });
+            return readState(libState.appStates[storeName], stateActions);
+          }
+        } else if (['eq', 'ne', 'in', 'ni', 'gt', 'gte', 'lt', 'lte', 'match'].includes(prop)) {
+          return (arg: any) => {
+            stateActions.push({ type: () => 'comparator', name: prop, arg, actionType: `${prop}(${arg})` });
+            return initialize({}, false, stateActions);
+          }
+        } else {
           stateActions.push({ type: (state) => (Array.isArray(state) && ['find', 'filter'].includes(prop)) ? 'search' : 'property', name: prop, arg: null, actionType: prop });
-          return initialize(val, false, stateActions);
+          return initialize({}, false, stateActions);
         }
       }
     });
