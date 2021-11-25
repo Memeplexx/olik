@@ -104,5 +104,15 @@ describe('Object', () => {
     expect(select.read()).toEqual({ arr: [{ id: 1, val: 1 }, { id: 2, val: 1 }, { id: 3, val: 0 }] });
   })
 
+  it('____', () => {
+    const init = { arr: [{ id: 1, val: 0, obj: { num: 0 } }, { id: 2, val: 0, obj: { num: 0 } }], obj: { num: 0 } };
+    const select = createApplicationStore(init);
+    const stateBefore = select.read();
+    select.arr
+      .find.id.eq(2).val
+      .replace(1);
+    console.log(select.read());
+  });
+
 });
 

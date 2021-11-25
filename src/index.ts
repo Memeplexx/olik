@@ -68,7 +68,7 @@ export const writeState = (oldObj: any, newObj: any, stateActions: StateAction[]
 
       // obtain contiguous stateActions and extract queryPaths
       const queryPaths = stateActions
-        .slice(0, stateActions.findIndex(sa => sa.type(oldObj) === 'action') - 1)
+        .slice(0, stateActions.findIndex(sa => sa.type(oldObj) === 'comparator'))
         .reduce((prev, curr) => {
           stateActions.shift();
           return prev.concat(curr);
