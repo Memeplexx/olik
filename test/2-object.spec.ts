@@ -5,6 +5,7 @@ describe('Object', () => {
 
   beforeEach(() => {
     libState.appStates = {};
+    libState.logLevel = 'none';
   })
 
   it('should replace a primitive', () => {
@@ -42,6 +43,8 @@ describe('Object', () => {
       .find.eq(3)
       .replace(6);
     expect(select.arr.read()).toEqual([1, 2, 6, 4, 5]);
+
+    // console.log(select.arr.find.eq(3).read()); // returns undefined!
   })
 
   it('should find an element from an array of primitives and then increment it', () => {

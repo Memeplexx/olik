@@ -5,6 +5,7 @@ describe('Top-level', () => {
 
   beforeEach(() => {
     libState.appStates = {};
+    libState.logLevel = 'none';
   })
 
   it('should work with half-finished writes intermixed with reads', () => {
@@ -31,12 +32,12 @@ describe('Top-level', () => {
     expect(select.read()).toEqual(1);
   })
 
-  it('should get all elements from a top-level array of primitives and then replace them', () => {
-    const select = createApplicationStore([1, 2, 3]);
-    select
-      .replace(1);
-    expect(select.read()).toEqual([1, 1, 1]);
-  })
+  // it('should get all elements from a top-level array of primitives and then replace them', () => {
+  //   const select = createApplicationStore([1, 2, 3]);
+  //   select
+  //     .replace(1);
+  //   expect(select.read()).toEqual([1, 1, 1]);
+  // })
 
   it('should get all elements from a top-level array of primitives and then replace them', () => {
     const select = createApplicationStore([1, 2, 3]);
@@ -64,24 +65,24 @@ describe('Top-level', () => {
 
   it('...', () => {
     const select = createApplicationStore([{ id: 1, val: 1 }, { id: 2, val: 2 }, { id: 3, val: 3 }]);
-    select
-      .val.incrementAll(2);
+    select.val
+      .incrementAll(2);
     expect(select.read()).toEqual([{ id: 1, val: 3 }, { id: 2, val: 4 }, { id: 3, val: 5 }]);
   })
 
   it('...', () => {
     const select = createApplicationStore({ arr: [{ id: 1, val: 1 }, { id: 2, val: 2 }, { id: 3, val: 3 }]});
-    select
-      .arr
-      .val.incrementAll(2);
+    select.arr.val
+      .incrementAll(2);
     expect(select.read()).toEqual({ arr: [{ id: 1, val: 3 }, { id: 2, val: 4 }, { id: 3, val: 5 }]});
   })
 
   it('...', () => {
     const select = createApplicationStore({ arr: [{ id: 1, val: 1 }, { id: 2, val: 2 }, { id: 3, val: 3 }]});
-    select
-      .arr
-      .val.replaceAll(4);
+    libState.logLevel = 'debug';
+    select.arr.val
+      .replaceAll(4);
+      libState.logLevel = 'none';
     expect(select.read()).toEqual({ arr: [{ id: 1, val: 4 }, { id: 2, val: 4 }, { id: 3, val: 4 }]});
   })
 
@@ -113,8 +114,6 @@ describe('Top-level', () => {
     expect(select.read()).toEqual([1, 4, 5]);
   })
 
-  
-  
 
 });
 

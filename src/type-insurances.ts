@@ -16,8 +16,8 @@ function test() {
     .find.obj.num.eq(3)
     .remove();
 
-  select.array
-    .replace([0]);
+  // select.array
+  //   .replace([0]);
 
   select.string
     .replace('test');
@@ -26,8 +26,8 @@ function test() {
     .find.eq(0)
     .replace(0);
 
-  select.arrayStr
-    .replace(['one'])
+  // select.arrayStr
+  //   .replace(['one'])
 
   select.objArray
     .find.eq({ num: 0, arr: [], objArr: [], obj: { num: 0 } })

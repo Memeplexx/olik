@@ -5,6 +5,7 @@ describe.skip('Performance', () => {
 
   beforeEach(() => {
     libState.appStates = {};
+    libState.logLevel = 'none';
   })
 
   it('', () => {

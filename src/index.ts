@@ -40,11 +40,12 @@ export type UpdatableObject<S, F extends FindOrFilter, Q extends QueryStatus> = 
   & Readable<S, F>;
 
 export type UpdatableArray<S extends Array<any>, F extends FindOrFilter, Q extends QueryStatus> = {
-  replace: (replacement: F extends 'isFilter' ? S : S[0]) => void
+  // replace: (replacement: F extends 'isFilter' ? S : S[0]) => void,
 }
   & (Q extends 'queried' ? {
     or: Comparators<S, S[0], F> & (S[0] extends object ? SearchableAny<S, S[0], F> : {}),
     and: Comparators<S, S[0], F> & (S[0] extends object ? SearchableAny<S, S[0], F> : {}),
+    replace: (replacement: F extends 'isFilter' ? S : S[0]) => void,
     remove: () => void,
   } : {
     find: Comparators<S, S[0], 'isFind'> & (S[0] extends object ? SearchableAny<S, S[0], 'isFind'> : {}),
@@ -115,7 +116,7 @@ export const libState = {
 }
 
 export interface StateAction {
-  type: 'property' | 'search' | 'comparator' | 'action';
+  type: (state: any) => 'property' | 'search' | 'comparator' | 'action';
   name: string;
   arg: any;
   actionType: string | null;
@@ -134,13 +135,13 @@ export const readSelector = (storeName: string) => {
         if (['eq', 'ne', 'in', 'ni', 'remove', 'replace', 'patch', 'read', 'increment', 'removeAll', 'replaceAll', 'incrementAll'].includes(prop)) {
           return (e: any) => {
             if (['replace', 'patch', 'remove', 'increment', 'removeAll', 'replaceAll', 'incrementAll'].includes(prop)) {
-              stateActions.push({ type: 'action', name: prop, arg: e, actionType: `${prop}()` });
+              stateActions.push({ type: () => 'action', name: prop, arg: e, actionType: `${prop}()` });
               libState.appStates[storeName] = writeState(libState.appStates[storeName], { ...libState.appStates[storeName] }, stateActions);
             } else if ('read' === prop) {
-              stateActions.push({ type: 'action', name: prop, arg: null, actionType: null });
+              stateActions.push({ type: () => 'action', name: prop, arg: null, actionType: null });
               return readState(libState.appStates[storeName], stateActions);
             } else {
-              stateActions.push({ type: 'comparator', name: prop, arg: e, actionType: `${prop}(${e})` });
+              stateActions.push({ type: () => 'comparator', name: prop, arg: e, actionType: `${prop}(${e})` });
               return initialize({}, false, stateActions);
             }
           }
@@ -150,10 +151,10 @@ export const readSelector = (storeName: string) => {
         }
         const val = (target as any)[prop];
         if (val !== null && typeof val === 'object') {
-          stateActions.push({ type: 'property', name: prop, arg: null, actionType: prop });
+          stateActions.push({ type: (state) => (Array.isArray(state) && ['find', 'filter'].includes(prop)) ? 'search' : 'property', name: prop, arg: null, actionType: prop });
           return initialize(val, false, stateActions);
         } else {
-          stateActions.push({ type: 'property', name: prop, arg: null, actionType: prop });
+          stateActions.push({ type: () => 'property', name: prop, arg: null, actionType: prop });
           return val;
         }
       }
@@ -193,8 +194,8 @@ export const readState = <S>(state: S, stateActions: StateAction[]): any => {
 
 export const writeState = (oldObj: any, newObj: any, stateActions: StateAction[]): any => {
 
-  if (Array.isArray(oldObj) && !(['find', 'filter', 'removeAll', 'replaceAll'/*, 'incrementAll'*/].includes(stateActions[0].name))) {
-    libState.logLevel = 'none';
+  // if this is an array and an array element property is being accessed directly without a search clause, eg: todos.status.replaceAll()
+  if (Array.isArray(oldObj) && (stateActions[0].type(oldObj) === 'property')) {
     return (oldObj as any[]).map((e, i) => {
       if (typeof (oldObj[i]) === 'object') {
         return { ...oldObj[i], ...writeState(oldObj[i] || {}, newObj[i] || {}, stateActions.slice()) };
@@ -203,21 +204,19 @@ export const writeState = (oldObj: any, newObj: any, stateActions: StateAction[]
     });
   }
 
-  const action = stateActions.shift();
-  if (!action) { return; /* Logically impossible */ }
+  const action = stateActions.shift()!;
   if (stateActions.length > 0) {
-    if (['find', 'filter'].includes(action.name)) {
+    if (Array.isArray(oldObj) && ['find', 'filter'].includes(action.name) && (action.type(oldObj) === 'search')) {
 
       // obtain contiguous stateActions and extract queryPaths
       const queryPaths = stateActions
-        .slice(0, stateActions.findIndex(sa => sa.type === 'action') - 1)
+        .slice(0, stateActions.findIndex(sa => sa.type(oldObj) === 'action') - 1)
         .reduce((prev, curr) => {
           stateActions.shift();
           return prev.concat(curr);
         }, new Array<StateAction>());
 
-      const argAction = stateActions.shift();
-      if (!argAction) { return; /* Logically impossible */ }
+      const argAction = stateActions.shift()!;
 
       if (stateActions[0].name === 'remove') {
         const arrayIndicesToRemove = (oldObj as any[])
