@@ -109,5 +109,14 @@ describe('Top-level', () => {
   })
 
 
+  it('', () => {
+    const select = createApplicationStore([1, 2, 3]);
+    select
+      .filter.eq(1).or.eq(2)
+      .increment(1);
+    console.log(select.read())
+  })
+
+
 });
 
