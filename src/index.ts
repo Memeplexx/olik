@@ -33,7 +33,7 @@ export const readSelector = (storeName: string) => {
         } else if ('read' === prop) {
           return () => {
             stateActions.push({ type: () => 'action', name: prop, arg: null, actionType: null });
-            return readState(libState.appStates[storeName], stateActions);
+            return readState(libState.appStates[storeName], stateActions.slice());
           }
         } else if (['eq', 'ne', 'in', 'ni', 'gt', 'gte', 'lt', 'lte', 'match'].includes(prop)) {
           return (arg: any) => {
@@ -51,8 +51,6 @@ export const readSelector = (storeName: string) => {
 }
 
 export const writeState = (oldObj: any, newObj: any, stateActions: StateAction[]): any => {
-
-  // if this is an array and an array element property is being accessed directly without a search clause, eg: todos.status.replaceAll()
   if (Array.isArray(oldObj) && (stateActions[0].type(oldObj) === 'property')) {
     return (oldObj as any[]).map((e, i) => {
       if (typeof (oldObj[i]) === 'object') {
@@ -61,21 +59,16 @@ export const writeState = (oldObj: any, newObj: any, stateActions: StateAction[]
       return writeState(oldObj[i] || {}, newObj[i] || {}, stateActions.slice());
     });
   }
-
   const action = stateActions.shift()!;
   if (stateActions.length > 0) {
     if (Array.isArray(oldObj) && ['find', 'filter'].includes(action.name) && (action.type(oldObj) === 'search')) {
-
-      // obtain contiguous stateActions and extract queryPaths
       const queryPaths = stateActions
         .slice(0, stateActions.findIndex(sa => sa.type(oldObj) === 'comparator'))
         .reduce((prev, curr) => {
           stateActions.shift();
           return prev.concat(curr);
         }, new Array<StateAction>());
-
       const argAction = stateActions.shift()!;
-
       if (stateActions[0].name === 'remove') {
         const arrayIndicesToRemove = (oldObj as any[])
           .map((e, i) => {
@@ -101,7 +94,7 @@ export const writeState = (oldObj: any, newObj: any, stateActions: StateAction[]
         });
       }
     } else {
-      return { ...oldObj, [action.name]: writeState((oldObj || {})[action.name], ((newObj as any) || {})[action.name], stateActions.slice()) };
+      return { ...oldObj, [action.name]: writeState((oldObj || {})[action.name], ((newObj as any) || {})[action.name], stateActions) };
     }
   } else if (action.name === 'replace') {
     return action.arg;
@@ -121,24 +114,40 @@ export const writeState = (oldObj: any, newObj: any, stateActions: StateAction[]
   }
 }
 
-export const readState = <S>(state: S, stateActions: StateAction[]): any => {
-  const action = stateActions.shift();
-  if (!action) { return; /* Logically impossible */ }
+export const readState = (oldObj: any, stateActions: StateAction[]): any => {
+  if (Array.isArray(oldObj) && (stateActions[0].type(oldObj) === 'property')) {
+    return (oldObj as any[]).map((e, i) => {
+      return readState(oldObj[i], stateActions.slice());
+    });
+  }
+  const action = stateActions.shift()!;
   if (stateActions.length > 0) {
-    if (['find', 'filter'].includes(action.name)) {
-      const queryPath = stateActions.shift();
-      if (!queryPath) { return; /* Note: POSSIBLE! */ }
-      const argAction = stateActions.shift();
-      if (!argAction) { return; /* Logically impossible */ }
-      // return (oldObj as any as any[]).map((e, i) => e[queryPath.name] === argAction.arg
-      //   ? { ...(oldObj as any)[i], ...copyState((oldObj as any)[i] || {}, (newObj as any)[i] || {}, stateActions) }
-      //   : e);
-      return readState(((state || []) as any[])[action.name as any]((e: any) => compare(e[queryPath.name], argAction.arg, argAction.name)), stateActions.slice());
+    if (Array.isArray(oldObj) && ['find', 'filter'].includes(action.name) && (action.type(oldObj) === 'search')) {
+      const queryPaths = stateActions
+        .slice(0, stateActions.findIndex(sa => sa.type(oldObj) === 'comparator'))
+        .reduce((prev, curr) => {
+          stateActions.shift();
+          return prev.concat(curr);
+        }, new Array<StateAction>());
+      const argAction = stateActions.shift()!;
+      if ('find' === action.name) {
+        return readState((oldObj as any[]).find(e => {
+          let toCompare = e;
+          queryPaths.forEach(qp => toCompare = toCompare[qp.name])
+          return compare(toCompare, argAction.arg, argAction.name);
+        }), stateActions);
+      }
+      return (oldObj as any[]).filter(e => {
+        let toCompare = e;
+        queryPaths.forEach(qp => toCompare = toCompare[qp.name])
+        return compare(toCompare, argAction.arg, argAction.name);
+      }).map(e => readState(e, stateActions));
+
     } else {
-      return readState((state as any)[action.name], stateActions.slice());
+      return readState((oldObj || {})[action.name], stateActions);
     }
-  } else {
-    return state;
+  } else if (action.name === 'read') {
+    return oldObj;
   }
 }
 
