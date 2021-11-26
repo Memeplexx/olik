@@ -148,4 +148,14 @@ describe('Object', () => {
     expect(num1ChangeCount).toEqual(1);
   })
 
+  it('', () => {
+    const select = createApplicationStore({ arr: [{ id: 1, num: 1 }, { id: 2, num: 2 }] });
+    let changeCount = 0;
+    select.arr.find.id.eq(1).onChange(() => changeCount++);
+    select.arr.find.id.eq(2).num.increment(1);
+    expect(changeCount).toEqual(0);
+    select.arr.find.id.eq(1).num.increment(1);
+    expect(changeCount).toEqual(1);
+  })
+
 });

@@ -52,7 +52,7 @@ export const readSelector = (storeName: string) => {
             return initialize({}, false, stateActions);
           }
         } else {
-          stateActions.push({ type: (state) => (Array.isArray(state) && ['find', 'filter'].includes(prop)) ? 'search' : 'property', name: prop, arg: null, actionType: prop });
+          stateActions.push({ type: (state) => (['find', 'filter'].includes(prop) && Array.isArray(state)) ? 'search' : 'property', name: prop, arg: null, actionType: prop });
           return initialize({}, false, stateActions);
         }
       }
@@ -67,8 +67,7 @@ export const notifySubscribers = (
   changeListeners: Map<StateAction[], (arg: any) => any>
 ) => {
   changeListeners.forEach((listener, stateActions) => {
-    let selectedNewState: any;
-    try { selectedNewState = readState(newState, stateActions.slice()); } catch (e) { /* A component store may have been detatched and state changes are being subscribed to inside component. Ignore */ }
+    const selectedNewState = readState(newState, stateActions.slice());
     const selectedOldState = readState(oldState, stateActions.slice());
     if (selectedOldState !== selectedNewState) {
       listener(selectedNewState);
@@ -136,35 +135,35 @@ export const writeState = (oldObj: any, newObj: any, stateActions: StateAction[]
   }
 }
 
-export const readState = (oldObj: any, stateActions: StateAction[]): any => {
-  if (Array.isArray(oldObj) && (stateActions[0].type(oldObj) === 'property')) {
-    return (oldObj as any[]).map((e, i) => {
-      return readState(oldObj[i], stateActions.slice());
+export const readState = (state: any, stateActions: StateAction[]): any => {
+  if (Array.isArray(state) && (stateActions[0].type(state) === 'property')) {
+    return (state as any[]).map((e, i) => {
+      return readState(state[i], stateActions.slice());
     });
   }
   const action = stateActions.shift()!;
   if (stateActions.length > 0) {
-    if (Array.isArray(oldObj) && ['find', 'filter'].includes(action.name) && (action.type(oldObj) === 'search')) {
+    if (Array.isArray(state) && ['find', 'filter'].includes(action.name) && (action.type(state) === 'search')) {
       const queryPaths = stateActions
-        .slice(0, stateActions.findIndex(sa => sa.type(oldObj) === 'comparator'))
+        .slice(0, stateActions.findIndex(sa => sa.type(state) === 'comparator'))
         .reduce((prev, curr) => {
           stateActions.shift();
           return prev.concat(curr);
         }, new Array<StateAction>());
       const argAction = stateActions.shift()!;
       if ('find' === action.name) {
-        return readState((oldObj as any[])
+        return readState((state as any[])
           .find(e => compare(queryPaths.reduce((prev, curr) => prev = prev[curr.name], e), argAction.arg, argAction.name)), stateActions);
       } else if ('filter' === action.name) {
-        return (oldObj as any[])
+        return (state as any[])
           .filter(e => compare(queryPaths.reduce((prev, curr) => prev = prev[curr.name], e), argAction.arg, argAction.name))
           .map(e => readState(e, stateActions));
       }
     } else {
-      return readState((oldObj || {})[action.name], stateActions);
+      return readState((state || {})[action.name], stateActions);
     }
   } else if (action.name === 'read' || action.name === 'onChange') {
-    return oldObj;
+    return state;
   }
 }
 
