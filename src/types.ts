@@ -36,20 +36,23 @@ export type UpdatableObject<S, F extends FindOrFilter, Q extends QueryStatus> = 
   replace: (replacement: S) => void;
   patch: (patch: Partial<S>) => void;
 }
-  & { [K in keyof S]: S[K] extends Array<any> ? UpdatableArray<S[K], 'isFilter', 'notQueried'> : S[K] extends object ? UpdatableObject<S[K], F, Q> : UpdatablePrimitive<S[K], F, Q> }
+  & { [K in keyof S]: S[K] extends Array<any>
+    ? UpdatableArray<S[K], 'isFilter', 'notQueried'>
+    : S[K] extends object ? UpdatableObject<S[K], F, Q>
+    : UpdatablePrimitive<S[K], F, Q> }
   & Readable<S, F>;
 
 export type UpdatableArray<S extends Array<any>, F extends FindOrFilter, Q extends QueryStatus> = (Q extends 'queried' ? {
-    or: Comparators<S, S[0], F> & (S[0] extends object ? SearchableAny<S, S[0], F> : {}),
-    and: Comparators<S, S[0], F> & (S[0] extends object ? SearchableAny<S, S[0], F> : {}),
-    replace: (replacement: F extends 'isFilter' ? S : S[0]) => void,
-    remove: () => void,
-  } : {
-    find: Comparators<S, S[0], 'isFind'> & (S[0] extends object ? SearchableAny<S, S[0], 'isFind'> : {}),
-    filter: Comparators<S, S[0], 'isFilter'> & (S[0] extends object ? SearchableAny<S, S[0], 'isFilter'> : {}),
-    removeAll: () => void,
-    replaceAll: (newArray: S) => void,
-  })
+  or: Comparators<S, S[0], F> & (S[0] extends object ? SearchableAny<S, S[0], F> : {}),
+  and: Comparators<S, S[0], F> & (S[0] extends object ? SearchableAny<S, S[0], F> : {}),
+  replace: (replacement: F extends 'isFilter' ? S : S[0]) => void,
+  remove: () => void,
+} : {
+  find: Comparators<S, S[0], 'isFind'> & (S[0] extends object ? SearchableAny<S, S[0], 'isFind'> : {}),
+  filter: Comparators<S, S[0], 'isFilter'> & (S[0] extends object ? SearchableAny<S, S[0], 'isFilter'> : {}),
+  removeAll: () => void,
+  replaceAll: (newArray: S) => void,
+})
   & (S[0] extends Array<any> ? {} : S[0] extends object ? UpdatableObject<S[0], F, Q> : UpdatablePrimitive<S[0], F, Q>);
 
 export type UpdatablePrimitive<S, F extends FindOrFilter, Q extends QueryStatus> = (
@@ -65,7 +68,7 @@ export type UpdatablePrimitive<S, F extends FindOrFilter, Q extends QueryStatus>
     increment: (by: number) => void;
   }) : {
   }
-) & Readable<S, F>;
+  ) & Readable<S, F>;
 
 export interface Readable<S, F extends FindOrFilter> {
   read: () => F extends 'isFilter' ? DeepReadonly<S[]> : DeepReadonly<S>;

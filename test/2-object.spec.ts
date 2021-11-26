@@ -122,9 +122,10 @@ describe('Object', () => {
       .find.id.eq(2)
       .arr.find.id.eq(1).num
       .replace(9);
-    // console.log(JSON.stringify(select.read()));
-    console.log(select.arr.find.id.eq(2).arr.find.id.eq(1).num.read());
+    console.log(JSON.stringify(select.read()));
+    // console.log(select.arr.find.id.eq(2).arr.find.id.eq(1).num.read());
+
+    // todos.filter.status.eq('todo').status.replace('done');
   });
 
 });
-
