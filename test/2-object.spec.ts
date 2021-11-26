@@ -128,4 +128,24 @@ describe('Object', () => {
     // todos.filter.status.eq('todo').status.replace('done');
   });
 
+  it('', () => {
+    const select = createApplicationStore({ num1: 0, num2: 0 });
+    let rootChangeCount = 0;
+    let num1ChangeCount = 0;
+    let num2ChangeCount = 0;
+    select.onChange(() => rootChangeCount++);
+    const l1 = select.num1.onChange(() => num1ChangeCount++);
+    select.num2.onChange(() => num2ChangeCount++);
+    select.num1.increment(1);
+    expect(num1ChangeCount).toEqual(1);
+    expect(num2ChangeCount).toEqual(0);
+    select.num2.increment(2);
+    expect(num1ChangeCount).toEqual(1);
+    expect(num2ChangeCount).toEqual(1);
+    expect(rootChangeCount).toEqual(2);
+    l1.unsubscribe();
+    select.num1.increment(1);
+    expect(num1ChangeCount).toEqual(1);
+  })
+
 });

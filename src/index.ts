@@ -5,12 +5,14 @@ export const createApplicationStore = <S>(
   initialState: S, options: { name: string } = { name: document.title }
 ): S extends Array<any> ? UpdatableArray<S, FindOrFilter, 'notQueried'> : S extends object ? UpdatableObject<S, 'isFind', 'queried'> : UpdatablePrimitive<S, 'isFind', 'queried'> => {
   libState.appStates[options.name] = initialState;
+  libState.changeListeners[options.name] = new Map();
   libState.logLevel = 'none';
   return readSelector(options.name);
 }
 
 export const libState = {
-  appStates: {} as { [name: string]: any },
+  appStates: {} as { [storeName: string]: any },
+  changeListeners: {} as { [storeName: string]: Map<StateAction[], (arg: any) => any> },
   logLevel: 'none' as ('debug' | 'none'),
 }
 
@@ -27,8 +29,10 @@ export const readSelector = (storeName: string) => {
         if (['replace', 'patch', 'remove', 'increment', 'removeAll', 'replaceAll', 'incrementAll'].includes(prop)) {
           return (arg: any) => {
             stateActions.push({ type: () => 'action', name: prop, arg, actionType: `${prop}()` });
+            const oldState = libState.appStates[storeName];
             libState.appStates[storeName] = writeState(libState.appStates[storeName], { ...libState.appStates[storeName] }, stateActions.slice());
             // console.log(stateActions.map(s => s.actionType).join('.'))
+            notifySubscribers(oldState, libState.appStates[storeName], libState.changeListeners[storeName]);
           }
         } else if ('read' === prop) {
           return () => {
@@ -36,8 +40,11 @@ export const readSelector = (storeName: string) => {
             return readState(libState.appStates[storeName], stateActions.slice());
           }
         } else if ('onChange' === prop) {
-          return () => {
-
+          stateActions.push({ type: () => 'action', name: prop, arg: null, actionType: null });
+          return (changeListener: (arg: any) => any) => {
+            const stateActionsCopy = stateActions.slice();
+            libState.changeListeners[storeName].set(stateActionsCopy, changeListener);
+            return { unsubscribe: () => { libState.changeListeners[storeName].delete(stateActionsCopy); } }
           }
         } else if (['eq', 'ne', 'in', 'ni', 'gt', 'gte', 'lt', 'lte', 'match'].includes(prop)) {
           return (arg: any) => {
@@ -52,6 +59,21 @@ export const readSelector = (storeName: string) => {
     });
   };
   return initialize({}, true, []);
+}
+
+export const notifySubscribers = (
+  oldState: any, 
+  newState: any,
+  changeListeners: Map<StateAction[], (arg: any) => any>
+) => {
+  changeListeners.forEach((listener, stateActions) => {
+    let selectedNewState: any;
+    try { selectedNewState = readState(newState, stateActions.slice()); } catch (e) { /* A component store may have been detatched and state changes are being subscribed to inside component. Ignore */ }
+    const selectedOldState = readState(oldState, stateActions.slice());
+    if (selectedOldState !== selectedNewState) {
+      listener(selectedNewState);
+    }
+  })
 }
 
 export const writeState = (oldObj: any, newObj: any, stateActions: StateAction[]): any => {
@@ -141,7 +163,7 @@ export const readState = (oldObj: any, stateActions: StateAction[]): any => {
     } else {
       return readState((oldObj || {})[action.name], stateActions);
     }
-  } else if (action.name === 'read') {
+  } else if (action.name === 'read' || action.name === 'onChange') {
     return oldObj;
   }
 }
