@@ -46,6 +46,8 @@ export const readSelector = (storeName: string) => {
             libState.changeListeners[storeName].set(stateActionsCopy, changeListener);
             return { unsubscribe: () => { libState.changeListeners[storeName].delete(stateActionsCopy); } }
           }
+        // } else if ('or' === prop) {
+          
         } else if (['eq', 'ne', 'in', 'ni', 'gt', 'gte', 'lt', 'lte', 'match'].includes(prop)) {
           return (arg: any) => {
             stateActions.push({ type: 'comparator', name: prop, arg, actionType: `${prop}(${arg})` });
@@ -109,8 +111,7 @@ export const writeState = (oldObj: any, newObj: any, stateActions: StateAction[]
         }
       } else {
         return (oldObj as any[]).map((e, i) => {
-          const toCompare = queryPaths.reduce((prev, curr) => prev = prev[curr.name], e);
-          return compare(toCompare, argAction.arg, argAction.name)
+          return compare(queryPaths.reduce((prev, curr) => prev = prev[curr.name], e), argAction.arg, argAction.name)
             ? (typeof (oldObj[i]) === 'object'
               ? { ...oldObj[i], ...writeState(oldObj[i] || {}, newObj[i] || {}, stateActions.slice()) }
               : writeState(oldObj[i] || {}, newObj[i] || {}, stateActions.slice()))
