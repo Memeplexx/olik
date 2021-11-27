@@ -43,9 +43,11 @@ export type UpsertablePrimitive<T> = {
 }
 
 export type UpdatableObject<S, F extends FindOrFilter, Q extends QueryStatus> = {
-  replace: (replacement: S) => void;
+  // replace: (replacement: S) => void;
   patch: (patch: Partial<S>) => void;
-}
+} & (F extends 'isFind' ? {
+  replace: (replacement: S) => void;
+} : {})
   & { [K in keyof S]: S[K] extends Array<any>
     ? UpdatableArray<S[K], 'isFilter', 'notQueried'>
     : S[K] extends object ? UpdatableObject<S[K], F, Q>
@@ -55,9 +57,11 @@ export type UpdatableObject<S, F extends FindOrFilter, Q extends QueryStatus> = 
 export type UpdatableArray<S extends Array<any>, F extends FindOrFilter, Q extends QueryStatus> = (Q extends 'queried' ? ({
   or: Comparators<S, S[0], F> & (S[0] extends object ? Searchable<S, S[0], F> : {}),
   and: Comparators<S, S[0], F> & (S[0] extends object ? Searchable<S, S[0], F> : {}),
-  replace: (replacement: F extends 'isFilter' ? S : S[0]) => void,
+  // replace: (replacement: F extends 'isFilter' ? S : S[0]) => void,
   remove: () => void,
-} & (S[0] extends Array<any> ? {} : S[0] extends object ? UpdatableObject<S[0], F, Q> : UpdatablePrimitive<S[0], F, Q>)) : ({
+} & (F extends 'isFind' ? {
+  replace: (replacement: S[0]) => void
+} : {}) & (S[0] extends Array<any> ? {} : S[0] extends object ? UpdatableObject<S[0], F, Q> : UpdatablePrimitive<S[0], F, Q>)) : ({
   find: Comparators<S, S[0], 'isFind'> & (S[0] extends object ? Searchable<S, S[0], 'isFind'> : {}),
   filter: Comparators<S, S[0], 'isFilter'> & (S[0] extends object ? Searchable<S, S[0], 'isFilter'> : {}),
   removeAll: () => void,
@@ -75,9 +79,9 @@ export type UpdatableArray<S extends Array<any>, F extends FindOrFilter, Q exten
 export type UpdatablePrimitive<S, F extends FindOrFilter, Q extends QueryStatus> = (
   Q extends 'notQueried' ? {
     replaceAll: (replacement: S) => void;
-  } : {
+  } : F extends 'isFind' ? {
     replace: (replacement: S) => void;
-  }
+  } : {}
 ) & (S extends number ?
   (Q extends 'notQueried' ? {
     incrementAll: (by: number) => void;

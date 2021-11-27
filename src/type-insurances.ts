@@ -57,8 +57,8 @@ function test() {
 
   select.objArray
     .find.num.eq(3)
-    .objArr.filter.num.eq(3)
-    .replace([{ num: 2 }]);
+    .objArr.find.num.eq(3)
+    .replace({ num: 2 });
 
   select.object
     .patch({ two: 'd' });
@@ -80,7 +80,7 @@ function test() {
     .num.replaceAll(2);
 
   select.objArray
-    .filter.num.eq(3)
+    .find.num.eq(3)
     .num.replace(3)
 
   select.arrayBool.find.eq(true).remove();
@@ -125,5 +125,8 @@ function test() {
   select.objArray
     .upsertMatching.obj.num
     .withMany([{ num: 3, arr: [], objArr: [], obj: { num: 0 } }]);
+
+
+    // select.objArray.filter.num.eq(1).
 
 }
