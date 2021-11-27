@@ -46,6 +46,7 @@ export type UpdatableArray<S extends Array<any>, F extends FindOrFilter, Q exten
   or: Comparators<S, S[0], F> & (S[0] extends object ? Searchable<S, S[0], F> : {}),
   and: Comparators<S, S[0], F> & (S[0] extends object ? Searchable<S, S[0], F> : {}),
   replace: (replacement: F extends 'isFilter' ? S : S[0]) => void,
+  upsert: (replacement: F extends 'isFilter' ? S : S[0]) => void,
   remove: () => void,
 } : {
   find: Comparators<S, S[0], 'isFind'> & (S[0] extends object ? Searchable<S, S[0], 'isFind'> : {}),

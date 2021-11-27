@@ -129,5 +129,17 @@ describe('Top-level', () => {
     expect(select.read()).toEqual([1, 2, 3, 4, 5, 6]);
   })
 
+  // it('', () => {
+  //   const select = createApplicationStore([1, 2, 3]);
+  //   select.find.eq(2).upsert(4);
+  //   expect(select.read()).toEqual([1, 4, 3]);
+  // });
+
+  // it('', () => {
+  //   const select = createApplicationStore([1, 2, 3]);
+  //   select.find.eq(4).upsert(4);
+  //   expect(select.read()).toEqual([1, 2, 3, 4]);
+  // });
+
 });
 

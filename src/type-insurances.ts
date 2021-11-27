@@ -118,4 +118,8 @@ function test() {
     .find.eq(3).and.lt(5)
     .read();
 
+  select.objArray
+    .find.num.eq(3)
+    .upsert({ arr: [], num: 0, objArr: [], obj: { num: 0 } })
+
 }

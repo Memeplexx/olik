@@ -26,7 +26,7 @@ export const readSelector = (storeName: string) => {
         if (topLevel) {
           stateActions = new Array<StateAction>();
         }
-        if (['replace', 'patch', 'remove', 'increment', 'removeAll', 'replaceAll', 'incrementAll', 'addOne', 'addMany'].includes(prop)) {
+        if (['replace', 'patch', 'remove', 'increment', 'removeAll', 'replaceAll', 'incrementAll', 'addOne', 'addMany', 'upsert'].includes(prop)) {
           return (arg: any) => {
             stateActions.push({ type: 'action', name: prop, arg, actionType: `${prop}()` });
             const oldState = libState.appStates[storeName];
@@ -196,14 +196,11 @@ export const readState = (state: any, stateActions: StateAction[]): any => {
     if (Array.isArray(state) && (action.type === 'search')) {
       const query = constructQuery(stateActions);
       if ('find' === action.name) {
-        const findResult = readState((state as any[])
-          .find(query), stateActions);
+        const findResult = readState((state as any[]).find(query), stateActions);
         if (findResult === undefined) { throw new Error(); }
         return findResult;
       } else if ('filter' === action.name) {
-        return (state as any[])
-          .filter(query)
-          .map(e => readState(e, stateActions.slice()));
+        return (state as any[]).filter(query).map(e => readState(e, stateActions.slice()));
       }
     } else {
       return readState((state || {})[action.name], stateActions);
