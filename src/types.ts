@@ -67,8 +67,10 @@ export type UpdatableArray<S extends Array<any>, F extends FindOrFilter, Q exten
   insertMany: (array: S) => void,
 } & (S[0] extends Array<any> ? {} : S[0] extends object ? {
   upsertMatching: { [K in keyof S[0]]: S[0][K] extends object ? UpsertableObject<S[0], S[0]> : UpsertablePrimitive<S[0]> },
-} : {}) & Readable<S, F>))
-  // & (S[0] extends Array<any> ? {} : S[0] extends object ? UpdatableObject<S[0], F, Q> : UpdatablePrimitive<S[0], F, Q>);
+} : {}) & Readable<S, F> & { [K in keyof S[0]]: (S[0][K] extends Array<any>
+    ? UpdatableArray<S[0][K], 'isFilter', 'notQueried'>
+    : S[0][K] extends object ? UpdatableObject<S[0][K], F, Q>
+    : UpdatablePrimitive<S[0][K], F, Q>) }))
 
 export type UpdatablePrimitive<S, F extends FindOrFilter, Q extends QueryStatus> = (
   Q extends 'notQueried' ? {

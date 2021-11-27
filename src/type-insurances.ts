@@ -125,6 +125,5 @@ function test() {
   select.objArray
     .upsertMatching.obj.num
     .withMany([{ num: 3, arr: [], objArr: [], obj: { num: 0 } }]);
-  
 
 }
