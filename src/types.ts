@@ -82,7 +82,6 @@ export type UpdatableArray<S extends Array<any>, F extends FindOrFilter, Q exten
       filter: Comparators<S, S[0], 'isFilter'> & (S[0] extends object ? Searchable<S, S[0], 'isFilter'> : {}),
       removeAll: () => void,
       replaceAll: (newArray: S) => void,
-      patchAll: (patch: Partial<S[0]>) => void,
       insertOne: (element: S[0]) => void,
       insertMany: (array: S) => void,
     }) & (
@@ -90,10 +89,16 @@ export type UpdatableArray<S extends Array<any>, F extends FindOrFilter, Q exten
         upsertMatching: { [K in keyof S[0]]: S[0][K] extends object ? UpsertableObject<S[0], S[0]> : UpsertablePrimitive<S[0]> },
       }) : {}
     ) & (
-      S[0] extends object ? { [K in keyof S[0]]: (S[0][K] extends Array<any>
-        ? UpdatableArray<S[0][K], 'isFilter', 'notQueried'>
-        : S[0][K] extends object ? UpdatableObject<S[0][K], F, Q>
-        : UpdatablePrimitive<S[0][K], F, Q>) } : {}
+      S[0] extends object ? (({
+        [K in keyof S[0]]: (S[0][K] extends Array<any>
+          ? UpdatableArray<S[0][K], 'isFilter', 'notQueried'>
+          : S[0][K] extends object ? UpdatableObject<S[0][K], F, Q>
+          : UpdatablePrimitive<S[0][K], F, Q>)
+      }) & ({
+        patchAll: (patch: Partial<S[0]>) => void,
+      })) : ({
+        incrementAll: (by: number) => void
+      })
     ) & (
       Readable<S, F>
     )

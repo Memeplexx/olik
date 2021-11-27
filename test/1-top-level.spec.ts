@@ -92,13 +92,13 @@ describe('Top-level', () => {
     expect(select.read()).toEqual([1, 4, 3]);
   })
 
-  it('should filter elements from a top-level array of primitives and then replace them', () => {
-    const select = createApplicationStore([1, 2, 3]);
-    select
-      .filter.in([1, 2])
-      .replace(1);
-    expect(select.read()).toEqual([1, 1, 3]);
-  })
+  // it('should filter elements from a top-level array of primitives and then replace them', () => {
+  //   const select = createApplicationStore([1, 2, 3]);
+  //   select
+  //     .filter.in([1, 2])
+  //     .replace(1);
+  //   expect(select.read()).toEqual([1, 1, 3]);
+  // })
 
   it('should filter elements from a top-level array of primitives and then increment them', () => {
     const select = createApplicationStore([1, 2, 3]);
