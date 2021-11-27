@@ -158,4 +158,13 @@ describe('Object', () => {
     expect(changeCount).toEqual(1);
   })
 
+  it('', () => {
+    const select = createApplicationStore({ arr: [{ id: 1, num: 1 }, { id: 2, num: 2 }] });
+    // select.arr
+    //   .filter.id.eq(1).or.num.eq(2)
+    //   .id.increment(10);
+    // console.log('_____________', select.read());
+    console.log('__________', select.arr.filter.id.eq(1).or.num.eq(2).id.read());
+  })
+
 });

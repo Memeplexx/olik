@@ -108,3 +108,8 @@ export interface StateAction {
   arg: any;
   actionType: string | null;
 }
+
+export interface QuerySpec {
+  query: (e: any) => boolean,
+  concat: 'and' | 'or' | 'last'
+};

@@ -1,4 +1,4 @@
-import { FindOrFilter, StateAction, UpdatableArray, UpdatableObject, UpdatablePrimitive } from "./types";
+import { FindOrFilter, QuerySpec, StateAction, UpdatableArray, UpdatableObject, UpdatablePrimitive } from "./types";
 
 
 export const createApplicationStore = <S>(
@@ -46,7 +46,7 @@ export const readSelector = (storeName: string) => {
             libState.changeListeners[storeName].set(stateActionsCopy, changeListener);
             return { unsubscribe: () => { libState.changeListeners[storeName].delete(stateActionsCopy); } }
           }
-        } else if ('or' === prop) {
+        } else if (['and', 'or'].includes(prop)) {
           stateActions.push({ type: 'searchConcat', name: prop, arg: null, actionType: prop });
           return initialize({}, false, stateActions);
         } else if (['eq', 'ne', 'in', 'ni', 'gt', 'gte', 'lt', 'lte', 'match'].includes(prop)) {
@@ -68,7 +68,7 @@ export const readSelector = (storeName: string) => {
 }
 
 export const notifySubscribers = (
-  oldState: any, 
+  oldState: any,
   newState: any,
   changeListeners: Map<StateAction[], (arg: any) => any>
 ) => {
@@ -79,6 +79,48 @@ export const notifySubscribers = (
       listener(selectedNewState);
     }
   })
+}
+
+export const constructQuery = (stateActions: StateAction[]) => {
+  const concatenateQueries = (queries: QuerySpec[]): QuerySpec[] => {
+    const constructQuery = () => {
+      const queryPaths = stateActions
+        .slice(0, stateActions.findIndex(sa => sa.type === 'comparator'))
+        .reduce((prev, curr) => {
+          stateActions.shift();
+          return prev.concat(curr);
+        }, new Array<StateAction>());
+      const comparator = stateActions.shift()!;
+      return (e: any) => compare(queryPaths.reduce((prev, curr) => prev = prev[curr.name], e), comparator.name, comparator.arg)
+    }
+    queries.push({ query: constructQuery(), concat: stateActions[0].type === 'action' ? 'last' : stateActions[0].name as 'and' | 'or' });
+    if (stateActions[0].type === 'searchConcat') {
+      stateActions.shift();
+      return concatenateQueries(queries);
+    }
+    return queries;
+  }
+  const queries = concatenateQueries([]);
+  const ors = new Array<(arg: any) => boolean>();
+  const ands = new Array<(arg: any) => boolean>();
+  for (let i = 0; i < queries.length; i++) {
+    const isLastClause = queries[i].concat === 'last';
+    const isAndClause = queries[i].concat === 'and';
+    const isOrClause = queries[i].concat === 'or';
+    const previousClauseWasAnAnd = queries[i - 1] && queries[i - 1].concat === 'and';
+    if (isAndClause || previousClauseWasAnAnd) {
+      ands.push(queries[i].query);
+    }
+    if ((isOrClause || isLastClause) && ands.length) {
+      const andsCopy = ands.slice();
+      ors.push(el => andsCopy.every(and => and(el)));
+      ands.length = 0;
+    }
+    if (!isAndClause && !previousClauseWasAnAnd) {
+      ors.push(queries[i].query);
+    }
+  }
+  return (e: any) => ors.some(fn => fn(e));
 }
 
 export const writeState = (oldObj: any, newObj: any, stateActions: StateAction[]): any => {
@@ -93,32 +135,32 @@ export const writeState = (oldObj: any, newObj: any, stateActions: StateAction[]
   const action = stateActions.shift()!;
   if (stateActions.length > 0) {
     if (Array.isArray(oldObj) && (action.type === 'search')) {
-      const queryPaths = stateActions
-        .slice(0, stateActions.findIndex(sa => sa.type === 'comparator'))
-        .reduce((prev, curr) => {
-          stateActions.shift();
-          return prev.concat(curr);
-        }, new Array<StateAction>());
-      const comparator = stateActions.shift()!;
+      const query = constructQuery(stateActions);
+      let findIndex = -1;
+      if ('find' === action.name) {
+        findIndex = (oldObj as any[]).findIndex(query);
+        if (findIndex === -1) { throw new Error(); }
+      }
       if (stateActions[0].name === 'remove') {
         if ('find' === action.name) {
-          const indexToRemove = (oldObj as any[])
-            .findIndex(e => compare(queryPaths.reduce((prev, curr) => prev = prev[curr.name], e), comparator.name, comparator.arg));
-          if (indexToRemove === -1) { throw new Error(); }
-          return (oldObj as any[])
-            .filter((e, i) => indexToRemove !== i);
+          return (oldObj as any[]).filter((e, i) => findIndex !== i);
         } else if ('filter' === action.name) {
-          return (oldObj as any[])
-            .filter(e => compare(queryPaths.reduce((prev, curr) => prev = prev[curr.name], e), comparator.name, comparator.arg));
+          return (oldObj as any[]).filter(query);
         }
       } else {
-        return (oldObj as any[]).map((e, i) => {
-          return compare(queryPaths.reduce((prev, curr) => prev = prev[curr.name], e), comparator.name, comparator.arg)
-            ? (typeof (oldObj[i]) === 'object'
-              ? { ...oldObj[i], ...writeState(oldObj[i] || {}, newObj[i] || {}, stateActions.slice()) }
-              : writeState(oldObj[i] || {}, newObj[i] || {}, stateActions.slice()))
-            : e;
-        });
+        if ('find' === action.name) {
+          return (oldObj as any[]).map((e, i) => i === findIndex
+            ? (typeof (e) === 'object'
+              ? { ...e, ...writeState(e || {}, newObj[i] || {}, stateActions.slice()) }
+              : writeState(e, newObj[i], stateActions.slice()))
+            : e);
+        } else if ('filter' === action.name) {
+          return (oldObj as any[]).map((e, i) => query(e)
+            ? (typeof (e) === 'object'
+              ? { ...e, ...writeState(e || {}, newObj[i] || {}, stateActions.slice()) }
+              : writeState(e, newObj[i], stateActions.slice()))
+            : e);
+        }
       }
     } else {
       return { ...oldObj, [action.name]: writeState((oldObj || {})[action.name], ((newObj as any) || {})[action.name], stateActions) };
@@ -150,20 +192,16 @@ export const readState = (state: any, stateActions: StateAction[]): any => {
   const action = stateActions.shift()!;
   if (stateActions.length > 0) {
     if (Array.isArray(state) && (action.type === 'search')) {
-      const queryPaths = stateActions
-        .slice(0, stateActions.findIndex(sa => sa.type === 'comparator'))
-        .reduce((prev, curr) => {
-          stateActions.shift();
-          return prev.concat(curr);
-        }, new Array<StateAction>());
-      const comparator = stateActions.shift()!;
+      const query = constructQuery(stateActions);
       if ('find' === action.name) {
-        return readState((state as any[])
-          .find(e => compare(queryPaths.reduce((prev, curr) => prev = prev[curr.name], e), comparator.name, comparator.arg)), stateActions);
+        const findResult = readState((state as any[])
+          .find(query), stateActions);
+        if (findResult === undefined) { throw new Error(); }
+        return findResult;
       } else if ('filter' === action.name) {
         return (state as any[])
-          .filter(e => compare(queryPaths.reduce((prev, curr) => prev = prev[curr.name], e), comparator.name, comparator.arg))
-          .map(e => readState(e, stateActions));
+          .filter(query)
+          .map(e => readState(e, stateActions.slice()));
       }
     } else {
       return readState((state || {})[action.name], stateActions);
