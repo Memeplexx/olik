@@ -117,6 +117,17 @@ describe('Top-level', () => {
     console.log(select.read())
   })
 
+  it('', () => {
+    const select = createApplicationStore([1, 2, 3]);
+    select.addOne(4);
+    expect(select.read()).toEqual([1, 2, 3, 4]);
+  })
+
+  it('', () => {
+    const select = createApplicationStore([1, 2, 3]);
+    select.addMany([4, 5, 6]);
+    expect(select.read()).toEqual([1, 2, 3, 4, 5, 6]);
+  })
 
 });
 

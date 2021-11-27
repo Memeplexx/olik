@@ -160,11 +160,15 @@ describe('Object', () => {
 
   it('', () => {
     const select = createApplicationStore({ arr: [{ id: 1, num: 1 }, { id: 2, num: 2 }] });
-    // select.arr
-    //   .filter.id.eq(1).or.num.eq(2)
-    //   .id.increment(10);
-    // console.log('_____________', select.read());
-    console.log('__________', select.arr.filter.id.eq(1).or.num.eq(2).id.read());
+    expect(select.arr.filter.id.eq(1).or.num.eq(2).id.read()).toEqual([1, 2]);
+  })
+
+  it('', () => {
+    const select = createApplicationStore({ arr: [{ id: 1, num: 1 }, { id: 2, num: 2 }] });
+    select.arr
+      .filter.id.eq(1).or.num.eq(2)
+      .id.increment(1);
+    expect(select.arr.read()).toEqual([{ id: 2, num: 1 }, { id: 3, num: 2 }]);
   })
 
 });

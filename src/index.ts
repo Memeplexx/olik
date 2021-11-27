@@ -26,7 +26,7 @@ export const readSelector = (storeName: string) => {
         if (topLevel) {
           stateActions = new Array<StateAction>();
         }
-        if (['replace', 'patch', 'remove', 'increment', 'removeAll', 'replaceAll', 'incrementAll'].includes(prop)) {
+        if (['replace', 'patch', 'remove', 'increment', 'removeAll', 'replaceAll', 'incrementAll', 'addOne', 'addMany'].includes(prop)) {
           return (arg: any) => {
             stateActions.push({ type: 'action', name: prop, arg, actionType: `${prop}()` });
             const oldState = libState.appStates[storeName];
@@ -180,6 +180,10 @@ export const writeState = (oldObj: any, newObj: any, stateActions: StateAction[]
       return oldObj.map((e: any) => e + action.arg);
     }
     return oldObj + action.arg;
+  } else if (action.name === 'addOne') {
+    return [...oldObj, action.arg];
+  } else if (action.name === 'addMany') {
+    return [...oldObj, ...action.arg];
   }
 }
 

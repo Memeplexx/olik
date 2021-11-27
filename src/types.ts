@@ -52,6 +52,8 @@ export type UpdatableArray<S extends Array<any>, F extends FindOrFilter, Q exten
   filter: Comparators<S, S[0], 'isFilter'> & (S[0] extends object ? SearchableAny<S, S[0], 'isFilter'> : {}),
   removeAll: () => void,
   replaceAll: (newArray: S) => void,
+  addOne: (element: S[0]) => void,
+  addMany: (array: S) => void,
 })
   & (S[0] extends Array<any> ? {} : S[0] extends object ? UpdatableObject<S[0], F, Q> : UpdatablePrimitive<S[0], F, Q>);
 
