@@ -43,13 +43,13 @@ export type UpdatableObject<S, F extends FindOrFilter, Q extends QueryStatus> = 
   & Readable<S, F>;
 
 export type UpdatableArray<S extends Array<any>, F extends FindOrFilter, Q extends QueryStatus> = (Q extends 'queried' ? {
-  or: Comparators<S, S[0], F> & (S[0] extends object ? SearchableAny<S, S[0], F> : {}),
-  and: Comparators<S, S[0], F> & (S[0] extends object ? SearchableAny<S, S[0], F> : {}),
+  or: Comparators<S, S[0], F> & (S[0] extends object ? Searchable<S, S[0], F> : {}),
+  and: Comparators<S, S[0], F> & (S[0] extends object ? Searchable<S, S[0], F> : {}),
   replace: (replacement: F extends 'isFilter' ? S : S[0]) => void,
   remove: () => void,
 } : {
-  find: Comparators<S, S[0], 'isFind'> & (S[0] extends object ? SearchableAny<S, S[0], 'isFind'> : {}),
-  filter: Comparators<S, S[0], 'isFilter'> & (S[0] extends object ? SearchableAny<S, S[0], 'isFilter'> : {}),
+  find: Comparators<S, S[0], 'isFind'> & (S[0] extends object ? Searchable<S, S[0], 'isFind'> : {}),
+  filter: Comparators<S, S[0], 'isFilter'> & (S[0] extends object ? Searchable<S, S[0], 'isFilter'> : {}),
   removeAll: () => void,
   replaceAll: (newArray: S) => void,
   addOne: (element: S[0]) => void,
@@ -102,7 +102,7 @@ export type Comparators<T, S, F extends FindOrFilter> = {
   lte: (lessThanOrEqualTo: S) => UpdatableAny<T, F, 'queried'>,
 } : {});
 
-export type SearchableAny<T, S, F extends FindOrFilter> = { [K in keyof S]: (S[K] extends object ? (SearchableAny<T, S[K], F> & Comparators<T, S[K], F>) : Comparators<T, S[K], F>) };
+export type Searchable<T, S, F extends FindOrFilter> = { [K in keyof S]: (S[K] extends object ? (Searchable<T, S[K], F> & Comparators<T, S[K], F>) : Comparators<T, S[K], F>) };
 
 export interface StateAction {
   type: 'property' | 'search' | 'comparator' | 'action' | 'searchConcat';
