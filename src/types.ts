@@ -32,6 +32,16 @@ export interface Unsubscribable {
   unsubscribe: () => any,
 }
 
+export type UpsertableObject<T, S> = {
+  withOne: (upsertion: T) => void,
+  withMany: (upsertion: T[]) => void,
+} & { [K in keyof S]: S[K] extends object ? UpsertableObject<T, S[K]> : UpsertablePrimitive<T> }
+
+export type UpsertablePrimitive<T> = {
+  withOne: (upsertion: T) => void,
+  withMany: (upsertion: T[]) => void,
+}
+
 export type UpdatableObject<S, F extends FindOrFilter, Q extends QueryStatus> = {
   replace: (replacement: S) => void;
   patch: (patch: Partial<S>) => void;
@@ -46,7 +56,6 @@ export type UpdatableArray<S extends Array<any>, F extends FindOrFilter, Q exten
   or: Comparators<S, S[0], F> & (S[0] extends object ? Searchable<S, S[0], F> : {}),
   and: Comparators<S, S[0], F> & (S[0] extends object ? Searchable<S, S[0], F> : {}),
   replace: (replacement: F extends 'isFilter' ? S : S[0]) => void,
-  upsert: (replacement: F extends 'isFilter' ? S : S[0]) => void,
   remove: () => void,
 } : {
   find: Comparators<S, S[0], 'isFind'> & (S[0] extends object ? Searchable<S, S[0], 'isFind'> : {}),
@@ -55,6 +64,7 @@ export type UpdatableArray<S extends Array<any>, F extends FindOrFilter, Q exten
   replaceAll: (newArray: S) => void,
   addOne: (element: S[0]) => void,
   addMany: (array: S) => void,
+  upsertMatching: { [K in keyof S[0]]: S[0][K] extends object ? UpsertableObject<S[0], S[0]> : UpsertablePrimitive<S[0]> },
 })
   & (S[0] extends Array<any> ? {} : S[0] extends object ? UpdatableObject<S[0], F, Q> : UpdatablePrimitive<S[0], F, Q>);
 

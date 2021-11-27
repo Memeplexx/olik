@@ -119,7 +119,12 @@ function test() {
     .read();
 
   select.objArray
-    .find.num.eq(3)
-    .upsert({ arr: [], num: 0, objArr: [], obj: { num: 0 } })
+    .upsertMatching.obj.num
+    .withOne({ num: 3, arr: [], objArr: [], obj: { num: 0 } });
+
+  select.objArray
+    .upsertMatching.obj.num
+    .withMany([{ num: 3, arr: [], objArr: [], obj: { num: 0 } }]);
+  
 
 }
