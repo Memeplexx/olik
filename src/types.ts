@@ -43,7 +43,6 @@ export type UpsertablePrimitive<T> = {
 }
 
 export type UpdatableObject<S, F extends FindOrFilter, Q extends QueryStatus> = {
-  // replace: (replacement: S) => void;
   patch: (patch: Partial<S>) => void;
 } & (F extends 'isFind' ? {
   replace: (replacement: S) => void;
@@ -57,7 +56,6 @@ export type UpdatableObject<S, F extends FindOrFilter, Q extends QueryStatus> = 
 export type UpdatableArray<S extends Array<any>, F extends FindOrFilter, Q extends QueryStatus> = (Q extends 'queried' ? ({
   or: Comparators<S, S[0], F> & (S[0] extends object ? Searchable<S, S[0], F> : {}),
   and: Comparators<S, S[0], F> & (S[0] extends object ? Searchable<S, S[0], F> : {}),
-  // replace: (replacement: F extends 'isFilter' ? S : S[0]) => void,
   remove: () => void,
 } & (F extends 'isFind' ? {
   replace: (replacement: S[0]) => void
