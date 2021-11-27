@@ -142,16 +142,11 @@ export const writeState = (currentState: any, stateToUpdate: any, stateActions: 
         return prev.concat(curr);
       }, new Array<StateAction>());
     const upsert = stateActions.shift()!;
-    const result = new Array<any>();
     const upsertArgs = Array.isArray(upsert.arg) ? upsert.arg : [upsert.arg];
-    (currentState as any[]).forEach((e, i) => {
+    const result = (currentState as any[]).map(e => {
       const elementValue = queryPaths.reduce((prev, curr) => prev = prev[curr.name], e);
       const foundIndex = upsertArgs.findIndex(ua => queryPaths.reduce((prev, curr) => prev = prev[curr.name], ua) === elementValue);
-      if (foundIndex !== -1) {
-        result.push(...upsertArgs.splice(foundIndex, 1));
-      } else {
-        result.push(e);
-      }
+      return foundIndex !== -1 ? upsertArgs.splice(foundIndex, 1)[0] : e;
     });
     return [...result, ...upsertArgs];
   }
