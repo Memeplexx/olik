@@ -127,12 +127,9 @@ export const constructQuery = (stateActions: StateAction[]) => {
 
 export const writeState = (currentState: any, stateToUpdate: any, stateActions: StateAction[]): any => {
   if (Array.isArray(currentState) && (stateActions[0].type === 'property')) {
-    return (currentState as any[]).map((e, i) => {
-      if (typeof (currentState[i]) === 'object') {
-        return { ...currentState[i], ...writeState(currentState[i] || {}, stateToUpdate[i] || {}, stateActions.slice()) };
-      }
-      return writeState(currentState[i] || {}, stateToUpdate[i] || {}, stateActions.slice());
-    });
+    return (currentState as any[]).map((e, i) => (typeof (currentState[i]) === 'object')
+      ? { ...currentState[i], ...writeState(currentState[i] || {}, stateToUpdate[i] || {}, stateActions.slice()) }
+      : writeState(currentState[i] || {}, stateToUpdate[i] || {}, stateActions.slice()));
   } else if (Array.isArray(currentState) && (stateActions[0].type === 'upsertMatching')) {
     stateActions.shift();
     const queryPaths = stateActions
@@ -194,7 +191,7 @@ export const writeState = (currentState: any, stateToUpdate: any, stateActions: 
   } else if (action.name === 'replaceAll') {
     return action.arg;
   } else if (action.name === 'patchAll') {
-    return (currentState as any[]).map(e => ({...e, ...action.arg}))
+    return (currentState as any[]).map(e => ({ ...e, ...action.arg }))
   } else if (action.name === 'incrementAll') {
     if (Array.isArray(currentState)) {
       return currentState.map((e: any) => e + action.arg);
