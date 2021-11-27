@@ -1,5 +1,7 @@
 import { createApplicationStore } from ".";
 
+type Test = { num: number, arr: Array<number>, objArr: Array<{ num: number }>, obj: { num: number } };
+
 function test() {
   const select = createApplicationStore({
     number: 0,
@@ -8,7 +10,7 @@ function test() {
     arrayStr: new Array<string>(),
     arrayBool: new Array<boolean>(),
     arrayTuple: new Array<'hello' | 'world'>(),
-    objArray: new Array<{ num: number, arr: Array<number>, objArr: Array<{ num: number }>, obj: { num: number } }>(),
+    objArray: new Array<Test>(),
     object: { one: '', two: '', three: 0 }
   });
 
@@ -127,6 +129,6 @@ function test() {
     .withMany([{ num: 3, arr: [], objArr: [], obj: { num: 0 } }]);
 
 
-    // select.objArray.filter.num.eq(1).
+  // select.objArray.upsertMatching.
 
 }

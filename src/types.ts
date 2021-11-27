@@ -42,52 +42,84 @@ export type UpsertablePrimitive<T> = {
   withMany: (upsertion: T[]) => void,
 }
 
-export type UpdatableObject<S, F extends FindOrFilter, Q extends QueryStatus> = {
-  patch: (patch: Partial<S>) => void;
-} & (F extends 'isFind' ? {
-  replace: (replacement: S) => void;
-} : {})
-  & { [K in keyof S]: S[K] extends Array<any>
+export type UpdatableObject<S, F extends FindOrFilter, Q extends QueryStatus> = (
+  ({
+    patch: (patch: Partial<S>) => void;
+  }) & (
+    F extends 'isFind' ? {
+      replace: (replacement: S) => void;
+    } : {}
+  ) & ({
+    [K in keyof S]: S[K] extends Array<any>
     ? UpdatableArray<S[K], 'isFilter', 'notQueried'>
     : S[K] extends object ? UpdatableObject<S[K], F, Q>
-    : UpdatablePrimitive<S[K], F, Q> }
-  & Readable<S, F>;
+    : UpdatablePrimitive<S[K], F, Q>
+  }) & (
+    Readable<S, F>
+  )
+);
 
-export type UpdatableArray<S extends Array<any>, F extends FindOrFilter, Q extends QueryStatus> = (Q extends 'queried' ? ({
-  or: Comparators<S, S[0], F> & (S[0] extends object ? Searchable<S, S[0], F> : {}),
-  and: Comparators<S, S[0], F> & (S[0] extends object ? Searchable<S, S[0], F> : {}),
-  remove: () => void,
-} & (F extends 'isFind' ? {
-  replace: (replacement: S[0]) => void
-} : {}) & (S[0] extends Array<any> ? {} : S[0] extends object ? UpdatableObject<S[0], F, Q> : UpdatablePrimitive<S[0], F, Q>)) : ({
-  find: Comparators<S, S[0], 'isFind'> & (S[0] extends object ? Searchable<S, S[0], 'isFind'> : {}),
-  filter: Comparators<S, S[0], 'isFilter'> & (S[0] extends object ? Searchable<S, S[0], 'isFilter'> : {}),
-  removeAll: () => void,
-  replaceAll: (newArray: S) => void,
-  patchAll: (patch: Partial<S[0]>) => void,
-  insertOne: (element: S[0]) => void,
-  insertMany: (array: S) => void,
-} & (S[0] extends Array<any> ? {} : S[0] extends object ? {
-  upsertMatching: { [K in keyof S[0]]: S[0][K] extends object ? UpsertableObject<S[0], S[0]> : UpsertablePrimitive<S[0]> },
-} : {}) & Readable<S, F> & { [K in keyof S[0]]: (S[0][K] extends Array<any>
-    ? UpdatableArray<S[0][K], 'isFilter', 'notQueried'>
-    : S[0][K] extends object ? UpdatableObject<S[0][K], F, Q>
-    : UpdatablePrimitive<S[0][K], F, Q>) }))
+export type UpdatableArray<S extends Array<any>, F extends FindOrFilter, Q extends QueryStatus> = (
+  Q extends 'queried' ? (
+    ({
+      or: Comparators<S, S[0], F> & (S[0] extends object ? Searchable<S, S[0], F> : {}),
+      and: Comparators<S, S[0], F> & (S[0] extends object ? Searchable<S, S[0], F> : {}),
+      remove: () => void,
+    }) & (
+      F extends 'isFind'
+      ? { replace: (replacement: S[0]) => void }
+      : {}
+    ) & (
+      S[0] extends Array<any>
+      ? {}
+      : S[0] extends object
+      ? UpdatableObject<S[0], F, Q>
+      : UpdatablePrimitive<S[0], F, Q>
+    )
+  ) : (
+    ({
+      find: Comparators<S, S[0], 'isFind'> & (S[0] extends object ? Searchable<S, S[0], 'isFind'> : {}),
+      filter: Comparators<S, S[0], 'isFilter'> & (S[0] extends object ? Searchable<S, S[0], 'isFilter'> : {}),
+      removeAll: () => void,
+      replaceAll: (newArray: S) => void,
+      patchAll: (patch: Partial<S[0]>) => void,
+      insertOne: (element: S[0]) => void,
+      insertMany: (array: S) => void,
+    }) & (
+      S[0] extends Array<any> ? {} : S[0] extends object ? ({
+        upsertMatching: { [K in keyof S[0]]: S[0][K] extends object ? UpsertableObject<S[0], S[0]> : UpsertablePrimitive<S[0]> },
+      }) : {}
+    ) & (
+      S[0] extends object ? { [K in keyof S[0]]: (S[0][K] extends Array<any>
+        ? UpdatableArray<S[0][K], 'isFilter', 'notQueried'>
+        : S[0][K] extends object ? UpdatableObject<S[0][K], F, Q>
+        : UpdatablePrimitive<S[0][K], F, Q>) } : {}
+    ) & (
+      Readable<S, F>
+    )
+  )
+)
+
 
 export type UpdatablePrimitive<S, F extends FindOrFilter, Q extends QueryStatus> = (
-  Q extends 'notQueried' ? {
-    replaceAll: (replacement: S) => void;
-  } : F extends 'isFind' ? {
-    replace: (replacement: S) => void;
-  } : {}
-) & (S extends number ?
-  (Q extends 'notQueried' ? {
-    incrementAll: (by: number) => void;
-  } : {
-    increment: (by: number) => void;
-  }) : {
-  }
-  ) & Readable<S, F>;
+  (
+    Q extends 'notQueried' ? {
+      replaceAll: (replacement: S) => void;
+    } : F extends 'isFind' ? {
+      replace: (replacement: S) => void;
+    } : {}
+  ) & (
+    S extends number ? (
+      Q extends 'notQueried' ? ({
+        incrementAll: (by: number) => void;
+      }) : ({
+        increment: (by: number) => void;
+      })
+    ) : {}
+  ) & (
+    Readable<S, F>
+  )
+);
 
 export interface Readable<S, F extends FindOrFilter> {
   read: () => F extends 'isFilter' ? DeepReadonly<S[]> : DeepReadonly<S>;
