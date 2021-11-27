@@ -108,7 +108,7 @@ export const writeState = (oldObj: any, newObj: any, stateActions: StateAction[]
             .filter((e, i) => indexToRemove !== i);
         } else if ('filter' === action.name) {
           return (oldObj as any[])
-            .filter((e, i) => compare(queryPaths.reduce((prev, curr) => prev = prev[curr.name], e), argAction.name, argAction.arg));
+            .filter(e => compare(queryPaths.reduce((prev, curr) => prev = prev[curr.name], e), argAction.name, argAction.arg));
         }
       } else {
         return (oldObj as any[]).map((e, i) => {
