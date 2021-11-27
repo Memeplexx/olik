@@ -52,22 +52,23 @@ export type UpdatableObject<S, F extends FindOrFilter, Q extends QueryStatus> = 
     : UpdatablePrimitive<S[K], F, Q> }
   & Readable<S, F>;
 
-export type UpdatableArray<S extends Array<any>, F extends FindOrFilter, Q extends QueryStatus> = (Q extends 'queried' ? {
+export type UpdatableArray<S extends Array<any>, F extends FindOrFilter, Q extends QueryStatus> = (Q extends 'queried' ? ({
   or: Comparators<S, S[0], F> & (S[0] extends object ? Searchable<S, S[0], F> : {}),
   and: Comparators<S, S[0], F> & (S[0] extends object ? Searchable<S, S[0], F> : {}),
   replace: (replacement: F extends 'isFilter' ? S : S[0]) => void,
   remove: () => void,
-} : ({
+} & (S[0] extends Array<any> ? {} : S[0] extends object ? UpdatableObject<S[0], F, Q> : UpdatablePrimitive<S[0], F, Q>)) : ({
   find: Comparators<S, S[0], 'isFind'> & (S[0] extends object ? Searchable<S, S[0], 'isFind'> : {}),
   filter: Comparators<S, S[0], 'isFilter'> & (S[0] extends object ? Searchable<S, S[0], 'isFilter'> : {}),
   removeAll: () => void,
   replaceAll: (newArray: S) => void,
+  patchAll: (patch: Partial<S[0]>) => void,
   insertOne: (element: S[0]) => void,
   insertMany: (array: S) => void,
 } & (S[0] extends Array<any> ? {} : S[0] extends object ? {
   upsertMatching: { [K in keyof S[0]]: S[0][K] extends object ? UpsertableObject<S[0], S[0]> : UpsertablePrimitive<S[0]> },
-} : {})))
-  & (S[0] extends Array<any> ? {} : S[0] extends object ? UpdatableObject<S[0], F, Q> : UpdatablePrimitive<S[0], F, Q>);
+} : {}) & Readable<S, F>))
+  // & (S[0] extends Array<any> ? {} : S[0] extends object ? UpdatableObject<S[0], F, Q> : UpdatablePrimitive<S[0], F, Q>);
 
 export type UpdatablePrimitive<S, F extends FindOrFilter, Q extends QueryStatus> = (
   Q extends 'notQueried' ? {
