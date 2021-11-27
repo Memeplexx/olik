@@ -123,75 +123,73 @@ export const constructQuery = (stateActions: StateAction[]) => {
   return (e: any) => ors.some(fn => fn(e));
 }
 
-export const writeState = (oldObj: any, newObj: any, stateActions: StateAction[]): any => {
-  if (Array.isArray(oldObj) && (stateActions[0].type === 'property')) {
-    return (oldObj as any[]).map((e, i) => {
-      if (typeof (oldObj[i]) === 'object') {
-        return { ...oldObj[i], ...writeState(oldObj[i] || {}, newObj[i] || {}, stateActions.slice()) };
+export const writeState = (currentState: any, stateToUpdate: any, stateActions: StateAction[]): any => {
+  if (Array.isArray(currentState) && (stateActions[0].type === 'property')) {
+    return (currentState as any[]).map((e, i) => {
+      if (typeof (currentState[i]) === 'object') {
+        return { ...currentState[i], ...writeState(currentState[i] || {}, stateToUpdate[i] || {}, stateActions.slice()) };
       }
-      return writeState(oldObj[i] || {}, newObj[i] || {}, stateActions.slice());
+      return writeState(currentState[i] || {}, stateToUpdate[i] || {}, stateActions.slice());
     });
   }
   const action = stateActions.shift()!;
   if (stateActions.length > 0) {
-    if (Array.isArray(oldObj) && (action.type === 'search')) {
+    if (Array.isArray(currentState) && (action.type === 'search')) {
       const query = constructQuery(stateActions);
       let findIndex = -1;
       if ('find' === action.name) {
-        findIndex = (oldObj as any[]).findIndex(query);
+        findIndex = (currentState as any[]).findIndex(query);
         if (findIndex === -1) { throw new Error(); }
       }
       if (stateActions[0].name === 'remove') {
         if ('find' === action.name) {
-          return (oldObj as any[]).filter((e, i) => findIndex !== i);
+          return (currentState as any[]).filter((e, i) => findIndex !== i);
         } else if ('filter' === action.name) {
-          return (oldObj as any[]).filter(query);
+          return (currentState as any[]).filter(query);
         }
       } else {
         if ('find' === action.name) {
-          return (oldObj as any[]).map((e, i) => i === findIndex
+          return (currentState as any[]).map((e, i) => i === findIndex
             ? (typeof (e) === 'object'
-              ? { ...e, ...writeState(e || {}, newObj[i] || {}, stateActions.slice()) }
-              : writeState(e, newObj[i], stateActions.slice()))
+              ? { ...e, ...writeState(e || {}, stateToUpdate[i] || {}, stateActions.slice()) }
+              : writeState(e, stateToUpdate[i], stateActions.slice()))
             : e);
         } else if ('filter' === action.name) {
-          return (oldObj as any[]).map((e, i) => query(e)
+          return (currentState as any[]).map((e, i) => query(e)
             ? (typeof (e) === 'object'
-              ? { ...e, ...writeState(e || {}, newObj[i] || {}, stateActions.slice()) }
-              : writeState(e, newObj[i], stateActions.slice()))
+              ? { ...e, ...writeState(e || {}, stateToUpdate[i] || {}, stateActions.slice()) }
+              : writeState(e, stateToUpdate[i], stateActions.slice()))
             : e);
         }
       }
     } else {
-      return { ...oldObj, [action.name]: writeState((oldObj || {})[action.name], ((newObj as any) || {})[action.name], stateActions) };
+      return { ...currentState, [action.name]: writeState((currentState || {})[action.name], ((stateToUpdate as any) || {})[action.name], stateActions) };
     }
   } else if (action.name === 'replace') {
     return action.arg;
   } else if (action.name === 'patch') {
-    return { ...oldObj, ...(action.arg as any) }
+    return { ...currentState, ...(action.arg as any) }
   } else if (action.name === 'increment') {
-    return oldObj + action.arg;
+    return currentState + action.arg;
   } else if (action.name === 'removeAll') {
     return [];
   } else if (action.name === 'replaceAll') {
     return action.arg;
   } else if (action.name === 'incrementAll') {
-    if (Array.isArray(oldObj)) {
-      return oldObj.map((e: any) => e + action.arg);
+    if (Array.isArray(currentState)) {
+      return currentState.map((e: any) => e + action.arg);
     }
-    return oldObj + action.arg;
+    return currentState + action.arg;
   } else if (action.name === 'addOne') {
-    return [...oldObj, action.arg];
+    return [...currentState, action.arg];
   } else if (action.name === 'addMany') {
-    return [...oldObj, ...action.arg];
+    return [...currentState, ...action.arg];
   }
 }
 
 export const readState = (state: any, stateActions: StateAction[]): any => {
   if (Array.isArray(state) && (stateActions[0].type === 'property')) {
-    return (state as any[]).map((e, i) => {
-      return readState(state[i], stateActions.slice());
-    });
+    return (state as any[]).map((e, i) => readState(state[i], stateActions.slice()));
   }
   const action = stateActions.shift()!;
   if (stateActions.length > 0) {
