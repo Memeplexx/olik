@@ -57,15 +57,16 @@ export type UpdatableArray<S extends Array<any>, F extends FindOrFilter, Q exten
   and: Comparators<S, S[0], F> & (S[0] extends object ? Searchable<S, S[0], F> : {}),
   replace: (replacement: F extends 'isFilter' ? S : S[0]) => void,
   remove: () => void,
-} : {
+} : ({
   find: Comparators<S, S[0], 'isFind'> & (S[0] extends object ? Searchable<S, S[0], 'isFind'> : {}),
   filter: Comparators<S, S[0], 'isFilter'> & (S[0] extends object ? Searchable<S, S[0], 'isFilter'> : {}),
   removeAll: () => void,
   replaceAll: (newArray: S) => void,
   addOne: (element: S[0]) => void,
   addMany: (array: S) => void,
+} & (S[0] extends Array<any> ? {} : S[0] extends object ? {
   upsertMatching: { [K in keyof S[0]]: S[0][K] extends object ? UpsertableObject<S[0], S[0]> : UpsertablePrimitive<S[0]> },
-})
+} : {})))
   & (S[0] extends Array<any> ? {} : S[0] extends object ? UpdatableObject<S[0], F, Q> : UpdatablePrimitive<S[0], F, Q>);
 
 export type UpdatablePrimitive<S, F extends FindOrFilter, Q extends QueryStatus> = (
@@ -116,7 +117,7 @@ export type Comparators<T, S, F extends FindOrFilter> = {
 export type Searchable<T, S, F extends FindOrFilter> = { [K in keyof S]: (S[K] extends object ? (Searchable<T, S[K], F> & Comparators<T, S[K], F>) : Comparators<T, S[K], F>) };
 
 export interface StateAction {
-  type: 'property' | 'search' | 'comparator' | 'action' | 'searchConcat';
+  type: 'property' | 'search' | 'comparator' | 'action' | 'searchConcat' | 'upsertMatching';
   name: string;
   arg: any;
   actionType: string | null;

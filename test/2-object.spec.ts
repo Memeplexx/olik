@@ -171,4 +171,28 @@ describe('Object', () => {
     expect(select.arr.read()).toEqual([{ id: 2, num: 1 }, { id: 3, num: 2 }]);
   })
 
+  it('', () => {
+    const select = createApplicationStore({ arr: [{ id: 1, num: 1 }, { id: 2, num: 2 }] });
+    select.arr
+      .upsertMatching.id
+      .withOne({ id: 1, num: 5 });
+    expect(select.arr.read()).toEqual([{ id: 1, num: 5 }, { id: 2, num: 2 }]);
+  })
+
+  it('', () => {
+    const select = createApplicationStore({ arr: [{ id: 1, num: 1 }, { id: 2, num: 2 }] });
+    select.arr
+      .upsertMatching.id
+      .withOne({ id: 3, num: 5 });
+    expect(select.arr.read()).toEqual([{ id: 1, num: 1 }, { id: 2, num: 2 }, { id: 3, num: 5 }]);
+  })
+
+  it('', () => {
+    const select = createApplicationStore({ arr: [{ id: 1, num: 1 }, { id: 2, num: 2 }] });
+    select.arr
+      .upsertMatching.id
+      .withMany([{ id: 1, num: 5 }, { id: 3, num: 5 }]);
+    expect(select.arr.read()).toEqual([{ id: 1, num: 5 }, { id: 2, num: 2 }, { id: 3, num: 5 }]);
+  })
+
 });
