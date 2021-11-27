@@ -62,8 +62,8 @@ export type UpdatableArray<S extends Array<any>, F extends FindOrFilter, Q exten
   filter: Comparators<S, S[0], 'isFilter'> & (S[0] extends object ? Searchable<S, S[0], 'isFilter'> : {}),
   removeAll: () => void,
   replaceAll: (newArray: S) => void,
-  addOne: (element: S[0]) => void,
-  addMany: (array: S) => void,
+  insertOne: (element: S[0]) => void,
+  insertMany: (array: S) => void,
 } & (S[0] extends Array<any> ? {} : S[0] extends object ? {
   upsertMatching: { [K in keyof S[0]]: S[0][K] extends object ? UpsertableObject<S[0], S[0]> : UpsertablePrimitive<S[0]> },
 } : {})))

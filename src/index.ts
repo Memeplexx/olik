@@ -26,23 +26,16 @@ export const readSelector = (storeName: string) => {
         if (topLevel) {
           stateActions = new Array<StateAction>();
         }
-        if (['replace', 'patch', 'remove', 'increment', 'removeAll', 'replaceAll', 'incrementAll', 'addOne', 'addMany', 'withOne', 'withMany'].includes(prop)) {
+        if (['replace', 'patch', 'remove', 'increment', 'removeAll', 'replaceAll', 'incrementAll', 'insertOne', 'insertMany', 'withOne', 'withMany'].includes(prop)) {
           return (arg: any) => {
             stateActions.push({ type: 'action', name: prop, arg, actionType: `${prop}()` });
             const oldState = libState.appStates[storeName];
-            // console.log('&&&&&&&', stateActions);
             libState.appStates[storeName] = writeState(libState.appStates[storeName], { ...libState.appStates[storeName] }, stateActions.slice());
-            // console.log(stateActions.map(s => s.actionType).join('.'))
             notifySubscribers(oldState, libState.appStates[storeName], libState.changeListeners[storeName]);
           }
         } else if ('upsertMatching' === prop) {
           stateActions.push({ type: 'upsertMatching', name: prop, arg: null, actionType: prop });
           return initialize({}, false, stateActions);
-          // } else if (['withOne', 'withMany'].includes(prop)) {
-          //   return (arg: any) => {
-          //     stateActions.push({ type: 'upsert', name: prop, arg, actionType: `${prop}()` });
-          //     libState.appStates[storeName] = writeState(libState.appStates[storeName], { ...libState.appStates[storeName] }, stateActions.slice());
-          //   }
         } else if ('read' === prop) {
           return () => {
             stateActions.push({ type: 'action', name: prop, arg: null, actionType: null });
@@ -152,8 +145,8 @@ export const writeState = (currentState: any, stateToUpdate: any, stateActions: 
     const result = new Array<any>();
     const upsertArgs = Array.isArray(upsert.arg) ? upsert.arg : [upsert.arg];
     (currentState as any[]).forEach((e, i) => {
-      const x = queryPaths.reduce((prev, curr) => prev = prev[curr.name], e);
-      const foundIndex = upsertArgs.findIndex(ua => queryPaths.reduce((prev, curr) => prev = prev[curr.name], ua) === x);
+      const elementValue = queryPaths.reduce((prev, curr) => prev = prev[curr.name], e);
+      const foundIndex = upsertArgs.findIndex(ua => queryPaths.reduce((prev, curr) => prev = prev[curr.name], ua) === elementValue);
       if (foundIndex !== -1) {
         result.push(...upsertArgs.splice(foundIndex, 1));
       } else {
@@ -210,9 +203,9 @@ export const writeState = (currentState: any, stateToUpdate: any, stateActions: 
       return currentState.map((e: any) => e + action.arg);
     }
     return currentState + action.arg;
-  } else if (action.name === 'addOne') {
+  } else if (action.name === 'insertOne') {
     return [...currentState, action.arg];
-  } else if (action.name === 'addMany') {
+  } else if (action.name === 'insertMany') {
     return [...currentState, ...action.arg];
   }
 }

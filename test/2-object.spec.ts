@@ -193,6 +193,9 @@ describe('Object', () => {
       .upsertMatching.id
       .withMany([{ id: 1, num: 5 }, { id: 3, num: 5 }]);
     expect(select.arr.read()).toEqual([{ id: 1, num: 5 }, { id: 2, num: 2 }, { id: 3, num: 5 }]);
+
+
+    // select.arr.replace()
   })
 
 });
