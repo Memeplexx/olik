@@ -103,7 +103,7 @@ export type Comparators<T, S, F extends FindOrFilter> = {
 export type SearchableAny<T, S, F extends FindOrFilter> = { [K in keyof S]: (S[K] extends object ? (SearchableAny<T, S[K], F> & Comparators<T, S[K], F>) : Comparators<T, S[K], F>) };
 
 export interface StateAction {
-  type: 'property' | 'search' | 'comparator' | 'action';
+  type: 'property' | 'search' | 'comparator' | 'action' | 'searchConcat';
   name: string;
   arg: any;
   actionType: string | null;

@@ -46,8 +46,9 @@ export const readSelector = (storeName: string) => {
             libState.changeListeners[storeName].set(stateActionsCopy, changeListener);
             return { unsubscribe: () => { libState.changeListeners[storeName].delete(stateActionsCopy); } }
           }
-        // } else if ('or' === prop) {
-          
+        } else if ('or' === prop) {
+          stateActions.push({ type: 'searchConcat', name: prop, arg: null, actionType: prop });
+          return initialize({}, false, stateActions);
         } else if (['eq', 'ne', 'in', 'ni', 'gt', 'gte', 'lt', 'lte', 'match'].includes(prop)) {
           return (arg: any) => {
             stateActions.push({ type: 'comparator', name: prop, arg, actionType: `${prop}(${arg})` });
@@ -98,21 +99,21 @@ export const writeState = (oldObj: any, newObj: any, stateActions: StateAction[]
           stateActions.shift();
           return prev.concat(curr);
         }, new Array<StateAction>());
-      const argAction = stateActions.shift()!;
+      const comparator = stateActions.shift()!;
       if (stateActions[0].name === 'remove') {
         if ('find' === action.name) {
           const indexToRemove = (oldObj as any[])
-            .findIndex(e => compare(queryPaths.reduce((prev, curr) => prev = prev[curr.name], e), argAction.name, argAction.arg));
+            .findIndex(e => compare(queryPaths.reduce((prev, curr) => prev = prev[curr.name], e), comparator.name, comparator.arg));
           if (indexToRemove === -1) { throw new Error(); }
           return (oldObj as any[])
             .filter((e, i) => indexToRemove !== i);
         } else if ('filter' === action.name) {
           return (oldObj as any[])
-            .filter(e => compare(queryPaths.reduce((prev, curr) => prev = prev[curr.name], e), argAction.name, argAction.arg));
+            .filter(e => compare(queryPaths.reduce((prev, curr) => prev = prev[curr.name], e), comparator.name, comparator.arg));
         }
       } else {
         return (oldObj as any[]).map((e, i) => {
-          return compare(queryPaths.reduce((prev, curr) => prev = prev[curr.name], e), argAction.name, argAction.arg)
+          return compare(queryPaths.reduce((prev, curr) => prev = prev[curr.name], e), comparator.name, comparator.arg)
             ? (typeof (oldObj[i]) === 'object'
               ? { ...oldObj[i], ...writeState(oldObj[i] || {}, newObj[i] || {}, stateActions.slice()) }
               : writeState(oldObj[i] || {}, newObj[i] || {}, stateActions.slice()))
@@ -155,13 +156,13 @@ export const readState = (state: any, stateActions: StateAction[]): any => {
           stateActions.shift();
           return prev.concat(curr);
         }, new Array<StateAction>());
-      const argAction = stateActions.shift()!;
+      const comparator = stateActions.shift()!;
       if ('find' === action.name) {
         return readState((state as any[])
-          .find(e => compare(queryPaths.reduce((prev, curr) => prev = prev[curr.name], e), argAction.name, argAction.arg)), stateActions);
+          .find(e => compare(queryPaths.reduce((prev, curr) => prev = prev[curr.name], e), comparator.name, comparator.arg)), stateActions);
       } else if ('filter' === action.name) {
         return (state as any[])
-          .filter(e => compare(queryPaths.reduce((prev, curr) => prev = prev[curr.name], e), argAction.name, argAction.arg))
+          .filter(e => compare(queryPaths.reduce((prev, curr) => prev = prev[curr.name], e), comparator.name, comparator.arg))
           .map(e => readState(e, stateActions));
       }
     } else {
