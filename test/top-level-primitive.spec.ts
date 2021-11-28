@@ -15,7 +15,7 @@ describe('top-level-primitive', () => {
     select
       .replace(1);
     expect(select.read()).toEqual(1);
-    // expect(libState.currentAction).toEqual({ type: 'replace()', replacement: 1 });
+    expect(libState.currentAction).toEqual({ type: 'replace()', replacement: 1 });
   })
 
   it('should increment a primitive', () => {
@@ -23,7 +23,7 @@ describe('top-level-primitive', () => {
     select
       .increment(1);
     expect(select.read()).toEqual(1);
-    // expect(libState.currentAction).toEqual({ type: 'increment()', by: 1 });
+    expect(libState.currentAction).toEqual({ type: 'increment()', by: 1 });
   })
 
 });

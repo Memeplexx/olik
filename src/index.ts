@@ -34,7 +34,7 @@ export const readSelector = (storeName: string) => {
           return (arg: any) => {
             stateActions.push({ type: 'action', name: prop, arg, actionType: `${prop}()` });
             const oldState = libState.appStates[storeName];
-            libState.appStates[storeName] = writeState(libState.appStates[storeName], { ...libState.appStates[storeName] }, stateActions.slice());
+            libState.appStates[storeName] = writeState(libState.appStates[storeName], { ...libState.appStates[storeName] }, stateActions, { index: 0 });
             notifySubscribers(oldState, libState.appStates[storeName], libState.changeListeners[storeName]);
           }
         } else if ('upsertMatching' === prop) {
@@ -43,7 +43,7 @@ export const readSelector = (storeName: string) => {
         } else if ('read' === prop) {
           return () => {
             stateActions.push({ type: 'action', name: prop, arg: null, actionType: null });
-            return readState(libState.appStates[storeName], stateActions.slice());
+            return readState(libState.appStates[storeName], stateActions, { index: 0 });
           }
         } else if ('onChange' === prop) {
           stateActions.push({ type: 'action', name: prop, arg: null, actionType: null });
@@ -79,29 +79,29 @@ export const notifySubscribers = (
   changeListeners: Map<StateAction[], (arg: any) => any>
 ) => {
   changeListeners.forEach((listener, stateActions) => {
-    const selectedNewState = readState(newState, stateActions.slice());
-    const selectedOldState = readState(oldState, stateActions.slice());
+    const selectedNewState = readState(newState, stateActions, { index: 0 });
+    const selectedOldState = readState(oldState, stateActions, { index: 0 });
     if (selectedOldState !== selectedNewState) {
       listener(selectedNewState);
     }
   })
 }
 
-export const constructQuery = (stateActions: StateAction[]) => {
+export const constructQuery = (stateActions: ReadonlyArray<StateAction>, cursor: { index: number }) => {
   const concatenateQueries = (queries: QuerySpec[]): QuerySpec[] => {
     const constructQuery = () => {
       const queryPaths = stateActions
-        .slice(0, stateActions.findIndex(sa => sa.type === 'comparator'))
+        .slice(cursor.index, cursor.index + stateActions.slice(cursor.index).findIndex(sa => sa.type === 'comparator'))
         .reduce((prev, curr) => {
-          stateActions.shift();
+          cursor.index++;
           return prev.concat(curr);
         }, new Array<StateAction>());
-      const comparator = stateActions.shift()!;
+      const comparator = stateActions[cursor.index++];
       return (e: any) => compare(queryPaths.reduce((prev, curr) => prev = prev[curr.name], e), comparator.name, comparator.arg)
     }
-    queries.push({ query: constructQuery(), concat: stateActions[0].type === 'action' ? 'last' : stateActions[0].name as 'and' | 'or' });
-    if (stateActions[0].type === 'searchConcat') {
-      stateActions.shift();
+    queries.push({ query: constructQuery(), concat: stateActions[cursor.index].type === 'action' ? 'last' : stateActions[cursor.index].name as 'and' | 'or' });
+    if (stateActions[cursor.index].type === 'searchConcat') {
+      cursor.index++;
       return concatenateQueries(queries);
     }
     return queries;
@@ -129,20 +129,20 @@ export const constructQuery = (stateActions: StateAction[]) => {
   return (e: any) => ors.some(fn => fn(e));
 }
 
-export const writeState = (currentState: any, stateToUpdate: any, stateActions: StateAction[]): any => {
-  if (Array.isArray(currentState) && (stateActions[0].type === 'property')) {
+export const writeState = (currentState: any, stateToUpdate: any, stateActions: ReadonlyArray<StateAction>, cursor: { index: number }): any => {
+  if (Array.isArray(currentState) && (stateActions[cursor.index].type === 'property')) {
     return (currentState as any[]).map((e, i) => (typeof (currentState[i]) === 'object')
-      ? { ...currentState[i], ...writeState(currentState[i] || {}, stateToUpdate[i] || {}, stateActions.slice()) }
-      : writeState(currentState[i] || {}, stateToUpdate[i] || {}, stateActions.slice()));
-  } else if (Array.isArray(currentState) && (stateActions[0].type === 'upsertMatching')) {
-    stateActions.shift();
+      ? { ...currentState[i], ...writeState(currentState[i] || {}, stateToUpdate[i] || {}, stateActions, { ...cursor }) }
+      : writeState(currentState[i] || {}, stateToUpdate[i] || {}, stateActions, { ...cursor }));
+  } else if (Array.isArray(currentState) && (stateActions[cursor.index].type === 'upsertMatching')) {
+    cursor.index++;
     const queryPaths = stateActions
-      .slice(0, stateActions.findIndex(sa => sa.type === 'action'))
+      .slice(cursor.index, cursor.index + stateActions.slice(cursor.index).findIndex(sa => sa.type === 'action'))
       .reduce((prev, curr) => {
-        stateActions.shift();
+        cursor.index++;
         return prev.concat(curr);
       }, new Array<StateAction>());
-    const upsert = stateActions.shift()!;
+    const upsert = stateActions[cursor.index++];
     const upsertArgs = Array.isArray(upsert.arg) ? upsert.arg : [upsert.arg];
     const result = (currentState as any[]).map(e => {
       const elementValue = queryPaths.reduce((prev, curr) => prev = prev[curr.name], e);
@@ -151,16 +151,16 @@ export const writeState = (currentState: any, stateToUpdate: any, stateActions: 
     });
     return [...result, ...upsertArgs];
   }
-  const action = stateActions.shift()!;
-  if (stateActions.length > 0) {
+  const action = stateActions[cursor.index++];
+  if (cursor.index < (stateActions.length)) {
     if (Array.isArray(currentState) && (action.type === 'search')) {
-      const query = constructQuery(stateActions);
+      const query = constructQuery(stateActions, cursor);
       let findIndex = -1;
       if ('find' === action.name) {
         findIndex = (currentState as any[]).findIndex(query);
         if (findIndex === -1) { throw new Error(); }
       }
-      if (stateActions[0].name === 'remove') {
+      if (stateActions[cursor.index].name === 'remove') {
         if ('find' === action.name) {
           return (currentState as any[]).filter((e, i) => findIndex !== i);
         } else if ('filter' === action.name) {
@@ -170,25 +170,28 @@ export const writeState = (currentState: any, stateToUpdate: any, stateActions: 
         if ('find' === action.name) {
           return (currentState as any[]).map((e, i) => i === findIndex
             ? (typeof (e) === 'object'
-              ? { ...e, ...writeState(e || {}, stateToUpdate[i] || {}, stateActions.slice()) }
-              : writeState(e, stateToUpdate[i], stateActions.slice()))
+              ? { ...e, ...writeState(e || {}, stateToUpdate[i] || {}, stateActions, cursor) }
+              : writeState(e, stateToUpdate[i], stateActions, cursor))
             : e);
         } else if ('filter' === action.name) {
           return (currentState as any[]).map((e, i) => query(e)
             ? (typeof (e) === 'object'
-              ? { ...e, ...writeState(e || {}, stateToUpdate[i] || {}, stateActions.slice()) }
-              : writeState(e, stateToUpdate[i], stateActions.slice()))
+              ? { ...e, ...writeState(e || {}, stateToUpdate[i] || {}, stateActions, { ...cursor }) }
+              : writeState(e, stateToUpdate[i], stateActions, { ...cursor }))
             : e);
         }
       }
     } else {
-      return { ...currentState, [action.name]: writeState((currentState || {})[action.name], ((stateToUpdate as any) || {})[action.name], stateActions) };
+      return { ...currentState, [action.name]: writeState((currentState || {})[action.name], ((stateToUpdate as any) || {})[action.name], stateActions, cursor) };
     }
   } else if (action.name === 'replace') {
+    constructAction(stateActions, { replacement: action.arg });
     return action.arg;
   } else if (action.name === 'patch') {
+    constructAction(stateActions, { patch: action.arg });
     return { ...currentState, ...(action.arg as any) }
   } else if (action.name === 'increment') {
+    constructAction(stateActions, { by: action.arg });
     return currentState + action.arg;
   } else if (action.name === 'removeAll') {
     return [];
@@ -208,27 +211,27 @@ export const writeState = (currentState: any, stateToUpdate: any, stateActions: 
   }
 }
 
-const constructAction = (stateActions: StateAction[], payload: {}) => {
-  return 
+const constructAction = (stateActions: ReadonlyArray<StateAction>, payload: {}) => {
+  libState.currentAction = { type: stateActions.map(sa => sa.actionType).join('.'), ...payload };
 }
 
-export const readState = (state: any, stateActions: StateAction[]): any => {
-  if (Array.isArray(state) && (stateActions[0].type === 'property')) {
-    return (state as any[]).map((e, i) => readState(state[i], stateActions.slice()));
+export const readState = (state: any, stateActions: StateAction[], cursor: { index: number }): any => {
+  if (Array.isArray(state) && (stateActions[cursor.index].type === 'property')) {
+    return (state as any[]).map((e, i) => readState(state[i], stateActions, { ...cursor }));
   }
-  const action = stateActions.shift()!;
-  if (stateActions.length > 0) {
+  const action = stateActions[cursor.index++];
+  if (cursor.index < stateActions.length) {
     if (Array.isArray(state) && (action.type === 'search')) {
-      const query = constructQuery(stateActions);
+      const query = constructQuery(stateActions, cursor);
       if ('find' === action.name) {
-        const findResult = readState((state as any[]).find(query), stateActions);
+        const findResult = readState((state as any[]).find(query), stateActions, cursor);
         if (findResult === undefined) { throw new Error(); }
         return findResult;
       } else if ('filter' === action.name) {
-        return (state as any[]).filter(query).map(e => readState(e, stateActions.slice()));
+        return (state as any[]).filter(query).map(e => readState(e, stateActions, { ...cursor }));
       }
     } else {
-      return readState((state || {})[action.name], stateActions);
+      return readState((state || {})[action.name], stateActions, cursor);
     }
   } else if (action.name === 'read' || action.name === 'onChange') {
     return state;

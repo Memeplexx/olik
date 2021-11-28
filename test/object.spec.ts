@@ -18,7 +18,7 @@ describe('Object', () => {
     expect(stateBefore.prop2).toEqual(stateAfter.prop2);
     expect(stateBefore.prop).not.toEqual(stateAfter.prop);
     expect(stateAfter.prop).toEqual(1);
-    // expect(libState.currentAction).toEqual({ type: 'prop.replace()', replacement: 1 });
+    expect(libState.currentAction).toEqual({ type: 'prop.replace()', replacement: 1 });
   })
 
   it('should increment a primitive', () => {
@@ -44,8 +44,6 @@ describe('Object', () => {
       .find.eq(3)
       .replace(6);
     expect(select.arr.read()).toEqual([1, 2, 6, 4, 5]);
-
-    // console.log(select.arr.find.eq(3).read()); // returns undefined!
   })
 
   it('should find an element from an array of primitives and then increment it', () => {
