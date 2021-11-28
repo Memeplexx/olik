@@ -1,11 +1,11 @@
 
-import { createApplicationStore, libState } from '../src/index';
+import { createApplicationStore, libState, testState } from '../src/index';
 
 describe('Object', () => {
 
   beforeEach(() => {
     libState.appStates = {};
-    libState.logLevel = 'none';
+    testState.logLevel = 'none';
   })
 
   it('should replace a primitive', () => {
@@ -18,6 +18,7 @@ describe('Object', () => {
     expect(stateBefore.prop2).toEqual(stateAfter.prop2);
     expect(stateBefore.prop).not.toEqual(stateAfter.prop);
     expect(stateAfter.prop).toEqual(1);
+    // expect(libState.currentAction).toEqual({ type: 'prop.replace()', replacement: 1 });
   })
 
   it('should increment a primitive', () => {

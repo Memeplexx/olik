@@ -1,18 +1,22 @@
-import { FindOrFilter, QuerySpec, StateAction, UpdatableArray, UpdatableObject, UpdatablePrimitive } from "./types";
+import { FindOrFilter, QuerySpec, StateAction, Store, UpdatableArray, UpdatableObject, UpdatablePrimitive } from "./types";
 
 
 export const createApplicationStore = <S>(
   initialState: S, options: { name: string } = { name: document.title }
-): S extends Array<any> ? UpdatableArray<S, FindOrFilter, 'notQueried'> : S extends object ? UpdatableObject<S, 'isFind', 'queried'> : UpdatablePrimitive<S, 'isFind', 'queried'> => {
+): Store<S> => {
   libState.appStates[options.name] = initialState;
   libState.changeListeners[options.name] = new Map();
-  libState.logLevel = 'none';
+  testState.logLevel = 'none';
   return readSelector(options.name);
 }
 
 export const libState = {
   appStates: {} as { [storeName: string]: any },
   changeListeners: {} as { [storeName: string]: Map<StateAction[], (arg: any) => any> },
+  currentAction: {},
+}
+
+export const testState = {
   logLevel: 'none' as ('debug' | 'none'),
 }
 
@@ -160,7 +164,7 @@ export const writeState = (currentState: any, stateToUpdate: any, stateActions: 
         if ('find' === action.name) {
           return (currentState as any[]).filter((e, i) => findIndex !== i);
         } else if ('filter' === action.name) {
-          return (currentState as any[]).filter(query);
+          return (currentState as any[]).filter(e => !query(e));
         }
       } else {
         if ('find' === action.name) {
@@ -202,6 +206,10 @@ export const writeState = (currentState: any, stateToUpdate: any, stateActions: 
   } else if (action.name === 'insertMany') {
     return [...currentState, ...action.arg];
   }
+}
+
+const constructAction = (stateActions: StateAction[], payload: {}) => {
+  return 
 }
 
 export const readState = (state: any, stateActions: StateAction[]): any => {

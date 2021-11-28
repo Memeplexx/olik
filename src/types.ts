@@ -100,7 +100,7 @@ export type UpdatableArray<S extends Array<any>, F extends FindOrFilter, Q exten
         incrementAll: (by: number) => void
       })
     ) & (
-      Readable<S, F>
+      Readable<S[0], F>
     )
   )
 )
@@ -169,3 +169,5 @@ export interface QuerySpec {
   query: (e: any) => boolean,
   concat: 'and' | 'or' | 'last'
 };
+
+export type Store<S> = S extends Array<any> ? UpdatableArray<S, /*FindOrFilter*/'isFilter', 'notQueried'> : S extends object ? UpdatableObject<S, 'isFind', 'queried'> : UpdatablePrimitive<S, 'isFind', 'queried'>;

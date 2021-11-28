@@ -132,4 +132,7 @@ function test() {
     .objArr.find.num.eq(3)
     .patch({ num: 4 });
 
+  // select.objArray.find.num.eq(3).observe();
+  // select.objArray.find.num.eq(3).useState();
+
 }
