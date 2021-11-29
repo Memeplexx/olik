@@ -96,22 +96,27 @@ describe('top-level-primitive-array', () => {
     select
       .find.eq(1).or.eq(2)
       .remove();
+    expect(libState.currentAction).toEqual({ type: 'find.eq(1).or.eq(2).remove()' });
     expect(select.read()).toEqual([2, 3]);
   })
 
   it('should find an element by one clause or another and increment it', () => {
     const select = createApplicationStore(initialState);
+    const by = 1;
     select
       .find.eq(1).or.eq(2)
       .increment(1);
+    expect(libState.currentAction).toEqual({ type: 'find.eq(1).or.eq(2).increment()', by });
     expect(select.read()).toEqual([2, 2, 3]);
   })
 
   it('should find an element by one clause and another and replace it', () => {
     const select = createApplicationStore(initialState);
+    const replacement = 9;
     select
       .find.gt(1).and.lt(3)
-      .replace(9);
+      .replace(replacement);
+    expect(libState.currentAction).toEqual({ type: 'find.gt(1).and.lt(3).replace()', replacement });
     expect(select.read()).toEqual([1, 9, 3]);
   })
 
@@ -120,14 +125,17 @@ describe('top-level-primitive-array', () => {
     select
       .find.gt(1).and.lt(3)
       .remove();
+    expect(libState.currentAction).toEqual({ type: 'find.gt(1).and.lt(3).remove()' });
     expect(select.read()).toEqual([1, 3]);
   })
 
   it('should find an element by one clause and another and increment it', () => {
     const select = createApplicationStore(initialState);
+    const by = 1;
     select
       .find.eq(1).and.lt(2)
       .increment(1);
+    expect(libState.currentAction).toEqual({ type: 'find.eq(1).and.lt(2).increment()', by });
     expect(select.read()).toEqual([2, 2, 3]);
   })
 
@@ -136,14 +144,17 @@ describe('top-level-primitive-array', () => {
     select
       .filter.gt(1)
       .remove();
+    expect(libState.currentAction).toEqual({ type: 'find.gt(1).remove()' });
     expect(select.read()).toEqual([1]);
   })
 
   it('should filter elements and increment them', () => {
     const select = createApplicationStore(initialState);
+    const by = 1;
     select
       .filter.gt(1)
       .increment(1);
+    expect(libState.currentAction).toEqual({ type: 'find.gt(1).increment()', by });
     expect(select.read()).toEqual([1, 3, 4]);
   })
 
@@ -152,6 +163,7 @@ describe('top-level-primitive-array', () => {
     select
       .filter.eq(1).or.eq(2)
       .remove();
+    expect(libState.currentAction).toEqual({ type: 'filter.eq(1).or.eq(2).remove()' });
     expect(select.read()).toEqual([3]);
   })
 

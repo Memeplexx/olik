@@ -55,7 +55,7 @@ export type UpdatableObject<S, F extends FindOrFilter, Q extends QueryStatus> = 
     : S[K] extends object ? UpdatableObject<S[K], F, Q>
     : UpdatablePrimitive<S[K], F, Q>
   }) & (
-    Readable<S, F>
+    Readable<F extends 'isFilter' ? S[] : S>
   )
 );
 
@@ -100,7 +100,7 @@ export type UpdatableArray<S extends Array<any>, F extends FindOrFilter, Q exten
         incrementAll: (by: number) => void
       })
     ) & (
-      Readable<S[0], F>
+      Readable<F extends 'isFilter' ? S : S[0]>
     )
   )
 )
@@ -122,13 +122,13 @@ export type UpdatablePrimitive<S, F extends FindOrFilter, Q extends QueryStatus>
       })
     ) : {}
   ) & (
-    Readable<S, F>
+    Readable<F extends 'isFilter' ? S[] : S>
   )
 );
 
-export interface Readable<S, F extends FindOrFilter> {
-  read: () => F extends 'isFilter' ? DeepReadonly<S[]> : DeepReadonly<S>;
-  onChange: (changeListener: (state: F extends 'isFilter' ? DeepReadonly<S[]> : DeepReadonly<S>) => any) => Unsubscribable;
+export interface Readable<S> {
+  read: () => DeepReadonly<S>;
+  onChange: (changeListener: (state: DeepReadonly<S>) => any) => Unsubscribable;
 }
 
 export type UpdatableAny<T, F extends FindOrFilter, Q extends QueryStatus>
@@ -156,7 +156,11 @@ export type Comparators<T, S, F extends FindOrFilter> = {
   lte: (lessThanOrEqualTo: S) => UpdatableAny<T, F, 'queried'>,
 } : {});
 
-export type Searchable<T, S, F extends FindOrFilter> = { [K in keyof S]: (S[K] extends object ? (Searchable<T, S[K], F> & Comparators<T, S[K], F>) : Comparators<T, S[K], F>) };
+export type Searchable<T, S, F extends FindOrFilter> = {
+  [K in keyof S]: (S[K] extends object
+    ? (Searchable<T, S[K], F> & Comparators<T, S[K], F>)
+    : Comparators<T, S[K], F>)
+};
 
 export interface StateAction {
   type: 'property' | 'search' | 'comparator' | 'action' | 'searchConcat' | 'upsertMatching';
@@ -170,7 +174,42 @@ export interface QuerySpec {
   concat: 'and' | 'or' | 'last'
 };
 
-export type Store<S> 
+export type Store<S>
   = S extends Array<any> ? UpdatableArray<S, 'isFilter', 'notQueried'>
   : S extends object ? UpdatableObject<S, 'isFind', 'queried'>
   : UpdatablePrimitive<S, 'isFind', 'queried'>;
+
+type DerivationCalculationInput<E> = E extends Readable<infer W> ? W : never;
+
+export type DerivationCalculationInputs<T extends Array<Readable<any>>> = {
+  [K in keyof T]: DerivationCalculationInput<T[K]>;
+}
+
+/**
+ * An object which can be unsubscribed from
+ */
+export interface Unsubscribable {
+  /**
+   * Unsubscribes from this listener thereby preventing a memory leak.
+   */
+  unsubscribe: () => any,
+}
+
+export interface Derivation<R> {
+  /**
+   * The current value of the derivation
+   */
+  read: () => R,
+  /**
+   * Listens to any updates on this derivation
+   * @returns a subscription which will need to be unsubscribed from to prevent a memory leak
+   * @example
+   * deriveFrom(...)
+   *   .onChange(derivation => console.log(derivation)) ;
+   */
+  onChange: (listener: (value: R) => any) => Unsubscribable,
+  /**
+   * Ensure that the next time state is read, it is re-caculated
+   */
+  invalidate: () => void,
+}

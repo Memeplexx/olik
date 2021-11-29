@@ -1,4 +1,4 @@
-import { FindOrFilter, QuerySpec, StateAction, Store, UpdatableArray, UpdatableObject, UpdatablePrimitive } from "./types";
+import { Derivation, DerivationCalculationInputs, FindOrFilter, QuerySpec, Readable, StateAction, Store, Unsubscribable, UpdatableArray, UpdatableObject, UpdatablePrimitive } from "./types";
 
 
 export const createApplicationStore = <S>(
@@ -42,11 +42,15 @@ export const readSelector = (storeName: string) => {
           return initialize({}, false, stateActions);
         } else if ('read' === prop) {
           return () => {
-            stateActions.push({ type: 'action', name: prop, arg: null, actionType: null });
+            if (!stateActions.length || (stateActions[stateActions.length - 1].type !== 'action')) {
+              stateActions.push({ type: 'action', name: prop, arg: null, actionType: null });
+            }
             return readState(libState.appStates[storeName], stateActions, { index: 0 });
           }
         } else if ('onChange' === prop) {
-          stateActions.push({ type: 'action', name: prop, arg: null, actionType: null });
+          if (!stateActions.length || (stateActions[stateActions.length - 1].type !== 'action')) {
+            stateActions.push({ type: 'action', name: prop, arg: null, actionType: null });
+          }
           return (changeListener: (arg: any) => any) => {
             const stateActionsCopy = stateActions.slice();
             libState.changeListeners[storeName].set(stateActionsCopy, changeListener);
@@ -261,4 +265,42 @@ export const compare = (toCompare: any, comparator: string, comparatorArg: any) 
   } else if (comparator === 'match') {
     return (toCompare as string).match(comparatorArg);
   }
+}
+
+export function deriveFrom<X extends Readable<any>[]>(...args: X) {
+  let previousParams = new Array<any>();
+  let previousResult = null as any;
+  return {
+    with: <R>(calculation: (...inputs: DerivationCalculationInputs<X>) => R) => {
+      const getValue = () => {
+        const params = (args as Array<Readable<any>>).map(arg => arg.read());
+        if (previousParams.length && params.every((v, i) => v === previousParams[i])) {
+          return previousResult;
+        }
+        const result = calculation(...(params as any));
+        previousParams = params;
+        previousResult = result;
+        return result;
+      }
+      const changeListeners = new Set<(value: R) => any>();
+      const result: Derivation<R> = {
+        read: () => getValue(),
+        invalidate: () => previousParams.length = 0,
+        onChange: (listener: (value: R) => any) => {
+          changeListeners.add(listener);
+          const unsubscribables: Unsubscribable[] = (args as Array<Readable<any>>)
+            .map(ops => ops.onChange(() => listener(getValue())));
+          return {
+            unsubscribe: () => {
+              unsubscribables.forEach(u => u.unsubscribe());
+              changeListeners.delete(listener);
+            }
+          }
+        }
+      };
+      // Object.keys(augmentations.derivation).forEach(name => (result as any)[name] = augmentations.derivation[name](result));
+      return result;
+    }
+  }
+  
 }

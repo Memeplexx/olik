@@ -1,4 +1,4 @@
-import { createApplicationStore } from ".";
+import { createApplicationStore, deriveFrom } from ".";
 import { Store } from "./types";
 
 type Test = { num: number, arr: Array<number>, objArr: Array<{ num: number }>, obj: { num: number } };
@@ -135,6 +135,12 @@ function test() {
 
   // select.objArray.find.num.eq(3).observe();
   // select.objArray.find.num.eq(3).useState();
+
+  const xxx = deriveFrom(
+    select.array.find.eq(3),
+    select.arrayBool,
+  ).with((arr, arrBool) => arr);
+  const qwerty = xxx.read();
 
 }
 
