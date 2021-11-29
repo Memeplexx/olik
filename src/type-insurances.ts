@@ -1,4 +1,5 @@
 import { createApplicationStore } from ".";
+import { Store } from "./types";
 
 type Test = { num: number, arr: Array<number>, objArr: Array<{ num: number }>, obj: { num: number } };
 
@@ -136,3 +137,4 @@ function test() {
   // select.objArray.find.num.eq(3).useState();
 
 }
+

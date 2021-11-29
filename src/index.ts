@@ -196,17 +196,22 @@ export const writeState = (currentState: any, stateToUpdate: any, stateActions: 
   } else if (action.name === 'removeAll') {
     return [];
   } else if (action.name === 'replaceAll') {
+    constructAction(stateActions, { replacement: action.arg });
     return action.arg;
   } else if (action.name === 'patchAll') {
+    constructAction(stateActions, { patch: action.arg });
     return (currentState as any[]).map(e => ({ ...e, ...action.arg }))
   } else if (action.name === 'incrementAll') {
+    constructAction(stateActions, { by: action.arg });
     if (Array.isArray(currentState)) {
       return currentState.map((e: any) => e + action.arg);
     }
     return currentState + action.arg;
   } else if (action.name === 'insertOne') {
+    constructAction(stateActions, { toInsert: action.arg });
     return [...currentState, action.arg];
   } else if (action.name === 'insertMany') {
+    constructAction(stateActions, { toInsert: action.arg });
     return [...currentState, ...action.arg];
   }
 }

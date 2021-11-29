@@ -170,4 +170,7 @@ export interface QuerySpec {
   concat: 'and' | 'or' | 'last'
 };
 
-export type Store<S> = S extends Array<any> ? UpdatableArray<S, /*FindOrFilter*/'isFilter', 'notQueried'> : S extends object ? UpdatableObject<S, 'isFind', 'queried'> : UpdatablePrimitive<S, 'isFind', 'queried'>;
+export type Store<S> 
+  = S extends Array<any> ? UpdatableArray<S, 'isFilter', 'notQueried'>
+  : S extends object ? UpdatableObject<S, 'isFind', 'queried'>
+  : UpdatablePrimitive<S, 'isFind', 'queried'>;
