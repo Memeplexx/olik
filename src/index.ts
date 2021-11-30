@@ -103,7 +103,10 @@ export const constructQuery = (stateActions: ReadonlyArray<StateAction>, cursor:
       const comparator = stateActions[cursor.index++];
       return (e: any) => compare(queryPaths.reduce((prev, curr) => prev = prev[curr.name], e), comparator.name, comparator.arg)
     }
-    queries.push({ query: constructQuery(), concat: stateActions[cursor.index].type === 'action' ? 'last' : stateActions[cursor.index].name as 'and' | 'or' });
+    queries.push({ 
+      query: constructQuery(), 
+      concat: ['action', 'property'].includes(stateActions[cursor.index].type) ? 'last' : stateActions[cursor.index].name as 'and' | 'or' 
+    });
     if (stateActions[cursor.index].type === 'searchConcat') {
       cursor.index++;
       return concatenateQueries(queries);
