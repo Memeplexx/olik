@@ -134,7 +134,7 @@ describe('top-level-primitive-array', () => {
     const by = 1;
     select
       .find.eq(1).and.lt(2)
-      .increment(1);
+      .increment(by);
     expect(libState.currentAction).toEqual({ type: 'find.eq(1).and.lt(2).increment()', by });
     expect(select.read()).toEqual([2, 2, 3]);
   })
@@ -144,7 +144,7 @@ describe('top-level-primitive-array', () => {
     select
       .filter.gt(1)
       .remove();
-    expect(libState.currentAction).toEqual({ type: 'find.gt(1).remove()' });
+    expect(libState.currentAction).toEqual({ type: 'filter.gt(1).remove()' });
     expect(select.read()).toEqual([1]);
   })
 
@@ -154,7 +154,7 @@ describe('top-level-primitive-array', () => {
     select
       .filter.gt(1)
       .increment(1);
-    expect(libState.currentAction).toEqual({ type: 'find.gt(1).increment()', by });
+    expect(libState.currentAction).toEqual({ type: 'filter.gt(1).increment()', by });
     expect(select.read()).toEqual([1, 3, 4]);
   })
 
@@ -169,25 +169,30 @@ describe('top-level-primitive-array', () => {
 
   it('should filter elements by one clause or another and increment them', () => {
     const select = createApplicationStore(initialState);
+    const by = 1;
     select
       .filter.eq(1).or.eq(2)
       .increment(1);
+    expect(libState.currentAction).toEqual({ type: 'filter.eq(1).or.eq(2).increment()', by });
     expect(select.read()).toEqual([2, 3, 3]);
   })
 
-  it.only('should filter elements by one clause and another and remove them', () => {
+  it('should filter elements by one clause and another and remove them', () => {
     const select = createApplicationStore(initialState);
     select
       .filter.gt(0).and.lt(3)
       .remove();
+    expect(libState.currentAction).toEqual({ type: 'filter.gt(0).and.lt(3).remove()' });
     expect(select.read()).toEqual([3]);
   })
 
   it('should filter elements by one clause and another and increment them', () => {
     const select = createApplicationStore(initialState);
+    const by = 1;
     select
       .filter.gt(0).and.gt(1)
       .increment(1);
+    expect(libState.currentAction).toEqual({ type: 'filter.gt(0).and.gt(1).increment()', by });
     expect(select.read()).toEqual([1, 3, 4]);
   })
 

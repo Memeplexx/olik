@@ -13,24 +13,136 @@ describe('Top-level', () => {
 
   it('should replace all elements', () => {
     const select = createApplicationStore(initialState);
-    const payload = [{ id: 5, val: 5 }, { id: 6, val: 6 }, { id: 7, val: 7 }];
+    const replacement = [{ id: 5, val: 5 }, { id: 6, val: 6 }, { id: 7, val: 7 }];
     select
-      .replaceAll(payload);
-    expect(select.read()).toEqual(payload);
-  })
-
-  it('should increment all elements properties', () => {
-    const select = createApplicationStore(initialState);
-    select.val
-      .incrementAll(1);
-    expect(select.read()).toEqual([{ id: 1, val: 2 }, { id: 2, val: 3 }, { id: 3, val: 4 }]);
+      .replaceAll(replacement);
+    expect(libState.currentAction).toEqual({ type: 'replaceAll()', replacement });
+    expect(select.read()).toEqual(replacement);
   })
 
   it('should remove all elements', () => {
     const select = createApplicationStore(initialState);
-    select.removeAll();
+    select
+      .removeAll();
+    expect(libState.currentAction).toEqual({ type: 'removeAll()' });
     expect(select.read()).toEqual([]);
   })
+
+  it('should increment all elements properties', () => {
+    const select = createApplicationStore(initialState);
+    const by = 1;
+    select.val
+      .incrementAll(by);
+    expect(libState.currentAction).toEqual({ type: 'val.incrementAll()', by });
+    expect(select.read()).toEqual([{ id: 1, val: 2 }, { id: 2, val: 3 }, { id: 3, val: 4 }]);
+  })
+
+  it('should be able to insert one object', () => {
+    const select = createApplicationStore(initialState);
+    const toInsert = { id: 4, val: 4 };
+    select.insertOne(toInsert);
+    expect(libState.currentAction).toEqual({ type: 'insertOne()', toInsert });
+    expect(select.read()).toEqual([...initialState, toInsert]);
+  })
+
+  it('should be able to insert many objects', () => {
+    const select = createApplicationStore(initialState);
+    const toInsert = [{ id: 4, val: 4 }, { id: 5, val: 5 }];
+    select.insertMany(toInsert);
+    expect(libState.currentAction).toEqual({ type: 'insertMany()', toInsert });
+    expect(select.read()).toEqual([...initialState, ...toInsert]);
+  })
+
+  it('should find an object and replace it', () => {
+    const select = createApplicationStore(initialState);
+    const replacement = { id: 4, val: 4 };
+    select
+      .find.id.eq(2)
+      .replace(replacement);
+    expect(libState.currentAction).toEqual({ type: 'find.id.eq(2).replace()', replacement });
+    expect(select.read()).toEqual([initialState[0], replacement, initialState[2]]);
+  })
+
+  it('should find an object and remove it', () => {
+    const select = createApplicationStore(initialState);
+    select
+      .find.id.eq(2)
+      .remove();
+    expect(libState.currentAction).toEqual({ type: 'find.id.eq(2).remove()' });
+    expect(select.read()).toEqual([initialState[0], initialState[2]]);
+  })
+
+  it('should find an object property and increment it', () => {
+    const select = createApplicationStore(initialState);
+    const by = 2;
+    select
+      .find.id.eq(2).val
+      .increment(by);
+    expect(libState.currentAction).toEqual({ type: 'find.id.eq(2).val.increment()', by });
+    expect(select.read()).toEqual([initialState[0], { id: 2, val: 4 }, initialState[2]]);
+  })
+
+  it('should find an object by one clause or another and replace it', () => {
+    const select = createApplicationStore(initialState);
+    const replacement = { id: 9, val: 9 };
+    select
+      .find.id.eq(1).or.id.eq(2)
+      .replace(replacement);
+    expect(libState.currentAction).toEqual({ type: 'find.id.eq(1).or.id.eq(2).replace()', replacement });
+    expect(select.read()).toEqual([replacement, initialState[1], initialState[2]]);
+  })
+
+  it('should find an object by one clause or another and remove it', () => {
+    const select = createApplicationStore(initialState);
+    select
+      .find.id.eq(1).or.id.eq(2)
+      .remove();
+    expect(libState.currentAction).toEqual({ type: 'find.id.eq(1).or.id.eq(2).remove()' });
+    expect(select.read()).toEqual([initialState[1], initialState[2]]);
+  })
+
+  it('should find an object by one clause or another and increment it', () => {
+    const select = createApplicationStore(initialState);
+    const by = 1;
+    select
+      .find.id.eq(1).or.id.eq(2).val
+      .increment(1);
+    expect(libState.currentAction).toEqual({ type: 'find.id.eq(1).or.id.eq(2).val.increment()', by });
+    expect(select.read()).toEqual([{ id: 1, val: 2 }, initialState[1], initialState[2]]);
+  })
+
+  it('should find an object by one clause and another and replace it', () => {
+    const select = createApplicationStore(initialState);
+    const replacement = { id: 9, val: 9 };
+    select
+      .find.id.gt(1).and.id.lt(3)
+      .replace(replacement);
+    expect(libState.currentAction).toEqual({ type: 'find.id.gt(1).and.id.lt(3).replace()', replacement });
+    expect(select.read()).toEqual([initialState[0], { id: 9, val: 9 }, initialState[2]]);
+  })
+
+  it('should find an object by one clause and another and remove it', () => {
+    const select = createApplicationStore(initialState);
+    select
+      .find.id.gt(1).and.id.lt(3)
+      .remove();
+    expect(libState.currentAction).toEqual({ type: 'find.id.gt(1).and.id.lt(3).remove()' });
+    expect(select.read()).toEqual([initialState[0], initialState[2]]);
+  })
+
+  // it('should find an object by one clause and another and increment it', () => {
+  //   const select = createApplicationStore(initialState);
+  //   const by = 1;
+  //   testState.logLevel = 'debug';
+  //   select
+  //     .find.id.eq(1).and.id.lt(2).val
+  //     .increment(by);
+  //     testState.logLevel = 'none';
+  //   expect(libState.currentAction).toEqual({ type: 'find.id.eq(1).and.id.lt(2).val.increment()', by });
+  //   expect(select.read()).toEqual([{ id: 1, val: 2 }, initialState[1], initialState[2]]);
+  // })
+
+  
 
   it('...', () => {
     const select = createApplicationStore({ arr: [{ id: 1, val: 1 }, { id: 2, val: 2 }, { id: 3, val: 3 }]});
@@ -46,17 +158,6 @@ describe('Top-level', () => {
     expect(select.read()).toEqual({ arr: [{ id: 1, val: 4 }, { id: 2, val: 4 }, { id: 3, val: 4 }]});
   })
 
-  it('should be able to insert one object', () => {
-    const select = createApplicationStore([{ id: 1, val: 1 }, { id: 2, val: 2 }, { id: 3, val: 3 }]);
-    select.insertOne({ id: 4, val: 4 });
-    expect(select.read()).toEqual([{ id: 1, val: 1 }, { id: 2, val: 2 }, { id: 3, val: 3 }, { id: 4, val: 4 }]);
-  })
-
-  it('should be able to insert many objects', () => {
-    const select = createApplicationStore([{ id: 1, val: 1 }, { id: 2, val: 2 }, { id: 3, val: 3 }]);
-    select.insertMany([{ id: 4, val: 4 }, { id: 5, val: 5 }]);
-    expect(select.read()).toEqual([{ id: 1, val: 1 }, { id: 2, val: 2 }, { id: 3, val: 3 }, { id: 4, val: 4 }, { id: 5, val: 5 }]);
-  })
 
 });
 

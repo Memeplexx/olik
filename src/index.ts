@@ -165,6 +165,7 @@ export const writeState = (currentState: any, stateToUpdate: any, stateActions: 
         if (findIndex === -1) { throw new Error(); }
       }
       if (stateActions[cursor.index].name === 'remove') {
+        constructAction(stateActions);
         if ('find' === action.name) {
           return (currentState as any[]).filter((e, i) => findIndex !== i);
         } else if ('filter' === action.name) {
@@ -198,6 +199,7 @@ export const writeState = (currentState: any, stateToUpdate: any, stateActions: 
     constructAction(stateActions, { by: action.arg });
     return currentState + action.arg;
   } else if (action.name === 'removeAll') {
+    constructAction(stateActions);
     return [];
   } else if (action.name === 'replaceAll') {
     constructAction(stateActions, { replacement: action.arg });
@@ -220,7 +222,7 @@ export const writeState = (currentState: any, stateToUpdate: any, stateActions: 
   }
 }
 
-const constructAction = (stateActions: ReadonlyArray<StateAction>, payload: {}) => {
+const constructAction = (stateActions: ReadonlyArray<StateAction>, payload?: {}) => {
   libState.currentAction = { type: stateActions.map(sa => sa.actionType).join('.'), ...payload };
 }
 
@@ -267,7 +269,7 @@ export const compare = (toCompare: any, comparator: string, comparatorArg: any) 
   }
 }
 
-export function deriveFrom<X extends Readable<any>[]>(...args: X) {
+export function derive<X extends Readable<any>[]>(...args: X) {
   let previousParams = new Array<any>();
   let previousResult = null as any;
   return {

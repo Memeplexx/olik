@@ -1,5 +1,5 @@
 
-import { createApplicationStore, deriveFrom, libState, testState } from '../src/index';
+import { createApplicationStore, derive, libState, testState } from '../src/index';
 
 describe('edge-case', () => {
 
@@ -20,7 +20,7 @@ describe('edge-case', () => {
 
   it('should support derivations', () => {
     const select = createApplicationStore({ num: 0, str: '', bool: false });
-    const derivation = deriveFrom(
+    const derivation = derive(
       select.num,
       select.str,
     ).with((num, str) => [num, str]);
