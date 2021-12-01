@@ -34,6 +34,5 @@ describe('edge-case', () => {
     expect(derivation.read()).toEqual([1, '']);
   })
 
-
 });
 

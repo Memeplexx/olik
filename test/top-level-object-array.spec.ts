@@ -28,6 +28,15 @@ describe('Top-level', () => {
     expect(select.read()).toEqual([]);
   })
 
+  it('should replace all elements properties', () => {
+    const select = createApplicationStore(initialState);
+    const replacement = 9;
+    select.val
+      .replaceAll(replacement);
+    expect(libState.currentAction).toEqual({ type: 'val.replaceAll()', replacement });
+    expect(select.read()).toEqual(initialState.map(s => ({ ...s, val: replacement })));
+  })
+
   it('should increment all elements properties', () => {
     const select = createApplicationStore(initialState);
     const by = 1;
@@ -40,7 +49,8 @@ describe('Top-level', () => {
   it('should be able to insert one element', () => {
     const select = createApplicationStore(initialState);
     const toInsert = { id: 4, val: 4 };
-    select.insertOne(toInsert);
+    select
+      .insertOne(toInsert);
     expect(libState.currentAction).toEqual({ type: 'insertOne()', toInsert });
     expect(select.read()).toEqual([...initialState, toInsert]);
   })
@@ -48,7 +58,8 @@ describe('Top-level', () => {
   it('should be able to insert many elements', () => {
     const select = createApplicationStore(initialState);
     const toInsert = [{ id: 4, val: 4 }, { id: 5, val: 5 }];
-    select.insertMany(toInsert);
+    select
+      .insertMany(toInsert);
     expect(libState.currentAction).toEqual({ type: 'insertMany()', toInsert });
     expect(select.read()).toEqual([...initialState, ...toInsert]);
   })
@@ -199,17 +210,17 @@ describe('Top-level', () => {
 
 
   it('...', () => {
-    const select = createApplicationStore({ arr: [{ id: 1, val: 1 }, { id: 2, val: 2 }, { id: 3, val: 3 }]});
+    const select = createApplicationStore({ arr: [{ id: 1, val: 1 }, { id: 2, val: 2 }, { id: 3, val: 3 }] });
     select.arr.val
       .incrementAll(2);
-    expect(select.read()).toEqual({ arr: [{ id: 1, val: 3 }, { id: 2, val: 4 }, { id: 3, val: 5 }]});
+    expect(select.read()).toEqual({ arr: [{ id: 1, val: 3 }, { id: 2, val: 4 }, { id: 3, val: 5 }] });
   })
 
   it('...', () => {
-    const select = createApplicationStore({ arr: [{ id: 1, val: 1 }, { id: 2, val: 2 }, { id: 3, val: 3 }]});
+    const select = createApplicationStore({ arr: [{ id: 1, val: 1 }, { id: 2, val: 2 }, { id: 3, val: 3 }] });
     select.arr.val
       .replaceAll(4);
-    expect(select.read()).toEqual({ arr: [{ id: 1, val: 4 }, { id: 2, val: 4 }, { id: 3, val: 4 }]});
+    expect(select.read()).toEqual({ arr: [{ id: 1, val: 4 }, { id: 2, val: 4 }, { id: 3, val: 4 }] });
   })
 
 
