@@ -31,25 +31,55 @@ export const readSelector = (storeName: string) => {
           stateActions = new Array<StateAction>();
         }
         if (['replace', 'patch', 'remove', 'increment', 'removeAll', 'replaceAll', 'patchAll', 'incrementAll', 'insertOne', 'insertMany', 'withOne', 'withMany'].includes(prop)) {
-          return (arg: any) => {
-            stateActions.push({ type: 'action', name: prop, arg, actionType: `${prop}()` });
-            const oldState = libState.appStates[storeName];
-            libState.appStates[storeName] = writeState(libState.appStates[storeName], { ...libState.appStates[storeName] }, stateActions, { index: 0 });
-            notifySubscribers(oldState, libState.appStates[storeName], libState.changeListeners[storeName]);
+          return (arg: any, opts?: { cacheFor: number }) => {
+            const performUpdate = (arg: any) => {
+              stateActions.push({ type: 'action', name: prop, arg, actionType: `${prop}()` });
+              const oldState = libState.appStates[storeName];
+              libState.appStates[storeName] = writeState(libState.appStates[storeName], { ...libState.appStates[storeName] }, stateActions, { index: 0 });
+              notifySubscribers(oldState, libState.appStates[storeName], libState.changeListeners[storeName]);
+            }
+            if (typeof (arg) !== 'function') {
+              performUpdate(arg);
+            } else {
+              return new Promise((resolve, reject) => {
+                const cachedValue = libState.appStates[storeName].cache?.[stateActions.map(sa => sa.actionType).join('.') + '.' + prop + '()'];
+                if (cachedValue) {
+                  resolve(cachedValue);
+                }
+                (arg() as Promise<any>)
+                  .then(promiseResult => {
+                    performUpdate(promiseResult);
+                    if (opts?.cacheFor) {
+                      const actionType = stateActions.map(sa => sa.actionType).join('.');
+                      libState.appStates[storeName] = writeState(libState.appStates[storeName], { ...libState.appStates[storeName] }, [
+                        { type: 'property', name: 'cache', actionType: 'cache' }, 
+                        { type: 'property', name: actionType, actionType: actionType }, 
+                        { type: 'action', name: 'replace', arg: toIsoString(new Date()), actionType: 'replace()' },
+                      ], { index: 0 });
+                    }
+                    const newState = readState(libState.appStates[storeName], [...stateActions.slice(0, stateActions.length - 1), { type: 'action', name: 'read' }], { index: 0 });
+                    resolve(newState);
+                  }).catch(e => reject(e));
+              })
+            }
+          }
+        } else if ('invalidateCache' === prop) {
+          return () => {
+            
           }
         } else if ('upsertMatching' === prop) {
-          stateActions.push({ type: 'upsertMatching', name: prop, arg: null, actionType: prop });
+          stateActions.push({ type: 'upsertMatching', name: prop, actionType: prop });
           return initialize({}, false, stateActions);
         } else if ('read' === prop) {
           return () => {
             if (!stateActions.length || (stateActions[stateActions.length - 1].type !== 'action')) {
-              stateActions.push({ type: 'action', name: prop, arg: null, actionType: null });
+              stateActions.push({ type: 'action', name: prop });
             }
             return readState(libState.appStates[storeName], stateActions, { index: 0 });
           }
         } else if ('onChange' === prop) {
           if (!stateActions.length || (stateActions[stateActions.length - 1].type !== 'action')) {
-            stateActions.push({ type: 'action', name: prop, arg: null, actionType: null });
+            stateActions.push({ type: 'action', name: prop });
           }
           return (changeListener: (arg: any) => any) => {
             const stateActionsCopy = stateActions.slice();
@@ -57,7 +87,7 @@ export const readSelector = (storeName: string) => {
             return { unsubscribe: () => { libState.changeListeners[storeName].delete(stateActionsCopy); } }
           }
         } else if (['and', 'or'].includes(prop)) {
-          stateActions.push({ type: 'searchConcat', name: prop, arg: null, actionType: prop });
+          stateActions.push({ type: 'searchConcat', name: prop, actionType: prop });
           return initialize({}, false, stateActions);
         } else if (['eq', 'ne', 'in', 'ni', 'gt', 'gte', 'lt', 'lte', 'match'].includes(prop)) {
           return (arg: any) => {
@@ -65,10 +95,10 @@ export const readSelector = (storeName: string) => {
             return initialize({}, false, stateActions);
           }
         } else if (['find', 'filter'].includes(prop)) {
-          stateActions.push({ type: 'search', name: prop, arg: null, actionType: prop });
+          stateActions.push({ type: 'search', name: prop, actionType: prop });
           return initialize({}, false, stateActions);
         } else {
-          stateActions.push({ type: 'property', name: prop, arg: null, actionType: prop });
+          stateActions.push({ type: 'property', name: prop, actionType: prop });
           return initialize({}, false, stateActions);
         }
       }
@@ -103,9 +133,9 @@ export const constructQuery = (stateActions: ReadonlyArray<StateAction>, cursor:
       const comparator = stateActions[cursor.index++];
       return (e: any) => compare(queryPaths.reduce((prev, curr) => prev = prev[curr.name], e), comparator.name, comparator.arg)
     }
-    queries.push({ 
-      query: constructQuery(), 
-      concat: ['action', 'property'].includes(stateActions[cursor.index].type) ? 'last' : stateActions[cursor.index].name as 'and' | 'or' 
+    queries.push({
+      query: constructQuery(),
+      concat: ['action', 'property'].includes(stateActions[cursor.index].type) ? 'last' : stateActions[cursor.index].name as 'and' | 'or'
     });
     if (stateActions[cursor.index].type === 'searchConcat') {
       cursor.index++;
@@ -225,6 +255,13 @@ export const writeState = (currentState: any, stateToUpdate: any, stateActions: 
   }
 }
 
+const doWriteState = (
+  storeName: string,
+  write: () => any,
+) => {
+
+}
+
 const constructAction = (stateActions: ReadonlyArray<StateAction>, payload?: {}) => {
   libState.currentAction = { type: stateActions.map(sa => sa.actionType).join('.'), ...payload };
 }
@@ -307,5 +344,22 @@ export function derive<X extends Readable<any>[]>(...args: X) {
       return result;
     }
   }
-  
+
+}
+
+export const toIsoString = (date: Date) => {
+  var tzo = -date.getTimezoneOffset(),
+    dif = tzo >= 0 ? '+' : '-',
+    pad = function (num: number) {
+      var norm = Math.floor(Math.abs(num));
+      return (norm < 10 ? '0' : '') + norm;
+    };
+  return date.getFullYear() +
+    '-' + pad(date.getMonth() + 1) +
+    '-' + pad(date.getDate()) +
+    'T' + pad(date.getHours()) +
+    ':' + pad(date.getMinutes()) +
+    ':' + pad(date.getSeconds()) +
+    dif + pad(tzo / 60) +
+    ':' + pad(tzo % 60);
 }

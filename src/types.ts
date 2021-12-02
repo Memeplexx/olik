@@ -42,12 +42,15 @@ export type UpsertablePrimitive<T> = {
   withMany: (upsertion: T[]) => void,
 }
 
+type Payload<S> = S | (() => Promise<S>);
+type Result<X extends Payload<any>> = X extends (() => Promise<infer R>) ? Promise<R> : void;
+
 export type UpdatableObject<S, F extends FindOrFilter, Q extends QueryStatus> = (
   ({
     patch: (patch: Partial<S>) => void;
   }) & (
     F extends 'isFind' ? {
-      replace: (replacement: S) => void;
+      replace: (replacement: Payload<S>) => void;
     } : {}
   ) & ({
     [K in keyof S]: S[K] extends Array<any>
@@ -111,7 +114,7 @@ export type UpdatablePrimitive<S, F extends FindOrFilter, Q extends QueryStatus>
     Q extends 'notQueried' ? {
       replaceAll: (replacement: S) => void;
     } : F extends 'isFind' ? {
-      replace: (replacement: S) => void;
+      replace: <X extends Payload<S>, H = X extends Function ? { cacheFor: number } : {}>(replacement: X, options?: H) => Result<X>;
     } : {}
   ) & (
     S extends number ? (
@@ -123,7 +126,9 @@ export type UpdatablePrimitive<S, F extends FindOrFilter, Q extends QueryStatus>
     ) : {}
   ) & (
     Readable<F extends 'isFilter' ? S[] : S>
-  )
+  ) & {
+    invalidateCache: () => void,
+  }
 );
 
 export interface Readable<S> {
@@ -165,8 +170,8 @@ export type Searchable<T, S, F extends FindOrFilter> = {
 export interface StateAction {
   type: 'property' | 'search' | 'comparator' | 'action' | 'searchConcat' | 'upsertMatching';
   name: string;
-  arg: any;
-  actionType: string | null;
+  arg?: any;
+  actionType?: string;
 }
 
 export interface QuerySpec {
