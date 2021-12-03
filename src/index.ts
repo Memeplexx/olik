@@ -64,16 +64,8 @@ export const readSelector = (storeName: string) => {
                           { type: 'property', name: 'cache', actionType: 'cache' },
                           { type: 'property', name: statePath, actionType: statePath },
                         ] as StateAction[];
-                        libState.appStates[storeName] = writeState(libState.appStates[storeName], { ...libState.appStates[storeName] }, [
-                          ...actions,
-                          { type: 'action', name: 'replace', arg: toIsoStringInCurrentTz(new Date()), actionType: 'replace()' },
-                        ], { index: 0 });
-                        setTimeout(() => {
-                          libState.appStates[storeName] = writeState(libState.appStates[storeName], { ...libState.appStates[storeName] }, [
-                            ...actions,
-                            { type: 'action', name: 'remove', actionType: 'remove()' },
-                          ], { index: 0 });
-                        }, opts.cacheFor);
+                        updateState(storeName, [...actions, { type: 'action', name: 'replace', arg: toIsoStringInCurrentTz(new Date()), actionType: 'replace()' }]);
+                        setTimeout(() => updateState(storeName, [...actions, { type: 'action', name: 'remove', actionType: 'remove()' }]), opts.cacheFor);
                       }
                       resolve(readCurrentState());
                     }).catch(e => {
@@ -372,6 +364,7 @@ export function derive<X extends Readable<any>[]>(...args: X) {
 
 export const transact = (...operations: (() => void)[]) => {
   if (!operations.length) { return; }
+  if (operations.length === 1) { return operations[0](); }
   libState.currentAction = {};
   libState.insideTransaction = true;
   operations.forEach(op => op());

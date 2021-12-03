@@ -50,5 +50,13 @@ describe('edge-case', () => {
     })
   })
 
+  it('should support transactions with only 1 action', () => {
+    const select = createApplicationStore({ num: 0 });
+    const replacement = 1;
+    transact(() => select.num.replace(replacement));
+    expect(select.num.read()).toEqual(replacement);
+    expect(libState.currentAction).toEqual({ type: 'num.replace()', replacement });
+  })
+
 });
 
