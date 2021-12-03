@@ -42,14 +42,15 @@ export const readSelector = (storeName: string) => {
             if (typeof (arg) !== 'function') {
               performUpdate(arg);
             } else {
+              const readCurrentState = () => readState(libState.appStates[storeName], [...stateActions, { type: 'action', name: 'read' }], { index: 0 });
               let snapshot: any = undefined;
               if (opts?.optimisticallyUpdateWith) {
-                snapshot = readState(libState.appStates[storeName], [...stateActions, { type: 'action', name: 'read' }], { index: 0 });
+                snapshot = readCurrentState();
                 performUpdate(opts?.optimisticallyUpdateWith);
               }
               return new Promise((resolve, reject) => {
                 if (libState.appStates[storeName].cache?.[stateActions.map(sa => sa.actionType).join('.')]) {
-                  resolve(readState(libState.appStates[storeName], stateActions, { index: 0 }));
+                  resolve(readCurrentState());
                 } else {
                   (arg() as Promise<any>)
                     .then(promiseResult => {
@@ -62,7 +63,7 @@ export const readSelector = (storeName: string) => {
                           { type: 'action', name: 'replace', arg: toIsoString(new Date()), actionType: 'replace()' },
                         ], { index: 0 });
                       }
-                      resolve(readState(libState.appStates[storeName], [...stateActions, { type: 'action', name: 'read' }], { index: 0 }));
+                      resolve(readCurrentState());
                     }).catch(e => {
                       if (snapshot !== undefined) {
                         performUpdate(snapshot);
@@ -90,17 +91,11 @@ export const readSelector = (storeName: string) => {
           return initialize({}, false, stateActions);
         } else if ('read' === prop) {
           return () => {
-            if (!stateActions.length || (stateActions[stateActions.length - 1].type !== 'action')) {
-              stateActions.push({ type: 'action', name: prop });
-            }
-            return readState(libState.appStates[storeName], stateActions, { index: 0 });
+            return readState(libState.appStates[storeName], [...stateActions, { type: 'action', name: prop }], { index: 0 });
           }
         } else if ('onChange' === prop) {
-          if (!stateActions.length || (stateActions[stateActions.length - 1].type !== 'action')) {
-            stateActions.push({ type: 'action', name: prop });
-          }
           return (changeListener: (arg: any) => any) => {
-            const stateActionsCopy = stateActions.slice();
+            const stateActionsCopy = [...stateActions, { type: 'action', name: prop }] as StateAction [];
             libState.changeListeners[storeName].set(stateActionsCopy, changeListener);
             return { unsubscribe: () => { libState.changeListeners[storeName].delete(stateActionsCopy); } }
           }
@@ -364,7 +359,7 @@ export function derive<X extends Readable<any>[]>(...args: X) {
 export const toIsoString = (date: Date) => {
   var tzo = -date.getTimezoneOffset(),
     dif = tzo >= 0 ? '+' : '-',
-    pad = function (num: number) {
+    pad = (num: number) => {
       var norm = Math.floor(Math.abs(num));
       return (norm < 10 ? '0' : '') + norm;
     };

@@ -46,7 +46,8 @@ describe('Async', () => {
         expect(libState.currentAction.type).toEqual('cache.num.replace()');
         expect(select.num.read()).toEqual(replacement);
         select.num.replace(resolve(replacement2))
-          .then(() => {
+          .then(result => {
+            expect(result).toEqual(replacement);
             expect(select.num.read()).toEqual(replacement);
             expect(select.cache.num.read()).toBeTruthy();
             select.num.invalidateCache();
