@@ -1,4 +1,4 @@
-import { Derivation, DerivationCalculationInputs, FindOrFilter, QuerySpec, Readable, StateAction, Store, Unsubscribable, UpdatableArray, UpdatableObject, UpdatablePrimitive } from "./types";
+import { Derivation, DerivationCalculationInputs, FindOrFilter, QuerySpec, Readable, StateAction, Store, Unsubscribe, UpdatableArray, UpdatableObject, UpdatablePrimitive } from "./types";
 
 
 export const createApplicationStore = <S>(
@@ -13,11 +13,25 @@ export const createApplicationStore = <S>(
 export const libState = {
   appStates: {} as { [storeName: string]: any },
   changeListeners: {} as { [storeName: string]: Map<StateAction[], (arg: any) => any> },
-  currentAction: {} as { type: string },
+  currentAction: {} as { [key: string]: any },
+  insideTransaction: false,
 }
 
 export const testState = {
   logLevel: 'none' as ('debug' | 'none'),
+}
+
+export const updateState = (
+  storeName: string,
+  stateActions: StateAction[],
+) => {
+  const oldState = libState.appStates[storeName];
+  libState.appStates[storeName] = writeState(
+    libState.appStates[storeName], { ...libState.appStates[storeName] },
+    stateActions,
+    { index: 0 }
+  );
+  notifySubscribers(oldState, libState.appStates[storeName], libState.changeListeners[storeName]);
 }
 
 export const readSelector = (storeName: string) => {
@@ -28,23 +42,14 @@ export const readSelector = (storeName: string) => {
         stateActions = topLevel ? new Array<StateAction>() : stateActions;
         if (['replace', 'patch', 'remove', 'increment', 'removeAll', 'replaceAll', 'patchAll', 'incrementAll', 'insertOne', 'insertMany', 'withOne', 'withMany'].includes(prop)) {
           return (arg: any, opts?: { cacheFor: number, optimisticallyUpdateWith: any }) => {
-            const performUpdate = (arg: any) => {
-              const oldState = libState.appStates[storeName];
-              libState.appStates[storeName] = writeState(
-                libState.appStates[storeName], { ...libState.appStates[storeName] },
-                [...stateActions, { type: 'action', name: prop, arg, actionType: `${prop}()` }],
-                { index: 0 }
-              );
-              notifySubscribers(oldState, libState.appStates[storeName], libState.changeListeners[storeName]);
-            }
             if (typeof (arg) !== 'function') {
-              performUpdate(arg);
+              updateState(storeName, [...stateActions, { type: 'action', name: prop, arg, actionType: `${prop}()` }]);
             } else {
               const readCurrentState = () => readState(libState.appStates[storeName], [...stateActions, { type: 'action', name: 'read' }], { index: 0 });
               let snapshot: any = undefined;
               if (opts?.optimisticallyUpdateWith) {
                 snapshot = readCurrentState();
-                performUpdate(opts?.optimisticallyUpdateWith);
+                updateState(storeName, [...stateActions, { type: 'action', name: prop, arg: opts.optimisticallyUpdateWith, actionType: `${prop}()` }]);
               }
               return new Promise((resolve, reject) => {
                 if (libState.appStates[storeName].cache?.[stateActions.map(sa => sa.actionType).join('.')]) {
@@ -52,18 +57,29 @@ export const readSelector = (storeName: string) => {
                 } else {
                   (arg() as Promise<any>)
                     .then(promiseResult => {
-                      performUpdate(promiseResult);
+                      updateState(storeName, [...stateActions, { type: 'action', name: prop, arg: promiseResult, actionType: `${prop}()` }]);
                       if (opts?.cacheFor) {
                         const statePath = stateActions.map(sa => sa.actionType).join('.');
-                        libState.appStates[storeName] = writeState(libState.appStates[storeName], { ...libState.appStates[storeName] }, [
+                        const actions = [
                           { type: 'property', name: 'cache', actionType: 'cache' },
                           { type: 'property', name: statePath, actionType: statePath },
+                        ] as StateAction[];
+                        libState.appStates[storeName] = writeState(libState.appStates[storeName], { ...libState.appStates[storeName] }, [
+                          ...actions,
                           { type: 'action', name: 'replace', arg: toIsoStringInCurrentTz(new Date()), actionType: 'replace()' },
                         ], { index: 0 });
+                        setTimeout(() => {
+                          libState.appStates[storeName] = writeState(libState.appStates[storeName], { ...libState.appStates[storeName] }, [
+                            ...actions,
+                            { type: 'action', name: 'remove', actionType: 'remove()' },
+                          ], { index: 0 });
+                        }, opts.cacheFor);
                       }
                       resolve(readCurrentState());
                     }).catch(e => {
-                      if (snapshot !== undefined) { performUpdate(snapshot); }
+                      if (snapshot !== undefined) { 
+                        updateState(storeName, [...stateActions, { type: 'action', name: prop, arg: snapshot, actionType: `${prop}()` }]);
+                      }
                       reject(e);
                     });
                 }
@@ -73,14 +89,11 @@ export const readSelector = (storeName: string) => {
         } else if ('invalidateCache' === prop) {
           return () => {
             const actionType = stateActions.map(sa => sa.actionType).join('.');
-            const newStateActions = [
+            updateState(storeName, [
               { type: 'property', name: 'cache', actionType: 'cache' },
               { type: 'property', name: actionType, actionType: actionType },
               { type: 'action', name: 'remove', actionType: 'remove()' },
-            ] as StateAction[];
-            const oldState = libState.appStates[storeName];
-            libState.appStates[storeName] = writeState(libState.appStates[storeName], { ...libState.appStates[storeName] }, newStateActions, { index: 0 });
-            notifySubscribers(oldState, libState.appStates[storeName], libState.changeListeners[storeName]);
+            ]);
           }
         } else if ('upsertMatching' === prop) {
           stateActions.push({ type: 'upsertMatching', name: prop, actionType: prop });
@@ -267,7 +280,14 @@ export const writeState = (currentState: any, stateToUpdate: any, stateActions: 
 }
 
 const constructAction = (stateActions: ReadonlyArray<StateAction>, payload?: {}) => {
-  libState.currentAction = { type: stateActions.map(sa => sa.actionType).join('.'), ...payload };
+  const type = stateActions.map(sa => sa.actionType).join('.');
+  if (!libState.insideTransaction) {
+    libState.currentAction = { type, ...payload };
+  } else if (!libState.currentAction.actions) {
+    libState.currentAction = { type, actions: [{ type, ...payload }] };
+  } else {
+    libState.currentAction = { type: `${libState.currentAction.type}, ${type}`, actions: [...libState.currentAction.actions, { type, ...payload }] };
+  }
 }
 
 export const readState = (state: any, stateActions: StateAction[], cursor: { index: number }): any => {
@@ -334,11 +354,11 @@ export function derive<X extends Readable<any>[]>(...args: X) {
         invalidate: () => previousParams.length = 0,
         onChange: (listener: (value: R) => any) => {
           changeListeners.add(listener);
-          const unsubscribables: Unsubscribable[] = (args as Array<Readable<any>>)
+          const unsubscribes: Unsubscribe[] = (args as Array<Readable<any>>)
             .map(ops => ops.onChange(() => listener(getValue())));
           return {
             unsubscribe: () => {
-              unsubscribables.forEach(u => u.unsubscribe());
+              unsubscribes.forEach(u => u.unsubscribe());
               changeListeners.delete(listener);
             }
           }
@@ -348,6 +368,14 @@ export function derive<X extends Readable<any>[]>(...args: X) {
       return result;
     }
   }
+}
+
+export const transact = (...operations: (() => void)[]) => {
+  if (!operations.length) { return; }
+  libState.currentAction = {};
+  libState.insideTransaction = true;
+  operations.forEach(op => op());
+  libState.insideTransaction = false;
 }
 
 export const toIsoStringInCurrentTz = (date: Date) => {

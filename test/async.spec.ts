@@ -88,4 +88,21 @@ describe('Async', () => {
     expect(select.num.read()).toEqual(optimisticallyUpdateWith);
   });
 
+  it('should automatically expire caches appropriately', done => {
+    const select = createApplicationStore({ num: 0 });
+    const replacement = 1;
+    const replacement2 = 2;
+    select.num
+      .replace(resolve(replacement), { cacheFor: 10 })
+      .then(() => select.num
+        .replace(resolve(replacement2))
+        .then(() => expect(select.num.read()).toEqual(replacement)));
+    setTimeout(() => {
+      select.num
+        .replace(resolve(replacement2))
+        .then(() => expect(select.num.read()).toEqual(replacement2))
+        .then(() => done());
+    }, 100);
+  })
+
 });

@@ -1,5 +1,5 @@
 
-import { createApplicationStore, derive, libState, testState } from '../src/index';
+import { createApplicationStore, derive, libState, testState, transact } from '../src/index';
 
 describe('edge-case', () => {
 
@@ -32,6 +32,22 @@ describe('edge-case', () => {
     select.num.increment(1);
     expect(changeCount).toEqual(1);
     expect(derivation.read()).toEqual([1, '']);
+  })
+
+  it('should support transactions', () => {
+    const select = createApplicationStore({ num: 0, str: '', bool: false });
+    transact(
+      () => select.num.replace(1),
+      () => select.str.replace('x'),
+    );
+    expect(select.read()).toEqual({ num: 1, str: 'x', bool: false });
+    expect(libState.currentAction).toEqual({
+      type: 'num.replace(), str.replace()',
+      actions: [
+        { type: 'num.replace()', replacement: 1 },
+        { type: 'str.replace()', replacement: 'x' },
+      ]
+    })
   })
 
 });

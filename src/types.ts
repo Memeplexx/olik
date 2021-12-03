@@ -25,7 +25,7 @@ export type DeepReadonly<T> =
 /**
  * An object which can be unsubscribed from
  */
-export interface Unsubscribable {
+export interface Unsubscribe {
   /**
    * Unsubscribes from this listener thereby preventing a memory leak.
    */
@@ -137,7 +137,7 @@ export type UpdatablePrimitive<S, F extends FindOrFilter, Q extends QueryStatus>
 
 export interface Readable<S> {
   read: () => DeepReadonly<S>;
-  onChange: (changeListener: (state: DeepReadonly<S>) => any) => Unsubscribable;
+  onChange: (changeListener: (state: DeepReadonly<S>) => any) => Unsubscribe;
 }
 
 export type UpdatableAny<T, F extends FindOrFilter, Q extends QueryStatus>
@@ -194,16 +194,6 @@ export type DerivationCalculationInputs<T extends Array<Readable<any>>> = {
   [K in keyof T]: DerivationCalculationInput<T[K]>;
 }
 
-/**
- * An object which can be unsubscribed from
- */
-export interface Unsubscribable {
-  /**
-   * Unsubscribes from this listener thereby preventing a memory leak.
-   */
-  unsubscribe: () => any,
-}
-
 export interface Derivation<R> {
   /**
    * The current value of the derivation
@@ -216,9 +206,9 @@ export interface Derivation<R> {
    * deriveFrom(...)
    *   .onChange(derivation => console.log(derivation)) ;
    */
-  onChange: (listener: (value: R) => any) => Unsubscribable,
+  onChange: (listener: (value: R) => any) => Unsubscribe,
   /**
-   * Ensure that the next time state is read, it is re-caculated
+   * Ensure that the next time state is read, it is re-calculated
    */
   invalidate: () => void,
 }
