@@ -167,34 +167,18 @@ describe('Object', () => {
     expect(select.arr.read()).toEqual([{ id: 2, num: 1 }, { id: 3, num: 2 }]);
   })
 
-  it('', () => {
-    const select = createApplicationStore({ arr: [{ id: 1, num: 1 }, { id: 2, num: 2 }] });
-    select.arr
-      .upsertMatching.id
-      .withOne({ id: 1, num: 5 });
-    expect(select.arr.read()).toEqual([{ id: 1, num: 5 }, { id: 2, num: 2 }]);
-  })
-
-  it('', () => {
-    const select = createApplicationStore({ arr: [{ id: 1, num: 1 }, { id: 2, num: 2 }] });
-    select.arr
-      .upsertMatching.id
-      .withOne({ id: 3, num: 5 });
-    expect(select.arr.read()).toEqual([{ id: 1, num: 1 }, { id: 2, num: 2 }, { id: 3, num: 5 }]);
-  })
-
-  it('', () => {
-    const select = createApplicationStore({ arr: [{ id: 1, num: 1 }, { id: 2, num: 2 }] });
-    select.arr
-      .upsertMatching.id
-      .withMany([{ id: 1, num: 5 }, { id: 3, num: 5 }]);
-    expect(select.arr.read()).toEqual([{ id: 1, num: 5 }, { id: 2, num: 2 }, { id: 3, num: 5 }]);
-  })
+  
 
   it('', () => {
     const select = createApplicationStore({ arr: [{ id: 1, num: 1 }, { id: 2, num: 2 }] });
     select.arr.patchAll({ num: 9 });
     expect(select.arr.read()).toEqual([{ id: 1, num: 9 }, { id: 2, num: 9 }]);
   });
+
+  it('should remove an object property', () => {
+    const select = createApplicationStore({ num: 0, str: '' });
+    select.num.remove();
+    expect(select.read()).toEqual({ str: '' });
+  })
 
 });

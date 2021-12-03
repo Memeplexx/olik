@@ -59,7 +59,10 @@ export type UpdatableObject<S, F extends FindOrFilter, Q extends QueryStatus> = 
     : UpdatablePrimitive<S[K], F, Q>
   }) & (
     Readable<F extends 'isFilter' ? S[] : S>
-  )
+  ) & {
+    invalidateCache: () => void,
+    remove: () => void,
+  }
 );
 
 export type UpdatableArray<S extends Array<any>, F extends FindOrFilter, Q extends QueryStatus> = (
@@ -114,7 +117,7 @@ export type UpdatablePrimitive<S, F extends FindOrFilter, Q extends QueryStatus>
     Q extends 'notQueried' ? {
       replaceAll: (replacement: S) => void;
     } : F extends 'isFind' ? {
-      replace: <X extends Payload<S>, H = X extends Function ? { cacheFor: number } : {}>(replacement: X, options?: H) => Result<X>;
+      replace: <X extends Payload<S>, H = X extends Function ? { cacheFor: number, optimisticallyUpdateWith: S } : {}>(replacement: X, options?: H) => Result<X>;
     } : {}
   ) & (
     S extends number ? (
@@ -128,6 +131,7 @@ export type UpdatablePrimitive<S, F extends FindOrFilter, Q extends QueryStatus>
     Readable<F extends 'isFilter' ? S[] : S>
   ) & {
     invalidateCache: () => void,
+    remove: () => void,
   }
 );
 
@@ -180,9 +184,9 @@ export interface QuerySpec {
 };
 
 export type Store<S>
-  = S extends Array<any> ? UpdatableArray<S, 'isFilter', 'notQueried'>
+  = Omit<S extends Array<any> ? UpdatableArray<S, 'isFilter', 'notQueried'>
   : S extends object ? UpdatableObject<S, 'isFind', 'queried'>
-  : UpdatablePrimitive<S, 'isFind', 'queried'>;
+  : UpdatablePrimitive<S, 'isFind', 'queried'>, 'remove'>;
 
 type DerivationCalculationInput<E> = E extends Readable<infer W> ? W : never;
 

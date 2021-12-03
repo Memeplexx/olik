@@ -208,21 +208,35 @@ describe('Top-level', () => {
     expect(select.read()).toEqual([initialState[0], { id: 2, val: 3 }, { id: 3, val: 4 }]);
   })
 
-
-  it('...', () => {
-    const select = createApplicationStore({ arr: [{ id: 1, val: 1 }, { id: 2, val: 2 }, { id: 3, val: 3 }] });
-    select.arr.val
-      .incrementAll(2);
-    expect(select.read()).toEqual({ arr: [{ id: 1, val: 3 }, { id: 2, val: 4 }, { id: 3, val: 5 }] });
+  it('should upsert one array element where a match could be found', () => {
+    const select = createApplicationStore(initialState);
+    const withOne = { id: 1, val: 5 };
+    select
+      .upsertMatching.id
+      .withOne(withOne);
+    expect(libState.currentAction).toEqual({ type: 'upsertMatching.id.withOne()', withOne });
+    expect(select.read()).toEqual([{ id: 1, val: 5 }, initialState[1], initialState[2]]);
   })
 
-  it('...', () => {
-    const select = createApplicationStore({ arr: [{ id: 1, val: 1 }, { id: 2, val: 2 }, { id: 3, val: 3 }] });
-    select.arr.val
-      .replaceAll(4);
-    expect(select.read()).toEqual({ arr: [{ id: 1, val: 4 }, { id: 2, val: 4 }, { id: 3, val: 4 }] });
+  it('should upsert one array element where a match could not be found', () => {
+    const select = createApplicationStore(initialState);
+    const withOne = { id: 4, val: 5 };
+    select
+      .upsertMatching.id
+      .withOne(withOne);
+    expect(libState.currentAction).toEqual({ type: 'upsertMatching.id.withOne()', withOne });
+    expect(select.read()).toEqual([...initialState, { id: 4, val: 5 }]);
   })
 
+  it('should upsert array elements where one matches and another does not', () => {
+    const select = createApplicationStore(initialState);
+    const withMany = [{ id: 1, val: 5 }, { id: 5, val: 5 }];
+    select
+      .upsertMatching.id
+      .withMany(withMany);
+    expect(libState.currentAction).toEqual({ type: 'upsertMatching.id.withMany()', withMany });
+    expect(select.read()).toEqual([{ id: 1, val: 5 }, initialState[1], initialState[2], { id: 5, val: 5 }]);
+  })
 
 });
 

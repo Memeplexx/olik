@@ -1,11 +1,11 @@
 
-import { createApplicationStore, libState } from '../src/index';
+import { createApplicationStore, libState, testState } from '../src/index';
 
 describe.skip('Performance', () => {
 
   beforeEach(() => {
     libState.appStates = {};
-    libState.logLevel = 'none';
+    testState.logLevel = 'none';
   })
 
   it('', () => {

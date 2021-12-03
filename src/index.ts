@@ -13,7 +13,7 @@ export const createApplicationStore = <S>(
 export const libState = {
   appStates: {} as { [storeName: string]: any },
   changeListeners: {} as { [storeName: string]: Map<StateAction[], (arg: any) => any> },
-  currentAction: {},
+  currentAction: {} as { type: string },
 }
 
 export const testState = {
@@ -22,50 +22,68 @@ export const testState = {
 
 export const readSelector = (storeName: string) => {
   const initialize = (s: any, topLevel: boolean, stateActions: StateAction[]): any => {
-    if (typeof s !== 'object') {
-      return null as any;
-    }
+    if (typeof s !== 'object') { return null as any; }
     return new Proxy(s, {
       get: function (target, prop: string) {
         if (topLevel) {
           stateActions = new Array<StateAction>();
         }
         if (['replace', 'patch', 'remove', 'increment', 'removeAll', 'replaceAll', 'patchAll', 'incrementAll', 'insertOne', 'insertMany', 'withOne', 'withMany'].includes(prop)) {
-          return (arg: any, opts?: { cacheFor: number }) => {
+          return (arg: any, opts?: { cacheFor: number, optimisticallyUpdateWith: any }) => {
             const performUpdate = (arg: any) => {
-              stateActions.push({ type: 'action', name: prop, arg, actionType: `${prop}()` });
               const oldState = libState.appStates[storeName];
-              libState.appStates[storeName] = writeState(libState.appStates[storeName], { ...libState.appStates[storeName] }, stateActions, { index: 0 });
+              libState.appStates[storeName] = writeState(
+                libState.appStates[storeName], { ...libState.appStates[storeName] }, 
+                [...stateActions, { type: 'action', name: prop, arg, actionType: `${prop}()` }], 
+                { index: 0 }
+              );
               notifySubscribers(oldState, libState.appStates[storeName], libState.changeListeners[storeName]);
             }
             if (typeof (arg) !== 'function') {
               performUpdate(arg);
             } else {
+              let snapshot: any = undefined;
+              if (opts?.optimisticallyUpdateWith) {
+                snapshot = readState(libState.appStates[storeName], [...stateActions, { type: 'action', name: 'read' }], { index: 0 });
+                performUpdate(opts?.optimisticallyUpdateWith);
+              }
               return new Promise((resolve, reject) => {
-                const cachedValue = libState.appStates[storeName].cache?.[stateActions.map(sa => sa.actionType).join('.') + '.' + prop + '()'];
-                if (cachedValue) {
-                  resolve(cachedValue);
+                if (libState.appStates[storeName].cache?.[stateActions.map(sa => sa.actionType).join('.')]) {
+                  resolve(readState(libState.appStates[storeName], stateActions, { index: 0 }));
+                } else {
+                  (arg() as Promise<any>)
+                    .then(promiseResult => {
+                      performUpdate(promiseResult);
+                      if (opts?.cacheFor) {
+                        const statePath = stateActions.map(sa => sa.actionType).join('.');
+                        libState.appStates[storeName] = writeState(libState.appStates[storeName], { ...libState.appStates[storeName] }, [
+                          { type: 'property', name: 'cache', actionType: 'cache' },
+                          { type: 'property', name: statePath, actionType: statePath },
+                          { type: 'action', name: 'replace', arg: toIsoString(new Date()), actionType: 'replace()' },
+                        ], { index: 0 });
+                      }
+                      resolve(readState(libState.appStates[storeName], [...stateActions, { type: 'action', name: 'read' }], { index: 0 }));
+                    }).catch(e => {
+                      if (snapshot !== undefined) {
+                        performUpdate(snapshot);
+                      }
+                      reject(e);
+                    });
                 }
-                (arg() as Promise<any>)
-                  .then(promiseResult => {
-                    performUpdate(promiseResult);
-                    if (opts?.cacheFor) {
-                      const actionType = stateActions.map(sa => sa.actionType).join('.');
-                      libState.appStates[storeName] = writeState(libState.appStates[storeName], { ...libState.appStates[storeName] }, [
-                        { type: 'property', name: 'cache', actionType: 'cache' }, 
-                        { type: 'property', name: actionType, actionType: actionType }, 
-                        { type: 'action', name: 'replace', arg: toIsoString(new Date()), actionType: 'replace()' },
-                      ], { index: 0 });
-                    }
-                    const newState = readState(libState.appStates[storeName], [...stateActions.slice(0, stateActions.length - 1), { type: 'action', name: 'read' }], { index: 0 });
-                    resolve(newState);
-                  }).catch(e => reject(e));
               })
             }
           }
         } else if ('invalidateCache' === prop) {
           return () => {
-            
+            const actionType = stateActions.map(sa => sa.actionType).join('.');
+            const newStateActions = [
+              { type: 'property', name: 'cache', actionType: 'cache' },
+              { type: 'property', name: actionType, actionType: actionType },
+              { type: 'action', name: 'remove', actionType: 'remove()' },
+            ] as StateAction[];
+            const oldState = libState.appStates[storeName];
+            libState.appStates[storeName] = writeState(libState.appStates[storeName], { ...libState.appStates[storeName] }, newStateActions, { index: 0 });
+            notifySubscribers(oldState, libState.appStates[storeName], libState.changeListeners[storeName]);
           }
         } else if ('upsertMatching' === prop) {
           stateActions.push({ type: 'upsertMatching', name: prop, actionType: prop });
@@ -186,6 +204,7 @@ export const writeState = (currentState: any, stateToUpdate: any, stateActions: 
       const foundIndex = upsertArgs.findIndex(ua => queryPaths.reduce((prev, curr) => prev = prev[curr.name], ua) === elementValue);
       return foundIndex !== -1 ? upsertArgs.splice(foundIndex, 1)[0] : e;
     });
+    constructAction(stateActions, { [upsert.name]: upsert.arg });
     return [...result, ...upsertArgs];
   }
   const action = stateActions[cursor.index++];
@@ -219,6 +238,9 @@ export const writeState = (currentState: any, stateToUpdate: any, stateActions: 
             : e);
         }
       }
+    } else if (['remove', 'invalidateCache'].includes(stateActions[cursor.index].name)) {
+      const { [stateActions[cursor.index - 1].name]: other, ...otherState } = currentState;
+      return otherState;
     } else {
       return { ...currentState, [action.name]: writeState((currentState || {})[action.name], ((stateToUpdate as any) || {})[action.name], stateActions, cursor) };
     }
@@ -253,13 +275,6 @@ export const writeState = (currentState: any, stateToUpdate: any, stateActions: 
     constructAction(stateActions, { toInsert: action.arg });
     return [...currentState, ...action.arg];
   }
-}
-
-const doWriteState = (
-  storeName: string,
-  write: () => any,
-) => {
-
 }
 
 const constructAction = (stateActions: ReadonlyArray<StateAction>, payload?: {}) => {
@@ -344,7 +359,6 @@ export function derive<X extends Readable<any>[]>(...args: X) {
       return result;
     }
   }
-
 }
 
 export const toIsoString = (date: Date) => {
