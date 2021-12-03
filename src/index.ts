@@ -1,4 +1,5 @@
-import { Derivation, DerivationCalculationInputs, FindOrFilter, QuerySpec, Readable, StateAction, Store, Unsubscribe, UpdatableArray, UpdatableObject, UpdatablePrimitive } from "./types";
+import { errorMessages } from './constants';
+import { Derivation, DerivationCalculationInputs, QuerySpec, Readable, StateAction, Store, Unsubscribe } from './types';
 
 
 export const createApplicationStore = <S>(
@@ -26,12 +27,13 @@ export const updateState = (
   stateActions: StateAction[],
 ) => {
   const oldState = libState.appStates[storeName];
-  libState.appStates[storeName] = writeState(
-    libState.appStates[storeName], { ...libState.appStates[storeName] },
-    stateActions,
-    { index: 0 }
-  );
-  notifySubscribers(oldState, libState.appStates[storeName], libState.changeListeners[storeName]);
+  libState.appStates[storeName] = writeState(libState.appStates[storeName], { ...libState.appStates[storeName] }, stateActions, { index: 0 });
+  libState.changeListeners[storeName].forEach((listener, stateActions) => {
+    const selectedNewState = readState(libState.appStates[storeName], stateActions, { index: 0 });
+    if (readState(oldState, stateActions, { index: 0 }) !== selectedNewState) {
+      listener(selectedNewState);
+    }
+  })
 }
 
 export const readSelector = (storeName: string) => {
@@ -45,6 +47,7 @@ export const readSelector = (storeName: string) => {
             if (typeof (arg) !== 'function') {
               updateState(storeName, [...stateActions, { type: 'action', name: prop, arg, actionType: `${prop}()` }]);
             } else {
+              if (libState.insideTransaction) { throw new Error(errorMessages.ASYNC_PAYLOAD_INSIDE_TRANSACTION); }
               const readCurrentState = () => readState(libState.appStates[storeName], [...stateActions, { type: 'action', name: 'read' }], { index: 0 });
               let snapshot: any = undefined;
               if (opts?.optimisticallyUpdateWith) {
@@ -69,7 +72,7 @@ export const readSelector = (storeName: string) => {
                       }
                       resolve(readCurrentState());
                     }).catch(e => {
-                      if (snapshot !== undefined) { 
+                      if (snapshot !== undefined) {
                         updateState(storeName, [...stateActions, { type: 'action', name: prop, arg: snapshot, actionType: `${prop}()` }]);
                       }
                       reject(e);
@@ -119,20 +122,6 @@ export const readSelector = (storeName: string) => {
   return initialize({}, true, []);
 }
 
-export const notifySubscribers = (
-  oldState: any,
-  newState: any,
-  changeListeners: Map<StateAction[], (arg: any) => any>
-) => {
-  changeListeners.forEach((listener, stateActions) => {
-    const selectedNewState = readState(newState, stateActions, { index: 0 });
-    const selectedOldState = readState(oldState, stateActions, { index: 0 });
-    if (selectedOldState !== selectedNewState) {
-      listener(selectedNewState);
-    }
-  })
-}
-
 export const constructQuery = (stateActions: ReadonlyArray<StateAction>, cursor: { index: number }) => {
   const concatenateQueries = (queries: QuerySpec[]): QuerySpec[] => {
     const constructQuery = () => {
@@ -143,7 +132,7 @@ export const constructQuery = (stateActions: ReadonlyArray<StateAction>, cursor:
           return prev.concat(curr);
         }, new Array<StateAction>());
       const comparator = stateActions[cursor.index++];
-      return (e: any) => compare(queryPaths.reduce((prev, curr) => prev = prev[curr.name], e), comparator.name, comparator.arg)
+      return (e: any) => comparisons[comparator.name](queryPaths.reduce((prev, curr) => prev = prev[curr.name], e), comparator.arg);
     }
     queries.push({
       query: constructQuery(),
@@ -159,19 +148,16 @@ export const constructQuery = (stateActions: ReadonlyArray<StateAction>, cursor:
   const ors = new Array<(arg: any) => boolean>();
   const ands = new Array<(arg: any) => boolean>();
   for (let i = 0; i < queries.length; i++) {
-    const isLastClause = queries[i].concat === 'last';
-    const isAndClause = queries[i].concat === 'and';
-    const isOrClause = queries[i].concat === 'or';
     const previousClauseWasAnAnd = queries[i - 1] && queries[i - 1].concat === 'and';
-    if (isAndClause || previousClauseWasAnAnd) {
+    if (queries[i].concat === 'and' || previousClauseWasAnAnd) {
       ands.push(queries[i].query);
     }
-    if ((isOrClause || isLastClause) && ands.length) {
+    if ((queries[i].concat === 'or' || queries[i].concat === 'last') && ands.length) {
       const andsCopy = ands.slice();
       ors.push(el => andsCopy.every(and => and(el)));
       ands.length = 0;
     }
-    if (!isAndClause && !previousClauseWasAnAnd) {
+    if (!(queries[i].concat === 'and') && !previousClauseWasAnAnd) {
       ors.push(queries[i].query);
     }
   }
@@ -198,8 +184,7 @@ export const writeState = (currentState: any, stateToUpdate: any, stateActions: 
       const foundIndex = upsertArgs.findIndex(ua => queryPaths.reduce((prev, curr) => prev = prev[curr.name], ua) === elementValue);
       return foundIndex !== -1 ? upsertArgs.splice(foundIndex, 1)[0] : e;
     });
-    constructAction(stateActions, { [upsert.name]: upsert.arg });
-    return [...result, ...upsertArgs];
+    return completeStateWrite(stateActions, { [upsert.name]: upsert.arg }, [...result, ...upsertArgs]);
   }
   const action = stateActions[cursor.index++];
   if (cursor.index < (stateActions.length)) {
@@ -208,15 +193,10 @@ export const writeState = (currentState: any, stateToUpdate: any, stateActions: 
       let findIndex = -1;
       if ('find' === action.name) {
         findIndex = (currentState as any[]).findIndex(query);
-        if (findIndex === -1) { throw new Error(); }
+        if (findIndex === -1) { throw new Error(errorMessages.FIND_RETURNS_NO_MATCHES); }
       }
       if (stateActions[cursor.index].name === 'remove') {
-        constructAction(stateActions);
-        if ('find' === action.name) {
-          return (currentState as any[]).filter((e, i) => findIndex !== i);
-        } else if ('filter' === action.name) {
-          return (currentState as any[]).filter(e => !query(e));
-        }
+        return completeStateWrite(stateActions, null, 'find' === action.name ? (currentState as any[]).filter((e, i) => findIndex !== i) : (currentState as any[]).filter(e => !query(e)));
       } else {
         if ('find' === action.name) {
           return (currentState as any[]).map((e, i) => i === findIndex
@@ -239,47 +219,32 @@ export const writeState = (currentState: any, stateToUpdate: any, stateActions: 
       return { ...currentState, [action.name]: writeState((currentState || {})[action.name], ((stateToUpdate as any) || {})[action.name], stateActions, cursor) };
     }
   } else if (action.name === 'replace') {
-    constructAction(stateActions, { replacement: action.arg });
-    return action.arg;
+    return completeStateWrite(stateActions, { replacement: action.arg }, action.arg);
   } else if (action.name === 'patch') {
-    constructAction(stateActions, { patch: action.arg });
-    return { ...currentState, ...(action.arg as any) }
+    return completeStateWrite(stateActions, { patch: action.arg }, { ...currentState, ...(action.arg as any) });
   } else if (action.name === 'increment') {
-    constructAction(stateActions, { by: action.arg });
-    return currentState + action.arg;
+    return completeStateWrite(stateActions, { by: action.arg }, currentState + action.arg);
   } else if (action.name === 'removeAll') {
-    constructAction(stateActions);
-    return [];
+    return completeStateWrite(stateActions, null, []);
   } else if (action.name === 'replaceAll') {
-    constructAction(stateActions, { replacement: action.arg });
-    return action.arg;
+    return completeStateWrite(stateActions, { replacement: action.arg }, action.arg);
   } else if (action.name === 'patchAll') {
-    constructAction(stateActions, { patch: action.arg });
-    return (currentState as any[]).map(e => ({ ...e, ...action.arg }))
+    return completeStateWrite(stateActions, { patch: action.arg }, (currentState as any[]).map(e => ({ ...e, ...action.arg })));
   } else if (action.name === 'incrementAll') {
-    constructAction(stateActions, { by: action.arg });
-    if (Array.isArray(currentState)) {
-      return currentState.map((e: any) => e + action.arg);
-    }
-    return currentState + action.arg;
+    return completeStateWrite(stateActions, { by: action.arg }, Array.isArray(currentState) ? currentState.map((e: any) => e + action.arg) : currentState + action.arg);
   } else if (action.name === 'insertOne') {
-    constructAction(stateActions, { toInsert: action.arg });
-    return [...currentState, action.arg];
+    return completeStateWrite(stateActions, { toInsert: action.arg }, [...currentState, action.arg]);
   } else if (action.name === 'insertMany') {
-    constructAction(stateActions, { toInsert: action.arg });
-    return [...currentState, ...action.arg];
+    return completeStateWrite(stateActions, { toInsert: action.arg }, [...currentState, ...action.arg]);
   }
 }
 
-const constructAction = (stateActions: ReadonlyArray<StateAction>, payload?: {}) => {
+const completeStateWrite = (stateActions: ReadonlyArray<StateAction>, payload: null | {}, newState: any) => {
   const type = stateActions.map(sa => sa.actionType).join('.');
-  if (!libState.insideTransaction) {
-    libState.currentAction = { type, ...payload };
-  } else if (!libState.currentAction.actions) {
-    libState.currentAction = { type, actions: [{ type, ...payload }] };
-  } else {
-    libState.currentAction = { type: `${libState.currentAction.type}, ${type}`, actions: [...libState.currentAction.actions, { type, ...payload }] };
-  }
+  libState.currentAction = !libState.insideTransaction ? { type, ...payload }
+    : !libState.currentAction.actions ? { type, actions: [{ type, ...payload }] }
+      : { type: `${libState.currentAction.type}, ${type}`, actions: [...libState.currentAction.actions, { type, ...payload }] };
+  return newState;
 }
 
 export const readState = (state: any, stateActions: StateAction[], cursor: { index: number }): any => {
@@ -292,7 +257,7 @@ export const readState = (state: any, stateActions: StateAction[], cursor: { ind
       const query = constructQuery(stateActions, cursor);
       if ('find' === action.name) {
         const findResult = readState((state as any[]).find(query), stateActions, cursor);
-        if (findResult === undefined) { throw new Error(); }
+        if (findResult === undefined) { throw new Error(errorMessages.FIND_RETURNS_NO_MATCHES); }
         return findResult;
       } else if ('filter' === action.name) {
         return (state as any[]).filter(query).map(e => readState(e, stateActions, { ...cursor }));
@@ -305,25 +270,16 @@ export const readState = (state: any, stateActions: StateAction[], cursor: { ind
   }
 }
 
-export const compare = (toCompare: any, comparator: string, comparatorArg: any) => {
-  if (comparator === 'eq') {
-    return toCompare === comparatorArg
-  } else if (comparator === 'in') {
-    return comparatorArg.includes(toCompare);
-  } else if (comparator === 'ni') {
-    return !comparatorArg.includes(toCompare);
-  } else if (comparator === 'gt') {
-    return toCompare > comparatorArg;
-  } else if (comparator === 'lt') {
-    return toCompare < comparatorArg;
-  } else if (comparator === 'gte') {
-    return toCompare >= comparatorArg;
-  } else if (comparator === 'lte') {
-    return toCompare <= comparatorArg;
-  } else if (comparator === 'match') {
-    return (toCompare as string).match(comparatorArg);
-  }
-}
+export const comparisons = {
+  eq: (toCompare, comparatorArg) => toCompare === comparatorArg,
+  in: (toCompare, comparatorArg) => comparatorArg.includes(toCompare),
+  ni: (toCompare, comparatorArg) => !comparatorArg.includes(toCompare),
+  gt: (toCompare, comparatorArg) => toCompare > comparatorArg,
+  lt: (toCompare, comparatorArg) => toCompare < comparatorArg,
+  gte: (toCompare, comparatorArg) => toCompare >= comparatorArg,
+  lte: (toCompare, comparatorArg) => toCompare <= comparatorArg,
+  match: (toCompare, comparatorArg) => comparatorArg.test(toCompare),
+} as { [comparator: string]: (toCompare: any, comparatorArg: any) => boolean }
 
 export function derive<X extends Readable<any>[]>(...args: X) {
   let previousParams = new Array<any>();

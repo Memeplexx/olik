@@ -1,4 +1,5 @@
 
+import { errorMessages } from '../src/constants';
 import { createApplicationStore, derive, libState, testState, transact } from '../src/index';
 
 describe('edge-case', () => {
@@ -56,6 +57,14 @@ describe('edge-case', () => {
     transact(() => select.num.replace(replacement));
     expect(select.num.read()).toEqual(replacement);
     expect(libState.currentAction).toEqual({ type: 'num.replace()', replacement });
+  })
+
+  it('should not support transactions if one of the actions has an async payload', () => {
+    const select = createApplicationStore({ num: 0, str: '', bool: false });
+    expect(() => transact(
+      () => select.num.replace(() => new Promise(resolve => resolve(1))),
+      () => select.str.replace('x'),
+    )).toThrow(errorMessages.ASYNC_PAYLOAD_INSIDE_TRANSACTION);
   })
 
 });
