@@ -25,16 +25,14 @@ export const readSelector = (storeName: string) => {
     if (typeof s !== 'object') { return null as any; }
     return new Proxy(s, {
       get: function (target, prop: string) {
-        if (topLevel) {
-          stateActions = new Array<StateAction>();
-        }
+        stateActions = topLevel ? new Array<StateAction>() : stateActions;
         if (['replace', 'patch', 'remove', 'increment', 'removeAll', 'replaceAll', 'patchAll', 'incrementAll', 'insertOne', 'insertMany', 'withOne', 'withMany'].includes(prop)) {
           return (arg: any, opts?: { cacheFor: number, optimisticallyUpdateWith: any }) => {
             const performUpdate = (arg: any) => {
               const oldState = libState.appStates[storeName];
               libState.appStates[storeName] = writeState(
-                libState.appStates[storeName], { ...libState.appStates[storeName] }, 
-                [...stateActions, { type: 'action', name: prop, arg, actionType: `${prop}()` }], 
+                libState.appStates[storeName], { ...libState.appStates[storeName] },
+                [...stateActions, { type: 'action', name: prop, arg, actionType: `${prop}()` }],
                 { index: 0 }
               );
               notifySubscribers(oldState, libState.appStates[storeName], libState.changeListeners[storeName]);
@@ -60,14 +58,12 @@ export const readSelector = (storeName: string) => {
                         libState.appStates[storeName] = writeState(libState.appStates[storeName], { ...libState.appStates[storeName] }, [
                           { type: 'property', name: 'cache', actionType: 'cache' },
                           { type: 'property', name: statePath, actionType: statePath },
-                          { type: 'action', name: 'replace', arg: toIsoString(new Date()), actionType: 'replace()' },
+                          { type: 'action', name: 'replace', arg: toIsoStringInCurrentTz(new Date()), actionType: 'replace()' },
                         ], { index: 0 });
                       }
                       resolve(readCurrentState());
                     }).catch(e => {
-                      if (snapshot !== undefined) {
-                        performUpdate(snapshot);
-                      }
+                      if (snapshot !== undefined) { performUpdate(snapshot); }
                       reject(e);
                     });
                 }
@@ -90,12 +86,10 @@ export const readSelector = (storeName: string) => {
           stateActions.push({ type: 'upsertMatching', name: prop, actionType: prop });
           return initialize({}, false, stateActions);
         } else if ('read' === prop) {
-          return () => {
-            return readState(libState.appStates[storeName], [...stateActions, { type: 'action', name: prop }], { index: 0 });
-          }
+          return () => readState(libState.appStates[storeName], [...stateActions, { type: 'action', name: prop }], { index: 0 });
         } else if ('onChange' === prop) {
           return (changeListener: (arg: any) => any) => {
-            const stateActionsCopy = [...stateActions, { type: 'action', name: prop }] as StateAction [];
+            const stateActionsCopy = [...stateActions, { type: 'action', name: prop }] as StateAction[];
             libState.changeListeners[storeName].set(stateActionsCopy, changeListener);
             return { unsubscribe: () => { libState.changeListeners[storeName].delete(stateActionsCopy); } }
           }
@@ -356,19 +350,13 @@ export function derive<X extends Readable<any>[]>(...args: X) {
   }
 }
 
-export const toIsoString = (date: Date) => {
-  var tzo = -date.getTimezoneOffset(),
-    dif = tzo >= 0 ? '+' : '-',
-    pad = (num: number) => {
-      var norm = Math.floor(Math.abs(num));
-      return (norm < 10 ? '0' : '') + norm;
-    };
-  return date.getFullYear() +
-    '-' + pad(date.getMonth() + 1) +
-    '-' + pad(date.getDate()) +
-    'T' + pad(date.getHours()) +
-    ':' + pad(date.getMinutes()) +
-    ':' + pad(date.getSeconds()) +
-    dif + pad(tzo / 60) +
-    ':' + pad(tzo % 60);
+export const toIsoStringInCurrentTz = (date: Date) => {
+  const tzo = -date.getTimezoneOffset();
+  const dif = tzo >= 0 ? '+' : '-';
+  const pad = (num: number) => {
+    const norm = Math.floor(Math.abs(num));
+    return (norm < 10 ? '0' : '') + norm;
+  };
+  return date.getFullYear() + '-' + pad(date.getMonth() + 1) + '-' + pad(date.getDate()) + 'T' + pad(date.getHours())
+    + ':' + pad(date.getMinutes()) + ':' + pad(date.getSeconds()) + dif + pad(tzo / 60) + ':' + pad(tzo % 60);
 }
