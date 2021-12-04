@@ -97,7 +97,7 @@ export type StoreWhichEnforcesTags<C> = Store<C, 'tagged'>;
 /**
  * An object which is capable of managing state for a component
  */
-export type StoreForAComponent<C> = Store<C, 'untagged'> & { detachFromApplicationStore: () => void, attachToApplicationStore: (options?: { instanceName: string | number }) => void };
+export type StoreForAComponent<C> = Store<C, 'untagged'> & { removeFromApplicationStore: () => void, setDeferredInstanceName: (instanceName: string | number) => void };
 
 /**
  * A function which selects from the store

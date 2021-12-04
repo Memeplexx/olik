@@ -71,70 +71,66 @@ export function createComponentStore<L>(
   state: L,
   options: OptionsForMakingAComponentStore,
 ) {
-  let detachedComponentStore: StoreForAComponent<any> | null;
-  let instanceName = options.instanceName;
-  const componentName = options.componentName;
   if (!libState.applicationStore) {
-    detachedComponentStore = createDetachedComponentStore(state, options) as any;
+    const devtoolsStoreName = `${options.componentName} : ${options.instanceName as string}`;
+    const componentStore = createStoreCore({
+      state,
+      devtools: options.devtools
+        ? { ...options.devtools, name: options.devtools.name || `${options.componentName} : ${options.instanceName as string}` }
+        : { name: devtoolsStoreName },
+    }) as SelectorFromAComponentStore<L>;
+    return ((selector?: (state: DeepReadonly<L>) => any) => {
+      const selectorFromCompStore = componentStore(selector);
+      selectorFromCompStore.removeFromApplicationStore = () => {}
+      return selectorFromCompStore;
+    }) as SelectorFromAComponentStore<L>;
   } else if (options.instanceName === Deferred) {
-    detachedComponentStore = createDetachedComponentStore(state, { ...options, devtools: false }) as any;
+    const componentStore = createStoreCore({ state, devtools: false });
+    return ((selector?: (state: DeepReadonly<L>) => any) => {
+      const selectorFromCompStore = componentStore(selector);
+      selectorFromCompStore.setDeferredInstanceName = (instanceName: string | number) => {
+        libState.applicationStore!(s => s.cmp[options.componentName][instanceName]).replace(selectorFromCompStore.read());
+        Array.from((selectorFromCompStore.storeState.changeListeners as Map<(ar: any) => any, (arg: any) => any>).entries())
+          .forEach(([performAction, selector]) =>
+            libState.applicationStore!(s => selector(s.cmp[options.componentName][instanceName])).onChange(performAction));
+        options.instanceName = instanceName;
+      };
+      const result = options.instanceName === Deferred ? selectorFromCompStore : (selector
+        ? libState.applicationStore!(s => selector(s.cmp[options.componentName][options.instanceName]))
+        : libState.applicationStore!(s => s.cmp[options.componentName][options.instanceName]));
+      (selectorFromCompStore as any).reset = (selectorFromCompStore as any).defineReset(state, selector);
+      result.removeFromApplicationStore = () => {
+        const state = libState.applicationStore!().read().cmp[options.componentName];
+        if ((Object.keys(state).length === 1) && state[options.instanceName!]) {
+          libState.applicationStore!(s => s.cmp[options.componentName]).remove();
+        } else {
+          libState.applicationStore!(s => s.cmp[options.componentName][options.instanceName]).remove();
+        }
+      }
+      return result;
+    }) as SelectorFromAComponentStore<L>;
   } else {
     const wrapperState = libState.applicationStore().read();
     if (['number', 'boolean', 'string'].some(type => typeof (wrapperState) === type) || Array.isArray(wrapperState)) {
       throw new Error(errorMessages.INVALID_CONTAINER_FOR_COMPONENT_STORES);
     }
-    libState.applicationStore(s => s.cmp[componentName][instanceName]).replace(state);
-  }
-  return ((selector?: (state: L) => any) => {
-    if (detachedComponentStore) {
-      const selectorFromCompStore = (detachedComponentStore as any)(selector);
-      selectorFromCompStore.attachToApplicationStore = (opts?: { instanceName: string | number }) => {
-        if (!libState.applicationStore) { return; }
-        if (options.instanceName === Deferred && (!opts?.instanceName || (typeof(opts?.instanceName) !== 'number' && typeof(opts?.instanceName) !== 'string'))) {
-          throw new Error(errorMessages.MUST_SUPPLY_INSTANCE_NAME_WITH_DEFERRED_INSTANCE_NAMES);
-        }
-        instanceName = (opts?.instanceName || instanceName).toString();
-        libState.applicationStore!(s => s.cmp[componentName][instanceName]).replace(selectorFromCompStore.read());
-        Array.from(((detachedComponentStore as any)().storeState.changeListeners as Map<(ar: any) => any, (arg: any) => any>).entries())
-          .forEach(([performAction, selector]) =>
-            libState.applicationStore!(s => selector(s.cmp[componentName][instanceName])).onChange(performAction));
-        detachedComponentStore = null;
-      }
-      return selectorFromCompStore;
-    } else {
+    libState.applicationStore(s => s.cmp[options.componentName][options.instanceName]).replace(state);
+    return (selector => {
       const selectorFromCompStore = selector
-        ? libState.applicationStore!(s => selector(s.cmp[componentName][instanceName]))
-        : libState.applicationStore!(s => s.cmp[componentName][instanceName]);
-      (selectorFromCompStore as any).detachFromApplicationStore = () => {
-        if (!libState.applicationStore) { return; }
-        const state = libState.applicationStore().read().cmp[componentName];
-        if ((Object.keys(state).length === 1) && state[instanceName!]) {
-          libState.applicationStore(s => s.cmp[componentName]).remove();
-        } else {
-          libState.applicationStore(s => s.cmp[componentName][instanceName]).remove();
-        }
-        detachedComponentStore = createDetachedComponentStore(state[instanceName], options) as any;
-      }
+        ? libState.applicationStore!(s => selector(s.cmp[options.componentName][options.instanceName]))
+        : libState.applicationStore!(s => s.cmp[options.componentName][options.instanceName]);
       (selectorFromCompStore as any).reset = (selectorFromCompStore as any).defineReset(state, selector);
-      return selectorFromCompStore;
-    }
-  }) as any as SelectorFromAComponentStore<L>;
-}
-
-function createDetachedComponentStore<L>(
-  state: L,
-  options: OptionsForMakingAComponentStore,
-) {
-  const devtoolsStoreName = options.devtools !== false ? `${options.componentName} : ${options.instanceName as string}` : '';
-  const selectorFromAppStore = createStoreCore({
-    state,
-    devtools: options.devtools === false ? false : options.devtools ? { ...options.devtools, name: options.devtools.name || devtoolsStoreName } : { name: devtoolsStoreName },
-  }) as SelectorFromAComponentStore<L>;
-  return ((selector?: (state: DeepReadonly<L>) => any) => {
-    const selectorFromCompStore = selectorFromAppStore(selector);
-    selectorFromCompStore.detachFromApplicationStore = () => { /* noop */ }
-    return selectorFromCompStore;
-  }) as SelectorFromAComponentStore<L>;
+      (selectorFromCompStore as any).removeFromApplicationStore = () => {
+        const state = libState.applicationStore!().read().cmp[options.componentName];
+        if ((Object.keys(state).length === 1) && state[options.instanceName!]) {
+          libState.applicationStore!(s => s.cmp[options.componentName]).remove();
+        } else {
+          libState.applicationStore!(s => s.cmp[options.componentName][options.instanceName]).remove();
+        }
+      }
+      return selectorFromCompStore as any;
+    }) as SelectorFromAComponentStore<L>;
+  }
 }
 
 function createApplicationStoreInternal<S, T extends Trackability>(

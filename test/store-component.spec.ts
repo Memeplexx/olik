@@ -81,7 +81,7 @@ describe('Component stores', () => {
     const instanceName = '0';
     const component1 = createComponentStore({ one: '' }, { componentName, instanceName });
     expect(select().read()).toEqual({ test: '', cmp: { [componentName]: { 0: { one: '' } } } });
-    component1().detachFromApplicationStore();
+    component1().removeFromApplicationStore();
     expect(select().read()).toEqual({ test: '', cmp: {} });
   })
 
@@ -94,9 +94,9 @@ describe('Component stores', () => {
     const component1 = createComponentStore({ one: '' }, { componentName, instanceName: '0' });
     const component2 = createComponentStore({ one: '' }, { componentName, instanceName: '1' });
     expect(select().read()).toEqual({ test: '', cmp: { [componentName]: { '0': { one: '' }, '1': { one: '' } } } });
-    component1().detachFromApplicationStore();
+    component1().removeFromApplicationStore();
     expect(select().read()).toEqual({ test: '', cmp: { [componentName]: { '1': { one: '' } } } });
-    component2().detachFromApplicationStore();
+    component2().removeFromApplicationStore();
     expect(select().read()).toEqual({ test: '', cmp: {} });
   })
 
@@ -199,7 +199,7 @@ describe('Component stores', () => {
     }, { componentName: 'dd', instanceName: '0' });
     component(s => s.object.property).replace('test');
     expect(component().read().object.property).toEqual('test');
-    component().detachFromApplicationStore();
+    component().removeFromApplicationStore();
   });
 
   it('should be able to support a custom instance name', () => {
@@ -259,7 +259,7 @@ describe('Component stores', () => {
       }
     });
     child(s => s.val).replace(1);
-    child().attachToApplicationStore({ instanceName });
+    child().setDeferredInstanceName(instanceName);
     child(s => s.val).replace(2);
   })
 
@@ -293,29 +293,8 @@ describe('Component stores', () => {
       }
     });
     child(s => s.val).replace(1);
-    child().attachToApplicationStore({ instanceName });
+    child().setDeferredInstanceName(instanceName);
     child(s => s.val).replace(2);
-  })
-
-  it('should be able to work after being detached, and then after being re-attached', () => {
-    const select = createApplicationStore({ val: '' });
-    const child = createComponentStore({ num: 0 }, { componentName: 'test', instanceName: 1 });
-    expect(select().read()).toEqual({ val: '', cmp: { test: { '1': { num: 0 } } } });
-    child().detachFromApplicationStore();
-    expect(select().read()).toEqual({ val: '', cmp: {} });
-    expect(child().read()).toEqual({ num: 0 });
-    child(s => s.num).replace(1);
-    expect(child().read()).toEqual({ num: 1 });
-    child().attachToApplicationStore();
-    expect(select().read()).toEqual({ val: '', cmp: { test: { '1': { num: 1 } } } });
-    child(s => s.num).replace(2);
-    expect(select().read()).toEqual({ val: '', cmp: { test: { '1': { num: 2 } } } });
-  })
-
-  it('should throw an error is an instanceName was not supplied for a deferred store', () => {
-    const select = createApplicationStore({ val: '' });
-    const child = createComponentStore({ num: 0 }, { componentName: 'comp', instanceName: Deferred });
-    expect(() => child().attachToApplicationStore()).toThrow(errorMessages.MUST_SUPPLY_INSTANCE_NAME_WITH_DEFERRED_INSTANCE_NAMES);
   })
 
 });

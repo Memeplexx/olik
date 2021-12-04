@@ -5,7 +5,7 @@ import { libState, testState } from '../src/shared-state';
 import { createApplicationStore } from '../src/store-creators';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
-describe.skip('Perf', () => {
+describe('Perf', () => {
 
   beforeAll(() => {
     testState.windowObject = windowAugmentedWithReduxDevtoolsImpl;
@@ -92,9 +92,7 @@ describe.skip('Perf', () => {
     const select = createApplicationStore(initialState)
     const before = performance.now();
     for (let i = 0; i < 100; i++) {
-      select(s => s.width).replace(
-        select().read().width + 1
-      );
+      select(s => s.width).increment(1);
     }
     console.log(`Olik simple: ${performance.now() - before}`);
   })
