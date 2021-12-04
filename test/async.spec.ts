@@ -21,6 +21,36 @@ describe('Async', () => {
     expect(libState.currentAction).toEqual({ type: 'num.replace()', replacement });
   })
 
+  it('should catch a rejection', done => {
+    const select = createApplicationStore({ num: 0 });
+    const rejection = 'test';
+    select.num
+      .replace(reject(rejection))
+      .catch(e => expect(e).toEqual(rejection))
+      .finally(done)
+  })
+
+  it('should only invoke promise functions once if caching is involved', async () => {
+    const select = createApplicationStore({ num: 0 });
+    const payload = 1;
+    let promiseCount = 0;
+    const promise = () => {
+      promiseCount++;
+      return new Promise(resolve => setTimeout(() => resolve(payload), 10));
+    }
+    await select.num
+      .replace(promise, { cacheFor: 1000 });
+    await select.num
+      .replace(promise);
+    expect(promiseCount).toEqual(1);
+  })
+
+  // it('should be able to invalidate a cache even if once does not yet exist', () => {
+  //   const select = createApplicationStore({ num: 0 });
+  //   select.num
+  //     .invalidateCache();
+  // })
+
   it('should be able to update state before the promise has settled', done => {
     const select = createApplicationStore({ num: 0 });
     const asyncResult = 1;
