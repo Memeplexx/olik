@@ -1,5 +1,5 @@
 import { errorMessages } from './constants';
-import { Augmentations, Derivation, DerivationCalculationInputs, QuerySpec, Readable, StateAction, Store, Unsubscribe } from './types';
+import { Augmentations, Derivation, DerivationCalculationInputs, FutureState, QuerySpec, Readable, StateAction, Store, Unsubscribe } from './types';
 
 
 export const createApplicationStore = <S>(
@@ -50,36 +50,70 @@ export const readSelector = (storeName: string) => {
             } else {
               if (libState.insideTransaction) { throw new Error(errorMessages.ASYNC_PAYLOAD_INSIDE_TRANSACTION); }
               const readCurrentState = () => readState(libState.appStates[storeName], [...stateActions, { type: 'action', name: 'read' }], { index: 0 });
-              let snapshot: any = undefined;
-              if (opts?.optimisticallyUpdateWith) {
-                snapshot = readCurrentState();
-                updateState(storeName, [...stateActions, { type: 'action', name: prop, arg: opts.optimisticallyUpdateWith, actionType: `${prop}()` }]);
+              let state = { storeValue: readCurrentState(), error: null, isLoading: true, wasRejected: false, wasResolved: false } as FutureState<any>;
+              if (libState.appStates[storeName].cache?.[stateActions.map(sa => sa.actionType).join('.')]) {
+                const result = new Proxy(new Promise<any>(resolve => resolve(readCurrentState())), {
+                  get: (target: any, prop: any) => {
+                    if (prop === 'then' || prop === 'catch' || prop === 'finally') {
+                      const t = Promise.resolve(readCurrentState());
+                      return (t as any)[prop].bind(t);
+                    } else if (prop === 'getFutureState') {
+                      return state;
+                    } else {
+                      return (...args: any[]) => target[prop].apply(target, args);
+                    }
+                  }
+                });
+                Object.keys(augmentations.future).forEach(name => (result as any)[name] = augmentations.future[name](result));
+                return result;
               }
-              return new Promise((resolve, reject) => {
-                if (libState.appStates[storeName].cache?.[stateActions.map(sa => sa.actionType).join('.')]) {
-                  resolve(readCurrentState());
-                } else {
-                  (arg() as Promise<any>)
-                    .then(promiseResult => {
-                      updateState(storeName, [...stateActions, { type: 'action', name: prop, arg: promiseResult, actionType: `${prop}()` }]);
-                      if (opts?.cacheFor) {
-                        const statePath = stateActions.map(sa => sa.actionType).join('.');
-                        const actions = [
-                          { type: 'property', name: 'cache', actionType: 'cache' },
-                          { type: 'property', name: statePath, actionType: statePath },
-                        ] as StateAction[];
-                        updateState(storeName, [...actions, { type: 'action', name: 'replace', arg: toIsoStringInCurrentTz(new Date()), actionType: 'replace()' }]);
-                        setTimeout(() => updateState(storeName, [...actions, { type: 'action', name: 'remove', actionType: 'remove()' }]), opts.cacheFor);
-                      }
-                      resolve(readCurrentState());
-                    }).catch(e => {
-                      if (snapshot !== undefined) {
-                        updateState(storeName, [...stateActions, { type: 'action', name: prop, arg: snapshot, actionType: `${prop}()` }]);
-                      }
-                      reject(e);
-                    });
+              const promiseResult = () => {
+                let snapshot: any = undefined;
+                if (opts?.optimisticallyUpdateWith) {
+                  snapshot = readCurrentState();
+                  updateState(storeName, [...stateActions, { type: 'action', name: prop, arg: opts.optimisticallyUpdateWith, actionType: `${prop}()` }]);
+                }
+                const promise = (augmentations.async ? augmentations.async(arg) : arg()) as Promise<any>;
+                return promise
+                  .then(promiseResult => {
+                    updateState(storeName, [...stateActions, { type: 'action', name: prop, arg: promiseResult, actionType: `${prop}()` }]);
+                    if (opts?.cacheFor) {
+                      const statePath = stateActions.map(sa => sa.actionType).join('.');
+                      const actions = [
+                        { type: 'property', name: 'cache', actionType: 'cache' },
+                        { type: 'property', name: statePath, actionType: statePath },
+                      ] as StateAction[];
+                      updateState(storeName, [...actions, { type: 'action', name: 'replace', arg: toIsoStringInCurrentTz(new Date()), actionType: 'replace()' }]);
+                      setTimeout(() => updateState(storeName, [...actions, { type: 'action', name: 'remove', actionType: 'remove()' }]), opts.cacheFor);
+                    }
+                    return readCurrentState();
+                  }).catch(error => {
+                    if (snapshot !== undefined) {
+                      updateState(storeName, [...stateActions, { type: 'action', name: prop, arg: snapshot, actionType: `${prop}()` }]);
+                    }
+                    state = { ...state, wasRejected: true, wasResolved: false, isLoading: false, error };
+                    throw error;
+                  });
+              }
+              let promiseWasChained = false;
+              const result: any = new Proxy(new Promise<any>(resolve => {
+                setTimeout(() => { if (!promiseWasChained) { promiseResult().then((r) => resolve(r)); } });
+              }), {
+                get: (target: any, prop: any) => {
+                  if (prop === 'getFutureState') {
+                    return () => state;
+                  } else if (prop === 'then' || prop === 'catch' || prop === 'finally') {
+                    promiseWasChained = true;
+                    const t = promiseResult();
+                    return (t as any)[prop].bind(t);
+                  } else { // must be an augmentation
+                    promiseWasChained = true;
+                    return (...args: any[]) => target[prop].apply(target, args);
+                  }
                 }
               })
+              Object.keys(augmentations.future).forEach(name => (result as any)[name] = augmentations.future[name](result));
+              return result
             }
           }
         } else if ('invalidateCache' === prop) {

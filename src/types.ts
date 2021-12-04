@@ -42,8 +42,8 @@ export type UpsertablePrimitive<T> = {
   withMany: (array: T[]) => void,
 }
 
-type Payload<S> = S | (() => Promise<S>);
-type Result<X extends Payload<any>> = X extends (() => Promise<infer R>) ? Promise<R> : void;
+type Payload<S> = S | (() => AnyAsync<S>);
+type UpdateResult<X extends AnyAsync<any>> = X extends (() => AnyAsync<infer R>) ? Future<R> : void;
 
 export type UpdatableObject<S, F extends FindOrFilter, Q extends QueryStatus> = (
   ({
@@ -87,7 +87,7 @@ export type UpdatableArray<S extends Array<any>, F extends FindOrFilter, Q exten
       find: Comparators<S, S[0], 'isFind'> & (S[0] extends object ? Searchable<S, S[0], 'isFind'> : {}),
       filter: Comparators<S, S[0], 'isFilter'> & (S[0] extends object ? Searchable<S, S[0], 'isFilter'> : {}),
       removeAll: () => void,
-      replaceAll: (newArray: S) => void,
+      replaceAll: <X extends Payload<S>>(newArray: X, options: UpdateOptions<X>) => UpdateResult<X>;
       insertOne: (element: S[0]) => void,
       insertMany: (array: S) => void,
     }) & (
@@ -111,20 +111,41 @@ export type UpdatableArray<S extends Array<any>, F extends FindOrFilter, Q exten
   )
 )
 
+export type UpdateOptions<H> = (H extends () => AnyAsync<any> ? {
+  /**
+   * Avoid unnecessary promise invocations by supplying the number of milliseconds that should elapse before the promise is invoked again.
+   * To un-do this, you can call `invalidateCache()` on the node of the state tree, for example
+   * @example
+   * select.todos.invalidateCache();
+   * @example
+   * select.todos.find.id.eq(2).invalidateCache();
+   */
+  cacheFor?: number;
+  /**
+   * Allows you to set an initial value to update the store with.
+   * If the promise is rejected, this value will be reverted to what it was before the promise was invoked.
+   * @example
+   * const newUsername = 'Jeff';
+   * select.username
+   *   .replace(() => updateUsernameOnApi(newUsername), { optimisticallyUpdateWith: newUsername })
+   *   .catch(err => notifyUserOfError(err))
+   */
+  optimisticallyUpdateWith?: H extends () => AnyAsync<infer W> ? W : never,
+} : {}) | void;
 
 export type UpdatablePrimitive<S, F extends FindOrFilter, Q extends QueryStatus> = (
   (
-    Q extends 'notQueried' ? {
-      replaceAll: (replacement: S) => void;
-    } : F extends 'isFind' ? {
-      replace: <X extends Payload<S>, H = X extends Function ? { cacheFor: number, optimisticallyUpdateWith: S } : {}>(replacement: X, options?: H) => Result<X>;
+    Q extends 'notQueried' ? /*{
+      replaceAll: <X extends Payload<S>>(replacement: X, options: UpdateOptions<X>) => UpdateResult<X>;
+    }*/ ReplaceAll<S> : F extends 'isFind' ? {
+      replace: <X extends Payload<S>>(replacement: X, options: UpdateOptions<X>) => UpdateResult<X>;
     } : {}
   ) & (
     S extends number ? (
       Q extends 'notQueried' ? ({
-        incrementAll: (by: number) => void;
+        incrementAll: <X extends Payload<number>>(by: X, options: UpdateOptions<X>) => UpdateResult<X>;
       }) : ({
-        increment: (by: number) => void;
+        increment: <X extends Payload<number>>(by: X, options: UpdateOptions<X>) => UpdateResult<X>;
       })
     ) : {}
   ) & (
@@ -134,6 +155,10 @@ export type UpdatablePrimitive<S, F extends FindOrFilter, Q extends QueryStatus>
     remove: () => void,
   }
 );
+
+export interface ReplaceAll<S> {
+  replaceAll: <X extends Payload<S>>(replacement: X, options: UpdateOptions<X>) => UpdateResult<X>;
+}
 
 export interface Readable<S> {
   read: () => DeepReadonly<S>;
@@ -234,3 +259,9 @@ export type Augmentations = {
   derivation: { [name: string]: <R>(derivation: Derivation<R>) => (...args: any[]) => any }
   async: <C>(fnReturningFutureAugmentation: () => any) => Promise<C>;
 }
+
+export interface Async<C> {
+}
+
+export type AnyAsync<C> = Async<C> | Promise<C>;
+
