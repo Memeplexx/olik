@@ -1,6 +1,7 @@
 
-import { createApplicationStore, libState, testState } from '../src/index';
+import { createApplicationStore } from '../src/index';
 import { DeepReadonlyArray, Store } from '../src/types';
+import { libState } from '../src/constants';
 
 describe('Object array', () => {
 
@@ -8,7 +9,7 @@ describe('Object array', () => {
 
   beforeEach(() => {
     libState.appStates = {};
-    testState.logLevel = 'none';
+    libState.logLevel = 'none';
   })
 
   it('should replace all elements', () => {

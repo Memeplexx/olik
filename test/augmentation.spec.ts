@@ -1,4 +1,5 @@
-import { augment, createApplicationStore, libState, testState } from "../src";
+import { augment, createApplicationStore } from "../src";
+import { libState } from '../src/constants';
 import { Observable } from 'rxjs';
 import { derive } from '../src';
 
@@ -6,7 +7,7 @@ describe('Augmentations', () => {
 
   beforeEach(() => {
     libState.appStates = {};
-    testState.logLevel = 'none';
+    libState.logLevel = 'none';
   })
 
   it('should be able to augment a selection', () => {
@@ -80,7 +81,6 @@ describe('Augmentations', () => {
     })
     const select = createApplicationStore({ array: [{id: 1, num: 1}] });
     const fetch = () => new Promise<{ id: number, num: number }>(resolve => setTimeout(() => resolve({ id: 1, num: 2 }), 5));
-    testState.logLevel = 'debug';
     const res = (select.array.find.id.eq(1).replace(fetch) as any).myThing();
     res.then((r: any) => {
       expect(r).toEqual({ id: 1, num: 2 });

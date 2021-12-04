@@ -1,5 +1,6 @@
-import { errorMessages } from './constants';
+import { augmentations, comparisons, errorMessages, libState } from './constants';
 import { Augmentations, DeepReadonly, Derivation, DerivationCalculationInputs, FutureState, QuerySpec, Readable, StateAction, Store, Unsubscribe } from './types';
+import { deepFreeze, toIsoStringInCurrentTz } from './utilities';
 
 
 export const createApplicationStore = <S>(
@@ -7,19 +8,8 @@ export const createApplicationStore = <S>(
 ): Store<S> => {
   libState.appStates[options.name] = initialState;
   libState.changeListeners[options.name] = new Map();
-  testState.logLevel = 'none';
+  libState.logLevel = 'none';
   return readSelector(options.name);
-}
-
-export const libState = {
-  appStates: {} as { [storeName: string]: any },
-  changeListeners: {} as { [storeName: string]: Map<StateAction[], (arg: any) => any> },
-  currentAction: {} as { [key: string]: any },
-  insideTransaction: false,
-}
-
-export const testState = {
-  logLevel: 'none' as ('debug' | 'none'),
 }
 
 export const updateState = (
@@ -43,80 +33,7 @@ export const readSelector = (storeName: string) => {
       get: function (target, prop: string) {
         stateActions = topLevel ? new Array<StateAction>() : stateActions;
         if (['replace', 'patch', 'remove', 'increment', 'removeAll', 'replaceAll', 'patchAll', 'incrementAll', 'insertOne', 'insertMany', 'withOne', 'withMany'].includes(prop)) {
-          return (arg: any, opts?: { cacheFor: number, optimisticallyUpdateWith: any }) => {
-            deepFreeze(arg);
-            if (typeof (arg) !== 'function') {
-              updateState(storeName, [...stateActions, { type: 'action', name: prop, arg, actionType: `${prop}()` }]);
-            } else {
-              if (libState.insideTransaction) { throw new Error(errorMessages.ASYNC_PAYLOAD_INSIDE_TRANSACTION); }
-              const readCurrentState = (throwIfNoArrayElementFound: boolean) => 
-                readState(libState.appStates[storeName], [...stateActions, { type: 'action', name: 'read' }], { index: 0 }, throwIfNoArrayElementFound);
-              let state = { storeValue: readCurrentState(true), error: null, isLoading: true, wasRejected: false, wasResolved: false } as FutureState<any>;
-              if (libState.appStates[storeName].cache?.[stateActions.map(sa => sa.actionType).join('.')]) {
-                const result = new Proxy(new Promise<any>(resolve => resolve(readCurrentState(true))), {
-                  get: (target: any, prop: any) => {
-                    if (prop === 'then' || prop === 'catch' || prop === 'finally') {
-                      const t = Promise.resolve(readCurrentState(true));
-                      return (t as any)[prop].bind(t);
-                    } else if (prop === 'getFutureState') {
-                      return state;
-                    } else {
-                      return (...args: any[]) => target[prop].apply(target, args);
-                    }
-                  }
-                });
-                Object.keys(augmentations.future).forEach(name => (result as any)[name] = augmentations.future[name](result));
-                return result;
-              }
-              const promiseResult = () => {
-                let snapshot: any = undefined;
-                if (opts?.optimisticallyUpdateWith) {
-                  snapshot = readCurrentState(true);
-                  updateState(storeName, [...stateActions, { type: 'action', name: prop, arg: opts.optimisticallyUpdateWith, actionType: `${prop}()` }]);
-                }
-                const promise = (augmentations.async ? augmentations.async(arg) : arg()) as Promise<any>;
-                return promise
-                  .then(promiseResult => {
-                    updateState(storeName, [...stateActions, { type: 'action', name: prop, arg: promiseResult, actionType: `${prop}()` }]);
-                    if (opts?.cacheFor) {
-                      const statePath = stateActions.map(sa => sa.actionType).join('.');
-                      const actions = [
-                        { type: 'property', name: 'cache', actionType: 'cache' },
-                        { type: 'property', name: statePath, actionType: statePath },
-                      ] as StateAction[];
-                      updateState(storeName, [...actions, { type: 'action', name: 'replace', arg: toIsoStringInCurrentTz(new Date()), actionType: 'replace()' }]);
-                      setTimeout(() => { try { updateState(storeName, [...actions, { type: 'action', name: 'remove', actionType: 'remove()' }]) } catch (e) { /* ignoring */ } }, opts.cacheFor);
-                    }
-                    return readCurrentState(false);
-                  }).catch(error => {
-                    if (snapshot !== undefined) {
-                      updateState(storeName, [...stateActions, { type: 'action', name: prop, arg: snapshot, actionType: `${prop}()` }]);
-                    }
-                    state = { ...state, wasRejected: true, wasResolved: false, isLoading: false, error };
-                    throw error;
-                  });
-              }
-              let promiseWasChained = false;
-              const result: any = new Proxy(new Promise<any>(resolve => {
-                setTimeout(() => { if (!promiseWasChained) { promiseResult().then((r) => resolve(r)); } });
-              }), {
-                get: (target: any, prop: any) => {
-                  if (prop === 'getFutureState') {
-                    return () => state;
-                  } else if (prop === 'then' || prop === 'catch' || prop === 'finally') {
-                    promiseWasChained = true;
-                    const t = promiseResult();
-                    return (t as any)[prop].bind(t);
-                  } else { // must be an augmentation
-                    promiseWasChained = true;
-                    return (...args: any[]) => target[prop].apply(target, args);
-                  }
-                }
-              })
-              Object.keys(augmentations.future).forEach(name => (result as any)[name] = augmentations.future[name](result));
-              return result
-            }
-          }
+          return processUpdate(storeName, stateActions, prop);
         } else if ('invalidateCache' === prop) {
           return () => {
             const actionType = stateActions.map(sa => sa.actionType).join('.');
@@ -308,17 +225,6 @@ export const readState = (state: any, stateActions: StateAction[], cursor: { ind
   }
 }
 
-export const comparisons = {
-  eq: (val, arg) => val === arg,
-  in: (val, arg) => arg.includes(val),
-  ni: (val, arg) => !arg.includes(val),
-  gt: (val, arg) => val > arg,
-  lt: (val, arg) => val < arg,
-  gte: (val, arg) => val >= arg,
-  lte: (val, arg) => val <= arg,
-  match: (val, arg) => arg.test(val),
-} as { [comparator: string]: (val: any, arg: any) => boolean }
-
 export function derive<X extends Readable<any>[]>(...args: X) {
   let previousParams = new Array<any>();
   let previousResult = null as any;
@@ -365,39 +271,84 @@ export const transact = (...operations: (() => void)[]) => {
   libState.insideTransaction = false;
 }
 
-export const toIsoStringInCurrentTz = (date: Date) => {
-  const tzo = -date.getTimezoneOffset();
-  const dif = tzo >= 0 ? '+' : '-';
-  const pad = (num: number) => {
-    const norm = Math.floor(Math.abs(num));
-    return (norm < 10 ? '0' : '') + norm;
-  };
-  return date.getFullYear() + '-' + pad(date.getMonth() + 1) + '-' + pad(date.getDate()) + 'T' + pad(date.getHours())
-    + ':' + pad(date.getMinutes()) + ':' + pad(date.getSeconds()) + dif + pad(tzo / 60) + ':' + pad(tzo % 60);
-}
-
-export const deepFreeze = <T extends Object>(o: T): T => {
-  Object.freeze(o);
-  if (o == null || o === undefined) { return o; }
-  (Object.getOwnPropertyNames(o) as Array<keyof T>).forEach(prop => {
-    if (o.hasOwnProperty(prop)
-      && o[prop] !== null
-      && (typeof (o[prop]) === 'object' || typeof (o[prop]) === 'function')
-      && !Object.isFrozen(o[prop])) {
-      deepFreeze(o[prop]);
-    }
-  });
-  return o;
-}
-
-export const augmentations: Augmentations = {
-  selection: {},
-  future: {},
-  derivation: {},
-  async: promise => promise(),
-};
-
 export function augment(arg: Partial<Augmentations>) {
   Object.assign(augmentations, arg);
+}
+
+const processUpdate = (storeName: string, stateActions: StateAction[], prop: string) => {
+  return (arg: any, opts?: { cacheFor: number, optimisticallyUpdateWith: any }) => {
+    deepFreeze(arg);
+    if (typeof (arg) !== 'function') {
+      updateState(storeName, [...stateActions, { type: 'action', name: prop, arg, actionType: `${prop}()` }]);
+    } else {
+      if (libState.insideTransaction) { throw new Error(errorMessages.ASYNC_PAYLOAD_INSIDE_TRANSACTION); }
+      const readCurrentState = (throwIfNoArrayElementFound: boolean) => 
+        readState(libState.appStates[storeName], [...stateActions, { type: 'action', name: 'read' }], { index: 0 }, throwIfNoArrayElementFound);
+      let state = { storeValue: readCurrentState(true), error: null, isLoading: true, wasRejected: false, wasResolved: false } as FutureState<any>;
+      if (libState.appStates[storeName].cache?.[stateActions.map(sa => sa.actionType).join('.')]) {
+        const result = new Proxy(new Promise<any>(resolve => resolve(readCurrentState(true))), {
+          get: (target: any, prop: any) => {
+            if (prop === 'then' || prop === 'catch' || prop === 'finally') {
+              const t = Promise.resolve(readCurrentState(true));
+              return (t as any)[prop].bind(t);
+            } else if (prop === 'getFutureState') {
+              return state;
+            } else {
+              return (...args: any[]) => target[prop].apply(target, args);
+            }
+          }
+        });
+        Object.keys(augmentations.future).forEach(name => (result as any)[name] = augmentations.future[name](result));
+        return result;
+      }
+      const promiseResult = () => {
+        let snapshot: any = undefined;
+        if (opts?.optimisticallyUpdateWith) {
+          snapshot = readCurrentState(true);
+          updateState(storeName, [...stateActions, { type: 'action', name: prop, arg: opts.optimisticallyUpdateWith, actionType: `${prop}()` }]);
+        }
+        const promise = (augmentations.async ? augmentations.async(arg) : arg()) as Promise<any>;
+        return promise
+          .then(promiseResult => {
+            updateState(storeName, [...stateActions, { type: 'action', name: prop, arg: promiseResult, actionType: `${prop}()` }]);
+            if (opts?.cacheFor) {
+              const statePath = stateActions.map(sa => sa.actionType).join('.');
+              const actions = [
+                { type: 'property', name: 'cache', actionType: 'cache' },
+                { type: 'property', name: statePath, actionType: statePath },
+              ] as StateAction[];
+              updateState(storeName, [...actions, { type: 'action', name: 'replace', arg: toIsoStringInCurrentTz(new Date()), actionType: 'replace()' }]);
+              setTimeout(() => { try { updateState(storeName, [...actions, { type: 'action', name: 'remove', actionType: 'remove()' }]) } catch (e) { /* ignoring */ } }, opts.cacheFor);
+            }
+            return readCurrentState(false);
+          }).catch(error => {
+            if (snapshot !== undefined) {
+              updateState(storeName, [...stateActions, { type: 'action', name: prop, arg: snapshot, actionType: `${prop}()` }]);
+            }
+            state = { ...state, wasRejected: true, wasResolved: false, isLoading: false, error };
+            throw error;
+          });
+      }
+      let promiseWasChained = false;
+      const result: any = new Proxy(new Promise<any>(resolve => {
+        setTimeout(() => { if (!promiseWasChained) { promiseResult().then((r) => resolve(r)); } });
+      }), {
+        get: (target: any, prop: any) => {
+          if (prop === 'getFutureState') {
+            return () => state;
+          } else if (prop === 'then' || prop === 'catch' || prop === 'finally') {
+            promiseWasChained = true;
+            const t = promiseResult();
+            return (t as any)[prop].bind(t);
+          } else { // must be an augmentation
+            promiseWasChained = true;
+            return (...args: any[]) => target[prop].apply(target, args);
+          }
+        }
+      })
+      Object.keys(augmentations.future).forEach(name => (result as any)[name] = augmentations.future[name](result));
+      return result
+    }
+  }
 }
 

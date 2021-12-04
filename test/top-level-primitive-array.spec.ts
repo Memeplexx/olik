@@ -1,5 +1,5 @@
-import { createApplicationStore, libState, testState } from '../src';
-
+import { createApplicationStore } from '../src';
+import { libState } from '../src/constants';
 
 describe('top-level-primitive-array', () => {
 
@@ -7,7 +7,7 @@ describe('top-level-primitive-array', () => {
 
   beforeEach(() => {
     libState.appStates = {};
-    testState.logLevel = 'none';
+    libState.logLevel = 'none';
   })
 
   it('should replace all elements', () => {

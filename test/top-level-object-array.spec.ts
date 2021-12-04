@@ -1,6 +1,6 @@
 
-import { createApplicationStore, libState, testState } from '../src/index';
-import { DeepReadonlyArray, Store } from '../src/types';
+import { createApplicationStore } from '../src/index';
+import { libState } from '../src/constants';
 
 describe('Top-level object', () => {
 
@@ -8,7 +8,7 @@ describe('Top-level object', () => {
 
   beforeEach(() => {
     libState.appStates = {};
-    testState.logLevel = 'none';
+    libState.logLevel = 'none';
   })
 
   it('should replace all elements', () => {

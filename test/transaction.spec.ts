@@ -1,12 +1,13 @@
 
 import { errorMessages } from '../src/constants';
-import { createApplicationStore, derive, libState, testState, transact } from '../src/index';
+import { createApplicationStore, transact } from '../src/index';
+import { libState } from '../src/constants';
 
 describe('transaction', () => {
 
   beforeEach(() => {
     libState.appStates = {};
-    testState.logLevel = 'none';
+    libState.logLevel = 'none';
   })
 
   it('should support transactions', () => {

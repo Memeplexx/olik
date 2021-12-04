@@ -1,11 +1,12 @@
-import { createApplicationStore, derive, libState, testState } from '../src';
+import { createApplicationStore, derive } from '../src';
+import { libState } from '../src/constants';
 
 
 describe('derivation', () => {
 
   beforeEach(() => {
     libState.appStates = {};
-    testState.logLevel = 'none';
+    libState.logLevel = 'none';
   })
 
   it('should support derivations', () => {
