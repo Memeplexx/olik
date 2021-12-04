@@ -1,5 +1,5 @@
 import { errorMessages } from './constants';
-import { Augmentations, Derivation, DerivationCalculationInputs, FutureState, QuerySpec, Readable, StateAction, Store, Unsubscribe } from './types';
+import { Augmentations, DeepReadonly, Derivation, DerivationCalculationInputs, FutureState, QuerySpec, Readable, StateAction, Store, Unsubscribe } from './types';
 
 
 export const createApplicationStore = <S>(
@@ -29,8 +29,8 @@ export const updateState = (
   const oldState = libState.appStates[storeName];
   libState.appStates[storeName] = writeState(libState.appStates[storeName], { ...libState.appStates[storeName] }, stateActions, { index: 0 });
   libState.changeListeners[storeName].forEach((listener, stateActions) => {
-    const selectedNewState = readState(libState.appStates[storeName], stateActions, { index: 0 });
-    if (readState(oldState, stateActions, { index: 0 }) !== selectedNewState) {
+    const selectedNewState = readState(libState.appStates[storeName], stateActions, { index: 0 }, false);
+    if (readState(oldState, stateActions, { index: 0 }, false) !== selectedNewState) {
       listener(selectedNewState);
     }
   })
@@ -49,7 +49,7 @@ export const readSelector = (storeName: string) => {
               updateState(storeName, [...stateActions, { type: 'action', name: prop, arg, actionType: `${prop}()` }]);
             } else {
               if (libState.insideTransaction) { throw new Error(errorMessages.ASYNC_PAYLOAD_INSIDE_TRANSACTION); }
-              const readCurrentState = () => readState(libState.appStates[storeName], [...stateActions, { type: 'action', name: 'read' }], { index: 0 });
+              const readCurrentState = () => readState(libState.appStates[storeName], [...stateActions, { type: 'action', name: 'read' }], { index: 0 }, false);
               let state = { storeValue: readCurrentState(), error: null, isLoading: true, wasRejected: false, wasResolved: false } as FutureState<any>;
               if (libState.appStates[storeName].cache?.[stateActions.map(sa => sa.actionType).join('.')]) {
                 const result = new Proxy(new Promise<any>(resolve => resolve(readCurrentState())), {
@@ -129,7 +129,7 @@ export const readSelector = (storeName: string) => {
           stateActions.push({ type: 'upsertMatching', name: prop, actionType: prop });
           return initialize({}, false, stateActions);
         } else if ('read' === prop) {
-          return () => readState(libState.appStates[storeName], [...stateActions, { type: 'action', name: prop }], { index: 0 })
+          return () => readState(libState.appStates[storeName], [...stateActions, { type: 'action', name: prop }], { index: 0 }, true)
         } else if ('onChange' === prop) {
           return (changeListener: (arg: any) => any) => {
             const stateActionsCopy = [...stateActions, { type: 'action', name: prop }] as StateAction[];
@@ -284,23 +284,23 @@ const completeStateWrite = (stateActions: ReadonlyArray<StateAction>, payload: n
   return newState;
 }
 
-export const readState = (state: any, stateActions: StateAction[], cursor: { index: number }): any => {
+export const readState = (state: any, stateActions: StateAction[], cursor: { index: number }, throwIfNoArrayElementFound: boolean): any => {
   if (Array.isArray(state) && (stateActions[cursor.index].type === 'property')) {
-    return (state as any[]).map((e, i) => readState(state[i], stateActions, { ...cursor }));
+    return (state as any[]).map((e, i) => readState(state[i], stateActions, { ...cursor }, throwIfNoArrayElementFound));
   }
   const action = stateActions[cursor.index++];
   if (cursor.index < stateActions.length) {
     if (Array.isArray(state) && (action.type === 'search')) {
       const query = constructQuery(stateActions, cursor);
       if ('find' === action.name) {
-        const findResult = readState((state as any[]).find(query), stateActions, cursor);
-        if (findResult === undefined) { throw new Error(errorMessages.FIND_RETURNS_NO_MATCHES); }
+        const findResult = readState((state as any[]).find(query), stateActions, cursor, throwIfNoArrayElementFound);
+        if (findResult === undefined && throwIfNoArrayElementFound) { throw new Error(errorMessages.FIND_RETURNS_NO_MATCHES); }
         return findResult;
       } else if ('filter' === action.name) {
-        return (state as any[]).filter(query).map(e => readState(e, stateActions, { ...cursor }));
+        return (state as any[]).filter(query).map(e => readState(e, stateActions, { ...cursor }, throwIfNoArrayElementFound));
       }
     } else {
-      return readState((state || {})[action.name], stateActions, cursor);
+      return readState((state || {})[action.name], stateActions, cursor, throwIfNoArrayElementFound);
     }
   } else if (action.name === 'read' || action.name === 'onChange') {
     return state;
@@ -333,13 +333,13 @@ export function derive<X extends Readable<any>[]>(...args: X) {
         previousResult = result;
         return result;
       }
-      const changeListeners = new Set<(value: R) => any>();
+      const changeListeners = new Set<(value: DeepReadonly<R>) => any>();
       const result: Derivation<R> = {
         read: () => getValue(),
         invalidate: () => previousParams.length = 0,
-        onChange: (listener: (value: R) => any) => {
+        onChange: listener => {
           changeListeners.add(listener);
-          const unsubscribes: Unsubscribe[] = (args as Array<Readable<any>>)
+          const unsubscribes: Unsubscribe[] = args
             .map(ops => ops.onChange(() => listener(getValue())));
           return {
             unsubscribe: () => {

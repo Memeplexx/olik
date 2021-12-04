@@ -105,4 +105,22 @@ describe('Async', () => {
     }, 100);
   })
 
+  it('should be able to remove an array element', done => {
+    const select = createApplicationStore({ arr: [1, 2, 3] });
+    select.arr.find.eq(3).remove(resolve(null))
+      .then(() => {
+        expect(select.arr.read()).toEqual([1, 2]);
+        done();
+      })
+  })
+
+  it('should be able to remove all elements from an array', done => {
+    const select = createApplicationStore({ arr: [1, 2, 3] });
+    select.arr.removeAll(resolve(null))
+      .then(() => {
+        expect(select.arr.read()).toEqual([]);
+        done();
+      })
+  })
+
 });

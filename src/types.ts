@@ -1,57 +1,29 @@
 export type FindOrFilter = 'isFind' | 'isFilter';
 export type QueryStatus = 'notQueried' | 'queried';
 
-/**
- * An array which cannot be mutated
- */
 export interface DeepReadonlyArray<T> extends ReadonlyArray<DeepReadonly<T>> {
 }
 
-/**
- * An object which cannot be mutated
- */
 export type DeepReadonlyObject<T> = {
   readonly [P in keyof T]: DeepReadonly<T[P]>;
 };
 
-/**
- * An object or an array which cannot be mutated
- */
 export type DeepReadonly<T> =
   T extends (infer R)[] ? DeepReadonlyArray<R> :
   T extends object ? DeepReadonlyObject<T> :
   T;
 
-/**
- * An object which can be unsubscribed from
- */
-export interface Unsubscribe {
-  /**
-   * Unsubscribes from this listener thereby preventing a memory leak.
-   */
-  unsubscribe: () => any,
-}
+export type UpsertableObject<T, S> = WithOne<T> & WithMany<T> & { [K in keyof S]: S[K] extends object ? UpsertableObject<T, S[K]> : UpsertablePrimitive<T> }
 
-export type UpsertableObject<T, S> = {
-  withOne: (element: T) => void,
-  withMany: (array: T[]) => void,
-} & { [K in keyof S]: S[K] extends object ? UpsertableObject<T, S[K]> : UpsertablePrimitive<T> }
-
-export type UpsertablePrimitive<T> = {
-  withOne: (element: T) => void,
-  withMany: (array: T[]) => void,
+export interface UpsertablePrimitive<T> extends WithOne<T>, WithMany<T> {
 }
 
 type Payload<S> = S | (() => AnyAsync<S>);
 type UpdateResult<X extends AnyAsync<any>> = X extends (() => AnyAsync<infer R>) ? Future<R> : void;
 
 export type UpdatableObject<S, F extends FindOrFilter, Q extends QueryStatus> = (
-  ({
-    patch: (patch: Partial<S>) => void;
-  }) & (
-    F extends 'isFind' ? {
-      replace: (replacement: Payload<S>) => void;
-    } : {}
+  Patch<S> & (
+    F extends 'isFind' ? Replace<S> : {}
   ) & ({
     [K in keyof S]: S[K] extends Array<any>
     ? UpdatableArray<S[K], 'isFilter', 'notQueried'>
@@ -59,10 +31,7 @@ export type UpdatableObject<S, F extends FindOrFilter, Q extends QueryStatus> = 
     : UpdatablePrimitive<S[K], F, Q>
   }) & (
     Readable<F extends 'isFilter' ? S[] : S>
-  ) & {
-    invalidateCache: () => void,
-    remove: () => void,
-  }
+  ) & InvalidateCache & Remove
 );
 
 export type UpdatableArray<S extends Array<any>, F extends FindOrFilter, Q extends QueryStatus> = (
@@ -70,48 +39,119 @@ export type UpdatableArray<S extends Array<any>, F extends FindOrFilter, Q exten
     ({
       or: Comparators<S, S[0], F> & (S[0] extends object ? Searchable<S, S[0], F> : {}),
       and: Comparators<S, S[0], F> & (S[0] extends object ? Searchable<S, S[0], F> : {}),
-      remove: () => void,
-    }) & (
-      F extends 'isFind'
-      ? { replace: (replacement: S[0]) => void }
-      : {}
-    ) & (
-      S[0] extends Array<any>
-      ? {}
-      : S[0] extends object
-      ? UpdatableObject<S[0], F, Q>
-      : UpdatablePrimitive<S[0], F, Q>
-    )
+    } & Remove)
+    & (F extends 'isFind' ? Replace<S[0]> : {})
+    & (S[0] extends Array<any> ? {} : S[0] extends object ? UpdatableObject<S[0], F, Q> : UpdatablePrimitive<S[0], F, Q>)
   ) : (
     ({
       find: Comparators<S, S[0], 'isFind'> & (S[0] extends object ? Searchable<S, S[0], 'isFind'> : {}),
       filter: Comparators<S, S[0], 'isFilter'> & (S[0] extends object ? Searchable<S, S[0], 'isFilter'> : {}),
-      removeAll: () => void,
-      replaceAll: <X extends Payload<S>>(newArray: X, options: UpdateOptions<X>) => UpdateResult<X>;
-      insertOne: (element: S[0]) => void,
-      insertMany: (array: S) => void,
-    }) & (
-      S[0] extends Array<any> ? {} : S[0] extends object ? ({
-        upsertMatching: { [K in keyof S[0]]: S[0][K] extends object ? UpsertableObject<S[0], S[0]> : UpsertablePrimitive<S[0]> },
-      }) : {}
+    } & RemoveAll & InsertMany<S> & InsertOne<S[0]> & ReplaceAll<S>) & (
+      S[0] extends Array<any> ? {} : S[0] extends object ? UpsertMatching<S[0]> : {}
     ) & (
       S[0] extends object ? (({
         [K in keyof S[0]]: (S[0][K] extends Array<any>
           ? UpdatableArray<S[0][K], 'isFilter', 'notQueried'>
-          : S[0][K] extends object ? UpdatableObject<S[0][K], F, Q>
+          : S[0][K] extends object
+          ? UpdatableObject<S[0][K], F, Q>
           : UpdatablePrimitive<S[0][K], F, Q>)
-      }) & ({
-        patchAll: (patch: Partial<S[0]>) => void,
-      })) : ({
-        incrementAll: (by: number) => void
-      })
+      }) & PatchAll<S[0]>) : IncrementAll
     ) & (
       Readable<F extends 'isFilter' ? S : S[0]>
     )
   )
 )
 
-export type UpdateOptions<H> = (H extends () => AnyAsync<any> ? {
+export type UpdateOptions<H> = (H extends () => AnyAsync<any> ? & CacheFor & OptimisticallyUpdateWith<H> : {}) | void;
+
+export type UpdatablePrimitive<S, F extends FindOrFilter, Q extends QueryStatus> = (
+  (
+    Q extends 'notQueried' ? ReplaceAll<S> : F extends 'isFind' ? Replace<S> : {}
+  ) & (
+    S extends number ? (Q extends 'notQueried' ? IncrementAll : Increment) : {}
+  ) & (
+    Readable<F extends 'isFilter' ? S[] : S>
+  ) & InvalidateCache & Remove
+);
+
+export interface UpsertMatching<S> {
+  upsertMatching: { [K in keyof S]: S[K] extends object ? UpsertableObject<S, S> : UpsertablePrimitive<S> },
+}
+
+export interface Unsubscribe {
+  unsubscribe: () => any,
+}
+
+export interface InvalidateCache {
+  invalidateCache: () => void,
+}
+
+export interface Remove {
+  remove(): void,
+  remove<X extends Payload<any>>(options: X): Future<any>;
+}
+
+export interface RemoveAll {
+  removeAll(): void,
+  removeAll<X extends Payload<any>>(options: X): Future<any>;
+}
+
+export interface InsertOne<S> {
+  insertOne<X extends Payload<S>>(element: X, options: UpdateOptions<X>): UpdateResult<X>;
+}
+
+export interface InsertMany<S> {
+  insertMany<X extends Payload<S>>(element: X, options: UpdateOptions<X>): UpdateResult<X>;
+}
+
+export interface Patch<S> {
+  patch<X extends Payload<Partial<S>>>(patch: X, options: UpdateOptions<X>): UpdateResult<X>;
+}
+
+export interface PatchAll<S> {
+  patchAll<X extends Payload<Partial<S>>>(patch: X, options: UpdateOptions<X>): UpdateResult<X>;
+}
+
+export interface Increment {
+  increment<X extends Payload<number>>(by: X, options: UpdateOptions<X>): UpdateResult<X>;
+}
+
+export interface IncrementAll {
+  incrementAll<X extends Payload<number>>(by: X, options: UpdateOptions<X>): UpdateResult<X>;
+}
+
+export interface Replace<S> {
+  replace<X extends Payload<S>>(replacement: X, options: UpdateOptions<X>): UpdateResult<X>;
+}
+
+export interface ReplaceAll<S> {
+  replaceAll<X extends Payload<S>>(replacement: X, options: UpdateOptions<X>): UpdateResult<X>;
+}
+
+export interface Invalidate {
+  invalidate(): void,
+}
+
+export interface Read<S> {
+  read(): DeepReadonly<S>;
+}
+
+export interface OnChange<S> {
+  onChange(changeListener: (state: DeepReadonly<S>) => any): Unsubscribe;
+}
+
+export interface Readable<S> extends Read<S>, OnChange<S> {
+}
+
+export interface WithOne<T> {
+  withOne: (element: T) => void,
+}
+
+export interface WithMany<T> {
+  withMany: (array: T[]) => void,
+}
+
+export interface CacheFor {
   /**
    * Avoid unnecessary promise invocations by supplying the number of milliseconds that should elapse before the promise is invoked again.
    * To un-do this, you can call `invalidateCache()` on the node of the state tree, for example
@@ -121,6 +161,9 @@ export type UpdateOptions<H> = (H extends () => AnyAsync<any> ? {
    * select.todos.find.id.eq(2).invalidateCache();
    */
   cacheFor?: number;
+}
+
+export interface OptimisticallyUpdateWith<H> {
   /**
    * Allows you to set an initial value to update the store with.
    * If the promise is rejected, this value will be reverted to what it was before the promise was invoked.
@@ -131,38 +174,6 @@ export type UpdateOptions<H> = (H extends () => AnyAsync<any> ? {
    *   .catch(err => notifyUserOfError(err))
    */
   optimisticallyUpdateWith?: H extends () => AnyAsync<infer W> ? W : never,
-} : {}) | void;
-
-export type UpdatablePrimitive<S, F extends FindOrFilter, Q extends QueryStatus> = (
-  (
-    Q extends 'notQueried' ? /*{
-      replaceAll: <X extends Payload<S>>(replacement: X, options: UpdateOptions<X>) => UpdateResult<X>;
-    }*/ ReplaceAll<S> : F extends 'isFind' ? {
-      replace: <X extends Payload<S>>(replacement: X, options: UpdateOptions<X>) => UpdateResult<X>;
-    } : {}
-  ) & (
-    S extends number ? (
-      Q extends 'notQueried' ? ({
-        incrementAll: <X extends Payload<number>>(by: X, options: UpdateOptions<X>) => UpdateResult<X>;
-      }) : ({
-        increment: <X extends Payload<number>>(by: X, options: UpdateOptions<X>) => UpdateResult<X>;
-      })
-    ) : {}
-  ) & (
-    Readable<F extends 'isFilter' ? S[] : S>
-  ) & {
-    invalidateCache: () => void,
-    remove: () => void,
-  }
-);
-
-export interface ReplaceAll<S> {
-  replaceAll: <X extends Payload<S>>(replacement: X, options: UpdateOptions<X>) => UpdateResult<X>;
-}
-
-export interface Readable<S> {
-  read: () => DeepReadonly<S>;
-  onChange: (changeListener: (state: DeepReadonly<S>) => any) => Unsubscribe;
 }
 
 export type UpdatableAny<T, F extends FindOrFilter, Q extends QueryStatus>
@@ -210,8 +221,8 @@ export interface QuerySpec {
 
 export type Store<S>
   = Omit<S extends Array<any> ? UpdatableArray<S, 'isFilter', 'notQueried'>
-  : S extends object ? UpdatableObject<S, 'isFind', 'queried'>
-  : UpdatablePrimitive<S, 'isFind', 'queried'>, 'remove'>;
+    : S extends object ? UpdatableObject<S, 'isFind', 'queried'>
+    : UpdatablePrimitive<S, 'isFind', 'queried'>, 'remove'>;
 
 type DerivationCalculationInput<E> = E extends Readable<infer W> ? W : never;
 
@@ -219,23 +230,7 @@ export type DerivationCalculationInputs<T extends Array<Readable<any>>> = {
   [K in keyof T]: DerivationCalculationInput<T[K]>;
 }
 
-export interface Derivation<R> {
-  /**
-   * The current value of the derivation
-   */
-  read: () => R,
-  /**
-   * Listens to any updates on this derivation
-   * @returns a subscription which will need to be unsubscribed from to prevent a memory leak
-   * @example
-   * deriveFrom(...)
-   *   .onChange(derivation => console.log(derivation)) ;
-   */
-  onChange: (listener: (value: R) => any) => Unsubscribe,
-  /**
-   * Ensure that the next time state is read, it is re-calculated
-   */
-  invalidate: () => void,
+export interface Derivation<R> extends Read<R>, OnChange<R>, Invalidate {
 }
 
 export type FutureState<C> = {
