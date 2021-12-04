@@ -114,7 +114,7 @@ export const readSelector = (storeName: string) => {
           stateActions.push({ type: 'search', name: prop, actionType: prop });
           return initialize({}, false, stateActions);
         } else if (augmentations.selection[prop]) {
-          return () => augmentations.selection[prop](initialize({}, false, stateActions))()
+          return augmentations.selection[prop](initialize({}, false, stateActions));
         } else {
           stateActions.push({ type: 'property', name: prop, actionType: prop });
           return initialize({}, false, stateActions);
@@ -315,7 +315,7 @@ export function derive<X extends Readable<any>[]>(...args: X) {
           }
         }
       };
-      // Object.keys(augmentations.derivation).forEach(name => (result as any)[name] = augmentations.derivation[name](result));
+      Object.keys(augmentations.derivation).forEach(name => (result as any)[name] = augmentations.derivation[name](result));
       return result;
     }
   }
