@@ -105,22 +105,73 @@ describe('Async', () => {
     }, 100);
   })
 
-  it('should be able to remove an array element', done => {
+  it('should be able to remove an array element', async () => {
     const select = createApplicationStore({ arr: [1, 2, 3] });
-    select.arr.find.eq(3).remove(resolve(null))
-      .then(() => {
-        expect(select.arr.read()).toEqual([1, 2]);
-        done();
-      })
+    await select.arr.find.eq(3).remove(resolve(null));
+    expect(select.arr.read()).toEqual([1, 2]);
   })
 
-  it('should be able to remove all elements from an array', done => {
+  it('should be able to remove all elements from an array', async () => {
     const select = createApplicationStore({ arr: [1, 2, 3] });
-    select.arr.removeAll(resolve(null))
-      .then(() => {
-        expect(select.arr.read()).toEqual([]);
-        done();
-      })
+    await select.arr.removeAll(resolve(null));
+    expect(select.arr.read()).toEqual([]);
+  })
+
+  it('should be able to remove an object property', async () => {
+    const select = createApplicationStore({ num: 0 });
+    await select.num.remove(resolve(null));
+    expect(select.read()).toEqual({});
+  })
+
+  it('should be able to replace an array element', async () => {
+    const select = createApplicationStore({ arr: [1, 2, 3] });
+    await select.arr.find.eq(2).replace(resolve(4));
+    expect(select.arr.read()).toEqual([1, 4, 3]);
+  })
+
+  it('should be able to insert one array element', async () => {
+    const select = createApplicationStore({ arr: [1, 2, 3] });
+    await select.arr.insertOne(resolve(4));
+    expect(select.arr.read()).toEqual([1, 2, 3, 4]);
+  })
+
+  it('should be able to insert many array elements', async () => {
+    const select = createApplicationStore({ arr: [1, 2, 3] });
+    await select.arr.insertMany(resolve([4, 5]));
+    expect(select.arr.read()).toEqual([1, 2, 3, 4, 5]);
+  })
+
+  it('should upsert one array element where a match could be found', async () => {
+    const initialState = { arr: [{ id: 1, num: 1 }, { id: 2, num: 2 }, { id: 3, num: 3 }] };
+    const select = createApplicationStore(initialState);
+    const withOne = { id: 1, val: 5 };
+    await select.arr
+      .upsertMatching.id
+      .withOne(resolve(withOne));
+    expect(libState.currentAction).toEqual({ type: 'arr.upsertMatching.id.withOne()', withOne });
+    expect(select.arr.read()).toEqual([withOne, initialState.arr[1], initialState.arr[2]]);
+  })
+
+  it('should upsert one array element where a match could not be found', async () => {
+    const initialState = { arr: [{ id: 1, num: 1 }, { id: 2, num: 2 }, { id: 3, num: 3 }] };
+    const select = createApplicationStore(initialState);
+    const withOne = { id: 4, val: 5 };
+    await select.arr
+      .upsertMatching.id
+      .withOne(resolve(withOne));
+    expect(libState.currentAction).toEqual({ type: 'arr.upsertMatching.id.withOne()', withOne });
+    expect(select.arr.read()).toEqual([...initialState.arr, withOne]);
+  })
+
+  it('should upsert array elements where one matches and another does not', async () => {
+    const initialState = { arr: [{ id: 1, num: 1 }, { id: 2, num: 2 }, { id: 3, num: 3 }] };
+    const select = createApplicationStore(initialState);
+    const withMany = [{ id: 1, val: 5 }, { id: 5, val: 5 }];
+    await select.arr
+      .upsertMatching.id
+      .withMany(resolve(withMany));
+    expect(libState.currentAction).toEqual({ type: 'arr.upsertMatching.id.withMany()', withMany });
+    expect(select.arr.read()).toEqual([withMany[0], initialState.arr[1], initialState.arr[2], withMany[1]]);
   })
 
 });

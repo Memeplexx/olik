@@ -49,13 +49,14 @@ export const readSelector = (storeName: string) => {
               updateState(storeName, [...stateActions, { type: 'action', name: prop, arg, actionType: `${prop}()` }]);
             } else {
               if (libState.insideTransaction) { throw new Error(errorMessages.ASYNC_PAYLOAD_INSIDE_TRANSACTION); }
-              const readCurrentState = () => readState(libState.appStates[storeName], [...stateActions, { type: 'action', name: 'read' }], { index: 0 }, false);
-              let state = { storeValue: readCurrentState(), error: null, isLoading: true, wasRejected: false, wasResolved: false } as FutureState<any>;
+              const readCurrentState = (throwIfNoArrayElementFound: boolean) => 
+                readState(libState.appStates[storeName], [...stateActions, { type: 'action', name: 'read' }], { index: 0 }, throwIfNoArrayElementFound);
+              let state = { storeValue: readCurrentState(true), error: null, isLoading: true, wasRejected: false, wasResolved: false } as FutureState<any>;
               if (libState.appStates[storeName].cache?.[stateActions.map(sa => sa.actionType).join('.')]) {
-                const result = new Proxy(new Promise<any>(resolve => resolve(readCurrentState())), {
+                const result = new Proxy(new Promise<any>(resolve => resolve(readCurrentState(true))), {
                   get: (target: any, prop: any) => {
                     if (prop === 'then' || prop === 'catch' || prop === 'finally') {
-                      const t = Promise.resolve(readCurrentState());
+                      const t = Promise.resolve(readCurrentState(true));
                       return (t as any)[prop].bind(t);
                     } else if (prop === 'getFutureState') {
                       return state;
@@ -70,7 +71,7 @@ export const readSelector = (storeName: string) => {
               const promiseResult = () => {
                 let snapshot: any = undefined;
                 if (opts?.optimisticallyUpdateWith) {
-                  snapshot = readCurrentState();
+                  snapshot = readCurrentState(true);
                   updateState(storeName, [...stateActions, { type: 'action', name: prop, arg: opts.optimisticallyUpdateWith, actionType: `${prop}()` }]);
                 }
                 const promise = (augmentations.async ? augmentations.async(arg) : arg()) as Promise<any>;
@@ -84,9 +85,9 @@ export const readSelector = (storeName: string) => {
                         { type: 'property', name: statePath, actionType: statePath },
                       ] as StateAction[];
                       updateState(storeName, [...actions, { type: 'action', name: 'replace', arg: toIsoStringInCurrentTz(new Date()), actionType: 'replace()' }]);
-                      setTimeout(() => updateState(storeName, [...actions, { type: 'action', name: 'remove', actionType: 'remove()' }]), opts.cacheFor);
+                      setTimeout(() => { try { updateState(storeName, [...actions, { type: 'action', name: 'remove', actionType: 'remove()' }]) } catch (e) { /* ignoring */ } }, opts.cacheFor);
                     }
-                    return readCurrentState();
+                    return readCurrentState(false);
                   }).catch(error => {
                     if (snapshot !== undefined) {
                       updateState(storeName, [...stateActions, { type: 'action', name: prop, arg: snapshot, actionType: `${prop}()` }]);

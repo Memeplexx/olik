@@ -144,11 +144,11 @@ export interface Readable<S> extends Read<S>, OnChange<S> {
 }
 
 export interface WithOne<T> {
-  withOne: (element: T) => void,
+  withOne: <X extends Payload<T>>(element: X) => UpdateResult<X>,
 }
 
 export interface WithMany<T> {
-  withMany: (array: T[]) => void,
+  withMany: <X extends Payload<T[]>>(array: X) => UpdateResult<X>,
 }
 
 export interface CacheFor {
