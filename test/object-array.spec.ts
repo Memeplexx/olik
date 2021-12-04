@@ -1,7 +1,6 @@
+import { createApplicationStore } from '../src';
+import { libState } from '../src/constant';
 
-import { createApplicationStore } from '../src/index';
-import { DeepReadonlyArray, Store } from '../src/types';
-import { libState } from '../src/constants';
 
 describe('Object array', () => {
 

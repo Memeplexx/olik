@@ -1,6 +1,5 @@
 import { createApplicationStore, derive } from '../src';
-import { libState } from '../src/constants';
-
+import { libState } from '../src/constant';
 
 describe('derivation', () => {
 

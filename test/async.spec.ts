@@ -1,6 +1,6 @@
 
-import { libState } from '../src/constants';
-import { createApplicationStore } from '../src/index';
+import { libState } from '../src/constant';
+import { createApplicationStore } from '../src';
 
 const resolve = <T>(data: T, timeout = 10) => () => new Promise<T>(resolve => setTimeout(() => resolve(data), timeout));
 const reject = <T>(rejection: any, timeout = 10) => () => new Promise<T>((resolve, reject) => setTimeout(() => reject(rejection), timeout));

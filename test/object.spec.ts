@@ -1,6 +1,6 @@
 
 import { createApplicationStore } from '../src/index';
-import { libState } from '../src/constants';
+import { libState } from '../src/constant';
 
 describe('Object', () => {
 

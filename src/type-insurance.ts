@@ -1,5 +1,4 @@
-import { createApplicationStore, derive } from ".";
-import { Store } from "./types";
+import { createApplicationStore } from '.';
 
 type Test = { num: number, arr: Array<number>, objArr: Array<{ num: number }>, obj: { num: number } };
 

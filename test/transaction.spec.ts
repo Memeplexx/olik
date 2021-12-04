@@ -1,7 +1,5 @@
-
-import { errorMessages } from '../src/constants';
-import { createApplicationStore, transact } from '../src/index';
-import { libState } from '../src/constants';
+import { createApplicationStore, transact } from '../src';
+import { errorMessages, libState } from '../src/constant';
 
 describe('transaction', () => {
 

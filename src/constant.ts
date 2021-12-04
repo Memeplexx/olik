@@ -1,4 +1,4 @@
-import { Augmentations, StateAction } from "./types"
+import { Augmentations, StateAction } from "./type"
 
 export const errorMessages = {
   FIND_RETURNS_NO_MATCHES: 'Could not find array element',

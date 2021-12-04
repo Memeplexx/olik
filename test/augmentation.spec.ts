@@ -1,7 +1,7 @@
-import { augment, createApplicationStore } from "../src";
-import { libState } from '../src/constants';
 import { Observable } from 'rxjs';
-import { derive } from '../src';
+
+import { augment, createApplicationStore, derive } from '../src';
+import { libState } from '../src/constant';
 
 describe('Augmentations', () => {
 

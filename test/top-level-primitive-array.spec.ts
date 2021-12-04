@@ -1,5 +1,5 @@
 import { createApplicationStore } from '../src';
-import { libState } from '../src/constants';
+import { libState } from '../src/constant';
 
 describe('top-level-primitive-array', () => {
 
