@@ -10,7 +10,7 @@ describe('top-level-primitive', () => {
     testState.logLevel = 'none';
   })
 
-  it('should replace a primitive', () => {
+  it('should replace a value', () => {
     const select = createApplicationStore(initialState);
     select
       .replace(1);
@@ -18,7 +18,7 @@ describe('top-level-primitive', () => {
     expect(libState.currentAction).toEqual({ type: 'replace()', replacement: 1 });
   })
 
-  it('should increment a primitive', () => {
+  it('should increment a value', () => {
     const select = createApplicationStore(initialState);
     select
       .increment(1);

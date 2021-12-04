@@ -1,5 +1,5 @@
 import { errorMessages } from './constants';
-import { Derivation, DerivationCalculationInputs, QuerySpec, Readable, StateAction, Store, Unsubscribe } from './types';
+import { Augmentations, Derivation, DerivationCalculationInputs, QuerySpec, Readable, StateAction, Store, Unsubscribe } from './types';
 
 
 export const createApplicationStore = <S>(
@@ -44,6 +44,7 @@ export const readSelector = (storeName: string) => {
         stateActions = topLevel ? new Array<StateAction>() : stateActions;
         if (['replace', 'patch', 'remove', 'increment', 'removeAll', 'replaceAll', 'patchAll', 'incrementAll', 'insertOne', 'insertMany', 'withOne', 'withMany'].includes(prop)) {
           return (arg: any, opts?: { cacheFor: number, optimisticallyUpdateWith: any }) => {
+            deepFreeze(arg);
             if (typeof (arg) !== 'function') {
               updateState(storeName, [...stateActions, { type: 'action', name: prop, arg, actionType: `${prop}()` }]);
             } else {
@@ -94,7 +95,7 @@ export const readSelector = (storeName: string) => {
           stateActions.push({ type: 'upsertMatching', name: prop, actionType: prop });
           return initialize({}, false, stateActions);
         } else if ('read' === prop) {
-          return () => readState(libState.appStates[storeName], [...stateActions, { type: 'action', name: prop }], { index: 0 });
+          return () => readState(libState.appStates[storeName], [...stateActions, { type: 'action', name: prop }], { index: 0 })
         } else if ('onChange' === prop) {
           return (changeListener: (arg: any) => any) => {
             const stateActionsCopy = [...stateActions, { type: 'action', name: prop }] as StateAction[];
@@ -112,6 +113,8 @@ export const readSelector = (storeName: string) => {
         } else if (['find', 'filter'].includes(prop)) {
           stateActions.push({ type: 'search', name: prop, actionType: prop });
           return initialize({}, false, stateActions);
+        } else if (augmentations.selection[prop]) {
+          return () => augmentations.selection[prop](initialize({}, false, stateActions))()
         } else {
           stateActions.push({ type: 'property', name: prop, actionType: prop });
           return initialize({}, false, stateActions);
@@ -178,7 +181,7 @@ export const writeState = (currentState: any, stateToUpdate: any, stateActions: 
         return prev.concat(curr);
       }, new Array<StateAction>());
     const upsert = stateActions[cursor.index++];
-    const upsertArgs = Array.isArray(upsert.arg) ? upsert.arg : [upsert.arg];
+    const upsertArgs = [...(Array.isArray(upsert.arg) ? upsert.arg : [upsert.arg])];
     const result = (currentState as any[]).map(e => {
       const elementValue = queryPaths.reduce((prev, curr) => prev = prev[curr.name], e);
       const foundIndex = upsertArgs.findIndex(ua => queryPaths.reduce((prev, curr) => prev = prev[curr.name], ua) === elementValue);
@@ -271,15 +274,15 @@ export const readState = (state: any, stateActions: StateAction[], cursor: { ind
 }
 
 export const comparisons = {
-  eq: (toCompare, comparatorArg) => toCompare === comparatorArg,
-  in: (toCompare, comparatorArg) => comparatorArg.includes(toCompare),
-  ni: (toCompare, comparatorArg) => !comparatorArg.includes(toCompare),
-  gt: (toCompare, comparatorArg) => toCompare > comparatorArg,
-  lt: (toCompare, comparatorArg) => toCompare < comparatorArg,
-  gte: (toCompare, comparatorArg) => toCompare >= comparatorArg,
-  lte: (toCompare, comparatorArg) => toCompare <= comparatorArg,
-  match: (toCompare, comparatorArg) => comparatorArg.test(toCompare),
-} as { [comparator: string]: (toCompare: any, comparatorArg: any) => boolean }
+  eq: (val, arg) => val === arg,
+  in: (val, arg) => arg.includes(val),
+  ni: (val, arg) => !arg.includes(val),
+  gt: (val, arg) => val > arg,
+  lt: (val, arg) => val < arg,
+  gte: (val, arg) => val >= arg,
+  lte: (val, arg) => val <= arg,
+  match: (val, arg) => arg.test(val),
+} as { [comparator: string]: (val: any, arg: any) => boolean }
 
 export function derive<X extends Readable<any>[]>(...args: X) {
   let previousParams = new Array<any>();
@@ -337,3 +340,29 @@ export const toIsoStringInCurrentTz = (date: Date) => {
   return date.getFullYear() + '-' + pad(date.getMonth() + 1) + '-' + pad(date.getDate()) + 'T' + pad(date.getHours())
     + ':' + pad(date.getMinutes()) + ':' + pad(date.getSeconds()) + dif + pad(tzo / 60) + ':' + pad(tzo % 60);
 }
+
+export const deepFreeze = <T extends Object>(o: T): T => {
+  Object.freeze(o);
+  if (o == null || o === undefined) { return o; }
+  (Object.getOwnPropertyNames(o) as Array<keyof T>).forEach(prop => {
+    if (o.hasOwnProperty(prop)
+      && o[prop] !== null
+      && (typeof (o[prop]) === 'object' || typeof (o[prop]) === 'function')
+      && !Object.isFrozen(o[prop])) {
+      deepFreeze(o[prop]);
+    }
+  });
+  return o;
+}
+
+export const augmentations: Augmentations = {
+  selection: {},
+  future: {},
+  derivation: {},
+  async: promise => promise(),
+};
+
+export function augment(arg: Partial<Augmentations>) {
+  Object.assign(augmentations, arg);
+}
+

@@ -215,7 +215,7 @@ describe('Top-level', () => {
       .upsertMatching.id
       .withOne(withOne);
     expect(libState.currentAction).toEqual({ type: 'upsertMatching.id.withOne()', withOne });
-    expect(select.read()).toEqual([{ id: 1, val: 5 }, initialState[1], initialState[2]]);
+    expect(select.read()).toEqual([withOne, initialState[1], initialState[2]]);
   })
 
   it('should upsert one array element where a match could not be found', () => {
@@ -225,7 +225,7 @@ describe('Top-level', () => {
       .upsertMatching.id
       .withOne(withOne);
     expect(libState.currentAction).toEqual({ type: 'upsertMatching.id.withOne()', withOne });
-    expect(select.read()).toEqual([...initialState, { id: 4, val: 5 }]);
+    expect(select.read()).toEqual([...initialState, withOne]);
   })
 
   it('should upsert array elements where one matches and another does not', () => {
@@ -235,7 +235,7 @@ describe('Top-level', () => {
       .upsertMatching.id
       .withMany(withMany);
     expect(libState.currentAction).toEqual({ type: 'upsertMatching.id.withMany()', withMany });
-    expect(select.read()).toEqual([{ id: 1, val: 5 }, initialState[1], initialState[2], { id: 5, val: 5 }]);
+    expect(select.read()).toEqual([withMany[0], initialState[1], initialState[2], withMany[1]]);
   })
 
 });

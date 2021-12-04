@@ -33,13 +33,13 @@ export interface Unsubscribe {
 }
 
 export type UpsertableObject<T, S> = {
-  withOne: (upsertion: T) => void,
-  withMany: (upsertion: T[]) => void,
+  withOne: (element: T) => void,
+  withMany: (array: T[]) => void,
 } & { [K in keyof S]: S[K] extends object ? UpsertableObject<T, S[K]> : UpsertablePrimitive<T> }
 
 export type UpsertablePrimitive<T> = {
-  withOne: (upsertion: T) => void,
-  withMany: (upsertion: T[]) => void,
+  withOne: (element: T) => void,
+  withMany: (array: T[]) => void,
 }
 
 type Payload<S> = S | (() => Promise<S>);
@@ -211,4 +211,26 @@ export interface Derivation<R> {
    * Ensure that the next time state is read, it is re-calculated
    */
   invalidate: () => void,
+}
+
+export type FutureState<C> = {
+  isLoading: boolean,
+  wasRejected: boolean,
+  wasResolved: boolean,
+  error: any,
+  storeValue: C,
+};
+
+export interface Future<C> extends Promise<C> {
+  /**
+   * Gets the current status for the UI to consume
+   */
+  getFutureState: () => FutureState<C>,
+}
+
+export type Augmentations = {
+  selection: { [name: string]: <C>(selection: Readable<C>) => (...args: any[]) => any },
+  future: { [name: string]: <C>(future: Future<C>) => (...args: any[]) => any };
+  derivation: { [name: string]: <R>(derivation: Derivation<R>) => (...args: any[]) => any }
+  async: <C>(fnReturningFutureAugmentation: () => any) => Promise<C>;
 }

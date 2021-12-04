@@ -3,67 +3,44 @@ import { createApplicationStore, libState, testState } from '../src/index';
 
 describe('Object', () => {
 
+  const initialState = { num: 0, str: '', bool: false }
+
   beforeEach(() => {
     libState.appStates = {};
     testState.logLevel = 'none';
   })
 
-  it('should replace a primitive', () => {
-    const select = createApplicationStore({ prop: 0, prop2: '' });
-    const stateBefore = select.read();
-    select.prop
-      .replace(1);
-    const stateAfter = select.read();
-    expect(stateBefore).not.toEqual(stateAfter);
-    expect(stateBefore.prop2).toEqual(stateAfter.prop2);
-    expect(stateBefore.prop).not.toEqual(stateAfter.prop);
-    expect(stateAfter.prop).toEqual(1);
-    expect(libState.currentAction).toEqual({ type: 'prop.replace()', replacement: 1 });
+  it('should replace an object property', () => {
+    const select = createApplicationStore(initialState);
+    const replacement = 1;
+    select.num
+      .replace(replacement);
+    expect(libState.currentAction).toEqual({ type: 'num.replace()', replacement });
+    expect(select.num.read()).toEqual(1);
   })
 
-  it('should increment a primitive', () => {
-    const select = createApplicationStore({ prop: 0, prop2: '' });
-    select.prop
-      .increment(1);
-    expect(select.read().prop).toEqual(1);
-    select.prop.increment(2);
-    expect(select.read().prop).toEqual(3);
+  it('should increment an object property', () => {
+    const select = createApplicationStore(initialState);
+    const by = 1;
+    select.num
+      .increment(by);
+    expect(libState.currentAction).toEqual({ type: 'num.increment()', by });
+    expect(select.num.read()).toEqual(1);
   })
-
-  it('should find an element from an array of primitives and then remove it', () => {
-    const select = createApplicationStore({ arr: [1, 2, 3, 4, 5], });
-    select.arr
-      .find.eq(3)
+  
+  it('should remove an object property', () => {
+    const select = createApplicationStore(initialState);
+    select.num
       .remove();
-    expect(select.arr.read()).toEqual([1, 2, 4, 5]);
-  })
-
-  it('should find an element from an array of primitives and then replace it', () => {
-    const select = createApplicationStore({ arr: [1, 2, 3, 4, 5], });
-    select.arr
-      .find.eq(3)
-      .replace(6);
-    expect(select.arr.read()).toEqual([1, 2, 6, 4, 5]);
-  })
-
-  it('should find an element from an array of primitives and then increment it', () => {
-    const select = createApplicationStore({ arr: [1, 2, 3, 4, 5], });
-    select.arr
-      .find.eq(3)
-      .replace(6);
-    expect(select.arr.read()).toEqual([1, 2, 6, 4, 5]);
+    expect(select.read()).toEqual({ str: '', bool: false });
   })
 
   it('should find then remove an array element which is an object', () => {
     const select = createApplicationStore({ arr: [{ id: 1, val: 'one' }, { id: 2, val: 'two' }], obj: { num: 0 } });
-    const stateBefore = select.read();
     select.arr
       .find.id.eq(1)
       .remove();
-    const stateAfter = select.read();
-    expect(stateBefore).not.toEqual(stateAfter);
-    expect(stateBefore.obj).toEqual(stateAfter.obj)
-    expect(stateAfter.arr).toEqual([{ id: 2, val: 'two' }]);
+    expect(select.arr.read()).toEqual([{ id: 2, val: 'two' }]);
   })
 
   it('should select.arr.find.id.eq(2).patch({ val: 1 })', () => {
@@ -175,10 +152,5 @@ describe('Object', () => {
     expect(select.arr.read()).toEqual([{ id: 1, num: 9 }, { id: 2, num: 9 }]);
   });
 
-  it('should remove an object property', () => {
-    const select = createApplicationStore({ num: 0, str: '' });
-    select.num.remove();
-    expect(select.read()).toEqual({ str: '' });
-  })
 
 });
