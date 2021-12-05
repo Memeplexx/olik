@@ -219,8 +219,8 @@ export interface QuerySpec {
   concat: 'and' | 'or' | 'last'
 };
 
-// export type ComponentStore<S>
-//   = Store<S> & { removeFromApplicationStore: () => void };
+export type ComponentStore<S>
+  = Store<S> & { removeFromApplicationStore: () => void };
 export type Store<S>
   = Omit<S extends Array<any> ? UpdatableArray<S, 'isFilter', 'notQueried'>
     : S extends object ? UpdatableObject<S, 'isFind', 'queried'>

@@ -1,7 +1,7 @@
 import { augmentations, errorMessages, libState } from './constant';
 import { integrateStoreWithReduxDevtools } from './devtools';
 import { readState } from './read';
-import { Deferred, OptionsForMakingAComponentStore, OptionsForMakingAnApplicationStore, StateAction, Store } from './type';
+import { Deferred, OptionsForMakingAComponentStore, OptionsForMakingAnApplicationStore, StateAction, Store, ComponentStore } from './type';
 import { deepFreeze } from './utility';
 import { processUpdate, updateState } from './write';
 
@@ -21,62 +21,62 @@ export const createApplicationStore = <S>(
   return store;
 }
 
-// export const createComponentStore = <L>(
-//   state: L,
-//   options: OptionsForMakingAComponentStore,
-// ): ComponentStore<L> => {
-//   if (!options.applicationStoreName) { options.applicationStoreName = document.title };
-//   const appStore = libState.appStores[options.applicationStoreName!] as any;
-//   if (!libState.appStores[options.applicationStoreName]) {
-//     const devtoolsStoreName = `${options.componentName} : ${options.instanceName as string}`;
-//     const componentStore = createApplicationStore(state, { name: devtoolsStoreName }) as any as ComponentStore<L>;
-//     componentStore.removeFromApplicationStore = () => { }
-//     return componentStore;
-//   } else if (options.instanceName === Deferred) {
-//     const componentStore = createApplicationStore(state, { disabledDevtoolsIntegration: true }) as any as ComponentStore<L>;
-//     const prox: any = new Proxy({}, {
-//       get: function (target, prop: string) {
-//         return appStore.cmp[options.componentName][options.instanceName][prop];
-//       }
-//     });
-//     prox.setDeferredInstanceName = (instanceName: string | number) => {
-//       appStore.cmp[options.componentName][instanceName].replace(prox.read());
-//       // TODO: transfer change listeners to parent store
-//       options.instanceName = instanceName;
-//     }
-//     const result = options.instanceName === Deferred ? componentStore
-//       : appStore.cmp[options.componentName][options.instanceName];
-//     result.removeFromApplicationStore = () => {
-//       const state = appStore.read().cmp[options.componentName];
-//       if ((Object.keys(state).length === 1) && state[options.instanceName!]) {
-//         appStore.cmp[options.componentName].remove();
-//       } else {
-//         appStore.cmp[options.componentName][options.instanceName].remove();
-//       }
-//     }
-//     return result;
-//   } else {
-//     const wrapperState = appStore.read();
-//     if (['number', 'boolean', 'string'].some(type => typeof (wrapperState) === type) || Array.isArray(wrapperState)) {
-//       throw new Error(errorMessages.INVALID_CONTAINER_FOR_COMPONENT_STORES);
-//     }
-//     appStore.cmp[options.componentName][options.instanceName].replace(state);
-//     const prox: any = new Proxy({}, {
-//       get: function (target, prop: string) {
-//         return appStore.cmp[options.componentName][options.instanceName][prop];
-//       }
-//     });
-//     prox.removeFromApplicationStore = () => {
-//       const state = appStore.read().cmp[options.componentName];
-//       if ((Object.keys(state).length === 1) && state[options.instanceName!]) {
-//         appStore.cmp[options.componentName].remove();
-//       } else {
-//         appStore.cmp[options.componentName][options.instanceName].remove();
-//       }
-//     }
-//     return prox;
-//   }
-// }
+export const createComponentStore = <L>(
+  state: L,
+  options: OptionsForMakingAComponentStore,
+): ComponentStore<L> => {
+  if (!options.applicationStoreName) { options.applicationStoreName = document.title };
+  const appStore = libState.appStores[options.applicationStoreName!] as any;
+  if (!libState.appStores[options.applicationStoreName]) {
+    const devtoolsStoreName = `${options.componentName} : ${options.instanceName as string}`;
+    const componentStore = createApplicationStore(state, { name: devtoolsStoreName }) as any as ComponentStore<L>;
+    componentStore.removeFromApplicationStore = () => { }
+    return componentStore;
+  } else if (options.instanceName === Deferred) {
+    const componentStore = createApplicationStore(state, { disabledDevtoolsIntegration: true }) as any as ComponentStore<L>;
+    const prox: any = new Proxy({}, {
+      get: function (target, prop: string) {
+        return appStore.cmp[options.componentName][options.instanceName][prop];
+      }
+    });
+    prox.setDeferredInstanceName = (instanceName: string | number) => {
+      appStore.cmp[options.componentName][instanceName].replace(prox.read());
+      // TODO: transfer change listeners to parent store
+      options.instanceName = instanceName;
+    }
+    const result = options.instanceName === Deferred ? componentStore
+      : appStore.cmp[options.componentName][options.instanceName];
+    result.removeFromApplicationStore = () => {
+      const state = appStore.read().cmp[options.componentName];
+      if ((Object.keys(state).length === 1) && state[options.instanceName!]) {
+        appStore.cmp[options.componentName].remove();
+      } else {
+        appStore.cmp[options.componentName][options.instanceName].remove();
+      }
+    }
+    return result;
+  } else {
+    const wrapperState = appStore.read();
+    if (['number', 'boolean', 'string'].some(type => typeof (wrapperState) === type) || Array.isArray(wrapperState)) {
+      throw new Error(errorMessages.INVALID_CONTAINER_FOR_COMPONENT_STORES);
+    }
+    appStore.cmp[options.componentName][options.instanceName].replace(state);
+    const prox: any = new Proxy({}, {
+      get: function (target, prop: string) {
+        return appStore.cmp[options.componentName][options.instanceName][prop];
+      }
+    });
+    prox.removeFromApplicationStore = () => {
+      const state = appStore.read().cmp[options.componentName];
+      if ((Object.keys(state).length === 1) && state[options.instanceName!]) {
+        appStore.cmp[options.componentName].remove();
+      } else {
+        appStore.cmp[options.componentName][options.instanceName].remove();
+      }
+    }
+    return prox;
+  }
+}
 
 const readSelector = (storeName: string) => {
   const initialize = (s: any, topLevel: boolean, stateActions: StateAction[]): any => {
