@@ -29,52 +29,53 @@ export const createComponentStore = <L>(
   const appStore = libState.appStores[options.applicationStoreName!] as any;
   if (!libState.appStores[options.applicationStoreName]) {
     const devtoolsStoreName = `${options.componentName} : ${options.instanceName as string}`;
-    const componentStore = createApplicationStore(state, { name: devtoolsStoreName }) as any as ComponentStore<L>;
-    componentStore.removeFromApplicationStore = () => { }
-    return componentStore;
+    return createApplicationStore(state, { name: devtoolsStoreName }) as any as ComponentStore<L>;
   } else if (options.instanceName === Deferred) {
     const componentStore = createApplicationStore(state, { disabledDevtoolsIntegration: true }) as any as ComponentStore<L>;
-    const prox: any = new Proxy({}, {
+    return new Proxy({}, {
       get: function (target, prop: string) {
+        if ('removeFromApplicationStore' === prop) {
+          return () => {
+            const state = appStore.read().cmp[options.componentName];
+            if ((Object.keys(state).length === 1) && state[options.instanceName!]) {
+              appStore.cmp[options.componentName].remove();
+            } else {
+              appStore.cmp[options.componentName][options.instanceName].remove();
+            }
+          }
+        } else if ('setDeferredInstanceName' === prop) {
+          return (instanceName: string | number) => {
+            appStore.cmp[options.componentName][instanceName].replace(componentStore.read());
+            // TODO: transfer change listeners to parent store
+            options.instanceName = instanceName;
+          }
+        } else if (options.instanceName === Deferred) {
+          return (componentStore as any)[prop];
+        }
         return appStore.cmp[options.componentName][options.instanceName][prop];
       }
-    });
-    prox.setDeferredInstanceName = (instanceName: string | number) => {
-      appStore.cmp[options.componentName][instanceName].replace(prox.read());
-      // TODO: transfer change listeners to parent store
-      options.instanceName = instanceName;
-    }
-    const result = options.instanceName === Deferred ? componentStore
-      : appStore.cmp[options.componentName][options.instanceName];
-    result.removeFromApplicationStore = () => {
-      const state = appStore.read().cmp[options.componentName];
-      if ((Object.keys(state).length === 1) && state[options.instanceName!]) {
-        appStore.cmp[options.componentName].remove();
-      } else {
-        appStore.cmp[options.componentName][options.instanceName].remove();
-      }
-    }
-    return result;
+    }) as ComponentStore<L>;
   } else {
     const wrapperState = appStore.read();
     if (['number', 'boolean', 'string'].some(type => typeof (wrapperState) === type) || Array.isArray(wrapperState)) {
       throw new Error(errorMessages.INVALID_CONTAINER_FOR_COMPONENT_STORES);
     }
     appStore.cmp[options.componentName][options.instanceName].replace(state);
-    const prox: any = new Proxy({}, {
+    return new Proxy({}, {
       get: function (target, prop: string) {
+        if (prop === 'removeFromApplicationStore') {
+          return () => {
+            const state = appStore.read().cmp[options.componentName];
+            if ((Object.keys(state).length === 1) && state[options.instanceName!]) {
+              appStore.cmp[options.componentName].remove();
+            } else {
+              appStore.cmp[options.componentName][options.instanceName].remove();
+            }
+          }
+        }
         return appStore.cmp[options.componentName][options.instanceName][prop];
       }
-    });
-    prox.removeFromApplicationStore = () => {
-      const state = appStore.read().cmp[options.componentName];
-      if ((Object.keys(state).length === 1) && state[options.instanceName!]) {
-        appStore.cmp[options.componentName].remove();
-      } else {
-        appStore.cmp[options.componentName][options.instanceName].remove();
-      }
-    }
-    return prox;
+    }) as ComponentStore<L>;
   }
 }
 
@@ -95,6 +96,8 @@ const readSelector = (storeName: string) => {
               { type: 'action', name: 'remove', actionType: 'remove()' },
             ]);
           }
+        } else if (['removeFromApplicationStore', 'setDeferredInstanceName'].includes(prop)) {
+          return () => { /* no-op */ }
         } else if ('upsertMatching' === prop) {
           stateActions.push({ type: 'upsertMatching', name: prop, actionType: prop });
           return initialize({}, false, stateActions);

@@ -1,4 +1,4 @@
-import { Augmentations, StateAction, Store } from "./type"
+import { Augmentations, StateAction } from "./type"
 import { DevtoolsInstance, PreviousAction, WindowAugmentedWithReduxDevtools } from "./type-internal";
 
 export const errorMessages = {

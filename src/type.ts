@@ -220,7 +220,13 @@ export interface QuerySpec {
 };
 
 export type ComponentStore<S>
-  = Store<S> & { removeFromApplicationStore: () => void };
+  = Omit<S extends Array<any> ? UpdatableArray<S, 'isFilter', 'notQueried'>
+  : S extends object ? UpdatableObject<S, 'isFind', 'queried'>
+  : UpdatablePrimitive<S, 'isFind', 'queried'>, 'remove'> & {
+    removeFromApplicationStore: () => void,
+    setDeferredInstanceName: (instanceName: string | number) => void,
+  };
+
 export type Store<S>
   = Omit<S extends Array<any> ? UpdatableArray<S, 'isFilter', 'notQueried'>
     : S extends object ? UpdatableObject<S, 'isFind', 'queried'>
