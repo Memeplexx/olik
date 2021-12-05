@@ -182,26 +182,29 @@ describe('derivation', () => {
     expect(memoCalcCount).toEqual(2);
   })
 
-  // it('should derive with a filter', () => {
-  //   const select = createApplicationStore({
-  //     array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
-  //   });
-  //   let memoCalcCount = 0;
-  //   const mem = derive(
-  //     select.array.filter.id.lte(2),
-  //   ).with(thing => {
-  //     memoCalcCount++;
-  //     return thing;
-  //   });
-  //   mem.read();
-  //   mem.read();
-  //   expect(memoCalcCount).toEqual(1);
-  //   select.array.find.id.eq(1).patch({ value: 'xxx' });
-  //   expect(memoCalcCount).toEqual(2);
-  //   select.array.find.id.eq(2).patch({ value: 'xxx' });
-  //   mem.read();
-  //   expect(memoCalcCount).toEqual(3);
-  // })
+  it('should derive with a filter', () => {
+    const select = createApplicationStore({
+      array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
+    });
+    let memoCalcCount = 0;
+    const mem = derive(
+      select.array.filter.id.lte(2),
+    ).with(thing => {
+      memoCalcCount++;
+      return thing;
+    });
+    mem.read();
+    mem.read();
+    expect(memoCalcCount).toEqual(1);
+    select.array.find.id.eq(1).patch({ value: 'xxx' });
+    mem.read();
+    mem.read();
+    expect(memoCalcCount).toEqual(2);
+    select.array.find.id.eq(2).patch({ value: 'xxx' });
+    mem.read();
+    mem.read();
+    expect(memoCalcCount).toEqual(3);
+  })
 
 });
 

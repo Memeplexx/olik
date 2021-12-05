@@ -8,7 +8,11 @@ export function derive<X extends Readable<any>[]>(...args: X) {
     with: <R>(calculation: (...inputs: DerivationCalculationInputs<X>) => R) => {
       const getValue = () => {
         const params = (args as Array<Readable<any>>).map(arg => arg.read());
-        if (previousParams.length && params.every((v, i) => v === previousParams[i])) {
+        if (previousParams.length && params.every((v, i) => {
+          // Start with a simple equality check.
+          // Else, if an array has been filtered (creating a new array to be created each time) compare stringified versions of the state
+          return (v === previousParams[i]) || (Array.isArray(v) && JSON.stringify(v) === JSON.stringify(previousParams[i]));
+        })) {
           return previousResult;
         }
         const result = calculation(...(params as any));
