@@ -5,7 +5,7 @@ import { createApplicationStore } from '../src';
 const resolve = <T>(data: T, timeout = 10) => () => new Promise<T>(resolve => setTimeout(() => resolve(data), timeout));
 const reject = <T>(rejection: any, timeout = 10) => () => new Promise<T>((resolve, reject) => setTimeout(() => reject(rejection), timeout));
 
-describe('Async', () => {
+describe('async', () => {
 
   beforeEach(() => {
     libState.appStates = {};

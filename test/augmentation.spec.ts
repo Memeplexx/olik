@@ -3,7 +3,7 @@ import { Observable } from 'rxjs';
 import { augment, createApplicationStore, derive } from '../src';
 import { libState } from '../src/constant';
 
-describe('Augmentations', () => {
+describe('augmentation', () => {
 
   beforeEach(() => {
     libState.appStates = {};

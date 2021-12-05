@@ -2,7 +2,7 @@
 import { createApplicationStore } from '../src/index';
 import { libState } from '../src/constant';
 
-describe('Top-level object', () => {
+describe('array-object', () => {
 
   const initialState = [{ id: 1, val: 1 }, { id: 2, val: 2 }, { id: 3, val: 3 }];
 
