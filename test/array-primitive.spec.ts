@@ -39,7 +39,8 @@ describe('array-primitive', () => {
   it('should be able to insert one primitive', () => {
     const select = createApplicationStore(initialState);
     const toInsert = 4;
-    select.insertOne(toInsert);
+    select
+      .insertOne(toInsert);
     expect(libState.currentAction).toEqual({ type: 'insertOne()', toInsert });
     expect(select.read()).toEqual([1, 2, 3, 4]);
   })
@@ -47,7 +48,8 @@ describe('array-primitive', () => {
   it('should be able to insert many primitives', () => {
     const select = createApplicationStore(initialState);
     const toInsert = [4, 5, 6];
-    select.insertMany(toInsert);
+    select
+      .insertMany(toInsert);
     expect(libState.currentAction).toEqual({ type: 'insertMany()', toInsert });
     expect(select.read()).toEqual([1, 2, 3, 4, 5, 6]);
   })

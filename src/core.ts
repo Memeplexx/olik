@@ -2,13 +2,14 @@ import { augmentations, libState } from './constant';
 import { integrateStoreWithReduxDevtools } from './devtools';
 import { readState } from './read';
 import { OptionsForMakingAComponentStore, OptionsForMakingAnApplicationStore, StateAction, Store } from './type';
+import { deepFreeze } from './utility';
 import { processUpdate, updateState } from './write';
 
 export const createApplicationStore = <S>(
   initialState: S, 
   options: OptionsForMakingAnApplicationStore = { name: document.title, replaceExistingStoreIfItExists: true }
 ): Store<S> => {
-  libState.appStates[options.name] = initialState;
+  libState.appStates[options.name] = deepFreeze(initialState);
   libState.changeListeners[options.name] = new Map();
   libState.logLevel = 'none';
   const store = readSelector(options.name);
@@ -47,7 +48,7 @@ const readSelector = (storeName: string) => {
           stateActions.push({ type: 'upsertMatching', name: prop, actionType: prop });
           return initialize({}, false, stateActions);
         } else if ('read' === prop) {
-          return () => readState(libState.appStates[storeName], [...stateActions, { type: 'action', name: prop }], { index: 0 }, true)
+          return () => deepFreeze(readState(libState.appStates[storeName], [...stateActions, { type: 'action', name: prop }], { index: 0 }, true));
         } else if ('onChange' === prop) {
           return (changeListener: (arg: any) => any) => {
             const stateActionsCopy = [...stateActions, { type: 'action', name: prop }] as StateAction[];
