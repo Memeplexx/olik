@@ -1,4 +1,4 @@
-import { augmentations, errorMessages, libState } from './constant';
+import { augmentations, devtoolsDebounce, errorMessages, libState } from './constant';
 import { constructQuery } from './query';
 import { readState } from './read';
 import { FutureState, StateAction } from './type';
@@ -15,7 +15,49 @@ export const updateState = (
     if (readState(oldState, stateActions, { index: 0 }, false) !== selectedNewState) {
       listener(selectedNewState);
     }
-  })
+  });
+
+  // if (arg.stack) {
+  //   console.groupCollapsed(libState.currentAction.type);
+  //   console.log(payloadWithTag);
+  //   console.log(arg.stack);
+  //   console.groupEnd();
+  // }
+
+  // Dispatch to devtools
+  const { type, ...actionPayload } = libState.currentAction;
+  if (libState.devtoolsDispatchListener && libState.dispatchToDevtools) {
+    const dispatchToDevtools = (payload?: any[]) => {
+      const action = payload ? { ...libState.currentAction, batched: payload } : libState.currentAction;
+      libState.currentActionForDevtools = action;
+      libState.devtoolsDispatchListener!(action);
+    }
+    if (libState.previousAction.debounceTimeout) {
+      window.clearTimeout(libState.previousAction.debounceTimeout);
+      libState.previousAction.debounceTimeout = 0;
+    }
+    if (libState.previousAction.type !== type) {
+      libState.previousAction.type = type;
+      libState.previousAction.payloads = [actionPayload];
+      dispatchToDevtools();
+      libState.previousAction.debounceTimeout = window.setTimeout(() => {
+        libState.previousAction.type = '';
+        libState.previousAction.payloads = [];
+      }, devtoolsDebounce);
+    } else {
+      if (libState.previousAction.timestamp < (Date.now() - devtoolsDebounce)) {
+        libState.previousAction.payloads = [actionPayload];
+      } else {
+        libState.previousAction.payloads.push(actionPayload);
+      }
+      libState.previousAction.timestamp = Date.now();
+      libState.previousAction.debounceTimeout = window.setTimeout(() => {
+        dispatchToDevtools(libState.previousAction.payloads.slice(0, libState.previousAction.payloads.length - 1));
+        libState.previousAction.type = '';
+        libState.previousAction.payloads = [];
+      }, devtoolsDebounce);
+    }
+  }
 }
 
 export const writeState = (currentState: any, stateToUpdate: any, stateActions: ReadonlyArray<StateAction>, cursor: { index: number }): any => {

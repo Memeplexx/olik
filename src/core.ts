@@ -1,15 +1,29 @@
 import { augmentations, libState } from './constant';
+import { integrateStoreWithReduxDevtools } from './devtools';
 import { readState } from './read';
-import { StateAction, Store } from './type';
+import { OptionsForMakingAComponentStore, OptionsForMakingAnApplicationStore, StateAction, Store } from './type';
 import { processUpdate, updateState } from './write';
 
 export const createApplicationStore = <S>(
-  initialState: S, options: { name: string } = { name: document.title }
+  initialState: S, 
+  options: OptionsForMakingAnApplicationStore = { name: document.title, replaceExistingStoreIfItExists: true }
 ): Store<S> => {
   libState.appStates[options.name] = initialState;
   libState.changeListeners[options.name] = new Map();
   libState.logLevel = 'none';
-  return readSelector(options.name);
+  const store = readSelector(options.name);
+  if (!libState.appStores[options.name] || options.replaceExistingStoreIfItExists) {
+    integrateStoreWithReduxDevtools({ store, devtools: { name: options.name } })
+  }
+  libState.appStores[options.name] = store;
+  return store;
+}
+
+export const createComponentStore = <L>(
+  state: L,
+  options: OptionsForMakingAComponentStore,
+) => {
+  
 }
 
 const readSelector = (storeName: string) => {

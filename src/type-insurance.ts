@@ -138,4 +138,3 @@ function test() {
   // derive(select.objArray).with(s => s).useState();
 
 }
-

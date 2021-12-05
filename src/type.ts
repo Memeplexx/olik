@@ -260,3 +260,25 @@ export interface Async<C> {
 
 export type AnyAsync<C> = Async<C> | Promise<C>;
 
+export const Deferred = Symbol('deferred');
+
+export type OptionsForMakingAComponentStore = {
+  /**
+   * The name that will distinguish this component store from others within the state tree
+   */
+  componentName: string;
+  /**
+   * The string that will distinguish different instances of the same component store.
+   */
+  instanceName: string | number | typeof Deferred;
+  /**
+   * Whether or not action stack-traces should be logged to the console.
+   * Internally, this makes use of `new Error().stack` to take advantage of sourcemaps
+   */
+  traceActions?: boolean,
+};
+
+export interface OptionsForMakingAnApplicationStore {
+  name: string,
+  replaceExistingStoreIfItExists: boolean,
+}
