@@ -181,7 +181,13 @@ export const processUpdate = (storeName: string, stateActions: StateAction[], pr
                 { type: 'property', name: statePath, actionType: statePath },
               ] as StateAction[];
               updateState(storeName, [...actions, { type: 'action', name: 'replace', arg: toIsoStringInCurrentTz(new Date()), actionType: 'replace()' }], changeListeners);
-              setTimeout(() => { try { updateState(storeName, [...actions, { type: 'action', name: 'remove', actionType: 'remove()' }], changeListeners) } catch (e) { /* ignoring */ } }, opts.cacheFor);
+              setTimeout(() => {
+                try { 
+                  updateState(storeName, [...actions, { type: 'action', name: 'remove', actionType: 'remove()' }], changeListeners) 
+                } catch (e) {
+                  // Ignoring. This may happen due to the user manually invalidating a cache. If that has happened, we don't want an error to be thrown.
+                }
+              }, opts.cacheFor);
             }
             return readCurrentState();
           }).catch(error => {

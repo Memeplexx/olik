@@ -1,5 +1,5 @@
 
-import { libState } from '../src/constant';
+import { errorMessages, libState } from '../src/constant';
 import { createApplicationStore } from '../src';
 
 const resolve = <T>(data: T, timeout = 10) => () => new Promise<T>(resolve => setTimeout(() => resolve(data), timeout));
@@ -203,6 +203,15 @@ describe('async', () => {
       .withMany(resolve(withMany));
     expect(libState.currentAction).toEqual({ type: 'arr.upsertMatching.id.withMany()', withMany });
     expect(select.arr.read()).toEqual([withMany[0], initialState.arr[1], initialState.arr[2], withMany[1]]);
+  })
+
+  it('should throw an error if an array element could not be found', async () => {
+    const initialState = { arr: [{ id: 1, num: 1 }, { id: 2, num: 2 }, { id: 3, num: 3 }] };
+    const select = createApplicationStore(initialState);
+    await select.arr
+      .find.id.eq(4)
+      .replace(resolve({ id: 4, num: 4 }))
+      .catch(e => expect(e.message).toEqual(errorMessages.FIND_RETURNS_NO_MATCHES))
   })
 
 });
