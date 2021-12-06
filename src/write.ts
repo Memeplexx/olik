@@ -7,10 +7,11 @@ import { deepFreeze, toIsoStringInCurrentTz } from './utility';
 export const updateState = (
   storeName: string,
   stateActions: StateAction[],
+  changeListeners: Map<StateAction[], (arg: any) => any>,
 ) => {
   const oldState = libState.appStates[storeName];
   libState.appStates[storeName] = writeState(libState.appStates[storeName], { ...libState.appStates[storeName] }, stateActions, { index: 0 });
-  libState.changeListeners[storeName].forEach((listener, stateActions) => {
+  changeListeners.forEach((listener, stateActions) => {
     const selectedNewState = readState(libState.appStates[storeName], stateActions, { index: 0 }, false);
     if (readState(oldState, stateActions, { index: 0 }, false) !== selectedNewState) {
       listener(selectedNewState);
@@ -135,21 +136,21 @@ export const writeState = (currentState: any, stateToUpdate: any, stateActions: 
   }
 }
 
-export const processUpdate = (storeName: string, stateActions: StateAction[], prop: string) => {
+export const processUpdate = (storeName: string, stateActions: StateAction[], prop: string, changeListeners: Map<StateAction[], (arg: any) => any>) => {
   return (arg: any, opts?: { cacheFor: number, optimisticallyUpdateWith: any }) => {
     deepFreeze(arg);
     if (typeof (arg) !== 'function') {
-      updateState(storeName, [...stateActions, { type: 'action', name: prop, arg, actionType: `${prop}()` }]);
+      updateState(storeName, [...stateActions, { type: 'action', name: prop, arg, actionType: `${prop}()` }], changeListeners);
     } else {
       if (libState.insideTransaction) { throw new Error(errorMessages.ASYNC_PAYLOAD_INSIDE_TRANSACTION); }
-      const readCurrentState = (throwIfNoArrayElementFound: boolean) => 
-        readState(libState.appStates[storeName], [...stateActions, { type: 'action', name: 'read' }], { index: 0 }, throwIfNoArrayElementFound);
-      let state = { storeValue: readCurrentState(true), error: null, isLoading: true, wasRejected: false, wasResolved: false } as FutureState<any>;
+      const readCurrentState = () => 
+        readState(libState.appStates[storeName], [...stateActions, { type: 'action', name: 'read' }], { index: 0 }, false);
+      let state = { storeValue: readCurrentState(), error: null, isLoading: true, wasRejected: false, wasResolved: false } as FutureState<any>;
       if (libState.appStates[storeName].cache?.[stateActions.map(sa => sa.actionType).join('.')]) {
-        const result = new Proxy(new Promise<any>(resolve => resolve(readCurrentState(true))), {
+        const result = new Proxy(new Promise<any>(resolve => resolve(readCurrentState())), {
           get: (target: any, prop: any) => {
             if (prop === 'then' || prop === 'catch' || prop === 'finally') {
-              const t = Promise.resolve(readCurrentState(true));
+              const t = Promise.resolve(readCurrentState());
               return (t as any)[prop].bind(t);
             } else if (prop === 'getFutureState') {
               return state;
@@ -164,26 +165,28 @@ export const processUpdate = (storeName: string, stateActions: StateAction[], pr
       const promiseResult = () => {
         let snapshot: any = undefined;
         if (opts?.optimisticallyUpdateWith) {
-          snapshot = readCurrentState(true);
-          updateState(storeName, [...stateActions, { type: 'action', name: prop, arg: opts.optimisticallyUpdateWith, actionType: `${prop}()` }]);
+          snapshot = readCurrentState();
+          updateState(storeName, [...stateActions, { type: 'action', name: prop, arg: opts.optimisticallyUpdateWith, actionType: `${prop}()` }], changeListeners);
         }
+        state = { ...state, storeValue: readCurrentState() };
         const promise = (augmentations.async ? augmentations.async(arg) : arg()) as Promise<any>;
         return promise
           .then(promiseResult => {
-            updateState(storeName, [...stateActions, { type: 'action', name: prop, arg: promiseResult, actionType: `${prop}()` }]);
+            updateState(storeName, [...stateActions, { type: 'action', name: prop, arg: promiseResult, actionType: `${prop}()` }], changeListeners);
+            state = { ...state, wasResolved: true, wasRejected: false, isLoading: false, storeValue: readCurrentState() };
             if (opts?.cacheFor) {
               const statePath = stateActions.map(sa => sa.actionType).join('.');
               const actions = [
                 { type: 'property', name: 'cache', actionType: 'cache' },
                 { type: 'property', name: statePath, actionType: statePath },
               ] as StateAction[];
-              updateState(storeName, [...actions, { type: 'action', name: 'replace', arg: toIsoStringInCurrentTz(new Date()), actionType: 'replace()' }]);
-              setTimeout(() => { try { updateState(storeName, [...actions, { type: 'action', name: 'remove', actionType: 'remove()' }]) } catch (e) { /* ignoring */ } }, opts.cacheFor);
+              updateState(storeName, [...actions, { type: 'action', name: 'replace', arg: toIsoStringInCurrentTz(new Date()), actionType: 'replace()' }], changeListeners);
+              setTimeout(() => { try { updateState(storeName, [...actions, { type: 'action', name: 'remove', actionType: 'remove()' }], changeListeners) } catch (e) { /* ignoring */ } }, opts.cacheFor);
             }
-            return readCurrentState(false);
+            return readCurrentState();
           }).catch(error => {
             if (snapshot !== undefined) {
-              updateState(storeName, [...stateActions, { type: 'action', name: prop, arg: snapshot, actionType: `${prop}()` }]);
+              updateState(storeName, [...stateActions, { type: 'action', name: prop, arg: snapshot, actionType: `${prop}()` }], changeListeners);
             }
             state = { ...state, wasRejected: true, wasResolved: false, isLoading: false, error };
             throw error;

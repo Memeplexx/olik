@@ -179,46 +179,80 @@ describe('component', () => {
     expect(parent.read()).toEqual({ hello: '', cmp: { [componentName]: { [instanceName]: { num: 0 } } } })
   })
 
-  // it('should be able to set a deferred instanceName', (done) => {
-  //   const initialRootState = { hello: 'hey' };
-  //   const componentName = 'MyComponent';
-  //   const instanceName = 'MyInstance';
-  //   const root = createApplicationStore(initialRootState);
-  //   const child = createComponentStore({ val: 0 }, { componentName, instanceName: Deferred });
-  //   let count = 0;
-  //   child.onChange(val => {
-  //     count++;
-  //     if (count === 1) {
-  //       expect(val.val).toEqual(1);
-  //     } else if (count === 2) {
-  //       expect(val.val).toEqual(2);
-  //       expect(child.read()).toEqual({
-  //         val: 2
-  //       })
-  //       expect(root.read()).toEqual({
-  //         ...initialRootState,
-  //         cmp: {
-  //           [componentName]: {
-  //             [instanceName]: {
-  //               val: 2
-  //             }
-  //           }
-  //         }
-  //       });
-  //       done();
-  //     }
-  //   });
-  //   child.val.replace(1);
-  //   child.setDeferredInstanceName(instanceName);
-  //   child.val.replace(2);
-  // })
+  it('should be able to set a deferred instanceName', (done) => {
+    const initialRootState = { hello: 'hey' };
+    const componentName = 'MyComponent';
+    const instanceName = 'MyInstance';
+    const root = createApplicationStore(initialRootState);
+    const child = createComponentStore({ val: 0 }, { componentName, instanceName: Deferred });
+    let count = 0;
+    child.onChange(val => {
+      count++;
+      if (count === 1) {
+        expect(val.val).toEqual(1);
+      } else if (count === 2) {
+        expect(val.val).toEqual(2);
+        expect(child.read()).toEqual({
+          val: 2
+        })
+        expect(root.read()).toEqual({
+          ...initialRootState,
+          cmp: {
+            [componentName]: {
+              [instanceName]: {
+                val: 2
+              }
+            }
+          }
+        });
+        done();
+      }
+    });
+    child.val.replace(1);
+    child.setDeferredInstanceName(instanceName);
+    child.val.replace(2);
+  })
 
-  // it('should be able to reset the state of a component store', () => {
-  //   const initialState = {
-  //     test: '',
-  //   };
-  //   const select = createApplicationStore(initialState);
-  //   select.reset();
-  // })
+  it('should be able to set a deferred instanceName where change listeners were added to an array element', done => {
+    const initialRootState = { hello: 'hey' };
+    const componentName = 'MyComponent';
+    const instanceName = 'MyInstance';
+    const root = createApplicationStore(initialRootState);
+    const child = createComponentStore({ arr: [{ id: 1, num: 1 }, { id: 2, num: 2 }] }, { componentName, instanceName: Deferred });
+    let count = 0;
+    child.arr.find.id.eq(1).onChange(val => {
+      count++;
+      if (count === 1) {
+        expect(val).toEqual({ id: 1, num: 3 });
+      } else if (count === 2) {
+        expect(val).toEqual({ id: 1, num: 4 });
+        expect(child.read()).toEqual({ arr: [{ id: 1, num: 4 }, { id: 2, num: 2 }] })
+        expect(root.read()).toEqual({
+          ...initialRootState,
+          cmp: {
+            [componentName]: {
+              [instanceName]: { arr: [{ id: 1, num: 4 }, { id: 2, num: 2 }] }
+            }
+          }
+        });
+        done();
+      }
+    });
+    child.arr.find.id.eq(1).replace({ id: 1, num: 3 });
+    child.setDeferredInstanceName(instanceName);
+    child.arr.find.id.eq(1).replace({ id: 1, num: 4 });
+  })
+
+  it('should be possible to remove a store that was originally deferred', () => {
+    const initialRootState = { hello: 'hey' };
+    const root = createApplicationStore(initialRootState);
+    const componentName = 'MyComponent';
+    const instanceName = 'MyInstance';
+    const child = createComponentStore({ test: '' }, { componentName, instanceName: Deferred });
+    child.setDeferredInstanceName(instanceName);
+    expect(root.read()).toEqual({ hello: 'hey', cmp: { MyComponent: { MyInstance: { test: '' } } } });
+    child.removeFromApplicationStore();
+    expect(root.read()).toEqual({ hello: 'hey', cmp: { } });
+  })
 
 });

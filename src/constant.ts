@@ -12,7 +12,7 @@ export const errorMessages = {
 export const libState = {
   appStates: {} as { [storeName: string]: any },
   appStores: {} as { [storeName: string]: /*Store<any>*/any },
-  changeListeners: {} as { [storeName: string]: Map<StateAction[], (arg: any) => any> },
+  // changeListeners: {} as { [storeName: string]: Map<StateAction[], (arg: any) => any> },
   currentAction: {} as { [key: string]: any },
   insideTransaction: false,
   logLevel: 'none' as ('debug' | 'none'),

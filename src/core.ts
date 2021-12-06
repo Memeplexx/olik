@@ -11,7 +11,6 @@ export const createApplicationStore = <S>(
     = { name: document.title, replaceExistingStoreIfItExists: true, disabledDevtoolsIntegration: false }
 ): Store<S> => {
   libState.appStates[options.name!] = deepFreeze(initialState);
-  libState.changeListeners[options.name!] = new Map();
   libState.logLevel = 'none';
   const store = readSelector(options.name!);
   if ((!libState.appStores[options.name!] || options.replaceExistingStoreIfItExists) && !options.disabledDevtoolsIntegration) {
@@ -27,6 +26,14 @@ export const createComponentStore = <L>(
 ): ComponentStore<L> => {
   if (!options.applicationStoreName) { options.applicationStoreName = document.title };
   const appStore = libState.appStores[options.applicationStoreName!] as any;
+  const removeFromApplicationStore = () => {
+    const state = appStore.read().cmp[options.componentName];
+    if ((Object.keys(state).length === 1) && state[options.instanceName!]) {
+      appStore.cmp[options.componentName].remove();
+    } else {
+      appStore.cmp[options.componentName][options.instanceName].remove();
+    }
+  }
   if (!libState.appStores[options.applicationStoreName]) {
     const devtoolsStoreName = `${options.componentName} : ${options.instanceName as string}`;
     return createApplicationStore(state, { name: devtoolsStoreName }) as any as ComponentStore<L>;
@@ -35,18 +42,22 @@ export const createComponentStore = <L>(
     return new Proxy({}, {
       get: function (target, prop: string) {
         if ('removeFromApplicationStore' === prop) {
-          return () => {
-            const state = appStore.read().cmp[options.componentName];
-            if ((Object.keys(state).length === 1) && state[options.instanceName!]) {
-              appStore.cmp[options.componentName].remove();
-            } else {
-              appStore.cmp[options.componentName][options.instanceName].remove();
-            }
-          }
+          removeFromApplicationStore();
         } else if ('setDeferredInstanceName' === prop) {
           return (instanceName: string | number) => {
             appStore.cmp[options.componentName][instanceName].replace(componentStore.read());
-            // TODO: transfer change listeners to parent store
+            Array.from(((componentStore as any).getChangeListeners() as Map<StateAction[], (arg: any) => any>).entries())
+              .forEach(([stateActions, performAction]) => {
+                let node = appStore.cmp[options.componentName][instanceName];
+                stateActions.slice(0, stateActions.length - 1).forEach(a => {
+                  if (a.type === 'comparator') {
+                    node = node[a.name](a.arg)
+                  } else { /* must be of type 'search' or 'property */
+                    node = node[a.name];
+                  }
+                }); 
+                node.onChange(performAction);
+              });
             options.instanceName = instanceName;
           }
         } else if (options.instanceName === Deferred) {
@@ -64,14 +75,7 @@ export const createComponentStore = <L>(
     return new Proxy({}, {
       get: function (target, prop: string) {
         if (prop === 'removeFromApplicationStore') {
-          return () => {
-            const state = appStore.read().cmp[options.componentName];
-            if ((Object.keys(state).length === 1) && state[options.instanceName!]) {
-              appStore.cmp[options.componentName].remove();
-            } else {
-              appStore.cmp[options.componentName][options.instanceName].remove();
-            }
-          }
+          removeFromApplicationStore();
         }
         return appStore.cmp[options.componentName][options.instanceName][prop];
       }
@@ -80,13 +84,14 @@ export const createComponentStore = <L>(
 }
 
 const readSelector = (storeName: string) => {
+  const changeListeners = new Map<StateAction[], (arg: any) => any>();
   const initialize = (s: any, topLevel: boolean, stateActions: StateAction[]): any => {
     if (typeof s !== 'object') { return null as any; }
     return new Proxy(s, {
       get: function (target, prop: string) {
         stateActions = topLevel ? new Array<StateAction>() : stateActions;
         if (['replace', 'patch', 'remove', 'increment', 'removeAll', 'replaceAll', 'patchAll', 'incrementAll', 'insertOne', 'insertMany', 'withOne', 'withMany'].includes(prop)) {
-          return processUpdate(storeName, stateActions, prop);
+          return processUpdate(storeName, stateActions, prop, changeListeners);
         } else if ('invalidateCache' === prop) {
           return () => {
             const actionType = stateActions.map(sa => sa.actionType).join('.');
@@ -94,10 +99,12 @@ const readSelector = (storeName: string) => {
               { type: 'property', name: 'cache', actionType: 'cache' },
               { type: 'property', name: actionType, actionType: actionType },
               { type: 'action', name: 'remove', actionType: 'remove()' },
-            ]);
+            ], changeListeners);
           }
-        } else if (['removeFromApplicationStore', 'setDeferredInstanceName'].includes(prop)) {
+        } else if ('removeFromApplicationStore' === prop) {
           return () => { /* no-op */ }
+        } else if ('getChangeListeners' === prop) {
+          return () => changeListeners;
         } else if ('upsertMatching' === prop) {
           stateActions.push({ type: 'upsertMatching', name: prop, actionType: prop });
           return initialize({}, false, stateActions);
@@ -106,8 +113,8 @@ const readSelector = (storeName: string) => {
         } else if ('onChange' === prop) {
           return (changeListener: (arg: any) => any) => {
             const stateActionsCopy = [...stateActions, { type: 'action', name: prop }] as StateAction[];
-            libState.changeListeners[storeName].set(stateActionsCopy, changeListener);
-            return { unsubscribe: () => { libState.changeListeners[storeName].delete(stateActionsCopy); } }
+            changeListeners.set(stateActionsCopy, changeListener);
+            return { unsubscribe: () => { changeListeners.delete(stateActionsCopy); } }
           }
         } else if (['and', 'or'].includes(prop)) {
           stateActions.push({ type: 'searchConcat', name: prop, actionType: prop });
