@@ -14,12 +14,12 @@ describe('async', () => {
 
   it('should perform a basic async update', async () => {
     const select = createApplicationStore({ num: 0 });
-    const replacement = 1;
+    const payload = 1;
     const asyncResult = await select.num
-      .replace(resolve(replacement));
-    expect(select.num.read()).toEqual(replacement);
-    expect(asyncResult).toEqual(replacement);
-    expect(libState.currentAction).toEqual({ type: 'num.replace()', replacement });
+      .replace(resolve(payload));
+    expect(select.num.read()).toEqual(payload);
+    expect(asyncResult).toEqual(payload);
+    expect(libState.currentAction).toEqual({ type: 'num.replace()', payload });
   })
 
   it('should catch a rejection', done => {
@@ -46,7 +46,7 @@ describe('async', () => {
     expect(promiseCount).toEqual(1);
   })
 
-  // it('should be able to invalidate a cache even if once does not yet exist', () => {
+  // it('should be able to invalidate a cache even if one does not yet exist', () => {
   //   const select = createApplicationStore({ num: 0 });
   //   select.num
   //     .invalidateCache();
@@ -175,34 +175,34 @@ describe('async', () => {
   it('should upsert one array element where a match could be found', async () => {
     const initialState = { arr: [{ id: 1, num: 1 }, { id: 2, num: 2 }, { id: 3, num: 3 }] };
     const select = createApplicationStore(initialState);
-    const withOne = { id: 1, val: 5 };
+    const payload = { id: 1, val: 5 };
     await select.arr
       .upsertMatching.id
-      .withOne(resolve(withOne));
-    expect(libState.currentAction).toEqual({ type: 'arr.upsertMatching.id.withOne()', withOne });
-    expect(select.arr.read()).toEqual([withOne, initialState.arr[1], initialState.arr[2]]);
+      .withOne(resolve(payload));
+    expect(libState.currentAction).toEqual({ type: 'arr.upsertMatching.id.withOne()', payload });
+    expect(select.arr.read()).toEqual([payload, initialState.arr[1], initialState.arr[2]]);
   })
 
   it('should upsert one array element where a match could not be found', async () => {
     const initialState = { arr: [{ id: 1, num: 1 }, { id: 2, num: 2 }, { id: 3, num: 3 }] };
     const select = createApplicationStore(initialState);
-    const withOne = { id: 4, val: 5 };
+    const payload = { id: 4, val: 5 };
     await select.arr
       .upsertMatching.id
-      .withOne(resolve(withOne));
-    expect(libState.currentAction).toEqual({ type: 'arr.upsertMatching.id.withOne()', withOne });
-    expect(select.arr.read()).toEqual([...initialState.arr, withOne]);
+      .withOne(resolve(payload));
+    expect(libState.currentAction).toEqual({ type: 'arr.upsertMatching.id.withOne()', payload });
+    expect(select.arr.read()).toEqual([...initialState.arr, payload]);
   })
 
   it('should upsert array elements where one matches and another does not', async () => {
     const initialState = { arr: [{ id: 1, num: 1 }, { id: 2, num: 2 }, { id: 3, num: 3 }] };
     const select = createApplicationStore(initialState);
-    const withMany = [{ id: 1, val: 5 }, { id: 5, val: 5 }];
+    const payload = [{ id: 1, val: 5 }, { id: 5, val: 5 }];
     await select.arr
       .upsertMatching.id
-      .withMany(resolve(withMany));
-    expect(libState.currentAction).toEqual({ type: 'arr.upsertMatching.id.withMany()', withMany });
-    expect(select.arr.read()).toEqual([withMany[0], initialState.arr[1], initialState.arr[2], withMany[1]]);
+      .withMany(resolve(payload));
+    expect(libState.currentAction).toEqual({ type: 'arr.upsertMatching.id.withMany()', payload });
+    expect(select.arr.read()).toEqual([payload[0], initialState.arr[1], initialState.arr[2], payload[1]]);
   })
 
   it('should throw an error if an array element could not be found', async () => {

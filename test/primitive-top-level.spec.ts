@@ -12,18 +12,20 @@ describe('top-level-primitive', () => {
 
   it('should replace a value', () => {
     const select = createApplicationStore(initialState);
+    const payload = 1;
     select
-      .replace(1);
+      .replace(payload);
     expect(select.read()).toEqual(1);
-    expect(libState.currentAction).toEqual({ type: 'replace()', replacement: 1 });
+    expect(libState.currentAction).toEqual({ type: 'replace()', payload });
   })
 
   it('should increment a value', () => {
     const select = createApplicationStore(initialState);
+    const payload = 1;
     select
-      .increment(1);
+      .increment(payload);
     expect(select.read()).toEqual(1);
-    expect(libState.currentAction).toEqual({ type: 'increment()', by: 1 });
+    expect(libState.currentAction).toEqual({ type: 'increment()', payload });
   })
 
 });

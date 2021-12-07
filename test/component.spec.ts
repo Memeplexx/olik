@@ -44,7 +44,7 @@ describe('component', () => {
     componentStore1.one.replace('test');
     expect(libState.currentAction).toEqual({
       type: `cmp.${componentName}.0.one.replace()`,
-      replacement: 'test',
+      payload: 'test',
     })
     expect(componentStore1.read().one).toEqual('test');
   })

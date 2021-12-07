@@ -82,14 +82,14 @@ describe('devtools', () => {
     const updateCount = 3;
     for (let i = 0; i < updateCount; i++) {
       select.test.replace(i);
-      expect(libState.currentActionForDevtools).toEqual({ type: 'test.replace()', replacement: 0 });
+      expect(libState.currentActionForDevtools).toEqual({ type: 'test.replace()', payload: 0 });
       payload.push(i);
     }
     setTimeout(() => {
       expect(libState.currentActionForDevtools).toEqual({
         type: 'test.replace()',
-        replacement: updateCount - 1,
-        batched: payload.slice(0, payload.length - 1).map(replacement => ({ replacement })),
+        payload: updateCount - 1,
+        batched: payload.slice(0, payload.length - 1).map(payload => ({ payload })),
       })
       done();
     }, 300);

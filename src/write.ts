@@ -81,7 +81,7 @@ export const writeState = (currentState: any, stateToUpdate: any, stateActions: 
       const foundIndex = upsertArgs.findIndex(ua => queryPaths.reduce((prev, curr) => prev = prev[curr.name], ua) === elementValue);
       return foundIndex !== -1 ? upsertArgs.splice(foundIndex, 1)[0] : e;
     });
-    return completeStateWrite(stateActions, { [upsert.name]: upsert.arg }, [...result, ...upsertArgs]);
+    return completeStateWrite(stateActions, { payload: upsert.arg }, [...result, ...upsertArgs]);
   }
   const action = stateActions[cursor.index++];
   if (cursor.index < (stateActions.length)) {
@@ -116,25 +116,25 @@ export const writeState = (currentState: any, stateToUpdate: any, stateActions: 
       return { ...currentState, [action.name]: writeState((currentState || {})[action.name], ((stateToUpdate as any) || {})[action.name], stateActions, cursor) };
     }
   } else if (action.name === 'replace') {
-    return completeStateWrite(stateActions, { replacement: action.arg }, action.arg);
+    return completeStateWrite(stateActions, { payload: action.arg }, action.arg);
   } else if (action.name === 'patch') {
-    return completeStateWrite(stateActions, { patch: action.arg }, { ...currentState, ...(action.arg as any) });
+    return completeStateWrite(stateActions, { payload: action.arg }, { ...currentState, ...(action.arg as any) });
   } else if (action.name === 'deepMerge') {
     return completeStateWrite(stateActions, { payload: action.arg }, deepMerge(currentState, action.arg));
   } else if (action.name === 'increment') {
-    return completeStateWrite(stateActions, { by: action.arg }, currentState + action.arg);
+    return completeStateWrite(stateActions, { payload: action.arg }, currentState + action.arg);
   } else if (action.name === 'removeAll') {
     return completeStateWrite(stateActions, null, []);
   } else if (action.name === 'replaceAll') {
-    return completeStateWrite(stateActions, { replacement: action.arg }, action.arg);
+    return completeStateWrite(stateActions, { payload: action.arg }, action.arg);
   } else if (action.name === 'patchAll') {
-    return completeStateWrite(stateActions, { patch: action.arg }, (currentState as any[]).map(e => ({ ...e, ...action.arg })));
+    return completeStateWrite(stateActions, { payload: action.arg }, (currentState as any[]).map(e => ({ ...e, ...action.arg })));
   } else if (action.name === 'incrementAll') {
-    return completeStateWrite(stateActions, { by: action.arg }, Array.isArray(currentState) ? currentState.map((e: any) => e + action.arg) : currentState + action.arg);
+    return completeStateWrite(stateActions, { payload: action.arg }, Array.isArray(currentState) ? currentState.map((e: any) => e + action.arg) : currentState + action.arg);
   } else if (action.name === 'insertOne') {
-    return completeStateWrite(stateActions, { toInsert: action.arg }, [...currentState, action.arg]);
+    return completeStateWrite(stateActions, { payload: action.arg }, [...currentState, action.arg]);
   } else if (action.name === 'insertMany') {
-    return completeStateWrite(stateActions, { toInsert: action.arg }, [...currentState, ...action.arg]);
+    return completeStateWrite(stateActions, { payload: action.arg }, [...currentState, ...action.arg]);
   }
 }
 

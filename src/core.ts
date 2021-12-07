@@ -109,7 +109,7 @@ const readSelector = (storeName: string) => {
           stateActions.push({ type: 'upsertMatching', name: prop, actionType: prop });
           return initialize({}, false, stateActions);
         } else if ('read' === prop) {
-          return () => deepFreeze(readState(libState.appStates[storeName], [...stateActions, { type: 'action', name: prop }], { index: 0 }, true));
+          return () => deepFreeze(readState(libState.appStates[storeName], [...stateActions, { type: 'action', name: prop }], { index: 0 }));
         } else if ('onChange' === prop) {
           return (changeListener: (arg: any) => any) => {
             const stateActionsCopy = [...stateActions, { type: 'action', name: prop }] as StateAction[];

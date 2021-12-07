@@ -13,19 +13,19 @@ describe('Object', () => {
 
   it('should replace an object property', () => {
     const select = createApplicationStore(initialState);
-    const replacement = 1;
+    const payload = 1;
     select.num
-      .replace(replacement);
-    expect(libState.currentAction).toEqual({ type: 'num.replace()', replacement });
+      .replace(payload);
+    expect(libState.currentAction).toEqual({ type: 'num.replace()', payload });
     expect(select.num.read()).toEqual(1);
   })
 
   it('should patch an object', () => {
     const select = createApplicationStore(initialState);
-    const patch = { bool: true, str: 'x' };
+    const payload = { bool: true, str: 'x' };
     select.patch({ bool: true, str: 'x' });
-    expect(libState.currentAction).toEqual({ type: 'patch()', patch });
-    expect(select.read()).toEqual({ ...initialState, ...patch });
+    expect(libState.currentAction).toEqual({ type: 'patch()', payload });
+    expect(select.read()).toEqual({ ...initialState, ...payload });
   })
 
   it('should deep merge an object', () => {
@@ -36,10 +36,10 @@ describe('Object', () => {
 
   it('should increment an object property', () => {
     const select = createApplicationStore(initialState);
-    const by = 1;
+    const payload = 1;
     select.num
-      .increment(by);
-    expect(libState.currentAction).toEqual({ type: 'num.increment()', by });
+      .increment(payload);
+    expect(libState.currentAction).toEqual({ type: 'num.increment()', payload });
     expect(select.num.read()).toEqual(1);
   })
 

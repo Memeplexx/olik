@@ -11,20 +11,21 @@ describe('array-deep', () => {
   it('should select.arr.find.id.eq(2).patch({ val: 1 })', () => {
     const initialState = { arr: [{ id: 1, val: 0, obj: { num: 0 } }, { id: 2, val: 0, obj: { num: 0 } }], obj: { num: 0 } };
     const select = createApplicationStore(initialState);
-    const patch = { val: 1 };
+    const payload = { val: 1 };
     libState.logLevel = 'debug';
     select.arr
       .find.id.eq(2)
-      .patch(patch);
-    expect(select.read()).toEqual({ ...initialState, arr: [initialState.arr[0], { ...initialState.arr[1], ...patch }] });
+      .patch(payload);
+    expect(select.read()).toEqual({ ...initialState, arr: [initialState.arr[0], { ...initialState.arr[1], ...payload }] });
   })
 
   it('should select.arr.find.id.eq(2).replace({ id: 4, val: 2 })', () => {
     const select = createApplicationStore({ arr: [{ id: 1, val: 0 }, { id: 2, val: 0 }], obj: { num: 0 } });
     const stateBefore = select.read();
+    const payload = { id: 4, val: 2 };
     select.arr
       .find.id.eq(2)
-      .replace({ id: 4, val: 2 });
+      .replace(payload);
     const stateAfter = select.read();
     expect(stateBefore).not.toEqual(stateAfter);
     expect(stateBefore.obj).toEqual(stateAfter.obj);
@@ -34,26 +35,29 @@ describe('array-deep', () => {
   })
 
   it('should select.arr.filter.id.in([1, 2]).patch({ val: 1 })', () => {
-    const select = createApplicationStore({ arr: [{ id: 1, val: 0 }, { id: 2, val: 0 }, { id: 3, val: 0 }] });
+    const initialState = { arr: [{ id: 1, val: 0 }, { id: 2, val: 0 }, { id: 3, val: 0 }] };
+    const select = createApplicationStore(initialState);
+    const payload = { val: 1 };
     select.arr
       .filter.id.in([1, 2])
-      .patch({ val: 1 });
+      .patch(payload);
     expect(select.read()).toEqual({ arr: [{ id: 1, val: 1 }, { id: 2, val: 1 }, { id: 3, val: 0 }] });
   })
 
   it('should find an element and replace one of its properties', () => {
     const initialState = { arr: [{ id: 1, val: 0, obj: { num: 0 } }, { id: 2, val: 0, obj: { num: 0 } }], obj: { num: 0 } };
     const select = createApplicationStore(initialState);
+    const payload = 1;
     select.arr
       .find.id.eq(2).val
-      .replace(1);
+      .replace(payload);
     expect(select.read()).toEqual({
       ...initialState,
       arr: [
         initialState.arr[0],
         {
           ...initialState.arr[1],
-          val: 1
+          val: payload
         }
       ]
     })
@@ -62,13 +66,14 @@ describe('array-deep', () => {
   it('should find an element, find an element in the property array, and replace one if its properties', () => {
     const initialState = { arr: [{ id: 1, val: 0, arr: [{ id: 1, num: 1 }, { id: 2, num: 2 }] }, { id: 2, val: 0, arr: [{ id: 1, num: 1 }, { id: 2, num: 2 }] }], obj: { num: 0 } };
     const select = createApplicationStore(initialState);
+    const payload = 9;
     select.arr
       .find.id.eq(2)
       .arr.find.id.eq(1).num
-      .replace(9);
+      .replace(payload);
     expect(libState.currentAction).toEqual({
       type: 'arr.find.id.eq(2).arr.find.id.eq(1).num.replace()',
-      replacement: 9
+      payload,
     });
     expect(select.read()).toEqual({
       ...initialState,
@@ -88,13 +93,14 @@ describe('array-deep', () => {
   it('should find an element, filter elements in the property array, and all of its properties', () => {
     const initialState = { arr: [{ id: 1, val: 0, arr: [{ id: 1, num: 1 }, { id: 2, num: 2 }] }, { id: 2, val: 0, arr: [{ id: 1, num: 1 }, { id: 2, num: 2 }] }], obj: { num: 0 } };
     const select = createApplicationStore(initialState);
+    const payload = 1;
     select.arr
       .find.id.eq(2)
       .arr.filter.id.in([1, 2]).num
-      .increment(1);
+      .increment(payload);
     expect(libState.currentAction).toEqual({
       type: 'arr.find.id.eq(2).arr.filter.id.in(1,2).num.increment()',
-      by: 1
+      payload,
     });
     expect(select.read()).toEqual({
       ...initialState,
@@ -102,8 +108,8 @@ describe('array-deep', () => {
         initialState.arr[0], {
           ...initialState.arr[1],
           arr: [
-            { ...initialState.arr[1].arr[0], num: initialState.arr[1].arr[0].num + 1 },
-            { ...initialState.arr[1].arr[1], num: initialState.arr[1].arr[1].num + 1 },
+            { ...initialState.arr[1].arr[0], num: initialState.arr[1].arr[0].num + payload },
+            { ...initialState.arr[1].arr[1], num: initialState.arr[1].arr[1].num + payload },
           ]
         }]
     })
@@ -112,13 +118,14 @@ describe('array-deep', () => {
   it('should find an element, filter elements in the property array, and all of its properties', () => {
     const initialState = { arr: [{ id: 1, val: 0, arr: [{ id: 1, num: 1 }, { id: 2, num: 2 }] }, { id: 2, val: 0, arr: [{ id: 1, num: 1 }, { id: 2, num: 2 }] }], obj: { num: 0 } };
     const select = createApplicationStore(initialState);
+    const payload = 1;
     select.arr
       .find.id.eq(2)
       .arr.num
-      .incrementAll(1);
+      .incrementAll(payload);
     expect(libState.currentAction).toEqual({
       type: 'arr.find.id.eq(2).arr.num.incrementAll()',
-      by: 1
+      payload,
     });
     expect(select.read()).toEqual({
       ...initialState,

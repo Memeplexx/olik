@@ -18,18 +18,18 @@ describe('transaction', () => {
     expect(libState.currentAction).toEqual({
       type: 'num.replace(), str.replace()',
       actions: [
-        { type: 'num.replace()', replacement: 1 },
-        { type: 'str.replace()', replacement: 'x' },
+        { type: 'num.replace()', payload: 1 },
+        { type: 'str.replace()', payload: 'x' },
       ]
     })
   })
 
   it('should support transactions with only 1 action', () => {
     const select = createApplicationStore({ num: 0 });
-    const replacement = 1;
-    transact(() => select.num.replace(replacement));
-    expect(select.num.read()).toEqual(replacement);
-    expect(libState.currentAction).toEqual({ type: 'num.replace()', replacement });
+    const payload = 1;
+    transact(() => select.num.replace(payload));
+    expect(select.num.read()).toEqual(payload);
+    expect(libState.currentAction).toEqual({ type: 'num.replace()', payload });
   })
 
   it('should not support transactions if one of the actions has an async payload', () => {
