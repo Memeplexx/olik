@@ -1,28 +1,12 @@
 import { createApplicationStore, derive } from '../src';
-import { libState } from '../src/constant';
+import { libState, testState } from '../src/constant';
 
 describe('derivation', () => {
 
   beforeEach(() => {
     libState.appStates = {};
-    libState.logLevel = 'none';
+    testState.logLevel = 'none';
   })
-
-  // it('should support derivations', () => {
-  //   const select = createApplicationStore({ num: 0, str: '', bool: false });
-  //   const derivation = derive(
-  //     select.num,
-  //     select.str,
-  //   ).with((num, str) => [num, str]);
-  //   expect(derivation.read()).toEqual([0, '']);
-  //   let changeCount = 0;
-  //   derivation.onChange(() => changeCount++);
-  //   select.bool.replace(true);
-  //   expect(changeCount).toEqual(0);
-  //   select.num.increment(1);
-  //   expect(changeCount).toEqual(1);
-  //   expect(derivation.read()).toEqual([1, '']);
-  // })
 
   it('should support derivations', () => {
     const select = createApplicationStore({

@@ -11,23 +11,25 @@ export const errorMessages = {
 
 export const libState = {
   appStates: {} as { [storeName: string]: any },
-  appStores: {} as { [storeName: string]: /*Store<any>*/any },
-  // changeListeners: {} as { [storeName: string]: Map<StateAction[], (arg: any) => any> },
+  appStores: {} as { [storeName: string]: any }, // note: don't change 'any' to Store<any> else the typescript engined seems to slow right down.
+  devtoolsRegistry: {} as { [name: string]: DevtoolsInstance },
   currentAction: {} as { [key: string]: any },
   insideTransaction: false,
-  logLevel: 'none' as ('debug' | 'none'),
   windowObject: null as null | WindowAugmentedWithReduxDevtools,
-  devtoolsRegistry: {} as { [name: string]: DevtoolsInstance },
   devtoolsDispatchListener: null as null | ((action: { }) => any),
   dispatchToDevtools: true,
   onDispatchListener: () => null,
-  currentActionForDevtools: { },
   previousAction: {
     type: '',
     timestamp: 0,
     payloads: [],
     debounceTimeout: 0,
   } as PreviousAction,
+}
+
+export const testState = {
+  currentActionForDevtools: { },
+  logLevel: 'none' as ('debug' | 'none'),
 }
 
 export const augmentations: Augmentations = {

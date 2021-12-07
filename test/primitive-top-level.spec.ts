@@ -1,5 +1,5 @@
 import { createApplicationStore } from '../src';
-import { libState } from '../src/constant';
+import { libState, testState } from '../src/constant';
 
 describe('top-level-primitive', () => {
 
@@ -7,7 +7,7 @@ describe('top-level-primitive', () => {
 
   beforeEach(() => {
     libState.appStates = {};
-    libState.logLevel = 'none';
+    testState.logLevel = 'none';
   })
 
   it('should replace a value', () => {

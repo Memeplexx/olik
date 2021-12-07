@@ -1,4 +1,4 @@
-import { augmentations, devtoolsDebounce, errorMessages, libState } from './constant';
+import { augmentations, devtoolsDebounce, errorMessages, libState, testState } from './constant';
 import { constructQuery } from './query';
 import { readState } from './read';
 import { FutureState, StateAction } from './type';
@@ -30,7 +30,7 @@ export const updateState = (
   if (libState.devtoolsDispatchListener && libState.dispatchToDevtools) {
     const dispatchToDevtools = (payload?: any[]) => {
       const action = payload ? { ...libState.currentAction, batched: payload } : libState.currentAction;
-      libState.currentActionForDevtools = action;
+      testState.currentActionForDevtools = action;
       libState.devtoolsDispatchListener!(action);
     }
     if (libState.previousAction.debounceTimeout) {

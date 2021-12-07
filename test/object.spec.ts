@@ -1,6 +1,6 @@
 
 import { createApplicationStore } from '../src/index';
-import { libState } from '../src/constant';
+import { libState, testState } from '../src/constant';
 
 describe('Object', () => {
 
@@ -8,7 +8,7 @@ describe('Object', () => {
 
   beforeEach(() => {
     libState.appStates = {};
-    libState.logLevel = 'none';
+    testState.logLevel = 'none';
   })
 
   it('should replace an object property', () => {

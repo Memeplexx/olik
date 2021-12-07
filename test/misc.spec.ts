@@ -1,11 +1,11 @@
 import { createApplicationStore } from '../src';
-import { libState } from '../src/constant';
+import { libState, testState } from '../src/constant';
 
 describe('misc', () => {
 
   beforeEach(() => {
     libState.appStates = {};
-    libState.logLevel = 'none';
+    testState.logLevel = 'none';
   })
 
   it('should work with half-finished writes intermixed with reads', () => {

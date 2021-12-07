@@ -1,4 +1,4 @@
-import { augmentations, errorMessages, libState } from './constant';
+import { augmentations, errorMessages, libState, testState } from './constant';
 import { integrateStoreWithReduxDevtools } from './devtools';
 import { readState } from './read';
 import { Deferred, OptionsForMakingAComponentStore, OptionsForMakingAnApplicationStore, StateAction, Store, ComponentStore } from './type';
@@ -11,7 +11,7 @@ export const createApplicationStore = <S>(
     = { name: document.title, replaceExistingStoreIfItExists: true, disabledDevtoolsIntegration: false }
 ): Store<S> => {
   libState.appStates[options.name!] = deepFreeze(initialState);
-  libState.logLevel = 'none';
+  testState.logLevel = 'none';
   const store = readSelector(options.name!);
   if ((!libState.appStores[options.name!] || options.replaceExistingStoreIfItExists) && !options.disabledDevtoolsIntegration) {
     integrateStoreWithReduxDevtools({ store, devtools: { name: options.name } })

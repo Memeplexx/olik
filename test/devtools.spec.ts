@@ -1,12 +1,12 @@
 import { createApplicationStore, derive } from '../src';
-import { errorMessages, libState } from '../src/constant';
+import { errorMessages, libState, testState } from '../src/constant';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
 describe('devtools', () => {
 
   beforeEach(() => {
     libState.appStates = {};
-    libState.logLevel = 'none';
+    testState.logLevel = 'none';
     libState.windowObject = windowAugmentedWithReduxDevtoolsImpl;
   })
 
@@ -82,11 +82,11 @@ describe('devtools', () => {
     const updateCount = 3;
     for (let i = 0; i < updateCount; i++) {
       select.test.replace(i);
-      expect(libState.currentActionForDevtools).toEqual({ type: 'test.replace()', payload: 0 });
+      expect(testState.currentActionForDevtools).toEqual({ type: 'test.replace()', payload: 0 });
       payload.push(i);
     }
     setTimeout(() => {
-      expect(libState.currentActionForDevtools).toEqual({
+      expect(testState.currentActionForDevtools).toEqual({
         type: 'test.replace()',
         payload: updateCount - 1,
         batched: payload.slice(0, payload.length - 1).map(payload => ({ payload })),

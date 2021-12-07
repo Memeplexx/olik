@@ -1,5 +1,5 @@
 
-import { errorMessages, libState } from '../src/constant';
+import { errorMessages, libState, testState } from '../src/constant';
 import { createApplicationStore } from '../src';
 
 const resolve = <T>(data: T, timeout = 10) => () => new Promise<T>(resolve => setTimeout(() => resolve(data), timeout));
@@ -9,7 +9,7 @@ describe('async', () => {
 
   beforeEach(() => {
     libState.appStates = {};
-    libState.logLevel = 'none';
+    testState.logLevel = 'none';
   })
 
   it('should perform a basic async update', async () => {

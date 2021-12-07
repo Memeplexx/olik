@@ -1,13 +1,13 @@
 import { Observable } from 'rxjs';
 
 import { augment, createApplicationStore, derive } from '../src';
-import { libState } from '../src/constant';
+import { libState, testState } from '../src/constant';
 
 describe('augmentation', () => {
 
   beforeEach(() => {
     libState.appStates = {};
-    libState.logLevel = 'none';
+    testState.logLevel = 'none';
   })
 
   it('should be able to augment a selection', () => {

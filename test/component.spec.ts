@@ -1,5 +1,5 @@
 import { createApplicationStore, createComponentStore } from '../src/index';
-import { libState, errorMessages } from '../src/constant';
+import { libState, errorMessages, testState } from '../src/constant';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 import { Deferred, Store } from '../src/type';
 
@@ -14,7 +14,7 @@ describe('component', () => {
   beforeEach(() => {
     libState.appStates = {};
     libState.appStores = {};
-    libState.logLevel = 'none';
+    testState.logLevel = 'none';
   })
 
   it('should attach a lib store correctly', () => {

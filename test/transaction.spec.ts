@@ -1,11 +1,11 @@
 import { createApplicationStore, transact } from '../src';
-import { errorMessages, libState } from '../src/constant';
+import { errorMessages, libState, testState } from '../src/constant';
 
 describe('transaction', () => {
 
   beforeEach(() => {
     libState.appStates = {};
-    libState.logLevel = 'none';
+    testState.logLevel = 'none';
   })
 
   it('should support transactions', () => {
