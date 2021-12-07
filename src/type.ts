@@ -102,11 +102,21 @@ export interface InvalidateCache {
 }
 
 export interface Remove {
+  /**
+   * Remove the selected property from its parent object.  
+   * 
+   * **WARNING**: Performing this action has the potential to contradict the type-system. 
+   * **Only** use this to remove properties from objects of type `{ [key: string]: any }` and 
+   * **not** from objects with a known structure, for example `{ num: number, str: string }`.
+   */
   remove(): void,
   remove<X extends Payload<any>>(options: X): Future<any>;
 }
 
 export interface RemoveAll {
+  /**
+   * Remove all elements from the selected array node.
+   */
   removeAll(): void,
   removeAll<X extends Payload<any>>(options: X): Future<any>;
 }
@@ -189,6 +199,16 @@ export interface Read<S> {
 }
 
 export interface OnChange<S> {
+  /**
+   * Listen to updates made to the selected node.  
+   * Please ensure that you unsubscribe once you're done listening for updates.
+   * 
+   * @example
+   * const subscription = select.todos
+   *   .onChange(todos => console.log(`There are now ${todos.length} todos in the store`));
+   * 
+   * subscription.unsubscribe();
+   */
   onChange(changeListener: (state: DeepReadonly<S>) => any): Unsubscribe;
 }
 
@@ -196,10 +216,16 @@ export interface Readable<S> extends Read<S>, OnChange<S> {
 }
 
 export interface WithOne<T> {
+  /**
+   * Upsert with an individual array element.
+   */
   withOne: <X extends Payload<T>>(element: X) => UpdateResult<X>,
 }
 
 export interface WithMany<T> {
+  /**
+   * Upsert with an array of elements.
+   */
   withMany: <X extends Payload<T[]>>(array: X) => UpdateResult<X>,
 }
 
