@@ -88,10 +88,16 @@ export interface UpsertMatching<S> {
 }
 
 export interface Unsubscribe {
-  unsubscribe: () => any,
+  /**
+   * Unsubscribe from the change listener that was previously added to the selected node.
+   */
+  unsubscribe: () => void,
 }
 
 export interface InvalidateCache {
+  /**
+   * Ensure that any data cached on the selected node is re-fetched the next time a promise is used to populate this node.
+   */
   invalidateCache: () => void,
 }
 
@@ -122,6 +128,9 @@ export interface PatchAll<S> {
 }
 
 export interface Increment {
+  /**
+   * Add the supplied number onto the selected node.
+   */
   increment<X extends Payload<number>>(by: X, options: UpdateOptions<X>): UpdateResult<X>;
 }
 
@@ -138,14 +147,23 @@ export interface ReplaceAll<S> {
 }
 
 export interface DeepMerge<S> {
+  /**
+   * Recursively merge the supplied object into the selected node.
+   */
   deepMerge: <X extends Payload<DeepMergePayload<S>>>(toMerge: X, options: UpdateOptions<X>) => UpdateResult<X>;
 }
 
-export interface Invalidate {
+export interface InvalidateDerivation {
+  /**
+   * Ensure that, the next time this derivation is read, it is re-calculated.
+   */
   invalidate(): void,
 }
 
 export interface Read<S> {
+  /**
+   * Read the current state from the selected node.
+   */
   read(): DeepReadonly<S>;
 }
 
@@ -251,7 +269,7 @@ export type DerivationCalculationInputs<T extends Array<Readable<any>>> = {
   [K in keyof T]: DerivationCalculationInput<T[K]>;
 }
 
-export interface Derivation<R> extends Read<R>, OnChange<R>, Invalidate {
+export interface Derivation<R> extends Read<R>, OnChange<R>, InvalidateDerivation {
 }
 
 export type FutureState<C> = {
