@@ -33,7 +33,7 @@ describe('array-primitive', () => {
     select
       .incrementAll(payload);
     expect(libState.currentAction).toEqual({ type: 'incrementAll()', payload });
-    expect(select.read()).toEqual([2, 3, 4]);
+    expect(select.read()).toEqual(initialState.map(e => e + 1));
   })
 
   it('should be able to insert one primitive', () => {
@@ -42,7 +42,7 @@ describe('array-primitive', () => {
     select
       .insertOne(payload);
     expect(libState.currentAction).toEqual({ type: 'insertOne()', payload });
-    expect(select.read()).toEqual([1, 2, 3, 4]);
+    expect(select.read()).toEqual([...initialState, payload]);
   })
 
   it('should be able to insert many primitives', () => {
@@ -51,7 +51,7 @@ describe('array-primitive', () => {
     select
       .insertMany(payload);
     expect(libState.currentAction).toEqual({ type: 'insertMany()', payload });
-    expect(select.read()).toEqual([1, 2, 3, 4, 5, 6]);
+    expect(select.read()).toEqual([...initialState, ...payload]);
   })
 
   it('should find an element and replace it', () => {
@@ -61,7 +61,7 @@ describe('array-primitive', () => {
       .find.eq(2)
       .replace(payload);
     expect(libState.currentAction).toEqual({ type: 'find.eq(2).replace()', payload });
-    expect(select.read()).toEqual([1, 9, 3]);
+    expect(select.read()).toEqual([1, payload, 3]);
   })
 
   it('should find an element and remove it', () => {
@@ -193,9 +193,9 @@ describe('array-primitive', () => {
     const payload = 1;
     select
       .filter.gt(0).and.gt(1)
-      .increment(1);
+      .increment(payload);
     expect(libState.currentAction).toEqual({ type: 'filter.gt(0).and.gt(1).increment()', payload });
-    expect(select.read()).toEqual([1, 3, 4]);
+    expect(select.read()).toEqual([payload, 3, 4]);
   })
 
 });
