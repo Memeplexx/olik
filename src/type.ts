@@ -31,8 +31,8 @@ type Payload<S> = S | (() => AnyAsync<S>);
 type UpdateResult<X extends AnyAsync<any>> = X extends (() => AnyAsync<infer R>) ? Future<R> : void;
 
 export type UpdatableObject<S, F extends FindOrFilter, Q extends QueryStatus> = (
-  Patch<S> & DeepMerge<S> & (
-    F extends 'isFind' ? Replace<S> : {}
+  Patch<S> & (
+    F extends 'isFind' ? Replace<S> & DeepMerge<S> : {}
   ) & ({
     [K in keyof S]: S[K] extends Array<any>
     ? UpdatableArray<S[K], 'isFilter', 'notQueried'>
