@@ -28,6 +28,12 @@ describe('Object', () => {
     expect(select.read()).toEqual({ ...initialState, ...patch });
   })
 
+  it('should deep merge an object', () => {
+    const select = createApplicationStore({ num: 0, obj: { num: 0, str: '', arr: [{ id: 1, num: 1 }] } });
+    select.deepMerge({ num: 9, str: 'x', obj: { xxx: '', arr: [{ fff: 's' }] } });
+    expect(select.read()).toEqual({ num: 9, str: 'x', obj: { xxx: '', arr: [{ fff: 's' }], num: 0, str: '' } });
+  })
+
   it('should increment an object property', () => {
     const select = createApplicationStore(initialState);
     const by = 1;
@@ -36,7 +42,7 @@ describe('Object', () => {
     expect(libState.currentAction).toEqual({ type: 'num.increment()', by });
     expect(select.num.read()).toEqual(1);
   })
-  
+
   it('should remove an object property', () => {
     const select = createApplicationStore(initialState);
     select.num
@@ -88,7 +94,7 @@ describe('Object', () => {
     expect(select.arr.read()).toEqual([{ id: 2, num: 1 }, { id: 3, num: 2 }]);
   })
 
-  
+
 
   it('', () => {
     const select = createApplicationStore({ arr: [{ id: 1, num: 1 }, { id: 2, num: 2 }] });

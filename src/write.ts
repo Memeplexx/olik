@@ -2,7 +2,7 @@ import { augmentations, devtoolsDebounce, errorMessages, libState } from './cons
 import { constructQuery } from './query';
 import { readState } from './read';
 import { FutureState, StateAction } from './type';
-import { deepFreeze, toIsoStringInCurrentTz } from './utility';
+import { deepFreeze, deepMerge, toIsoStringInCurrentTz } from './utility';
 
 export const updateState = (
   storeName: string,
@@ -119,6 +119,8 @@ export const writeState = (currentState: any, stateToUpdate: any, stateActions: 
     return completeStateWrite(stateActions, { replacement: action.arg }, action.arg);
   } else if (action.name === 'patch') {
     return completeStateWrite(stateActions, { patch: action.arg }, { ...currentState, ...(action.arg as any) });
+  } else if (action.name === 'deepMerge') {
+    return completeStateWrite(stateActions, { payload: action.arg }, deepMerge(currentState, action.arg));
   } else if (action.name === 'increment') {
     return completeStateWrite(stateActions, { by: action.arg }, currentState + action.arg);
   } else if (action.name === 'removeAll') {

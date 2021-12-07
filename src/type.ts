@@ -13,6 +13,15 @@ export type DeepReadonly<T> =
   T extends object ? DeepReadonlyObject<T> :
   T;
 
+export type DeepMergePayloadObject<T> = Partial<{
+  [P in keyof T]: DeepMergePayload<T[P]>;
+}> & { [x: string]: any }
+
+export type DeepMergePayload<T> = 
+  T extends (infer R)[] ? Array<DeepMergePayload<R>> :
+  T extends object ? DeepMergePayloadObject<T> :
+  T;
+
 export type UpsertableObject<T, S> = WithOne<T> & WithMany<T> & { [K in keyof S]: S[K] extends object ? UpsertableObject<T, S[K]> : UpsertablePrimitive<T> }
 
 export interface UpsertablePrimitive<T> extends WithOne<T>, WithMany<T> {
@@ -22,7 +31,7 @@ type Payload<S> = S | (() => AnyAsync<S>);
 type UpdateResult<X extends AnyAsync<any>> = X extends (() => AnyAsync<infer R>) ? Future<R> : void;
 
 export type UpdatableObject<S, F extends FindOrFilter, Q extends QueryStatus> = (
-  Patch<S> & (
+  Patch<S> & DeepMerge<S> & (
     F extends 'isFind' ? Replace<S> : {}
   ) & ({
     [K in keyof S]: S[K] extends Array<any>
@@ -126,6 +135,10 @@ export interface Replace<S> {
 
 export interface ReplaceAll<S> {
   replaceAll<X extends Payload<S>>(replacement: X, options: UpdateOptions<X>): UpdateResult<X>;
+}
+
+export interface DeepMerge<S> {
+  deepMerge: <X extends Payload<DeepMergePayload<S>>>(toMerge: X, options: UpdateOptions<X>) => UpdateResult<X>;
 }
 
 export interface Invalidate {

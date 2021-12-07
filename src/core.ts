@@ -90,7 +90,7 @@ const readSelector = (storeName: string) => {
     return new Proxy(s, {
       get: function (target, prop: string) {
         stateActions = topLevel ? new Array<StateAction>() : stateActions;
-        if (['replace', 'patch', 'remove', 'increment', 'removeAll', 'replaceAll', 'patchAll', 'incrementAll', 'insertOne', 'insertMany', 'withOne', 'withMany'].includes(prop)) {
+        if (['replace', 'patch', 'deepMerge', 'remove', 'increment', 'removeAll', 'replaceAll', 'patchAll', 'incrementAll', 'insertOne', 'insertMany', 'withOne', 'withMany'].includes(prop)) {
           return processUpdate(storeName, stateActions, prop, changeListeners);
         } else if ('invalidateCache' === prop) {
           return () => {
