@@ -47,6 +47,7 @@ export const createComponentStore = <L>(
           removeFromApplicationStore();
         } else if ('setDeferredInstanceName' === prop) {
           return (instanceName: string | number) => {
+            if (options.instanceName !== Deferred) { throw new Error(errorMessages.CANNOT_SET_DEFERRED_INSTANCE_NAME_AGAIN); }
             appStore.cmp[options.componentName][instanceName].replace(componentStore.read());
             Array.from(((componentStore as any).getChangeListeners() as Map<StateAction[], (arg: any) => any>).entries())
               .forEach(([stateActions, performAction]) => {
@@ -78,6 +79,8 @@ export const createComponentStore = <L>(
       get: function (target, prop: string) {
         if (prop === 'removeFromApplicationStore') {
           removeFromApplicationStore();
+        } else if ('setDeferredInstanceName' === prop) {
+          if (options.instanceName !== Deferred) { throw new Error(errorMessages.CANNOT_SET_DEFERRED_INSTANCE_NAME); }
         }
         return appStore.cmp[options.componentName][options.instanceName][prop];
       }
@@ -108,7 +111,7 @@ const readSelector = (storeName: string) => {
               /* This can happen if a cache has already expired */
             }
           }
-        } else if ('removeFromApplicationStore' === prop) {
+        } else if (['removeFromApplicationStore', 'setDeferredInstanceName'].includes(prop)) {
           return () => { /* no-op */ }
         } else if ('getChangeListeners' === prop) {
           return () => changeListeners;

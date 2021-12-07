@@ -253,4 +253,17 @@ describe('component', () => {
     expect(root.read()).toEqual({ hello: 'hey', cmp: { } });
   })
 
+  it('should not allow setting a deferred instance name if the store was not initialized with a Deferred instanceName', () => {
+    const select = createApplicationStore({});
+    const componentStore = createComponentStore({}, { componentName: 'x', instanceName: 'x' });
+    expect(() => componentStore.setDeferredInstanceName('test')).toThrow(errorMessages.CANNOT_SET_DEFERRED_INSTANCE_NAME);
+  })
+
+  it('should not allow setting a deferred instance name if setDeferredInstanceName() was already called', () => {
+    const select = createApplicationStore({});
+    const componentStore = createComponentStore({}, { componentName: 'x', instanceName: Deferred });
+    componentStore.setDeferredInstanceName('test');
+    expect(() => componentStore.setDeferredInstanceName('test')).toThrow(errorMessages.CANNOT_SET_DEFERRED_INSTANCE_NAME_AGAIN);
+  })
+
 });
