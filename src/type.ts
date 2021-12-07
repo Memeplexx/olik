@@ -17,7 +17,7 @@ export type DeepMergePayloadObject<T> = Partial<{
   [P in keyof T]: DeepMergePayload<T[P]>;
 }> & { [x: string]: any }
 
-export type DeepMergePayload<T> = 
+export type DeepMergePayload<T> =
   T extends (infer R)[] ? Array<DeepMergePayload<R>> :
   T extends object ? DeepMergePayloadObject<T> :
   T;
@@ -234,11 +234,11 @@ export interface QuerySpec {
 
 export type ComponentStore<S>
   = Omit<S extends Array<any> ? UpdatableArray<S, 'isFilter', 'notQueried'>
-  : S extends object ? UpdatableObject<S, 'isFind', 'queried'>
-  : UpdatablePrimitive<S, 'isFind', 'queried'>, 'remove'> & {
-    removeFromApplicationStore: () => void,
-    setDeferredInstanceName: (instanceName: string | number) => void,
-  };
+    : S extends object ? UpdatableObject<S, 'isFind', 'queried'>
+    : UpdatablePrimitive<S, 'isFind', 'queried'>, 'remove'> & {
+      removeFromApplicationStore: () => void,
+      setDeferredInstanceName: (instanceName: string | number) => void,
+    };
 
 export type Store<S>
   = Omit<S extends Array<any> ? UpdatableArray<S, 'isFilter', 'notQueried'>
@@ -305,4 +305,9 @@ export interface OptionsForMakingAnApplicationStore {
   name?: string,
   replaceExistingStoreIfItExists?: boolean,
   disabledDevtoolsIntegration?: boolean,
+  /**
+   * Whether or not action stack-traces should be logged to the console.
+   * Internally, this makes use of `new Error().stack` to take advantage of sourcemaps
+   */
+  traceActions?: boolean,
 }

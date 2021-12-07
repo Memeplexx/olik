@@ -206,5 +206,26 @@ describe('derivation', () => {
     expect(memoCalcCount).toEqual(3);
   })
 
+  it('should invalidate a derivation', () => {
+    const select = createApplicationStore({
+      num: 0,
+      str: '',
+    });
+    let memoCalcCount = 0;
+    const mem = derive(
+      select.num,
+    ).with(thing => {
+      memoCalcCount++;
+      return thing;
+    });
+    mem.read();
+    mem.read();
+    expect(memoCalcCount).toEqual(1);
+    mem.invalidate();
+    mem.read();
+    mem.read();
+    expect(memoCalcCount).toEqual(2);
+  })
+
 });
 

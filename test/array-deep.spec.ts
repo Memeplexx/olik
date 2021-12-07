@@ -26,6 +26,10 @@ describe('array-deep', () => {
     select.arr
       .find.id.eq(2)
       .replace(payload);
+    expect(libState.currentAction).toEqual({
+      type: 'arr.find.id.eq(2).replace()',
+      payload,
+    });
     const stateAfter = select.read();
     expect(stateBefore).not.toEqual(stateAfter);
     expect(stateBefore.obj).toEqual(stateAfter.obj);
@@ -41,6 +45,10 @@ describe('array-deep', () => {
     select.arr
       .filter.id.in([1, 2])
       .patch(payload);
+    expect(libState.currentAction).toEqual({
+      type: 'arr.filter.id.in(1,2).patch()',
+      payload,
+    });
     expect(select.read()).toEqual({ arr: [{ id: 1, val: 1 }, { id: 2, val: 1 }, { id: 3, val: 0 }] });
   })
 
@@ -51,6 +59,10 @@ describe('array-deep', () => {
     select.arr
       .find.id.eq(2).val
       .replace(payload);
+    expect(libState.currentAction).toEqual({
+      type: 'arr.find.id.eq(2).val.replace()',
+      payload,
+    });
     expect(select.read()).toEqual({
       ...initialState,
       arr: [
