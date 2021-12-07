@@ -1,4 +1,4 @@
-import { createApplicationStore } from '.';
+import { createApplicationStore, derive } from '.';
 
 type Test = { num: number, arr: Array<number>, objArr: Array<{ num: number }>, obj: { num: number } };
 
@@ -136,6 +136,5 @@ function test() {
   // select.objArray.find.num.eq(3).useState();
 
   // derive(select.objArray).with(s => s).useState();
-
 
 }

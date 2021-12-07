@@ -12,8 +12,8 @@ export const updateState = (
   const oldState = libState.appStates[storeName];
   libState.appStates[storeName] = writeState(libState.appStates[storeName], { ...libState.appStates[storeName] }, stateActions, { index: 0 });
   changeListeners.forEach((listener, stateActions) => {
-    const selectedNewState = readState(libState.appStates[storeName], stateActions, { index: 0 }, false);
-    if (readState(oldState, stateActions, { index: 0 }, false) !== selectedNewState) {
+    const selectedNewState = readState(libState.appStates[storeName], stateActions, { index: 0 });
+    if (readState(oldState, stateActions, { index: 0 }) !== selectedNewState) {
       listener(selectedNewState);
     }
   });
@@ -146,7 +146,7 @@ export const processUpdate = (storeName: string, stateActions: StateAction[], pr
     } else {
       if (libState.insideTransaction) { throw new Error(errorMessages.ASYNC_PAYLOAD_INSIDE_TRANSACTION); }
       const readCurrentState = () => 
-        readState(libState.appStates[storeName], [...stateActions, { type: 'action', name: 'read' }], { index: 0 }, false);
+        readState(libState.appStates[storeName], [...stateActions, { type: 'action', name: 'read' }], { index: 0 });
       let state = { storeValue: readCurrentState(), error: null, isLoading: true, wasRejected: false, wasResolved: false } as FutureState<any>;
       if (libState.appStates[storeName].cache?.[stateActions.map(sa => sa.actionType).join('.')]) {
         const result = new Proxy(new Promise<any>(resolve => resolve(readCurrentState())), {
