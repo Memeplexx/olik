@@ -112,18 +112,30 @@ export interface RemoveAll {
 }
 
 export interface InsertOne<S> {
+  /**
+   * Insert the supplied array element into the selected array node. 
+   */
   insertOne<X extends Payload<S>>(element: X, options: UpdateOptions<X>): UpdateResult<X>;
 }
 
 export interface InsertMany<S> {
+  /**
+   * Insert the supplied array into the selected array node. 
+   */
   insertMany<X extends Payload<S>>(element: X, options: UpdateOptions<X>): UpdateResult<X>;
 }
 
 export interface Patch<S> {
+  /**
+   * Partially update the selected object node with the supplied state.
+   */
   patch<X extends Payload<Partial<S>>>(patch: X, options: UpdateOptions<X>): UpdateResult<X>;
 }
 
 export interface PatchAll<S> {
+  /**
+   * Partially update all the selected object nodes with the supplied state.
+   */
   patchAll<X extends Payload<Partial<S>>>(patch: X, options: UpdateOptions<X>): UpdateResult<X>;
 }
 
@@ -135,14 +147,23 @@ export interface Increment {
 }
 
 export interface IncrementAll {
+  /**
+   * Add the supplied number onto all the selected nodes. 
+   */
   incrementAll<X extends Payload<number>>(by: X, options: UpdateOptions<X>): UpdateResult<X>;
 }
 
 export interface Replace<S> {
+  /**
+   * Replace the selected node with the supplied state.
+   */
   replace<X extends Payload<S>>(replacement: X, options: UpdateOptions<X>): UpdateResult<X>;
 }
 
 export interface ReplaceAll<S> {
+  /**
+   * Replace all the selected nodes with the supplied state.
+   */
   replaceAll<X extends Payload<S>>(replacement: X, options: UpdateOptions<X>): UpdateResult<X>;
 }
 
@@ -315,17 +336,31 @@ export type OptionsForMakingAComponentStore = {
    * Internally, this makes use of `new Error().stack` to take advantage of sourcemaps
    */
   traceActions?: boolean,
-
+  /**
+   * The name that will identify your store in the devtools extension.
+   * The default value is `document.title`.
+   */
   applicationStoreName?: string;
 };
 
 export interface OptionsForMakingAnApplicationStore {
+  /**
+   * The name that will identify your store in the devtools extension.
+   * The default value is `document.title`.
+   */
   name?: string,
+  /**
+   * If an existing store exists with the same `name`, and `replaceExistingStoreIfItExists` is set to  
+   * * `true`, the new store state will be completely `replace()` the existing store state.  
+   * * `false`, the new store state will be `deepMerge()`ed with the existing store state.  
+   * The default value is `true`.
+   */
   replaceExistingStoreIfItExists?: boolean,
-  disabledDevtoolsIntegration?: boolean,
   /**
    * Whether or not action stack-traces should be logged to the console.
    * Internally, this makes use of `new Error().stack` to take advantage of sourcemaps
    */
   traceActions?: boolean,
+
+  disabledDevtoolsIntegration?: boolean,
 }

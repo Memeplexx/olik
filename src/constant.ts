@@ -6,13 +6,13 @@ export const errorMessages = {
   ASYNC_PAYLOAD_INSIDE_TRANSACTION: 'Transactions do not currently support asynchronous payloads',
   DEVTOOL_DISPATCHED_INVALID_JSON: 'Please dispatch a valid object and ensure that all keys are enclosed in double-quotes',
   DEVTOOL_DISPATCHED_WITH_NO_ACTION: (type: string) => `Cannot dispatch ${type} because there is no action to perform, eg. replace()`,
-  INVALID_CONTAINER_FOR_COMPONENT_STORES: `Could not to attach a component store to your application store because the root of your application store is either a primitive or an array`,
+  INVALID_CONTAINER_FOR_COMPONENT_STORES: `The state which your application store manages must be an object in order for it to host your component store`,
   INVALID_STATE_INPUT: (illegal: any) => `State must be serializable as JSON. Value of '${illegal.toString()}' is not permitted`,
 }
 
 export const libState = {
   appStates: {} as { [storeName: string]: any },
-  appStores: {} as { [storeName: string]: any }, // note: don't change 'any' to Store<any> else the typescript engined seems to slow right down.
+  appStores: {} as { [storeName: string]: any }, // note: don't change 'any' to Store<any> else the typescript engine seems to take strain.
   devtoolsRegistry: {} as { [name: string]: DevtoolsInstance },
   currentAction: {} as { [key: string]: any },
   insideTransaction: false,
