@@ -1,3 +1,5 @@
+import { errorMessages } from "./constant";
+
 export const toIsoStringInCurrentTz = (date: Date) => {
   const tzo = -date.getTimezoneOffset();
   const dif = tzo >= 0 ? '+' : '-';
@@ -43,4 +45,25 @@ export const deepMerge = (old: any, payload: any) => {
     return output;
   }
   return mergeDeep(old, payload);
+}
+
+export const validateState = (state: any) => {
+  const throwError = (illegal: any) => {
+    throw new Error(errorMessages.INVALID_STATE_INPUT(illegal));
+  };
+  if (
+    state !== null
+    && !['boolean', 'number', 'string'].some(type => typeof state === type)
+  ) {
+    if (!Array.isArray(state)) {
+      if (typeof state !== "object") {
+        throwError(state);
+      }
+      const proto = Object.getPrototypeOf(state);
+      if (proto != null && proto !== Object.prototype) {
+        throwError(state);
+      }
+    }
+    Object.keys(state).forEach(key => validateState(state[key]));
+  }
 }

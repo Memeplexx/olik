@@ -5,8 +5,6 @@ import { Deferred, Store } from '../src/type';
 
 describe('component', () => {
 
-  const spyInfo = jest.spyOn(console, 'info');
-
   beforeAll(() => {
     libState.windowObject = windowAugmentedWithReduxDevtoolsImpl;
   });

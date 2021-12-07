@@ -2,7 +2,7 @@ import { augmentations, errorMessages, libState, testState } from './constant';
 import { integrateStoreWithReduxDevtools } from './devtools';
 import { readState } from './read';
 import { Deferred, OptionsForMakingAComponentStore, OptionsForMakingAnApplicationStore, StateAction, Store, ComponentStore } from './type';
-import { deepFreeze } from './utility';
+import { deepFreeze, validateState } from './utility';
 import { processUpdate, updateState } from './write';
 
 export const createApplicationStore = <S>(
@@ -10,6 +10,7 @@ export const createApplicationStore = <S>(
   options: OptionsForMakingAnApplicationStore
     = { name: document.title, replaceExistingStoreIfItExists: true, disabledDevtoolsIntegration: false }
 ): Store<S> => {
+  validateState(initialState);
   libState.appStates[options.name!] = deepFreeze(initialState);
   testState.logLevel = 'none';
   const store = readSelector(options.name!);
@@ -21,9 +22,10 @@ export const createApplicationStore = <S>(
 }
 
 export const createComponentStore = <L>(
-  state: L,
+  initialState: L,
   options: OptionsForMakingAComponentStore,
 ): ComponentStore<L> => {
+  validateState(initialState);
   if (!options.applicationStoreName) { options.applicationStoreName = document.title };
   const appStore = libState.appStores[options.applicationStoreName!] as any;
   const removeFromApplicationStore = () => {
@@ -36,9 +38,9 @@ export const createComponentStore = <L>(
   }
   if (!libState.appStores[options.applicationStoreName]) {
     const devtoolsStoreName = `${options.componentName} : ${options.instanceName as string}`;
-    return createApplicationStore(state, { name: devtoolsStoreName }) as any as ComponentStore<L>;
+    return createApplicationStore(initialState, { name: devtoolsStoreName }) as any as ComponentStore<L>;
   } else if (options.instanceName === Deferred) {
-    const componentStore = createApplicationStore(state, { disabledDevtoolsIntegration: true }) as any as ComponentStore<L>;
+    const componentStore = createApplicationStore(initialState, { disabledDevtoolsIntegration: true }) as any as ComponentStore<L>;
     return new Proxy({}, {
       get: function (target, prop: string) {
         if ('removeFromApplicationStore' === prop) {
@@ -71,7 +73,7 @@ export const createComponentStore = <L>(
     if (['number', 'boolean', 'string'].some(type => typeof (wrapperState) === type) || Array.isArray(wrapperState)) {
       throw new Error(errorMessages.INVALID_CONTAINER_FOR_COMPONENT_STORES);
     }
-    appStore.cmp[options.componentName][options.instanceName].replace(state);
+    appStore.cmp[options.componentName][options.instanceName].replace(initialState);
     return new Proxy({}, {
       get: function (target, prop: string) {
         if (prop === 'removeFromApplicationStore') {
