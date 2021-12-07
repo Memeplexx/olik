@@ -95,11 +95,16 @@ const readSelector = (storeName: string) => {
         } else if ('invalidateCache' === prop) {
           return () => {
             const actionType = stateActions.map(sa => sa.actionType).join('.');
-            updateState(storeName, [
+            const newStateActions = [
               { type: 'property', name: 'cache', actionType: 'cache' },
               { type: 'property', name: actionType, actionType: actionType },
               { type: 'action', name: 'remove', actionType: 'remove()' },
-            ], changeListeners);
+            ] as StateAction[];
+            try {
+              updateState(storeName, newStateActions, changeListeners);
+            } catch (e) {
+              /* This can happen if a cache has already expired */
+            }
           }
         } else if ('removeFromApplicationStore' === prop) {
           return () => { /* no-op */ }

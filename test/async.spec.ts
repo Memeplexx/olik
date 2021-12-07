@@ -46,11 +46,11 @@ describe('async', () => {
     expect(promiseCount).toEqual(1);
   })
 
-  // it('should be able to invalidate a cache even if one does not yet exist', () => {
-  //   const select = createApplicationStore({ num: 0 });
-  //   select.num
-  //     .invalidateCache();
-  // })
+  it('should be able to invalidate a cache even if one does not yet exist', () => {
+    const select = createApplicationStore({ num: 0 });
+    select.num
+      .invalidateCache();
+  })
 
   it('should be able to update state before the promise has settled', done => {
     const select = createApplicationStore({ num: 0 });
