@@ -2,8 +2,19 @@ import { createApplicationStore, derive } from '.';
 
 type Test = { num: number, arr: Array<number>, objArr: Array<{ num: number }>, obj: { num: number } };
 
+interface State {
+  number: number,
+  string: string,
+  array: number[],
+  arrayStr: string[],
+  arrayBool: boolean[],
+  arrayTuple: ('hello' | 'world')[],
+  objArray: Test[],
+  object: { one: string, two: string, three: number }
+}
+
 function test() {
-  const select = createApplicationStore({
+  const select = createApplicationStore<State>({
     number: 0,
     string: '',
     array: new Array<number>(),
@@ -137,4 +148,14 @@ function test() {
 
   // derive(select.objArray).with(s => s).useState();
 
+  
+
 }
+
+// const updateTodoStatus = (id: number, status: TodoStatus) => {
+//   select.todos
+//     .find.id.eq(id)
+//     .status.replace(status);
+
+//   todos.find.id.eq(3).status.replace()
+// }

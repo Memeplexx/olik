@@ -10,7 +10,7 @@ export const errorMessages = {
   INVALID_STATE_INPUT: (illegal: any) => `State must be serializable as JSON. Value of '${illegal.toString()}' is not permitted`,
   CANNOT_SET_DEFERRED_INSTANCE_NAME: 'Cannot set a deferred instance name unless the component store was initialized with an instanceName of Deferred',
   CANNOT_SET_DEFERRED_INSTANCE_NAME_AGAIN: 'Cannot invoke setDeferredInstanceName() more than once',
-}
+} as const;
 
 export const libState = {
   appStates: {} as { [storeName: string]: any },
