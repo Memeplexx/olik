@@ -1,17 +1,17 @@
-import { createApplicationStore } from '../src';
+import { createStore } from '../src';
 import { libState, testState } from '../src/constant';
 
 describe('top-level-primitive', () => {
 
-  const initialState = 0;
+  const name = 'AppStore';
+  const state = 0;
 
   beforeEach(() => {
-    libState.appStates = {};
     testState.logLevel = 'none';
   })
 
   it('should replace a value', () => {
-    const select = createApplicationStore(initialState);
+    const select = createStore({ name, state });
     const payload = 1;
     select
       .replace(payload);
@@ -20,7 +20,7 @@ describe('top-level-primitive', () => {
   })
 
   it('should increment a value', () => {
-    const select = createApplicationStore(initialState);
+    const select = createStore({ name, state });
     const payload = 1;
     select
       .increment(payload);

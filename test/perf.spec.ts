@@ -1,16 +1,18 @@
 
-import { createApplicationStore } from '../src/index';
+import { createStore } from '../src/index';
 import { libState, testState } from '../src/constant';
 
 describe.skip('Performance', () => {
 
+  const name = 'AppStore';
+
   beforeEach(() => {
-    libState.appStates = {};
     testState.logLevel = 'none';
   })
 
   it('', () => {
-    const select = createApplicationStore({ arr: [{ id: 1, val: '', obj: { num: 0 } }, { id: 2, val: '', obj: { num: 0 } }], obj: { num: 0 } });
+    const state = { arr: [{ id: 1, val: '', obj: { num: 0 } }, { id: 2, val: '', obj: { num: 0 } }], obj: { num: 0 } };
+    const select = createStore({ name, state });
     const before = performance.now();
     for (let i = 0; i < 100; i++) {
       select.arr
@@ -21,7 +23,8 @@ describe.skip('Performance', () => {
   })
 
   it('', () => {
-    const select = createApplicationStore({ num: 0, str: '' });
+    const state = { num: 0, str: '' };
+    const select = createStore({ name, state });
     const before = performance.now();
     for (let i = 0; i < 100; i++) {
       select.num.replace(i);

@@ -1,16 +1,17 @@
-import { createApplicationStore } from '../src';
-import { libState, testState, errorMessages } from '../src/constant';
-import { Store } from '../src/type';
+import { createStore } from '../src';
+import { errorMessages, testState } from '../src/constant';
 
 describe('misc', () => {
 
+  const name = 'AppStore';
+
   beforeEach(() => {
-    libState.appStates = {};
     testState.logLevel = 'none';
   })
 
   it('should work with half-finished writes intermixed with reads', () => {
-    const select = createApplicationStore({ num: 0, str: '', bool: false });
+    const state = { num: 0, str: '', bool: false };
+    const select = createStore({ name, state });
     const changeNum = select.num;
     const changeBool = select.bool;
     select.str.replace('x');
@@ -20,7 +21,8 @@ describe('misc', () => {
   })
 
   it('should not allow sets or maps', () => {
-    expect(() => createApplicationStore({ set: new Set() }) as any).toThrow(errorMessages.INVALID_STATE_INPUT(new Set().toString()));
+    const state = { set: new Set() };
+    expect(() => createStore({ name, state }) as any).toThrow(errorMessages.INVALID_STATE_INPUT(new Set().toString()));
   })
 
 });

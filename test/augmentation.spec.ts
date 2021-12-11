@@ -1,12 +1,13 @@
 import { Observable } from 'rxjs';
 
-import { augment, createApplicationStore, derive } from '../src';
+import { augment, createStore, derive } from '../src';
 import { libState, testState } from '../src/constant';
 
 describe('augmentation', () => {
 
+  const name = 'AppStore';
+
   beforeEach(() => {
-    libState.appStates = {};
     testState.logLevel = 'none';
   })
 
@@ -16,7 +17,8 @@ describe('augmentation', () => {
         myThing: input => () => input.read(),
       }
     })
-    const select = createApplicationStore({ num: 42 });
+    const state = { num: 42 };
+    const select = createStore({ name, state });
     const res = (select.num as any).myThing();
     expect(res).toEqual(42);
   })
@@ -27,7 +29,8 @@ describe('augmentation', () => {
         myThing: input => () => input.read(),
       }
     })
-    const select = createApplicationStore({ array: [42] });
+    const state = { array: [42] };
+    const select = createStore({ name, state });
     const res = (select.array as any).myThing();
     expect(res).toEqual([42]);
   })
@@ -38,7 +41,8 @@ describe('augmentation', () => {
         myThing: input => () => input.read(),
       }
     })
-    const select = createApplicationStore({ array: [42] });
+    const state = { array: [42] };
+    const select = createStore({ name, state });
     const res = (select.array.find.eq(42) as any).myThing();
     expect(res).toEqual(42);
   })
@@ -49,7 +53,8 @@ describe('augmentation', () => {
         myThing: selection => () => selection,
       }
     })
-    const select = createApplicationStore({ num: 42 });
+    const state = { num: 42 };
+    const select = createStore({ name, state });
     const fetch = () => new Promise(resolve => setTimeout(() => resolve(43), 5))
     const res = (select.num as any).replace(fetch).myThing();
     res.then((r: any) => {
@@ -64,7 +69,8 @@ describe('augmentation', () => {
         myThing: selection => () => selection,
       }
     })
-    const select = createApplicationStore({ array: [42] });
+    const state = { array: [42] };
+    const select = createStore({ name, state });
     const fetch = () => new Promise(resolve => setTimeout(() => resolve([43]), 5))
     const res = (select.array as any).replace(fetch).myThing();
     res.then((r: any) => {
@@ -79,7 +85,8 @@ describe('augmentation', () => {
         myThing: selection => () => selection,
       }
     })
-    const select = createApplicationStore({ array: [{id: 1, num: 1}] });
+    const state = { array: [{id: 1, num: 1}] };
+    const select = createStore({ name, state });
     const fetch = () => new Promise<{ id: number, num: number }>(resolve => setTimeout(() => resolve({ id: 1, num: 2 }), 5));
     const res = (select.array.find.id.eq(1).replace(fetch) as any).myThing();
     res.then((r: any) => {
@@ -92,7 +99,8 @@ describe('augmentation', () => {
     augment({
       async: fnReturningFutureAugmentation => fnReturningFutureAugmentation().toPromise(),
     })
-    const select = createApplicationStore({ thing: '' });
+    const state = { thing: '' };
+    const select = createStore({ name, state });
     const fetch = () => new Observable(observer => {
       observer.next('test');
       observer.complete();
@@ -109,7 +117,8 @@ describe('augmentation', () => {
         myThing: input => () => input.read()
       }
     })
-    const select = createApplicationStore({ one: 'abc', two: false });
+    const state = { one: 'abc', two: false };
+    const select = createStore({ name, state });
     const result = (derive(
       select.one,
       select.two,

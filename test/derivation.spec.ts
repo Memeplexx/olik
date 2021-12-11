@@ -1,18 +1,20 @@
-import { createApplicationStore, derive } from '../src';
+import { createStore, derive } from '../src';
 import { libState, testState } from '../src/constant';
 
 describe('derivation', () => {
 
+  const name = 'AppStore';
+
   beforeEach(() => {
-    libState.appStates = {};
     testState.logLevel = 'none';
   })
 
   it('should support derivations', () => {
-    const select = createApplicationStore({
+    const state = {
       array: ['1', '2'],
       counter: 3,
-    });
+    };
+    const select = createStore({ name, state });
     const mem = derive(
       select.array,
       select.counter,
@@ -24,10 +26,11 @@ describe('derivation', () => {
   })
 
   it('should cache correctly', () => {
-    const select = createApplicationStore({
+    const state = {
       array: new Array<string>(),
       counter: 3,
-    });
+    };
+    const select = createStore({ name, state });
     let recalculating = 0;
     let eventReceived = 0;
     const mem = derive(
@@ -59,11 +62,12 @@ describe('derivation', () => {
   })
 
   it('should emit events only when required', () => {
-    const select = createApplicationStore({
+    const state = {
       array: new Array<string>(),
       counter: 3,
       string: '',
-    });
+    };
+    const select = createStore({ name, state });
     let recalculating = 0;
     let eventReceived = 0;
     const mem = derive(
@@ -82,10 +86,11 @@ describe('derivation', () => {
   })
 
   it('should correctly unsubscribe', () => {
-    const select = createApplicationStore({
+    const state = {
       one: 'x',
       two: 0,
-    });
+    };
+    const select = createStore({ name, state });
     const mem = derive(
       select.one,
       select.two,
@@ -104,10 +109,11 @@ describe('derivation', () => {
   })
 
   it('should derive on specific array element', () => {
-    const select = createApplicationStore({
+    const state = {
       array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
       object: { hello: 'world' },
-    });
+    };
+    const select = createStore({ name, state });
     let recalculating = 0;
     const mem = derive(
       select.array
@@ -127,7 +133,8 @@ describe('derivation', () => {
   })
 
   it('should be able to derive from using a derivation as an argument', () => {
-    const select = createApplicationStore({ num: 0, str: 'x' });
+    const state = { num: 0, str: 'x' };
+    const select = createStore({ name, state });
     let originalMemoCalcCount = 0;
     const mem = derive(
       select.num,
@@ -147,9 +154,10 @@ describe('derivation', () => {
   })
 
   it('should derive with a find', () => {
-    const select = createApplicationStore({
+    const state = {
       array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
-    });
+    };
+    const select = createStore({ name, state });
     let memoCalcCount = 0;
     const mem = derive(
       select.array.find.id.eq(2),
@@ -167,9 +175,10 @@ describe('derivation', () => {
   })
 
   it('should derive with a filter', () => {
-    const select = createApplicationStore({
+    const state = {
       array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
-    });
+    };
+    const select = createStore({ name, state });
     let memoCalcCount = 0;
     const mem = derive(
       select.array.filter.id.lte(2),
@@ -191,10 +200,11 @@ describe('derivation', () => {
   })
 
   it('should invalidate a derivation', () => {
-    const select = createApplicationStore({
+    const state = {
       num: 0,
       str: '',
-    });
+    };
+    const select = createStore({ name, state });
     let memoCalcCount = 0;
     const mem = derive(
       select.num,

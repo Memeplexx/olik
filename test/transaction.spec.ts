@@ -1,15 +1,17 @@
-import { createApplicationStore, transact } from '../src';
+import { createStore, transact } from '../src';
 import { errorMessages, libState, testState } from '../src/constant';
 
 describe('transaction', () => {
 
+  const name = 'AppStore';
+
   beforeEach(() => {
-    libState.appStates = {};
     testState.logLevel = 'none';
   })
 
   it('should support transactions', () => {
-    const select = createApplicationStore({ num: 0, str: '', bool: false });
+    const state = { num: 0, str: '', bool: false };
+    const select = createStore({ name, state });
     transact(
       () => select.num.replace(1),
       () => select.str.replace('x'),
@@ -25,7 +27,8 @@ describe('transaction', () => {
   })
 
   it('should support transactions with only 1 action', () => {
-    const select = createApplicationStore({ num: 0 });
+    const state = { num: 0 };
+    const select = createStore({ name, state });
     const payload = 1;
     transact(() => select.num.replace(payload));
     expect(select.num.read()).toEqual(payload);
@@ -33,7 +36,8 @@ describe('transaction', () => {
   })
 
   it('should not support transactions if one of the actions has an async payload', () => {
-    const select = createApplicationStore({ num: 0, str: '', bool: false });
+    const state = { num: 0, str: '', bool: false };
+    const select = createStore({ name, state });
     expect(() => transact(
       () => select.num.replace(() => new Promise(resolve => resolve(1))),
       () => select.str.replace('x'),

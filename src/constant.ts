@@ -6,14 +6,13 @@ export const errorMessages = {
   ASYNC_PAYLOAD_INSIDE_TRANSACTION: 'Transactions do not currently support asynchronous payloads',
   DEVTOOL_DISPATCHED_INVALID_JSON: 'Please dispatch a valid object and ensure that all keys are enclosed in double-quotes',
   DEVTOOL_DISPATCHED_WITH_NO_ACTION: (type: string) => `Cannot dispatch ${type} because there is no action to perform, eg. replace()`,
-  INVALID_CONTAINER_FOR_COMPONENT_STORES: `The state which your application store manages must be an object in order for it to host your component store`,
+  INVALID_CONTAINER_FOR_COMPONENT_STORES: `The state which your container store manages must be an object in order for it to host your nested store`,
   INVALID_STATE_INPUT: (illegal: any) => `State must be serializable as JSON. Value of '${illegal.toString()}' is not permitted`,
   CANNOT_SET_DEFERRED_INSTANCE_NAME: 'Cannot set a deferred instance name unless the component store was initialized with an instanceName of Deferred',
   CANNOT_SET_DEFERRED_INSTANCE_NAME_AGAIN: 'Cannot invoke setDeferredInstanceName() more than once',
 } as const;
 
 export const libState = {
-  appStates: {} as { [storeName: string]: any },
   appStores: {} as { [storeName: string]: any }, // note: don't change 'any' to Store<any> else the typescript engine seems to take strain.
   devtoolsRegistry: {} as { [name: string]: DevtoolsInstance },
   currentAction: {} as { [key: string]: any },

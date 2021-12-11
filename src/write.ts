@@ -9,10 +9,10 @@ export const updateState = (
   stateActions: StateAction[],
   changeListeners: Map<StateAction[], (arg: any) => any>,
 ) => {
-  const oldState = libState.appStates[storeName];
-  libState.appStates[storeName] = writeState(libState.appStates[storeName], { ...libState.appStates[storeName] }, stateActions, { index: 0 });
+  const oldState = libState.appStores[storeName].getState();
+  libState.appStores[storeName].setState(writeState(oldState, { ...oldState }, stateActions, { index: 0 }));
   changeListeners.forEach((listener, stateActions) => {
-    const selectedNewState = readState(libState.appStates[storeName], stateActions, { index: 0 });
+    const selectedNewState = readState(libState.appStores[storeName].getState(), stateActions, { index: 0 });
     if (readState(oldState, stateActions, { index: 0 }) !== selectedNewState) {
       listener(selectedNewState);
     }
@@ -145,10 +145,10 @@ export const processUpdate = (storeName: string, stateActions: StateAction[], pr
       updateState(storeName, [...stateActions, { type: 'action', name: prop, arg, actionType: `${prop}()` }], changeListeners);
     } else {
       if (libState.insideTransaction) { throw new Error(errorMessages.ASYNC_PAYLOAD_INSIDE_TRANSACTION); }
-      const readCurrentState = () => 
-        readState(libState.appStates[storeName], [...stateActions, { type: 'action', name: 'read' }], { index: 0 });
+      const readCurrentState = () =>
+        readState(libState.appStores[storeName].getState(), [...stateActions, { type: 'action', name: 'read' }], { index: 0 });
       let state = { storeValue: readCurrentState(), error: null, isLoading: true, wasRejected: false, wasResolved: false } as FutureState<any>;
-      if (libState.appStates[storeName].cache?.[stateActions.map(sa => sa.actionType).join('.')]) {
+      if (libState.appStores[storeName].getState().cache?.[stateActions.map(sa => sa.actionType).join('.')]) {
         const result = new Proxy(new Promise<any>(resolve => resolve(readCurrentState())), {
           get: (target: any, prop: any) => {
             if (prop === 'then' || prop === 'catch' || prop === 'finally') {
@@ -184,8 +184,8 @@ export const processUpdate = (storeName: string, stateActions: StateAction[], pr
               ] as StateAction[];
               updateState(storeName, [...actions, { type: 'action', name: 'replace', arg: toIsoStringInCurrentTz(new Date()), actionType: 'replace()' }], changeListeners);
               setTimeout(() => {
-                try { 
-                  updateState(storeName, [...actions, { type: 'action', name: 'remove', actionType: 'remove()' }], changeListeners) 
+                try {
+                  updateState(storeName, [...actions, { type: 'action', name: 'remove', actionType: 'remove()' }], changeListeners)
                 } catch (e) {
                   // Ignoring. This may happen due to the user manually invalidating a cache. If that has happened, we don't want an error to be thrown.
                 }

@@ -374,19 +374,5 @@ export interface OptionsForMakingAnApplicationStore {
    * The name that will identify your store in the devtools extension.
    * The default value is `document.title`.
    */
-  name?: string,
-  /**
-   * If an existing store exists with the same `name`, and `replaceExistingStoreIfItExists` is set to  
-   * * `true`, the new store state will be completely `replace()` the existing store state.  
-   * * `false`, the new store state will be `deepMerge()`ed with the existing store state.  
-   * The default value is `true`.
-   */
-  replaceExistingStoreIfItExists?: boolean,
-  /**
-   * Whether or not action stack-traces should be logged to the console.
-   * Internally, this makes use of `new Error().stack` to take advantage of sourcemaps
-   */
-  traceActions?: boolean,
-
-  disabledDevtoolsIntegration?: boolean,
+  name: string,
 }

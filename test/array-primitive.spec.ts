@@ -1,17 +1,17 @@
-import { createApplicationStore } from '../src';
+import { createStore } from '../src';
 import { libState, testState } from '../src/constant';
 
 describe('array-primitive', () => {
 
-  const initialState = [1, 2, 3];
+  const name = 'AppStore';
+  const state = [1, 2, 3];
 
   beforeEach(() => {
-    libState.appStates = {};
     testState.logLevel = 'none';
   })
 
   it('should replace all elements', () => {
-    const select = createApplicationStore(initialState);
+    const select = createStore({ name, state });
     const payload = [4, 5, 6];
     select
       .replaceAll(payload);
@@ -20,7 +20,7 @@ describe('array-primitive', () => {
   })
 
   it('should remove all elements', () => {
-    const select = createApplicationStore(initialState);
+    const select = createStore({ name, state });
     select
       .removeAll();
     expect(libState.currentAction).toEqual({ type: 'removeAll()' });
@@ -28,34 +28,34 @@ describe('array-primitive', () => {
   })
 
   it('should increment all elements', () => {
-    const select = createApplicationStore(initialState);
+    const select = createStore({ name, state });
     const payload = 1;
     select
       .incrementAll(payload);
     expect(libState.currentAction).toEqual({ type: 'incrementAll()', payload });
-    expect(select.read()).toEqual(initialState.map(e => e + 1));
+    expect(select.read()).toEqual(state.map(e => e + 1));
   })
 
   it('should be able to insert one primitive', () => {
-    const select = createApplicationStore(initialState);
+    const select = createStore({ name, state });
     const payload = 4;
     select
       .insertOne(payload);
     expect(libState.currentAction).toEqual({ type: 'insertOne()', payload });
-    expect(select.read()).toEqual([...initialState, payload]);
+    expect(select.read()).toEqual([...state, payload]);
   })
 
   it('should be able to insert many primitives', () => {
-    const select = createApplicationStore(initialState);
+    const select = createStore({ name, state });
     const payload = [4, 5, 6];
     select
       .insertMany(payload);
     expect(libState.currentAction).toEqual({ type: 'insertMany()', payload });
-    expect(select.read()).toEqual([...initialState, ...payload]);
+    expect(select.read()).toEqual([...state, ...payload]);
   })
 
   it('should find an element and replace it', () => {
-    const select = createApplicationStore(initialState);
+    const select = createStore({ name, state });
     const payload = 9;
     select
       .find.eq(2)
@@ -65,7 +65,7 @@ describe('array-primitive', () => {
   })
 
   it('should find an element and remove it', () => {
-    const select = createApplicationStore(initialState);
+    const select = createStore({ name, state });
     select
       .find.eq(2)
       .remove();
@@ -74,7 +74,7 @@ describe('array-primitive', () => {
   })
 
   it('should find an element and increment it', () => {
-    const select = createApplicationStore(initialState);
+    const select = createStore({ name, state });
     const payload = 2;
     select
       .find.eq(2)
@@ -84,7 +84,7 @@ describe('array-primitive', () => {
   })
 
   it('should find an element by one clause or another and replace it', () => {
-    const select = createApplicationStore(initialState);
+    const select = createStore({ name, state });
     const payload = 9;
     select
       .find.eq(1).or.eq(2)
@@ -94,7 +94,7 @@ describe('array-primitive', () => {
   })
 
   it('should find an element by one clause or another and remove it', () => {
-    const select = createApplicationStore(initialState);
+    const select = createStore({ name, state });
     select
       .find.eq(1).or.eq(2)
       .remove();
@@ -103,7 +103,7 @@ describe('array-primitive', () => {
   })
 
   it('should find an element by one clause or another and increment it', () => {
-    const select = createApplicationStore(initialState);
+    const select = createStore({ name, state });
     const payload = 1;
     select
       .find.eq(1).or.eq(2)
@@ -113,7 +113,7 @@ describe('array-primitive', () => {
   })
 
   it('should find an element by one clause and another and replace it', () => {
-    const select = createApplicationStore(initialState);
+    const select = createStore({ name, state });
     const payload = 9;
     select
       .find.gt(1).and.lt(3)
@@ -123,7 +123,7 @@ describe('array-primitive', () => {
   })
 
   it('should find an element by one clause and another and remove it', () => {
-    const select = createApplicationStore(initialState);
+    const select = createStore({ name, state });
     select
       .find.gt(1).and.lt(3)
       .remove();
@@ -132,7 +132,7 @@ describe('array-primitive', () => {
   })
 
   it('should find an element by one clause and another and increment it', () => {
-    const select = createApplicationStore(initialState);
+    const select = createStore({ name, state });
     const payload = 1;
     select
       .find.eq(1).and.lt(2)
@@ -142,7 +142,7 @@ describe('array-primitive', () => {
   })
 
   it('should filter elements and remove them', () => {
-    const select = createApplicationStore(initialState);
+    const select = createStore({ name, state });
     select
       .filter.gt(1)
       .remove();
@@ -151,7 +151,7 @@ describe('array-primitive', () => {
   })
 
   it('should filter elements and increment them', () => {
-    const select = createApplicationStore(initialState);
+    const select = createStore({ name, state });
     const payload = 1;
     select
       .filter.gt(1)
@@ -161,7 +161,7 @@ describe('array-primitive', () => {
   })
 
   it('should filter elements by one clause or another and remove them', () => {
-    const select = createApplicationStore(initialState);
+    const select = createStore({ name, state });
     select
       .filter.eq(1).or.eq(2)
       .remove();
@@ -170,7 +170,7 @@ describe('array-primitive', () => {
   })
 
   it('should filter elements by one clause or another and increment them', () => {
-    const select = createApplicationStore(initialState);
+    const select = createStore({ name, state });
     const payload = 1;
     select
       .filter.eq(1).or.eq(2)
@@ -180,7 +180,7 @@ describe('array-primitive', () => {
   })
 
   it('should filter elements by one clause and another and remove them', () => {
-    const select = createApplicationStore(initialState);
+    const select = createStore({ name, state });
     select
       .filter.gt(0).and.lt(3)
       .remove();
@@ -189,7 +189,7 @@ describe('array-primitive', () => {
   })
 
   it('should filter elements by one clause and another and increment them', () => {
-    const select = createApplicationStore(initialState);
+    const select = createStore({ name, state });
     const payload = 1;
     select
       .filter.gt(0).and.gt(1)

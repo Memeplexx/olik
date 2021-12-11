@@ -1,4 +1,4 @@
-import { createApplicationStore, derive } from '.';
+import { createStore, derive } from '.';
 
 type Test = { num: number, arr: Array<number>, objArr: Array<{ num: number }>, obj: { num: number } };
 
@@ -14,15 +14,18 @@ interface State {
 }
 
 function test() {
-  const select = createApplicationStore<State>({
-    number: 0,
-    string: '',
-    array: new Array<number>(),
-    arrayStr: new Array<string>(),
-    arrayBool: new Array<boolean>(),
-    arrayTuple: new Array<'hello' | 'world'>(),
-    objArray: new Array<Test>(),
-    object: { one: '', two: '', three: 0 }
+  const select = createStore<State>({
+    name: 'test',
+    state: {
+      number: 0,
+      string: '',
+      array: new Array<number>(),
+      arrayStr: new Array<string>(),
+      arrayBool: new Array<boolean>(),
+      arrayTuple: new Array<'hello' | 'world'>(),
+      objArray: new Array<Test>(),
+      object: { one: '', two: '', three: 0 }
+    }
   });
 
   select.objArray
@@ -148,7 +151,7 @@ function test() {
 
   // derive(select.objArray).with(s => s).useState();
 
-  
+
 
 }
 

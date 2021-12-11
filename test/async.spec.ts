@@ -1,19 +1,21 @@
 
 import { errorMessages, libState, testState } from '../src/constant';
-import { createApplicationStore } from '../src';
+import { createStore } from '../src';
 
 const resolve = <T>(data: T, timeout = 10) => () => new Promise<T>(resolve => setTimeout(() => resolve(data), timeout));
 const reject = <T>(rejection: any, timeout = 10) => () => new Promise<T>((resolve, reject) => setTimeout(() => reject(rejection), timeout));
 
 describe('async', () => {
 
+  const name = 'AppStore';
+
   beforeEach(() => {
-    libState.appStates = {};
     testState.logLevel = 'none';
   })
 
   it('should perform a basic async update', async () => {
-    const select = createApplicationStore({ num: 0 });
+    const state = { num: 0 };
+    const select = createStore({ name, state });
     const payload = 1;
     const asyncResult = await select.num
       .replace(resolve(payload));
@@ -23,7 +25,8 @@ describe('async', () => {
   })
 
   it('should catch a rejection', done => {
-    const select = createApplicationStore({ num: 0 });
+    const state = { num: 0 };
+    const select = createStore({ name, state });
     const rejection = 'test';
     select.num
       .replace(reject(rejection))
@@ -32,7 +35,8 @@ describe('async', () => {
   })
 
   it('should only invoke promise functions once if caching is involved', async () => {
-    const select = createApplicationStore({ num: 0 });
+    const state = { num: 0 };
+    const select = createStore({ name, state });
     const payload = 1;
     let promiseCount = 0;
     const promise = () => {
@@ -47,13 +51,15 @@ describe('async', () => {
   })
 
   it('should be able to invalidate a cache even if one does not yet exist', () => {
-    const select = createApplicationStore({ num: 0 });
+    const state = { num: 0 };
+    const select = createStore({ name, state });
     select.num
       .invalidateCache();
   })
 
   it('should be able to update state before the promise has settled', done => {
-    const select = createApplicationStore({ num: 0 });
+    const state = { num: 0 };
+    const select = createStore({ name, state });
     const asyncResult = 1;
     const syncResult = 2;
     select.num
@@ -68,7 +74,8 @@ describe('async', () => {
   })
 
   it('should support caching', done => {
-    const select = createApplicationStore({ num: 0, cache: { num: '' } });
+    const state = { num: 0, cache: { num: '' } };
+    const select = createStore({ name, state });
     const replacement = 1;
     const replacement2 = 2;
     select.num
@@ -93,7 +100,8 @@ describe('async', () => {
   })
 
   it('should support optimistic updates', done => {
-    const select = createApplicationStore({ num: 0 });
+    const state = { num: 0 };
+    const select = createStore({ name, state });
     const replacement = 1;
     const optimisticallyUpdateWith = 9;
     select.num
@@ -106,7 +114,8 @@ describe('async', () => {
   })
 
   it('should rollback optimistic updates upon failure', done => {
-    const select = createApplicationStore({ num: 0 });
+    const state = { num: 0 };
+    const select = createStore({ name, state });
     const optimisticallyUpdateWith = 9;
     const error = 'Test';
     select.num
@@ -120,7 +129,8 @@ describe('async', () => {
   });
 
   it('should automatically expire caches appropriately', done => {
-    const select = createApplicationStore({ num: 0 });
+    const state = { num: 0 };
+    const select = createStore({ name, state });
     const replacement = 1;
     const replacement2 = 2;
     select.num
@@ -137,77 +147,83 @@ describe('async', () => {
   })
 
   it('should be able to remove an array element', async () => {
-    const select = createApplicationStore({ arr: [1, 2, 3] });
+    const state = { arr: [1, 2, 3] };
+    const select = createStore({ name, state });
     await select.arr.find.eq(3).remove(resolve(null));
     expect(select.arr.read()).toEqual([1, 2]);
   })
 
   it('should be able to remove all elements from an array', async () => {
-    const select = createApplicationStore({ arr: [1, 2, 3] });
+    const state = { arr: [1, 2, 3] };
+    const select = createStore({ name, state });
     await select.arr.removeAll(resolve(null));
     expect(select.arr.read()).toEqual([]);
   })
 
   it('should be able to remove an object property', async () => {
-    const select = createApplicationStore({ num: 0 });
+    const state = { num: 0 };
+    const select = createStore({ name, state });
     await select.num.remove(resolve(null));
     expect(select.read()).toEqual({});
   })
 
   it('should be able to replace an array element', async () => {
-    const select = createApplicationStore({ arr: [1, 2, 3] });
+    const state = { arr: [1, 2, 3] };
+    const select = createStore({ name, state });
     await select.arr.find.eq(2).replace(resolve(4));
     expect(select.arr.read()).toEqual([1, 4, 3]);
   })
 
   it('should be able to insert one array element', async () => {
-    const select = createApplicationStore({ arr: [1, 2, 3] });
+    const state = { arr: [1, 2, 3] };
+    const select = createStore({ name, state });
     await select.arr.insertOne(resolve(4));
     expect(select.arr.read()).toEqual([1, 2, 3, 4]);
   })
 
   it('should be able to insert many array elements', async () => {
-    const select = createApplicationStore({ arr: [1, 2, 3] });
+    const state = { arr: [1, 2, 3] };
+    const select = createStore({ name, state });
     await select.arr.insertMany(resolve([4, 5]));
     expect(select.arr.read()).toEqual([1, 2, 3, 4, 5]);
   })
 
   it('should upsert one array element where a match could be found', async () => {
-    const initialState = { arr: [{ id: 1, num: 1 }, { id: 2, num: 2 }, { id: 3, num: 3 }] };
-    const select = createApplicationStore(initialState);
+    const state = { arr: [{ id: 1, num: 1 }, { id: 2, num: 2 }, { id: 3, num: 3 }] };
+    const select = createStore({ name, state });
     const payload = { id: 1, val: 5 };
     await select.arr
       .upsertMatching.id
       .withOne(resolve(payload));
     expect(libState.currentAction).toEqual({ type: 'arr.upsertMatching.id.withOne()', payload });
-    expect(select.arr.read()).toEqual([payload, initialState.arr[1], initialState.arr[2]]);
+    expect(select.arr.read()).toEqual([payload, state.arr[1], state.arr[2]]);
   })
 
   it('should upsert one array element where a match could not be found', async () => {
-    const initialState = { arr: [{ id: 1, num: 1 }, { id: 2, num: 2 }, { id: 3, num: 3 }] };
-    const select = createApplicationStore(initialState);
+    const state = { arr: [{ id: 1, num: 1 }, { id: 2, num: 2 }, { id: 3, num: 3 }] };
+    const select = createStore({ name, state });
     const payload = { id: 4, val: 5 };
     await select.arr
       .upsertMatching.id
       .withOne(resolve(payload));
     expect(libState.currentAction).toEqual({ type: 'arr.upsertMatching.id.withOne()', payload });
-    expect(select.arr.read()).toEqual([...initialState.arr, payload]);
+    expect(select.arr.read()).toEqual([...state.arr, payload]);
   })
 
   it('should upsert array elements where one matches and another does not', async () => {
-    const initialState = { arr: [{ id: 1, num: 1 }, { id: 2, num: 2 }, { id: 3, num: 3 }] };
-    const select = createApplicationStore(initialState);
+    const state = { arr: [{ id: 1, num: 1 }, { id: 2, num: 2 }, { id: 3, num: 3 }] };
+    const select = createStore({ name, state });
     const payload = [{ id: 1, val: 5 }, { id: 5, val: 5 }];
     await select.arr
       .upsertMatching.id
       .withMany(resolve(payload));
     expect(libState.currentAction).toEqual({ type: 'arr.upsertMatching.id.withMany()', payload });
-    expect(select.arr.read()).toEqual([payload[0], initialState.arr[1], initialState.arr[2], payload[1]]);
+    expect(select.arr.read()).toEqual([payload[0], state.arr[1], state.arr[2], payload[1]]);
   })
 
   it('should throw an error if an array element could not be found', async () => {
-    const initialState = { arr: [{ id: 1, num: 1 }, { id: 2, num: 2 }, { id: 3, num: 3 }] };
-    const select = createApplicationStore(initialState);
+    const state = { arr: [{ id: 1, num: 1 }, { id: 2, num: 2 }, { id: 3, num: 3 }] };
+    const select = createStore({ name, state });
     await select.arr
       .find.id.eq(4)
       .replace(resolve({ id: 4, num: 4 }))

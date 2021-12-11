@@ -1,30 +1,33 @@
 import { errorMessages, libState } from './constant';
-import { Read, Store } from './type';
+import { Read, Readable } from './type';
 import { WindowAugmentedWithReduxDevtools } from './type-internal';
 import { Replace, ReplaceAll } from './type';
 
-export function integrateStoreWithReduxDevtools<S>(
+export function integrateWithReduxDevtools<S>(
   arg: {
-    store: Store<S>,
-    devtools?: any,
-  },
+    store: Readable<S>,
+    devtoolsOptions?: any,
+  }
 ) {
   let windowObj = window as any as WindowAugmentedWithReduxDevtools;
   if (libState.windowObject) {
     windowObj = libState.windowObject as WindowAugmentedWithReduxDevtools;
   }
 
-  // If user does not have devtools installed or enabled, do nothing.
-  if (!windowObj.__REDUX_DEVTOOLS_EXTENSION__) { return; }
+  // If user does not have devtools installed or enabled, warn & return.
+  if (!windowObj.__REDUX_DEVTOOLS_EXTENSION__) {
+    console.warn('Please install the Redux Devtools extension in your browser');
+    return;
+  }
 
   // If a devtools instance has already been registered, do not re-create that instance.
   // This problem really only presents its self when hot-reloading is being used
-  const storeName = (arg.devtools && arg.devtools.name) ? arg.devtools.name : document.title;
+  const storeName = arg.devtoolsOptions?.name || (arg.store as any).getStoreName() || document.title;
   let devTools = libState.devtoolsRegistry[storeName];
   if (devTools) { return; }
 
   // Register devtools extension
-  devTools = windowObj.__REDUX_DEVTOOLS_EXTENSION__.connect(arg.devtools);
+  devTools = windowObj.__REDUX_DEVTOOLS_EXTENSION__.connect(arg.devtoolsOptions);
   devTools.init(arg.store.read());
   libState.devtoolsRegistry[storeName] = devTools;
 
