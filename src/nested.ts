@@ -19,13 +19,8 @@ export const nestStoreIfPossible = (
   Array.from(((arg.store as any).getChangeListeners() as Map<StateAction[], (arg: any) => any>).entries())
     .forEach(([stateActions, performAction]) => {
       let node = appStore.nested[nestedStoreName][arg.instanceName];
-      stateActions.slice(0, stateActions.length - 1).forEach(a => {
-        if (a.type === 'comparator') {
-          node = node[a.name](a.arg)
-        } else { /* must be of type 'search' or 'property */
-          node = node[a.name];
-        }
-      });
+      stateActions.slice(0, stateActions.length - 1)
+        .forEach(a => node = a.type === 'comparator' ? node[a.name](a.arg) : node[a.name]);
       node.onChange(performAction);
     });
   (arg.store as any).setNestedStoreInfo({ storeName: nestedStoreName, instanceName: arg.instanceName, containerStoreName: arg.containerStoreName });
