@@ -29,7 +29,7 @@ const readSelector = (storeName: string) => {
       get: function (target, prop: string) {
         stateActions = topLevel ? new Array<StateAction>() : stateActions;
         if (topLevel && nestedStoreInfo) {
-          return libState.appStores[nestedStoreInfo.containerStoreName].cmp[nestedStoreInfo.storeName][nestedStoreInfo.instanceName!][prop];
+          return libState.appStores[nestedStoreInfo.containerStoreName].nested[nestedStoreInfo.storeName][nestedStoreInfo.instanceName!][prop];
         } else if (['replace', 'patch', 'deepMerge', 'remove', 'increment', 'removeAll', 'replaceAll', 'patchAll', 'incrementAll', 'insertOne', 'insertMany', 'withOne', 'withMany'].includes(prop)) {
           return processUpdate(storeName, stateActions, prop, changeListeners);
         } else if ('invalidateCache' === prop) {

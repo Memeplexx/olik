@@ -15,10 +15,10 @@ export const nestStoreIfPossible = (
     throw new Error(errorMessages.INVALID_CONTAINER_FOR_COMPONENT_STORES);
   }
   const nestedStoreName = (arg.store as any).getStoreName();
-  appStore.cmp[nestedStoreName][arg.instanceName].replace(arg.store.read());
+  appStore.nested[nestedStoreName][arg.instanceName].replace(arg.store.read());
   Array.from(((arg.store as any).getChangeListeners() as Map<StateAction[], (arg: any) => any>).entries())
     .forEach(([stateActions, performAction]) => {
-      let node = appStore.cmp[nestedStoreName][arg.instanceName];
+      let node = appStore.nested[nestedStoreName][arg.instanceName];
       stateActions.slice(0, stateActions.length - 1).forEach(a => {
         if (a.type === 'comparator') {
           node = node[a.name](a.arg)
@@ -32,11 +32,11 @@ export const nestStoreIfPossible = (
   delete libState.appStores[nestedStoreName];
   return {
     detach: () => {
-      const state = appStore.read().cmp[nestedStoreName];
+      const state = appStore.read().nested[nestedStoreName];
       if ((Object.keys(state).length === 1) && state[arg.instanceName]) {
-        appStore.cmp[nestedStoreName].remove();
+        appStore.nested[nestedStoreName].remove();
       } else {
-        appStore.cmp[nestedStoreName][arg.instanceName].remove();
+        appStore.nested[nestedStoreName][arg.instanceName].remove();
       }
       (arg.store as any).setNestedStoreInfo();
     }
