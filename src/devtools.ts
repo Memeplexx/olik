@@ -1,4 +1,4 @@
-import { errorMessages, libState } from './constant';
+import { errorMessages, libState, testState } from './constant';
 import { Read, Readable } from './type';
 import { StoreInternal, WindowAugmentedWithReduxDevtools } from './type-internal';
 import { Replace, ReplaceAll } from './type';
@@ -8,10 +8,14 @@ export function trackWithReduxDevtools<S>(
   devtoolsOptions?: any,
 ) {
   const storeArg = store as StoreInternal<S>;
+
+  // do not continue if this is a nested store
   if (!!storeArg.getNestedStoreInfo()) { return; }
+
+  // mock out the window object for testing purposes
   let windowObj = window as any as WindowAugmentedWithReduxDevtools;
-  if (libState.windowObject) {
-    windowObj = libState.windowObject as WindowAugmentedWithReduxDevtools;
+  if (testState.fakeWindowObjectForReduxDevtools) {
+    windowObj = testState.fakeWindowObjectForReduxDevtools as WindowAugmentedWithReduxDevtools;
   }
 
   // If user does not have devtools installed or enabled, warn & return.

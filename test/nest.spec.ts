@@ -6,10 +6,6 @@ describe('nest', () => {
 
   const nameOfContainerStore = 'ParentStore';
 
-  beforeAll(() => {
-    libState.windowObject = windowAugmentedWithReduxDevtoolsImpl;
-  });
-
   beforeEach(() => {
     libState.appStores = {};
     testState.logLevel = 'none';

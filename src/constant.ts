@@ -17,7 +17,6 @@ export const libState = {
   devtoolsRegistry: {} as { [name: string]: DevtoolsInstance },
   currentAction: {} as { [key: string]: any },
   insideTransaction: false,
-  windowObject: null as null | WindowAugmentedWithReduxDevtools,
   devtoolsDispatchListener: null as null | ((action: { }) => any),
   dispatchToDevtools: true,
   onDispatchListener: () => null,
@@ -31,6 +30,7 @@ export const libState = {
 
 export const testState = {
   currentActionForDevtools: { },
+  fakeWindowObjectForReduxDevtools: null as null | WindowAugmentedWithReduxDevtools,
   logLevel: 'none' as ('debug' | 'none'),
 }
 

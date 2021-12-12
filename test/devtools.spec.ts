@@ -10,7 +10,7 @@ describe('devtools', () => {
     libState.appStores = {};
     libState.devtoolsRegistry = {};
     testState.logLevel = 'none';
-    libState.windowObject = windowAugmentedWithReduxDevtoolsImpl;
+    testState.fakeWindowObjectForReduxDevtools = windowAugmentedWithReduxDevtoolsImpl;
   })
 
   it('should correctly respond to devtools dispatches where the state is an object', () => {
@@ -20,7 +20,7 @@ describe('devtools', () => {
     select.x
       .replace(3);
     expect(select.read()).toEqual({ x: 3, y: 0 });
-    libState.windowObject!.__REDUX_DEVTOOLS_EXTENSION__._mockInvokeSubscription({ type: 'DISPATCH', state: JSON.stringify(state), payload: { type: 'JUMP_TO_ACTION' }, source: '@devtools-extension' });
+    testState.fakeWindowObjectForReduxDevtools!.__REDUX_DEVTOOLS_EXTENSION__._mockInvokeSubscription({ type: 'DISPATCH', state: JSON.stringify(state), payload: { type: 'JUMP_TO_ACTION' }, source: '@devtools-extension' });
     expect(select.read()).toEqual(state);
     expect(libState.currentAction.type).toEqual('replace()');
   });
@@ -32,7 +32,7 @@ describe('devtools', () => {
     select.replaceAll(['d', 'e', 'f']);
     expect(select.read()).toEqual(['d', 'e', 'f']);
     const state2 = ['g', 'h'];
-    libState.windowObject!.__REDUX_DEVTOOLS_EXTENSION__._mockInvokeSubscription({ type: 'DISPATCH', state: JSON.stringify(state2), payload: { type: 'JUMP_TO_ACTION' }, source: '@devtools-extension' });
+    testState.fakeWindowObjectForReduxDevtools!.__REDUX_DEVTOOLS_EXTENSION__._mockInvokeSubscription({ type: 'DISPATCH', state: JSON.stringify(state2), payload: { type: 'JUMP_TO_ACTION' }, source: '@devtools-extension' });
     expect(select.read()).toEqual(state2);
     expect(libState.currentAction.type).toEqual('replaceAll()');
   });
@@ -41,7 +41,7 @@ describe('devtools', () => {
     const state = { hello: '' };
     const select = createStore({ name, state });
     trackWithReduxDevtools(select);
-    libState.windowObject!.__REDUX_DEVTOOLS_EXTENSION__._mockInvokeSubscription({ type: 'DISPATCH', payload: { type: 'COMMIT' }, source: '@devtools-extension' });
+    testState.fakeWindowObjectForReduxDevtools!.__REDUX_DEVTOOLS_EXTENSION__._mockInvokeSubscription({ type: 'DISPATCH', payload: { type: 'COMMIT' }, source: '@devtools-extension' });
   });
 
   it('should handle a ROLLBACK correctly', () => {
@@ -54,7 +54,7 @@ describe('devtools', () => {
     select.num
       .replace(2);
     expect(select.read().num).toEqual(2);
-    libState.windowObject!.__REDUX_DEVTOOLS_EXTENSION__._mockInvokeSubscription({ type: 'DISPATCH', payload: { type: 'ROLLBACK' }, source: '@devtools-extension', state: '{ "num": 1 }' });
+    testState.fakeWindowObjectForReduxDevtools!.__REDUX_DEVTOOLS_EXTENSION__._mockInvokeSubscription({ type: 'DISPATCH', payload: { type: 'ROLLBACK' }, source: '@devtools-extension', state: '{ "num": 1 }' });
     expect(select.read().num).toEqual(1);
   });
 
@@ -62,7 +62,7 @@ describe('devtools', () => {
     const state = { hello: 0 };
     const select = createStore({ name, state });
     trackWithReduxDevtools(select);
-    expect(() => libState.windowObject!.__REDUX_DEVTOOLS_EXTENSION__
+    expect(() => testState.fakeWindowObjectForReduxDevtools!.__REDUX_DEVTOOLS_EXTENSION__
       ._mockInvokeSubscription({ type: 'ACTION', source: '@devtools-extension', payload: "{'type': 'hello.replace', 'payload': 2}" }))
       .toThrow(errorMessages.DEVTOOL_DISPATCHED_INVALID_JSON);
   });
@@ -71,7 +71,7 @@ describe('devtools', () => {
     const state = { hello: 0 };
     const select = createStore({ name, state });
     trackWithReduxDevtools(select);
-    expect(() => libState.windowObject!.__REDUX_DEVTOOLS_EXTENSION__
+    expect(() => testState.fakeWindowObjectForReduxDevtools!.__REDUX_DEVTOOLS_EXTENSION__
       ._mockInvokeSubscription({ type: 'ACTION', source: '@devtools-extension', payload: '{"type": "hello.replace", "payload": 2}' }))
       .toThrow(errorMessages.DEVTOOL_DISPATCHED_WITH_NO_ACTION('hello.replace'));
   });
@@ -80,7 +80,7 @@ describe('devtools', () => {
     const state = { hello: 0 };
     const select = createStore({ name, state });
     trackWithReduxDevtools(select);
-    expect(() => libState.windowObject!.__REDUX_DEVTOOLS_EXTENSION__
+    expect(() => testState.fakeWindowObjectForReduxDevtools!.__REDUX_DEVTOOLS_EXTENSION__
       ._mockInvokeSubscription({ type: 'ACTION', source: '@devtools-extension', payload: '{"type": "hello.replace", "payload": 2}' }))
       .toThrow(errorMessages.DEVTOOL_DISPATCHED_WITH_NO_ACTION('hello.replace'));
   });
@@ -89,7 +89,7 @@ describe('devtools', () => {
     const state = { hello: 0 };
     const select = createStore({ name, state });
     trackWithReduxDevtools(select);
-    libState.windowObject!.__REDUX_DEVTOOLS_EXTENSION__
+    testState.fakeWindowObjectForReduxDevtools!.__REDUX_DEVTOOLS_EXTENSION__
       ._mockInvokeSubscription({ type: 'ACTION', source: '@devtools-extension', payload: '{"type": "hello.replace()", "payload": 2}' });
     expect(select.read().hello).toEqual(2);
   });
