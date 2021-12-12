@@ -2,7 +2,7 @@ import { createStore, nestStoreIfPossible } from '../src/index';
 import { libState, errorMessages, testState } from '../src/constant';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
-describe('component', () => {
+describe('nest', () => {
 
   const nameOfContainerStore = 'ParentStore';
 

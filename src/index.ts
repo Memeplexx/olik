@@ -2,5 +2,5 @@ export { createStore } from './core';
 export { augment } from './augment';
 export { derive } from './derive';
 export { transact } from './transact';
-export { nestStoreIfPossible } from './nested';
+export { nestStoreIfPossible } from './nest';
 export { integrateWithReduxDevtools } from './devtools';
