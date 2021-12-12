@@ -1,4 +1,4 @@
-import { createStore, derive, integrateWithReduxDevtools } from '../src';
+import { createStore, trackWithReduxDevtools } from '../src';
 import { errorMessages, libState, testState } from '../src/constant';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
@@ -16,7 +16,7 @@ describe('devtools', () => {
   it('should correctly respond to devtools dispatches where the state is an object', () => {
     const state = { x: 0, y: 0 };
     const select = createStore({ name, state });
-    integrateWithReduxDevtools({ store: select })
+    trackWithReduxDevtools(select)
     select.x
       .replace(3);
     expect(select.read()).toEqual({ x: 3, y: 0 });
@@ -28,7 +28,7 @@ describe('devtools', () => {
   it('should correctly respond to devtools dispatches where the state is an array', () => {
     const state = ['a', 'b', 'c'];
     const select = createStore({ name, state });
-    integrateWithReduxDevtools({ store: select })
+    trackWithReduxDevtools(select)
     select.replaceAll(['d', 'e', 'f']);
     expect(select.read()).toEqual(['d', 'e', 'f']);
     const state2 = ['g', 'h'];
@@ -40,14 +40,14 @@ describe('devtools', () => {
   it('should handle a COMMIT without throwing an error', () => {
     const state = { hello: '' };
     const select = createStore({ name, state });
-    integrateWithReduxDevtools({ store: select });
+    trackWithReduxDevtools(select);
     libState.windowObject!.__REDUX_DEVTOOLS_EXTENSION__._mockInvokeSubscription({ type: 'DISPATCH', payload: { type: 'COMMIT' }, source: '@devtools-extension' });
   });
 
   it('should handle a ROLLBACK correctly', () => {
     const state = { num: 0 };
     const select = createStore({ name, state });
-    integrateWithReduxDevtools({ store: select });
+    trackWithReduxDevtools(select);
     select.num
       .replace(1);
     expect(select.read().num).toEqual(1);
@@ -61,7 +61,7 @@ describe('devtools', () => {
   it('should throw an error should a devtools dispatch contain invalid JSON', () => {
     const state = { hello: 0 };
     const select = createStore({ name, state });
-    integrateWithReduxDevtools({ store: select });
+    trackWithReduxDevtools(select);
     expect(() => libState.windowObject!.__REDUX_DEVTOOLS_EXTENSION__
       ._mockInvokeSubscription({ type: 'ACTION', source: '@devtools-extension', payload: "{'type': 'hello.replace', 'payload': 2}" }))
       .toThrow(errorMessages.DEVTOOL_DISPATCHED_INVALID_JSON);
@@ -70,7 +70,7 @@ describe('devtools', () => {
   it('should throw an error should a devtools dispatch not contain parenthesis', () => {
     const state = { hello: 0 };
     const select = createStore({ name, state });
-    integrateWithReduxDevtools({ store: select });
+    trackWithReduxDevtools(select);
     expect(() => libState.windowObject!.__REDUX_DEVTOOLS_EXTENSION__
       ._mockInvokeSubscription({ type: 'ACTION', source: '@devtools-extension', payload: '{"type": "hello.replace", "payload": 2}' }))
       .toThrow(errorMessages.DEVTOOL_DISPATCHED_WITH_NO_ACTION('hello.replace'));
@@ -79,7 +79,7 @@ describe('devtools', () => {
   it('should throw an error should a devtools dispatch not contain parenthesis', () => {
     const state = { hello: 0 };
     const select = createStore({ name, state });
-    integrateWithReduxDevtools({ store: select });
+    trackWithReduxDevtools(select);
     expect(() => libState.windowObject!.__REDUX_DEVTOOLS_EXTENSION__
       ._mockInvokeSubscription({ type: 'ACTION', source: '@devtools-extension', payload: '{"type": "hello.replace", "payload": 2}' }))
       .toThrow(errorMessages.DEVTOOL_DISPATCHED_WITH_NO_ACTION('hello.replace'));
@@ -88,7 +88,7 @@ describe('devtools', () => {
   it('should correctly devtools dispatch made by user', () => {
     const state = { hello: 0 };
     const select = createStore({ name, state });
-    integrateWithReduxDevtools({ store: select });
+    trackWithReduxDevtools(select);
     libState.windowObject!.__REDUX_DEVTOOLS_EXTENSION__
       ._mockInvokeSubscription({ type: 'ACTION', source: '@devtools-extension', payload: '{"type": "hello.replace()", "payload": 2}' });
     expect(select.read().hello).toEqual(2);
@@ -97,7 +97,7 @@ describe('devtools', () => {
   it('should throttle tightly packed updates', done => {
     const state = { test: 0 };
     const select = createStore({ name, state });
-    integrateWithReduxDevtools({ store: select });
+    trackWithReduxDevtools(select);
     const payload: number[] = [];
     const updateCount = 3;
     for (let i = 0; i < updateCount; i++) {

@@ -1,6 +1,7 @@
 import { augmentations, libState, testState } from './constant';
 import { readState } from './read';
 import { OptionsForMakingAStore, StateAction, UpdatableArray, UpdatableObject, UpdatablePrimitive } from './type';
+import { NestedStoreInfo } from './type-internal';
 import { deepFreeze, validateState } from './utility';
 import { processUpdate, updateState } from './write';
 
@@ -25,7 +26,7 @@ export const createStore = <S>(
 
 const readSelector = (storeName: string) => {
   const changeListeners = new Map<StateAction[], (arg: any) => any>();
-  let nestedStoreInfo: undefined | { instanceName?: string | number, containerStoreName: string, storeName: string };
+  let nestedStoreInfo: undefined | NestedStoreInfo;
   let state: any;
   const initialize = (s: any, topLevel: boolean, stateActions: StateAction[]): any => {
     if (typeof s !== 'object') { return null; }
@@ -55,7 +56,9 @@ const readSelector = (storeName: string) => {
         } else if ('getStoreName' === prop) {
           return () => storeName;
         } else if ('setNestedStoreInfo' === prop) {
-          return (info: any) => nestedStoreInfo = info;
+          return (info: NestedStoreInfo) => nestedStoreInfo = info;
+        } else if ('getNestedStoreInfo' === prop) {
+          return () => nestedStoreInfo;
         } else if ('setState' === prop) {
           return (newState: any) => state = newState;
         } else if ('getState' === prop) {

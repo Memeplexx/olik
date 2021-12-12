@@ -26,7 +26,7 @@ describe('nest', () => {
     const nameOfNestedStore = 'myComp';
     const instanceName = '0';
     const selectNested = createStore({ name: nameOfNestedStore, state: stateOfNestedStore });
-    nestStoreIfPossible({ store: selectNested, containerStoreName: nameOfContainerStore, instanceName });
+    nestStoreIfPossible(selectNested, { containerStoreName: nameOfContainerStore, instanceName });
     expect(selectContainer.read()).toEqual({ ...stateOfContainerStore, nested: { [nameOfNestedStore]: { [instanceName]: stateOfNestedStore } } });
   })
 
@@ -42,7 +42,7 @@ describe('nest', () => {
     const nameOfNestedStore = 'myComp';
     const instanceName = '0';
     const selectNested = createStore({ name: nameOfNestedStore, state: stateOfNestedStore });
-    nestStoreIfPossible({ store: selectNested, containerStoreName: nameOfContainerStore, instanceName });
+    nestStoreIfPossible(selectNested, { containerStoreName: nameOfContainerStore, instanceName });
     expect(selectNested.read().one).toEqual('');
     selectNested.one.replace('test');
     expect(libState.currentAction).toEqual({
@@ -64,7 +64,7 @@ describe('nest', () => {
     const nameOfNestedStore = 'myComp';
     const instanceName = '0';
     const selectNested = createStore({ name: nameOfNestedStore, state: stateOfNestedStore });
-    nestStoreIfPossible({ store: selectNested, containerStoreName: nameOfContainerStore, instanceName });
+    nestStoreIfPossible(selectNested, { containerStoreName: nameOfContainerStore, instanceName });
     expect(selectNested.read().one).toEqual('');
     selectContainer.nested.myComp['0'].one.replace('test');
     expect(selectNested.read().one).toEqual('test');
@@ -76,7 +76,7 @@ describe('nest', () => {
     const instanceName = '0';
     const payload = 'another';
     const selectNested = createStore({ name: nameOfNestedStore, state: stateOfNestedStore });
-    nestStoreIfPossible({ store: selectNested, containerStoreName: nameOfContainerStore, instanceName });
+    nestStoreIfPossible(selectNested, { containerStoreName: nameOfContainerStore, instanceName });
     selectNested.test.replace(payload);
     expect(selectNested.test.read()).toEqual(payload);
   })
@@ -92,7 +92,7 @@ describe('nest', () => {
     const nameOfNestedStore = 'myComp';
     const instanceName = '0';
     const selectNested = createStore({ name: nameOfNestedStore, state: stateOfNestedStore });
-    const ref = nestStoreIfPossible({ store: selectNested, containerStoreName: nameOfContainerStore, instanceName });
+    const ref = nestStoreIfPossible(selectNested, { containerStoreName: nameOfContainerStore, instanceName });
     expect(selectContainer.read()).toEqual({ test: '', nested: { [nameOfNestedStore]: { [instanceName]: { one: '' } } } });
     ref.detach();
     expect(selectContainer.read()).toEqual({ test: '', nested: {} });
@@ -106,9 +106,9 @@ describe('nest', () => {
     const selectContainer = createStore({ name: nameOfContainerStore, state: stateOfContainerStore });
     const nameOfNestedStore = 'myComp';
     const selectNested1 = createStore({ name: nameOfNestedStore, state: stateOfNestedStore });
-    const ref1 = nestStoreIfPossible({ store: selectNested1, containerStoreName: nameOfContainerStore, instanceName: '0' });
+    const ref1 = nestStoreIfPossible(selectNested1, { containerStoreName: nameOfContainerStore, instanceName: '0' });
     const selectNested2 = createStore({ name: nameOfNestedStore, state: stateOfNestedStore });
-    const ref2 = nestStoreIfPossible({ store: selectNested2, containerStoreName: nameOfContainerStore, instanceName: '1' });
+    const ref2 = nestStoreIfPossible(selectNested2, { containerStoreName: nameOfContainerStore, instanceName: '1' });
     expect(selectContainer.read()).toEqual({ ...stateOfContainerStore, nested: { [nameOfNestedStore]: { '0': stateOfNestedStore, '1': stateOfNestedStore } } });
     ref1.detach();
     expect(selectContainer.read()).toEqual({ ...stateOfContainerStore, nested: { [nameOfNestedStore]: { '1': stateOfNestedStore } } });
@@ -127,10 +127,10 @@ describe('nest', () => {
     const selectContainer = createStore({ name: nameOfContainerStore, state: stateOfContainerStore });
     const componentName = 'myComp';
     const selectNested1 = createStore({ name: nameOfNestedStore, state: stateOfNestedStore });
-    nestStoreIfPossible({ store: selectNested1, containerStoreName: nameOfContainerStore, instanceName: '0' });
+    nestStoreIfPossible(selectNested1, { containerStoreName: nameOfContainerStore, instanceName: '0' });
     selectNested1.one.replace('test1');
     const selectNested2 = createStore({ name: nameOfNestedStore, state: stateOfNestedStore });
-    nestStoreIfPossible({ store: selectNested2, containerStoreName: nameOfContainerStore, instanceName: '1' });
+    nestStoreIfPossible(selectNested2, { containerStoreName: nameOfContainerStore, instanceName: '1' });
     selectNested2.one.replace('test2');
     expect(selectContainer.read()).toEqual({ test: '', nested: { [componentName]: { 0: { one: 'test1' }, 1: { one: 'test2' } } } });
   })
@@ -144,7 +144,7 @@ describe('nest', () => {
     const nameOfNestedStore = 'myComp';
     const instanceName = '0';
     const selectNested = createStore({ name: nameOfNestedStore, state: stateOfNestedStore });
-    nestStoreIfPossible({ store: selectNested, containerStoreName: nameOfContainerStore, instanceName });
+    nestStoreIfPossible(selectNested, { containerStoreName: nameOfContainerStore, instanceName });
     selectNested.insertOne('test');
     expect(selectContainer.read()).toEqual({ test: '', nested: { [nameOfNestedStore]: { [instanceName]: ['test'] } } });
   })
@@ -158,7 +158,7 @@ describe('nest', () => {
     const nameOfNestedStore = 'myComp';
     const instanceName = '0';
     const selectNested = createStore({ name: nameOfNestedStore, state: stateOfNestedStore });
-    nestStoreIfPossible({ store: selectNested, containerStoreName: nameOfContainerStore, instanceName });
+    nestStoreIfPossible(selectNested, { containerStoreName: nameOfContainerStore, instanceName });
     selectNested.replace(1);
     expect(selectContainer.read()).toEqual({ test: '', nested: { [nameOfNestedStore]: { [stateOfNestedStore]: 1 } } });
   })
@@ -172,23 +172,23 @@ describe('nest', () => {
     const nameOfNestedStore1 = 'myComp';
     const instanceName = '0';
     const selectNested1 = createStore({ name: nameOfNestedStore1, state: stateOfNestedStore });
-    nestStoreIfPossible({ store: selectNested1, containerStoreName: nameOfContainerStore, instanceName });
+    nestStoreIfPossible(selectNested1, { containerStoreName: nameOfContainerStore, instanceName });
     const nameOfNestedStore2 = 'myComp2';
     const selectNested2 = createStore({ name: nameOfNestedStore2, state: stateOfNestedStore });
-    nestStoreIfPossible({ store: selectNested2, containerStoreName: nameOfContainerStore, instanceName });
+    nestStoreIfPossible(selectNested2, { containerStoreName: nameOfContainerStore, instanceName });
     expect(selectContainer.read()).toEqual({ test: '', nested: { [nameOfNestedStore1]: { 0: 0 }, [nameOfNestedStore2]: { 0: 0 } } });
   })
 
   it('should throw an error if the containing stores state is a primitive', () => {
     createStore({ name: nameOfContainerStore, state: 0 });
     const selectNested = createStore({ name: 'test', state: 0 });
-    expect(() => nestStoreIfPossible({ store: selectNested, containerStoreName: nameOfContainerStore, instanceName: '0' })).toThrow(errorMessages.INVALID_CONTAINER_FOR_COMPONENT_STORES);
+    expect(() => nestStoreIfPossible(selectNested, { containerStoreName: nameOfContainerStore, instanceName: '0' })).toThrow(errorMessages.INVALID_CONTAINER_FOR_COMPONENT_STORES);
   })
 
   it('should throw an error if the containing stores state is an array', () => {
     createStore({ name: nameOfContainerStore, state: new Array<string>() });
     const selectNested = createStore({ name: 'test', state: 0 });
-    expect(() => nestStoreIfPossible({ store: selectNested, containerStoreName: nameOfContainerStore, instanceName: '0' })).toThrow(errorMessages.INVALID_CONTAINER_FOR_COMPONENT_STORES);
+    expect(() => nestStoreIfPossible(selectNested, { containerStoreName: nameOfContainerStore, instanceName: '0' })).toThrow(errorMessages.INVALID_CONTAINER_FOR_COMPONENT_STORES);
   })
 
   it('should work without a container store', () => {
@@ -200,7 +200,7 @@ describe('nest', () => {
         string: 'b',
       }
     });
-    const ref = nestStoreIfPossible({ store: selectNested, containerStoreName: nameOfContainerStore, instanceName: '0' });
+    const ref = nestStoreIfPossible(selectNested, { containerStoreName: nameOfContainerStore, instanceName: '0' });
     selectNested.object.property.replace('test');
     expect(selectNested.read().object.property).toEqual('test');
     ref.detach();
@@ -236,7 +236,7 @@ describe('nest', () => {
       }
     });
     selectNested.val.replace(1);
-    nestStoreIfPossible({ store: selectNested, containerStoreName: nameOfContainerStore, instanceName: instanceName });
+    nestStoreIfPossible(selectNested, { containerStoreName: nameOfContainerStore, instanceName: instanceName });
     selectNested.val.replace(2);
   })
 
@@ -266,7 +266,7 @@ describe('nest', () => {
       }
     });
     selectNested.arr.find.id.eq(1).replace({ id: 1, num: 3 });
-    nestStoreIfPossible({ store: selectNested, instanceName, containerStoreName: nameOfContainerStore });
+    nestStoreIfPossible(selectNested, { instanceName, containerStoreName: nameOfContainerStore });
     selectNested.arr.find.id.eq(1).replace({ id: 1, num: 4 });
   })
 

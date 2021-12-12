@@ -3,4 +3,4 @@ export { augment } from './augment';
 export { derive } from './derive';
 export { transact } from './transact';
 export { nestStoreIfPossible } from './nest';
-export { integrateWithReduxDevtools } from './devtools';
+export { trackWithReduxDevtools } from './devtools';

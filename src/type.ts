@@ -345,3 +345,7 @@ export type Store<S> = Omit<S extends Array<any> ? UpdatableArray<S, 'isFilter',
   : UpdatablePrimitive<S, 'isFind', 'queried'>, 'remove'>;
 
 export type ChangeListeners = Map<StateAction[], (arg: any) => any>;
+
+export interface NestStoreRef {
+  detach(): void,
+}

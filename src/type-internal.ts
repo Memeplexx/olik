@@ -24,13 +24,20 @@ export interface PreviousAction {
   debounceTimeout: number,
 }
 
+export interface NestedStoreInfo {
+  storeName: string,
+  instanceName: string | number,
+  containerStoreName: string,
+}
+
 export type StoreInternal<S> = Store<S> & {
   nested: any,
   setState(state: S): void,
   getState(): S,
   getChangeListeners(): ChangeListeners,
   getStoreName(): string,
-  setNestedStoreInfo(info?: { storeName: string, instanceName: string | number, containerStoreName: string }): void,
+  setNestedStoreInfo(info?: NestedStoreInfo): void,
+  getNestedStoreInfo(): NestedStoreInfo | undefined,
 }
 
 export interface QuerySpec {
