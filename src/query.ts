@@ -1,5 +1,6 @@
 import { comparisons } from './constant';
-import { QuerySpec, StateAction } from './type';
+import { StateAction } from './type';
+import { QuerySpec } from './type-internal';
 
 export const constructQuery = (stateActions: ReadonlyArray<StateAction>, cursor: { index: number }) => {
   const concatenateQueries = (queries: QuerySpec[]): QuerySpec[] => {

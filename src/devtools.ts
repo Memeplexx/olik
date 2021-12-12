@@ -1,6 +1,6 @@
 import { errorMessages, libState } from './constant';
 import { Read, Readable } from './type';
-import { WindowAugmentedWithReduxDevtools } from './type-internal';
+import { StoreInternal, WindowAugmentedWithReduxDevtools } from './type-internal';
 import { Replace, ReplaceAll } from './type';
 
 export function integrateWithReduxDevtools<S>(
@@ -9,6 +9,7 @@ export function integrateWithReduxDevtools<S>(
     devtoolsOptions?: any,
   }
 ) {
+  const store = arg.store as StoreInternal<S>;
   let windowObj = window as any as WindowAugmentedWithReduxDevtools;
   if (libState.windowObject) {
     windowObj = libState.windowObject as WindowAugmentedWithReduxDevtools;
@@ -22,17 +23,17 @@ export function integrateWithReduxDevtools<S>(
 
   // If a devtools instance has already been registered, do not re-create that instance.
   // This problem really only presents its self when hot-reloading is being used
-  const storeName = arg.devtoolsOptions?.name || (arg.store as any).getStoreName() || document.title;
+  const storeName = arg.devtoolsOptions?.name || store.getStoreName() || document.title;
   let devTools = libState.devtoolsRegistry[storeName];
   if (devTools) { return; }
 
   // Register devtools extension
   devTools = windowObj.__REDUX_DEVTOOLS_EXTENSION__.connect(arg.devtoolsOptions);
-  devTools.init(arg.store.read());
+  devTools.init(store.read());
   libState.devtoolsRegistry[storeName] = devTools;
 
   // Ensure that the store responds to events emitted from the devtools extension
-  libState.devtoolsDispatchListener = action => devTools.send(action, arg.store.read());
+  libState.devtoolsDispatchListener = action => devTools.send(action, store.read());
   devTools.subscribe((message: any) => {
     if (message.type === 'ACTION' && message.source === '@devtools-extension') {
       let messagePayload: { type: string, payload: any };
@@ -46,12 +47,12 @@ export function integrateWithReduxDevtools<S>(
       }
       let pathSegments = messagePayload.type.split('.');
       const action = pathSegments.pop() as string;
-      let selection: any = arg.store;
+      let selection: any = store;
       pathSegments.forEach(seg => selection = selection[seg] as any);
       selection[action.substring(0, action.length - 2)](messagePayload.payload);
     }
     if (message.type === 'DISPATCH' && message.payload) {
-      const selection = arg.store as any as Replace<any> & ReplaceAll<any> & Read<any>;
+      const selection = store as any as Replace<any> & ReplaceAll<any> & Read<any>;
       const setState = (state: any) => {
         libState.dispatchToDevtools = false;
         selection[Array.isArray(selection.read()) ? 'replaceAll' : 'replace'](state);

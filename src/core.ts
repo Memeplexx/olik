@@ -1,15 +1,19 @@
-import { augmentations, errorMessages, libState, testState } from './constant';
+import { augmentations, libState, testState } from './constant';
 import { readState } from './read';
-import { Deferred, OptionsForMakingAComponentStore, OptionsForMakingAnApplicationStore, StateAction, Store, ComponentStore } from './type';
+import { OptionsForMakingAStore, StateAction, UpdatableArray, UpdatableObject, UpdatablePrimitive } from './type';
 import { deepFreeze, validateState } from './utility';
 import { processUpdate, updateState } from './write';
 
 
+type Store<S> = Omit<S extends Array<any> ? UpdatableArray<S, 'isFilter', 'notQueried'>
+  : S extends object ? UpdatableObject<S, 'isFind', 'queried'>
+  : UpdatablePrimitive<S, 'isFind', 'queried'>, 'remove'>;
+// NOTE: It seems necessary for the above copy of the Store<S> definition to exist here
+// (rather than making use of the existing Store<S> definition) otherwise the typescript 
+// compiler seems to inexplicably hang.
+
 export const createStore = <S>(
-  args: {
-    state: S,
-    name: string,
-  }
+  args: OptionsForMakingAStore<S>
 ): Store<S> => {
   validateState(args.state);
   testState.logLevel = 'none';
@@ -24,7 +28,7 @@ const readSelector = (storeName: string) => {
   let nestedStoreInfo: undefined | { instanceName?: string | number, containerStoreName: string, storeName: string };
   let state: any;
   const initialize = (s: any, topLevel: boolean, stateActions: StateAction[]): any => {
-    if (typeof s !== 'object') { return null as any; }
+    if (typeof s !== 'object') { return null; }
     return new Proxy(s, {
       get: function (target, prop: string) {
         stateActions = topLevel ? new Array<StateAction>() : stateActions;

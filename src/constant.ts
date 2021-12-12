@@ -1,5 +1,5 @@
-import { Augmentations, StateAction } from "./type"
-import { DevtoolsInstance, PreviousAction, WindowAugmentedWithReduxDevtools } from "./type-internal";
+import { Augmentations, StateAction, Store } from "./type"
+import { DevtoolsInstance, PreviousAction, StoreInternal, WindowAugmentedWithReduxDevtools } from "./type-internal";
 
 export const errorMessages = {
   FIND_RETURNS_NO_MATCHES: 'Could not find array element',
@@ -13,7 +13,7 @@ export const errorMessages = {
 } as const;
 
 export const libState = {
-  appStores: {} as { [storeName: string]: any }, // note: don't change 'any' to Store<any> else the typescript engine seems to take strain.
+  appStores: {} as { [storeName: string]: StoreInternal<any> },
   devtoolsRegistry: {} as { [name: string]: DevtoolsInstance },
   currentAction: {} as { [key: string]: any },
   insideTransaction: false,

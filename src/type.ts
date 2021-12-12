@@ -292,24 +292,6 @@ export interface StateAction {
   actionType?: string;
 }
 
-export interface QuerySpec {
-  query: (e: any) => boolean,
-  concat: 'and' | 'or' | 'last'
-};
-
-export type ComponentStore<S>
-  = Omit<S extends Array<any> ? UpdatableArray<S, 'isFilter', 'notQueried'>
-    : S extends object ? UpdatableObject<S, 'isFind', 'queried'>
-    : UpdatablePrimitive<S, 'isFind', 'queried'>, 'remove'> & {
-      removeFromApplicationStore: () => void,
-      setDeferredInstanceName: (instanceName: string | number) => void,
-    };
-
-export type Store<S>
-  = Omit<S extends Array<any> ? UpdatableArray<S, 'isFilter', 'notQueried'>
-    : S extends object ? UpdatableObject<S, 'isFind', 'queried'>
-    : UpdatablePrimitive<S, 'isFind', 'queried'>, 'remove'>;
-
 type DerivationCalculationInput<E> = E extends Readable<infer W> ? W : never;
 
 export type DerivationCalculationInputs<T extends Array<Readable<any>>> = {
@@ -346,33 +328,20 @@ export interface Async<C> {
 
 export type AnyAsync<C> = Async<C> | Promise<C>;
 
-export const Deferred = Symbol('deferred');
-
-export type OptionsForMakingAComponentStore = {
-  /**
-   * The name that will distinguish this component store from others within the state tree
-   */
-  componentName: string;
-  /**
-   * The string that will distinguish different instances of the same component store.
-   */
-  instanceName: string | number | typeof Deferred;
-  /**
-   * Whether or not action stack-traces should be logged to the console.
-   * Internally, this makes use of `new Error().stack` to take advantage of sourcemaps
-   */
-  traceActions?: boolean,
-  /**
-   * The name that will identify your store in the devtools extension.
-   * The default value is `document.title`.
-   */
-  applicationStoreName?: string;
-};
-
-export interface OptionsForMakingAnApplicationStore {
+export interface OptionsForMakingAStore<S> {
   /**
    * The name that will identify your store in the devtools extension.
    * The default value is `document.title`.
    */
   name: string,
+  /**
+   * The initial state of your store. Can be any serializable object
+   */
+  state: S,
 }
+
+export type Store<S> = Omit<S extends Array<any> ? UpdatableArray<S, 'isFilter', 'notQueried'>
+  : S extends object ? UpdatableObject<S, 'isFind', 'queried'>
+  : UpdatablePrimitive<S, 'isFind', 'queried'>, 'remove'>;
+
+export type ChangeListeners = Map<StateAction[], (arg: any) => any>;
