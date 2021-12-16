@@ -151,8 +151,6 @@ function test() {
 
   // derive(select.objArray).with(s => s).useState();
 
-
-
 }
 
 // const updateTodoStatus = (id: number, status: TodoStatus) => {

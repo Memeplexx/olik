@@ -1,4 +1,4 @@
-import { errorMessages } from "./constant";
+import { errorMessages } from './constant';
 
 export const toIsoStringInCurrentTz = (date: Date) => {
   const tzo = -date.getTimezoneOffset();

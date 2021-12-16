@@ -35,6 +35,7 @@ export type StoreInternal<S> = Store<S> & {
   setState(state: S): void,
   getState(): S,
   getChangeListeners(): ChangeListeners,
+  setStoreName(name: string): void,
   getStoreName(): string,
   setNestedStoreInfo(info?: NestedStoreInfo): void,
   getNestedStoreInfo(): NestedStoreInfo | undefined,
