@@ -53,6 +53,8 @@ const readSelector = (storeName: string) => {
           }
         } else if ('getChangeListeners' === prop) {
           return () => changeListeners;
+        } else if ('setStoreName' === prop) {
+          return (name: string) => storeName = name;
         } else if ('getStoreName' === prop) {
           return () => storeName;
         } else if ('setNestedStoreInfo' === prop) {

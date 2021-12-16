@@ -25,6 +25,7 @@ export const nestStoreIfPossible = (
         .forEach(a => node = a.type === 'comparator' ? node[a.name](a.arg) : node[a.name]);
       node.onChange(performAction);
     });
+  // TODO: delete old listeners?
   storeArg.setNestedStoreInfo({ storeName: nestedStoreName, instanceName: arg.instanceName, containerStoreName: arg.containerStoreName });
   delete libState.appStores[nestedStoreName];
   return {
