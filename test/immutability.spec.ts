@@ -1,5 +1,5 @@
 import { createStore } from '../src';
-import { libState } from '../src/constant';
+import { testState } from '../src/constant';
 import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
 describe('immutability', () => {
@@ -7,7 +7,7 @@ describe('immutability', () => {
   const name = 'AppStore';
 
   beforeAll(() => {
-    libState.windowObject = windowAugmentedWithReduxDevtoolsImpl
+    testState.fakeWindowObjectForReduxDevtools = windowAugmentedWithReduxDevtoolsImpl
   });
 
   const state = {
