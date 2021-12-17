@@ -352,3 +352,6 @@ export interface ChangeListener {
 export interface NestStoreRef {
   detach(): void,
 }
+
+export interface StoreLike<S> extends Read<S>, OnChange<S>, InvalidateCache, Replace<S> {
+}

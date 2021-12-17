@@ -1,9 +1,9 @@
 import { errorMessages, libState } from './constant';
-import { NestStoreRef, Store } from './type';
+import { NestStoreRef, Store, StoreLike } from './type';
 import { StoreInternal } from './type-internal';
 
 export const nestStoreIfPossible = (
-  store: Store<any>,
+  store: StoreLike<any>,
   arg: {
     instanceName: string | number,
     containerStoreName: string,

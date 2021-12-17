@@ -1,4 +1,4 @@
-import { ChangeListener, Store } from "./type"
+import { ChangeListener, Store, StoreLike } from "./type"
 
 export type DevtoolsInstance = {
   init: (state: any) => any,
@@ -30,7 +30,7 @@ export interface NestedStoreInfo {
   containerStoreName: string,
 }
 
-export type StoreInternal<S> = Store<S> & {
+export type StoreInternal<S> = StoreLike<S> & {
   nested: any,
   setState(state: S): void,
   getState(): S,
