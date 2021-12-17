@@ -18,13 +18,13 @@ export const nestStoreIfPossible = (
   }
   const nestedStoreName = storeArg.getStoreName();
   appStore.nested[nestedStoreName][arg.instanceName].replace(storeArg.read());
-  Array.from(storeArg.getChangeListeners().entries())
-    .forEach(([stateActions, performAction]) => {
+  storeArg.getChangeListeners()
+    .forEach(({ actions, listener }) => {
       let node = appStore.nested[nestedStoreName][arg.instanceName];
-      stateActions.slice(0, stateActions.length - 1)
+      actions.slice(0, actions.length - 1)
         .forEach(a => node = a.type === 'comparator' ? node[a.name](a.arg) : node[a.name]);
-      node.onChange(performAction);
-    });
+      node.onChange(listener);
+    })
   // TODO: delete old listeners?
   storeArg.setNestedStoreInfo({ storeName: nestedStoreName, instanceName: arg.instanceName, containerStoreName: arg.containerStoreName });
   delete libState.appStores[nestedStoreName];

@@ -1,22 +1,22 @@
 import { augmentations, devtoolsDebounce, errorMessages, libState, testState } from './constant';
 import { constructQuery } from './query';
 import { readState } from './read';
-import { FutureState, StateAction } from './type';
+import { ChangeListener, FutureState, StateAction } from './type';
 import { deepFreeze, deepMerge, toIsoStringInCurrentTz } from './utility';
 
 export const updateState = (
   storeName: string,
   stateActions: StateAction[],
-  changeListeners: Map<StateAction[], (arg: any) => any>,
+  changeListeners: Array<ChangeListener>,
 ) => {
   const oldState = libState.appStores[storeName].getState();
   libState.appStores[storeName].setState(writeState(oldState, { ...oldState }, stateActions, { index: 0 }));
-  changeListeners.forEach((listener, stateActions) => {
-    const selectedNewState = readState(libState.appStores[storeName].getState(), stateActions, { index: 0 });
-    if (readState(oldState, stateActions, { index: 0 }) !== selectedNewState) {
+  changeListeners.forEach(({actions, listener}) => {
+    const selectedNewState = readState(libState.appStores[storeName].getState(), actions, { index: 0 });
+    if (readState(oldState, actions, { index: 0 }) !== selectedNewState) {
       listener(selectedNewState);
     }
-  });
+  })
 
   // if (arg.stack) {
   //   console.groupCollapsed(libState.currentAction.type);
@@ -138,7 +138,7 @@ export const writeState = (currentState: any, stateToUpdate: any, stateActions: 
   }
 }
 
-export const processUpdate = (storeName: string, stateActions: StateAction[], prop: string, changeListeners: Map<StateAction[], (arg: any) => any>) => {
+export const processUpdate = (storeName: string, stateActions: StateAction[], prop: string, changeListeners: Array<ChangeListener>) => {
   return (arg: any, opts?: { cacheFor: number, optimisticallyUpdateWith: any }) => {
     deepFreeze(arg);
     if (typeof (arg) !== 'function') {

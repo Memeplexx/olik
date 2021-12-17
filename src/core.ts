@@ -1,6 +1,6 @@
 import { augmentations, libState, testState } from './constant';
 import { readState } from './read';
-import { OptionsForMakingAStore, StateAction, UpdatableArray, UpdatableObject, UpdatablePrimitive } from './type';
+import { ChangeListener, OptionsForMakingAStore, StateAction, UpdatableArray, UpdatableObject, UpdatablePrimitive } from './type';
 import { NestedStoreInfo } from './type-internal';
 import { deepFreeze, validateState } from './utility';
 import { processUpdate, updateState } from './write';
@@ -25,9 +25,11 @@ export const createStore = <S>(
 }
 
 const readSelector = (storeName: string) => {
-  const changeListeners = new Map<StateAction[], (arg: any) => any>();
+  const changeListeners = new Array<ChangeListener>();
   let nestedStoreInfo: undefined | NestedStoreInfo;
+  let mergedStoreInfo: string;
   let state: any;
+  let name = storeName;
   const initialize = (s: any, topLevel: boolean, stateActions: StateAction[]): any => {
     if (typeof s !== 'object') { return null; }
     return new Proxy(s, {
@@ -35,8 +37,10 @@ const readSelector = (storeName: string) => {
         stateActions = topLevel ? new Array<StateAction>() : stateActions;
         if (topLevel && nestedStoreInfo) {
           return libState.appStores[nestedStoreInfo.containerStoreName].nested[nestedStoreInfo.storeName][nestedStoreInfo.instanceName!][prop];
+        } else if (topLevel && mergedStoreInfo) {
+          return (libState.appStores[mergedStoreInfo] as any)[prop];
         } else if (['replace', 'patch', 'deepMerge', 'remove', 'increment', 'removeAll', 'replaceAll', 'patchAll', 'incrementAll', 'insertOne', 'insertMany', 'withOne', 'withMany'].includes(prop)) {
-          return processUpdate(storeName, stateActions, prop, changeListeners);
+          return processUpdate(name, stateActions, prop, changeListeners);
         } else if ('invalidateCache' === prop) {
           return () => {
             const actionType = stateActions.map(sa => sa.actionType).join('.');
@@ -46,17 +50,17 @@ const readSelector = (storeName: string) => {
               { type: 'action', name: 'remove', actionType: 'remove()' },
             ] as StateAction[];
             try {
-              updateState(storeName, newStateActions, changeListeners);
+              updateState(name, newStateActions, changeListeners);
             } catch (e) {
               /* This can happen if a cache has already expired */
             }
           }
         } else if ('getChangeListeners' === prop) {
           return () => changeListeners;
-        } else if ('setStoreName' === prop) {
-          return (name: string) => storeName = name;
+        } else if ('setMergedStoreInfo' === prop) {
+          return (info: string) => mergedStoreInfo = info;
         } else if ('getStoreName' === prop) {
-          return () => storeName;
+          return () => name;
         } else if ('setNestedStoreInfo' === prop) {
           return (info: NestedStoreInfo) => nestedStoreInfo = info;
         } else if ('getNestedStoreInfo' === prop) {
@@ -73,8 +77,9 @@ const readSelector = (storeName: string) => {
         } else if ('onChange' === prop) {
           return (changeListener: (arg: any) => any) => {
             const stateActionsCopy = [...stateActions, { type: 'action', name: prop }] as StateAction[];
-            changeListeners.set(stateActionsCopy, changeListener);
-            return { unsubscribe: () => { changeListeners.delete(stateActionsCopy); } }
+            const element = { actions: stateActionsCopy, listener: changeListener };
+            changeListeners.push(element);
+            return { unsubscribe: () => { changeListeners.splice(changeListeners.findIndex(e => e === element), 1); } }
           }
         } else if (['and', 'or'].includes(prop)) {
           stateActions.push({ type: 'searchConcat', name: prop, actionType: prop });

@@ -1,4 +1,4 @@
-import { ChangeListeners, Store } from "./type"
+import { ChangeListener, Store } from "./type"
 
 export type DevtoolsInstance = {
   init: (state: any) => any,
@@ -34,11 +34,11 @@ export type StoreInternal<S> = Store<S> & {
   nested: any,
   setState(state: S): void,
   getState(): S,
-  getChangeListeners(): ChangeListeners,
-  setStoreName(name: string): void,
+  getChangeListeners(): ChangeListener[],
   getStoreName(): string,
   setNestedStoreInfo(info?: NestedStoreInfo): void,
   getNestedStoreInfo(): NestedStoreInfo | undefined,
+  setMergedStoreInfo(info: string): void;
 }
 
 export interface QuerySpec {
