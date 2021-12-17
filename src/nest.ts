@@ -1,5 +1,5 @@
 import { errorMessages, libState } from './constant';
-import { NestStoreRef, Store, StoreLike } from './type';
+import { NestStoreRef, StoreLike } from './type';
 import { StoreInternal } from './type-internal';
 
 export const nestStoreIfPossible = (

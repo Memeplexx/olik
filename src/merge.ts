@@ -1,9 +1,8 @@
 import { errorMessages, libState } from './constant';
-import { Store, StoreLike } from './type';
+import { StoreLike } from './type';
 import { StoreInternal } from './type-internal';
 
 export const mergeStoreIfPossible = (
-  // store: Store<any>,
   store: StoreLike<any>,
   nameOfStoreToMergeInto: string
 ) => {
