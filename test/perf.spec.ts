@@ -1,6 +1,6 @@
 
 import { createStore } from '../src/index';
-import { libState, testState } from '../src/constant';
+import { testState } from '../src/constant';
 
 describe.skip('Performance', () => {
 

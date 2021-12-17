@@ -6,11 +6,13 @@ describe('devtools', () => {
 
   const name = 'AppStore';
 
+  beforeAll(() => {
+    testState.fakeWindowObjectForReduxDevtools = windowAugmentedWithReduxDevtoolsImpl;
+  })
+
   beforeEach(() => {
-    libState.appStores = {};
     libState.devtoolsRegistry = {};
     testState.logLevel = 'none';
-    testState.fakeWindowObjectForReduxDevtools = windowAugmentedWithReduxDevtoolsImpl;
   })
 
   it('should correctly respond to devtools dispatches where the state is an object', () => {

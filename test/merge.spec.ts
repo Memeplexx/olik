@@ -7,7 +7,6 @@ describe('merge', () => {
   const nameOfStoreToMerge = 'MergeStore';
 
   beforeEach(() => {
-    libState.appStores = {};
     testState.logLevel = 'none';
   })
 

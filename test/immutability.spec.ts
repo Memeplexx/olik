@@ -6,10 +6,6 @@ describe('immutability', () => {
 
   const name = 'AppStore';
 
-  beforeAll(() => {
-    testState.fakeWindowObjectForReduxDevtools = windowAugmentedWithReduxDevtoolsImpl
-  });
-
   const state = {
     object: { property: 'one', property2: 'two' },
     arr: [{id: 1, name: 'a'}],

@@ -7,7 +7,6 @@ describe('nest', () => {
   const nameOfContainerStore = 'ParentStore';
 
   beforeEach(() => {
-    libState.appStores = {};
     testState.logLevel = 'none';
   })
 
@@ -188,6 +187,7 @@ describe('nest', () => {
   })
 
   it('should work without a container store', () => {
+    libState.appStores = {}
     const selectNested = createStore({
       name: 'test',
       state: {
