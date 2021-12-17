@@ -1,100 +1,109 @@
-import { libState, testState } from '../src/shared-state';
-import { createApplicationStore } from '../src/store-creators';
-import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
+
+import { createStore } from '../src/index';
+import { libState, testState } from '../src/constant';
 
 describe('Object', () => {
 
-  beforeAll(() => {
-    testState.windowObject = windowAugmentedWithReduxDevtoolsImpl;
-  });
+  const state = { num: 0, str: '', bool: false };
+  const name = 'AppStore';
 
   beforeEach(() => {
-    libState.applicationStore = null;
+    testState.logLevel = 'none';
   })
 
-  const initialState = {
-    object: { property: 'one', property2: 'two' },
-    array: [{ id: 1, value: 'one' }]
-  };
-
-  it('should replace()', () => {
-    const select = createApplicationStore(initialState);
-    const payload = 'hey';
-    select(s => s.object.property)
+  it('should replace an object property', () => {
+    const select = createStore({ name, state });
+    const payload = 1;
+    select.num
       .replace(payload);
-    expect(testState.currentAction).toEqual({
-      type: 'object.property.replace()',
-      replacement: payload,
-    });
-    expect(select().read().object.property).toEqual('hey');
-    expect(select().read().object.property2 === initialState.object.property2).toBeTruthy();
+    expect(libState.currentAction).toEqual({ type: 'num.replace()', payload });
+    expect(select.num.read()).toEqual(1);
   })
 
-  it('should patch()', () => {
-    const select = createApplicationStore(initialState);
-    const payload = { property: 'xxx' };
-    select(s => s.object)
-      .patch(payload);
-    expect(testState.currentAction).toEqual({
-      type: 'object.patch()',
-      patch: payload,
-    });
-    expect(select().read().object.property).toEqual(payload.property);
-    expect(select().read().object.property2 === initialState.object.property2).toBeTruthy();
+  it('should patch an object', () => {
+    const select = createStore({ name, state });
+    const payload = { bool: true, str: 'x' };
+    select.patch({ bool: true, str: 'x' });
+    expect(libState.currentAction).toEqual({ type: 'patch()', payload });
+    expect(select.read()).toEqual({ ...state, ...payload });
   })
 
-  it('should reset()', () => {
-    const select = createApplicationStore(initialState);
-    select(s => s.object.property)
-      .replace('hey');
-    expect(select().read().object.property).toEqual('hey');
-    select(s => s.object.property)
-      .reset();
-    expect(select().read().object.property).toEqual('one');
-    select().replace({ object: { property: 'xx', property2: 'yy' }, array: [] });
-    expect(select().read()).toEqual({ object: { property: 'xx', property2: 'yy' }, array: [] });
-    select().reset();
-    expect(testState.currentAction).toEqual({
-      type: 'reset()',
-      replacement: initialState,
-    })
-    expect(select().read()).toEqual(initialState);
+  it('should deep merge an object', () => {
+    const state = { num: 0, obj: { num: 0, str: '', arr: [{ id: 1, num: 1 }] } };
+    const select = createStore({ name, state });
+    select.deepMerge({ num: 9, str: 'x', obj: { xxx: '', arr: [{ fff: 's' }] } });
+    expect(select.read()).toEqual({ num: 9, str: 'x', obj: { xxx: '', arr: [{ fff: 's' }], num: 0, str: '' } });
   })
 
-  it('should be able to add a new property onto an object', () => {
-    const select = createApplicationStore({} as { [key: string]: string });
-    const payload = { hello: 'world' };
-    select().patch(payload);
-    expect(testState.currentAction).toEqual({
-      type: 'patch()',
-      patch: payload,
-    });
-    expect(select().read()).toEqual({ hello: 'world' });
+  it('should increment an object property', () => {
+    const select = createStore({ name, state });
+    const payload = 1;
+    select.num
+      .increment(payload);
+    expect(libState.currentAction).toEqual({ type: 'num.increment()', payload });
+    expect(select.num.read()).toEqual(1);
   })
 
-  it('should remove a value', () => {
-    const select = createApplicationStore({ hello: 'one', world: 'two', another: 'three' });
-    select(s => s.another).remove();
-    expect(testState.currentAction).toEqual({
-      type: 'another.remove()',
-    });
-    expect(select().read()).toEqual({ hello: 'one', world: 'two' });
+  it('should remove an object property', () => {
+    const select = createStore({ name, state });
+    select.num
+      .remove();
+    expect(select.read()).toEqual({ str: '', bool: false });
   })
 
-  it('should patchAll()', () => {
-    const select = createApplicationStore(initialState);
-    const payload = [{ id: 2, value: 'two' }, { id: 3, value: 'three' }];
-    select(s => s.array)
-      .replaceAll(payload);
-    expect(select(s => s.array).read()).toEqual(payload);
+
+  it('', () => {
+    const state = { num1: 0, num2: 0 };
+    const select = createStore({ name, state });
+    let rootChangeCount = 0;
+    let num1ChangeCount = 0;
+    let num2ChangeCount = 0;
+    select.onChange(() => rootChangeCount++);
+    const l1 = select.num1.onChange(() => num1ChangeCount++);
+    select.num2.onChange(() => num2ChangeCount++);
+    select.num1.increment(1);
+    expect(num1ChangeCount).toEqual(1);
+    expect(num2ChangeCount).toEqual(0);
+    select.num2.increment(2);
+    expect(num1ChangeCount).toEqual(1);
+    expect(num2ChangeCount).toEqual(1);
+    expect(rootChangeCount).toEqual(2);
+    l1.unsubscribe();
+    select.num1.increment(1);
+    expect(num1ChangeCount).toEqual(1);
   })
 
-  it('should patchAll()', () => {
-    const select = createApplicationStore({ array: [{ id: 2, value: 'two' }, { id: 3, value: 'three' }] });
-    const payload = { value: 'xxx' };
-    select(s => s.array)
-      .patchAll(payload);
-    expect(select(s => s.array).read()).toEqual([{ id: 2, value: 'xxx' }, { id: 3, value: 'xxx' }]);
+  it('', () => {
+    const state = { arr: [{ id: 1, num: 1 }, { id: 2, num: 2 }] };
+    const select = createStore({ name, state });
+    let changeCount = 0;
+    select.arr.find.id.eq(1).onChange(() => changeCount++);
+    select.arr.find.id.eq(2).num.increment(1);
+    expect(changeCount).toEqual(0);
+    select.arr.find.id.eq(1).num.increment(1);
+    expect(changeCount).toEqual(1);
   })
+
+  it('', () => {
+    const state = { arr: [{ id: 1, num: 1 }, { id: 2, num: 2 }] };
+    const select = createStore({ name, state });
+    expect(select.arr.filter.id.eq(1).or.num.eq(2).id.read()).toEqual([1, 2]);
+  })
+
+  it('', () => {
+    const state = { arr: [{ id: 1, num: 1 }, { id: 2, num: 2 }] };
+    const select = createStore({ name, state });
+    select.arr
+      .filter.id.eq(1).or.num.eq(2)
+      .id.increment(1);
+    expect(select.arr.read()).toEqual([{ id: 2, num: 1 }, { id: 3, num: 2 }]);
+  })
+
+  it('', () => {
+    const state = { arr: [{ id: 1, num: 1 }, { id: 2, num: 2 }] };
+    const select = createStore({ name, state });
+    select.arr.patchAll({ num: 9 });
+    expect(select.arr.read()).toEqual([{ id: 1, num: 9 }, { id: 2, num: 9 }]);
+  });
 
 });

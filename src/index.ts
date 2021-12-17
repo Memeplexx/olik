@@ -1,6 +1,7 @@
-export * from './store-creators';
-export * from './derive-from';
-export * from './devtools-integration';
-export * from './shapes-external';
-export * from './transact';
-export { augment } from './augmentations';
+export { createStore } from './core';
+export { augment } from './augment';
+export { derive } from './derive';
+export { transact } from './transact';
+export { nestStoreIfPossible } from './nest';
+export { trackWithReduxDevtools } from './devtools';
+export { mergeStoreIfPossible } from './merge';

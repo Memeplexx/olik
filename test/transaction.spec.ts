@@ -1,46 +1,48 @@
-import { createApplicationStore, transact } from '../src';
-import { libState, testState } from '../src/shared-state';
-import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
+import { createStore, transact } from '../src';
+import { errorMessages, libState, testState } from '../src/constant';
 
-describe('Transact', () => {
+describe('transaction', () => {
 
-  beforeAll(() => {
-    testState.windowObject = windowAugmentedWithReduxDevtoolsImpl;
-  });
+  const name = 'AppStore';
 
   beforeEach(() => {
-    libState.applicationStore = null;
+    testState.logLevel = 'none';
   })
 
-  it('should perform a transaction', () => {
-    const select = createApplicationStore({ hello: '', world: new Array<string>(), some: { deep: { val: false } } });
-    let changeCount = 0;
-    select().onChange(s => changeCount++);
+  it('should support transactions', () => {
+    const state = { num: 0, str: '', bool: false };
+    const select = createStore({ name, state });
     transact(
-      () => select(s => s.hello).replace('test'),
-      () => select(s => s.world).insertOne('hey'),
-      () => select(s => s.some.deep.val).replace(true),
+      () => select.num.replace(1),
+      () => select.str.replace('x'),
     );
-    expect(changeCount).toEqual(1);
-    const expectedState = { hello: 'test', world: ['hey'], some: { deep: { val: true } } };
-    expect(select().read()).toEqual(expectedState);
-    expect(testState.currentAction).toEqual({
-      type: 'hello.replace(), world.insertOne(), some.deep.val.replace()',
+    expect(select.read()).toEqual({ num: 1, str: 'x', bool: false });
+    expect(libState.currentAction).toEqual({
+      type: 'num.replace(), str.replace()',
       actions: [
-        {
-          type: 'hello.replace()',
-          replacement: 'test',
-        },
-        {
-          type: 'world.insertOne()',
-          insertion: 'hey',
-        },
-        {
-          type: 'some.deep.val.replace()',
-          replacement: true,
-        }
+        { type: 'num.replace()', payload: 1 },
+        { type: 'str.replace()', payload: 'x' },
       ]
-    });
-  });
+    })
+  })
+
+  it('should support transactions with only 1 action', () => {
+    const state = { num: 0 };
+    const select = createStore({ name, state });
+    const payload = 1;
+    transact(() => select.num.replace(payload));
+    expect(select.num.read()).toEqual(payload);
+    expect(libState.currentAction).toEqual({ type: 'num.replace()', payload });
+  })
+
+  it('should not support transactions if one of the actions has an async payload', () => {
+    const state = { num: 0, str: '', bool: false };
+    const select = createStore({ name, state });
+    expect(() => transact(
+      () => select.num.replace(() => new Promise(resolve => resolve(1))),
+      () => select.str.replace('x'),
+    )).toThrow(errorMessages.ASYNC_PAYLOAD_INSIDE_TRANSACTION);
+  })
 
 });
+

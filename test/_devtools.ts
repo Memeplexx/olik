@@ -1,4 +1,4 @@
-import { WindowAugmentedWithReduxDevtools } from '../src/shapes-internal';
+import { WindowAugmentedWithReduxDevtools } from "../src/type-internal";
 
 export const windowAugmentedWithReduxDevtoolsImpl = {
   __REDUX_DEVTOOLS_EXTENSION__: new class {

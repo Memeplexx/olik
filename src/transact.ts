@@ -1,18 +1,10 @@
-import { libState } from './shared-state';
+import { libState } from './constant';
 
-export function transact(...operations: (() => void)[]) {
-  if (!operations.length) {
-    return;
-  }
-  if (operations.length === 1) {
-    operations[0]();
-    return;
-  }
-  libState.transactionState = 'started';
-  operations.forEach((operation, i) => {
-    if (i === operations.length - 1) {
-      libState.transactionState = 'last';
-    }
-    operation();
-  });
+export const transact = (...operations: (() => void)[]) => {
+  if (!operations.length) { return; }
+  if (operations.length === 1) { return operations[0](); }
+  libState.currentAction = {};
+  libState.insideTransaction = true;
+  operations.forEach(op => op());
+  libState.insideTransaction = false;
 }
