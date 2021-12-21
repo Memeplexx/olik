@@ -1,19 +1,12 @@
 import { augmentations, libState, testState } from './constant';
 import { readState } from './read';
-import { ChangeListener, OptionsForMakingAStore, StateAction, UpdatableArray, UpdatableObject, UpdatablePrimitive } from './type';
+import { ChangeListener, OptionsForMakingAStore, StateAction, UpdatableArray, UpdatableObject, UpdatablePrimitive, Store } from './type';
 import { NestedStoreInfo } from './type-internal';
 import { deepFreeze, validateState } from './utility';
 import { processUpdate, updateState } from './write';
 
 
-type Store<S> = Omit<S extends Array<any> ? UpdatableArray<S, 'isFilter', 'notQueried'>
-  : S extends object ? UpdatableObject<S, 'isFind', 'queried'>
-  : UpdatablePrimitive<S, 'isFind', 'queried'>, 'remove'>;
-// NOTE: It seems necessary for the above copy of the Store<S> definition to exist here
-// (rather than making use of the existing Store<S> definition) otherwise the typescript 
-// compiler seems to inexplicably hang.
-
-export const createStore = <S>(
+export const createStore = <S = undefined>(
   args: OptionsForMakingAStore<S>
 ): Store<S> => {
   validateState(args.state);

@@ -1,15 +1,15 @@
 import { errorMessages, libState } from './constant';
-import { NestStoreRef, StoreLike } from './type';
+import { NestStoreRef, Store } from './type';
 import { StoreInternal } from './type-internal';
 
-export const nestStoreIfPossible = (
-  store: StoreLike<any>,
+export const nestStoreIfPossible = <S>(
+  store: Store<S>,
   arg: {
     instanceName: string | number,
     containerStoreName: string,
   }
 ): NestStoreRef => {
-  const storeArg = store as StoreInternal<any>;
+  const storeArg = store as any as StoreInternal<any>;
   const appStore = libState.appStores[arg.containerStoreName || document.title];
   if (!appStore) { return { detach: () => null }; }
   const wrapperState = appStore.read();

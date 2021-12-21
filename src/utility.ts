@@ -1,4 +1,4 @@
-import { errorMessages } from './constant';
+import { errorMessages, libState } from './constant';
 
 export const toIsoStringInCurrentTz = (date: Date) => {
   const tzo = -date.getTimezoneOffset();
@@ -67,3 +67,5 @@ export const validateState = (state: any) => {
     Object.keys(state).forEach(key => validateState(state[key]));
   }
 }
+
+export const getStoreByName = (name: string) => libState.appStores[name];

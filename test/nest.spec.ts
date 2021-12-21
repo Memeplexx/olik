@@ -139,7 +139,7 @@ describe('nest', () => {
     const nameOfNestedStore = 'myComp';
     const instanceName = '0';
     const selectNested = createStore({ name: nameOfNestedStore, state: stateOfNestedStore });
-    nestStoreIfPossible(selectNested, { containerStoreName: nameOfContainerStore, instanceName });
+    nestStoreIfPossible(selectNested as any, { containerStoreName: nameOfContainerStore, instanceName });
     selectNested.insertOne('test');
     expect(selectContainer.read()).toEqual({ test: '', nested: { [nameOfNestedStore]: { [instanceName]: ['test'] } } });
   })

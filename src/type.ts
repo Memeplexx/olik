@@ -30,58 +30,69 @@ export interface UpsertablePrimitive<T> extends WithOne<T>, WithMany<T> {
 type Payload<S> = S | (() => AnyAsync<S>);
 type UpdateResult<X extends AnyAsync<any>> = X extends (() => AnyAsync<infer R>) ? Future<R> : void;
 
-export type UpdatableObject<S, F extends FindOrFilter, Q extends QueryStatus> = (
-  Patch<S> & (
-    F extends 'isFind' ? Replace<S> & DeepMerge<S> : {}
-  ) & ({
-    [K in keyof S]: S[K] extends Array<any>
-    ? UpdatableArray<S[K], 'isFilter', 'notQueried'>
-    : S[K] extends object ? UpdatableObject<S[K], F, Q>
-    : UpdatablePrimitive<S[K], F, Q>
-  }) & (
-    Readable<F extends 'isFilter' ? S[] : S>
-  ) & InvalidateCache & Remove
-);
+type DecrementRecursion<Depth extends number> = [-1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30][Depth];
 
-export type UpdatableArray<S extends Array<any>, F extends FindOrFilter, Q extends QueryStatus> = (
-  Q extends 'queried' ? (
-    ({
-      or: Comparators<S, S[0], F> & (S[0] extends object ? Searchable<S, S[0], F> : {}),
-      and: Comparators<S, S[0], F> & (S[0] extends object ? Searchable<S, S[0], F> : {}),
-    } & Remove)
+export type UpdatableObject<S, F extends FindOrFilter, Q extends QueryStatus, Depth extends number, NewDepth extends number = DecrementRecursion<Depth>> = {
+  done: {},
+  recur:
+  & Patch<S>
+  & (F extends 'isFind' ? (Replace<S> & DeepMerge<S>) : {})
+  & Readable<F extends 'isFilter' ? S[] : S>
+  & InvalidateCache
+  & Remove
+  & ({
+    [K in keyof S]: S[K] extends Array<any>
+    ? UpdatableArray<S[K], 'isFilter', 'notQueried', NewDepth>
+    : S[K] extends object ? UpdatableObject<S[K], F, Q, NewDepth>
+    : UpdatablePrimitive<S[K], F, Q>
+  })
+}[Depth extends -1 ? 'done' : 'recur']
+
+
+export type UpdatableArray<S extends Array<any>, F extends FindOrFilter, Q extends QueryStatus, Depth extends number, NewDepth extends number = DecrementRecursion<Depth>> = {
+  done: {},
+  recur:
+  & Q extends 'queried' ? (
+    & Remove
     & (F extends 'isFind' ? Replace<S[0]> : {})
-    & (S[0] extends Array<any> ? {} : S[0] extends object ? UpdatableObject<S[0], F, Q> : UpdatablePrimitive<S[0], F, Q>)
+    & { or: Comparators<S, S[0], F, NewDepth> & (S[0] extends object ? Searchable<S, S[0], F, NewDepth> : {}) }
+    & { and: Comparators<S, S[0], F, NewDepth> & (S[0] extends object ? Searchable<S, S[0], F, NewDepth> : {}) }
+    & (S[0] extends Array<any> ? {} : S[0] extends object ? UpdatableObject<S[0], F, Q, NewDepth> : UpdatablePrimitive<S[0], F, Q>)
   ) : (
-    ({
-      find: Comparators<S, S[0], 'isFind'> & (S[0] extends object ? Searchable<S, S[0], 'isFind'> : {}),
-      filter: Comparators<S, S[0], 'isFilter'> & (S[0] extends object ? Searchable<S, S[0], 'isFilter'> : {}),
-    } & RemoveAll & InsertMany<S> & InsertOne<S[0]> & ReplaceAll<S>) & (
-      S[0] extends Array<any> ? {} : S[0] extends object ? UpsertMatching<S[0]> : {}
-    ) & (
-      S[0] extends object ? (({
-        [K in keyof S[0]]: (S[0][K] extends Array<any>
-          ? UpdatableArray<S[0][K], 'isFilter', 'notQueried'>
-          : S[0][K] extends object
-          ? UpdatableObject<S[0][K], F, Q>
-          : UpdatablePrimitive<S[0][K], F, Q>)
-      }) & PatchAll<S[0]>) : IncrementAll
-    ) & (
-      Readable<F extends 'isFilter' ? S : S[0]>
+    & RemoveAll
+    & InsertMany<S>
+    & InsertOne<S[0]>
+    & ReplaceAll<S>
+    & Readable<F extends 'isFilter' ? S : S[0]>
+    & (S[0] extends Array<any> ? {} : S[0] extends object ? UpsertMatching<S[0]> : {})
+    & { find: Comparators<S, S[0], 'isFind', NewDepth> & (S[0] extends object ? Searchable<S, S[0], 'isFind', NewDepth> : {}) }
+    & { filter: Comparators<S, S[0], 'isFilter', NewDepth> & (S[0] extends object ? Searchable<S, S[0], 'isFilter', NewDepth> : {}) }
+    & (
+      S[0] extends object
+      ? (
+        & PatchAll<S[0]>
+        & { [K in keyof S[0]]:
+          (S[0][K] extends Array<any>
+            ? UpdatableArray<S[0][K], 'isFilter', 'notQueried', NewDepth>
+            : S[0][K] extends object
+            ? UpdatableObject<S[0][K], F, Q, NewDepth>
+            : UpdatablePrimitive<S[0][K], F, Q>)
+        }
+      )
+      : IncrementAll
     )
   )
-)
+}[Depth extends -1 ? 'done' : 'recur']
 
 export type UpdateOptions<H> = (H extends () => AnyAsync<any> ? & CacheFor & OptimisticallyUpdateWith<H> : {}) | void;
 
-export type UpdatablePrimitive<S, F extends FindOrFilter, Q extends QueryStatus> = (
-  (
-    Q extends 'notQueried' ? ReplaceAll<S> : F extends 'isFind' ? Replace<S> : {}
-  ) & (
-    S extends number ? (Q extends 'notQueried' ? IncrementAll : Increment) : {}
-  ) & (
-    Readable<F extends 'isFilter' ? S[] : S>
-  ) & InvalidateCache & Remove
-);
+export type UpdatablePrimitive<S, F extends FindOrFilter, Q extends QueryStatus> = 
+  & InvalidateCache
+  & Remove
+  & (Q extends 'notQueried' ? ReplaceAll<S> : F extends 'isFind' ? Replace<S> : {})
+  & (S extends number ? (Q extends 'notQueried' ? IncrementAll : Increment) : {})
+  & Readable<F extends 'isFilter' ? S[] : S>
+
 
 export interface UpsertMatching<S> {
   upsertMatching: { [K in keyof S]: S[K] extends object ? UpsertableObject<S, S> : UpsertablePrimitive<S> },
@@ -254,36 +265,45 @@ export interface OptimisticallyUpdateWith<H> {
   optimisticallyUpdateWith?: H extends () => AnyAsync<infer W> ? W : never,
 }
 
-export type UpdatableAny<T, F extends FindOrFilter, Q extends QueryStatus>
-  = T extends Array<any>
-  ? UpdatableArray<T, F, Q>
+export type UpdatableAny<T, F extends FindOrFilter, Q extends QueryStatus, Depth extends number, NewDepth extends number = DecrementRecursion<Depth>> = {
+  depth: {},
+  recur: 
+  T extends Array<any>
+  ? UpdatableArray<T, F, Q, NewDepth>
   : T extends object
-  ? UpdatableObject<T, F, Q>
-  : UpdatablePrimitive<T, F, Q>;
+  ? UpdatableObject<T, F, Q, NewDepth>
+  : UpdatablePrimitive<T, F, Q>
+}[Depth extends -1 ? 'done' : 'recur']
 
-export type Comparators<T, S, F extends FindOrFilter> = {
-  eq: (value: S) => UpdatableAny<T, F, 'queried'>,
-  ne: (value: S) => UpdatableAny<T, F, 'queried'>,
-  in: (array: S[]) => UpdatableAny<T, F, 'queried'>,
-  ni: (array: S[]) => UpdatableAny<T, F, 'queried'>,
-} & (S extends string ? {
-  match: (matches: RegExp) => UpdatableAny<T, F, 'queried'>,
-  gt: (greaterThan: S) => UpdatableAny<T, F, 'queried'>,
-  gte: (greaterThanOrEqualTo: S) => UpdatableAny<T, F, 'queried'>,
-  lt: (lessThan: S) => UpdatableAny<T, F, 'queried'>,
-  lte: (lessThanOrEqualTo: S) => UpdatableAny<T, F, 'queried'>,
-} : S extends number ? {
-  gt: (greaterThan: S) => UpdatableAny<T, F, 'queried'>,
-  gte: (greaterThanOrEqualTo: S) => UpdatableAny<T, F, 'queried'>,
-  lt: (lessThan: S) => UpdatableAny<T, F, 'queried'>,
-  lte: (lessThanOrEqualTo: S) => UpdatableAny<T, F, 'queried'>,
-} : {});
+export type Comparators<T, S, F extends FindOrFilter, Depth extends number, NewDepth extends number = DecrementRecursion<Depth>> = {
+  done: {},
+  recur: {
+    eq: (value: S) => UpdatableAny<T, F, 'queried', NewDepth>,
+    ne: (value: S) => UpdatableAny<T, F, 'queried', NewDepth>,
+    in: (array: S[]) => UpdatableAny<T, F, 'queried', NewDepth>,
+    ni: (array: S[]) => UpdatableAny<T, F, 'queried', NewDepth>,
+  } & (S extends string ? {
+    match: (matches: RegExp) => UpdatableAny<T, F, 'queried', NewDepth>,
+    gt: (greaterThan: S) => UpdatableAny<T, F, 'queried', NewDepth>,
+    gte: (greaterThanOrEqualTo: S) => UpdatableAny<T, F, 'queried', NewDepth>,
+    lt: (lessThan: S) => UpdatableAny<T, F, 'queried', NewDepth>,
+    lte: (lessThanOrEqualTo: S) => UpdatableAny<T, F, 'queried', NewDepth>,
+  } : S extends number ? {
+    gt: (greaterThan: S) => UpdatableAny<T, F, 'queried', NewDepth>,
+    gte: (greaterThanOrEqualTo: S) => UpdatableAny<T, F, 'queried', NewDepth>,
+    lt: (lessThan: S) => UpdatableAny<T, F, 'queried', NewDepth>,
+    lte: (lessThanOrEqualTo: S) => UpdatableAny<T, F, 'queried', NewDepth>,
+  } : {})
+}[Depth extends -1 ? 'done' : 'recur']
 
-export type Searchable<T, S, F extends FindOrFilter> = {
-  [K in keyof S]: (S[K] extends object
-    ? (Searchable<T, S[K], F> & Comparators<T, S[K], F>)
-    : Comparators<T, S[K], F>)
-};
+export type Searchable<T, S, F extends FindOrFilter, Depth extends number, NewDepth extends number = DecrementRecursion<Depth>> = {
+  done: {},
+  recur: {
+    [K in keyof S]: (S[K] extends object
+      ? (Searchable<T, S[K], F, NewDepth> & Comparators<T, S[K], F, NewDepth>)
+      : Comparators<T, S[K], F, NewDepth>)
+  }
+}[Depth extends -1 ? 'done' : 'recur']
 
 export interface StateAction {
   type: 'property' | 'search' | 'comparator' | 'action' | 'searchConcat' | 'upsertMatching';
@@ -340,9 +360,12 @@ export interface OptionsForMakingAStore<S> {
   state: S,
 }
 
-export type Store<S> = Omit<S extends Array<any> ? UpdatableArray<S, 'isFilter', 'notQueried'>
-  : S extends object ? UpdatableObject<S, 'isFind', 'queried'>
-  : UpdatablePrimitive<S, 'isFind', 'queried'>, 'remove'>;
+// export type Store<S> = Omit<S extends Array<any> ? UpdatableArray<S, 'isFilter', 'notQueried', 12>
+//   : S extends object ? UpdatableObject<S, 'isFind', 'queried', 12>
+//   : UpdatablePrimitive<S, 'isFind', 'queried', 12>, 'remove'>;
+export type Store<S> = S extends Array<any> ? UpdatableArray<S, 'isFilter', 'notQueried', 28>
+  : S extends object ? UpdatableObject<S, 'isFind', 'queried', 28>
+  : UpdatablePrimitive<S, 'isFind', 'queried'>;
 
 export interface ChangeListener {
   actions: StateAction[];
@@ -355,3 +378,4 @@ export interface NestStoreRef {
 
 export interface StoreLike<S> extends Read<S>, OnChange<S>, InvalidateCache, Replace<S> {
 }
+
