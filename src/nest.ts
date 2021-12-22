@@ -4,13 +4,13 @@ import { NestStoreRef } from './type';
 import { StoreInternal } from './type-internal';
 
 export const nestStoreIfPossible = <S>(
-  store: StoreLike<S>,
   arg: {
+    store: StoreLike<S>,
     instanceName: string | number,
     containerStoreName: string,
   }
 ): NestStoreRef => {
-  const storeArg = store as any as StoreInternal<any>;
+  const storeArg = arg.store as StoreInternal<any>;
   const appStore = libState.appStores[arg.containerStoreName || document.title];
   if (!appStore) { return { detach: () => null }; }
   const wrapperState = appStore.state;
