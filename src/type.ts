@@ -396,11 +396,6 @@ export interface Augmentations {
   async: <C>(fnReturningFutureAugmentation: () => any) => Promise<C>;
 }
 
-// export interface Async<C> {
-// }
-
-// export type AnyAsync<C> = Async<C> | Promise<C>;
-
 export interface AnyAsync<C> extends Promise<C> { }
 
 export interface OptionsForMakingAStore<S> {
