@@ -28,7 +28,7 @@ export interface UpsertablePrimitive<T> extends WithOne<T>, WithMany<T> {
 }
 
 type Payload<S> = S | (() => AnyAsync<S>);
-type UpdateResult<X extends AnyAsync<any>> = X extends (() => AnyAsync<infer R>) ? Future<R> : void;
+type UpdateResult<X> = X extends (() => AnyAsync<infer R>) ? Future<R> : void;
 
 export type DecrementRecursion = [-1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30];
 export type LengthOfTuple<T extends any[]> = T extends { length: infer L } ? L : never;
@@ -396,10 +396,12 @@ export interface Augmentations {
   async: <C>(fnReturningFutureAugmentation: () => any) => Promise<C>;
 }
 
-export interface Async<C> {
-}
+// export interface Async<C> {
+// }
 
-export type AnyAsync<C> = Async<C> | Promise<C>;
+// export type AnyAsync<C> = Async<C> | Promise<C>;
+
+export interface AnyAsync<C> extends Promise<C> { }
 
 export interface OptionsForMakingAStore<S> {
   /**
