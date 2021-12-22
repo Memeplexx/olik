@@ -1,28 +1,20 @@
-import { augmentations, libState, testState } from './constant';
+import { augmentations, libState } from './constant';
 import { readState } from './read';
-import { ChangeListener, OptionsForMakingAStore, StateAction, UpdatableArray, UpdatableObject, UpdatablePrimitive, Store } from './type';
+import { ChangeListener, OptionsForMakingAStore, StateAction, Store } from './type';
 import { NestedStoreInfo } from './type-internal';
 import { deepFreeze, validateState } from './utility';
 import { processUpdate, updateState } from './write';
 
 
-export const createStore = <S = undefined>(
+export const createStore = <S>(
   args: OptionsForMakingAStore<S>
 ): Store<S> => {
   validateState(args.state);
-  testState.logLevel = 'none';
-  const store = readSelector(args.name);
-  store.setState(deepFreeze(args.state));
-  libState.appStores[args.name] = store;
-  return store;
-}
-
-const readSelector = (storeName: string) => {
   const changeListeners = new Array<ChangeListener>();
   let nestedStoreInfo: undefined | NestedStoreInfo;
-  let mergedStoreInfo: string;
-  let state: any;
-  let name = storeName;
+  let mergedStoreInfo: undefined | string;
+  let state = JSON.parse(JSON.stringify(args.state));
+  let name = args.name;
   const initialize = (s: any, topLevel: boolean, stateActions: StateAction[]): any => {
     if (typeof s !== 'object') { return null; }
     return new Proxy(s, {
@@ -60,13 +52,11 @@ const readSelector = (storeName: string) => {
           return () => nestedStoreInfo;
         } else if ('setState' === prop) {
           return (newState: any) => state = newState;
-        } else if ('getState' === prop) {
-          return () => state;
         } else if ('upsertMatching' === prop) {
           stateActions.push({ type: 'upsertMatching', name: prop, actionType: prop });
           return initialize({}, false, stateActions);
-        } else if ('read' === prop) {
-          return () => deepFreeze(readState(state, [...stateActions, { type: 'action', name: prop }], { index: 0 }));
+        } else if ('state' === prop) {
+          return deepFreeze(readState(state, [...stateActions, { type: 'action', name: prop }], { index: 0 }));
         } else if ('onChange' === prop) {
           return (changeListener: (arg: any) => any) => {
             const stateActionsCopy = [...stateActions, { type: 'action', name: prop }] as StateAction[];
@@ -94,5 +84,5 @@ const readSelector = (storeName: string) => {
       }
     });
   };
-  return initialize({}, true, []);
+  return libState.appStores[args.name] = initialize({}, true, []);
 }

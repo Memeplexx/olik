@@ -225,9 +225,9 @@ export interface InvalidateDerivation {
 
 export interface Read<S> {
   /**
-   * Read the current state from the selected node.
+   * The current state from the selected node.
    */
-  read(): DeepReadonly<S>;
+  state: DeepReadonly<S>;
 }
 
 export interface OnChange<S> {
@@ -301,7 +301,7 @@ export type Comparators<T, S, F extends FindOrFilter, Depth extends number, NewD
   & In<T, S, F, NewDepth>
   & Ni<T, S, F, NewDepth>
   & (S extends string ?
-    & Match<T, S, F, NewDepth>
+    & Match<T, F, NewDepth>
     : {}
   ) & (S extends string | number ?
     & Gt<T, S, F, NewDepth>
@@ -345,7 +345,7 @@ export interface Lte<T, S, F extends FindOrFilter, NewDepth extends number> {
   lte: (lessThanOrEqualTo: S) => UpdatableAny<T, F, 'queried', NewDepth>
 }
 
-export interface Match<T, S, F extends FindOrFilter, NewDepth extends number> {
+export interface Match<T, F extends FindOrFilter, NewDepth extends number> {
   match: (matches: RegExp) => UpdatableAny<T, F, 'queried', NewDepth>
 }
 
@@ -413,9 +413,9 @@ export interface OptionsForMakingAStore<S> {
   state: S,
 }
 
-export type Store<S> = S extends Array<any> ? UpdatableArray<S, 'isFilter', 'notQueried', MaxRecursionDepth>
+export type Store<S> = (S extends Array<any> ? UpdatableArray<S, 'isFilter', 'notQueried', MaxRecursionDepth>
   : S extends object ? UpdatableObject<S, 'isFind', 'queried', MaxRecursionDepth>
-  : UpdatablePrimitive<S, 'isFind', 'queried', MaxRecursionDepth>;
+  : UpdatablePrimitive<S, 'isFind', 'queried', MaxRecursionDepth>);
 
 export interface ChangeListener {
   actions: StateAction[];

@@ -19,7 +19,7 @@ describe('async', () => {
     const payload = 1;
     const asyncResult = await select.num
       .replace(resolve(payload));
-    expect(select.num.read()).toEqual(payload);
+    expect(select.num.state).toEqual(payload);
     expect(asyncResult).toEqual(payload);
     expect(libState.currentAction).toEqual({ type: 'num.replace()', payload });
   })
@@ -66,11 +66,11 @@ describe('async', () => {
       .replace(resolve(asyncResult))
       .then(r => {
         expect(r).toEqual(asyncResult);
-        expect(select.num.read()).toEqual(asyncResult);
+        expect(select.num.state).toEqual(asyncResult);
         done();
       });
     select.num.replace(syncResult);
-    expect(select.num.read()).toEqual(syncResult);
+    expect(select.num.state).toEqual(syncResult);
   })
 
   it('should support caching', done => {
@@ -82,17 +82,17 @@ describe('async', () => {
       .replace(resolve(replacement), { cacheFor: 1000 })
       .then(() => {
         expect(libState.currentAction.type).toEqual('cache.num.replace()');
-        expect(select.num.read()).toEqual(replacement);
+        expect(select.num.state).toEqual(replacement);
         select.num.replace(resolve(replacement2))
           .then(result => {
             expect(result).toEqual(replacement);
-            expect(select.num.read()).toEqual(replacement);
-            expect(select.cache.num.read()).toBeTruthy();
+            expect(select.num.state).toEqual(replacement);
+            expect(select.cache.num.state).toBeTruthy();
             select.num.invalidateCache();
-            expect(select.cache.read()).toEqual({});
+            expect(select.cache.state).toEqual({});
             select.num.replace(resolve(replacement2))
               .then(() => {
-                expect(select.num.read()).toEqual(replacement2);
+                expect(select.num.state).toEqual(replacement2);
                 done();
               })
           });
@@ -107,10 +107,10 @@ describe('async', () => {
     select.num
       .replace(resolve(replacement), { optimisticallyUpdateWith })
       .then(() => {
-        expect(select.num.read()).toEqual(replacement);
+        expect(select.num.state).toEqual(replacement);
         done();
       });
-    expect(select.num.read()).toEqual(optimisticallyUpdateWith);
+    expect(select.num.state).toEqual(optimisticallyUpdateWith);
   })
 
   it('should rollback optimistic updates upon failure', done => {
@@ -122,10 +122,10 @@ describe('async', () => {
       .replace(reject<number>(error), { optimisticallyUpdateWith })
       .catch(e => {
         expect(e).toEqual(error);
-        expect(select.num.read()).toEqual(0);
+        expect(select.num.state).toEqual(0);
         done();
       });
-    expect(select.num.read()).toEqual(optimisticallyUpdateWith);
+    expect(select.num.state).toEqual(optimisticallyUpdateWith);
   });
 
   it('should automatically expire caches appropriately', done => {
@@ -137,11 +137,11 @@ describe('async', () => {
       .replace(resolve(replacement), { cacheFor: 10 })
       .then(() => select.num
         .replace(resolve(replacement2))
-        .then(() => expect(select.num.read()).toEqual(replacement)));
+        .then(() => expect(select.num.state).toEqual(replacement)));
     setTimeout(() => {
       select.num
         .replace(resolve(replacement2))
-        .then(() => expect(select.num.read()).toEqual(replacement2))
+        .then(() => expect(select.num.state).toEqual(replacement2))
         .then(() => done());
     }, 100);
   })
@@ -150,42 +150,42 @@ describe('async', () => {
     const state = { arr: [1, 2, 3] };
     const select = createStore({ name, state });
     await select.arr.find.eq(3).remove(resolve(null));
-    expect(select.arr.read()).toEqual([1, 2]);
+    expect(select.arr.state).toEqual([1, 2]);
   })
 
   it('should be able to remove all elements from an array', async () => {
     const state = { arr: [1, 2, 3] };
     const select = createStore({ name, state });
     await select.arr.removeAll(resolve(null));
-    expect(select.arr.read()).toEqual([]);
+    expect(select.arr.state).toEqual([]);
   })
 
   it('should be able to remove an object property', async () => {
     const state = { num: 0 };
     const select = createStore({ name, state });
     await select.num.remove(resolve(null));
-    expect(select.read()).toEqual({});
+    expect(select.state).toEqual({});
   })
 
   it('should be able to replace an array element', async () => {
     const state = { arr: [1, 2, 3] };
     const select = createStore({ name, state });
     await select.arr.find.eq(2).replace(resolve(4));
-    expect(select.arr.read()).toEqual([1, 4, 3]);
+    expect(select.arr.state).toEqual([1, 4, 3]);
   })
 
   it('should be able to insert one array element', async () => {
     const state = { arr: [1, 2, 3] };
     const select = createStore({ name, state });
     await select.arr.insertOne(resolve(4));
-    expect(select.arr.read()).toEqual([1, 2, 3, 4]);
+    expect(select.arr.state).toEqual([1, 2, 3, 4]);
   })
 
   it('should be able to insert many array elements', async () => {
     const state = { arr: [1, 2, 3] };
     const select = createStore({ name, state });
     await select.arr.insertMany(resolve([4, 5]));
-    expect(select.arr.read()).toEqual([1, 2, 3, 4, 5]);
+    expect(select.arr.state).toEqual([1, 2, 3, 4, 5]);
   })
 
   it('should upsert one array element where a match could be found', async () => {
@@ -196,7 +196,7 @@ describe('async', () => {
       .upsertMatching.id
       .withOne(resolve(payload));
     expect(libState.currentAction).toEqual({ type: 'arr.upsertMatching.id.withOne()', payload });
-    expect(select.arr.read()).toEqual([payload, state.arr[1], state.arr[2]]);
+    expect(select.arr.state).toEqual([payload, state.arr[1], state.arr[2]]);
   })
 
   it('should upsert one array element where a match could not be found', async () => {
@@ -207,7 +207,7 @@ describe('async', () => {
       .upsertMatching.id
       .withOne(resolve(payload));
     expect(libState.currentAction).toEqual({ type: 'arr.upsertMatching.id.withOne()', payload });
-    expect(select.arr.read()).toEqual([...state.arr, payload]);
+    expect(select.arr.state).toEqual([...state.arr, payload]);
   })
 
   it('should upsert array elements where one matches and another does not', async () => {
@@ -218,7 +218,7 @@ describe('async', () => {
       .upsertMatching.id
       .withMany(resolve(payload));
     expect(libState.currentAction).toEqual({ type: 'arr.upsertMatching.id.withMany()', payload });
-    expect(select.arr.read()).toEqual([payload[0], state.arr[1], state.arr[2], payload[1]]);
+    expect(select.arr.state).toEqual([payload[0], state.arr[1], state.arr[2], payload[1]]);
   })
 
   it('should throw an error if an array element could not be found', async () => {

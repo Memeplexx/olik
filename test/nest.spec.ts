@@ -22,7 +22,7 @@ describe('nest', () => {
     const instanceName = '0';
     const selectNested = createStore({ name: nameOfNestedStore, state: stateOfNestedStore });
     nestStoreIfPossible(selectNested, { containerStoreName: nameOfContainerStore, instanceName });
-    expect(selectContainer.read()).toEqual({ ...stateOfContainerStore, nested: { [nameOfNestedStore]: { [instanceName]: stateOfNestedStore } } });
+    expect(selectContainer.state).toEqual({ ...stateOfContainerStore, nested: { [nameOfNestedStore]: { [instanceName]: stateOfNestedStore } } });
   })
 
   it('should be able to update a lib store correctly', () => {
@@ -38,13 +38,13 @@ describe('nest', () => {
     const instanceName = '0';
     const selectNested = createStore({ name: nameOfNestedStore, state: stateOfNestedStore });
     nestStoreIfPossible(selectNested, { containerStoreName: nameOfContainerStore, instanceName });
-    expect(selectNested.read().one).toEqual('');
+    expect(selectNested.state.one).toEqual('');
     selectNested.one.replace('test');
     expect(libState.currentAction).toEqual({
       type: `nested.${nameOfNestedStore}.0.one.replace()`,
       payload: 'test',
     })
-    expect(selectNested.read().one).toEqual('test');
+    expect(selectNested.state.one).toEqual('test');
   })
 
   it('should be able to update a lib store via host store correctly', () => {
@@ -60,9 +60,9 @@ describe('nest', () => {
     const instanceName = '0';
     const selectNested = createStore({ name: nameOfNestedStore, state: stateOfNestedStore });
     nestStoreIfPossible(selectNested, { containerStoreName: nameOfContainerStore, instanceName });
-    expect(selectNested.read().one).toEqual('');
+    expect(selectNested.state.one).toEqual('');
     selectContainer.nested.myComp['0'].one.replace('test');
-    expect(selectNested.read().one).toEqual('test');
+    expect(selectNested.state.one).toEqual('test');
   })
 
   it('should be able to create a detached store', () => {
@@ -73,7 +73,7 @@ describe('nest', () => {
     const selectNested = createStore({ name: nameOfNestedStore, state: stateOfNestedStore });
     nestStoreIfPossible(selectNested, { containerStoreName: nameOfContainerStore, instanceName });
     selectNested.test.replace(payload);
-    expect(selectNested.test.read()).toEqual(payload);
+    expect(selectNested.test.state).toEqual(payload);
   })
 
   it('should be able to stopTracking a component store correctly', () => {
@@ -88,9 +88,9 @@ describe('nest', () => {
     const instanceName = '0';
     const selectNested = createStore({ name: nameOfNestedStore, state: stateOfNestedStore });
     const ref = nestStoreIfPossible(selectNested, { containerStoreName: nameOfContainerStore, instanceName });
-    expect(selectContainer.read()).toEqual({ test: '', nested: { [nameOfNestedStore]: { [instanceName]: { one: '' } } } });
+    expect(selectContainer.state).toEqual({ test: '', nested: { [nameOfNestedStore]: { [instanceName]: { one: '' } } } });
     ref.detach();
-    expect(selectContainer.read()).toEqual({ test: '', nested: {} });
+    expect(selectContainer.state).toEqual({ test: '', nested: {} });
   })
 
   it('should be able to stopTracking a component store where there are multiple stores for the same component', () => {
@@ -104,11 +104,11 @@ describe('nest', () => {
     const ref1 = nestStoreIfPossible(selectNested1, { containerStoreName: nameOfContainerStore, instanceName: '0' });
     const selectNested2 = createStore({ name: nameOfNestedStore, state: stateOfNestedStore });
     const ref2 = nestStoreIfPossible(selectNested2, { containerStoreName: nameOfContainerStore, instanceName: '1' });
-    expect(selectContainer.read()).toEqual({ ...stateOfContainerStore, nested: { [nameOfNestedStore]: { '0': stateOfNestedStore, '1': stateOfNestedStore } } });
+    expect(selectContainer.state).toEqual({ ...stateOfContainerStore, nested: { [nameOfNestedStore]: { '0': stateOfNestedStore, '1': stateOfNestedStore } } });
     ref1.detach();
-    expect(selectContainer.read()).toEqual({ ...stateOfContainerStore, nested: { [nameOfNestedStore]: { '1': stateOfNestedStore } } });
+    expect(selectContainer.state).toEqual({ ...stateOfContainerStore, nested: { [nameOfNestedStore]: { '1': stateOfNestedStore } } });
     ref2.detach();
-    expect(selectContainer.read()).toEqual({ ...stateOfContainerStore, nested: {} });
+    expect(selectContainer.state).toEqual({ ...stateOfContainerStore, nested: {} });
   })
 
   it('should be able to perform an update on a second component store', () => {
@@ -127,7 +127,7 @@ describe('nest', () => {
     const selectNested2 = createStore({ name: nameOfNestedStore, state: stateOfNestedStore });
     nestStoreIfPossible(selectNested2, { containerStoreName: nameOfContainerStore, instanceName: '1' });
     selectNested2.one.replace('test2');
-    expect(selectContainer.read()).toEqual({ test: '', nested: { [componentName]: { 0: { one: 'test1' }, 1: { one: 'test2' } } } });
+    expect(selectContainer.state).toEqual({ test: '', nested: { [componentName]: { 0: { one: 'test1' }, 1: { one: 'test2' } } } });
   })
 
   it('should be able to support component store which is a top-level array', () => {
@@ -141,7 +141,7 @@ describe('nest', () => {
     const selectNested = createStore({ name: nameOfNestedStore, state: stateOfNestedStore });
     nestStoreIfPossible(selectNested as any, { containerStoreName: nameOfContainerStore, instanceName });
     selectNested.insertOne('test');
-    expect(selectContainer.read()).toEqual({ test: '', nested: { [nameOfNestedStore]: { [instanceName]: ['test'] } } });
+    expect(selectContainer.state).toEqual({ test: '', nested: { [nameOfNestedStore]: { [instanceName]: ['test'] } } });
   })
 
   it('should be able to support component store which is a top-level number', () => {
@@ -155,7 +155,7 @@ describe('nest', () => {
     const selectNested = createStore({ name: nameOfNestedStore, state: stateOfNestedStore });
     nestStoreIfPossible(selectNested, { containerStoreName: nameOfContainerStore, instanceName });
     selectNested.replace(1);
-    expect(selectContainer.read()).toEqual({ test: '', nested: { [nameOfNestedStore]: { [stateOfNestedStore]: 1 } } });
+    expect(selectContainer.state).toEqual({ test: '', nested: { [nameOfNestedStore]: { [stateOfNestedStore]: 1 } } });
   })
 
   it('should be able to support more than one component store type', () => {
@@ -171,7 +171,7 @@ describe('nest', () => {
     const nameOfNestedStore2 = 'myComp2';
     const selectNested2 = createStore({ name: nameOfNestedStore2, state: stateOfNestedStore });
     nestStoreIfPossible(selectNested2, { containerStoreName: nameOfContainerStore, instanceName });
-    expect(selectContainer.read()).toEqual({ test: '', nested: { [nameOfNestedStore1]: { 0: 0 }, [nameOfNestedStore2]: { 0: 0 } } });
+    expect(selectContainer.state).toEqual({ test: '', nested: { [nameOfNestedStore1]: { 0: 0 }, [nameOfNestedStore2]: { 0: 0 } } });
   })
 
   it('should throw an error if the containing stores state is a primitive', () => {
@@ -198,7 +198,7 @@ describe('nest', () => {
     });
     const ref = nestStoreIfPossible(selectNested, { containerStoreName: nameOfContainerStore, instanceName: '0' });
     selectNested.object.property.replace('test');
-    expect(selectNested.read().object.property).toEqual('test');
+    expect(selectNested.state.object.property).toEqual('test');
     ref.detach();
   });
 
@@ -215,10 +215,10 @@ describe('nest', () => {
         expect(val.val).toEqual(1);
       } else if (count === 2) {
         expect(val.val).toEqual(2);
-        expect(selectNested.read()).toEqual({
+        expect(selectNested.state).toEqual({
           val: 2
         })
-        expect(selectContainer.read()).toEqual({
+        expect(selectContainer.state).toEqual({
           ...stateOfContainerStore,
           nested: {
             [nameOfNestedStore]: {
@@ -249,8 +249,8 @@ describe('nest', () => {
         expect(val).toEqual({ id: 1, num: 3 });
       } else if (count === 2) {
         expect(val).toEqual({ id: 1, num: 4 });
-        expect(selectNested.read()).toEqual({ arr: [{ id: 1, num: 4 }, { id: 2, num: 2 }] })
-        expect(selectContainer.read()).toEqual({
+        expect(selectNested.state).toEqual({ arr: [{ id: 1, num: 4 }, { id: 2, num: 2 }] })
+        expect(selectContainer.state).toEqual({
           ...stateOfContainerStore,
           nested: {
             [nameOfNestedStore]: {

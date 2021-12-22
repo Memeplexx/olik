@@ -32,11 +32,11 @@ export function trackWithReduxDevtools<S>(
 
   // Register devtools extension
   devTools = windowObj.__REDUX_DEVTOOLS_EXTENSION__.connect(devtoolsOptions);
-  devTools.init(storeArg.read());
+  devTools.init(storeArg.state);
   libState.devtoolsRegistry[storeName] = devTools;
 
   // Ensure that the store responds to events emitted from the devtools extension
-  libState.devtoolsDispatchListener = action => devTools.send(action, storeArg.read());
+  libState.devtoolsDispatchListener = action => devTools.send(action, storeArg.state);
   devTools.subscribe((message: any) => {
     if (message.type === 'ACTION' && message.source === '@devtools-extension') {
       let messagePayload: { type: string, payload: any };
@@ -58,7 +58,7 @@ export function trackWithReduxDevtools<S>(
       const selection = storeArg as any as Replace<any> & ReplaceAll<any> & Read<any>;
       const setState = (state: any) => {
         libState.dispatchToDevtools = false;
-        selection[Array.isArray(selection.read()) ? 'replaceAll' : 'replace'](state);
+        selection[Array.isArray(selection.state) ? 'replaceAll' : 'replace'](state);
         libState.dispatchToDevtools = true;
       }
       switch (message.payload.type) {
@@ -68,7 +68,7 @@ export function trackWithReduxDevtools<S>(
           libState.onDispatchListener();
           return;
         case 'COMMIT':
-          devTools.init(selection.read());
+          devTools.init(selection.state);
           return;
         case 'ROLLBACK':
           const parsedState = JSON.parse(message.state);

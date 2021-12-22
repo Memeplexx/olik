@@ -16,7 +16,7 @@ describe('transaction', () => {
       () => select.num.replace(1),
       () => select.str.replace('x'),
     );
-    expect(select.read()).toEqual({ num: 1, str: 'x', bool: false });
+    expect(select.state).toEqual({ num: 1, str: 'x', bool: false });
     expect(libState.currentAction).toEqual({
       type: 'num.replace(), str.replace()',
       actions: [
@@ -31,7 +31,7 @@ describe('transaction', () => {
     const select = createStore({ name, state });
     const payload = 1;
     transact(() => select.num.replace(payload));
-    expect(select.num.read()).toEqual(payload);
+    expect(select.num.state).toEqual(payload);
     expect(libState.currentAction).toEqual({ type: 'num.replace()', payload });
   })
 

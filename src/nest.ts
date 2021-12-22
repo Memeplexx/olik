@@ -1,9 +1,10 @@
+import { StoreLike } from '.';
 import { errorMessages, libState } from './constant';
-import { NestStoreRef, Store } from './type';
+import { NestStoreRef } from './type';
 import { StoreInternal } from './type-internal';
 
 export const nestStoreIfPossible = <S>(
-  store: Store<S>,
+  store: StoreLike<S>,
   arg: {
     instanceName: string | number,
     containerStoreName: string,
@@ -12,12 +13,12 @@ export const nestStoreIfPossible = <S>(
   const storeArg = store as any as StoreInternal<any>;
   const appStore = libState.appStores[arg.containerStoreName || document.title];
   if (!appStore) { return { detach: () => null }; }
-  const wrapperState = appStore.read();
+  const wrapperState = appStore.state;
   if (['number', 'boolean', 'string'].some(type => typeof (wrapperState) === type) || Array.isArray(wrapperState)) {
     throw new Error(errorMessages.INVALID_CONTAINER_FOR_COMPONENT_STORES);
   }
   const nestedStoreName = storeArg.getStoreName();
-  appStore.nested[nestedStoreName][arg.instanceName].replace(storeArg.read());
+  appStore.nested[nestedStoreName][arg.instanceName].replace(storeArg.state);
   storeArg.getChangeListeners()
     .forEach(({ actions, listener }) => {
       let node = appStore.nested[nestedStoreName][arg.instanceName];
@@ -30,7 +31,7 @@ export const nestStoreIfPossible = <S>(
   delete libState.appStores[nestedStoreName];
   return {
     detach: () => {
-      const state = appStore.read().nested[nestedStoreName];
+      const state = appStore.state.nested[nestedStoreName];
       if ((Object.keys(state).length === 1) && state[arg.instanceName]) {
         appStore.nested[nestedStoreName].remove();
       } else {

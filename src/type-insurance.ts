@@ -10,7 +10,7 @@ interface State {
   arrayBool: boolean[],
   arrayTuple: ('hello' | 'world')[],
   objArray: Test[],
-  object: { one: string, two: string, three: number, a: {b: {c: {d: ''}}} }
+  object: { one: string, two: string, three: number, a: {b: {c: {d: string}}} }
 }
 
 function test() {
@@ -115,26 +115,26 @@ function test() {
   select.number.increment(3);
 
   const rr = select.array
-    .read();
+    .state;
 
   const r = select.objArray
     .filter.eq(null as any)
-    .read();
+    .state;
 
   const rrr = select.array
     .filter.eq(2)
-    .read();
+    .state;
 
-  const rrrr = select.read();
+  const rrrr = select.state;
 
   const abc = select.objArray
     .find.num.eq(3)
     .objArr.find.num.eq(3)
-    .read();
+    .state;
 
   const e = select.array
     .find.eq(3).and.lt(5)
-    .read();
+    .state;
 
   select.objArray
     .upsertMatching.obj.num

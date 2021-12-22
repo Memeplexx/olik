@@ -9,10 +9,10 @@ export const updateState = (
   stateActions: StateAction[],
   changeListeners: Array<ChangeListener>,
 ) => {
-  const oldState = libState.appStores[storeName].getState();
+  const oldState = libState.appStores[storeName].state;
   libState.appStores[storeName].setState(writeState(oldState, { ...oldState }, stateActions, { index: 0 }));
   changeListeners.forEach(({actions, listener}) => {
-    const selectedNewState = readState(libState.appStores[storeName].getState(), actions, { index: 0 });
+    const selectedNewState = readState(libState.appStores[storeName].state, actions, { index: 0 });
     if (readState(oldState, actions, { index: 0 }) !== selectedNewState) {
       listener(selectedNewState);
     }
@@ -146,9 +146,9 @@ export const processUpdate = (storeName: string, stateActions: StateAction[], pr
     } else {
       if (libState.insideTransaction) { throw new Error(errorMessages.ASYNC_PAYLOAD_INSIDE_TRANSACTION); }
       const readCurrentState = () =>
-        readState(libState.appStores[storeName].getState(), [...stateActions, { type: 'action', name: 'read' }], { index: 0 });
+        readState(libState.appStores[storeName].state, [...stateActions, { type: 'action', name: 'state' }], { index: 0 });
       let state = { storeValue: readCurrentState(), error: null, isLoading: true, wasRejected: false, wasResolved: false } as FutureState<any>;
-      if (libState.appStores[storeName].getState().cache?.[stateActions.map(sa => sa.actionType).join('.')]) {
+      if (libState.appStores[storeName].state.cache?.[stateActions.map(sa => sa.actionType).join('.')]) {
         const result = new Proxy(new Promise<any>(resolve => resolve(readCurrentState())), {
           get: (target: any, prop: any) => {
             if (prop === 'then' || prop === 'catch' || prop === 'finally') {

@@ -17,7 +17,7 @@ describe('Object', () => {
     select.num
       .replace(payload);
     expect(libState.currentAction).toEqual({ type: 'num.replace()', payload });
-    expect(select.num.read()).toEqual(1);
+    expect(select.num.state).toEqual(1);
   })
 
   it('should patch an object', () => {
@@ -25,14 +25,14 @@ describe('Object', () => {
     const payload = { bool: true, str: 'x' };
     select.patch({ bool: true, str: 'x' });
     expect(libState.currentAction).toEqual({ type: 'patch()', payload });
-    expect(select.read()).toEqual({ ...state, ...payload });
+    expect(select.state).toEqual({ ...state, ...payload });
   })
 
   it('should deep merge an object', () => {
     const state = { num: 0, obj: { num: 0, str: '', arr: [{ id: 1, num: 1 }] } };
     const select = createStore({ name, state });
     select.deepMerge({ num: 9, str: 'x', obj: { xxx: '', arr: [{ fff: 's' }] } });
-    expect(select.read()).toEqual({ num: 9, str: 'x', obj: { xxx: '', arr: [{ fff: 's' }], num: 0, str: '' } });
+    expect(select.state).toEqual({ num: 9, str: 'x', obj: { xxx: '', arr: [{ fff: 's' }], num: 0, str: '' } });
   })
 
   it('should increment an object property', () => {
@@ -41,14 +41,14 @@ describe('Object', () => {
     select.num
       .increment(payload);
     expect(libState.currentAction).toEqual({ type: 'num.increment()', payload });
-    expect(select.num.read()).toEqual(1);
+    expect(select.num.state).toEqual(1);
   })
 
   it('should remove an object property', () => {
     const select = createStore({ name, state });
     select.num
       .remove();
-    expect(select.read()).toEqual({ str: '', bool: false });
+    expect(select.state).toEqual({ str: '', bool: false });
   })
 
 
@@ -87,7 +87,7 @@ describe('Object', () => {
   it('', () => {
     const state = { arr: [{ id: 1, num: 1 }, { id: 2, num: 2 }] };
     const select = createStore({ name, state });
-    expect(select.arr.filter.id.eq(1).or.num.eq(2).id.read()).toEqual([1, 2]);
+    expect(select.arr.filter.id.eq(1).or.num.eq(2).id.state).toEqual([1, 2]);
   })
 
   it('', () => {
@@ -96,14 +96,14 @@ describe('Object', () => {
     select.arr
       .filter.id.eq(1).or.num.eq(2)
       .id.increment(1);
-    expect(select.arr.read()).toEqual([{ id: 2, num: 1 }, { id: 3, num: 2 }]);
+    expect(select.arr.state).toEqual([{ id: 2, num: 1 }, { id: 3, num: 2 }]);
   })
 
   it('', () => {
     const state = { arr: [{ id: 1, num: 1 }, { id: 2, num: 2 }] };
     const select = createStore({ name, state });
     select.arr.patchAll({ num: 9 });
-    expect(select.arr.read()).toEqual([{ id: 1, num: 9 }, { id: 2, num: 9 }]);
+    expect(select.arr.state).toEqual([{ id: 1, num: 9 }, { id: 2, num: 9 }]);
   });
 
 });

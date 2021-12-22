@@ -33,7 +33,6 @@ export interface NestedStoreInfo {
 export type StoreInternal<S> = StoreLike<S> & {
   nested: any,
   setState(state: S): void,
-  getState(): S,
   getChangeListeners(): ChangeListener[],
   getStoreName(): string,
   setNestedStoreInfo(info?: NestedStoreInfo): void,

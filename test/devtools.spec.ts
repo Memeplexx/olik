@@ -21,9 +21,9 @@ describe('devtools', () => {
     trackWithReduxDevtools(select)
     select.x
       .replace(3);
-    expect(select.read()).toEqual({ x: 3, y: 0 });
+    expect(select.state).toEqual({ x: 3, y: 0 });
     testState.fakeWindowObjectForReduxDevtools!.__REDUX_DEVTOOLS_EXTENSION__._mockInvokeSubscription({ type: 'DISPATCH', state: JSON.stringify(state), payload: { type: 'JUMP_TO_ACTION' }, source: '@devtools-extension' });
-    expect(select.read()).toEqual(state);
+    expect(select.state).toEqual(state);
     expect(libState.currentAction.type).toEqual('replace()');
   });
 
@@ -32,10 +32,10 @@ describe('devtools', () => {
     const select = createStore({ name, state });
     trackWithReduxDevtools(select)
     select.replaceAll(['d', 'e', 'f']);
-    expect(select.read()).toEqual(['d', 'e', 'f']);
+    expect(select.state).toEqual(['d', 'e', 'f']);
     const state2 = ['g', 'h'];
     testState.fakeWindowObjectForReduxDevtools!.__REDUX_DEVTOOLS_EXTENSION__._mockInvokeSubscription({ type: 'DISPATCH', state: JSON.stringify(state2), payload: { type: 'JUMP_TO_ACTION' }, source: '@devtools-extension' });
-    expect(select.read()).toEqual(state2);
+    expect(select.state).toEqual(state2);
     expect(libState.currentAction.type).toEqual('replaceAll()');
   });
 
@@ -52,12 +52,12 @@ describe('devtools', () => {
     trackWithReduxDevtools(select);
     select.num
       .replace(1);
-    expect(select.read().num).toEqual(1);
+    expect(select.state.num).toEqual(1);
     select.num
       .replace(2);
-    expect(select.read().num).toEqual(2);
+    expect(select.state.num).toEqual(2);
     testState.fakeWindowObjectForReduxDevtools!.__REDUX_DEVTOOLS_EXTENSION__._mockInvokeSubscription({ type: 'DISPATCH', payload: { type: 'ROLLBACK' }, source: '@devtools-extension', state: '{ "num": 1 }' });
-    expect(select.read().num).toEqual(1);
+    expect(select.state.num).toEqual(1);
   });
 
   it('should throw an error should a devtools dispatch contain invalid JSON', () => {
@@ -93,7 +93,7 @@ describe('devtools', () => {
     trackWithReduxDevtools(select);
     testState.fakeWindowObjectForReduxDevtools!.__REDUX_DEVTOOLS_EXTENSION__
       ._mockInvokeSubscription({ type: 'ACTION', source: '@devtools-extension', payload: '{"type": "hello.replace()", "payload": 2}' });
-    expect(select.read().hello).toEqual(2);
+    expect(select.state.hello).toEqual(2);
   });
 
   it('should throttle tightly packed updates', done => {

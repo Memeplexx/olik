@@ -15,7 +15,7 @@ describe('top-level-primitive', () => {
     const payload = 1;
     select
       .replace(payload);
-    expect(select.read()).toEqual(1);
+    expect(select.state).toEqual(1);
     expect(libState.currentAction).toEqual({ type: 'replace()', payload });
   })
 
@@ -24,7 +24,7 @@ describe('top-level-primitive', () => {
     const payload = 1;
     select
       .increment(payload);
-    expect(select.read()).toEqual(1);
+    expect(select.state).toEqual(1);
     expect(libState.currentAction).toEqual({ type: 'increment()', payload });
   })
 

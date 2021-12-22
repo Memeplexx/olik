@@ -1,18 +1,18 @@
-import { Store } from '.';
+import { StoreLike } from '.';
 import { errorMessages, libState } from './constant';
 import { StoreInternal } from './type-internal';
 
 export const mergeStoreIfPossible = <S>(
-  store: Store<S>,
+  store: StoreLike<S>,
   nameOfStoreToMergeInto: string
 ) => {
   const appStore = libState.appStores[nameOfStoreToMergeInto];
   if (!appStore) { return; }
-  const wrapperState = appStore.read();
+  const wrapperState = appStore.state;
   if (['number', 'boolean', 'string'].some(type => typeof (wrapperState) === type) || Array.isArray(wrapperState)) {
     throw new Error(errorMessages.INVALID_EXISTING_STORE_FOR_MERGING);
   }
-  const state = store.read();
+  const state = store.state;
   if (['number', 'boolean', 'string'].some(type => typeof (state) === type) || Array.isArray(state)) {
     throw new Error(errorMessages.INVALID_MERGING_STORE);
   }

@@ -14,7 +14,7 @@ describe('augmentation', () => {
   it('should be able to augment a selection', () => {
     augment({
       selection: {
-        myThing: input => () => input.read(),
+        myThing: input => () => input.state,
       }
     })
     const state = { num: 42 };
@@ -26,7 +26,7 @@ describe('augmentation', () => {
   it('should be able to augment a selection on an array action', () => {
     augment({
       selection: {
-        myThing: input => () => input.read(),
+        myThing: input => () => input.state,
       }
     })
     const state = { array: [42] };
@@ -38,7 +38,7 @@ describe('augmentation', () => {
   it('should be able to augment a selection on an array element action', () => {
     augment({
       selection: {
-        myThing: input => () => input.read(),
+        myThing: input => () => input.state,
       }
     })
     const state = { array: [42] };
@@ -114,7 +114,7 @@ describe('augmentation', () => {
   it('should be able to augment a derivation', done => {
     augment({
       derivation: {
-        myThing: input => () => input.read()
+        myThing: input => () => input.state
       }
     })
     const state = { one: 'abc', two: false };

@@ -17,7 +17,7 @@ export const readState = (state: any, stateActions: StateAction[], cursor: { ind
     } else {
       return readState((state || {})[action.name], stateActions, cursor);
     }
-  } else if (action.name === 'read' || action.name === 'onChange') {
+  } else if (action.name === 'state' || action.name === 'onChange') {
     return state;
   }
 }

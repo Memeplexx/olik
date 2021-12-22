@@ -29,7 +29,7 @@ describe('immutability', () => {
     const select = createStore({ name, state });
     const payload = { id: 2, name: 'hey' };
     select.arr.find.id.eq(1).replace(payload);
-    expect(() => (select.read() as any).arr = []).toThrow();
+    expect(() => (select.state as any).arr = []).toThrow();
   })
 
 });

@@ -17,7 +17,7 @@ describe('array-object', () => {
     select
       .replaceAll(payload);
     expect(libState.currentAction).toEqual({ type: 'replaceAll()', payload });
-    expect(select.read()).toEqual(payload);
+    expect(select.state).toEqual(payload);
   })
 
   it('should remove all elements', () => {
@@ -25,7 +25,7 @@ describe('array-object', () => {
     select
       .removeAll();
     expect(libState.currentAction).toEqual({ type: 'removeAll()' });
-    expect(select.read()).toEqual([]);
+    expect(select.state).toEqual([]);
   })
 
   it('should replace all elements properties', () => {
@@ -34,7 +34,7 @@ describe('array-object', () => {
     select.val
       .replaceAll(payload);
     expect(libState.currentAction).toEqual({ type: 'val.replaceAll()', payload });
-    expect(select.read()).toEqual(state.map(s => ({ ...s, val: payload })));
+    expect(select.state).toEqual(state.map(s => ({ ...s, val: payload })));
   })
 
   it('should increment all elements properties', () => {
@@ -43,7 +43,7 @@ describe('array-object', () => {
     select.val
       .incrementAll(payload);
     expect(libState.currentAction).toEqual({ type: 'val.incrementAll()', payload });
-    expect(select.read()).toEqual([{ id: 1, val: 2 }, { id: 2, val: 3 }, { id: 3, val: 4 }]);
+    expect(select.state).toEqual([{ id: 1, val: 2 }, { id: 2, val: 3 }, { id: 3, val: 4 }]);
   })
 
   it('should be able to insert one element', () => {
@@ -52,7 +52,7 @@ describe('array-object', () => {
     select
       .insertOne(payload);
     expect(libState.currentAction).toEqual({ type: 'insertOne()', payload });
-    expect(select.read()).toEqual([...state, payload]);
+    expect(select.state).toEqual([...state, payload]);
   })
 
   it('should be able to insert many elements', () => {
@@ -61,7 +61,7 @@ describe('array-object', () => {
     select
       .insertMany(payload);
     expect(libState.currentAction).toEqual({ type: 'insertMany()', payload });
-    expect(select.read()).toEqual([...state, ...payload]);
+    expect(select.state).toEqual([...state, ...payload]);
   })
 
   it('should find an element and replace it', () => {
@@ -71,7 +71,7 @@ describe('array-object', () => {
       .find.id.eq(2)
       .replace(payload);
     expect(libState.currentAction).toEqual({ type: 'find.id.eq(2).replace()', payload });
-    expect(select.read()).toEqual([state[0], payload, state[2]]);
+    expect(select.state).toEqual([state[0], payload, state[2]]);
   })
 
   it('should find an element and remove it', () => {
@@ -80,7 +80,7 @@ describe('array-object', () => {
       .find.id.eq(2)
       .remove();
     expect(libState.currentAction).toEqual({ type: 'find.id.eq(2).remove()' });
-    expect(select.read()).toEqual([state[0], state[2]]);
+    expect(select.state).toEqual([state[0], state[2]]);
   })
 
   it('should find an element property and increment it', () => {
@@ -90,7 +90,7 @@ describe('array-object', () => {
       .find.id.eq(2).val
       .increment(payload);
     expect(libState.currentAction).toEqual({ type: 'find.id.eq(2).val.increment()', payload });
-    expect(select.read()).toEqual([state[0], { id: 2, val: 4 }, state[2]]);
+    expect(select.state).toEqual([state[0], { id: 2, val: 4 }, state[2]]);
   })
 
   it('should find an element by one clause or another and replace it', () => {
@@ -100,7 +100,7 @@ describe('array-object', () => {
       .find.id.eq(1).or.id.eq(2)
       .replace(payload);
     expect(libState.currentAction).toEqual({ type: 'find.id.eq(1).or.id.eq(2).replace()', payload });
-    expect(select.read()).toEqual([payload, state[1], state[2]]);
+    expect(select.state).toEqual([payload, state[1], state[2]]);
   })
 
   it('should find an element by one clause or another and remove it', () => {
@@ -109,7 +109,7 @@ describe('array-object', () => {
       .find.id.eq(1).or.id.eq(2)
       .remove();
     expect(libState.currentAction).toEqual({ type: 'find.id.eq(1).or.id.eq(2).remove()' });
-    expect(select.read()).toEqual([state[1], state[2]]);
+    expect(select.state).toEqual([state[1], state[2]]);
   })
 
   it('should find an element by one clause or another and increment it', () => {
@@ -119,7 +119,7 @@ describe('array-object', () => {
       .find.id.eq(1).or.id.eq(2).val
       .increment(1);
     expect(libState.currentAction).toEqual({ type: 'find.id.eq(1).or.id.eq(2).val.increment()', payload });
-    expect(select.read()).toEqual([{ id: 1, val: 2 }, state[1], state[2]]);
+    expect(select.state).toEqual([{ id: 1, val: 2 }, state[1], state[2]]);
   })
 
   it('should find an element by one clause and another and replace it', () => {
@@ -129,7 +129,7 @@ describe('array-object', () => {
       .find.id.gt(1).and.id.lt(3)
       .replace(payload);
     expect(libState.currentAction).toEqual({ type: 'find.id.gt(1).and.id.lt(3).replace()', payload });
-    expect(select.read()).toEqual([state[0], { id: 9, val: 9 }, state[2]]);
+    expect(select.state).toEqual([state[0], { id: 9, val: 9 }, state[2]]);
   })
 
   it('should find an element by one clause and another and remove it', () => {
@@ -138,7 +138,7 @@ describe('array-object', () => {
       .find.id.gt(1).and.id.lt(3)
       .remove();
     expect(libState.currentAction).toEqual({ type: 'find.id.gt(1).and.id.lt(3).remove()' });
-    expect(select.read()).toEqual([state[0], state[2]]);
+    expect(select.state).toEqual([state[0], state[2]]);
   })
 
   it('should find an element by one clause and another and increment it', () => {
@@ -148,7 +148,7 @@ describe('array-object', () => {
       .find.id.eq(1).and.id.lt(2).val
       .increment(payload);
     expect(libState.currentAction).toEqual({ type: 'find.id.eq(1).and.id.lt(2).val.increment()', payload });
-    expect(select.read()).toEqual([{ id: 1, val: 2 }, state[1], state[2]]);
+    expect(select.state).toEqual([{ id: 1, val: 2 }, state[1], state[2]]);
   })
 
   it('should filter elements and remove them', () => {
@@ -157,7 +157,7 @@ describe('array-object', () => {
       .filter.id.gt(1)
       .remove();
     expect(libState.currentAction).toEqual({ type: 'filter.id.gt(1).remove()' });
-    expect(select.read()).toEqual([state[0]]);
+    expect(select.state).toEqual([state[0]]);
   })
 
   it('should filter elements and increment them', () => {
@@ -167,7 +167,7 @@ describe('array-object', () => {
       .filter.id.gt(1).val
       .increment(1);
     expect(libState.currentAction).toEqual({ type: 'filter.id.gt(1).val.increment()', payload });
-    expect(select.read()).toEqual([state[0], { id: 2, val: 3 }, { id: 3, val: 4 }]);
+    expect(select.state).toEqual([state[0], { id: 2, val: 3 }, { id: 3, val: 4 }]);
   })
 
   it('should filter elements by one clause or another and remove them', () => {
@@ -176,7 +176,7 @@ describe('array-object', () => {
       .filter.id.eq(1).or.id.eq(2)
       .remove();
     expect(libState.currentAction).toEqual({ type: 'filter.id.eq(1).or.id.eq(2).remove()' });
-    expect(select.read()).toEqual([state[2]]);
+    expect(select.state).toEqual([state[2]]);
   })
 
   it('should filter elements by one clause or another and increment them', () => {
@@ -186,7 +186,7 @@ describe('array-object', () => {
       .filter.id.eq(1).or.id.eq(2).val
       .increment(1);
     expect(libState.currentAction).toEqual({ type: 'filter.id.eq(1).or.id.eq(2).val.increment()', payload });
-    expect(select.read()).toEqual([{ id: 1, val: 2 }, { id: 2, val: 3 }, state[2]]);
+    expect(select.state).toEqual([{ id: 1, val: 2 }, { id: 2, val: 3 }, state[2]]);
   })
 
   it('should filter elements by one clause and another and remove them', () => {
@@ -195,7 +195,7 @@ describe('array-object', () => {
       .filter.id.gt(0).and.id.lt(3)
       .remove();
     expect(libState.currentAction).toEqual({ type: 'filter.id.gt(0).and.id.lt(3).remove()' });
-    expect(select.read()).toEqual([state[2]]);
+    expect(select.state).toEqual([state[2]]);
   })
 
   it('should filter elements by one clause and another and increment them', () => {
@@ -205,7 +205,7 @@ describe('array-object', () => {
       .filter.id.gt(0).and.id.gt(1).val
       .increment(1);
     expect(libState.currentAction).toEqual({ type: 'filter.id.gt(0).and.id.gt(1).val.increment()', payload });
-    expect(select.read()).toEqual([state[0], { id: 2, val: 3 }, { id: 3, val: 4 }]);
+    expect(select.state).toEqual([state[0], { id: 2, val: 3 }, { id: 3, val: 4 }]);
   })
 
   it('should upsert one array element where a match could be found', () => {
@@ -215,7 +215,7 @@ describe('array-object', () => {
       .upsertMatching.id
       .withOne(payload);
     expect(libState.currentAction).toEqual({ type: 'upsertMatching.id.withOne()', payload });
-    expect(select.read()).toEqual([payload, state[1], state[2]]);
+    expect(select.state).toEqual([payload, state[1], state[2]]);
   })
 
   it('should upsert one array element where a match could not be found', () => {
@@ -225,7 +225,7 @@ describe('array-object', () => {
       .upsertMatching.id
       .withOne(payload);
     expect(libState.currentAction).toEqual({ type: 'upsertMatching.id.withOne()', payload });
-    expect(select.read()).toEqual([...state, payload]);
+    expect(select.state).toEqual([...state, payload]);
   })
 
   it('should upsert array elements where one matches and another does not', () => {
@@ -235,7 +235,7 @@ describe('array-object', () => {
       .upsertMatching.id
       .withMany(payload);
     expect(libState.currentAction).toEqual({ type: 'upsertMatching.id.withMany()', payload });
-    expect(select.read()).toEqual([payload[0], state[1], state[2], payload[1]]);
+    expect(select.state).toEqual([payload[0], state[1], state[2], payload[1]]);
   })
 
 });
