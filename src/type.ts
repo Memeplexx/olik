@@ -295,58 +295,58 @@ export type UpdatableAny<T, F extends FindOrFilter, Q extends QueryStatus, Depth
   ,
   Depth>
 
-export type Comparators<T, S, F extends FindOrFilter, Depth extends number, NewDepth extends number = DecrementRecursion[Depth]> = Rec<
-  & Eq<T, S, F, NewDepth>
-  & Ne<T, S, F, NewDepth>
-  & In<T, S, F, NewDepth>
-  & Ni<T, S, F, NewDepth>
+export type Comparators<T, S, F extends FindOrFilter, Depth extends number, NewDepth extends number = DecrementRecursion[Depth], Response = UpdatableAny<T, F, 'queried', NewDepth>> = Rec<
+  & Eq<S, Response>
+  & Ne<S, Response>
+  & In<S, Response>
+  & Ni<S, Response>
   & (S extends string ?
-    & Match<T, F, NewDepth>
+    & Match<Response>
     : {}
   ) & (S extends string | number ?
-    & Gt<T, S, F, NewDepth>
-    & Gte<T, S, F, NewDepth>
-    & Lt<T, S, F, NewDepth>
-    & Lte<T, S, F, NewDepth>
+    & Gt<S, Response>
+    & Gte<S, Response>
+    & Lt<S, Response>
+    & Lte<S, Response>
     : {}
   )
   ,
   Depth>
 
-export interface Eq<T, S, F extends FindOrFilter, NewDepth extends number> {
-  eq: (equalTo: S) => UpdatableAny<T, F, 'queried', NewDepth>
+export interface Eq<S, Response> {
+  eq: (equalTo: S) => Response
 }
 
-export interface Ne<T, S, F extends FindOrFilter, NewDepth extends number> {
-  ne: (notEqualTo: S) => UpdatableAny<T, F, 'queried', NewDepth>
+export interface Ne<S, Response> {
+  ne: (notEqualTo: S) => Response
 }
 
-export interface In<T, S, F extends FindOrFilter, NewDepth extends number> {
-  in: (within: S[]) => UpdatableAny<T, F, 'queried', NewDepth>
+export interface In<S, Response> {
+  in: (within: S[]) => Response
 }
 
-export interface Ni<T, S, F extends FindOrFilter, NewDepth extends number> {
-  ni: (notWithin: S[]) => UpdatableAny<T, F, 'queried', NewDepth>
+export interface Ni<S, Response> {
+  ni: (notWithin: S[]) => Response
 }
 
-export interface Gt<T, S, F extends FindOrFilter, NewDepth extends number> {
-  gt: (greaterThan: S) => UpdatableAny<T, F, 'queried', NewDepth>
+export interface Gt<S, Response> {
+  gt: (greaterThan: S) => Response
 }
 
-export interface Gte<T, S, F extends FindOrFilter, NewDepth extends number> {
-  gte: (greaterThanOrEqualTo: S) => UpdatableAny<T, F, 'queried', NewDepth>
+export interface Gte<S, Response> {
+  gte: (greaterThanOrEqualTo: S) => Response
 }
 
-export interface Lt<T, S, F extends FindOrFilter, NewDepth extends number> {
-  lt: (lessThan: S) => UpdatableAny<T, F, 'queried', NewDepth>
+export interface Lt<S, Response> {
+  lt: (lessThan: S) => Response
 }
 
-export interface Lte<T, S, F extends FindOrFilter, NewDepth extends number> {
-  lte: (lessThanOrEqualTo: S) => UpdatableAny<T, F, 'queried', NewDepth>
+export interface Lte<S, Response> {
+  lte: (lessThanOrEqualTo: S) => Response
 }
 
-export interface Match<T, F extends FindOrFilter, NewDepth extends number> {
-  match: (matches: RegExp) => UpdatableAny<T, F, 'queried', NewDepth>
+export interface Match<Response> {
+  match: (matches: RegExp) => Response
 }
 
 export type Searchable<T, S, F extends FindOrFilter, Depth extends number, NewDepth extends number = DecrementRecursion[Depth]> = Rec<
