@@ -22,7 +22,7 @@ describe('misc', () => {
 
   it('should not allow sets or maps', () => {
     const state = { set: new Set() };
-    expect(() => createStore({name, state})).toThrow(errorMessages.INVALID_STATE_INPUT(new Set().toString()));
+    expect(() => createStore({ name, state })).toThrow(errorMessages.INVALID_STATE_INPUT(new Set().toString()));
   })
 
 });

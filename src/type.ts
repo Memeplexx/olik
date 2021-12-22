@@ -30,7 +30,11 @@ export interface UpsertablePrimitive<T> extends WithOne<T>, WithMany<T> {
 type Payload<S> = S | (() => AnyAsync<S>);
 type UpdateResult<X extends AnyAsync<any>> = X extends (() => AnyAsync<infer R>) ? Future<R> : void;
 
-type DecrementRecursion = [-1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30];
+export type DecrementRecursion = [-1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30];
+export type LengthOfTuple<T extends any[]> = T extends { length: infer L } ? L : never;
+export type DropFirstInTuple<T extends any[]> = ((...args: T) => any) extends (arg0: any, arg1: any, arg2: any, ...rest: infer U) => any ? U : T;
+export type LastInTuple<T extends any[]> = T[LengthOfTuple<DropFirstInTuple<T>>];
+export type MaxRecursionDepth = LastInTuple<DecrementRecursion>;
 
 export type Rec<X, Depth extends number> = {
   done: {},
@@ -129,7 +133,7 @@ export interface InvalidateCache {
   invalidateCache: () => void,
 }
 
-export type Remove<Depth extends number> = [Depth] extends [28] ? {} : {
+export type Remove<Depth extends number> = [Depth] extends [MaxRecursionDepth] ? {} : {
   /**
    * Remove the selected property from its parent object.  
    * 
@@ -292,25 +296,58 @@ export type UpdatableAny<T, F extends FindOrFilter, Q extends QueryStatus, Depth
   Depth>
 
 export type Comparators<T, S, F extends FindOrFilter, Depth extends number, NewDepth extends number = DecrementRecursion[Depth]> = Rec<
-  {
-    eq: (value: S) => UpdatableAny<T, F, 'queried', NewDepth>,
-    ne: (value: S) => UpdatableAny<T, F, 'queried', NewDepth>,
-    in: (array: S[]) => UpdatableAny<T, F, 'queried', NewDepth>,
-    ni: (array: S[]) => UpdatableAny<T, F, 'queried', NewDepth>,
-  } & (S extends string ? {
-    match: (matches: RegExp) => UpdatableAny<T, F, 'queried', NewDepth>,
-    gt: (greaterThan: S) => UpdatableAny<T, F, 'queried', NewDepth>,
-    gte: (greaterThanOrEqualTo: S) => UpdatableAny<T, F, 'queried', NewDepth>,
-    lt: (lessThan: S) => UpdatableAny<T, F, 'queried', NewDepth>,
-    lte: (lessThanOrEqualTo: S) => UpdatableAny<T, F, 'queried', NewDepth>,
-  } : S extends number ? {
-    gt: (greaterThan: S) => UpdatableAny<T, F, 'queried', NewDepth>,
-    gte: (greaterThanOrEqualTo: S) => UpdatableAny<T, F, 'queried', NewDepth>,
-    lt: (lessThan: S) => UpdatableAny<T, F, 'queried', NewDepth>,
-    lte: (lessThanOrEqualTo: S) => UpdatableAny<T, F, 'queried', NewDepth>,
-  } : {})
+  & Eq<T, S, F, NewDepth>
+  & Ne<T, S, F, NewDepth>
+  & In<T, S, F, NewDepth>
+  & Ni<T, S, F, NewDepth>
+  & (S extends string ?
+    & Match<T, S, F, NewDepth>
+    : {}
+  ) & (S extends string | number ?
+    & Gt<T, S, F, NewDepth>
+    & Gte<T, S, F, NewDepth>
+    & Lt<T, S, F, NewDepth>
+    & Lte<T, S, F, NewDepth>
+    : {}
+  )
   ,
   Depth>
+
+export interface Eq<T, S, F extends FindOrFilter, NewDepth extends number> {
+  eq: (equalTo: S) => UpdatableAny<T, F, 'queried', NewDepth>
+}
+
+export interface Ne<T, S, F extends FindOrFilter, NewDepth extends number> {
+  ne: (notEqualTo: S) => UpdatableAny<T, F, 'queried', NewDepth>
+}
+
+export interface In<T, S, F extends FindOrFilter, NewDepth extends number> {
+  in: (within: S[]) => UpdatableAny<T, F, 'queried', NewDepth>
+}
+
+export interface Ni<T, S, F extends FindOrFilter, NewDepth extends number> {
+  ni: (notWithin: S[]) => UpdatableAny<T, F, 'queried', NewDepth>
+}
+
+export interface Gt<T, S, F extends FindOrFilter, NewDepth extends number> {
+  gt: (greaterThan: S) => UpdatableAny<T, F, 'queried', NewDepth>
+}
+
+export interface Gte<T, S, F extends FindOrFilter, NewDepth extends number> {
+  gte: (greaterThanOrEqualTo: S) => UpdatableAny<T, F, 'queried', NewDepth>
+}
+
+export interface Lt<T, S, F extends FindOrFilter, NewDepth extends number> {
+  lt: (lessThan: S) => UpdatableAny<T, F, 'queried', NewDepth>
+}
+
+export interface Lte<T, S, F extends FindOrFilter, NewDepth extends number> {
+  lte: (lessThanOrEqualTo: S) => UpdatableAny<T, F, 'queried', NewDepth>
+}
+
+export interface Match<T, S, F extends FindOrFilter, NewDepth extends number> {
+  match: (matches: RegExp) => UpdatableAny<T, F, 'queried', NewDepth>
+}
 
 export type Searchable<T, S, F extends FindOrFilter, Depth extends number, NewDepth extends number = DecrementRecursion[Depth]> = Rec<
   {
@@ -337,7 +374,7 @@ export type DerivationCalculationInputs<T extends Array<Readable<any>>> = {
 export interface Derivation<R> extends Read<R>, OnChange<R>, InvalidateDerivation {
 }
 
-export type FutureState<C> = {
+export interface FutureState<C> {
   isLoading: boolean,
   wasRejected: boolean,
   wasResolved: boolean,
@@ -352,7 +389,7 @@ export interface Future<C> extends Promise<C> {
   getFutureState: () => FutureState<C>,
 }
 
-export type Augmentations = {
+export interface Augmentations {
   selection: { [name: string]: <C>(selection: Readable<C>) => (...args: any[]) => any },
   future: { [name: string]: <C>(future: Future<C>) => (...args: any[]) => any };
   derivation: { [name: string]: <R>(derivation: Derivation<R>) => (...args: any[]) => any }
@@ -376,9 +413,9 @@ export interface OptionsForMakingAStore<S> {
   state: S,
 }
 
-export type Store<S> = S extends Array<any> ? UpdatableArray<S, 'isFilter', 'notQueried', 28>
-  : S extends object ? UpdatableObject<S, 'isFind', 'queried', 28>
-  : UpdatablePrimitive<S, 'isFind', 'queried', 28>;
+export type Store<S> = S extends Array<any> ? UpdatableArray<S, 'isFilter', 'notQueried', MaxRecursionDepth>
+  : S extends object ? UpdatableObject<S, 'isFind', 'queried', MaxRecursionDepth>
+  : UpdatablePrimitive<S, 'isFind', 'queried', MaxRecursionDepth>;
 
 export interface ChangeListener {
   actions: StateAction[];
