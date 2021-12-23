@@ -34,7 +34,7 @@ export const createStore = <S>(
               { type: 'action', name: 'remove', actionType: 'remove()' },
             ] as StateAction[];
             try {
-              updateState(args.name, newStateActions, changeListeners);
+              updateState(args.name, newStateActions);
             } catch (e) {
               /* This can happen if a cache has already expired */
             }

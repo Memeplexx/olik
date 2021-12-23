@@ -7,11 +7,10 @@ import { deepFreeze, deepMerge, toIsoStringInCurrentTz } from './utility';
 export const updateState = (
   storeName: string,
   stateActions: StateAction[],
-  changeListeners: Array<ChangeListener>,
 ) => {
   const oldState = libState.appStores[storeName].state;
   libState.appStores[storeName].setState(writeState(oldState, { ...oldState }, stateActions, { index: 0 }));
-  changeListeners.forEach(({actions, listener}) => {
+  libState.appStores[storeName].getChangeListeners().forEach(({actions, listener}) => {
     const selectedNewState = readState(libState.appStores[storeName].state, actions, { index: 0 });
     if (readState(oldState, actions, { index: 0 }) !== selectedNewState) {
       listener(selectedNewState);
@@ -142,7 +141,7 @@ export const processUpdate = (storeName: string, stateActions: StateAction[], pr
   return (arg: any, opts?: { cacheFor: number, optimisticallyUpdateWith: any }) => {
     deepFreeze(arg);
     if (typeof (arg) !== 'function') {
-      updateState(storeName, [...stateActions, { type: 'action', name: prop, arg, actionType: `${prop}()` }], changeListeners);
+      updateState(storeName, [...stateActions, { type: 'action', name: prop, arg, actionType: `${prop}()` }]);
     } else {
       if (libState.insideTransaction) { throw new Error(errorMessages.ASYNC_PAYLOAD_INSIDE_TRANSACTION); }
       const readCurrentState = () =>
@@ -168,13 +167,13 @@ export const processUpdate = (storeName: string, stateActions: StateAction[], pr
         let snapshot: any = undefined;
         if (opts?.optimisticallyUpdateWith) {
           snapshot = readCurrentState();
-          updateState(storeName, [...stateActions, { type: 'action', name: prop, arg: opts.optimisticallyUpdateWith, actionType: `${prop}()` }], changeListeners);
+          updateState(storeName, [...stateActions, { type: 'action', name: prop, arg: opts.optimisticallyUpdateWith, actionType: `${prop}()` }]);
         }
         state = { ...state, storeValue: readCurrentState() };
         const promise = (augmentations.async ? augmentations.async(arg) : arg()) as Promise<any>;
         return promise
           .then(promiseResult => {
-            updateState(storeName, [...stateActions, { type: 'action', name: prop, arg: promiseResult, actionType: `${prop}()` }], changeListeners);
+            updateState(storeName, [...stateActions, { type: 'action', name: prop, arg: promiseResult, actionType: `${prop}()` }]);
             state = { ...state, wasResolved: true, wasRejected: false, isLoading: false, storeValue: readCurrentState() };
             if (opts?.cacheFor) {
               const statePath = stateActions.map(sa => sa.actionType).join('.');
@@ -182,10 +181,10 @@ export const processUpdate = (storeName: string, stateActions: StateAction[], pr
                 { type: 'property', name: 'cache', actionType: 'cache' },
                 { type: 'property', name: statePath, actionType: statePath },
               ] as StateAction[];
-              updateState(storeName, [...actions, { type: 'action', name: 'replace', arg: toIsoStringInCurrentTz(new Date()), actionType: 'replace()' }], changeListeners);
+              updateState(storeName, [...actions, { type: 'action', name: 'replace', arg: toIsoStringInCurrentTz(new Date()), actionType: 'replace()' }]);
               setTimeout(() => {
                 try {
-                  updateState(storeName, [...actions, { type: 'action', name: 'remove', actionType: 'remove()' }], changeListeners)
+                  updateState(storeName, [...actions, { type: 'action', name: 'remove', actionType: 'remove()' }])
                 } catch (e) {
                   // Ignoring. This may happen due to the user manually invalidating a cache. If that has happened, we don't want an error to be thrown.
                 }
@@ -194,7 +193,7 @@ export const processUpdate = (storeName: string, stateActions: StateAction[], pr
             return readCurrentState();
           }).catch(error => {
             if (snapshot !== undefined) {
-              updateState(storeName, [...stateActions, { type: 'action', name: prop, arg: snapshot, actionType: `${prop}()` }], changeListeners);
+              updateState(storeName, [...stateActions, { type: 'action', name: prop, arg: snapshot, actionType: `${prop}()` }]);
             }
             state = { ...state, wasRejected: true, wasResolved: false, isLoading: false, error };
             throw error;

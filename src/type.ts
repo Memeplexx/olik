@@ -411,6 +411,12 @@ export interface OptionsForMakingAStore<S> {
    * The initial state of your store. Can be any serializable object
    */
   state: S,
+  /**
+   * Whether or not action stack-traces should be logged to the console.
+   * Internally, this makes use of `new Error().stack` to take advantage of sourcemaps.
+   * Do not leave this on during production since it affects performance.
+   */
+ traceActions?: boolean,
 }
 
 export type Store<S> = (S extends Array<any> ? UpdatableArray<S, 'isFilter', 'notQueried', MaxRecursionDepth>
