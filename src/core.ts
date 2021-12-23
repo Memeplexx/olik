@@ -83,5 +83,5 @@ export const createStore = <S>(
       }
     });
   };
-  return libState.appStores[args.name] = Object.assign(initialize({}, true, []), { state });
+  return libState.appStores[args.name] = Object.assign(initialize({}, true, []));
 }
