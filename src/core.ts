@@ -14,7 +14,6 @@ export const createStore = <S>(
   let nestedStoreInfo: undefined | NestedStoreInfo;
   let mergedStoreInfo: undefined | string;
   let state = JSON.parse(JSON.stringify(args.state));
-  let name = args.name;
   const initialize = (s: any, topLevel: boolean, stateActions: StateAction[]): any => {
     if (typeof s !== 'object') { return null; }
     return new Proxy(s, {
@@ -25,7 +24,7 @@ export const createStore = <S>(
         } else if (topLevel && mergedStoreInfo) {
           return (libState.appStores[mergedStoreInfo] as any)[prop];
         } else if (['replace', 'patch', 'deepMerge', 'remove', 'increment', 'removeAll', 'replaceAll', 'patchAll', 'incrementAll', 'insertOne', 'insertMany', 'withOne', 'withMany'].includes(prop)) {
-          return processUpdate(name, stateActions, prop, changeListeners);
+          return processUpdate(args.name, stateActions, prop, changeListeners);
         } else if ('invalidateCache' === prop) {
           return () => {
             const actionType = stateActions.map(sa => sa.actionType).join('.');
@@ -35,7 +34,7 @@ export const createStore = <S>(
               { type: 'action', name: 'remove', actionType: 'remove()' },
             ] as StateAction[];
             try {
-              updateState(name, newStateActions, changeListeners);
+              updateState(args.name, newStateActions, changeListeners);
             } catch (e) {
               /* This can happen if a cache has already expired */
             }
@@ -45,7 +44,7 @@ export const createStore = <S>(
         } else if ('setMergedStoreInfo' === prop) {
           return (info: string) => mergedStoreInfo = info;
         } else if ('getStoreName' === prop) {
-          return () => name;
+          return () => args.name;
         } else if ('setNestedStoreInfo' === prop) {
           return (info: NestedStoreInfo) => nestedStoreInfo = info;
         } else if ('getNestedStoreInfo' === prop) {
