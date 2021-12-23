@@ -17,7 +17,7 @@ export const createStore = <S>(
   const initialize = (s: any, topLevel: boolean, stateActions: StateAction[]): any => {
     if (typeof s !== 'object') { return null; }
     return new Proxy(s, {
-      get: function (target, prop: string) {
+      get: (target, prop: string) => {
         stateActions = topLevel ? new Array<StateAction>() : stateActions;
         if (topLevel && nestedStoreInfo) {
           return libState.appStores[nestedStoreInfo.containerStoreName].nested[nestedStoreInfo.storeName][nestedStoreInfo.instanceName!][prop];
