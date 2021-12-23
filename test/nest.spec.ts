@@ -268,6 +268,14 @@ describe('nest', () => {
     selectNested.arr.find.id.eq(1).replace({ id: 1, num: 4 });
   })
 
+  // it('should be able to read state directly of a nested store', () => {
+  //   const containerStoreName = 'x';
+  //   const select = createStore({ name: 'x', state: { one: '' } });
+  //   const selectNested = createStore({ name: 'y', state: { two: 'two' } });
+  //   nestStoreIfPossible({ store: selectNested, instanceName: 'qwerty', containerStoreName });
+  //   console.log(select.state);
+  // })
+
   it('should replace a nested store if it has the same identifiers', () => {})
 
 });
