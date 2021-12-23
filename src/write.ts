@@ -1,29 +1,37 @@
-import { augmentations, devtoolsDebounce, errorMessages, libState, testState } from './constant';
+import { augmentations, errorMessages, libState, testState } from './constant';
 import { constructQuery } from './query';
 import { readState } from './read';
-import { ChangeListener, FutureState, StateAction } from './type';
+import { FutureState, StateAction } from './type';
 import { deepFreeze, deepMerge, toIsoStringInCurrentTz } from './utility';
 
 export const updateState = (
-  storeName: string,
-  stateActions: StateAction[],
+  args: {
+    storeName: string,
+    stateActions: StateAction[],
+    batchActions?: number;
+  }
 ) => {
-  const oldState = libState.appStores[storeName].state;
-  libState.appStores[storeName].setState(writeState(oldState, { ...oldState }, stateActions, { index: 0 }));
-  libState.appStores[storeName].getChangeListeners().forEach(({actions, listener}) => {
-    const selectedNewState = readState(libState.appStores[storeName].state, actions, { index: 0 });
+  const store = libState.appStores[args.storeName];
+  const oldState = store.state;
+  store.setState(writeState(oldState, { ...oldState }, args.stateActions, { index: 0 }));
+  store.getChangeListeners().forEach(({actions, listener}) => {
+    const selectedNewState = readState(store.state, actions, { index: 0 });
     if (readState(oldState, actions, { index: 0 }) !== selectedNewState) {
       listener(selectedNewState);
     }
   })
 
   // Dispatch to devtools
-  const { type, ...actionPayload } = libState.currentAction;
+  const { type, payload } = libState.currentAction;
   if (libState.devtoolsDispatchListener && libState.dispatchToDevtools) {
-    const dispatchToDevtools = (payload?: any[]) => {
-      const action = payload ? { ...libState.currentAction, batched: payload } : libState.currentAction;
+    const dispatchToDevtools = (batched?: any[]) => {
+      const action = batched ? { ...libState.currentAction, batched } : libState.currentAction;
       testState.currentActionForDevtools = action;
       libState.devtoolsDispatchListener!(action);
+    }
+    if (!args.batchActions) {
+      dispatchToDevtools();
+      return;
     }
     if (libState.previousAction.debounceTimeout) {
       window.clearTimeout(libState.previousAction.debounceTimeout);
@@ -31,24 +39,24 @@ export const updateState = (
     }
     if (libState.previousAction.type !== type) {
       libState.previousAction.type = type;
-      libState.previousAction.payloads = [actionPayload];
+      libState.previousAction.payloads = [payload];
       dispatchToDevtools();
       libState.previousAction.debounceTimeout = window.setTimeout(() => {
         libState.previousAction.type = '';
         libState.previousAction.payloads = [];
-      }, devtoolsDebounce);
+      }, args.batchActions);
     } else {
-      if (libState.previousAction.timestamp < (Date.now() - devtoolsDebounce)) {
-        libState.previousAction.payloads = [actionPayload];
+      if (libState.previousAction.timestamp < (Date.now() - args.batchActions)) {
+        libState.previousAction.payloads = [payload];
       } else {
-        libState.previousAction.payloads.push(actionPayload);
+        libState.previousAction.payloads.push(payload);
       }
       libState.previousAction.timestamp = Date.now();
       libState.previousAction.debounceTimeout = window.setTimeout(() => {
         dispatchToDevtools(libState.previousAction.payloads.slice(0, libState.previousAction.payloads.length - 1));
         libState.previousAction.type = '';
         libState.previousAction.payloads = [];
-      }, devtoolsDebounce);
+      }, args.batchActions);
     }
   }
 }
@@ -130,11 +138,11 @@ export const writeState = (currentState: any, stateToUpdate: any, stateActions: 
   }
 }
 
-export const processUpdate = (storeName: string, stateActions: StateAction[], prop: string, changeListeners: Array<ChangeListener>) => {
+export const processUpdate = (storeName: string, stateActions: StateAction[], prop: string, batchActions?: number) => {
   return (arg: any, opts?: { cacheFor: number, optimisticallyUpdateWith: any }) => {
     deepFreeze(arg);
     if (typeof (arg) !== 'function') {
-      updateState(storeName, [...stateActions, { type: 'action', name: prop, arg, actionType: `${prop}()` }]);
+      updateState({ storeName, batchActions, stateActions: [...stateActions, { type: 'action', name: prop, arg, actionType: `${prop}()` }] });
     } else {
       if (libState.insideTransaction) { throw new Error(errorMessages.ASYNC_PAYLOAD_INSIDE_TRANSACTION); }
       const readCurrentState = () =>
@@ -160,13 +168,13 @@ export const processUpdate = (storeName: string, stateActions: StateAction[], pr
         let snapshot: any = undefined;
         if (opts?.optimisticallyUpdateWith) {
           snapshot = readCurrentState();
-          updateState(storeName, [...stateActions, { type: 'action', name: prop, arg: opts.optimisticallyUpdateWith, actionType: `${prop}()` }]);
+          updateState({ storeName, batchActions, stateActions: [...stateActions, { type: 'action', name: prop, arg: opts.optimisticallyUpdateWith, actionType: `${prop}()` }] });
         }
         state = { ...state, storeValue: readCurrentState() };
         const promise = (augmentations.async ? augmentations.async(arg) : arg()) as Promise<any>;
         return promise
           .then(promiseResult => {
-            updateState(storeName, [...stateActions, { type: 'action', name: prop, arg: promiseResult, actionType: `${prop}()` }]);
+            updateState({ storeName, batchActions, stateActions: [...stateActions, { type: 'action', name: prop, arg: promiseResult, actionType: `${prop}()` }] });
             state = { ...state, wasResolved: true, wasRejected: false, isLoading: false, storeValue: readCurrentState() };
             if (opts?.cacheFor) {
               const statePath = stateActions.map(sa => sa.actionType).join('.');
@@ -174,10 +182,10 @@ export const processUpdate = (storeName: string, stateActions: StateAction[], pr
                 { type: 'property', name: 'cache', actionType: 'cache' },
                 { type: 'property', name: statePath, actionType: statePath },
               ] as StateAction[];
-              updateState(storeName, [...actions, { type: 'action', name: 'replace', arg: toIsoStringInCurrentTz(new Date()), actionType: 'replace()' }]);
+              updateState({ storeName, batchActions, stateActions: [...actions, { type: 'action', name: 'replace', arg: toIsoStringInCurrentTz(new Date()), actionType: 'replace()' }] });
               setTimeout(() => {
                 try {
-                  updateState(storeName, [...actions, { type: 'action', name: 'remove', actionType: 'remove()' }])
+                  updateState({ storeName, batchActions, stateActions: [...actions, { type: 'action', name: 'remove', actionType: 'remove()' }] })
                 } catch (e) {
                   // Ignoring. This may happen due to the user manually invalidating a cache. If that has happened, we don't want an error to be thrown.
                 }
@@ -186,7 +194,7 @@ export const processUpdate = (storeName: string, stateActions: StateAction[], pr
             return readCurrentState();
           }).catch(error => {
             if (snapshot !== undefined) {
-              updateState(storeName, [...stateActions, { type: 'action', name: prop, arg: snapshot, actionType: `${prop}()` }]);
+              updateState({ storeName, batchActions, stateActions: [...stateActions, { type: 'action', name: prop, arg: snapshot, actionType: `${prop}()` }] });
             }
             state = { ...state, wasRejected: true, wasResolved: false, isLoading: false, error };
             throw error;

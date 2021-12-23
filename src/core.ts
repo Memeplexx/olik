@@ -9,6 +9,7 @@ import { processUpdate, updateState } from './write';
 export const createStore = <S>(
   args: OptionsForMakingAStore<S>
 ): Store<S> => {
+  Object.freeze(args);
   validateState(args.state);
   const changeListeners = new Array<ChangeListener>();
   let nestedStoreInfo: undefined | NestedStoreInfo;
@@ -24,7 +25,7 @@ export const createStore = <S>(
         } else if (topLevel && mergedStoreInfo) {
           return (libState.appStores[mergedStoreInfo] as any)[prop];
         } else if (['replace', 'patch', 'deepMerge', 'remove', 'increment', 'removeAll', 'replaceAll', 'patchAll', 'incrementAll', 'insertOne', 'insertMany', 'withOne', 'withMany'].includes(prop)) {
-          return processUpdate(args.name, stateActions, prop, changeListeners);
+          return processUpdate(args.name, stateActions, prop, args.batchActions);
         } else if ('invalidateCache' === prop) {
           return () => {
             const actionType = stateActions.map(sa => sa.actionType).join('.');
@@ -34,7 +35,7 @@ export const createStore = <S>(
               { type: 'action', name: 'remove', actionType: 'remove()' },
             ] as StateAction[];
             try {
-              updateState(args.name, newStateActions);
+              updateState({ storeName: args.name, batchActions: args.batchActions, stateActions: newStateActions });
             } catch (e) {
               /* This can happen if a cache has already expired */
             }

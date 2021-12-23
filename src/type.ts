@@ -411,6 +411,14 @@ export interface OptionsForMakingAStore<S> {
    * The initial state of your store. Can be any serializable object
    */
   state: S,
+  /**
+   * Sometimes a specific action may be dispatched many times in a short period.
+   * To prevent this spam, we can combine multiple actions into 1 'batch' by 
+   * defining the maximum number of milliseconds that must transpire before a new action is created.
+   * This effectively acts like a throttle and a debounce
+   * Default is `0`.
+   */
+  batchActions?: number;
 }
 
 export interface ReduxDevtoolsOptions {

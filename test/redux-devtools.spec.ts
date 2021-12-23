@@ -97,21 +97,23 @@ describe('devtools', () => {
   });
 
   it('should throttle tightly packed updates', done => {
+    testState.logLevel = 'debug';
     const state = { test: 0 };
-    const select = createStore({ name, state });
+    const select = createStore({ name, state, batchActions: 200 });
     trackWithReduxDevtools({ store: select });
     const payload: number[] = [];
-    const updateCount = 3;
+    const updateCount = 6;
     for (let i = 0; i < updateCount; i++) {
       select.test.replace(i);
       expect(testState.currentActionForDevtools).toEqual({ type: 'test.replace()', payload: 0 });
+      testState.logLevel = 'none';
       payload.push(i);
     }
     setTimeout(() => {
       expect(testState.currentActionForDevtools).toEqual({
         type: 'test.replace()',
         payload: updateCount - 1,
-        batched: payload.slice(0, payload.length - 1).map(payload => ({ payload })),
+        batched: payload.slice(1, payload.length - 1),
       })
       done();
     }, 300);
