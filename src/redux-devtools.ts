@@ -1,13 +1,11 @@
 import { errorMessages, libState, testState } from './constant';
-import { Read, Readable } from './type';
+import { Read, ReduxDevtoolsOptions, Replace, ReplaceAll } from './type';
 import { StoreInternal, WindowAugmentedWithReduxDevtools } from './type-internal';
-import { Replace, ReplaceAll } from './type';
 
 export function trackWithReduxDevtools<S>(
-  store: Readable<S>,
-  devtoolsOptions?: any,
+  args: ReduxDevtoolsOptions,
 ) {
-  const storeArg = store as StoreInternal<S>;
+  const storeArg = args.store as StoreInternal<S>;
 
   // do not continue if this is a nested store
   if (!!storeArg.getNestedStoreInfo()) { return; }
@@ -26,12 +24,16 @@ export function trackWithReduxDevtools<S>(
 
   // If a devtools instance has already been registered, do not re-create that instance.
   // This problem really only presents its self when hot-reloading is being used
-  const storeName = devtoolsOptions?.name || storeArg.getStoreName() || document.title;
+  const storeName = storeArg.getStoreName() || document.title;
   let devTools = libState.devtoolsRegistry[storeName];
   if (devTools) { return; }
 
   // Register devtools extension
-  devTools = windowObj.__REDUX_DEVTOOLS_EXTENSION__.connect(devtoolsOptions);
+  const devtoolsOpts = { name: storeName };
+  if (args?.traceActions) {
+    Object.assign(devtoolsOpts, { trace: true, type: 'redux', traceLimit: 100 });
+  }
+  devTools = windowObj.__REDUX_DEVTOOLS_EXTENSION__.connect(devtoolsOpts);
   devTools.init(storeArg.state);
   libState.devtoolsRegistry[storeName] = devTools;
 

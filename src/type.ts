@@ -411,12 +411,18 @@ export interface OptionsForMakingAStore<S> {
    * The initial state of your store. Can be any serializable object
    */
   state: S,
+}
+
+export interface ReduxDevtoolsOptions {
   /**
-   * Whether or not action stack-traces should be logged to the console.
-   * Internally, this makes use of `new Error().stack` to take advantage of sourcemaps.
-   * Do not leave this on during production since it affects performance.
+   * The store to be monitored
    */
- traceActions?: boolean,
+  store: Readable<any>;
+  /**
+   * Whether or not to display the 'trace' tab in the devtools.
+   * Set this to false for production builds as it negatively impacts performance.
+   */
+  traceActions?: boolean;
 }
 
 export type Store<S> = (S extends Array<any> ? UpdatableArray<S, 'isFilter', 'notQueried', MaxRecursionDepth>

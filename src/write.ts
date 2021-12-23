@@ -17,13 +17,6 @@ export const updateState = (
     }
   })
 
-  // if (arg.stack) {
-  //   console.groupCollapsed(libState.currentAction.type);
-  //   console.log(payloadWithTag);
-  //   console.log(arg.stack);
-  //   console.groupEnd();
-  // }
-
   // Dispatch to devtools
   const { type, ...actionPayload } = libState.currentAction;
   if (libState.devtoolsDispatchListener && libState.dispatchToDevtools) {
