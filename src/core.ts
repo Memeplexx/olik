@@ -7,13 +7,12 @@ import { processPotentiallyAsyncUpdate, setNewStateAndCallChangeListeners } from
 
 
 export const createStore = <S>(
-  args: OptionsForMakingAStore<S>
+  { name, state, batchActions }: OptionsForMakingAStore<S>
 ): Store<S> => {
-  Object.freeze(args);
-  validateState(args.state);
+  validateState(state);
   const internals = {
-    storeName: args.name,
-    state: JSON.parse(JSON.stringify(args.state)),
+    storeName: name,
+    state: JSON.parse(JSON.stringify(state)),
     changeListeners: [],
     currentAction: { type: '' },
     batchedAction: {
@@ -32,7 +31,7 @@ export const createStore = <S>(
         } else if (topLevel && internals.mergedStoreInfo) {
           return (libState.stores[internals.mergedStoreInfo] as any)[prop];
         } else if (['replace', 'patch', 'deepMerge', 'remove', 'increment', 'removeAll', 'replaceAll', 'patchAll', 'incrementAll', 'insertOne', 'insertMany', 'withOne', 'withMany'].includes(prop)) {
-          return processPotentiallyAsyncUpdate({ storeName: args.name, stateActions, prop, batchActions: args.batchActions });
+          return processPotentiallyAsyncUpdate({ storeName: name, stateActions, prop, batchActions });
         } else if ('invalidateCache' === prop) {
           return () => {
             const actionType = stateActions.map(sa => sa.actionType).join('.');
@@ -42,7 +41,7 @@ export const createStore = <S>(
               { type: 'action', name: 'remove', actionType: 'remove()' },
             ] as StateAction[];
             try {
-              setNewStateAndCallChangeListeners({ storeName: args.name, batchActions: args.batchActions, stateActions: newStateActions });
+              setNewStateAndCallChangeListeners({ storeName: name, batchActions, stateActions: newStateActions });
             } catch (e) {
               /* This can happen if a cache has already expired */
             }
@@ -81,5 +80,5 @@ export const createStore = <S>(
       }
     });
   };
-  return libState.stores[args.name] = Object.assign(initialize({}, true, []));
+  return libState.stores[name] = Object.assign(initialize({}, true, []));
 }
