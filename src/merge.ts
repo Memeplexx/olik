@@ -1,27 +1,24 @@
-import { StoreLike } from '.';
+import { OptionsForMergingAStore } from '.';
 import { errorMessages, libState } from './constant';
 import { StoreInternal } from './type-internal';
 
 export const mergeStoreIfPossible = <S>(
-  arg: {
-    store: StoreLike<S>,
-    nameOfStoreToMergeInto: string,
-  }
+  { store, nameOfStoreToMergeInto }: OptionsForMergingAStore<S>
 ) => {
-  const appStore = libState.stores[arg.nameOfStoreToMergeInto];
+  const appStore = libState.stores[nameOfStoreToMergeInto];
   if (!appStore) { return; }
   const wrapperState = appStore.state;
   if (['number', 'boolean', 'string'].some(type => typeof (wrapperState) === type) || Array.isArray(wrapperState)) {
     throw new Error(errorMessages.INVALID_EXISTING_STORE_FOR_MERGING);
   }
-  const state = arg.store.state;
+  const state = store.state;
   if (['number', 'boolean', 'string'].some(type => typeof (state) === type) || Array.isArray(state)) {
     throw new Error(errorMessages.INVALID_MERGING_STORE);
   }
-  const internals = (arg.store as StoreInternal<any>).internals;
+  const internals = (store as StoreInternal<any>).internals;
   delete libState.stores[internals.storeName];
   const changeListeners = internals.changeListeners;
-  internals.mergedStoreInfo = arg.nameOfStoreToMergeInto;
+  internals.mergedStoreInfo = nameOfStoreToMergeInto;
   changeListeners
     .forEach(({ actions, listener }) => {
       let node = appStore as any;

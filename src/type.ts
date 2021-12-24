@@ -421,6 +421,32 @@ export interface OptionsForMakingAStore<S> {
   batchActions?: number;
 }
 
+export interface OptionsForNestedAStore<S> {
+  /**
+   * The store to be nested
+   */
+  store: StoreLike<S>,
+  /**
+   * The name that will distinguish instances of this store
+   */
+  instanceName: string | number,
+  /**
+   * The name of the store in which this store should be nested
+   */
+  containerStoreName: string,
+}
+
+export interface OptionsForMergingAStore<S> {
+  /**
+   * The store to be merged
+   */
+  store: StoreLike<S>,
+  /**
+   * The name of the store with which this store should be merged
+   */
+  nameOfStoreToMergeInto: string,
+}
+
 export interface ReduxDevtoolsOptions {
   /**
    * The store to be monitored
