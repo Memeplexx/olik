@@ -80,7 +80,7 @@ export const writeState = (storeName: string, currentState: any, stateToUpdate: 
       const foundIndex = upsertArgs.findIndex(ua => queryPaths.reduce((prev, curr) => prev = prev[curr.name], ua) === elementValue);
       return foundIndex !== -1 ? upsertArgs.splice(foundIndex, 1)[0] : e;
     });
-    return completeStateWrite(storeName, stateActions, { payload: upsert.arg }, [...result, ...upsertArgs]);
+    return completeStateWrite({ storeName, stateActions, payload: { payload: upsert.arg }, newState: [...result, ...upsertArgs] });
   }
   const action = stateActions[cursor.index++];
   if (cursor.index < (stateActions.length)) {
@@ -92,7 +92,7 @@ export const writeState = (storeName: string, currentState: any, stateToUpdate: 
         if (findIndex === -1) { throw new Error(errorMessages.FIND_RETURNS_NO_MATCHES); }
       }
       if (stateActions[cursor.index].name === 'remove') {
-        return completeStateWrite(storeName, stateActions, null, 'find' === action.name ? (currentState as any[]).filter((e, i) => findIndex !== i) : (currentState as any[]).filter(e => !query(e)));
+        return completeStateWrite({ storeName, stateActions, payload: null, newState: 'find' === action.name ? (currentState as any[]).filter((e, i) => findIndex !== i) : (currentState as any[]).filter(e => !query(e)) });
       } else {
         if ('find' === action.name) {
           return (currentState as any[]).map((e, i) => i === findIndex
@@ -115,25 +115,25 @@ export const writeState = (storeName: string, currentState: any, stateToUpdate: 
       return { ...currentState, [action.name]: writeState(storeName, (currentState || {})[action.name], ((stateToUpdate as any) || {})[action.name], stateActions, cursor) };
     }
   } else if (action.name === 'replace') {
-    return completeStateWrite(storeName, stateActions, { payload: action.arg }, action.arg);
+    return completeStateWrite({ storeName, stateActions, payload: { payload: action.arg }, newState: action.arg });
   } else if (action.name === 'patch') {
-    return completeStateWrite(storeName, stateActions, { payload: action.arg }, { ...currentState, ...(action.arg as any) });
+    return completeStateWrite({ storeName, stateActions, payload: { payload: action.arg }, newState: { ...currentState, ...(action.arg as any) } });
   } else if (action.name === 'deepMerge') {
-    return completeStateWrite(storeName, stateActions, { payload: action.arg }, deepMerge(currentState, action.arg));
+    return completeStateWrite({ storeName, stateActions, payload: { payload: action.arg }, newState: deepMerge(currentState, action.arg) });
   } else if (action.name === 'increment') {
-    return completeStateWrite(storeName, stateActions, { payload: action.arg }, currentState + action.arg);
+    return completeStateWrite({ storeName, stateActions, payload: { payload: action.arg }, newState: currentState + action.arg });
   } else if (action.name === 'removeAll') {
-    return completeStateWrite(storeName, stateActions, null, []);
+    return completeStateWrite({ storeName, stateActions, payload: null, newState: [] });
   } else if (action.name === 'replaceAll') {
-    return completeStateWrite(storeName, stateActions, { payload: action.arg }, action.arg);
+    return completeStateWrite({ storeName, stateActions, payload: { payload: action.arg }, newState: action.arg });
   } else if (action.name === 'patchAll') {
-    return completeStateWrite(storeName, stateActions, { payload: action.arg }, (currentState as any[]).map(e => ({ ...e, ...action.arg })));
+    return completeStateWrite({ storeName, stateActions, payload: { payload: action.arg }, newState: (currentState as any[]).map(e => ({ ...e, ...action.arg })) });
   } else if (action.name === 'incrementAll') {
-    return completeStateWrite(storeName, stateActions, { payload: action.arg }, Array.isArray(currentState) ? currentState.map((e: any) => e + action.arg) : currentState + action.arg);
+    return completeStateWrite({ storeName, stateActions, payload: { payload: action.arg }, newState: Array.isArray(currentState) ? currentState.map((e: any) => e + action.arg) : currentState + action.arg });
   } else if (action.name === 'insertOne') {
-    return completeStateWrite(storeName, stateActions, { payload: action.arg }, [...currentState, action.arg]);
+    return completeStateWrite({ storeName, stateActions, payload: { payload: action.arg }, newState: [...currentState, action.arg] });
   } else if (action.name === 'insertMany') {
-    return completeStateWrite(storeName, stateActions, { payload: action.arg }, [...currentState, ...action.arg]);
+    return completeStateWrite({ storeName, stateActions, payload: { payload: action.arg }, newState: [...currentState, ...action.arg] });
   }
 }
 
@@ -222,12 +222,16 @@ export const processUpdate = (storeName: string, stateActions: StateAction[], pr
   }
 }
 
-const completeStateWrite = (storeName: string, stateActions: ReadonlyArray<StateAction>, payload: null | {}, newState: any) => {
-  const internals = libState.stores[storeName].internals;
+const completeStateWrite = (
+  args: {
+    storeName: string, stateActions: ReadonlyArray<StateAction>, payload: null | {}, newState: any,
+  }
+) => {
+  const internals = libState.stores[args.storeName].internals;
   const currentAction = internals.currentAction;
-  const type = stateActions.map(sa => sa.actionType).join('.');
-  internals.currentAction = !libState.isInsideTransaction ? { type, ...payload }
-    : !currentAction.actions ? { type, actions: [{ type, ...payload }] }
-      : { type: `${currentAction.type}, ${type}`, actions: [...currentAction.actions, { type, ...payload }] };
-  return newState;
+  const type = args.stateActions.map(sa => sa.actionType).join('.');
+  internals.currentAction = !libState.isInsideTransaction ? { type, ...args.payload }
+    : !currentAction.actions ? { type, actions: [{ type, ...args.payload }] }
+      : { type: `${currentAction.type}, ${type}`, actions: [...currentAction.actions, { type, ...args.payload }] };
+  return args.newState;
 }
