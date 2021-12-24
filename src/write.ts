@@ -14,7 +14,7 @@ export const updateState = (
   const store = libState.appStores[args.storeName];
   const oldState = store.state;
   store.setState(writeState(oldState, { ...oldState }, args.stateActions, { index: 0 }));
-  store.getChangeListeners().forEach(({actions, listener}) => {
+  store.getChangeListeners().forEach(({ actions, listener }) => {
     const selectedNewState = readState(store.state, actions, { index: 0 });
     if (readState(oldState, actions, { index: 0 }) !== selectedNewState) {
       listener(selectedNewState);
@@ -29,33 +29,31 @@ export const updateState = (
       testState.currentActionForDevtools = action;
       libState.devtoolsDispatchListener!(action);
     }
+
+    // if the user is not batching actions, simply dispatch immediately
     if (!args.batchActions) {
       dispatchToDevtools();
       return;
     }
-    if (libState.previousAction.debounceTimeout) {
-      window.clearTimeout(libState.previousAction.debounceTimeout);
-      libState.previousAction.debounceTimeout = 0;
-    }
-    if (libState.previousAction.type !== type) {
-      libState.previousAction.type = type;
-      libState.previousAction.payloads = [payload];
+
+    // If the action's type is different from the batched action's type, 
+    // update the batched action type to match the current action type, 
+    // and dispatch to devtools immediately
+    if (libState.batchedAction.type !== type) {
+      libState.batchedAction.type = type;
       dispatchToDevtools();
-      libState.previousAction.debounceTimeout = window.setTimeout(() => {
-        libState.previousAction.type = '';
-        libState.previousAction.payloads = [];
-      }, args.batchActions);
-    } else {
-      if (libState.previousAction.timestamp < (Date.now() - args.batchActions)) {
-        libState.previousAction.payloads = [payload];
-      } else {
-        libState.previousAction.payloads.push(payload);
-      }
-      libState.previousAction.timestamp = Date.now();
-      libState.previousAction.debounceTimeout = window.setTimeout(() => {
-        dispatchToDevtools(libState.previousAction.payloads.slice(0, libState.previousAction.payloads.length - 1));
-        libState.previousAction.type = '';
-        libState.previousAction.payloads = [];
+
+      // The presence of a batched action type means the actions are currently being batched.
+      // Add the current payload into the batch, clear any existing timeout, and
+      // kick of a new timeout which, when reached, should reset the batched action to its pristine state
+    } else if (libState.batchedAction.type) {
+      libState.batchedAction.payloads.push(payload);
+      window.clearTimeout(libState.batchedAction.timeout);
+      libState.batchedAction.timeout = window.setTimeout(() => {
+        // Before dispatching the batch, remove the last payload from the batch because it is redundant
+        dispatchToDevtools(libState.batchedAction.payloads.slice(0, libState.batchedAction.payloads.length - 1));
+        libState.batchedAction.type = '';
+        libState.batchedAction.payloads = [];
       }, args.batchActions);
     }
   }

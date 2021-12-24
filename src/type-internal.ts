@@ -21,7 +21,7 @@ export interface PreviousAction {
   timestamp: number,
   type: string,
   payloads: any[],
-  debounceTimeout: number,
+  timeout: number,
 }
 
 export interface NestedStoreInfo {

@@ -22,11 +22,11 @@ export const libState = {
   devtoolsDispatchListener: null as null | ((action: { }) => any),
   dispatchToDevtools: true,
   onDispatchListener: () => null,
-  previousAction: {
+  batchedAction: {
     type: '',
     timestamp: 0,
     payloads: [],
-    debounceTimeout: 0,
+    timeout: 0,
   } as PreviousAction,
 }
 
