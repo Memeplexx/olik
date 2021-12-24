@@ -22,7 +22,6 @@ export const updateState = (
   })
 
   // Dispatch to devtools
-  const { type, payload } = libState.currentAction;
   if (libState.devtoolsDispatchListener && libState.dispatchToDevtools) {
     const dispatchToDevtools = (batched?: any[]) => {
       const action = batched ? { ...libState.currentAction, batched } : libState.currentAction;
@@ -30,28 +29,27 @@ export const updateState = (
       libState.devtoolsDispatchListener!(action);
     }
 
-    // if the user is not batching actions, simply dispatch immediately
-    if (!args.batchActions) {
-      dispatchToDevtools();
-      return;
-    }
+    // if the user is not batching actions, simply dispatch immediately, and return
+    if (!args.batchActions) { dispatchToDevtools(); return; }
 
     // If the action's type is different from the batched action's type, 
     // update the batched action type to match the current action type, 
     // and dispatch to devtools immediately
-    if (libState.batchedAction.type !== type) {
-      libState.batchedAction.type = type;
+    if (libState.batchedAction.type !== libState.currentAction.type) {
+      libState.batchedAction.type = libState.currentAction.type;
       dispatchToDevtools();
 
       // The presence of a batched action type means the actions are currently being batched.
       // Add the current payload into the batch, clear any existing timeout, and
       // kick of a new timeout which, when reached, should reset the batched action to its pristine state
     } else if (libState.batchedAction.type) {
-      libState.batchedAction.payloads.push(payload);
+      libState.batchedAction.payloads.push(libState.currentAction.payload);
       window.clearTimeout(libState.batchedAction.timeout);
       libState.batchedAction.timeout = window.setTimeout(() => {
-        // Before dispatching the batch, remove the last payload from the batch because it is redundant
-        dispatchToDevtools(libState.batchedAction.payloads.slice(0, libState.batchedAction.payloads.length - 1));
+        // Remove the last payload from the batch because it is a duplication of the root action payload
+        libState.batchedAction.payloads.pop();
+        // Dispatch the batch to devtools and reset it
+        dispatchToDevtools(libState.batchedAction.payloads);
         libState.batchedAction.type = '';
         libState.batchedAction.payloads = [];
       }, args.batchActions);
