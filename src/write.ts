@@ -4,20 +4,17 @@ import { readState } from './read';
 import { FutureState, StateAction } from './type';
 import { deepFreeze, deepMerge, toIsoStringInCurrentTz } from './utility';
 
-export const updateState = (
-  args: {
-    storeName: string,
-    stateActions: StateAction[],
-    batchActions?: number;
-  }
+export const setNewStateAndCallChangeListeners = (
+  { storeName, stateActions, batchActions }: 
+  { storeName: string, stateActions: StateAction[], batchActions?: number }
 ) => {
-  const store = libState.stores[args.storeName];
+  const store = libState.stores[storeName];
   const oldState = store.state;
   const internals = store.internals;
-  internals.state = writeState(args.storeName, oldState, { ...oldState }, args.stateActions, { index: 0 });
+  internals.state = copyNewState({ storeName, currentState: oldState, stateToUpdate: { ...oldState }, stateActions, cursor: { index: 0 } });
   internals.changeListeners.forEach(({ actions, listener }) => {
-    const selectedNewState = readState(store.state, actions, { index: 0 });
-    if (readState(oldState, actions, { index: 0 }) !== selectedNewState) {
+    const selectedNewState = readState({ state: store.state, stateActions: actions, cursor: { index: 0 } });
+    if (readState({ state: oldState, stateActions: actions, cursor: { index: 0 } }) !== selectedNewState) {
       listener(selectedNewState);
     }
   })
@@ -32,7 +29,7 @@ export const updateState = (
     }
 
     // if the user is not batching actions, simply dispatch immediately, and return
-    if (!args.batchActions) { dispatchToDevtools(); return; }
+    if (!batchActions) { dispatchToDevtools(); return; }
 
     // If the action's type is different from the batched action's type, 
     // update the batched action type to match the current action type, 
@@ -55,16 +52,19 @@ export const updateState = (
         dispatchToDevtools(internals.batchedAction.payloads);
         internals.batchedAction.type = '';
         internals.batchedAction.payloads = [];
-      }, args.batchActions);
+      }, batchActions);
     }
   }
 }
 
-export const writeState = (storeName: string, currentState: any, stateToUpdate: any, stateActions: ReadonlyArray<StateAction>, cursor: { index: number }): any => {
+export const copyNewState = (
+  { storeName, currentState, stateToUpdate, stateActions, cursor }:
+  { storeName: string, currentState: any, stateToUpdate: any, stateActions: ReadonlyArray<StateAction>, cursor: { index: number } }
+): any => {
   if (Array.isArray(currentState) && (stateActions[cursor.index].type === 'property')) {
     return (currentState as any[]).map((e, i) => (typeof (currentState[i]) === 'object')
-      ? { ...currentState[i], ...writeState(storeName, currentState[i] || {}, stateToUpdate[i] || {}, stateActions, { ...cursor }) }
-      : writeState(storeName, currentState[i] || {}, stateToUpdate[i] || {}, stateActions, { ...cursor }));
+      ? { ...currentState[i], ...copyNewState({ storeName, currentState: currentState[i] || {}, stateToUpdate: stateToUpdate[i] || {}, stateActions, cursor: { ...cursor } }) }
+      : copyNewState({ storeName, currentState: currentState[i] || {}, stateToUpdate: stateToUpdate[i] || {}, stateActions, cursor: { ...cursor } }));
   } else if (Array.isArray(currentState) && (stateActions[cursor.index].type === 'upsertMatching')) {
     cursor.index++;
     const queryPaths = stateActions
@@ -80,7 +80,7 @@ export const writeState = (storeName: string, currentState: any, stateToUpdate: 
       const foundIndex = upsertArgs.findIndex(ua => queryPaths.reduce((prev, curr) => prev = prev[curr.name], ua) === elementValue);
       return foundIndex !== -1 ? upsertArgs.splice(foundIndex, 1)[0] : e;
     });
-    return completeStateWrite({ storeName, stateActions, payload: { payload: upsert.arg }, newState: [...result, ...upsertArgs] });
+    return setCurrentActionReturningNewState({ storeName, stateActions, payload: { payload: upsert.arg }, newState: [...result, ...upsertArgs] });
   }
   const action = stateActions[cursor.index++];
   if (cursor.index < (stateActions.length)) {
@@ -92,19 +92,19 @@ export const writeState = (storeName: string, currentState: any, stateToUpdate: 
         if (findIndex === -1) { throw new Error(errorMessages.FIND_RETURNS_NO_MATCHES); }
       }
       if (stateActions[cursor.index].name === 'remove') {
-        return completeStateWrite({ storeName, stateActions, payload: null, newState: 'find' === action.name ? (currentState as any[]).filter((e, i) => findIndex !== i) : (currentState as any[]).filter(e => !query(e)) });
+        return setCurrentActionReturningNewState({ storeName, stateActions, payload: null, newState: 'find' === action.name ? (currentState as any[]).filter((e, i) => findIndex !== i) : (currentState as any[]).filter(e => !query(e)) });
       } else {
         if ('find' === action.name) {
           return (currentState as any[]).map((e, i) => i === findIndex
             ? (typeof (e) === 'object'
-              ? { ...e, ...writeState(storeName, e || {}, stateToUpdate[i] || {}, stateActions, cursor) }
-              : writeState(storeName, e, stateToUpdate[i], stateActions, cursor))
+              ? { ...e, ...copyNewState({ storeName, currentState: e || {}, stateToUpdate: stateToUpdate[i] || {}, stateActions, cursor }) }
+              : copyNewState({ storeName, currentState: e, stateToUpdate: stateToUpdate[i], stateActions, cursor }))
             : e);
         } else if ('filter' === action.name) {
           return (currentState as any[]).map((e, i) => query(e)
             ? (typeof (e) === 'object'
-              ? { ...e, ...writeState(storeName, e || {}, stateToUpdate[i] || {}, stateActions, { ...cursor }) }
-              : writeState(storeName, e, stateToUpdate[i], stateActions, { ...cursor }))
+              ? { ...e, ...copyNewState({ storeName, currentState: e || {}, stateToUpdate: stateToUpdate[i] || {}, stateActions, cursor: { ...cursor } }) }
+              : copyNewState({ storeName, currentState: e, stateToUpdate: stateToUpdate[i], stateActions, cursor: { ...cursor } }))
             : e);
         }
       }
@@ -112,40 +112,43 @@ export const writeState = (storeName: string, currentState: any, stateToUpdate: 
       const { [stateActions[cursor.index - 1].name]: other, ...otherState } = currentState;
       return otherState;
     } else {
-      return { ...currentState, [action.name]: writeState(storeName, (currentState || {})[action.name], ((stateToUpdate as any) || {})[action.name], stateActions, cursor) };
+      return { ...currentState, [action.name]: copyNewState({ storeName, currentState: (currentState || {})[action.name], stateToUpdate: ((stateToUpdate as any) || {})[action.name], stateActions, cursor }) };
     }
   } else if (action.name === 'replace') {
-    return completeStateWrite({ storeName, stateActions, payload: { payload: action.arg }, newState: action.arg });
+    return setCurrentActionReturningNewState({ storeName, stateActions, payload: { payload: action.arg }, newState: action.arg });
   } else if (action.name === 'patch') {
-    return completeStateWrite({ storeName, stateActions, payload: { payload: action.arg }, newState: { ...currentState, ...(action.arg as any) } });
+    return setCurrentActionReturningNewState({ storeName, stateActions, payload: { payload: action.arg }, newState: { ...currentState, ...(action.arg as any) } });
   } else if (action.name === 'deepMerge') {
-    return completeStateWrite({ storeName, stateActions, payload: { payload: action.arg }, newState: deepMerge(currentState, action.arg) });
+    return setCurrentActionReturningNewState({ storeName, stateActions, payload: { payload: action.arg }, newState: deepMerge(currentState, action.arg) });
   } else if (action.name === 'increment') {
-    return completeStateWrite({ storeName, stateActions, payload: { payload: action.arg }, newState: currentState + action.arg });
+    return setCurrentActionReturningNewState({ storeName, stateActions, payload: { payload: action.arg }, newState: currentState + action.arg });
   } else if (action.name === 'removeAll') {
-    return completeStateWrite({ storeName, stateActions, payload: null, newState: [] });
+    return setCurrentActionReturningNewState({ storeName, stateActions, payload: null, newState: [] });
   } else if (action.name === 'replaceAll') {
-    return completeStateWrite({ storeName, stateActions, payload: { payload: action.arg }, newState: action.arg });
+    return setCurrentActionReturningNewState({ storeName, stateActions, payload: { payload: action.arg }, newState: action.arg });
   } else if (action.name === 'patchAll') {
-    return completeStateWrite({ storeName, stateActions, payload: { payload: action.arg }, newState: (currentState as any[]).map(e => ({ ...e, ...action.arg })) });
+    return setCurrentActionReturningNewState({ storeName, stateActions, payload: { payload: action.arg }, newState: (currentState as any[]).map(e => ({ ...e, ...action.arg })) });
   } else if (action.name === 'incrementAll') {
-    return completeStateWrite({ storeName, stateActions, payload: { payload: action.arg }, newState: Array.isArray(currentState) ? currentState.map((e: any) => e + action.arg) : currentState + action.arg });
+    return setCurrentActionReturningNewState({ storeName, stateActions, payload: { payload: action.arg }, newState: Array.isArray(currentState) ? currentState.map((e: any) => e + action.arg) : currentState + action.arg });
   } else if (action.name === 'insertOne') {
-    return completeStateWrite({ storeName, stateActions, payload: { payload: action.arg }, newState: [...currentState, action.arg] });
+    return setCurrentActionReturningNewState({ storeName, stateActions, payload: { payload: action.arg }, newState: [...currentState, action.arg] });
   } else if (action.name === 'insertMany') {
-    return completeStateWrite({ storeName, stateActions, payload: { payload: action.arg }, newState: [...currentState, ...action.arg] });
+    return setCurrentActionReturningNewState({ storeName, stateActions, payload: { payload: action.arg }, newState: [...currentState, ...action.arg] });
   }
 }
 
-export const processUpdate = (storeName: string, stateActions: StateAction[], prop: string, batchActions?: number) => {
+export const processPotentiallyAsyncUpdate = (
+  { storeName, batchActions, stateActions, prop }:
+  { storeName: string, stateActions: StateAction[], prop: string, batchActions?: number }
+) => {
   return (arg: any, opts?: { cacheFor: number, optimisticallyUpdateWith: any }) => {
     deepFreeze(arg);
     if (typeof (arg) !== 'function') {
-      updateState({ storeName, batchActions, stateActions: [...stateActions, { type: 'action', name: prop, arg, actionType: `${prop}()` }] });
+      setNewStateAndCallChangeListeners({ storeName, batchActions, stateActions: [...stateActions, { type: 'action', name: prop, arg, actionType: `${prop}()` }] });
     } else {
       if (libState.isInsideTransaction) { throw new Error(errorMessages.ASYNC_PAYLOAD_INSIDE_TRANSACTION); }
       const readCurrentState = () =>
-        readState(libState.stores[storeName].state, [...stateActions, { type: 'action', name: 'state' }], { index: 0 });
+        readState({ state: libState.stores[storeName].state, stateActions: [...stateActions, { type: 'action', name: 'state' }], cursor: { index: 0 } });
       let state = { storeValue: readCurrentState(), error: null, isLoading: true, wasRejected: false, wasResolved: false } as FutureState<any>;
       if (libState.stores[storeName].state.cache?.[stateActions.map(sa => sa.actionType).join('.')]) {
         const result = new Proxy(new Promise<any>(resolve => resolve(readCurrentState())), {
@@ -167,13 +170,13 @@ export const processUpdate = (storeName: string, stateActions: StateAction[], pr
         let snapshot: any = undefined;
         if (opts?.optimisticallyUpdateWith) {
           snapshot = readCurrentState();
-          updateState({ storeName, batchActions, stateActions: [...stateActions, { type: 'action', name: prop, arg: opts.optimisticallyUpdateWith, actionType: `${prop}()` }] });
+          setNewStateAndCallChangeListeners({ storeName, batchActions, stateActions: [...stateActions, { type: 'action', name: prop, arg: opts.optimisticallyUpdateWith, actionType: `${prop}()` }] });
         }
         state = { ...state, storeValue: readCurrentState() };
         const promise = (augmentations.async ? augmentations.async(arg) : arg()) as Promise<any>;
         return promise
           .then(promiseResult => {
-            updateState({ storeName, batchActions, stateActions: [...stateActions, { type: 'action', name: prop, arg: promiseResult, actionType: `${prop}()` }] });
+            setNewStateAndCallChangeListeners({ storeName, batchActions, stateActions: [...stateActions, { type: 'action', name: prop, arg: promiseResult, actionType: `${prop}()` }] });
             state = { ...state, wasResolved: true, wasRejected: false, isLoading: false, storeValue: readCurrentState() };
             if (opts?.cacheFor) {
               const statePath = stateActions.map(sa => sa.actionType).join('.');
@@ -181,10 +184,10 @@ export const processUpdate = (storeName: string, stateActions: StateAction[], pr
                 { type: 'property', name: 'cache', actionType: 'cache' },
                 { type: 'property', name: statePath, actionType: statePath },
               ] as StateAction[];
-              updateState({ storeName, batchActions, stateActions: [...actions, { type: 'action', name: 'replace', arg: toIsoStringInCurrentTz(new Date()), actionType: 'replace()' }] });
+              setNewStateAndCallChangeListeners({ storeName, batchActions, stateActions: [...actions, { type: 'action', name: 'replace', arg: toIsoStringInCurrentTz(new Date()), actionType: 'replace()' }] });
               setTimeout(() => {
                 try {
-                  updateState({ storeName, batchActions, stateActions: [...actions, { type: 'action', name: 'remove', actionType: 'remove()' }] })
+                  setNewStateAndCallChangeListeners({ storeName, batchActions, stateActions: [...actions, { type: 'action', name: 'remove', actionType: 'remove()' }] })
                 } catch (e) {
                   // Ignoring. This may happen due to the user manually invalidating a cache. If that has happened, we don't want an error to be thrown.
                 }
@@ -193,7 +196,7 @@ export const processUpdate = (storeName: string, stateActions: StateAction[], pr
             return readCurrentState();
           }).catch(error => {
             if (snapshot !== undefined) {
-              updateState({ storeName, batchActions, stateActions: [...stateActions, { type: 'action', name: prop, arg: snapshot, actionType: `${prop}()` }] });
+              setNewStateAndCallChangeListeners({ storeName, batchActions, stateActions: [...stateActions, { type: 'action', name: prop, arg: snapshot, actionType: `${prop}()` }] });
             }
             state = { ...state, wasRejected: true, wasResolved: false, isLoading: false, error };
             throw error;
@@ -222,16 +225,15 @@ export const processUpdate = (storeName: string, stateActions: StateAction[], pr
   }
 }
 
-const completeStateWrite = (
-  args: {
-    storeName: string, stateActions: ReadonlyArray<StateAction>, payload: null | {}, newState: any,
-  }
+const setCurrentActionReturningNewState = (
+  { newState, payload, stateActions, storeName }: 
+  { storeName: string, stateActions: ReadonlyArray<StateAction>, payload: null | {}, newState: any, }
 ) => {
-  const internals = libState.stores[args.storeName].internals;
+  const internals = libState.stores[storeName].internals;
   const currentAction = internals.currentAction;
-  const type = args.stateActions.map(sa => sa.actionType).join('.');
-  internals.currentAction = !libState.isInsideTransaction ? { type, ...args.payload }
-    : !currentAction.actions ? { type, actions: [{ type, ...args.payload }] }
-      : { type: `${currentAction.type}, ${type}`, actions: [...currentAction.actions, { type, ...args.payload }] };
-  return args.newState;
+  const type = stateActions.map(sa => sa.actionType).join('.');
+  internals.currentAction = !libState.isInsideTransaction ? { type, ...payload }
+    : !currentAction.actions ? { type, actions: [{ type, ...payload }] }
+      : { type: `${currentAction.type}, ${type}`, actions: [...currentAction.actions, { type, ...payload }] };
+  return newState;
 }

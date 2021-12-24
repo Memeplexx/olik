@@ -3,7 +3,7 @@ import { readState } from './read';
 import { OptionsForMakingAStore, StateAction, Store } from './type';
 import { StoreInternals } from './type-internal';
 import { deepFreeze, validateState } from './utility';
-import { processUpdate, updateState } from './write';
+import { processPotentiallyAsyncUpdate, setNewStateAndCallChangeListeners } from './write';
 
 
 export const createStore = <S>(
@@ -32,7 +32,7 @@ export const createStore = <S>(
         } else if (topLevel && internals.mergedStoreInfo) {
           return (libState.stores[internals.mergedStoreInfo] as any)[prop];
         } else if (['replace', 'patch', 'deepMerge', 'remove', 'increment', 'removeAll', 'replaceAll', 'patchAll', 'incrementAll', 'insertOne', 'insertMany', 'withOne', 'withMany'].includes(prop)) {
-          return processUpdate(args.name, stateActions, prop, args.batchActions);
+          return processPotentiallyAsyncUpdate({ storeName: args.name, stateActions, prop, batchActions: args.batchActions });
         } else if ('invalidateCache' === prop) {
           return () => {
             const actionType = stateActions.map(sa => sa.actionType).join('.');
@@ -42,7 +42,7 @@ export const createStore = <S>(
               { type: 'action', name: 'remove', actionType: 'remove()' },
             ] as StateAction[];
             try {
-              updateState({ storeName: args.name, batchActions: args.batchActions, stateActions: newStateActions });
+              setNewStateAndCallChangeListeners({ storeName: args.name, batchActions: args.batchActions, stateActions: newStateActions });
             } catch (e) {
               /* This can happen if a cache has already expired */
             }
@@ -53,7 +53,7 @@ export const createStore = <S>(
           stateActions.push({ type: 'upsertMatching', name: prop, actionType: prop });
           return initialize({}, false, stateActions);
         } else if ('state' === prop) {
-          return deepFreeze(readState(internals.state, [...stateActions, { type: 'action', name: prop }], { index: 0 }));
+          return deepFreeze(readState({ state: internals.state, stateActions: [...stateActions, { type: 'action', name: prop }], cursor: { index: 0 } }));
         } else if ('onChange' === prop) {
           return (changeListener: (arg: any) => any) => {
             const stateActionsCopy = [...stateActions, { type: 'action', name: prop }] as StateAction[];
