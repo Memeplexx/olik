@@ -27,7 +27,7 @@ export const updateState = (
     const currentAction = internals.currentAction;
     const dispatchToDevtools = (batched?: any[]) => {
       const action = batched ? { ...currentAction, batched } : currentAction;
-      testState.currentActionForDevtools = action;
+      testState.currentActionForReduxDevtools = action;
       internals.reduxDevtools!.dispatcher(action);
     }
 
@@ -37,24 +37,24 @@ export const updateState = (
     // If the action's type is different from the batched action's type, 
     // update the batched action type to match the current action type, 
     // and dispatch to devtools immediately
-    if (libState.batchedAction.type !== currentAction.type) {
-      libState.batchedAction.type = currentAction.type;
+    if (internals.batchedAction.type !== currentAction.type) {
+      internals.batchedAction.type = currentAction.type;
       dispatchToDevtools();
 
       // The presence of a batched action type means the actions are currently being batched.
-    } else if (libState.batchedAction.type) {
+    } else if (internals.batchedAction.type) {
       // Add the current payload into the batch
-      libState.batchedAction.payloads.push(currentAction.payload);
+      internals.batchedAction.payloads.push(currentAction.payload);
       // Clear the existing timeout so that the batch is not prematurely expired
-      window.clearTimeout(libState.batchedAction.timeoutHandle);
+      window.clearTimeout(internals.batchedAction.timeoutHandle);
       // kick of a new timeout which, when reached, should reset the batched action to its pristine state
-      libState.batchedAction.timeoutHandle = window.setTimeout(() => {
+      internals.batchedAction.timeoutHandle = window.setTimeout(() => {
         // Remove the last payload from the batch because it is a duplication of the root action payload
-        libState.batchedAction.payloads.pop();
+        internals.batchedAction.payloads.pop();
         // Dispatch the batch to devtools and reset it
-        dispatchToDevtools(libState.batchedAction.payloads);
-        libState.batchedAction.type = '';
-        libState.batchedAction.payloads = [];
+        dispatchToDevtools(internals.batchedAction.payloads);
+        internals.batchedAction.type = '';
+        internals.batchedAction.payloads = [];
       }, args.batchActions);
     }
   }

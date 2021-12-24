@@ -17,7 +17,7 @@ export type WindowAugmentedWithReduxDevtools = {
   }
 }
 
-export interface PreviousAction {
+export interface BatchedAction {
   type: string,
   payloads: any[],
   timeoutHandle: number,
@@ -36,11 +36,12 @@ export interface StoreInternals<S> {
   nestedStoreInfo?: NestedStoreInfo,
   mergedStoreInfo?: string;
   currentAction: { [key: string]: any },
+  batchedAction: BatchedAction,
   reduxDevtools?: {
     instance: DevtoolsInstance,
     dispatcher: (action: any) => any,
     disableDispatch: boolean,
-  }
+  },
 }
 
 export type StoreInternal<S> = StoreLike<S> & {

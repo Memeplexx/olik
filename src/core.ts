@@ -16,6 +16,11 @@ export const createStore = <S>(
     state: JSON.parse(JSON.stringify(args.state)),
     changeListeners: [],
     currentAction: { type: '' },
+    batchedAction: {
+      type: '',
+      payloads: [],
+      timeoutHandle: 0,
+    }
   } as StoreInternals<S>;
   const initialize = (s: any, topLevel: boolean, stateActions: StateAction[]): any => {
     if (typeof s !== 'object') { return null; }

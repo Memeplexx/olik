@@ -1,6 +1,7 @@
 import { createStore, trackWithReduxDevtools } from '../src';
 import { errorMessages, libState, testState } from '../src/constant';
 import { windowAugmentedWithReduxDevtoolsImpl, currentAction } from './_utility';
+import { StoreInternal } from '../src/type-internal';
 
 describe('devtools', () => {
 
@@ -11,7 +12,6 @@ describe('devtools', () => {
   })
 
   beforeEach(() => {
-    libState.devtoolsRegistry = {};
     testState.logLevel = 'none';
   })
 
@@ -105,12 +105,12 @@ describe('devtools', () => {
     const updateCount = 6;
     for (let i = 0; i < updateCount; i++) {
       select.test.replace(i);
-      expect(testState.currentActionForDevtools).toEqual({ type: 'test.replace()', payload: 0 });
+      expect(testState.currentActionForReduxDevtools).toEqual({ type: 'test.replace()', payload: 0 });
       testState.logLevel = 'none';
       payload.push(i);
     }
     setTimeout(() => {
-      expect(testState.currentActionForDevtools).toEqual({
+      expect(testState.currentActionForReduxDevtools).toEqual({
         type: 'test.replace()',
         payload: updateCount - 1,
         batched: payload.slice(1, payload.length - 1),

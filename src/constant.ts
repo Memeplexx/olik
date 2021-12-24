@@ -1,5 +1,5 @@
-import { Augmentations, StateAction, Store } from "./type"
-import { DevtoolsInstance, PreviousAction, StoreInternal, WindowAugmentedWithReduxDevtools } from "./type-internal";
+import { Augmentations } from './type';
+import { StoreInternal, WindowAugmentedWithReduxDevtools } from './type-internal';
 
 export const errorMessages = {
   FIND_RETURNS_NO_MATCHES: 'Could not find array element',
@@ -18,15 +18,10 @@ export const libState = {
   stores: {} as { [storeName: string]: StoreInternal<any> },
   isInsideTransaction: false,
   onInternalDispatch: () => null,
-  batchedAction: {
-    type: '',
-    payloads: [],
-    timeoutHandle: 0,
-  } as PreviousAction,
 }
 
 export const testState = {
-  currentActionForDevtools: { },
+  currentActionForReduxDevtools: { },
   fakeWindowObjectForReduxDevtools: null as null | WindowAugmentedWithReduxDevtools,
   logLevel: 'none' as ('debug' | 'none'),
 }
