@@ -97,7 +97,6 @@ describe('devtools', () => {
   });
 
   it('should throttle tightly packed updates', done => {
-    testState.logLevel = 'debug';
     const state = { test: 0 };
     const select = createStore({ name, state, batchActions: 200 });
     trackWithReduxDevtools({ store: select });

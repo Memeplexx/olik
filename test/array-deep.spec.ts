@@ -1,5 +1,5 @@
 import { createStore } from '../src';
-import { libState, testState } from '../src/constant';
+import { testState } from '../src/constant';
 import { currentAction } from './_utility';
 
 describe('array-deep', () => {
