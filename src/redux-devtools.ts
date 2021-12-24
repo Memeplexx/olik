@@ -42,12 +42,19 @@ export function trackWithReduxDevtools<S>(
     disableDispatch: false,
   };
 
+  const setState = (state: any) => {
+    internals.reduxDevtools!.disableDispatch = true;
+    const selection = storeArg as any as Replace<any> & ReplaceAll<any> & Read<any>;
+    selection[Array.isArray(selection.state) ? 'replaceAll' : 'replace'](state);
+    internals.reduxDevtools!.disableDispatch = false;
+  }
+
   // Ensure that the store responds to events emitted from the devtools extension
   devTools.subscribe((message: any) => {
     if (message.type === 'ACTION' && message.source === '@devtools-extension') {
       let messagePayload: { type: string, payload: any };
       try {
-        messagePayload = JSON.parse(message.payload);
+        messagePayload = messagePayload = JSON.parse(message.payload.replace(/"\s+|\s+"/g, '"'));
       } catch (e) {
         throw Error(errorMessages.DEVTOOL_DISPATCHED_INVALID_JSON);
       }
@@ -59,14 +66,18 @@ export function trackWithReduxDevtools<S>(
       let selection: any = storeArg;
       pathSegments.forEach(seg => selection = selection[seg] as any);
       selection[action.substring(0, action.length - 2)](messagePayload.payload);
+      libState.onInternalDispatch();
+    }
+    if (message.type === 'EXPORT') {
+      const url = window.URL.createObjectURL(new Blob([JSON.stringify(storeArg.state)], { type: 'application/json' }));
+      document.body.appendChild(Object.assign(document.createElement('a'), {
+        style: { display: 'none' },
+        href: url,
+        download: `${storeArg.internals.storeName}.json`
+      })).click();
+      window.URL.revokeObjectURL(url);
     }
     if (message.type === 'DISPATCH' && message.payload) {
-      const selection = storeArg as any as Replace<any> & ReplaceAll<any> & Read<any>;
-      const setState = (state: any) => {
-        internals.reduxDevtools!.disableDispatch = true;
-        selection[Array.isArray(selection.state) ? 'replaceAll' : 'replace'](state);
-        internals.reduxDevtools!.disableDispatch = false;
-      }
       switch (message.payload.type) {
         case 'JUMP_TO_STATE':
         case 'JUMP_TO_ACTION':
@@ -74,12 +85,16 @@ export function trackWithReduxDevtools<S>(
           libState.onInternalDispatch();
           return;
         case 'COMMIT':
-          devTools!.init(selection.state);
+          devTools!.init(storeArg.state);
           return;
         case 'ROLLBACK':
           const parsedState = JSON.parse(message.state);
           setState(parsedState);
           devTools!.init(parsedState);
+          return;
+        case 'IMPORT_STATE':
+          setState(message.payload.nextLiftedState);
+          libState.onInternalDispatch();
           return;
       }
     }
