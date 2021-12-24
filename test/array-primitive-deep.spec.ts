@@ -1,5 +1,6 @@
 import { createStore } from '../src';
 import { libState, testState } from '../src/constant';
+import { currentAction } from './_utility';
 
 describe('array-primitive-deep', () => {
 
@@ -15,7 +16,7 @@ describe('array-primitive-deep', () => {
     const payload = [4, 5, 6];
     select.arr
       .replaceAll(payload);
-    expect(libState.currentAction).toEqual({ type: 'arr.replaceAll()', payload });
+    expect(currentAction(select)).toEqual({ type: 'arr.replaceAll()', payload });
     expect(select.state).toEqual({ arr: [4, 5, 6] });
   })
 
@@ -23,7 +24,7 @@ describe('array-primitive-deep', () => {
     const select = createStore({ name, state });
     select.arr
       .removeAll();
-    expect(libState.currentAction).toEqual({ type: 'arr.removeAll()' });
+    expect(currentAction(select)).toEqual({ type: 'arr.removeAll()' });
     expect(select.state).toEqual({ arr: [] });
   })
 
@@ -32,7 +33,7 @@ describe('array-primitive-deep', () => {
     const payload = 1;
     select.arr
       .incrementAll(payload);
-    expect(libState.currentAction).toEqual({ type: 'arr.incrementAll()', payload });
+    expect(currentAction(select)).toEqual({ type: 'arr.incrementAll()', payload });
     expect(select.state).toEqual({ arr: [2, 3, 4] });
   })
 
@@ -41,7 +42,7 @@ describe('array-primitive-deep', () => {
     const payload = 4;
     select.arr
       .insertOne(payload);
-    expect(libState.currentAction).toEqual({ type: 'arr.insertOne()', payload });
+    expect(currentAction(select)).toEqual({ type: 'arr.insertOne()', payload });
     expect(select.state).toEqual({ arr: [1, 2, 3, 4] });
   })
 
@@ -50,7 +51,7 @@ describe('array-primitive-deep', () => {
     const payload = [4, 5, 6];
     select.arr
       .insertMany(payload);
-    expect(libState.currentAction).toEqual({ type: 'arr.insertMany()', payload });
+    expect(currentAction(select)).toEqual({ type: 'arr.insertMany()', payload });
     expect(select.state).toEqual({ arr: [1, 2, 3, 4, 5, 6] });
   })
 
@@ -60,7 +61,7 @@ describe('array-primitive-deep', () => {
     select.arr
       .find.eq(2)
       .replace(payload);
-    expect(libState.currentAction).toEqual({ type: 'arr.find.eq(2).replace()', payload });
+    expect(currentAction(select)).toEqual({ type: 'arr.find.eq(2).replace()', payload });
     expect(select.state).toEqual({ arr: [1, 9, 3] });
   })
 
@@ -69,7 +70,7 @@ describe('array-primitive-deep', () => {
     select.arr
       .find.eq(2)
       .remove();
-    expect(libState.currentAction).toEqual({ type: 'arr.find.eq(2).remove()' });
+    expect(currentAction(select)).toEqual({ type: 'arr.find.eq(2).remove()' });
     expect(select.state).toEqual({ arr: [1, 3] });
   })
 
@@ -79,7 +80,7 @@ describe('array-primitive-deep', () => {
     select.arr
       .find.eq(2)
       .increment(payload);
-    expect(libState.currentAction).toEqual({ type: 'arr.find.eq(2).increment()', payload });
+    expect(currentAction(select)).toEqual({ type: 'arr.find.eq(2).increment()', payload });
     expect(select.state).toEqual({ arr: [1, 4, 3] });
   })
 
@@ -89,7 +90,7 @@ describe('array-primitive-deep', () => {
     select.arr
       .find.eq(1).or.eq(2)
       .replace(payload);
-    expect(libState.currentAction).toEqual({ type: 'arr.find.eq(1).or.eq(2).replace()', payload });
+    expect(currentAction(select)).toEqual({ type: 'arr.find.eq(1).or.eq(2).replace()', payload });
     expect(select.state).toEqual({ arr: [9, 2, 3] });
   })
 
@@ -98,7 +99,7 @@ describe('array-primitive-deep', () => {
     select.arr
       .find.eq(1).or.eq(2)
       .remove();
-    expect(libState.currentAction).toEqual({ type: 'arr.find.eq(1).or.eq(2).remove()' });
+    expect(currentAction(select)).toEqual({ type: 'arr.find.eq(1).or.eq(2).remove()' });
     expect(select.state).toEqual({ arr: [2, 3] });
   })
 
@@ -108,7 +109,7 @@ describe('array-primitive-deep', () => {
     select.arr
       .find.eq(1).or.eq(2)
       .increment(1);
-    expect(libState.currentAction).toEqual({ type: 'arr.find.eq(1).or.eq(2).increment()', payload });
+    expect(currentAction(select)).toEqual({ type: 'arr.find.eq(1).or.eq(2).increment()', payload });
     expect(select.state).toEqual({ arr: [2, 2, 3] });
   })
 
@@ -118,7 +119,7 @@ describe('array-primitive-deep', () => {
     select.arr
       .find.gt(1).and.lt(3)
       .replace(payload);
-    expect(libState.currentAction).toEqual({ type: 'arr.find.gt(1).and.lt(3).replace()', payload });
+    expect(currentAction(select)).toEqual({ type: 'arr.find.gt(1).and.lt(3).replace()', payload });
     expect(select.state).toEqual({ arr: [1, 9, 3] });
   })
 
@@ -127,7 +128,7 @@ describe('array-primitive-deep', () => {
     select.arr
       .find.gt(1).and.lt(3)
       .remove();
-    expect(libState.currentAction).toEqual({ type: 'arr.find.gt(1).and.lt(3).remove()' });
+    expect(currentAction(select)).toEqual({ type: 'arr.find.gt(1).and.lt(3).remove()' });
     expect(select.state).toEqual({ arr: [1, 3] });
   })
 
@@ -137,7 +138,7 @@ describe('array-primitive-deep', () => {
     select.arr
       .find.eq(1).and.lt(2)
       .increment(payload);
-    expect(libState.currentAction).toEqual({ type: 'arr.find.eq(1).and.lt(2).increment()', payload });
+    expect(currentAction(select)).toEqual({ type: 'arr.find.eq(1).and.lt(2).increment()', payload });
     expect(select.state).toEqual({ arr: [2, 2, 3] });
   })
 
@@ -146,7 +147,7 @@ describe('array-primitive-deep', () => {
     select.arr
       .filter.gt(1)
       .remove();
-    expect(libState.currentAction).toEqual({ type: 'arr.filter.gt(1).remove()' });
+    expect(currentAction(select)).toEqual({ type: 'arr.filter.gt(1).remove()' });
     expect(select.state).toEqual({ arr: [1] });
   })
 
@@ -156,7 +157,7 @@ describe('array-primitive-deep', () => {
     select.arr
       .filter.gt(1)
       .increment(1);
-    expect(libState.currentAction).toEqual({ type: 'arr.filter.gt(1).increment()', payload });
+    expect(currentAction(select)).toEqual({ type: 'arr.filter.gt(1).increment()', payload });
     expect(select.state).toEqual({ arr: [1, 3, 4] });
   })
 
@@ -165,7 +166,7 @@ describe('array-primitive-deep', () => {
     select.arr
       .filter.eq(1).or.eq(2)
       .remove();
-    expect(libState.currentAction).toEqual({ type: 'arr.filter.eq(1).or.eq(2).remove()' });
+    expect(currentAction(select)).toEqual({ type: 'arr.filter.eq(1).or.eq(2).remove()' });
     expect(select.state).toEqual({ arr: [3] });
   })
 
@@ -175,7 +176,7 @@ describe('array-primitive-deep', () => {
     select.arr
       .filter.eq(1).or.eq(2)
       .increment(1);
-    expect(libState.currentAction).toEqual({ type: 'arr.filter.eq(1).or.eq(2).increment()', payload });
+    expect(currentAction(select)).toEqual({ type: 'arr.filter.eq(1).or.eq(2).increment()', payload });
     expect(select.state).toEqual({ arr: [2, 3, 3] });
   })
 
@@ -184,7 +185,7 @@ describe('array-primitive-deep', () => {
     select.arr
       .filter.gt(0).and.lt(3)
       .remove();
-    expect(libState.currentAction).toEqual({ type: 'arr.filter.gt(0).and.lt(3).remove()' });
+    expect(currentAction(select)).toEqual({ type: 'arr.filter.gt(0).and.lt(3).remove()' });
     expect(select.state).toEqual({ arr: [3] });
   })
 
@@ -194,7 +195,7 @@ describe('array-primitive-deep', () => {
     select.arr
       .filter.gt(0).and.gt(1)
       .increment(1);
-    expect(libState.currentAction).toEqual({ type: 'arr.filter.gt(0).and.gt(1).increment()', payload });
+    expect(currentAction(select)).toEqual({ type: 'arr.filter.gt(0).and.gt(1).increment()', payload });
     expect(select.state).toEqual({ arr: [1, 3, 4] });
   })
 

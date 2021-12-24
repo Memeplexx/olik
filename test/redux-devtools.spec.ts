@@ -1,6 +1,6 @@
 import { createStore, trackWithReduxDevtools } from '../src';
 import { errorMessages, libState, testState } from '../src/constant';
-import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
+import { windowAugmentedWithReduxDevtoolsImpl, currentAction } from './_utility';
 
 describe('devtools', () => {
 
@@ -24,7 +24,7 @@ describe('devtools', () => {
     expect(select.state).toEqual({ x: 3, y: 0 });
     testState.fakeWindowObjectForReduxDevtools!.__REDUX_DEVTOOLS_EXTENSION__._mockInvokeSubscription({ type: 'DISPATCH', state: JSON.stringify(state), payload: { type: 'JUMP_TO_ACTION' }, source: '@devtools-extension' });
     expect(select.state).toEqual(state);
-    expect(libState.currentAction.type).toEqual('replace()');
+    expect(currentAction(select).type).toEqual('replace()');
   });
 
   it('should correctly respond to devtools dispatches where the state is an array', () => {
@@ -36,7 +36,7 @@ describe('devtools', () => {
     const state2 = ['g', 'h'];
     testState.fakeWindowObjectForReduxDevtools!.__REDUX_DEVTOOLS_EXTENSION__._mockInvokeSubscription({ type: 'DISPATCH', state: JSON.stringify(state2), payload: { type: 'JUMP_TO_ACTION' }, source: '@devtools-extension' });
     expect(select.state).toEqual(state2);
-    expect(libState.currentAction.type).toEqual('replaceAll()');
+    expect(currentAction(select).type).toEqual('replaceAll()');
   });
 
   it('should handle a COMMIT without throwing an error', () => {

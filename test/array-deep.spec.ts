@@ -1,5 +1,6 @@
 import { createStore } from '../src';
 import { libState, testState } from '../src/constant';
+import { currentAction } from './_utility';
 
 describe('array-deep', () => {
 
@@ -27,7 +28,7 @@ describe('array-deep', () => {
     select.arr
       .find.id.eq(2)
       .replace(payload);
-    expect(libState.currentAction).toEqual({
+    expect(currentAction(select)).toEqual({
       type: 'arr.find.id.eq(2).replace()',
       payload,
     });
@@ -46,7 +47,7 @@ describe('array-deep', () => {
     select.arr
       .filter.id.in([1, 2])
       .patch(payload);
-    expect(libState.currentAction).toEqual({
+    expect(currentAction(select)).toEqual({
       type: 'arr.filter.id.in(1,2).patch()',
       payload,
     });
@@ -60,7 +61,7 @@ describe('array-deep', () => {
     select.arr
       .find.id.eq(2).val
       .replace(payload);
-    expect(libState.currentAction).toEqual({
+    expect(currentAction(select)).toEqual({
       type: 'arr.find.id.eq(2).val.replace()',
       payload,
     });
@@ -84,7 +85,7 @@ describe('array-deep', () => {
       .find.id.eq(2)
       .arr.find.id.eq(1).num
       .replace(payload);
-    expect(libState.currentAction).toEqual({
+    expect(currentAction(select)).toEqual({
       type: 'arr.find.id.eq(2).arr.find.id.eq(1).num.replace()',
       payload,
     });
@@ -111,7 +112,7 @@ describe('array-deep', () => {
       .find.id.eq(2)
       .arr.filter.id.in([1, 2]).num
       .increment(payload);
-    expect(libState.currentAction).toEqual({
+    expect(currentAction(select)).toEqual({
       type: 'arr.find.id.eq(2).arr.filter.id.in(1,2).num.increment()',
       payload,
     });
@@ -136,7 +137,7 @@ describe('array-deep', () => {
       .find.id.eq(2)
       .arr.num
       .incrementAll(payload);
-    expect(libState.currentAction).toEqual({
+    expect(currentAction(select)).toEqual({
       type: 'arr.find.id.eq(2).arr.num.incrementAll()',
       payload,
     });

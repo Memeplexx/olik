@@ -1,3 +1,4 @@
+import { StoreInternal } from "../src/type-internal";
 import { WindowAugmentedWithReduxDevtools } from "../src/type-internal";
 
 export const windowAugmentedWithReduxDevtoolsImpl = {
@@ -13,3 +14,5 @@ export const windowAugmentedWithReduxDevtoolsImpl = {
     _mockInvokeSubscription = (message: { type: string, payload: any, state?: any, source: any }) => this._subscribers.forEach(s => s(message));
   }(),
 } as unknown as WindowAugmentedWithReduxDevtools;
+
+export const currentAction = <S>(store: any) => (store as StoreInternal<S>).getCurrentAction();

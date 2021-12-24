@@ -1,5 +1,6 @@
 import { createStore, transact } from '../src';
 import { errorMessages, libState, testState } from '../src/constant';
+import { currentAction } from './_utility';
 
 describe('transaction', () => {
 
@@ -17,7 +18,7 @@ describe('transaction', () => {
       () => select.str.replace('x'),
     );
     expect(select.state).toEqual({ num: 1, str: 'x', bool: false });
-    expect(libState.currentAction).toEqual({
+    expect(currentAction(select)).toEqual({
       type: 'num.replace(), str.replace()',
       actions: [
         { type: 'num.replace()', payload: 1 },
@@ -32,7 +33,7 @@ describe('transaction', () => {
     const payload = 1;
     transact(() => select.num.replace(payload));
     expect(select.num.state).toEqual(payload);
-    expect(libState.currentAction).toEqual({ type: 'num.replace()', payload });
+    expect(currentAction(select)).toEqual({ type: 'num.replace()', payload });
   })
 
   it('should not support transactions if one of the actions has an async payload', () => {
@@ -42,6 +43,27 @@ describe('transaction', () => {
       () => select.num.replace(() => new Promise(resolve => resolve(1))),
       () => select.str.replace('x'),
     )).toThrow(errorMessages.ASYNC_PAYLOAD_INSIDE_TRANSACTION);
+  })
+
+  it('should not throw errors is transactions traverse multiple stores', () => {
+    const select1 = createStore({ name: 'a', state: { num: 0 } });
+    const select2 = createStore({ name: 'b', state: { str: '' } });
+    transact(
+      () => select1.num.increment(1),
+      () => select2.str.replace('x'),
+    );
+    expect(currentAction(select1)).toEqual({
+      type: 'num.increment()',
+      actions: [ { type: 'num.increment()', payload: 1 } ]
+    })
+    expect(currentAction(select2)).toEqual({
+      type: 'str.replace()',
+      actions: [ { type: 'str.replace()', payload: 'x' } ]
+    })
+    select1.num.increment(1);
+    expect(currentAction(select1)).toEqual({ type: 'num.increment()', payload: 1 });
+    select2.str.replace('y');
+    expect(currentAction(select2)).toEqual({ type: 'str.replace()', payload: 'y' });
   })
 
 });

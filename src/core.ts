@@ -15,6 +15,7 @@ export const createStore = <S>(
   let nestedStoreInfo: undefined | NestedStoreInfo;
   let mergedStoreInfo: undefined | string;
   let state = JSON.parse(JSON.stringify(args.state));
+  let currentAction: { type: string, payload?: any } = { type: '' };
   const initialize = (s: any, topLevel: boolean, stateActions: StateAction[]): any => {
     if (typeof s !== 'object') { return null; }
     return new Proxy(s, {
@@ -52,6 +53,10 @@ export const createStore = <S>(
           return () => nestedStoreInfo;
         } else if ('setState' === prop) {
           return (newState: any) => state = newState;
+        } else if ('getCurrentAction' === prop) {
+          return () => currentAction;
+        } else if ('setCurrentAction' === prop) {
+          return (action: any) => currentAction = action;
         } else if ('upsertMatching' === prop) {
           stateActions.push({ type: 'upsertMatching', name: prop, actionType: prop });
           return initialize({}, false, stateActions);

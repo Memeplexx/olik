@@ -1,4 +1,6 @@
 import { errorMessages, libState } from './constant';
+import { Store } from './type';
+import { StoreInternal } from './type-internal';
 
 export const toIsoStringInCurrentTz = (date: Date) => {
   const tzo = -date.getTimezoneOffset();
@@ -69,3 +71,5 @@ export const validateState = (state: any) => {
 }
 
 export const getStoreByName = (name: string) => libState.appStores[name];
+
+

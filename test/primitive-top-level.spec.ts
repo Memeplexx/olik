@@ -1,5 +1,6 @@
 import { createStore } from '../src';
 import { libState, testState } from '../src/constant';
+import { currentAction } from './_utility';
 
 describe('top-level-primitive', () => {
 
@@ -16,7 +17,7 @@ describe('top-level-primitive', () => {
     select
       .replace(payload);
     expect(select.state).toEqual(1);
-    expect(libState.currentAction).toEqual({ type: 'replace()', payload });
+    expect(currentAction(select)).toEqual({ type: 'replace()', payload });
   })
 
   it('should increment a value', () => {
@@ -25,7 +26,7 @@ describe('top-level-primitive', () => {
     select
       .increment(payload);
     expect(select.state).toEqual(1);
-    expect(libState.currentAction).toEqual({ type: 'increment()', payload });
+    expect(currentAction(select)).toEqual({ type: 'increment()', payload });
   })
 
 });

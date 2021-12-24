@@ -1,6 +1,4 @@
 import { createStore } from '../src';
-import { testState } from '../src/constant';
-import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
 
 describe('immutability', () => {
 

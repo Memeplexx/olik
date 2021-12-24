@@ -36,7 +36,9 @@ export type StoreInternal<S> = StoreLike<S> & {
   getStoreName(): string,
   setNestedStoreInfo(info?: NestedStoreInfo): void,
   getNestedStoreInfo(): NestedStoreInfo | undefined,
-  setMergedStoreInfo(info: string): void;
+  setMergedStoreInfo(info: string): void,
+  getCurrentAction(): { [key: string]: any },
+  setCurrentAction(action: { [key: string]: any }): void,
 };
 
 export interface QuerySpec {

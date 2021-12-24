@@ -1,5 +1,6 @@
 import { createStore } from '../src';
 import { libState, testState } from '../src/constant';
+import { currentAction } from './_utility';
 
 
 describe('array-object-deep', () => {
@@ -16,7 +17,7 @@ describe('array-object-deep', () => {
     const payload = [{ id: 5, val: 5 }, { id: 6, val: 6 }, { id: 7, val: 7 }];
     select.arr
       .replaceAll(payload);
-    expect(libState.currentAction).toEqual({ type: 'arr.replaceAll()', payload });
+    expect(currentAction(select)).toEqual({ type: 'arr.replaceAll()', payload });
     expect(select.arr.state).toEqual(payload);
   })
 
@@ -24,7 +25,7 @@ describe('array-object-deep', () => {
     const select = createStore({ name, state });
     select.arr
       .removeAll();
-    expect(libState.currentAction).toEqual({ type: 'arr.removeAll()' });
+    expect(currentAction(select)).toEqual({ type: 'arr.removeAll()' });
     expect(select.arr.state).toEqual([]);
   })
 
@@ -33,7 +34,7 @@ describe('array-object-deep', () => {
     const payload = 9;
     select.arr.val
       .replaceAll(payload);
-    expect(libState.currentAction).toEqual({ type: 'arr.val.replaceAll()', payload });
+    expect(currentAction(select)).toEqual({ type: 'arr.val.replaceAll()', payload });
     expect(select.arr.state).toEqual(state.arr.map(s => ({ ...s, val: payload })));
   })
 
@@ -42,7 +43,7 @@ describe('array-object-deep', () => {
     const payload = 1;
     select.arr.val
       .incrementAll(payload);
-    expect(libState.currentAction).toEqual({ type: 'arr.val.incrementAll()', payload });
+    expect(currentAction(select)).toEqual({ type: 'arr.val.incrementAll()', payload });
     expect(select.arr.state).toEqual([{ id: 1, val: 2 }, { id: 2, val: 3 }, { id: 3, val: 4 }]);
   })
 
@@ -51,7 +52,7 @@ describe('array-object-deep', () => {
     const payload = { id: 4, val: 4 };
     select.arr
       .insertOne(payload);
-    expect(libState.currentAction).toEqual({ type: 'arr.insertOne()', payload });
+    expect(currentAction(select)).toEqual({ type: 'arr.insertOne()', payload });
     expect(select.arr.state).toEqual([...state.arr, payload]);
   })
 
@@ -60,7 +61,7 @@ describe('array-object-deep', () => {
     const payload = [{ id: 4, val: 4 }, { id: 5, val: 5 }];
     select.arr
       .insertMany(payload);
-    expect(libState.currentAction).toEqual({ type: 'arr.insertMany()', payload });
+    expect(currentAction(select)).toEqual({ type: 'arr.insertMany()', payload });
     expect(select.arr.state).toEqual([...state.arr, ...payload]);
   })
 
@@ -70,7 +71,7 @@ describe('array-object-deep', () => {
     select.arr
       .find.id.eq(2)
       .replace(payload);
-    expect(libState.currentAction).toEqual({ type: 'arr.find.id.eq(2).replace()', payload });
+    expect(currentAction(select)).toEqual({ type: 'arr.find.id.eq(2).replace()', payload });
     expect(select.arr.state).toEqual([state.arr[0], payload, state.arr[2]]);
   })
 
@@ -79,7 +80,7 @@ describe('array-object-deep', () => {
     select.arr
       .find.id.eq(2)
       .remove();
-    expect(libState.currentAction).toEqual({ type: 'arr.find.id.eq(2).remove()' });
+    expect(currentAction(select)).toEqual({ type: 'arr.find.id.eq(2).remove()' });
     expect(select.arr.state).toEqual([state.arr[0], state.arr[2]]);
   })
 
@@ -89,7 +90,7 @@ describe('array-object-deep', () => {
     select.arr
       .find.id.eq(2).val
       .increment(payload);
-    expect(libState.currentAction).toEqual({ type: 'arr.find.id.eq(2).val.increment()', payload });
+    expect(currentAction(select)).toEqual({ type: 'arr.find.id.eq(2).val.increment()', payload });
     expect(select.arr.state).toEqual([state.arr[0], { id: 2, val: 4 }, state.arr[2]]);
   })
 
@@ -99,7 +100,7 @@ describe('array-object-deep', () => {
     select.arr
       .find.id.eq(1).or.id.eq(2)
       .replace(payload);
-    expect(libState.currentAction).toEqual({ type: 'arr.find.id.eq(1).or.id.eq(2).replace()', payload });
+    expect(currentAction(select)).toEqual({ type: 'arr.find.id.eq(1).or.id.eq(2).replace()', payload });
     expect(select.arr.state).toEqual([payload, state.arr[1], state.arr[2]]);
   })
 
@@ -108,7 +109,7 @@ describe('array-object-deep', () => {
     select.arr
       .find.id.eq(1).or.id.eq(2)
       .remove();
-    expect(libState.currentAction).toEqual({ type: 'arr.find.id.eq(1).or.id.eq(2).remove()' });
+    expect(currentAction(select)).toEqual({ type: 'arr.find.id.eq(1).or.id.eq(2).remove()' });
     expect(select.arr.state).toEqual([state.arr[1], state.arr[2]]);
   })
 
@@ -118,7 +119,7 @@ describe('array-object-deep', () => {
     select.arr
       .find.id.eq(1).or.id.eq(2).val
       .increment(1);
-    expect(libState.currentAction).toEqual({ type: 'arr.find.id.eq(1).or.id.eq(2).val.increment()', payload });
+    expect(currentAction(select)).toEqual({ type: 'arr.find.id.eq(1).or.id.eq(2).val.increment()', payload });
     expect(select.arr.state).toEqual([{ id: 1, val: 2 }, state.arr[1], state.arr[2]]);
   })
 
@@ -128,7 +129,7 @@ describe('array-object-deep', () => {
     select.arr
       .find.id.gt(1).and.id.lt(3)
       .replace(payload);
-    expect(libState.currentAction).toEqual({ type: 'arr.find.id.gt(1).and.id.lt(3).replace()', payload });
+    expect(currentAction(select)).toEqual({ type: 'arr.find.id.gt(1).and.id.lt(3).replace()', payload });
     expect(select.arr.state).toEqual([state.arr[0], { id: 9, val: 9 }, state.arr[2]]);
   })
 
@@ -137,7 +138,7 @@ describe('array-object-deep', () => {
     select.arr
       .find.id.gt(1).and.id.lt(3)
       .remove();
-    expect(libState.currentAction).toEqual({ type: 'arr.find.id.gt(1).and.id.lt(3).remove()' });
+    expect(currentAction(select)).toEqual({ type: 'arr.find.id.gt(1).and.id.lt(3).remove()' });
     expect(select.arr.state).toEqual([state.arr[0], state.arr[2]]);
   })
 
@@ -147,7 +148,7 @@ describe('array-object-deep', () => {
     select.arr
       .find.id.eq(1).and.id.lt(2).val
       .increment(payload);
-    expect(libState.currentAction).toEqual({ type: 'arr.find.id.eq(1).and.id.lt(2).val.increment()', payload });
+    expect(currentAction(select)).toEqual({ type: 'arr.find.id.eq(1).and.id.lt(2).val.increment()', payload });
     expect(select.arr.state).toEqual([{ id: 1, val: 2 }, state.arr[1], state.arr[2]]);
   })
 
@@ -156,7 +157,7 @@ describe('array-object-deep', () => {
     select.arr
       .filter.id.gt(1)
       .remove();
-    expect(libState.currentAction).toEqual({ type: 'arr.filter.id.gt(1).remove()' });
+    expect(currentAction(select)).toEqual({ type: 'arr.filter.id.gt(1).remove()' });
     expect(select.arr.state).toEqual([state.arr[0]]);
   })
 
@@ -166,7 +167,7 @@ describe('array-object-deep', () => {
     select.arr
       .filter.id.gt(1).val
       .increment(1);
-    expect(libState.currentAction).toEqual({ type: 'arr.filter.id.gt(1).val.increment()', payload });
+    expect(currentAction(select)).toEqual({ type: 'arr.filter.id.gt(1).val.increment()', payload });
     expect(select.arr.state).toEqual([state.arr[0], { id: 2, val: 3 }, { id: 3, val: 4 }]);
   })
 
@@ -175,7 +176,7 @@ describe('array-object-deep', () => {
     select.arr
       .filter.id.eq(1).or.id.eq(2)
       .remove();
-    expect(libState.currentAction).toEqual({ type: 'arr.filter.id.eq(1).or.id.eq(2).remove()' });
+    expect(currentAction(select)).toEqual({ type: 'arr.filter.id.eq(1).or.id.eq(2).remove()' });
     expect(select.arr.state).toEqual([state.arr[2]]);
   })
 
@@ -185,7 +186,7 @@ describe('array-object-deep', () => {
     select.arr
       .filter.id.eq(1).or.id.eq(2).val
       .increment(1);
-    expect(libState.currentAction).toEqual({ type: 'arr.filter.id.eq(1).or.id.eq(2).val.increment()', payload });
+    expect(currentAction(select)).toEqual({ type: 'arr.filter.id.eq(1).or.id.eq(2).val.increment()', payload });
     expect(select.arr.state).toEqual([{ id: 1, val: 2 }, { id: 2, val: 3 }, state.arr[2]]);
   })
 
@@ -194,7 +195,7 @@ describe('array-object-deep', () => {
     select.arr
       .filter.id.gt(0).and.id.lt(3)
       .remove();
-    expect(libState.currentAction).toEqual({ type: 'arr.filter.id.gt(0).and.id.lt(3).remove()' });
+    expect(currentAction(select)).toEqual({ type: 'arr.filter.id.gt(0).and.id.lt(3).remove()' });
     expect(select.arr.state).toEqual([state.arr[2]]);
   })
 
@@ -204,7 +205,7 @@ describe('array-object-deep', () => {
     select.arr
       .filter.id.gt(0).and.id.gt(1).val
       .increment(1);
-    expect(libState.currentAction).toEqual({ type: 'arr.filter.id.gt(0).and.id.gt(1).val.increment()', payload });
+    expect(currentAction(select)).toEqual({ type: 'arr.filter.id.gt(0).and.id.gt(1).val.increment()', payload });
     expect(select.arr.state).toEqual([state.arr[0], { id: 2, val: 3 }, { id: 3, val: 4 }]);
   })
 
@@ -214,7 +215,7 @@ describe('array-object-deep', () => {
     select.arr
       .upsertMatching.id
       .withOne(payload);
-    expect(libState.currentAction).toEqual({ type: 'arr.upsertMatching.id.withOne()', payload });
+    expect(currentAction(select)).toEqual({ type: 'arr.upsertMatching.id.withOne()', payload });
     expect(select.arr.state).toEqual([payload, state.arr[1], state.arr[2]]);
   })
 
@@ -224,7 +225,7 @@ describe('array-object-deep', () => {
     select.arr
       .upsertMatching.id
       .withOne(payload);
-    expect(libState.currentAction).toEqual({ type: 'arr.upsertMatching.id.withOne()', payload });
+    expect(currentAction(select)).toEqual({ type: 'arr.upsertMatching.id.withOne()', payload });
     expect(select.arr.state).toEqual([...state.arr, payload]);
   })
 
@@ -234,7 +235,7 @@ describe('array-object-deep', () => {
     select.arr
       .upsertMatching.id
       .withMany(payload);
-    expect(libState.currentAction).toEqual({ type: 'arr.upsertMatching.id.withMany()', payload });
+    expect(currentAction(select)).toEqual({ type: 'arr.upsertMatching.id.withMany()', payload });
     expect(select.arr.state).toEqual([payload[0], state.arr[1], state.arr[2], payload[1]]);
   })
 

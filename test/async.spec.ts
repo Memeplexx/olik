@@ -1,6 +1,7 @@
 
 import { errorMessages, libState, testState } from '../src/constant';
 import { createStore } from '../src';
+import { currentAction } from './_utility';
 
 const resolve = <T>(data: T, timeout = 10) => () => new Promise<T>(resolve => setTimeout(() => resolve(data), timeout));
 const reject = <T>(rejection: any, timeout = 10) => () => new Promise<T>((resolve, reject) => setTimeout(() => reject(rejection), timeout));
@@ -21,7 +22,7 @@ describe('async', () => {
       .replace(resolve(payload));
     expect(select.num.state).toEqual(payload);
     expect(asyncResult).toEqual(payload);
-    expect(libState.currentAction).toEqual({ type: 'num.replace()', payload });
+    expect(currentAction(select)).toEqual({ type: 'num.replace()', payload });
   })
 
   it('should catch a rejection', done => {
@@ -81,7 +82,7 @@ describe('async', () => {
     select.num
       .replace(resolve(replacement), { cacheFor: 1000 })
       .then(() => {
-        expect(libState.currentAction.type).toEqual('cache.num.replace()');
+        expect(currentAction(select).type).toEqual('cache.num.replace()');
         expect(select.num.state).toEqual(replacement);
         select.num.replace(resolve(replacement2))
           .then(result => {
@@ -195,7 +196,7 @@ describe('async', () => {
     await select.arr
       .upsertMatching.id
       .withOne(resolve(payload));
-    expect(libState.currentAction).toEqual({ type: 'arr.upsertMatching.id.withOne()', payload });
+    expect(currentAction(select)).toEqual({ type: 'arr.upsertMatching.id.withOne()', payload });
     expect(select.arr.state).toEqual([payload, state.arr[1], state.arr[2]]);
   })
 
@@ -206,7 +207,7 @@ describe('async', () => {
     await select.arr
       .upsertMatching.id
       .withOne(resolve(payload));
-    expect(libState.currentAction).toEqual({ type: 'arr.upsertMatching.id.withOne()', payload });
+    expect(currentAction(select)).toEqual({ type: 'arr.upsertMatching.id.withOne()', payload });
     expect(select.arr.state).toEqual([...state.arr, payload]);
   })
 
@@ -217,7 +218,7 @@ describe('async', () => {
     await select.arr
       .upsertMatching.id
       .withMany(resolve(payload));
-    expect(libState.currentAction).toEqual({ type: 'arr.upsertMatching.id.withMany()', payload });
+    expect(currentAction(select)).toEqual({ type: 'arr.upsertMatching.id.withMany()', payload });
     expect(select.arr.state).toEqual([payload[0], state.arr[1], state.arr[2], payload[1]]);
   })
 

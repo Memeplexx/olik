@@ -1,5 +1,6 @@
 import { createStore } from '../src/index';
 import { libState, testState } from '../src/constant';
+import { currentAction } from './_utility';
 
 describe('array-query', () => {
 
@@ -104,7 +105,7 @@ describe('array-query', () => {
       .and.id.eq(2)
       .or.id.eq(3)
       .replace(payload);
-    expect(libState.currentAction).toEqual({
+    expect(currentAction(select)).toEqual({
       type: `arr.find.id.eq(1).and.id.eq(2).or.id.eq(3).replace()`,
       payload,
     });
@@ -118,7 +119,7 @@ describe('array-query', () => {
       .and.id.eq(2)
       .or.id.eq(3)
       .remove();
-    expect(libState.currentAction).toEqual({
+    expect(currentAction(select)).toEqual({
       type: `arr.find.id.eq(1).and.id.eq(2).or.id.eq(3).remove()`,
     });
     expect(select.state).toEqual({ arr: [state.arr[0], state.arr[1]] });
@@ -132,7 +133,7 @@ describe('array-query', () => {
       .or.id.eq(3)
       .and.num.eq(3)
       .replace(payload);
-    expect(libState.currentAction).toEqual({
+    expect(currentAction(select)).toEqual({
       type: `arr.find.id.eq(4).or.id.eq(3).and.num.eq(3).replace()`,
       payload,
     });
@@ -146,7 +147,7 @@ describe('array-query', () => {
       .or.id.eq(3)
       .and.num.eq(3)
       .remove();
-    expect(libState.currentAction).toEqual({
+    expect(currentAction(select)).toEqual({
       type: `arr.find.id.eq(4).or.id.eq(3).and.num.eq(3).remove()`,
     });
     expect(select.state).toEqual({ arr: [state.arr[0], state.arr[1]] });
@@ -161,7 +162,7 @@ describe('array-query', () => {
       .or.id.eq(3)
       .and.num.eq(3)
       .replace(payload);
-    expect(libState.currentAction).toEqual({
+    expect(currentAction(select)).toEqual({
       type: `arr.find.id.eq(1).and.num.eq(1).or.id.eq(3).and.num.eq(3).replace()`,
       payload,
     });
@@ -176,7 +177,7 @@ describe('array-query', () => {
       .or.id.eq(3)
       .and.num.eq(3)
       .remove();
-    expect(libState.currentAction).toEqual({
+    expect(currentAction(select)).toEqual({
       type: `arr.find.id.eq(1).and.num.eq(1).or.id.eq(3).and.num.eq(3).remove()`,
     });
     expect(select.state).toEqual({ arr: [state.arr[1], state.arr[2]] });

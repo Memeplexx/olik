@@ -1,6 +1,7 @@
 
 import { createStore } from '../src/index';
 import { libState, testState } from '../src/constant';
+import { currentAction } from './_utility';
 
 describe('Object', () => {
 
@@ -16,7 +17,7 @@ describe('Object', () => {
     const payload = 1;
     select.num
       .replace(payload);
-    expect(libState.currentAction).toEqual({ type: 'num.replace()', payload });
+    expect(currentAction(select)).toEqual({ type: 'num.replace()', payload });
     expect(select.num.state).toEqual(1);
   })
 
@@ -24,7 +25,7 @@ describe('Object', () => {
     const select = createStore({ name, state });
     const payload = { bool: true, str: 'x' };
     select.patch({ bool: true, str: 'x' });
-    expect(libState.currentAction).toEqual({ type: 'patch()', payload });
+    expect(currentAction(select)).toEqual({ type: 'patch()', payload });
     expect(select.state).toEqual({ ...state, ...payload });
   })
 
@@ -40,7 +41,7 @@ describe('Object', () => {
     const payload = 1;
     select.num
       .increment(payload);
-    expect(libState.currentAction).toEqual({ type: 'num.increment()', payload });
+    expect(currentAction(select)).toEqual({ type: 'num.increment()', payload });
     expect(select.num.state).toEqual(1);
   })
 

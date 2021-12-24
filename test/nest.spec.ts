@@ -1,6 +1,6 @@
 import { createStore, nestStoreIfPossible } from '../src/index';
 import { libState, errorMessages, testState } from '../src/constant';
-import { windowAugmentedWithReduxDevtoolsImpl } from './_devtools';
+import { currentAction } from './_utility';
 
 describe('nest', () => {
 
@@ -40,7 +40,7 @@ describe('nest', () => {
     nestStoreIfPossible({ store: selectNested, containerStoreName: nameOfContainerStore, instanceName });
     expect(selectNested.state.one).toEqual('');
     selectNested.one.replace('test');
-    expect(libState.currentAction).toEqual({
+    expect(currentAction(selectNested)).toEqual({
       type: `nested.${nameOfNestedStore}.0.one.replace()`,
       payload: 'test',
     })
