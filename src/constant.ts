@@ -24,9 +24,8 @@ export const libState = {
   onDispatchListener: () => null,
   batchedAction: {
     type: '',
-    timestamp: 0,
     payloads: [],
-    timeout: 0,
+    timeoutHandle: 0,
   } as PreviousAction,
 }
 

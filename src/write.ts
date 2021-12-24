@@ -44,9 +44,9 @@ export const updateState = (
       // Add the current payload into the batch
       libState.batchedAction.payloads.push(libState.currentAction.payload);
       // Clear the existing timeout so that the batch is not prematurely expired
-      window.clearTimeout(libState.batchedAction.timeout);
+      window.clearTimeout(libState.batchedAction.timeoutHandle);
       // kick of a new timeout which, when reached, should reset the batched action to its pristine state
-      libState.batchedAction.timeout = window.setTimeout(() => {
+      libState.batchedAction.timeoutHandle = window.setTimeout(() => {
         // Remove the last payload from the batch because it is a duplication of the root action payload
         libState.batchedAction.payloads.pop();
         // Dispatch the batch to devtools and reset it

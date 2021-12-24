@@ -18,10 +18,9 @@ export type WindowAugmentedWithReduxDevtools = {
 }
 
 export interface PreviousAction {
-  timestamp: number,
   type: string,
   payloads: any[],
-  timeout: number,
+  timeoutHandle: number,
 }
 
 export interface NestedStoreInfo {
