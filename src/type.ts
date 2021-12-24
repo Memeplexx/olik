@@ -112,10 +112,16 @@ export interface And<S extends Array<any>, F extends FindOrFilter, NewDepth exte
 }
 
 export interface Find<S extends Array<any>, NewDepth extends number> {
+  /**
+   * Find from the selected array
+   */
   find: Comparators<S, S[0], 'isFind', NewDepth> & (S[0] extends object ? Searchable<S, S[0], 'isFind', NewDepth> : {})
 }
 
 export interface Filter<S extends Array<any>, NewDepth extends number> {
+  /**
+   * Filter the selected array
+   */
   filter: Comparators<S, S[0], 'isFilter', NewDepth> & (S[0] extends object ? Searchable<S, S[0], 'isFilter', NewDepth> : {})
 }
 
@@ -314,38 +320,65 @@ export type Comparators<T, S, F extends FindOrFilter, Depth extends number, NewD
   Depth>
 
 export interface Eq<S, Response> {
+  /**
+   * Whether the selection is equal to the supplied value
+   */
   eq: (equalTo: S) => Response
 }
 
 export interface Ne<S, Response> {
+  /**
+   * Whether the selection is not equal to the supplied value
+   */
   ne: (notEqualTo: S) => Response
 }
 
 export interface In<S, Response> {
+  /**
+   * Whether the selection is within the supplied array
+   */
   in: (within: S[]) => Response
 }
 
 export interface Ni<S, Response> {
+  /**
+   * Whether the selection is not within the supplied array
+   */
   ni: (notWithin: S[]) => Response
 }
 
 export interface Gt<S, Response> {
+  /**
+   * Whether the selection is greater than the supplied value
+   */
   gt: (greaterThan: S) => Response
 }
 
 export interface Gte<S, Response> {
+  /**
+   * Whether the selection is greater than or equal to the supplied value
+   */
   gte: (greaterThanOrEqualTo: S) => Response
 }
 
 export interface Lt<S, Response> {
+  /**
+   * Whether the selection is less than the supplied value
+   */
   lt: (lessThan: S) => Response
 }
 
 export interface Lte<S, Response> {
+  /**
+   * Whether the selection is less than or equal to the supplied value
+   */
   lte: (lessThanOrEqualTo: S) => Response
 }
 
 export interface Match<Response> {
+  /**
+   * Whether the selection matches the supplied regular expression
+   */
   match: (matches: RegExp) => Response
 }
 

@@ -83,8 +83,8 @@ export const copyNewState = (
     return setCurrentActionReturningNewState({ storeName, stateActions, payload: { payload: upsert.arg }, newState: [...result, ...upsertArgs] });
   }
   const action = stateActions[cursor.index++];
-  if (cursor.index < (stateActions.length)) {
-    if (Array.isArray(currentState) && (action.type === 'search')) {
+  if (cursor.index < stateActions.length) {
+    if (action.type === 'search' && Array.isArray(currentState)) {
       const query = constructQuery(stateActions, cursor);
       let findIndex = -1;
       if ('find' === action.name) {
