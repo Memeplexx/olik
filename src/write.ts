@@ -13,8 +13,9 @@ export const updateState = (
 ) => {
   const store = libState.appStores[args.storeName];
   const oldState = store.state;
-  store.setState(writeState(args.storeName, oldState, { ...oldState }, args.stateActions, { index: 0 }));
-  store.getChangeListeners().forEach(({ actions, listener }) => {
+  const internals = store.internals;
+  internals.state = writeState(args.storeName, oldState, { ...oldState }, args.stateActions, { index: 0 });
+  internals.changeListeners.forEach(({ actions, listener }) => {
     const selectedNewState = readState(store.state, actions, { index: 0 });
     if (readState(oldState, actions, { index: 0 }) !== selectedNewState) {
       listener(selectedNewState);
@@ -22,12 +23,12 @@ export const updateState = (
   })
 
   // Dispatch to devtools
-  if (store.getReduxDevtoolsDispatcher() && libState.dispatchToDevtools) {
-    const currentAction = store.getCurrentAction();
+  if (internals.reduxDevtools?.dispatcher && libState.dispatchToDevtools) {
+    const currentAction = internals.currentAction;
     const dispatchToDevtools = (batched?: any[]) => {
       const action = batched ? { ...currentAction, batched } : currentAction;
       testState.currentActionForDevtools = action;
-      store.getReduxDevtoolsDispatcher()(action);
+      internals.reduxDevtools!.dispatcher(action);
     }
 
     // if the user is not batching actions, simply dispatch immediately, and return
@@ -222,11 +223,11 @@ export const processUpdate = (storeName: string, stateActions: StateAction[], pr
 }
 
 const completeStateWrite = (storeName: string, stateActions: ReadonlyArray<StateAction>, payload: null | {}, newState: any) => {
-  const store = libState.appStores[storeName];
-  const currentAction = store.getCurrentAction();
+  const internals = libState.appStores[storeName].internals;
+  const currentAction = internals.currentAction;
   const type = stateActions.map(sa => sa.actionType).join('.');
-  store.setCurrentAction(!libState.insideTransaction ? { type, ...payload }
+  internals.currentAction = !libState.insideTransaction ? { type, ...payload }
     : !currentAction.actions ? { type, actions: [{ type, ...payload }] }
-      : { type: `${currentAction.type}, ${type}`, actions: [...currentAction.actions, { type, ...payload }] });
+      : { type: `${currentAction.type}, ${type}`, actions: [...currentAction.actions, { type, ...payload }] };
   return newState;
 }

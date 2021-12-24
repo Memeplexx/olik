@@ -15,4 +15,4 @@ export const windowAugmentedWithReduxDevtoolsImpl = {
   }(),
 } as unknown as WindowAugmentedWithReduxDevtools;
 
-export const currentAction = <S>(store: any) => (store as StoreInternal<S>).getCurrentAction();
+export const currentAction = <S>(store: any) => (store as StoreInternal<S>).internals.currentAction;

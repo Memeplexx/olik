@@ -17,9 +17,10 @@ export const nestStoreIfPossible = <S>(
   if (['number', 'boolean', 'string'].some(type => typeof (wrapperState) === type) || Array.isArray(wrapperState)) {
     throw new Error(errorMessages.INVALID_CONTAINER_FOR_COMPONENT_STORES);
   }
-  const nestedStoreName = storeArg.getStoreName();
+  const internals = storeArg.internals;
+  const nestedStoreName = internals.storeName;
   appStore.nested[nestedStoreName][arg.instanceName].replace(storeArg.state);
-  storeArg.getChangeListeners()
+  internals.changeListeners
     .forEach(({ actions, listener }) => {
       let node = appStore.nested[nestedStoreName][arg.instanceName];
       actions.slice(0, actions.length - 1)
@@ -27,7 +28,7 @@ export const nestStoreIfPossible = <S>(
       node.onChange(listener);
     })
   // TODO: delete old listeners?
-  storeArg.setNestedStoreInfo({ storeName: nestedStoreName, instanceName: arg.instanceName, containerStoreName: arg.containerStoreName });
+  internals.nestedStoreInfo = { storeName: nestedStoreName, instanceName: arg.instanceName, containerStoreName: arg.containerStoreName };
   delete libState.appStores[nestedStoreName];
   return {
     detach: () => {
@@ -37,7 +38,7 @@ export const nestStoreIfPossible = <S>(
       } else {
         appStore.nested[nestedStoreName][arg.instanceName].remove();
       }
-      storeArg.setNestedStoreInfo();
+      internals.nestedStoreInfo = undefined;
     }
   }
 }

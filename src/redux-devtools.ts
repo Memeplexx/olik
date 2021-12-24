@@ -6,9 +6,10 @@ export function trackWithReduxDevtools<S>(
   args: ReduxDevtoolsOptions,
 ) {
   const storeArg = args.store as StoreInternal<S>;
+  const internals = storeArg.internals;
 
   // do not continue if this is a nested store
-  if (!!storeArg.getNestedStoreInfo()) { return; }
+  if (!!internals.nestedStoreInfo) { return; }
 
   // mock out the window object for testing purposes
   let windowObj = window as any as WindowAugmentedWithReduxDevtools;
@@ -24,8 +25,8 @@ export function trackWithReduxDevtools<S>(
 
   // If a devtools instance has already been registered, do not re-create that instance.
   // This problem really only presents its self when hot-reloading is being used
-  const storeName = storeArg.getStoreName() || document.title;
-  let devTools = storeArg.getReduxDevtoolsInstance();
+  const storeName = internals.storeName || document.title;
+  let devTools = internals.reduxDevtools?.instance;
   if (devTools) { return; }
 
   // Register devtools extension
@@ -35,10 +36,7 @@ export function trackWithReduxDevtools<S>(
   }
   devTools = windowObj.__REDUX_DEVTOOLS_EXTENSION__.connect(devtoolsOpts);
   devTools.init(storeArg.state);
-  storeArg.setReduxDevtoolsInstance(devTools);
-
-  // Define a dispatcher so that when state is updated, events are passed to the devtools
-  storeArg.setReduxDevtoolsDispatcher(action => devTools.send(action, storeArg.state));
+  internals.reduxDevtools = { instance: devTools, dispatcher: (action: any) => devTools!.send(action, storeArg.state) };
 
   // Ensure that the store responds to events emitted from the devtools extension
   devTools.subscribe((message: any) => {
@@ -72,12 +70,12 @@ export function trackWithReduxDevtools<S>(
           libState.onDispatchListener();
           return;
         case 'COMMIT':
-          devTools.init(selection.state);
+          devTools!.init(selection.state);
           return;
         case 'ROLLBACK':
           const parsedState = JSON.parse(message.state);
           setState(parsedState);
-          devTools.init(parsedState);
+          devTools!.init(parsedState);
           return;
       }
     }

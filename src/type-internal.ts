@@ -29,20 +29,22 @@ export interface NestedStoreInfo {
   containerStoreName: string,
 }
 
+export interface StoreInternals<S> {
+  storeName: string,
+  state: S,
+  changeListeners: ChangeListener[],
+  nestedStoreInfo?: NestedStoreInfo,
+  mergedStoreInfo?: string;
+  currentAction: { [key: string]: any },
+  reduxDevtools?: {
+    instance: DevtoolsInstance,
+    dispatcher: (action: any) => any,
+  }
+}
+
 export type StoreInternal<S> = StoreLike<S> & {
   nested: any,
-  setState(state: S): void,
-  getChangeListeners(): ChangeListener[],
-  getStoreName(): string,
-  setNestedStoreInfo(info?: NestedStoreInfo): void,
-  getNestedStoreInfo(): NestedStoreInfo | undefined,
-  setMergedStoreInfo(info: string): void,
-  getCurrentAction(): { [key: string]: any },
-  setCurrentAction(action: { [key: string]: any }): void,
-  getReduxDevtoolsInstance(): DevtoolsInstance,
-  setReduxDevtoolsInstance(instance: DevtoolsInstance): void,
-  getReduxDevtoolsDispatcher(): (action: any) => any,
-  setReduxDevtoolsDispatcher(dispatcher: (action: any) => any): void,
+  internals: StoreInternals<S>,
 };
 
 export interface QuerySpec {
