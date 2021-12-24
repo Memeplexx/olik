@@ -21,7 +21,7 @@ export const createStore = <S>(
       timeoutHandle: 0,
     }
   } as StoreInternals<S>;
-  const initialize = (s: any, topLevel: boolean, stateActions: StateAction[]): any => {
+  const recurseProxy = (s: any, topLevel: boolean, stateActions: StateAction[]): any => {
     if (typeof s !== 'object') { return null; }
     return new Proxy(s, {
       get: (target, prop: string) => {
@@ -51,7 +51,7 @@ export const createStore = <S>(
           return internals;
         } else if ('upsertMatching' === prop) {
           stateActions.push({ type: 'upsertMatching', name: prop, actionType: prop });
-          return initialize({}, false, stateActions);
+          return recurseProxy({}, false, stateActions);
         } else if ('state' === prop) {
           return deepFreeze(readState({ state: internals.state, stateActions: [...stateActions, { type: 'action', name: prop }], cursor: { index: 0 } }));
         } else if ('onChange' === prop) {
@@ -63,23 +63,23 @@ export const createStore = <S>(
           }
         } else if (['and', 'or'].includes(prop)) {
           stateActions.push({ type: 'searchConcat', name: prop, actionType: prop });
-          return initialize({}, false, stateActions);
+          return recurseProxy({}, false, stateActions);
         } else if (['eq', 'ne', 'in', 'ni', 'gt', 'gte', 'lt', 'lte', 'match'].includes(prop)) {
           return (arg: any) => {
             stateActions.push({ type: 'comparator', name: prop, arg, actionType: `${prop}(${arg})` });
-            return initialize({}, false, stateActions);
+            return recurseProxy({}, false, stateActions);
           }
         } else if (['find', 'filter'].includes(prop)) {
           stateActions.push({ type: 'search', name: prop, actionType: prop });
-          return initialize({}, false, stateActions);
+          return recurseProxy({}, false, stateActions);
         } else if (augmentations.selection[prop]) {
-          return augmentations.selection[prop](initialize({}, false, stateActions));
+          return augmentations.selection[prop](recurseProxy({}, false, stateActions));
         } else {
           stateActions.push({ type: 'property', name: prop, actionType: prop });
-          return initialize({}, false, stateActions);
+          return recurseProxy({}, false, stateActions);
         }
       }
     });
   };
-  return libState.stores[name] = Object.assign(initialize({}, true, []));
+  return libState.stores[name] = Object.assign(recurseProxy({}, true, []));
 }
