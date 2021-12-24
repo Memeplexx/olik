@@ -41,6 +41,8 @@ export type StoreInternal<S> = StoreLike<S> & {
   setCurrentAction(action: { [key: string]: any }): void,
   getReduxDevtoolsInstance(): DevtoolsInstance,
   setReduxDevtoolsInstance(instance: DevtoolsInstance): void,
+  getReduxDevtoolsDispatcher(): (action: any) => any,
+  setReduxDevtoolsDispatcher(dispatcher: (action: any) => any): void,
 };
 
 export interface QuerySpec {

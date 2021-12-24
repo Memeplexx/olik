@@ -17,7 +17,6 @@ export const errorMessages = {
 export const libState = {
   appStores: {} as { [storeName: string]: StoreInternal<any> },
   insideTransaction: false,
-  reduxDevtoolsDispatcher: null as null | ((action: { }) => any),
   dispatchToDevtools: true,
   onDispatchListener: () => null,
   batchedAction: {

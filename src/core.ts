@@ -17,6 +17,7 @@ export const createStore = <S>(
   let state = JSON.parse(JSON.stringify(args.state));
   let currentAction: { type: string, payload?: any } = { type: '' };
   let reduxDevtoolsInstance: DevtoolsInstance;
+  let reduxDevtoolsDispatcher: undefined | ((action: any) => any);
   const initialize = (s: any, topLevel: boolean, stateActions: StateAction[]): any => {
     if (typeof s !== 'object') { return null; }
     return new Proxy(s, {
@@ -62,6 +63,10 @@ export const createStore = <S>(
           return () => reduxDevtoolsInstance;
         } else if ('setReduxDevtoolsInstance' === prop) {
           return (instance: any) => reduxDevtoolsInstance = instance;
+        } else if ('getReduxDevtoolsDispatcher' === prop) {
+          return () => reduxDevtoolsDispatcher;
+        } else if ('setReduxDevtoolsDispatcher' === prop) {
+          return (dispatcher: any) => reduxDevtoolsDispatcher = dispatcher;
         } else if ('upsertMatching' === prop) {
           stateActions.push({ type: 'upsertMatching', name: prop, actionType: prop });
           return initialize({}, false, stateActions);
