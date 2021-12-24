@@ -59,9 +59,9 @@ export function trackWithReduxDevtools<S>(
     if (message.type === 'DISPATCH' && message.payload) {
       const selection = storeArg as any as Replace<any> & ReplaceAll<any> & Read<any>;
       const setState = (state: any) => {
-        libState.dispatchToDevtools = false;
+        libState.disableDispatch = true;
         selection[Array.isArray(selection.state) ? 'replaceAll' : 'replace'](state);
-        libState.dispatchToDevtools = true;
+        libState.disableDispatch = false;
       }
       switch (message.payload.type) {
         case 'JUMP_TO_STATE':

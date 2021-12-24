@@ -17,7 +17,7 @@ export const errorMessages = {
 export const libState = {
   appStores: {} as { [storeName: string]: StoreInternal<any> },
   insideTransaction: false,
-  dispatchToDevtools: true,
+  disableDispatch: false,
   onDispatchListener: () => null,
   batchedAction: {
     type: '',

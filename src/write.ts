@@ -23,7 +23,7 @@ export const updateState = (
   })
 
   // Dispatch to devtools
-  if (internals.reduxDevtools?.dispatcher && libState.dispatchToDevtools) {
+  if (internals.reduxDevtools?.dispatcher && !libState.disableDispatch) {
     const currentAction = internals.currentAction;
     const dispatchToDevtools = (batched?: any[]) => {
       const action = batched ? { ...currentAction, batched } : currentAction;
