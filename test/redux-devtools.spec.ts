@@ -69,24 +69,6 @@ describe('devtools', () => {
       .toThrow(errorMessages.DEVTOOL_DISPATCHED_INVALID_JSON);
   });
 
-  it('should throw an error should a devtools dispatch not contain parenthesis', () => {
-    const state = { hello: 0 };
-    const select = createStore({ name, state });
-    trackWithReduxDevtools({ store: select });
-    expect(() => testState.fakeWindowObjectForReduxDevtools!.__REDUX_DEVTOOLS_EXTENSION__
-      ._mockInvokeSubscription({ type: 'ACTION', source: '@devtools-extension', payload: '{"type": "hello.replace", "payload": 2}' }))
-      .toThrow(errorMessages.DEVTOOL_DISPATCHED_WITH_NO_ACTION('hello.replace'));
-  });
-
-  it('should throw an error should a devtools dispatch not contain parenthesis', () => {
-    const state = { hello: 0 };
-    const select = createStore({ name, state });
-    trackWithReduxDevtools({ store: select });
-    expect(() => testState.fakeWindowObjectForReduxDevtools!.__REDUX_DEVTOOLS_EXTENSION__
-      ._mockInvokeSubscription({ type: 'ACTION', source: '@devtools-extension', payload: '{"type": "hello.replace", "payload": 2}' }))
-      .toThrow(errorMessages.DEVTOOL_DISPATCHED_WITH_NO_ACTION('hello.replace'));
-  });
-
   it('should correctly devtools dispatch made by user', () => {
     const state = { hello: 0 };
     const select = createStore({ name, state });

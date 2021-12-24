@@ -50,16 +50,13 @@ export function trackWithReduxDevtools<S>(
   }
 
   // Ensure that the store responds to events emitted from the devtools extension
-  devTools.subscribe((message: any) => {
-    if (message.type === 'ACTION' && message.source === '@devtools-extension') {
+  devTools.subscribe(message => {
+    if ('ACTION' === message.type) {
       let messagePayload: { type: string, payload: any };
       try {
-        messagePayload = messagePayload = JSON.parse(message.payload.replace(/"\s+|\s+"/g, '"'));
+        messagePayload = JSON.parse(message.payload.replace(/"\s+|\s+"/g, '"'));
       } catch (e) {
         throw Error(errorMessages.DEVTOOL_DISPATCHED_INVALID_JSON);
-      }
-      if (!messagePayload.type.endsWith('()')) {
-        throw new Error(errorMessages.DEVTOOL_DISPATCHED_WITH_NO_ACTION(messagePayload.type));
       }
       let pathSegments = messagePayload.type.split('.');
       const action = pathSegments.pop() as string;
@@ -67,8 +64,7 @@ export function trackWithReduxDevtools<S>(
       pathSegments.forEach(seg => selection = selection[seg] as any);
       selection[action.substring(0, action.length - 2)](messagePayload.payload);
       libState.onInternalDispatch();
-    }
-    if (message.type === 'EXPORT') {
+    } else if ('EXPORT' === message.type) {
       const url = window.URL.createObjectURL(new Blob([JSON.stringify(storeArg.state)], { type: 'application/json' }));
       document.body.appendChild(Object.assign(document.createElement('a'), {
         style: { display: 'none' },
@@ -76,26 +72,19 @@ export function trackWithReduxDevtools<S>(
         download: `${storeArg.internals.storeName}.json`
       })).click();
       window.URL.revokeObjectURL(url);
-    }
-    if (message.type === 'DISPATCH' && message.payload) {
-      switch (message.payload.type) {
-        case 'JUMP_TO_STATE':
-        case 'JUMP_TO_ACTION':
-          setState(JSON.parse(message.state));
-          libState.onInternalDispatch();
-          return;
-        case 'COMMIT':
-          devTools!.init(storeArg.state);
-          return;
-        case 'ROLLBACK':
-          const parsedState = JSON.parse(message.state);
-          setState(parsedState);
-          devTools!.init(parsedState);
-          return;
-        case 'IMPORT_STATE':
-          setState(message.payload.nextLiftedState);
-          libState.onInternalDispatch();
-          return;
+    } else if ('DISPATCH' === message.type && message.payload) {
+      if (['JUMP_TO_STATE', 'JUMP_TO_ACTION'].includes(message.payload.type)) {
+        setState(JSON.parse(message.state));
+        libState.onInternalDispatch();
+      } else if ('COMMIT' === message.payload.type) {
+        devTools!.init(storeArg.state);
+      } else if ('ROLLBACK' === message.payload.type) {
+        const parsedState = JSON.parse(message.state);
+        setState(parsedState);
+        devTools!.init(parsedState);
+      } else if ('IMPORT_STATE' === message.payload.type) {
+        setState(message.payload.nextLiftedState);
+        libState.onInternalDispatch();
       }
     }
   });
