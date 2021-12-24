@@ -39,6 +39,8 @@ export type StoreInternal<S> = StoreLike<S> & {
   setMergedStoreInfo(info: string): void,
   getCurrentAction(): { [key: string]: any },
   setCurrentAction(action: { [key: string]: any }): void,
+  getReduxDevtoolsInstance(): DevtoolsInstance,
+  setReduxDevtoolsInstance(instance: DevtoolsInstance): void,
 };
 
 export interface QuerySpec {

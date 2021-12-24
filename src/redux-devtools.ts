@@ -25,7 +25,7 @@ export function trackWithReduxDevtools<S>(
   // If a devtools instance has already been registered, do not re-create that instance.
   // This problem really only presents its self when hot-reloading is being used
   const storeName = storeArg.getStoreName() || document.title;
-  let devTools = libState.devtoolsRegistry[storeName];
+  let devTools = storeArg.getReduxDevtoolsInstance();
   if (devTools) { return; }
 
   // Register devtools extension
@@ -35,7 +35,7 @@ export function trackWithReduxDevtools<S>(
   }
   devTools = windowObj.__REDUX_DEVTOOLS_EXTENSION__.connect(devtoolsOpts);
   devTools.init(storeArg.state);
-  libState.devtoolsRegistry[storeName] = devTools;
+  storeArg.setReduxDevtoolsInstance(devTools);
 
   // Ensure that the store responds to events emitted from the devtools extension
   libState.devtoolsDispatchListener = action => devTools.send(action, storeArg.state);

@@ -1,7 +1,7 @@
 import { augmentations, libState } from './constant';
 import { readState } from './read';
 import { ChangeListener, OptionsForMakingAStore, StateAction, Store } from './type';
-import { NestedStoreInfo } from './type-internal';
+import { NestedStoreInfo, DevtoolsInstance } from './type-internal';
 import { deepFreeze, validateState } from './utility';
 import { processUpdate, updateState } from './write';
 
@@ -16,6 +16,7 @@ export const createStore = <S>(
   let mergedStoreInfo: undefined | string;
   let state = JSON.parse(JSON.stringify(args.state));
   let currentAction: { type: string, payload?: any } = { type: '' };
+  let reduxDevtoolsInstance: DevtoolsInstance;
   const initialize = (s: any, topLevel: boolean, stateActions: StateAction[]): any => {
     if (typeof s !== 'object') { return null; }
     return new Proxy(s, {
@@ -57,6 +58,10 @@ export const createStore = <S>(
           return () => currentAction;
         } else if ('setCurrentAction' === prop) {
           return (action: any) => currentAction = action;
+        } else if ('getReduxDevtoolsInstance' === prop) {
+          return () => reduxDevtoolsInstance;
+        } else if ('setReduxDevtoolsInstance' === prop) {
+          return (instance: any) => reduxDevtoolsInstance = instance;
         } else if ('upsertMatching' === prop) {
           stateActions.push({ type: 'upsertMatching', name: prop, actionType: prop });
           return initialize({}, false, stateActions);

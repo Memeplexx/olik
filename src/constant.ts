@@ -16,7 +16,6 @@ export const errorMessages = {
 
 export const libState = {
   appStores: {} as { [storeName: string]: StoreInternal<any> },
-  devtoolsRegistry: {} as { [name: string]: DevtoolsInstance },
   insideTransaction: false,
   devtoolsDispatchListener: null as null | ((action: { }) => any),
   dispatchToDevtools: true,
