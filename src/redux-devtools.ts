@@ -37,8 +37,10 @@ export function trackWithReduxDevtools<S>(
   devTools.init(storeArg.state);
   storeArg.setReduxDevtoolsInstance(devTools);
 
+  // Define a dispatcher so that when state is updated, events are passed to the devtools
+  libState.reduxDevtoolsDispatcher = action => devTools.send(action, storeArg.state);
+
   // Ensure that the store responds to events emitted from the devtools extension
-  libState.devtoolsDispatchListener = action => devTools.send(action, storeArg.state);
   devTools.subscribe((message: any) => {
     if (message.type === 'ACTION' && message.source === '@devtools-extension') {
       let messagePayload: { type: string, payload: any };

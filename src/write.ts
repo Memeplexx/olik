@@ -22,12 +22,12 @@ export const updateState = (
   })
 
   // Dispatch to devtools
-  if (libState.devtoolsDispatchListener && libState.dispatchToDevtools) {
+  if (libState.reduxDevtoolsDispatcher && libState.dispatchToDevtools) {
     const currentAction = store.getCurrentAction();
     const dispatchToDevtools = (batched?: any[]) => {
       const action = batched ? { ...currentAction, batched } : currentAction;
       testState.currentActionForDevtools = action;
-      libState.devtoolsDispatchListener!(action);
+      libState.reduxDevtoolsDispatcher!(action);
     }
 
     // if the user is not batching actions, simply dispatch immediately, and return
