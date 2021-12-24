@@ -23,9 +23,9 @@ export const createStore = <S>(
       get: (target, prop: string) => {
         stateActions = topLevel ? new Array<StateAction>() : stateActions;
         if (topLevel && internals.nestedStoreInfo) {
-          return libState.appStores[internals.nestedStoreInfo.containerStoreName].nested[internals.nestedStoreInfo.storeName][internals.nestedStoreInfo.instanceName!][prop];
+          return libState.stores[internals.nestedStoreInfo.containerStoreName].nested[internals.nestedStoreInfo.storeName][internals.nestedStoreInfo.instanceName!][prop];
         } else if (topLevel && internals.mergedStoreInfo) {
-          return (libState.appStores[internals.mergedStoreInfo] as any)[prop];
+          return (libState.stores[internals.mergedStoreInfo] as any)[prop];
         } else if (['replace', 'patch', 'deepMerge', 'remove', 'increment', 'removeAll', 'replaceAll', 'patchAll', 'incrementAll', 'insertOne', 'insertMany', 'withOne', 'withMany'].includes(prop)) {
           return processUpdate(args.name, stateActions, prop, args.batchActions);
         } else if ('invalidateCache' === prop) {
@@ -76,5 +76,5 @@ export const createStore = <S>(
       }
     });
   };
-  return libState.appStores[args.name] = Object.assign(initialize({}, true, []));
+  return libState.stores[args.name] = Object.assign(initialize({}, true, []));
 }

@@ -189,7 +189,7 @@ describe('nest', () => {
   })
 
   it('should work without a container store', () => {
-    libState.appStores = {}
+    libState.stores = {}
     const selectNested = createStore({
       name: 'test',
       state: {

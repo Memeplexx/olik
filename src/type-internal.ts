@@ -39,6 +39,7 @@ export interface StoreInternals<S> {
   reduxDevtools?: {
     instance: DevtoolsInstance,
     dispatcher: (action: any) => any,
+    disableDispatch: boolean,
   }
 }
 

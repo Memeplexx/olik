@@ -36,7 +36,11 @@ export function trackWithReduxDevtools<S>(
   }
   devTools = windowObj.__REDUX_DEVTOOLS_EXTENSION__.connect(devtoolsOpts);
   devTools.init(storeArg.state);
-  internals.reduxDevtools = { instance: devTools, dispatcher: (action: any) => devTools!.send(action, storeArg.state) };
+  internals.reduxDevtools = {
+    instance: devTools,
+    dispatcher: (action: any) => devTools!.send(action, storeArg.state),
+    disableDispatch: false,
+  };
 
   // Ensure that the store responds to events emitted from the devtools extension
   devTools.subscribe((message: any) => {
@@ -59,15 +63,15 @@ export function trackWithReduxDevtools<S>(
     if (message.type === 'DISPATCH' && message.payload) {
       const selection = storeArg as any as Replace<any> & ReplaceAll<any> & Read<any>;
       const setState = (state: any) => {
-        libState.disableDispatch = true;
+        internals.reduxDevtools!.disableDispatch = true;
         selection[Array.isArray(selection.state) ? 'replaceAll' : 'replace'](state);
-        libState.disableDispatch = false;
+        internals.reduxDevtools!.disableDispatch = false;
       }
       switch (message.payload.type) {
         case 'JUMP_TO_STATE':
         case 'JUMP_TO_ACTION':
           setState(JSON.parse(message.state));
-          libState.onDispatchListener();
+          libState.onInternalDispatch();
           return;
         case 'COMMIT':
           devTools!.init(selection.state);
@@ -81,8 +85,6 @@ export function trackWithReduxDevtools<S>(
     }
   });
 }
-
-export const listenToDevtoolsDispatch = (onDispatch: () => any) => libState.onDispatchListener = onDispatch;
 
 // ref: https://medium.com/@zalmoxis/redux-devtools-without-redux-or-how-to-have-a-predictable-state-with-any-architecture-61c5f5a7716f
 // ref: https://github.com/zalmoxisus/redux-devtools-extension/blob/master/docs/API/Methods.md#listen

@@ -8,7 +8,7 @@ export const mergeStoreIfPossible = <S>(
     nameOfStoreToMergeInto: string,
   }
 ) => {
-  const appStore = libState.appStores[arg.nameOfStoreToMergeInto];
+  const appStore = libState.stores[arg.nameOfStoreToMergeInto];
   if (!appStore) { return; }
   const wrapperState = appStore.state;
   if (['number', 'boolean', 'string'].some(type => typeof (wrapperState) === type) || Array.isArray(wrapperState)) {
@@ -19,7 +19,7 @@ export const mergeStoreIfPossible = <S>(
     throw new Error(errorMessages.INVALID_MERGING_STORE);
   }
   const internals = (arg.store as StoreInternal<any>).internals;
-  delete libState.appStores[internals.storeName];
+  delete libState.stores[internals.storeName];
   const changeListeners = internals.changeListeners;
   internals.mergedStoreInfo = arg.nameOfStoreToMergeInto;
   changeListeners

@@ -11,7 +11,7 @@ export const nestStoreIfPossible = <S>(
   }
 ): NestStoreRef => {
   const storeArg = arg.store as StoreInternal<any>;
-  const appStore = libState.appStores[arg.containerStoreName || document.title];
+  const appStore = libState.stores[arg.containerStoreName || document.title];
   if (!appStore) { return { detach: () => null }; }
   const wrapperState = appStore.state;
   if (['number', 'boolean', 'string'].some(type => typeof (wrapperState) === type) || Array.isArray(wrapperState)) {
@@ -29,7 +29,7 @@ export const nestStoreIfPossible = <S>(
     })
   // TODO: delete old listeners?
   internals.nestedStoreInfo = { storeName: nestedStoreName, instanceName: arg.instanceName, containerStoreName: arg.containerStoreName };
-  delete libState.appStores[nestedStoreName];
+  delete libState.stores[nestedStoreName];
   return {
     detach: () => {
       const state = appStore.state.nested[nestedStoreName];

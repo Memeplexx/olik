@@ -70,6 +70,6 @@ export const validateState = (state: any) => {
   }
 }
 
-export const getStoreByName = (name: string) => libState.appStores[name];
+export const getStoreByName = (name: string) => libState.stores[name];
 
-
+export const listenToDevtoolsDispatch = (onDispatch: () => any) => libState.onInternalDispatch = onDispatch;

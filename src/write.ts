@@ -11,7 +11,7 @@ export const updateState = (
     batchActions?: number;
   }
 ) => {
-  const store = libState.appStores[args.storeName];
+  const store = libState.stores[args.storeName];
   const oldState = store.state;
   const internals = store.internals;
   internals.state = writeState(args.storeName, oldState, { ...oldState }, args.stateActions, { index: 0 });
@@ -23,7 +23,7 @@ export const updateState = (
   })
 
   // Dispatch to devtools
-  if (internals.reduxDevtools?.dispatcher && !libState.disableDispatch) {
+  if (internals.reduxDevtools?.dispatcher && !internals.reduxDevtools.disableDispatch) {
     const currentAction = internals.currentAction;
     const dispatchToDevtools = (batched?: any[]) => {
       const action = batched ? { ...currentAction, batched } : currentAction;
@@ -143,11 +143,11 @@ export const processUpdate = (storeName: string, stateActions: StateAction[], pr
     if (typeof (arg) !== 'function') {
       updateState({ storeName, batchActions, stateActions: [...stateActions, { type: 'action', name: prop, arg, actionType: `${prop}()` }] });
     } else {
-      if (libState.insideTransaction) { throw new Error(errorMessages.ASYNC_PAYLOAD_INSIDE_TRANSACTION); }
+      if (libState.isInsideTransaction) { throw new Error(errorMessages.ASYNC_PAYLOAD_INSIDE_TRANSACTION); }
       const readCurrentState = () =>
-        readState(libState.appStores[storeName].state, [...stateActions, { type: 'action', name: 'state' }], { index: 0 });
+        readState(libState.stores[storeName].state, [...stateActions, { type: 'action', name: 'state' }], { index: 0 });
       let state = { storeValue: readCurrentState(), error: null, isLoading: true, wasRejected: false, wasResolved: false } as FutureState<any>;
-      if (libState.appStores[storeName].state.cache?.[stateActions.map(sa => sa.actionType).join('.')]) {
+      if (libState.stores[storeName].state.cache?.[stateActions.map(sa => sa.actionType).join('.')]) {
         const result = new Proxy(new Promise<any>(resolve => resolve(readCurrentState())), {
           get: (target: any, prop: any) => {
             if (prop === 'then' || prop === 'catch' || prop === 'finally') {
@@ -223,10 +223,10 @@ export const processUpdate = (storeName: string, stateActions: StateAction[], pr
 }
 
 const completeStateWrite = (storeName: string, stateActions: ReadonlyArray<StateAction>, payload: null | {}, newState: any) => {
-  const internals = libState.appStores[storeName].internals;
+  const internals = libState.stores[storeName].internals;
   const currentAction = internals.currentAction;
   const type = stateActions.map(sa => sa.actionType).join('.');
-  internals.currentAction = !libState.insideTransaction ? { type, ...payload }
+  internals.currentAction = !libState.isInsideTransaction ? { type, ...payload }
     : !currentAction.actions ? { type, actions: [{ type, ...payload }] }
       : { type: `${currentAction.type}, ${type}`, actions: [...currentAction.actions, { type, ...payload }] };
   return newState;
