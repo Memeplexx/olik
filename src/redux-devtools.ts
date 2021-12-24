@@ -3,10 +3,10 @@ import { Read, ReduxDevtoolsOptions, Replace, ReplaceAll } from './type';
 import { StoreInternal, WindowAugmentedWithReduxDevtools } from './type-internal';
 
 export function trackWithReduxDevtools<S>(
-  args: ReduxDevtoolsOptions,
+  { store, traceActions, limitFindOrFilterArgLength }: ReduxDevtoolsOptions,
 ) {
-  const storeArg = args.store as StoreInternal<S>;
-  const internals = storeArg.internals;
+  // const store = args.store as StoreInternal<S>;
+  const internals = (store as StoreInternal<S>).internals;
 
   // do not continue if this is a nested store
   if (!!internals.nestedStoreInfo) { return; }
@@ -25,26 +25,33 @@ export function trackWithReduxDevtools<S>(
 
   // If a devtools instance has already been registered, do not re-create that instance.
   // This problem really only presents its self when hot-reloading is being used
-  const storeName = internals.storeName || document.title;
   let devTools = internals.reduxDevtools?.instance;
   if (devTools) { return; }
 
   // Register devtools extension
-  const devtoolsOpts = { name: storeName };
-  if (args?.traceActions) {
+  const devtoolsOpts = { name: name || document.title };
+  if (traceActions) {
     Object.assign(devtoolsOpts, { trace: true, type: 'redux', traceLimit: 100 });
   }
   devTools = windowObj.__REDUX_DEVTOOLS_EXTENSION__.connect(devtoolsOpts);
-  devTools.init(storeArg.state);
+  devTools.init(store.state);
   internals.reduxDevtools = {
     instance: devTools,
-    dispatcher: (action: any) => devTools!.send(action, storeArg.state),
+    dispatcher: (action: any) => {
+      // const type = action.type as string;
+      // let newType = '';
+      // while (type.includes('.find.')) {
+      //   const [f, s] = type.split('.find.');
+      //   newType += f;
+      // }
+      devTools!.send(action, store.state);
+    },
     disableDispatch: false,
   };
 
   const setState = (state: any) => {
     internals.reduxDevtools!.disableDispatch = true;
-    const selection = storeArg as any as Replace<any> & ReplaceAll<any> & Read<any>;
+    const selection = store as any as Replace<any> & ReplaceAll<any> & Read<any>;
     selection[Array.isArray(selection.state) ? 'replaceAll' : 'replace'](state);
     internals.reduxDevtools!.disableDispatch = false;
   }
@@ -60,16 +67,16 @@ export function trackWithReduxDevtools<S>(
       }
       let pathSegments = messagePayload.type.split('.');
       const action = pathSegments.pop() as string;
-      let selection: any = storeArg;
+      let selection: any = store;
       pathSegments.forEach(seg => selection = selection[seg] as any);
       selection[action.substring(0, action.length - 2)](messagePayload.payload);
       libState.onInternalDispatch();
     } else if ('EXPORT' === message.type) {
-      const url = window.URL.createObjectURL(new Blob([JSON.stringify(storeArg.state)], { type: 'application/json' }));
+      const url = window.URL.createObjectURL(new Blob([JSON.stringify(store.state)], { type: 'application/json' }));
       document.body.appendChild(Object.assign(document.createElement('a'), {
         style: { display: 'none' },
         href: url,
-        download: `${storeArg.internals.storeName}.json`
+        download: `${internals.storeName}.json`
       })).click();
       window.URL.revokeObjectURL(url);
     } else if ('DISPATCH' === message.type && message.payload) {
@@ -77,7 +84,7 @@ export function trackWithReduxDevtools<S>(
         setState(JSON.parse(message.state));
         libState.onInternalDispatch();
       } else if ('COMMIT' === message.payload.type) {
-        devTools!.init(storeArg.state);
+        devTools!.init(store.state);
       } else if ('ROLLBACK' === message.payload.type) {
         const parsedState = JSON.parse(message.state);
         setState(parsedState);

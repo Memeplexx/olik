@@ -490,6 +490,11 @@ export interface ReduxDevtoolsOptions {
    * Set this to false for production builds as it negatively impacts performance.
    */
   traceActions?: boolean;
+  /**
+   * Limit the length of where args so as to prevent vert long action types
+   * Defaults to `6`
+   */
+  limitFindOrFilterArgLength?: number
 }
 
 export type Store<S> = (S extends Array<any> ? UpdatableArray<S, 'isFilter', 'notQueried', MaxRecursionDepth>
