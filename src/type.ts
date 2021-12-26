@@ -445,11 +445,12 @@ export interface OptionsForMakingAStore<S> {
    */
   state: S,
   /**
-   * Sometimes a specific action may be dispatched many times in a short period.
-   * To prevent this spam, we can combine multiple actions into 1 'batch' by 
-   * defining the maximum number of milliseconds that must transpire before a new action is created.
-   * This effectively acts like a throttle and a debounce
-   * Default is `0`.
+   * Sometimes actions with the same `type` may be dispatched many times in a short period.
+   * An example of this might be tracking the users mouse cursor position.
+   * To prevent these actions from spamming the debug logs, we can 'batch' those actions
+   * that have an identical `type` for a specific number of milliseconds.
+   * This effectively acts like a 'throttle' + 'debounce'.
+   * The default value is `0`.
    */
   batchActions?: number;
 }
