@@ -84,7 +84,7 @@ export const copyNewState = (
   const action = stateActions[cursor.index++];
   if (cursor.index < stateActions.length) {
     if (action.type === 'search' && Array.isArray(currentState)) {
-      const query = constructQuery(stateActions, cursor);
+      const query = constructQuery({ stateActions, cursor });
       let findIndex = -1;
       if ('find' === action.name) {
         findIndex = (currentState as any[]).findIndex(query);

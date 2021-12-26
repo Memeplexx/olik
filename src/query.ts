@@ -2,7 +2,9 @@ import { comparisons } from './constant';
 import { StateAction } from './type';
 import { QuerySpec } from './type-internal';
 
-export const constructQuery = (stateActions: ReadonlyArray<StateAction>, cursor: { index: number }) => {
+export const constructQuery = (
+  { cursor, stateActions }: { stateActions: ReadonlyArray<StateAction>, cursor: { index: number } }
+) => {
   const concatenateQueries = (queries: QuerySpec[]): QuerySpec[] => {
     const constructQuery = () => {
       const queryPaths = stateActions

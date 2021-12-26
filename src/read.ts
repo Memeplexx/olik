@@ -11,7 +11,7 @@ export const readState = (
   const action = stateActions[cursor.index++];
   if (cursor.index < stateActions.length) {
     if (Array.isArray(state) && (action.type === 'search')) {
-      const query = constructQuery(stateActions, cursor);
+      const query = constructQuery({ stateActions, cursor });
       if ('find' === action.name) {
         return readState({ state: (state as any[]).find(query), stateActions, cursor });
       } else if ('filter' === action.name) {
