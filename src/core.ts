@@ -38,7 +38,7 @@ export const createStore = <S>(
             const actionType = stateActions.map(sa => sa.actionType).join('.');
             const newStateActions = [
               { type: 'property', name: 'cache', actionType: 'cache' },
-              { type: 'property', name: actionType, actionType: actionType },
+              { type: 'property', name: actionType, actionType },
               { type: 'action', name: 'remove', actionType: 'remove()' },
             ] as StateAction[];
             try {
@@ -55,11 +55,11 @@ export const createStore = <S>(
         } else if ('state' === prop) {
           return deepFreeze(readState({ state: internals.state, stateActions: [...stateActions, { type: 'action', name: prop }], cursor: { index: 0 } }));
         } else if ('onChange' === prop) {
-          return (changeListener: (arg: any) => any) => {
+          return (listener: (arg: any) => any) => {
             const stateActionsCopy = [...stateActions, { type: 'action', name: prop }] as StateAction[];
-            const element = { actions: stateActionsCopy, listener: changeListener };
+            const element = { actions: stateActionsCopy, listener };
             internals.changeListeners.push(element);
-            return { unsubscribe: () => { internals.changeListeners.splice(internals.changeListeners.findIndex(e => e === element), 1); } }
+            return { unsubscribe: () => internals.changeListeners.splice(internals.changeListeners.findIndex(e => e === element), 1) }
           }
         } else if (['and', 'or'].includes(prop)) {
           stateActions.push({ type: 'searchConcat', name: prop, actionType: prop });
