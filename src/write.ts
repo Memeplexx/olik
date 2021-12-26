@@ -1,4 +1,4 @@
-import { augmentations, errorMessages, libState, testState } from './constant';
+import { augmentations, errorMessages, libState } from './constant';
 import { constructQuery } from './query';
 import { readState } from './read';
 import { FutureState, StateAction } from './type';
