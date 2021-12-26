@@ -2,7 +2,7 @@ import { augmentations, libState } from './constant';
 import { readState } from './read';
 import { OptionsForMakingAStore, StateAction, Store } from './type';
 import { StoreInternals } from './type-internal';
-import { deepFreeze, validateState } from './utility';
+import { deepFreeze, validateState, removeStaleCacheReferences } from './utility';
 import { processPotentiallyAsyncUpdate, setNewStateAndCallChangeListeners } from './write';
 
 
@@ -10,6 +10,7 @@ export const createStore = <S>(
   { name, state, batchActions }: OptionsForMakingAStore<S>
 ): Store<S> => {
   validateState(state);
+  removeStaleCacheReferences(state);
   const internals = {
     storeName: name,
     state: JSON.parse(JSON.stringify(state)),

@@ -70,6 +70,15 @@ export const validateState = (state: any) => {
   }
 }
 
+export const removeStaleCacheReferences = (state: any) => {
+  if (!state.cache) { return; }
+  for (let key in state.cache) {
+    if (new Date(state.cache[key]).getTime() <= Date.now()) {
+      delete state.cache[key];
+    }
+  }
+}
+
 export const getStoreByName = (name: string) => libState.stores[name];
 
 export const listenToDevtoolsDispatch = (onDispatch: () => any) => libState.onInternalDispatch = onDispatch;

@@ -231,4 +231,12 @@ describe('async', () => {
       .catch(e => expect(e.message).toEqual(errorMessages.FIND_RETURNS_NO_MATCHES))
   })
 
+  it('should remove stale cache references', async () => {
+    const select = createStore({ name, state: { num: 0 } });
+    await select.num.replace(resolve(1), { cacheFor: 10 });
+    expect((select.state as any).cache.num).toBeTruthy();
+    await new Promise(resolve => setTimeout(() => resolve(), 20));
+    expect(select.state).toEqual({ num: 1, cache: {} });
+  })
+
 });
