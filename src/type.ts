@@ -491,10 +491,16 @@ export interface ReduxDevtoolsOptions {
    */
   traceActions?: boolean;
   /**
-   * Limit the length of where args so as to prevent vert long action types
-   * Defaults to `6`
+   * Limit the length of search args so as to prevent very long action types.  
+   * 
+   * For example, by default, the following action type:
+   * `todos.find.id.eq(c985ab52-6645-11ec-90d6-0242ac120003).remove()`
+   * will be abbreviated to
+   * `todos.find.id.eq(c985ab).remove()`  
+   * 
+   * Default value is `6`
    */
-  limitFindOrFilterArgLength?: number
+  limitSearchArgLength?: number
 }
 
 export type Store<S> = (S extends Array<any> ? UpdatableArray<S, 'isFilter', 'notQueried', MaxRecursionDepth>

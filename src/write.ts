@@ -24,7 +24,6 @@ export const setNewStateAndCallChangeListeners = (
     const currentAction = internals.currentAction;
     const dispatchToDevtools = (batched?: any[]) => {
       const action = batched ? { ...currentAction, batched } : currentAction;
-      testState.currentActionForReduxDevtools = action;
       internals.reduxDevtools!.dispatcher(action);
     }
 

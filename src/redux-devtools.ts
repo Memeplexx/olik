@@ -3,7 +3,7 @@ import { Read, ReduxDevtoolsOptions, Replace, ReplaceAll } from './type';
 import { StoreInternal, WindowAugmentedWithReduxDevtools } from './type-internal';
 
 export function trackWithReduxDevtools<S>(
-  { store, traceActions, limitFindOrFilterArgLength }: ReduxDevtoolsOptions,
+  { store, traceActions, limitSearchArgLength }: ReduxDevtoolsOptions,
 ) {
   // const store = args.store as StoreInternal<S>;
   const internals = (store as StoreInternal<S>).internals;
@@ -38,13 +38,13 @@ export function trackWithReduxDevtools<S>(
   internals.reduxDevtools = {
     instance: devTools,
     dispatcher: (action: any) => {
-      // const type = action.type as string;
-      // let newType = '';
-      // while (type.includes('.find.')) {
-      //   const [f, s] = type.split('.find.');
-      //   newType += f;
-      // }
-      devTools!.send(action, store.state);
+      const newAction = {
+        ...action,
+        type: (action.type as string)
+          .replace(/\((.+?)\)/g, (substring, args) => `(${args.toString().substring(0, limitSearchArgLength || 6)})`),
+      };
+      testState.currentActionForReduxDevtools = newAction;
+      devTools!.send(newAction, store.state);
     },
     disableDispatch: false,
   };

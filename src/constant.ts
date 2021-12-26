@@ -20,7 +20,7 @@ export const libState = {
 }
 
 export const testState = {
-  currentActionForReduxDevtools: { },
+  currentActionForReduxDevtools: { } as { [type: string]: string },
   fakeWindowObjectForReduxDevtools: null as null | WindowAugmentedWithReduxDevtools,
   logLevel: 'none' as ('debug' | 'none'),
 }
