@@ -29,7 +29,7 @@ export function trackWithReduxDevtools<S>(
   if (devTools) { return; }
 
   // Register devtools extension
-  const devtoolsOpts = { name: name || document.title };
+  const devtoolsOpts = { name: internals.storeName || document.title };
   if (traceActions) {
     Object.assign(devtoolsOpts, { trace: true, type: 'redux', traceLimit: 100 });
   }
