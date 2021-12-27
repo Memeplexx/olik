@@ -1,4 +1,4 @@
-import { Augmentations } from './type';
+import { Augmentations, EnableAsyncActionsArgs } from './type';
 import { StoreInternal, WindowAugmentedWithReduxDevtools } from './type-internal';
 
 export const errorMessages = {
@@ -11,12 +11,14 @@ export const errorMessages = {
   INVALID_STATE_INPUT: (illegal: any) => `State must be serializable as JSON. Value of '${illegal.toString()}' is not permitted`,
   CANNOT_SET_DEFERRED_INSTANCE_NAME: 'Cannot set a deferred instance name unless the component store was initialized with an instanceName of Deferred',
   CANNOT_SET_DEFERRED_INSTANCE_NAME_AGAIN: 'Cannot invoke setDeferredInstanceName() more than once',
+  ASYNC_UPDATES_NOT_ENABLED: 'Cannot perform an async update until you enable it. Simply import and invoke `enableAsyncActionPayloads()` wherever your application initializes',
 } as const;
 
 export const libState = {
   stores: {} as { [storeName: string]: StoreInternal<any> },
   isInsideTransaction: false,
   onInternalDispatch: () => null,
+  asyncUpdate: undefined as undefined | ((args: EnableAsyncActionsArgs) => Promise<any>),
 }
 
 export const testState = {

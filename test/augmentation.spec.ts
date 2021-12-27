@@ -1,9 +1,10 @@
 import { Observable } from 'rxjs';
 
 import { augment } from '../src/augment';
-import { testState } from '../src/constant';
+import { testState, libState } from '../src/constant';
 import { createStore } from '../src/core';
 import { derive } from '../src/derive';
+import { enableAsyncActionPayloads } from '../src/write-async';
 
 describe('augmentation', () => {
 
@@ -57,6 +58,7 @@ describe('augmentation', () => {
     })
     const state = { num: 42 };
     const select = createStore({ name, state });
+    enableAsyncActionPayloads();
     const fetch = () => new Promise(resolve => setTimeout(() => resolve(43), 5))
     const res = (select.num as any).replace(fetch).myThing();
     res.then((r: any) => {
@@ -73,6 +75,7 @@ describe('augmentation', () => {
     })
     const state = { array: [42] };
     const select = createStore({ name, state });
+    enableAsyncActionPayloads();
     const fetch = () => new Promise(resolve => setTimeout(() => resolve([43]), 5))
     const res = (select.array as any).replace(fetch).myThing();
     res.then((r: any) => {
@@ -89,6 +92,7 @@ describe('augmentation', () => {
     })
     const state = { array: [{id: 1, num: 1}] };
     const select = createStore({ name, state });
+    enableAsyncActionPayloads();
     const fetch = () => new Promise<{ id: number, num: number }>(resolve => setTimeout(() => resolve({ id: 1, num: 2 }), 5));
     const res = (select.array.find.id.eq(1).replace(fetch) as any).myThing();
     res.then((r: any) => {
@@ -103,6 +107,7 @@ describe('augmentation', () => {
     })
     const state = { thing: '' };
     const select = createStore({ name, state });
+    enableAsyncActionPayloads();
     const fetch = () => new Observable(observer => {
       observer.next('test');
       observer.complete();

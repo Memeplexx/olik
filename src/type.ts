@@ -504,6 +504,16 @@ export interface ReduxDevtoolsOptions {
   limitSearchArgLength?: number
 }
 
+export interface EnableAsyncActionsArgs {
+  storeName: string,
+  stateActions: StateAction[],
+  batchActions?: number,
+  prop: string,
+  cacheFor?: number,
+  optimisticallyUpdateWith?: any,
+  arg: any,
+}
+
 export type Store<S> = (S extends Array<any> ? UpdatableArray<S, 'isFilter', 'notQueried', MaxRecursionDepth>
   : S extends object ? UpdatableObject<S, 'isFind', 'queried', MaxRecursionDepth>
   : UpdatablePrimitive<S, 'isFind', 'queried', MaxRecursionDepth>);

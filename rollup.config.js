@@ -25,14 +25,15 @@ const commonConfig = {
 export default [
   {
     input: [
-      './out-tsc/core.js',
+      './out-tsc/index.js',
       './out-tsc/augment.js',
       './out-tsc/derive.js',
       './out-tsc/transact.js',
       './out-tsc/nest.js',
       './out-tsc/redux-devtools.js',
       './out-tsc/merge.js',
-      './out-tsc/utility.js'
+      './out-tsc/utility.js',
+      './out-tsc/write-async.js'
     ],
     output: [
       {

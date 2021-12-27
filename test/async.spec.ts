@@ -1,6 +1,7 @@
 import { errorMessages, testState } from '../src/constant';
 import { createStore } from '../src/core';
 import { currentAction } from './_utility';
+import { enableAsyncActionPayloads } from '../src/write-async';
 
 
 const resolve = <T>(data: T, timeout = 10) => () => new Promise<T>(resolve => setTimeout(() => resolve(data), timeout));
@@ -12,6 +13,7 @@ describe('async', () => {
 
   beforeEach(() => {
     testState.logLevel = 'none';
+    enableAsyncActionPayloads();
   })
 
   it('should perform a basic async update', async () => {

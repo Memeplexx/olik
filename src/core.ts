@@ -3,7 +3,8 @@ import { readState } from './read';
 import { OptionsForMakingAStore, StateAction, Store } from './type';
 import { StoreInternals } from './type-internal';
 import { deepFreeze, validateState, removeStaleCacheReferences } from './utility';
-import { processPotentiallyAsyncUpdate, setNewStateAndCallChangeListeners } from './write';
+import { processPotentiallyAsyncUpdate } from './write';
+import { setNewStateAndNotifyListeners } from './write-complete';
 
 
 export const createStore = <S>(
@@ -43,7 +44,7 @@ export const createStore = <S>(
               { type: 'action', name: 'remove', actionType: 'remove()' },
             ] as StateAction[];
             try {
-              setNewStateAndCallChangeListeners({ storeName: name, batchActions, stateActions: newStateActions });
+              setNewStateAndNotifyListeners({ storeName: name, batchActions, stateActions: newStateActions });
             } catch (e) {
               /* This can happen if a cache has already expired */
             }
