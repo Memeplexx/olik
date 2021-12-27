@@ -1,5 +1,6 @@
-import { createStore, mergeStoreIfPossible } from '../src';
-import { errorMessages, libState, testState } from '../src/constant';
+import { errorMessages, testState } from '../src/constant';
+import { createStore } from '../src/core';
+import { mergeStoreIfPossible } from '../src/merge';
 
 describe('merge', () => {
 

@@ -25,7 +25,6 @@ const commonConfig = {
 export default [
   {
     input: [
-      './out-tsc/index.js',
       './out-tsc/core.js',
       './out-tsc/augment.js',
       './out-tsc/derive.js',

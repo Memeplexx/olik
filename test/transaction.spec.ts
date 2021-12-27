@@ -1,5 +1,6 @@
-import { createStore, transact } from '../src';
-import { errorMessages, libState, testState } from '../src/constant';
+import { errorMessages, testState } from '../src/constant';
+import { createStore } from '../src/core';
+import { transact } from '../src/transact';
 import { currentAction } from './_utility';
 
 describe('transaction', () => {

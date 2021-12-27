@@ -1,4 +1,4 @@
-import { createStore, derive } from '.';
+import { createStore } from './core';
 
 type Test = { num: number, arr: Array<number>, objArr: Array<{ num: number }>, obj: { num: number } };
 

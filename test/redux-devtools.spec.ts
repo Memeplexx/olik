@@ -1,7 +1,7 @@
-import { createStore, trackWithReduxDevtools } from '../src';
-import { errorMessages, libState, testState } from '../src/constant';
-import { windowAugmentedWithReduxDevtoolsImpl, currentAction } from './_utility';
-import { StoreInternal } from '../src/type-internal';
+import { errorMessages, testState } from '../src/constant';
+import { createStore } from '../src/core';
+import { trackWithReduxDevtools } from '../src/redux-devtools';
+import { currentAction, windowAugmentedWithReduxDevtoolsImpl } from './_utility';
 
 describe('devtools', () => {
 

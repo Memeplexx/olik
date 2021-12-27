@@ -1,5 +1,5 @@
-import { createStore } from '../src';
 import { errorMessages, testState } from '../src/constant';
+import { createStore } from '../src/core';
 
 describe('misc', () => {
 

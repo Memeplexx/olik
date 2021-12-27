@@ -1,7 +1,9 @@
 import { Observable } from 'rxjs';
 
-import { augment, createStore, derive } from '../src';
-import { libState, testState } from '../src/constant';
+import { augment } from '../src/augment';
+import { testState } from '../src/constant';
+import { createStore } from '../src/core';
+import { derive } from '../src/derive';
 
 describe('augmentation', () => {
 

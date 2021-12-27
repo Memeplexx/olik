@@ -1,7 +1,7 @@
-
-import { errorMessages, libState, testState } from '../src/constant';
-import { createStore } from '../src';
+import { errorMessages, testState } from '../src/constant';
+import { createStore } from '../src/core';
 import { currentAction } from './_utility';
+
 
 const resolve = <T>(data: T, timeout = 10) => () => new Promise<T>(resolve => setTimeout(() => resolve(data), timeout));
 const reject = <T>(rejection: any, timeout = 10) => () => new Promise<T>((resolve, reject) => setTimeout(() => reject(rejection), timeout));

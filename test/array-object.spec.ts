@@ -1,7 +1,7 @@
-
-import { createStore } from '../src/index';
-import { libState, testState } from '../src/constant';
+import { testState } from '../src/constant';
+import { createStore } from '../src/core';
 import { currentAction } from './_utility';
+
 
 describe('array-object', () => {
 

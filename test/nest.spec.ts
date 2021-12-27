@@ -1,5 +1,6 @@
-import { createStore, nestStoreIfPossible } from '../src/index';
-import { libState, errorMessages, testState } from '../src/constant';
+import { errorMessages, libState, testState } from '../src/constant';
+import { createStore } from '../src/core';
+import { nestStoreIfPossible } from '../src/nest';
 import { currentAction } from './_utility';
 
 describe('nest', () => {

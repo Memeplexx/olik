@@ -1,5 +1,6 @@
-import { createStore, derive } from '../src';
-import { libState, testState } from '../src/constant';
+import { testState } from '../src/constant';
+import { createStore } from '../src/core';
+import { derive } from '../src/derive';
 
 describe('derivation', () => {
 

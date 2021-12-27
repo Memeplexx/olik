@@ -1,5 +1,5 @@
-import { createStore } from '../src';
-import { libState, testState } from '../src/constant';
+import { testState } from '../src/constant';
+import { createStore } from '../src/core';
 import { currentAction } from './_utility';
 
 
