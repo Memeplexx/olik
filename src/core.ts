@@ -1,8 +1,8 @@
-import { augmentations, libState } from './constant';
+import { augmentations, libState, errorMessages } from './constant';
 import { readState } from './read';
 import { OptionsForMakingAStore, StateAction, Store } from './type';
 import { StoreInternals } from './type-internal';
-import { deepFreeze, validateState, removeStaleCacheReferences } from './utility';
+import { deepFreeze } from './utility';
 import { processPotentiallyAsyncUpdate } from './write';
 import { setNewStateAndNotifyListeners } from './write-complete';
 
@@ -84,4 +84,34 @@ export const createStore = <S>(
     });
   };
   return libState.stores[name] = Object.assign(recurseProxy({}, true, []));
+}
+
+export const validateState = (state: any) => {
+  const throwError = (illegal: any) => {
+    throw new Error(errorMessages.INVALID_STATE_INPUT(illegal));
+  };
+  if (
+    state !== null
+    && !['boolean', 'number', 'string'].some(type => typeof state === type)
+  ) {
+    if (!Array.isArray(state)) {
+      if (typeof state !== "object") {
+        throwError(state);
+      }
+      const proto = Object.getPrototypeOf(state);
+      if (proto != null && proto !== Object.prototype) {
+        throwError(state);
+      }
+    }
+    Object.keys(state).forEach(key => validateState(state[key]));
+  }
+}
+
+export const removeStaleCacheReferences = (state: any) => {
+  if (!state.cache) { return; }
+  for (let key in state.cache) {
+    if (new Date(state.cache[key]).getTime() <= Date.now()) {
+      delete state.cache[key];
+    }
+  }
 }
