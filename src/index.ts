@@ -7,3 +7,4 @@ export { trackWithReduxDevtools } from './redux-devtools';
 export { mergeStoreIfPossible } from './merge';
 export { getStoreByName, listenToDevtoolsDispatch } from './utility';
 export { enableAsyncActionPayloads } from './write-async'
+export * from './type';

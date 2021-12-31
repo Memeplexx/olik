@@ -1,6 +1,6 @@
 {
   "name": "olik",
-  "version": "0.1.21",
+  "version": "0.1.23",
   "description": "Declarative state-management. Free of inaccurate actions & convoluted reducers. All in-line.",
   "license": "MIT",
   "homepage": "https://memeplexx.github.io/Olik/",
@@ -16,8 +16,8 @@
     "typescript"
   ],
   "author": "Stephen Paul (https://github.com/memeplexx)",
-  "main": "dist/cjs",
-  "module": "dist/esm",
+  "main": "dist/index.js",
+  "module": "dist/index.es.js",
   "types": "dist/index.d.ts",
   "sideEffects": false,
   "scripts": {
