@@ -1,0 +1,46 @@
+{
+  "Todo": {
+    "id": {
+      "int": {
+        "min": 1,
+        "max": 1000000
+      }
+    },
+    "title": {
+      "string": [
+        "Preheat the oven",
+        "Mix the softened butter into the sugar in globs",
+        "Mix in the eggs one at a time",
+        "Measure and mix in the vanilla, salt, and baking soda",
+        "Add the flour all at once",
+        "Add the chocolate chips all at once and use a folding motion to incorporate them into the batter",
+        "Scoop the batter onto your baking sheet, spacing the balls of dough roughly 2 inches apart",
+        "Bake the cookies for 9-11 minutes",
+        "Transfer the cookies to a rack to finish cooling completely"
+      ]
+    },
+    "done": {
+      "boolean": {}
+    },
+    "urgency": {
+      "int": {
+        "min": 0,
+        "max": 5
+      }
+    },
+    "dueDate": {
+      "dateTime": {
+        "min": "2022-01-01T00:00:00Z",
+        "max": "2030-12-31T23:59:59Z"
+      }
+    }
+  },
+  "Question": {
+    "answer": {
+      "int": {
+        "min": 42,
+        "max": 42
+      }
+    }
+  }
+}
