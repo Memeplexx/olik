@@ -1,4 +1,5 @@
 export type FindOrFilter = 'isFind' | 'isFilter';
+
 export type QueryStatus = 'notQueried' | 'queried';
 
 export interface DeepReadonlyArray<T> extends ReadonlyArray<DeepReadonly<T>> {
