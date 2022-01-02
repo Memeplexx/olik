@@ -59,12 +59,14 @@ export type UpdatableArray<S extends Array<any>, F extends FindOrFilter, Q exten
   & Q extends 'queried'
   ? (
     & Remove<Depth>
+    & InvalidateCache
     & (F extends 'isFind' ? Replace<S[0]> : {})
     & Or<S, F, NewDepth>
     & And<S, F, NewDepth>
     & (S[0] extends Array<any> ? {} : S[0] extends object ? UpdatableObject<S[0], F, Q, NewDepth> : UpdatablePrimitive<S[0], F, Q, NewDepth>)
   ) : (
     & Remove<Depth>
+    & InvalidateCache
     & RemoveAll
     & InsertMany<S>
     & InsertOne<S[0]>
