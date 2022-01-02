@@ -26,3 +26,18 @@
 html[data-theme='dark'] .docusaurus-highlight-code-line {
   background-color: rgba(0, 0, 0, 0.3);
 }
+
+@font-face {
+  font-family: "Comfortaa";
+  src: url(fonts/Comfortaa/Comfortaa-VariableFont_wght.ttf);
+}
+
+body {
+  font-family: "Comfortaa", sans-serif;
+}
+
+
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: inherit;
+}
