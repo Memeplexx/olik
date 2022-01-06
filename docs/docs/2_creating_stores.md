@@ -9,7 +9,7 @@ sidebar_position: 2
 ```ts
 import { createStore } from 'olik' /* or 'olik-react' or 'olik-ng' */
 
-export const get = createStore({
+export const store = createStore({
   name: document.title,     // can be any user-defined string
   state: { hello: 'world' } // can be any serializable, plain Javascript object
 })

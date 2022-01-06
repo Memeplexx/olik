@@ -1,4 +1,4 @@
-import { augmentations, libState, errorMessages } from './constant';
+import { augmentations, errorMessages, libState } from './constant';
 import { readState } from './read';
 import { OptionsForMakingAStore, StateAction, Store } from './type';
 import { StoreInternals } from './type-internal';

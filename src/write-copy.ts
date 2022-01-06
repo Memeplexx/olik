@@ -56,7 +56,7 @@ export const copyNewState = (
       }
     } else if (['remove', 'invalidateCache'].includes(stateActions[cursor.index].name)) {
       const { [stateActions[cursor.index - 1].name]: other, ...otherState } = currentState;
-      return otherState;
+      return setCurrentActionReturningNewState({ storeName, stateActions, payload: null, newState: otherState })
     } else {
       return { ...currentState, [action.name]: copyNewState({ storeName, currentState: (currentState || {})[action.name], stateToUpdate: ((stateToUpdate as any) || {})[action.name], stateActions, cursor }) };
     }

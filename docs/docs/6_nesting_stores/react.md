@@ -20,16 +20,21 @@ export const select = createApplicationStore({ /* initial application state */ }
 ### **Creating** a component store
 The `useNestedStore()` hook returns a store which will exist for the lifetime of your component
 ```tsx
-const TodoComponent = (props: { todoId: number }) => {
+const IncrementorComponent = (props: { id: number }) => {
+
   const nested = useNestedStore({
-    name: 'TodoComponent',
-    instanceName: props.todoId,
+    name: 'Incrementor',
+    instanceName: props.id,
     containerStoreName: 'MyApp',
-    state: {
-      num: 0,
-      str: "abc"
-    }
+    state: { num: 0 }
   })
+
+  const num = nested.num.useState();
+
+  return (
+    <button onClick={() => nested.num.increment(1)}>+</button>
+    <div>Result: {num}</div>
+  )
 }
 ```
 [**Demo 🥚**](https://codesandbox.io/s/olik-react-nested-stores-ve6lj?file=/src/App.tsx)
