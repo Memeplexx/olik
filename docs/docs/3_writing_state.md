@@ -9,7 +9,7 @@ sidebar_position: 3
 
 🥚 Let's begin with the following store:
 ```ts
-const get = createAppStore({
+const get = createStore({
   user: {
     firstName: '',
     lastName: '',

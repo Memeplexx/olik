@@ -10,8 +10,11 @@ sidebar_position: 2
 🥚 Let's begin with the following store:
 ```ts
 const get = createStore({
-  todos: new Array<{ id: number, title: string, done: boolean }>(),
-  showDone: false,
+  name: document.title,
+  state: {
+    todos: new Array<{ id: number, title: string, done: boolean }>(),
+    showDone: false,
+  }
 });
 ```
 
@@ -25,10 +28,11 @@ You can observe a selected node of your state tree using the `observe()` functio
 ```ts
 @Component({...})
 class MyComponent {
-  todos$ = get.todos.observe();
+  todos$ = get.todos
+    .observe();
 }
 ```
-<a href="https://codesandbox.io/s/olik-ng-read-iwyd3?file=/src/app/app.component.ts" target="_blank">Demo <img/></a>
+[**Demo 🥚**](https://codesandbox.io/s/olik-ng-read-iwyd3?file=/src/app/app.component.ts)
 
 ### **Derive** computationally expensive state
 The `derive()` function allows you to derive computationally expensive state.
@@ -42,7 +46,7 @@ class MyComponent {
     .observe();
 }
 ```
-<a href="https://codesandbox.io/s/olik-ng-memoise-supgo?file=/src/app/app.component.ts" target="_blank">Demo <img/></a>
+[**Demo 🥚**](https://codesandbox.io/s/olik-ng-memoise-supgo?file=/src/app/app.component.ts)
 
 ### Minimize **async pipes** & read observables **synchronously**
 The `combineComponentObservables()` is a *convenience* function that:
@@ -63,17 +67,18 @@ import { combineComponentObservables } from 'olik-ng';
 @Component({...})
 class AppComponent {
 
-  username$ = get.username.observe();
+  username$ = get.username.observe()
   todos$ = get.todos.observe()
-  observables$ = combineComponentObservables<AppComponent>(this);
+  observables$ = combineComponentObservables<AppComponent>(this)
 
   ngAfterViewInit() {
     // synchronous read
-    console.log({ todos: this.observables$.value.todos$ }); 
+    console.log({ todos: this.observables$.value.todos$ })
   }
 }
 ```
-<a href="https://codesandbox.io/s/olik-ng-combinecomponentobservables-trh42?file=/src/app/app.component.ts" target="_blank">Demo <img/></a>
+<a href="https://codesandbox.io/s/olik-ng-combinecomponentobservables-trh42?file=/src/app/app.component.ts" target="_blank">Demo <img/></a>  
+
 Note that:
 * the `observables$` variable must **not** be renamed.
 * must be the **last** variable you declare.

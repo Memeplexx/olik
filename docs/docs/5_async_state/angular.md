@@ -7,7 +7,7 @@ permalink: /docs/async-state/angular
 parent: Async state
 ---
 
-# <img src="../../assets/images/angular_large.png" width="40" class="ng-icon"/> Fetching state with Angular
+# Handling async state with Angular
 
 🥚 Let's begin with the following store and service:
 
@@ -51,7 +51,7 @@ class MyComponent {
   );
 }
 ```
-<a href="https://codesandbox.io/s/olik-ng-async-5y3hd?file=/src/app/app.component.ts" target="_blank">Demo <img src="../assets/images/code_sandbox_blue.png"/></a>
+[**Demo 🥚**](https://codesandbox.io/s/olik-ng-async-5y3hd?file=/src/app/app.component.ts)
 
 ## **Resolving data** in a route resolver
 It may be better to pre-fetch all component data using an [Angular route resolver](https://angular.io/api/router/Resolve).
@@ -68,4 +68,4 @@ export class MyRouteResolver implements Resolve<Observable<any>> {
   }
 }
 ```
-<a href="https://codesandbox.io/s/olik-ng-route-resolver-6mmbk?file=/src/app/child.resolver.ts" target="_blank">Demo <img src="../assets/images/code_sandbox_blue.png"/></a>
+[**Demo 🥚**](https://codesandbox.io/s/olik-ng-route-resolver-6mmbk?file=/src/app/child.resolver.ts)

@@ -1,9 +1,9 @@
 ---
-sidebar_label: 'Creating a Store'
+sidebar_label: 'Creating stores'
 sidebar_position: 2
 ---
 
-# Creating a store
+# Creating stores
 
 ### A store can be defined as follows
 ```ts

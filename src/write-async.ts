@@ -76,7 +76,7 @@ export const enableAsyncActionPayloads = () => {
           return (t as any)[prop].bind(t);
         } else { // must be an augmentation
           promiseWasChained = true;
-          return (...args: any[]) => target[prop].apply(target, args);
+          return target[prop];
         }
       }
     })

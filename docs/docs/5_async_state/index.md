@@ -8,11 +8,21 @@ sidebar_label: 'Async state'
 
 🥚 Let's begin with the following store:
 ```ts
-type Todo = { id: number, title: string };
+import {
+  createStore, enableAsyncActionPayloads
+} from 'olik' // or 'olik-ng' or 'olik-react'
 
+// 1. create store
+type Todo = { id: number, title: string };
 const get = createStore({
-  todos: new Array<Todo>(),
+  name: document.title,
+  state: {
+    todos: new Array<Todo>(),
+  }
 });
+
+// 2. import the ability to dispatch promises as payloads
+enableAsyncActionPayloads();
 ```
 
 ### **Listening** to state changes
@@ -71,6 +81,8 @@ get.todos.invalidateCache();
 ### **Optimistic** updates
 You can make immediate updates, which will be rolled back if an error is thrown.
 ```ts
-const setUserAsAdminOnAPI = (isAdmin: boolean) => () => fetch('http://api/todos');
-get.user.isAdmin.replace(setUserAsAdminOnAPI(true), { optimisticallyUpdateWith: true })
+const setUserAsAdminOnAPI = (isAdmin: boolean) =>
+  () => fetch('http://api/todos');
+get.user.isAdmin
+  .replace(setUserAsAdminOnAPI(true), { optimisticallyUpdateWith: true })
 ```

@@ -10,8 +10,11 @@ sidebar_position: 1
 🥚 Let's begin with the following store:
 ```ts
 const get = createStore({
-  todos: new Array<{ id: number, title: string, done: boolean }>(),
-  showDone: false,
+  name: document.title,
+  state: {
+    todos: new Array<{ id: number, title: string, done: boolean }>(),
+    showDone: false,
+  }
 });
 ```
 
@@ -23,10 +26,7 @@ export function App() {
   return todos.map(todo => (<div key={todo.id}>{todo.name}</div>));
 }
 ```
-<div>
-  <a class="code-sandbox-demo" href="https://codesandbox.io/s/olik-react-usestate-hook-d3z0y?file=/src/App.tsx" target="_blank" title="Basic demo">Demo 1<img/></a>
-  <a class="code-sandbox-demo" href="https://codesandbox.io/s/olik-react-usestate-with-deps-7pf9d?file=/src/App.tsx" target="_blank" title="Demo showing hook with dependencies">Demo 2<img/></a>
-</div>
+[**Demo - no deps 🥚**](https://codesandbox.io/s/olik-ng-read-iwyd3?file=/src/app/app.component.ts) &nbsp;&nbsp;&nbsp; [**Demo - with deps 🥚**](https://codesandbox.io/s/olik-react-usestate-with-deps-7pf9d?file=/src/App.tsx)
 
 ### **Derive** computationally expensive state
 ```tsx
@@ -38,7 +38,5 @@ export function App() {
   return todos.map(todo => (<div key={todo.id}>{todo.name}</div>));
 }
 ```
-<div>
-  <a class="code-sandbox-demo" href="https://codesandbox.io/s/olik-react-derivefrom-jv9dd?file=/src/App.tsx" target="_blank" title="Basic demo">Demo 1<img/></a>
-  <a class="code-sandbox-demo" href="https://codesandbox.io/s/olik-react-derivefrom-with-deps-z7x4i?file=/src/App.tsx" target="_blank" title="Demo showing hook with dependencies">Demo 2<img/></a>
-</div>
+
+[**Demo - no deps 🥚**](https://codesandbox.io/s/olik-react-derivefrom-jv9dd?file=/src/App.tsx) &nbsp;&nbsp;&nbsp; [**Demo - with deps 🥚**](https://codesandbox.io/s/olik-react-derivefrom-with-deps-z7x4i?file=/src/App.tsx)
