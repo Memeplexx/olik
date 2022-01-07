@@ -26,7 +26,7 @@ export interface BatchedAction {
 export interface NestedStoreInfo {
   storeName: string,
   instanceName: string | number,
-  containerStoreName: string,
+  containerName: string,
 }
 
 export interface StoreInternals<S> {

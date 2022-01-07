@@ -470,7 +470,7 @@ export interface OptionsForNestedAStore<S> {
   /**
    * The name of the store in which this store should be nested
    */
-  containerStoreName: string,
+   containerName: string,
 }
 
 export interface OptionsForMergingAStore<S> {

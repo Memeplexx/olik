@@ -3,10 +3,10 @@ import { NestStoreRef, OptionsForNestedAStore } from './type';
 import { StoreInternal } from './type-internal';
 
 export const nestStoreIfPossible = <S>(
-  { store, instanceName, containerStoreName }: OptionsForNestedAStore<S>,
+  { store, instanceName, containerName }: OptionsForNestedAStore<S>,
 ): NestStoreRef => {
   const storeArg = store as StoreInternal<any>;
-  const appStore = libState.stores[containerStoreName || document.title];
+  const appStore = libState.stores[containerName || document.title];
   if (!appStore) { return { detach: () => null }; }
   const wrapperState = appStore.state;
   if (['number', 'boolean', 'string'].some(type => typeof (wrapperState) === type) || Array.isArray(wrapperState)) {
@@ -23,7 +23,7 @@ export const nestStoreIfPossible = <S>(
       node.onChange(listener);
     })
   // TODO: delete old listeners?
-  internals.nestedStoreInfo = { storeName: nestedStoreName, instanceName, containerStoreName };
+  internals.nestedStoreInfo = { storeName: nestedStoreName, instanceName, containerName };
   delete libState.stores[nestedStoreName];
   return {
     detach: () => {

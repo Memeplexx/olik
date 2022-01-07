@@ -29,8 +29,8 @@ export const createStore = <S>(
       get: (target, prop: string) => {
         stateActions = topLevel ? new Array<StateAction>() : stateActions;
         if (topLevel && internals.nestedStoreInfo) {
-          const { nestedStoreInfo: { containerStoreName, instanceName, storeName } } = internals;
-          return libState.stores[containerStoreName].nested[storeName][instanceName!][prop];
+          const { nestedStoreInfo: { containerName, instanceName, storeName } } = internals;
+          return libState.stores[containerName].nested[storeName][instanceName!][prop];
         } else if (topLevel && internals.mergedStoreInfo) {
           return (libState.stores[internals.mergedStoreInfo] as any)[prop];
         } else if (['replace', 'patch', 'deepMerge', 'remove', 'increment', 'removeAll', 'replaceAll', 'patchAll', 'incrementAll', 'insertOne', 'insertMany', 'withOne', 'withMany'].includes(prop)) {

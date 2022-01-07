@@ -64,7 +64,7 @@ store.todos
   .upsertMatching.id
   .withOne(todo)
 
-// INSERT MANY TODOS (IF THEY DOES NOT ALREADY EXIST) OR UPDATE THEM (IF THEY DO)
+// INSERT MANY TODOS (IF THEY DO NOT ALREADY EXIST) OR UPDATE THEM (IF THEY DO)
 store.todos
   .upsertMatching.id
   .withMany(arrayOfTodos)

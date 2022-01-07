@@ -5,11 +5,10 @@ import { StoreInternal, WindowAugmentedWithReduxDevtools } from './type-internal
 export function trackWithReduxDevtools<S>(
   { store, traceActions, limitSearchArgLength }: ReduxDevtoolsOptions,
 ) {
-  // const store = args.store as StoreInternal<S>;
   const internals = (store as StoreInternal<S>).internals;
 
   // do not continue if this is a nested store
-  if (!!internals.nestedStoreInfo) { return; }
+  if (!!internals.nestedStoreInfo || !!internals.mergedStoreInfo) { return; }
 
   // mock out the window object for testing purposes
   let windowObj = window as any as WindowAugmentedWithReduxDevtools;
@@ -29,11 +28,8 @@ export function trackWithReduxDevtools<S>(
   if (devTools) { return; }
 
   // Register devtools extension
-  const devtoolsOpts = { name: internals.storeName || document.title };
-  if (traceActions) {
-    Object.assign(devtoolsOpts, { trace: true, type: 'redux', traceLimit: 100 });
-  }
-  devTools = windowObj.__REDUX_DEVTOOLS_EXTENSION__.connect(devtoolsOpts);
+  devTools = windowObj.__REDUX_DEVTOOLS_EXTENSION__.connect(
+    Object.assign({ name: internals.storeName }, traceActions ? { trace: true, type: 'redux', traceLimit: 100 } : {}));
   devTools.init(store.state);
   internals.reduxDevtools = {
     instance: devTools,

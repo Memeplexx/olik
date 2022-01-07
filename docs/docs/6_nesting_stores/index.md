@@ -7,31 +7,32 @@ sidebar_label: 'Nesting stores'
 #### A component-level store may be 'nested' inside an application-level store so that you can track your component state within your application state. 
 
 
-## Nesting without a framework:
+## Understanding nesting (without a framework):
 
 #### Application store:
 ```ts
 import { createStore, trackWithReduxDevtools } from 'olik'
 
-const store = createStore({ name: document.title, state: { string: '' } })
+const store = createStore({ name: document.title, state: { str: '' } })
 trackWithReduxDevtools({ store })
 ```
 
 #### Component store:
-```ts {7-8}
+```ts
 import { createStore, nestStoreIfPossible, trackWithReduxDevtools } from 'olik'
 
 class MyComponent {
 
   // Define store to manage component state & attempt to nest it
-  const nested = createStore({ name: 'MyComponent', state: { number: 0 } })
+  const nested = createStore({ name: 'MyComponent', state: { num: 0 } })
   const ref = nestStoreIfPossible(
-    { store: nested, containerStoreName: document.title, instanceName: 1 })
+    { store: nested, containerName: document.title, instanceName: 1 })
 
-  // Track store within Redux Devtools if container store cannot found
+  // This will register a new instance within Redux Devtools 
+  // if container store could not be not found
   trackWithReduxDevtools({ store: nested })
 
-  // Optionally detach store from container when it is no longer being used
+  // Detach store from container when it is no longer being used
   onComponentDestroyed = () => ref.detach()
 }
 ```
@@ -39,11 +40,11 @@ class MyComponent {
 #### The above application store state should now look as follows:
 ```ts
 {
-  string: '',
+  str: '',
   nested: {
     MyComponent: {
       1: {
-        number: ''
+        num: ''
       },
     },
   }
@@ -51,5 +52,6 @@ class MyComponent {
 ```
 [**Demo 🥚**](https://codesandbox.io/s/attached-component-store-d9xqk?file=/src/index.ts)
 
-## Nesting without a framework:
+## Framework bindings:
 * [**React**](react)
+* [**Angular**](angular)

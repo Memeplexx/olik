@@ -5,6 +5,19 @@ sidebar_position: 2
 
 # Nesting stores with Angular
 
+🥚 Let's begin with the following store:
+
+```ts
+import { createStore } from 'olik-ng'
+
+export const store = createStore({
+  name: document.title,
+  state: { str: '' }
+})
+
+trackWitHReduxDevtools({ store })
+```
+
 ### **Creating** and nesting a store
 ```ts 
 import { createStore } from 'olik-ng';
@@ -19,7 +32,7 @@ export class IncrementorComponent implements OnInit, OnDestroy {
   ngOnInit() {
     this.nestStoreRef = nestStoreIfPossible({
       store: this.store,
-      containerStoreName: document.title,
+      containerName: document.title,
       instanceName: this.id,
     })
     trackWithReduxDevtools({ store: this.store });
