@@ -23,8 +23,7 @@ const IncrementorComponent = (props: { id: number }) => {
 
   const nested = useNestedStore({
     name: 'Incrementor',
-    instanceName: props.id,
-    containerName: document.title,
+    tryToNestWithinStore: document.title,
     state: { num: 0 }
   })
 

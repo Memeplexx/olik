@@ -461,6 +461,10 @@ export interface OptionsForMakingAStore<S> {
    * This will be ignored if the library could not find a store matching the name provided.
    */
   tryToNestWithinStore?: string;
+  /**
+   * Whether or not to track this store with the Redux Devtools Extension.
+   */
+  trackWithReduxDevtools?: boolean;
 }
 
 export interface OptionsForMergingAStore<S> {
@@ -475,10 +479,6 @@ export interface OptionsForMergingAStore<S> {
 }
 
 export interface ReduxDevtoolsOptions {
-  /**
-   * The store to be monitored
-   */
-  store: Readable<any>;
   /**
    * Whether or not to display the 'trace' tab in the devtools.
    * Set this to false for production builds as it negatively impacts performance.

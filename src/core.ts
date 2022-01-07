@@ -83,8 +83,12 @@ export const createStore = <S>(
       }
     });
   };
-  const store = recurseProxy({}, true, []);;
+  const store = recurseProxy({}, true, []);
   libState.stores[args.name] = store;
+  if (args.trackWithReduxDevtools) {
+    if (!libState.reduxDevtools) { throw new Error(errorMessages.REDUX_DEVTOOLS_NOT_ENABLED); }
+    libState.reduxDevtools(internals.storeName);
+  }
   if (args.tryToNestWithinStore) {
     if (!libState.nestStore) { throw new Error(errorMessages.NESTED_STORES_NOT_ENABLED); }
     return libState.nestStore({ storeName: internals.storeName, containerName: args.tryToNestWithinStore });

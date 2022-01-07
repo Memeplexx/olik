@@ -1,6 +1,6 @@
 import { errorMessages, testState } from '../src/constant';
 import { createStore } from '../src/core';
-import { trackWithReduxDevtools } from '../src/redux-devtools';
+import { enableReduxDevtools } from '../src/redux-devtools';
 import { currentAction, windowAugmentedWithReduxDevtoolsImpl } from './_utility';
 
 describe('devtools', () => {
@@ -9,6 +9,7 @@ describe('devtools', () => {
 
   beforeAll(() => {
     testState.fakeWindowObjectForReduxDevtools = windowAugmentedWithReduxDevtoolsImpl;
+    enableReduxDevtools();
   })
 
   beforeEach(() => {
@@ -17,8 +18,7 @@ describe('devtools', () => {
 
   it('should correctly respond to devtools dispatches where the state is an object', () => {
     const state = { x: 0, y: 0 };
-    const select = createStore({ name, state });
-    trackWithReduxDevtools({ store: select })
+    const select = createStore({ name, state, trackWithReduxDevtools: true });
     select.x
       .replace(3);
     expect(select.state).toEqual({ x: 3, y: 0 });
@@ -29,8 +29,7 @@ describe('devtools', () => {
 
   it('should correctly respond to devtools dispatches where the state is an array', () => {
     const state = ['a', 'b', 'c'];
-    const select = createStore({ name, state });
-    trackWithReduxDevtools({ store: select })
+    const select = createStore({ name, state, trackWithReduxDevtools: true });
     select.replaceAll(['d', 'e', 'f']);
     expect(select.state).toEqual(['d', 'e', 'f']);
     const state2 = ['g', 'h'];
@@ -41,15 +40,13 @@ describe('devtools', () => {
 
   it('should handle a COMMIT without throwing an error', () => {
     const state = { hello: '' };
-    const select = createStore({ name, state });
-    trackWithReduxDevtools({ store: select });
+    const select = createStore({ name, state, trackWithReduxDevtools: true });
     testState.fakeWindowObjectForReduxDevtools!.__REDUX_DEVTOOLS_EXTENSION__._mockInvokeSubscription({ type: 'DISPATCH', payload: { type: 'COMMIT' }, source: '@devtools-extension' });
   });
 
   it('should handle a ROLLBACK correctly', () => {
     const state = { num: 0 };
-    const select = createStore({ name, state });
-    trackWithReduxDevtools({ store: select });
+    const select = createStore({ name, state, trackWithReduxDevtools: true });
     select.num
       .replace(1);
     expect(select.state.num).toEqual(1);
@@ -62,8 +59,7 @@ describe('devtools', () => {
 
   it('should throw an error should a devtools dispatch contain invalid JSON', () => {
     const state = { hello: 0 };
-    const select = createStore({ name, state });
-    trackWithReduxDevtools({ store: select });
+    const select = createStore({ name, state, trackWithReduxDevtools: true });
     expect(() => testState.fakeWindowObjectForReduxDevtools!.__REDUX_DEVTOOLS_EXTENSION__
       ._mockInvokeSubscription({ type: 'ACTION', source: '@devtools-extension', payload: "{'type': 'hello.replace', 'payload': 2}" }))
       .toThrow(errorMessages.DEVTOOL_DISPATCHED_INVALID_JSON);
@@ -71,8 +67,7 @@ describe('devtools', () => {
 
   it('should correctly devtools dispatch made by user', () => {
     const state = { hello: 0 };
-    const select = createStore({ name, state });
-    trackWithReduxDevtools({ store: select });
+    const select = createStore({ name, state, trackWithReduxDevtools: true });
     testState.fakeWindowObjectForReduxDevtools!.__REDUX_DEVTOOLS_EXTENSION__
       ._mockInvokeSubscription({ type: 'ACTION', source: '@devtools-extension', payload: '{"type": "hello.replace()", "payload": 2}' });
     expect(select.state.hello).toEqual(2);
@@ -80,8 +75,7 @@ describe('devtools', () => {
 
   it('should throttle tightly packed updates', done => {
     const state = { test: 0 };
-    const select = createStore({ name, state, batchActions: 200 });
-    trackWithReduxDevtools({ store: select });
+    const select = createStore({ name, state, batchActions: 200, trackWithReduxDevtools: true });
     const payload: number[] = [];
     const updateCount = 6;
     for (let i = 0; i < updateCount; i++) {
@@ -101,8 +95,8 @@ describe('devtools', () => {
   })
 
   it('should abbreviate action types correctly', () => {
-    const select = createStore({ name, state: [{ id: 'qwertyuiop', val: [{ id: 'asdfghjkl', val: 0 }] } ] });
-    trackWithReduxDevtools({ store: select, limitSearchArgLength: 5 });
+    enableReduxDevtools({ limitSearchArgLength: 5 })
+    const select = createStore({ name, state: [{ id: 'qwertyuiop', val: [{ id: 'asdfghjkl', val: 0 }] } ], trackWithReduxDevtools: true });
     select.find.id.eq('qwertyuiop').val.find.id.in(['asdfghjkl']).val.increment(1);
     expect(testState.currentActionForReduxDevtools.type).toEqual('find.id.eq(qwert).val.find.id.in(asdfg).val.increment()');
   })
