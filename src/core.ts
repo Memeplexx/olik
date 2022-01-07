@@ -21,18 +21,18 @@ export const createStore = <S>(
       type: '',
       payloads: [],
       timeoutHandle: 0,
-    }
+    },
   } as StoreInternals<S>;
   const recurseProxy = (s: any, topLevel: boolean, stateActions: StateAction[]): any => {
     if (typeof s !== 'object') { return null; }
     return new Proxy(s, {
       get: (target, prop: string) => {
         stateActions = topLevel ? new Array<StateAction>() : stateActions;
-        if (topLevel && internals.nestedStoreInfo) {
+        if (topLevel && !!internals.nestedStoreInfo?.isNested) {
           const { nestedStoreInfo: { containerName, instanceName, storeName } } = internals;
-          return libState.stores[containerName].nested[storeName][instanceName!][prop];
-        } else if (topLevel && internals.mergedStoreInfo) {
-          return (libState.stores[internals.mergedStoreInfo] as any)[prop];
+          return libState.stores[containerName].nested[storeName][instanceName][prop];
+        } else if (topLevel && internals.mergedStoreInfo?.isMerged) {
+          return (libState.stores[internals.mergedStoreInfo.nameOfStoreToMergeInto] as any)[prop];
         } else if (['replace', 'patch', 'deepMerge', 'remove', 'increment', 'removeAll', 'replaceAll', 'patchAll', 'incrementAll', 'insertOne', 'insertMany', 'withOne', 'withMany'].includes(prop)) {
           return processPotentiallyAsyncUpdate({ storeName: name, stateActions, prop, batchActions });
         } else if ('invalidateCache' === prop) {

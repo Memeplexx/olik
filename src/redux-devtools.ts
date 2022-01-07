@@ -7,14 +7,11 @@ export function trackWithReduxDevtools<S>(
 ) {
   const internals = (store as StoreInternal<S>).internals;
 
-  // do not continue if this is a nested store
-  if (!!internals.nestedStoreInfo || !!internals.mergedStoreInfo) { return; }
+  // do not continue if store has been nested or merged
+  if (!!internals.nestedStoreInfo?.isNested || !!internals.mergedStoreInfo?.isMerged) { return; }
 
   // mock out the window object for testing purposes
-  let windowObj = window as any as WindowAugmentedWithReduxDevtools;
-  if (testState.fakeWindowObjectForReduxDevtools) {
-    windowObj = testState.fakeWindowObjectForReduxDevtools as WindowAugmentedWithReduxDevtools;
-  }
+  const windowObj = (testState.fakeWindowObjectForReduxDevtools || window) as WindowAugmentedWithReduxDevtools;
 
   // If user does not have devtools installed or enabled, warn & return.
   if (!windowObj.__REDUX_DEVTOOLS_EXTENSION__) {
@@ -28,8 +25,10 @@ export function trackWithReduxDevtools<S>(
   if (devTools) { return; }
 
   // Register devtools extension
-  devTools = windowObj.__REDUX_DEVTOOLS_EXTENSION__.connect(
-    Object.assign({ name: internals.storeName }, traceActions ? { trace: true, type: 'redux', traceLimit: 100 } : {}));
+  devTools = windowObj.__REDUX_DEVTOOLS_EXTENSION__.connect({
+    name: (internals.nestedStoreInfo && !internals.nestedStoreInfo.isNested) ? `${internals.storeName} | ${internals.nestedStoreInfo.instanceName}` : internals.storeName,
+    ...(traceActions ? { trace: true, type: 'redux', traceLimit: 100 } : {})
+  });
   devTools.init(store.state);
   internals.reduxDevtools = {
     instance: devTools,

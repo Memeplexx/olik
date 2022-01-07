@@ -6,19 +6,19 @@ export const mergeStoreIfPossible = <S>(
   { store, nameOfStoreToMergeInto }: OptionsForMergingAStore<S>
 ) => {
   const appStore = libState.stores[nameOfStoreToMergeInto];
+  const state = store.state;
+  const internals = (store as StoreInternal<any>).internals;
+  internals.mergedStoreInfo = { nameOfStoreToMergeInto, isMerged: !!appStore };
   if (!appStore) { return; }
   const wrapperState = appStore.state;
   if (['number', 'boolean', 'string'].some(type => typeof (wrapperState) === type) || Array.isArray(wrapperState)) {
     throw new Error(errorMessages.INVALID_EXISTING_STORE_FOR_MERGING);
   }
-  const state = store.state;
   if (['number', 'boolean', 'string'].some(type => typeof (state) === type) || Array.isArray(state)) {
     throw new Error(errorMessages.INVALID_MERGING_STORE);
   }
-  const internals = (store as StoreInternal<any>).internals;
   delete libState.stores[internals.storeName];
   const changeListeners = internals.changeListeners;
-  internals.mergedStoreInfo = nameOfStoreToMergeInto;
   changeListeners
     .forEach(({ actions, listener }) => {
       let node = appStore as any;

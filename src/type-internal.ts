@@ -27,6 +27,12 @@ export interface NestedStoreInfo {
   storeName: string,
   instanceName: string | number,
   containerName: string,
+  isNested: boolean,
+}
+
+export interface MergedStoreInfo {
+  nameOfStoreToMergeInto: string,
+  isMerged: boolean;
 }
 
 export interface StoreInternals<S> {
@@ -34,7 +40,7 @@ export interface StoreInternals<S> {
   state: S,
   changeListeners: ChangeListener[],
   nestedStoreInfo?: NestedStoreInfo,
-  mergedStoreInfo?: string;
+  mergedStoreInfo?: MergedStoreInfo;
   currentAction: { [key: string]: any },
   batchedAction: BatchedAction,
   reduxDevtools?: {

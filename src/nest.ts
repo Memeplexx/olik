@@ -6,15 +6,19 @@ export const nestStoreIfPossible = <S>(
   { store, instanceName, containerName }: OptionsForNestedAStore<S>,
 ): NestStoreRef => {
   const storeArg = store as StoreInternal<any>;
+  const nestedState = storeArg.state;
   const appStore = libState.stores[containerName || document.title];
-  if (!appStore) { return { detach: () => null }; }
+  const internals = storeArg.internals;
+  const nestedStoreName = internals.storeName;
+  internals.nestedStoreInfo = { storeName: nestedStoreName, instanceName, containerName, isNested: !!appStore };
+  if (!appStore) {
+    return { detach: () => null };
+  }
   const wrapperState = appStore.state;
   if (['number', 'boolean', 'string'].some(type => typeof (wrapperState) === type) || Array.isArray(wrapperState)) {
     throw new Error(errorMessages.INVALID_CONTAINER_FOR_COMPONENT_STORES);
   }
-  const internals = storeArg.internals;
-  const nestedStoreName = internals.storeName;
-  appStore.nested[nestedStoreName][instanceName].replace(storeArg.state);
+  appStore.nested[nestedStoreName][instanceName].replace(nestedState);
   internals.changeListeners
     .forEach(({ actions, listener }) => {
       let node = appStore.nested[nestedStoreName][instanceName];
@@ -23,7 +27,6 @@ export const nestStoreIfPossible = <S>(
       node.onChange(listener);
     })
   // TODO: delete old listeners?
-  internals.nestedStoreInfo = { storeName: nestedStoreName, instanceName, containerName };
   delete libState.stores[nestedStoreName];
   return {
     detach: () => {
