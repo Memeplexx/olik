@@ -1,4 +1,5 @@
-import { Augmentations, EnableAsyncActionsArgs } from './type';
+import { StoreLike } from '.';
+import { Augmentations, EnableAsyncActionsArgs, EnableNestedStoreArgs, NestStoreRef } from './type';
 import { StoreInternal, WindowAugmentedWithReduxDevtools } from './type-internal';
 
 export const errorMessages = {
@@ -9,9 +10,8 @@ export const errorMessages = {
   INVALID_EXISTING_STORE_FOR_MERGING: `The state which your existing store manages must be a non-array object in order to support merging`,
   INVALID_MERGING_STORE: `The store you're merging must be an non-array object in order for it to merge`,
   INVALID_STATE_INPUT: (illegal: any) => `State must be serializable as JSON. Value of '${illegal.toString()}' is not permitted`,
-  CANNOT_SET_DEFERRED_INSTANCE_NAME: 'Cannot set a deferred instance name unless the component store was initialized with an instanceName of Deferred',
-  CANNOT_SET_DEFERRED_INSTANCE_NAME_AGAIN: 'Cannot invoke setDeferredInstanceName() more than once',
   ASYNC_UPDATES_NOT_ENABLED: 'Cannot perform an async update until you enable it. Simply import and invoke `enableAsyncActionPayloads()` wherever your application initializes',
+  NESTED_STORES_NOT_ENABLED: 'Cannot nest this store until you enable nesting. Simply import and invoke `enableNesting()` wherever your application initializes',
 } as const;
 
 export const libState = {
@@ -19,6 +19,8 @@ export const libState = {
   isInsideTransaction: false,
   onInternalDispatch: () => null,
   asyncUpdate: undefined as undefined | ((args: EnableAsyncActionsArgs) => Promise<any>),
+  nestStore: undefined as undefined | ((args: EnableNestedStoreArgs) => any),
+  detachNestedStore: undefined as undefined | ((args: StoreLike<any>) => any),
 }
 
 export const testState = {

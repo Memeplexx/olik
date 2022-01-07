@@ -28,9 +28,11 @@ export const createStore = <S>(
     return new Proxy(s, {
       get: (target, prop: string) => {
         stateActions = topLevel ? new Array<StateAction>() : stateActions;
-        if (topLevel && !!internals.nestedStoreInfo?.isNested) {
-          const { nestedStoreInfo: { containerName, instanceName, storeName } } = internals;
-          return libState.stores[containerName].nested[storeName][instanceName][prop];
+        if ('internals' === prop) {
+          return internals;
+        } else if (topLevel && !!internals.nestedStoreInfo?.isNested) {
+          const { nestedStoreInfo: { containerName, instanceId, storeName } } = internals;
+          return libState.stores[containerName].nested[storeName][instanceId][prop];
         } else if (topLevel && internals.mergedStoreInfo?.isMerged) {
           return (libState.stores[internals.mergedStoreInfo.nameOfStoreToMergeInto] as any)[prop];
         } else if (['replace', 'patch', 'deepMerge', 'remove', 'increment', 'removeAll', 'replaceAll', 'patchAll', 'incrementAll', 'insertOne', 'insertMany', 'withOne', 'withMany'].includes(prop)) {
@@ -49,8 +51,6 @@ export const createStore = <S>(
               /* This can happen if a cache has already expired */
             }
           }
-        } else if ('internals' === prop) {
-          return internals;
         } else if ('upsertMatching' === prop) {
           stateActions.push({ type: 'upsertMatching', name: prop, actionType: prop });
           return recurseProxy({}, false, stateActions);
@@ -83,10 +83,16 @@ export const createStore = <S>(
       }
     });
   };
-  libState.stores[args.name] = recurseProxy({}, true, []);
-  libState.stores[args.name].state = args.state;
-  libState.stores[args.name].onChange(state => { if (libState.stores[internals.storeName]) { libState.stores[internals.storeName].state = state } });
-  return libState.stores[args.name] as any;
+  const store = recurseProxy({}, true, []);;
+  libState.stores[args.name] = store;
+  if (args.tryToNestWithinStore) {
+    if (!libState.nestStore) { throw new Error(errorMessages.NESTED_STORES_NOT_ENABLED); }
+    return libState.nestStore({ storeName: internals.storeName, containerName: args.tryToNestWithinStore });
+  } else {
+    store.state = args.state;
+    store.onChange((state: any) => store.state = state );
+    return libState.stores[args.name] as any;
+  }
 }
 
 export const validateState = (state: any) => {

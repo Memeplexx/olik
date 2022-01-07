@@ -5,12 +5,12 @@ import { StoreInternal } from './type-internal';
 export const mergeStoreIfPossible = <S>(
   { store, nameOfStoreToMergeInto }: OptionsForMergingAStore<S>
 ) => {
-  const appStore = libState.stores[nameOfStoreToMergeInto];
+  const existingStore = libState.stores[nameOfStoreToMergeInto];
   const state = store.state;
   const internals = (store as StoreInternal<any>).internals;
-  internals.mergedStoreInfo = { nameOfStoreToMergeInto, isMerged: !!appStore };
-  if (!appStore) { return; }
-  const wrapperState = appStore.state;
+  internals.mergedStoreInfo = { nameOfStoreToMergeInto, isMerged: !!existingStore };
+  if (!existingStore) { return; }
+  const wrapperState = existingStore.state;
   if (['number', 'boolean', 'string'].some(type => typeof (wrapperState) === type) || Array.isArray(wrapperState)) {
     throw new Error(errorMessages.INVALID_EXISTING_STORE_FOR_MERGING);
   }
@@ -21,11 +21,11 @@ export const mergeStoreIfPossible = <S>(
   const changeListeners = internals.changeListeners;
   changeListeners
     .forEach(({ actions, listener }) => {
-      let node = appStore as any;
+      let node = existingStore as any;
       actions.slice(0, actions.length - 1)
         .forEach(a => node = a.type === 'comparator' ? node[a.name](a.arg) : node[a.name]);
       node.onChange(listener);
     });
     changeListeners.length = 0;
-  (appStore as any).deepMerge(state);
+  (existingStore as any).deepMerge(state);
 }

@@ -456,21 +456,11 @@ export interface OptionsForMakingAStore<S> {
    * The default value is `0`.
    */
   batchActions?: number;
-}
-
-export interface OptionsForNestedAStore<S> {
   /**
-   * The store to be nested
+   * The name of the store in which this store should be nested.
+   * This will be ignored if the library could not find a store matching the name provided.
    */
-  store: StoreLike<S>,
-  /**
-   * The name that will distinguish instances of this store
-   */
-  instanceName: string | number,
-  /**
-   * The name of the store in which this store should be nested
-   */
-  containerName: string,
+  tryToNestWithinStore?: string;
 }
 
 export interface OptionsForMergingAStore<S> {
@@ -515,6 +505,11 @@ export interface EnableAsyncActionsArgs {
   cacheFor?: number,
   optimisticallyUpdateWith?: any,
   arg: any,
+}
+
+export interface EnableNestedStoreArgs {
+  storeName: string;
+  containerName: string;
 }
 
 export type Store<S> = (S extends Array<any> ? UpdatableArray<S, 'isFilter', 'notQueried', MaxRecursionDepth>
