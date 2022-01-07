@@ -83,7 +83,10 @@ export const createStore = <S>(
       }
     });
   };
-  return libState.stores[name] = Object.assign(recurseProxy({}, true, []));
+  libState.stores[name] = recurseProxy({}, true, []);
+  libState.stores[name].state = state;
+  libState.stores[name].onChange(state => { if (libState.stores[name]) { libState.stores[name].state = state } });
+  return libState.stores[name] as any;
 }
 
 export const validateState = (state: any) => {
