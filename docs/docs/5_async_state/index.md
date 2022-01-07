@@ -4,7 +4,7 @@ sidebar_label: 'Async state'
 
 # Async state
 
-#### Instead of updating state with a **value**, you can update it with a **promise**:
+#### Instead of updating state with a **value**, you can update it with a function returning a **promise**.
 
 🥚 Let's begin with the following store:
 ```ts
@@ -23,14 +23,6 @@ const get = createStore({
 
 // 2. import the ability to dispatch promises as payloads
 enableAsyncActionPayloads();
-```
-
-### **Listening** to state changes
-You can receive events when a selected node is updated as follows.  
-*(Remember to **always** unsubscribe to avoid a memory leak).*
-```ts
-const subscription = get.user.onChange(u => console.log(u));
-subscription.unsubscribe();
 ```
 
 ### **Fetching** state
@@ -55,13 +47,9 @@ get.todos
 ```
 [**Demo 🥚**](https://codesandbox.io/s/writing-async-state-r8rs6?file=/src/index.ts)
 
----
-
 ### **Framework-specific** APIs:
 * [**React**](react)
 * [**Angular**](angular)
-
----
 
 ### **Caching** data
 The library uses your store as a cache and can avoid re-fetching for a specified period.

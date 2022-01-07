@@ -1,10 +1,6 @@
 ---
-layout: default
-title: React
-nav_order: 1
-has_children: false
-permalink: /docs/async-state/react
-parent: Async state
+sidebar_label: 'React'
+sidebar_position: 1
 ---
 
 # Nesting stores with React
@@ -12,12 +8,12 @@ parent: Async state
 🥚 Let's begin with the following store:
 
 ```ts
-import { createApplicationStore } from 'olik-react'
+import { createStore } from 'olik-react'
 
-export const select = createApplicationStore({ /* initial application state */ })
+export const store = createStore({ /* initial application state */ })
 ```
 
-### **Creating** a component store
+### **Creating** and nesting a store
 The `useNestedStore()` hook returns a store which will exist for the lifetime of your component
 ```tsx
 const IncrementorComponent = (props: { id: number }) => {

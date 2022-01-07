@@ -9,58 +9,73 @@ sidebar_position: 3
 
 🥚 Let's begin with the following store:
 ```ts
-const get = createStore({
-  user: {
-    firstName: '',
-    lastName: '',
-    job: { title: '', contractor: false },
-  },
-  todos: new Array<{ id: number, name: string, done: boolean, urgency: number }>(),
+const store = createStore({
+  name: 'MyStore',
+  state: {
+    user: {
+      firstName: '',
+      lastName: '',
+      job: { title: '', contractor: false },
+    },
+    todos: new Array<{ id: number, name: string, done: boolean, urgency: number }>(),
+  }
 });
 ```
 ### Writing **object and primitive** nodes
 ```ts
-// Replace user's age with 29
-get.user.age.replace(29)
-```
-```ts
-// Increment user's age by 1
-get.user.age.increment(1)
-```
-```ts
-// Update some, but not all, user's details
-get.user.patch({ firstName: 'Jeff', lastName: 'Anderson' })
-```
-```ts
-// Deep-merge user object
-get.user.deepMerge({ age: 21, job: { contractor: true } } )
+// REPLACE USERS AGE WITH 29
+store.user.age
+  .replace(29)
+
+// INCREMENT USERS AGE BY 1
+store.user.age
+  .increment(1)
+
+// UPDATE SOME, BUT NOT ALL, USERS DETAILS
+store.user
+  .patch({ firstName: 'Jeff', lastName: 'Anderson' })
+
+// DEEP-MERGE USER OBJECT
+store.user
+  .deepMerge({ age: 21, job: { contractor: true } } )
 ```
 
 ### Writing **array** nodes
 
 ```ts
-// Replace all elements in an array
-get.todos.replaceAll(arrayOfTodos)
-```
-```ts
-// Remove all elements from an array
-get.todos.removeAll()
-```
-```ts
-// Insert one element into the existing array
-get.todos.insertOne(todo)
-```
-```ts
-// Insert an array of elements into the existing array
-get.todos.insertMany(arrayOfTodos)
-```
-```ts
-// Insert an element (if it does not already exist) or update it (if it does)
-get.todos.upsertMatching.id.withOne(todo)
-```
-```ts
-// Insert elements (if they do not already exist) or update them (if they do)
-get.todos.upsertMatching.id.withMany(arrayOfTodos)
+// REPLACE ALL TODOS
+store.todos
+  .replaceAll(arrayOfTodos)
+
+// REMOVE ALL TODOS
+store.todos
+  .removeAll()
+
+// INSERT ONE TODO
+store.todos
+  .insertOne(todo)
+
+// INSERT MANY TODOS
+store.todos
+  .insertMany(arrayOfTodos)
+
+// INSERT ONE TODO (IF IT DOES NOT ALREADY EXIST) OR UPDATE IT (IF IT DOES)
+store.todos
+  .upsertMatching.id
+  .withOne(todo)
+
+// INSERT MANY TODOS (IF THEY DOES NOT ALREADY EXIST) OR UPDATE THEM (IF THEY DO)
+store.todos
+  .upsertMatching.id
+  .withMany(arrayOfTodos)
+
+// MARK ALL TODOS AS DONE
+store.todos.done
+  .replaceAll(true)
+
+// INCREMENT URGENCY OF ALL TODOS BY 1
+store.todos.done
+  .incrementAll(1)  
 ```
 
 ### Writing **array element** nodes
@@ -68,20 +83,31 @@ In order for the library to generate highly descriptive action types, searching 
 Note: in the following examples `find()` is interchangeable with `filter()`.  
 
 ```ts
-// Replace an array element
-get.todos.find.id.eq(3).replace(todo)
-```
-```ts
-// Remove an array element
-get.todos.find.id.eq(3).remove()
-```
-```ts
-// Partially update an array element
-get.todos.find.id.eq(3).patch({ done: true })
-```
-```ts
-// Apply multiple search clauses and comparators
-get.todos.filter.done.eq(true).or.urgency.lt(3).remove()
+// FIND A TODO BY ITS ID AND REPLACE IT
+store.todos
+  .find.id.eq(3)
+  .replace(todo)
+
+// FIND A TODO BY ITS ID AND REMOVE IT
+store.todos
+  .find.id.eq(3)
+  .remove()
+
+// FIND A TODO BY ITS ID AND PARTIALLY UPDATE AN IT
+store.todos
+  .find.id.eq(3)
+  .patch({ done: true, urgency: 1 })
+
+// FIND A TODO BY ITS ID AND REPLACE ITS URGENCY
+store.todos
+  .find.id.eq(3)
+  .urgency
+  .replace(5)
+
+// APPLY MULTIPLE SEARCH CLAUSES WITH DIFFERENT COMPARATORS
+store.todos
+  .filter.done.eq(true).or.urgency.lt(3)
+  .remove()
 ```
 
 ---
@@ -92,7 +118,7 @@ Avoid unnecessary render cycles by performing many updates at once.
 import { transact } from /* whichever version of olik you've installed */
 
 transact(
-  () => get.user.patch({ firstName: 'James', lastName: 'White' }),
-  () => get.todos.removeAll(),
+  () => store.user.patch({ firstName: 'James', lastName: 'White' }),
+  () => store.todos.removeAll(),
 )
 ```

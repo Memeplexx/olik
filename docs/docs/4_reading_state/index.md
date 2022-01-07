@@ -11,10 +11,22 @@ sidebar_label: 'Reading state'
 ### **Synchronous** reads  
 The following statements are equivalent to each other:
 ```ts
-const todos = get.todos.state;
+const todos = store.todos.state;
 ```
 ```ts
-const todos = get.state.todos;
+const todos = store.state.todos;
 ```
 
 
+### **Listening** to state changes
+You can receive events when a selected node is updated as follows.  
+*(Remember to **always** unsubscribe to avoid a memory leak).*
+```ts
+const sub = store.user
+  .onChange(u => console.log(u));
+sub.unsubscribe();
+```
+
+### **Framework-specific** APIs:
+* [**React**](react)
+* [**Angular**](angular)

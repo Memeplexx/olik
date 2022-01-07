@@ -1,10 +1,6 @@
 ---
-layout: default
-title: Angular
-nav_order: 2
-has_children: false
-permalink: /docs/async-state/angular
-parent: Async state
+sidebar_label: 'Angular'
+sidebar_position: 2
 ---
 
 # Handling async state with Angular

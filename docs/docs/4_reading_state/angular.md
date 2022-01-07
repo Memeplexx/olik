@@ -9,7 +9,7 @@ sidebar_position: 2
 
 🥚 Let's begin with the following store:
 ```ts
-const get = createStore({
+const store = createStore({
   name: document.title,
   state: {
     todos: new Array<{ id: number, title: string, done: boolean }>(),
@@ -25,10 +25,10 @@ You can observe a selected node of your state tree using the `observe()` functio
   {{todo.title}}
 </div>
 ```
-```ts
+```ts {4}
 @Component({...})
 class MyComponent {
-  todos$ = get.todos
+  todos$ = store.todos
     .observe();
 }
 ```
@@ -36,12 +36,12 @@ class MyComponent {
 
 ### **Derive** computationally expensive state
 The `derive()` function allows you to derive computationally expensive state.
-```ts
-import { deriveFrom } from 'olik-ng';
+```ts {5-7}
+import { derive } from 'olik-ng';
 
 @Component({...})
 class MyComponent {
-  completedTodos$ = derive((get.todos, get.showDone)
+  completedTodos$ = derive(store.todos, store.showDone)
     .with((todos, showDone) => todos.filter(todo => todo.done === showDone))
     .observe();
 }

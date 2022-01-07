@@ -1,10 +1,6 @@
 ---
-layout: default
-title: React
-nav_order: 1
-has_children: false
-permalink: /docs/async-state/react
-parent: Async state
+sidebar_label: 'React'
+sidebar_position: 1
 ---
 
 # Handling async state with React
