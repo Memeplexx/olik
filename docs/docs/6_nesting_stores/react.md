@@ -8,14 +8,12 @@ sidebar_position: 1
 🥚 Let's begin with the following store:
 
 ```ts
-import { createStore } from 'olik-react'
-
 export const store = createStore({
   name: document.title,
   state: { str: '' }
 })
 
-trackWitHReduxDevtools({ store })
+trackWithReduxDevtools({ store })
 ```
 
 ### **Creating** and nesting a store
@@ -29,7 +27,8 @@ const IncrementorComponent = (props: { id: number }) => {
     containerName: document.title,
     state: { num: 0 }
   })
-  React.useMemo(() => trackWithReduxDevtools({ store: nested }), []);
+
+  React.useMemo(() => trackWithReduxDevtools({ store: nested }), [nested]);
 
   const num = nested.num.useState();
 

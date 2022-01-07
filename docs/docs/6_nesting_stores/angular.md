@@ -8,25 +8,21 @@ sidebar_position: 2
 🥚 Let's begin with the following store:
 
 ```ts
-import { createStore } from 'olik-ng'
-
 export const store = createStore({
   name: document.title,
   state: { str: '' }
 })
 
-trackWitHReduxDevtools({ store })
+trackWithReduxDevtools({ store })
 ```
 
 ### **Creating** and nesting a store
 ```ts 
-import { createStore } from 'olik-ng';
-
 @Component({ ... })
 export class IncrementorComponent implements OnInit, OnDestroy {
 
   store = createStore({ name: 'Incrementor', state: { num: 0 } })
-  nestStoreRef: NestStoreRef;
+  nestStoreRef?: NestStoreRef;
   @Input() id: number;
 
   ngOnInit() {
@@ -43,3 +39,4 @@ export class IncrementorComponent implements OnInit, OnDestroy {
   }
 }
 ```
+[**Demo 🥚**](https://codesandbox.io/s/olik-ng-nested-stores-gt4bg?file=/src/app/incrementor/incrementor.component.ts]
