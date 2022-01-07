@@ -26,7 +26,8 @@ export function trackWithReduxDevtools<S>(
 
   // Register devtools extension
   devTools = windowObj.__REDUX_DEVTOOLS_EXTENSION__.connect({
-    name: (internals.nestedStoreInfo && !internals.nestedStoreInfo.isNested) ? `${internals.storeName} | ${internals.nestedStoreInfo.instanceName}` : internals.storeName,
+    // name: (internals.nestedStoreInfo && !internals.nestedStoreInfo.isNested) ? `${internals.storeName} | ${internals.nestedStoreInfo.instanceName}` : internals.storeName,
+    name: internals.storeName,
     ...(traceActions ? { trace: true, type: 'redux', traceLimit: 100 } : {})
   });
   devTools.init(store.state);

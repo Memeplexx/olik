@@ -8,13 +8,13 @@ import { setNewStateAndNotifyListeners } from './write-complete';
 
 
 export const createStore = <S>(
-  { name, state, batchActions }: OptionsForMakingAStore<S>
+  args: OptionsForMakingAStore<S>
 ): Store<S> => {
-  validateState(state);
-  removeStaleCacheReferences(state);
+  validateState(args.state);
+  removeStaleCacheReferences(args.state);
   const internals = {
-    storeName: name,
-    state: JSON.parse(JSON.stringify(state)),
+    storeName: args.name,
+    state: JSON.parse(JSON.stringify(args.state)),
     changeListeners: [],
     currentAction: { type: '' },
     batchedAction: {
@@ -34,7 +34,7 @@ export const createStore = <S>(
         } else if (topLevel && internals.mergedStoreInfo?.isMerged) {
           return (libState.stores[internals.mergedStoreInfo.nameOfStoreToMergeInto] as any)[prop];
         } else if (['replace', 'patch', 'deepMerge', 'remove', 'increment', 'removeAll', 'replaceAll', 'patchAll', 'incrementAll', 'insertOne', 'insertMany', 'withOne', 'withMany'].includes(prop)) {
-          return processPotentiallyAsyncUpdate({ storeName: name, stateActions, prop, batchActions });
+          return processPotentiallyAsyncUpdate({ storeName: internals.storeName, stateActions, prop, batchActions: args.batchActions });
         } else if ('invalidateCache' === prop) {
           return () => {
             const actionType = stateActions.map(sa => sa.actionType).join('.');
@@ -44,7 +44,7 @@ export const createStore = <S>(
               { type: 'action', name: 'remove', actionType: 'remove()' },
             ] as StateAction[];
             try {
-              setNewStateAndNotifyListeners({ storeName: name, batchActions, stateActions: newStateActions });
+              setNewStateAndNotifyListeners({ storeName: internals.storeName, batchActions: args.batchActions, stateActions: newStateActions });
             } catch (e) {
               /* This can happen if a cache has already expired */
             }
@@ -83,10 +83,10 @@ export const createStore = <S>(
       }
     });
   };
-  libState.stores[name] = recurseProxy({}, true, []);
-  libState.stores[name].state = state;
-  libState.stores[name].onChange(state => { if (libState.stores[name]) { libState.stores[name].state = state } });
-  return libState.stores[name] as any;
+  libState.stores[args.name] = recurseProxy({}, true, []);
+  libState.stores[args.name].state = args.state;
+  libState.stores[args.name].onChange(state => { if (libState.stores[internals.storeName]) { libState.stores[internals.storeName].state = state } });
+  return libState.stores[args.name] as any;
 }
 
 export const validateState = (state: any) => {

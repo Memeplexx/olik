@@ -12,6 +12,10 @@ export const nestStoreIfPossible = <S>(
   const nestedStoreName = internals.storeName;
   internals.nestedStoreInfo = { storeName: nestedStoreName, instanceName, containerName, isNested: !!appStore };
   if (!appStore) {
+    delete libState.stores[nestedStoreName];
+    const storeName = `${nestedStoreName} | ${instanceName}`;
+    storeArg.internals.storeName = storeName;
+    libState.stores[storeName] = storeArg;
     return { detach: () => null };
   }
   const wrapperState = appStore.state;
