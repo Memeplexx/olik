@@ -36,7 +36,7 @@ export const createStore = <S>(
         } else if (topLevel && internals.mergedStoreInfo?.isMerged) {
           return (libState.stores[internals.mergedStoreInfo.nameOfStoreToMergeInto] as any)[prop];
         } else if (['replace', 'patch', 'deepMerge', 'remove', 'increment', 'removeAll', 'replaceAll', 'patchAll', 'incrementAll', 'insertOne', 'insertMany', 'withOne', 'withMany'].includes(prop)) {
-          return processPotentiallyAsyncUpdate({ storeName: internals.storeName, stateActions, prop, batchActions: args.batchActions });
+          return processPotentiallyAsyncUpdate({ storeName: internals.storeName, stateActions, prop });
         } else if ('invalidateCache' === prop) {
           return () => {
             const actionType = stateActions.map(sa => sa.actionType).join('.');
@@ -46,7 +46,7 @@ export const createStore = <S>(
               { type: 'action', name: 'remove', actionType: 'remove()' },
             ] as StateAction[];
             try {
-              setNewStateAndNotifyListeners({ storeName: internals.storeName, batchActions: args.batchActions, stateActions: newStateActions });
+              setNewStateAndNotifyListeners({ storeName: internals.storeName, stateActions: newStateActions });
             } catch (e) {
               /* This can happen if a cache has already expired */
             }
@@ -86,8 +86,8 @@ export const createStore = <S>(
   const store = recurseProxy({}, true, []);
   libState.stores[args.name] = store;
   if (args.trackWithReduxDevtools) {
-    if (!libState.reduxDevtools) { throw new Error(errorMessages.REDUX_DEVTOOLS_NOT_ENABLED); }
-    libState.reduxDevtools(internals.storeName);
+    if (!libState.initializeReduxDevtools) { throw new Error(errorMessages.REDUX_DEVTOOLS_NOT_ENABLED); }
+    libState.initializeReduxDevtools(internals.storeName);
   }
   if (args.tryToNestWithinStore) {
     if (!libState.nestStore) { throw new Error(errorMessages.NESTED_STORES_NOT_ENABLED); }

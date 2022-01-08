@@ -5,7 +5,7 @@ import { setNewStateAndNotifyListeners } from './write-complete';
 
 export const enableAsyncActionPayloads = () => {
   libState.asyncUpdate = (
-    { storeName, stateActions, batchActions, prop, cacheFor, optimisticallyUpdateWith, arg }: EnableAsyncActionsArgs
+    { storeName, stateActions, prop, cacheFor, optimisticallyUpdateWith, arg }: EnableAsyncActionsArgs
   ) => {
     if (libState.isInsideTransaction) { throw new Error(errorMessages.ASYNC_PAYLOAD_INSIDE_TRANSACTION); }
     const readCurrentState = () =>
@@ -31,13 +31,13 @@ export const enableAsyncActionPayloads = () => {
       let snapshot: any = undefined;
       if (optimisticallyUpdateWith) {
         snapshot = readCurrentState();
-        setNewStateAndNotifyListeners({ storeName, batchActions, stateActions: [...stateActions, { type: 'action', name: prop, arg: optimisticallyUpdateWith, actionType: `${prop}()` }] });
+        setNewStateAndNotifyListeners({ storeName, stateActions: [...stateActions, { type: 'action', name: prop, arg: optimisticallyUpdateWith, actionType: `${prop}()` }] });
       }
       state = { ...state, storeValue: readCurrentState() };
       const promise = (augmentations.async ? augmentations.async(arg) : arg()) as Promise<any>;
       return promise
         .then(promiseResult => {
-          setNewStateAndNotifyListeners({ storeName, batchActions, stateActions: [...stateActions, { type: 'action', name: prop, arg: promiseResult, actionType: `${prop}()` }] });
+          setNewStateAndNotifyListeners({ storeName, stateActions: [...stateActions, { type: 'action', name: prop, arg: promiseResult, actionType: `${prop}()` }] });
           state = { ...state, wasResolved: true, wasRejected: false, isLoading: false, storeValue: readCurrentState() };
           if (cacheFor) {
             const statePath = stateActions.map(sa => sa.actionType).join('.');
@@ -45,10 +45,10 @@ export const enableAsyncActionPayloads = () => {
               { type: 'property', name: 'cache', actionType: 'cache' },
               { type: 'property', name: statePath, actionType: statePath },
             ] as StateAction[];
-            setNewStateAndNotifyListeners({ storeName, batchActions, stateActions: [...actions, { type: 'action', name: 'replace', arg: toIsoStringInCurrentTz(new Date()), actionType: 'replace()' }] });
+            setNewStateAndNotifyListeners({ storeName, stateActions: [...actions, { type: 'action', name: 'replace', arg: toIsoStringInCurrentTz(new Date()), actionType: 'replace()' }] });
             setTimeout(() => {
               try {
-                setNewStateAndNotifyListeners({ storeName, batchActions, stateActions: [...actions, { type: 'action', name: 'remove', actionType: 'remove()' }] })
+                setNewStateAndNotifyListeners({ storeName, stateActions: [...actions, { type: 'action', name: 'remove', actionType: 'remove()' }] })
               } catch (e) {
                 // Ignoring. This may happen due to the user manually invalidating a cache. If that has happened, we don't want an error to be thrown.
               }
@@ -57,7 +57,7 @@ export const enableAsyncActionPayloads = () => {
           return readCurrentState();
         }).catch(error => {
           if (snapshot !== undefined) {
-            setNewStateAndNotifyListeners({ storeName, batchActions, stateActions: [...stateActions, { type: 'action', name: prop, arg: snapshot, actionType: `${prop}()` }] });
+            setNewStateAndNotifyListeners({ storeName, stateActions: [...stateActions, { type: 'action', name: prop, arg: snapshot, actionType: `${prop}()` }] });
           }
           state = { ...state, wasRejected: true, wasResolved: false, isLoading: false, error };
           throw error;

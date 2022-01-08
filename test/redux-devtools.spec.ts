@@ -75,7 +75,8 @@ describe('devtools', () => {
 
   it('should throttle tightly packed updates', done => {
     const state = { test: 0 };
-    const select = createStore({ name, state, batchActions: 200, trackWithReduxDevtools: true });
+    const select = createStore({ name, state, trackWithReduxDevtools: true });
+    enableReduxDevtools({  batchActions: 200 })
     const payload: number[] = [];
     const updateCount = 6;
     for (let i = 0; i < updateCount; i++) {

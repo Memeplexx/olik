@@ -448,15 +448,6 @@ export interface OptionsForMakingAStore<S> {
    */
   state: S,
   /**
-   * Sometimes actions with the same `type` may be dispatched many times in a short period.
-   * An example of this might be tracking the users mouse cursor position.
-   * To prevent these actions from spamming the debug logs, we can 'batch' those actions
-   * that have an identical `type` for a specific number of milliseconds.
-   * This effectively acts like a 'throttle' + 'debounce'.
-   * The default value is `0`.
-   */
-  batchActions?: number;
-  /**
    * The name of the store in which this store should be nested.
    * This will be ignored if the library could not find a store matching the name provided.
    */
@@ -494,13 +485,21 @@ export interface ReduxDevtoolsOptions {
    * 
    * Default value is `6`
    */
-  limitSearchArgLength?: number
+  limitSearchArgLength?: number;
+  /**
+   * Sometimes actions with the same `type` may be dispatched many times in a short period.
+   * An example of this might be tracking the users mouse cursor position.
+   * To prevent these actions from spamming the debug logs, we can 'batch' those actions
+   * that have an identical `type` for a specific number of milliseconds.
+   * This effectively acts like a 'throttle' + 'debounce'.
+   * The default value is `0`.
+   */
+   batchActions?: number;
 }
 
 export interface EnableAsyncActionsArgs {
   storeName: string,
   stateActions: StateAction[],
-  batchActions?: number,
   prop: string,
   cacheFor?: number,
   optimisticallyUpdateWith?: any,

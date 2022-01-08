@@ -22,11 +22,13 @@ export const libState = {
   asyncUpdate: undefined as undefined | ((args: EnableAsyncActionsArgs) => Promise<any>),
   nestStore: undefined as undefined | ((args: EnableNestedStoreArgs) => any),
   detachNestedStore: undefined as undefined | ((args: StoreLike<any>) => any),
-  reduxDevtools: undefined as undefined | ((storeName: string) => any),
+  initializeReduxDevtools: undefined as undefined | ((storeName: string) => any),
+  dispatchToReduxDevtools: undefined as undefined | ((storeName: string) => any),
+  // reduxDevtools: undefined as undefined | { init: ((storeName: string) => any), dispatch: ((storeName: string) => any) }
 }
 
 export const testState = {
-  currentActionForReduxDevtools: { } as { [type: string]: string },
+  currentActionForReduxDevtools: {} as { [type: string]: string },
   fakeWindowObjectForReduxDevtools: null as null | WindowAugmentedWithReduxDevtools,
   logLevel: 'none' as ('debug' | 'none'),
 }
