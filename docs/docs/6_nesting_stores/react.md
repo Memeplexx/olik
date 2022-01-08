@@ -7,34 +7,26 @@ sidebar_position: 1
 
 🥚 Let's begin with the following store:
 
-```ts
+```ts {6}
 export const store = createStore({
   name: document.title,
   state: { str: '' }
 })
 
-trackWithReduxDevtools({ store })
+enableNesting()
 ```
 
-### **Creating** and nesting a store
+### **Creating** a nested a store
 The `useNestedStore()` hook returns a store which will exist for the lifetime of your component
-```tsx
+```tsx {5}
 const IncrementorComponent = (props: { id: number }) => {
-
-  const nested = useNestedStore({
+  const nestedStore = useNestedStore({
     name: 'Incrementor',
     tryToNestWithinStore: document.title,
-    state: { num: 0 }
+    state: { num: 0 },
   })
 
-  React.useMemo(() => trackWithReduxDevtools({ store: nested }), [nested]);
-
-  const num = nested.num.useState();
-
-  return (
-    <button onClick={() => nested.num.increment(1)}>+</button>
-    <div>Result: {num}</div>
-  )
+  return (/* rendered content */)
 }
 ```
 [**Demo 🥚**](https://codesandbox.io/s/olik-react-nested-stores-ve6lj?file=/src/App.tsx)

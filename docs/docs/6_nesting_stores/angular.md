@@ -7,36 +7,29 @@ sidebar_position: 2
 
 🥚 Let's begin with the following store:
 
-```ts
+```ts {6}
 export const store = createStore({
   name: document.title,
-  state: { str: '' }
+  state: { str: '' },
 })
 
-trackWithReduxDevtools({ store })
+enableNesting()
 ```
 
-### **Creating** and nesting a store
-```ts 
+### **Creating** a nested a store
+```ts {6,11}
 @Component({ ... })
-export class IncrementorComponent implements OnInit, OnDestroy {
+export class IncrementorComponent implements OnDestroy {
 
-  store = createStore({ name: 'Incrementor', state: { num: 0 } })
-  nestStoreRef?: NestStoreRef;
-  @Input() id: number;
-
-  ngOnInit() {
-    this.nestStoreRef = nestStoreIfPossible({
-      store: this.store,
-      containerName: document.title,
-      instanceName: this.id,
-    })
-    trackWithReduxDevtools({ store: this.store });
-  }
+  nestedStore = createStore({
+    name: 'Incrementor',
+    tryToNestWithinStore: document.title,
+    state: { num: 0 },
+  })
 
   ngOnDestroy() {
-    this.nestStoreRef?.detach();
+    detachNestedStore(this.nestedStore)
   }
 }
 ```
-[**Demo 🥚**](https://codesandbox.io/s/olik-ng-nested-stores-gt4bg?file=/src/app/incrementor/incrementor.component.ts]
+[**Demo 🥚**](https://codesandbox.io/s/olik-ng-nested-stores-gt4bg?file=/src/app/incrementor/incrementor.component.ts)

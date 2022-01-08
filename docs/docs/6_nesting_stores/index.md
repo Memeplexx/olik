@@ -11,29 +11,31 @@ sidebar_label: 'Nesting stores'
 
 #### Application store:
 ```ts
-import { createStore, trackWithReduxDevtools } from 'olik'
+import { createStore, enableNesting } from 'olik'
 
-const store = createStore({ name: document.title, state: { str: '' } })
-trackWithReduxDevtools({ store })
+const store = createStore({
+  name: document.title,
+  state: { str: '' },
+})
+
+enableNesting()
 ```
 
 #### Component store:
 ```ts
-import { createStore, nestStoreIfPossible, trackWithReduxDevtools } from 'olik'
+import { createStore, detachNestedStore } from 'olik'
 
 class MyComponent {
 
   // Define store to manage component state & attempt to nest it
-  const nested = createStore({ name: 'MyComponent', state: { num: 0 } })
-  const ref = nestStoreIfPossible(
-    { store: nested, containerName: document.title, instanceName: 1 })
-
-  // This will register a new instance within Redux Devtools 
-  // if container store could not be not found
-  trackWithReduxDevtools({ store: nested })
-
+  const nestedStore = createStore({
+    name: 'MyComponent',
+    tryNestWithinStore: document.title,
+    state: { num: 0 }.
+  })
+  
   // Detach store from container when it is no longer being used
-  onComponentDestroyed = () => ref.detach()
+  onComponentDestroyed = () => detachNestedStore(this.nestedStore)
 }
 ```
 

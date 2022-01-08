@@ -17,7 +17,7 @@ export const setNewStateAndNotifyListeners = (
       listener(selectedNewState);
     }
   })
-  if (libState.reduxDevtools) {
+  if (!!libState.reduxDevtools && !!internals.reduxDevtools) {
     libState.reduxDevtools.dispatch(storeName);
   }
 }
