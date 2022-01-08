@@ -17,4 +17,4 @@ export const deepFreeze = <T extends Object>(o: T): T => {
 
 export const getStoreByName = (name: string) => libState.stores[name];
 
-export const listenToDevtoolsDispatch = (onDispatch: () => any) => libState.onInternalDispatch = onDispatch;
+

@@ -37,19 +37,7 @@ export function enableReduxDevtools(
         ...(traceActions ? { trace: true, type: 'redux', traceLimit: 100 } : {})
       });
       devTools.init(store.state);
-      internals.reduxDevtools = {
-        instance: devTools,
-        dispatcher: (action: any) => {
-          const newAction = {
-            ...action,
-            type: (action.type as string)
-              .replace(/\((.+?)\)/g, (substring, args) => `(${args.toString().substring(0, limitSearchArgLength || 6)})`),
-          };
-          testState.currentActionForReduxDevtools = newAction;
-          devTools!.send(newAction, store.state);
-        },
-        disableDispatch: false,
-      };
+      internals.reduxDevtools = { instance: devTools, disableDispatch: false };
   
       const setState = (state: any) => {
         internals.reduxDevtools!.disableDispatch = true;
@@ -103,11 +91,17 @@ export function enableReduxDevtools(
       const internals = store.internals;
   
       // Dispatch to devtools
-      if (internals.reduxDevtools?.dispatcher && !internals.reduxDevtools.disableDispatch) {
+      if (internals.reduxDevtools && !internals.reduxDevtools.disableDispatch) {
         const currentAction = internals.currentAction;
         const dispatchToDevtools = (batched?: any[]) => {
           const action = batched ? { ...currentAction, batched } : currentAction;
-          internals.reduxDevtools!.dispatcher(action);
+          const newAction = {
+            ...action,
+            type: (action.type as string)
+              .replace(/\((.+?)\)/g, (substring, args) => `(${args.toString().substring(0, limitSearchArgLength || 6)})`),
+          };
+          testState.currentActionForReduxDevtools = newAction;
+          internals.reduxDevtools?.instance.send(newAction, store.state);
         }
   
         // if the user is not batching actions, simply dispatch immediately, and return
@@ -139,9 +133,9 @@ export function enableReduxDevtools(
       }
     }
   }
-
 }
 
+export const listenToDevtoolsDispatch = (onDispatch: () => any) => libState.onInternalDispatch = onDispatch;
 
 // ref: https://medium.com/@zalmoxis/redux-devtools-without-redux-or-how-to-have-a-predictable-state-with-any-architecture-61c5f5a7716f
 // ref: https://github.com/zalmoxisus/redux-devtools-extension/blob/master/docs/API/Methods.md#listen

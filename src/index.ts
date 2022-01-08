@@ -3,8 +3,8 @@ export { augment } from './augment';
 export { derive } from './derive';
 export { transact } from './transact';
 export { enableNesting, detachNestedStore } from './nest';
-export { enableReduxDevtools } from './redux-devtools';
+export { enableReduxDevtools, listenToDevtoolsDispatch } from './redux-devtools';
 export { mergeStoreIfPossible } from './merge';
-export { getStoreByName, listenToDevtoolsDispatch } from './utility';
+export { getStoreByName } from './utility';
 export { enableAsyncActionPayloads } from './write-async'
 export * from './type';

@@ -1,5 +1,5 @@
-import { ReduxDevtoolsOptions, StoreLike } from '.';
-import { Augmentations, EnableAsyncActionsArgs, EnableNestedStoreArgs, NestStoreRef } from './type';
+import { StoreLike } from '.';
+import { Augmentations, EnableAsyncActionsArgs, EnableNestedStoreArgs } from './type';
 import { StoreInternal, WindowAugmentedWithReduxDevtools } from './type-internal';
 
 export const errorMessages = {

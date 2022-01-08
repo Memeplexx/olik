@@ -45,7 +45,6 @@ export interface StoreInternals<S> {
   batchedAction: BatchedAction,
   reduxDevtools?: {
     instance: DevtoolsInstance,
-    dispatcher: (action: any) => any,
     disableDispatch: boolean,
   },
 }
