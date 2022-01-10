@@ -11,9 +11,6 @@ sidebar_position: 1
 
 🥚 Let's begin with the following store:
 ```ts
-import { createStore } from 'olik'
-
-
 const store = createStore({
   name: document.title,
   state: {
@@ -26,9 +23,11 @@ const store = createStore({
 ### Reading state
 ```tsx
 export function App() {
-  const todos = store.todos.useState();
 
-  return todos.map(todo => (<div key={todo.id}>{todo.name}</div>));
+  const todos = store.todos
+    .useState();
+
+  return (/* rendered content */);
 }
 ```
 [**Demo - no deps 🥚**](https://codesandbox.io/s/olik-react-usestate-hook-d3z0y?file=/src/App.tsx) &nbsp;&nbsp;&nbsp; [**Demo - with deps 🥚**](https://codesandbox.io/s/olik-react-usestate-with-deps-7pf9d?file=/src/App.tsx)
@@ -36,11 +35,12 @@ export function App() {
 ### Deriving computationally expensive state
 ```tsx
 export function App() {
+  
   const todos = derive(store.todos, store.showDone)
     .with((todos, showDone) => todos.filter(todo => todo.done === showDone))
     .useState()
 
-  return todos.map(todo => (<div key={todo.id}>{todo.name}</div>));
+  return (/* rendered content */);
 }
 ```
 

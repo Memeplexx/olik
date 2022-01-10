@@ -4,24 +4,25 @@ sidebar_label: 'Nesting stores'
 
 # Nesting stores
 
-#### A component-level store may be 'nested' inside an application-level store so that you can track your component state within your application state. 
+#### You can nest a component-level store within your application-level store. This allows you to track its state together with your application state. 
 
 
-## Understanding nesting (without a framework):
 
-#### Application store:
+🥚 Let's begin with the following store:
 ```ts
-import { createStore, enableNesting } from 'olik'
+import { createStore, enableNesting, enableReduxDevtools } from 'olik'
+
+enableNesting()
+enableReduxDevtools()
 
 const store = createStore({
   name: document.title,
   state: { str: '' },
 })
-
-enableNesting()
 ```
 
-#### Component store:
+### Creating a nested store
+To create a nested store, you must provide the name of its container store. If the container store could not found, then your nested store will be registered as a separate store. This allows you to build your component outside your application.
 ```ts
 import { createStore, detachNestedStore } from 'olik'
 
@@ -31,27 +32,15 @@ class MyComponent {
   const nestedStore = createStore({
     name: 'MyComponent',
     tryNestWithinStore: document.title,
-    state: { num: 0 }.
+    state: { num: 0 },
   })
   
   // Detach store from container when it is no longer being used
   onComponentDestroyed = () => detachNestedStore(this.nestedStore)
 }
 ```
+You should now see that your application state has a new property called `nested` which contains the state for `MyComponent`.
 
-#### The above application store state should now look as follows:
-```ts
-{
-  str: '',
-  nested: {
-    MyComponent: {
-      1: {
-        num: ''
-      },
-    },
-  }
-}
-```
 [**Demo 🥚**](https://codesandbox.io/s/attached-component-store-d9xqk?file=/src/index.ts)
 
 ## Framework bindings:

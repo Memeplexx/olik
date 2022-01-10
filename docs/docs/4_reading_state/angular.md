@@ -27,9 +27,9 @@ You can observe a selected node of your state tree using the `observe()` functio
   {{todo.title}}
 </div>
 ```
-```ts {4}
+```ts
 @Component({...})
-class MyComponent {
+export class MyComponent {
   todos$ = store.todos
     .observe();
 }
@@ -38,11 +38,9 @@ class MyComponent {
 
 ### Deriving computationally expensive state
 The `derive()` function allows you to derive computationally expensive state.
-```ts {5-7}
-import { derive } from 'olik-ng';
-
+```ts
 @Component({...})
-class MyComponent {
+export class MyComponent {
   completedTodos$ = derive(store.todos, store.showDone)
     .with((todos, showDone) => todos.filter(todo => todo.done === showDone))
     .observe();
@@ -54,6 +52,7 @@ class MyComponent {
 The `combineComponentObservables()` is a *convenience* function that:
 * Removes the need to declare an `async` pipe for *every* observable in your template. This can make writing conditional logic way less verbose.
 * Allows you to read your component observables, synchronously, without subscribing to them.  
+* Allows you to read your component observable values from within the [**Angular Devtools extension**](https://angular.io/guide/devtools).
 
 ```html {1}
 <ng-container *ngIf="obs$ | async; let obs;">
@@ -65,7 +64,7 @@ The `combineComponentObservables()` is a *convenience* function that:
 import { combineComponentObservables } from 'olik-ng';
 
 @Component({...})
-class AppComponent {
+export class AppComponent {
 
   username$ = store.username.observe()
   todos$ = store.todos.observe()

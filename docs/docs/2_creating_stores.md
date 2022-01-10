@@ -15,12 +15,17 @@ export const store = createStore({
 })
 ```
 
-### Structuring your initial state
-Keep your state tree as flat as possible.  
+> 💡 Although Olik works with arbitrarily deep state-trees, normalizing your state is still advised.
 [**This guide**](https://redux.js.org/recipes/structuring-reducers/normalizing-state-shape), from the Redux docs, explains the benefits of normalizing your state tree.
 
-### Nesting stores
-If you have already covered writing, reading, & async state, you may be interested in Nesting Stores to manage your component state.
+### Integrating with the Redux Devtools Extension
+```ts
+import { enableReduxDevtools } from 'olik'
 
-### Lazily-loaded modules
-Code modules, which are lazily loaded, may create their own AppStore. When downloaded, their store will be automatically merged in using the `deepMerge()` utility.
+enableReduxDevtools()
+
+export const store = createStore({
+  /* other properties */
+  trackWithReduxDevtools: true,
+})
+```

@@ -8,69 +8,68 @@ sidebar_label: 'Async state'
 
 🥚 Let's begin with the following store:
 ```ts
-import {
-  createStore, enableAsyncActionPayloads
-} from 'olik' // or 'olik-ng' or 'olik-react'
+import { createStore, enableAsyncActionPayloads } from 'olik'
 
 // 1. create store
-type Todo = { id: number, title: string };
-const get = createStore({
+type Todo = { id: number, title: string }
+const store = createStore({
   name: document.title,
-  state: {
-    todos: new Array<Todo>(),
-  }
+  state: { todos: new Array<Todo>() }
 });
 
 // 2. import the ability to dispatch promises as payloads
 enableAsyncActionPayloads();
 ```
 
-### **Fetching** state
+### Fetching state
 ```ts
 const fetchTodos = () => fetch('http://api/todos')
-  .then(res => res.json());
+  .then(res => res.json())
 
-get.todos.replaceAll(fetchTodos)
+store.todos
+  .replaceAll(fetchTodos)
 ```
 [**Demo 🥚**](https://codesandbox.io/s/reading-async-state-3x6xh?file=/src/index.ts)
 
-### **Writing** state
+### Writing state
 ```ts
 const updateTodo = (todo: Todo) => () => fetch(`http://api/todo/${todo.id}`, {
   method: 'POST',
   body: JSON.stringify(todo),
-}).then(res => res.json());
+}).then(res => res.json())
 
-get.todos
+store.todos
   .find.id.eq(3)
   .replace(updateTodo(todo))
 ```
 [**Demo 🥚**](https://codesandbox.io/s/writing-async-state-r8rs6?file=/src/index.ts)
 
-### **Framework-specific** APIs:
-* [**React**](react)
-* [**Angular**](angular)
-
-### **Caching** data
-The library uses your store as a cache and can avoid re-fetching for a specified period.
+### Caching data
+The library uses your store as a cache and will not re-fetch for a specified period.
 ```ts
 const fetchTodosFromAPI = () => fetch('http://api/todos');
-get.todos.replaceAll(fetchTodosFromAPI, { cacheFor: 1000 * 60 })
+store.todos
+  .replaceAll(fetchTodosFromAPI, { cacheFor: 1000 * 60 })
 ```
 [**Demo 🥚**](https://codesandbox.io/s/olik-demo-caching-data-no-framework-3rvz9?file=/src/index.ts)
 
-### **Cache invalidation**
+### Invalidating caches
 The following code will un-do the above.
 ```ts
-get.todos.invalidateCache();
+store.todos
+  .invalidateCache()
 ```
 [**Demo 🥚**](https://codesandbox.io/s/olik-demo-cache-invalidation-no-framework-efore?file=/src/index.ts)
 
-### **Optimistic** updates
+### Optimistic updates
 You can make immediate updates, which will be rolled back if an error is thrown.
 ```ts
 const setUserAsAdminOnAPI = (isAdmin: boolean) =>
-  () => fetch('http://api/todos');
-get.user.isAdmin
+  () => fetch('http://api/todos')
+store.user.isAdmin
   .replace(setUserAsAdminOnAPI(true), { optimisticallyUpdateWith: true })
 ```
+
+### Framework-specific APIs:
+* [**React**](react)
+* [**Angular**](angular)

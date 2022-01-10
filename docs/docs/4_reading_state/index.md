@@ -9,6 +9,7 @@ sidebar_label: 'Reading state'
 ---
 
 ### Reading synchronously
+To read state associated with a node, you can use the `state` property.  
 The following statements are equivalent to each other:
 ```ts
 const todos = store.todos.state;
