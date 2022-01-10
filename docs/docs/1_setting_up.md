@@ -22,6 +22,11 @@ If you're using **React**:
 ```bash
 npm install olik olik-react
 ```
+```ts
+import { augmentOlikForReact } from 'olik-react'
+
+augmentOlikForReact() // invoke before initializing store
+```
 
 ---
 
@@ -34,4 +39,5 @@ npm install olik olik-ng
 import { OlikNgModule } from 'olik-ng'
 
 @NgModule({ imports: [OlikNgModule] })
+export class AppModule {}
 ```

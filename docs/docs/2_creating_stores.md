@@ -7,7 +7,7 @@ sidebar_position: 2
 
 ### A store can be defined as follows
 ```ts
-import { createStore } from 'olik' /* or 'olik-react' or 'olik-ng' */
+import { createStore } from 'olik'
 
 export const store = createStore({
   name: document.title,     // can be any user-defined string

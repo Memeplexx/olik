@@ -11,6 +11,9 @@ sidebar_position: 1
 
 🥚 Let's begin with the following store:
 ```ts
+import { createStore } from 'olik'
+
+
 const store = createStore({
   name: document.title,
   state: {
@@ -42,3 +45,4 @@ export function App() {
 ```
 
 [**Demo - no deps 🥚**](https://codesandbox.io/s/olik-react-derivefrom-jv9dd?file=/src/App.tsx) &nbsp;&nbsp;&nbsp; [**Demo - with deps 🥚**](https://codesandbox.io/s/olik-react-derivefrom-with-deps-z7x4i?file=/src/App.tsx)
+

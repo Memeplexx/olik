@@ -12,7 +12,7 @@ export const fetchTodos = () =>
   fetch('http://example.com/todos').then(res => res.json());
 
 const Component = () => {
-  const future = get.todos
+  const future = store.todos
     .replaceAll(fetchTodos)
     .useFuture();
   return (

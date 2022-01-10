@@ -41,7 +41,7 @@ class MyComponent {
 
   constructor(private httpClient: HttpClient) { }
 
-  todos$ = get.todos
+  todos$ = store.todos
     .replaceAll(this.httpClient.get('http://example.com/todos'))
     .asObservableFuture();
   );
@@ -58,7 +58,7 @@ export class MyRouteResolver implements Resolve<Observable<any>> {
   constructor(private httpClient: HttpClient) { }
 
   resolve(route: ActivatedRouteSnapshot, state: RouterStateSnapshot) {
-    return get.todos
+    return store.todos
       .replaceAll(this.httpClient.get('http://example.com/todos'))
       .asObservable();
   }
