@@ -8,7 +8,7 @@ sidebar_label: 'Reading state'
 
 ---
 
-### **Synchronous** reads  
+### Reading synchronously
 The following statements are equivalent to each other:
 ```ts
 const todos = store.todos.state;

@@ -7,6 +7,8 @@ sidebar_position: 2
 
 #### Olik-NG contains functions to read state and memoise expensive derivations  
 
+---
+
 🥚 Let's begin with the following store:
 ```ts
 const store = createStore({
@@ -18,7 +20,7 @@ const store = createStore({
 });
 ```
 
-### **Observe** state
+### Observing state
 You can observe a selected node of your state tree using the `observe()` function
 ```html
 <div *ngFor="let todo of todos$ | async">
@@ -34,7 +36,7 @@ class MyComponent {
 ```
 [**Demo 🥚**](https://codesandbox.io/s/olik-ng-read-iwyd3?file=/src/app/app.component.ts)
 
-### **Derive** computationally expensive state
+### Deriving computationally expensive state
 The `derive()` function allows you to derive computationally expensive state.
 ```ts {5-7}
 import { derive } from 'olik-ng';

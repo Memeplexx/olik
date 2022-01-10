@@ -7,16 +7,14 @@ sidebar_position: 3
 
 #### Olik exposes a standardized set of state-update primitives to make the developer experience as transparent, consistent, and debuggable as possible.
 
+---
+
 🥚 Let's begin with the following store:
 ```ts
 const store = createStore({
-  name: 'MyStore',
+  name: document.title,
   state: {
-    user: {
-      firstName: '',
-      lastName: '',
-      job: { title: '', contractor: false },
-    },
+    user: { firstName: '', lastName: '', job: { title: '', contractor: false } },
     todos: new Array<{ id: number, name: string, done: boolean, urgency: number }>(),
   }
 });
