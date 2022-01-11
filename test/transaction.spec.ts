@@ -2,7 +2,7 @@ import { errorMessages, testState } from '../src/constant';
 import { createStore } from '../src/core';
 import { transact } from '../src/transact';
 import { currentAction } from './_utility';
-import { enableAsyncActionPayloads } from '../src/write-async';
+import { importOlikAsyncActions } from '../src/write-async';
 
 describe('transaction', () => {
 
@@ -41,7 +41,7 @@ describe('transaction', () => {
   it('should not support transactions if one of the actions has an async payload', () => {
     const state = { num: 0, str: '', bool: false };
     const select = createStore({ name, state });
-    enableAsyncActionPayloads();
+    importOlikAsyncActions();
     expect(() => transact(
       () => select.num.replace(() => new Promise(resolve => resolve(1))),
       () => select.str.replace('x'),

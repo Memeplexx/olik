@@ -1,7 +1,6 @@
 import { testState } from '../src/constant';
 import { createStore } from '../src/core';
 import { currentAction } from './_utility';
-import { enableAsyncActionPayloads } from '../src/write-async';
 
 describe('array-deep', () => {
 
@@ -9,7 +8,6 @@ describe('array-deep', () => {
 
   beforeEach(() => {
     testState.logLevel = 'none';
-    enableAsyncActionPayloads();
   })
 
   it('should select.arr.find.id.eq(2).patch({ val: 1 })', () => {

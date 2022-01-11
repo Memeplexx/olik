@@ -3,7 +3,7 @@ import { readState } from './read';
 import { EnableAsyncActionsArgs, FutureState, StateAction } from './type';
 import { setNewStateAndNotifyListeners } from './write-complete';
 
-export const enableAsyncActionPayloads = () => {
+export const importOlikAsyncActions = () => {
   libState.asyncUpdate = (
     { storeName, stateActions, prop, cacheFor, optimisticallyUpdateWith, arg }: EnableAsyncActionsArgs
   ) => {

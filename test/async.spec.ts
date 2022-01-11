@@ -1,7 +1,7 @@
 import { errorMessages, testState } from '../src/constant';
 import { createStore } from '../src/core';
 import { currentAction } from './_utility';
-import { enableAsyncActionPayloads } from '../src/write-async';
+import { importOlikAsyncActions } from '../src/write-async';
 
 
 const resolve = <T>(data: T, timeout = 10) => () => new Promise<T>(resolve => setTimeout(() => resolve(data), timeout));
@@ -13,7 +13,7 @@ describe('async', () => {
 
   beforeEach(() => {
     testState.logLevel = 'none';
-    enableAsyncActionPayloads();
+    importOlikAsyncActions();
   })
 
   it('should perform a basic async update', async () => {
@@ -237,7 +237,7 @@ describe('async', () => {
     const select = createStore({ name, state: { num: 0 } });
     await select.num.replace(resolve(1), { cacheFor: 10 });
     expect((select.state as any).cache.num).toBeTruthy();
-    await new Promise(resolve => setTimeout(() => resolve(), 20));
+    await new Promise(resolve => setTimeout(() => resolve(null), 20));
     expect(select.state).toEqual({ num: 1, cache: {} });
   })
 
