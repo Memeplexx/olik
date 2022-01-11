@@ -7,4 +7,4 @@ export { getStoreByName } from './utility';
 export * from './type';
 export { importOlikNestingModule, detachNestedStore } from './nest';
 export { importOlikReduxDevtoolsModule, listenToDevtoolsDispatch } from './redux-devtools';
-export { importOlikAsyncActions } from './write-async'
+export { importOlikAsyncModule } from './write-async'
