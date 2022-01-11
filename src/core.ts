@@ -31,8 +31,8 @@ export const createStore = <S>(
         if ('internals' === prop) {
           return internals;
         } else if (topLevel && !!internals.nestedStoreInfo?.isNested) {
-          const { nestedStoreInfo: { containerName, instanceId, storeName } } = internals;
-          return libState.stores[containerName].nested[storeName][instanceId][prop];
+          const { nestedStoreInfo: { containerName, instanceId, nestedStoreName } } = internals;
+          return libState.stores[containerName].nested[nestedStoreName][instanceId][prop];
         } else if (topLevel && internals.mergedStoreInfo?.isMerged) {
           return (libState.stores[internals.mergedStoreInfo.nameOfStoreToMergeInto] as any)[prop];
         } else if (['replace', 'patch', 'deepMerge', 'remove', 'increment', 'removeAll', 'replaceAll', 'patchAll', 'incrementAll', 'insertOne', 'insertMany', 'withOne', 'withMany'].includes(prop)) {
@@ -89,9 +89,9 @@ export const createStore = <S>(
     if (!libState.reduxDevtools) { throw new Error(errorMessages.REDUX_DEVTOOLS_NOT_ENABLED); }
     libState.reduxDevtools.init(internals.storeName);
   }
-  if (args.tryToNestWithinStore) {
+  if (args.nestStore) {
     if (!libState.nestStore) { throw new Error(errorMessages.NESTED_STORES_NOT_ENABLED); }
-    return libState.nestStore({ storeName: internals.storeName, containerName: args.tryToNestWithinStore });
+    return libState.nestStore({ storeName: internals.storeName, containerName: args.nestStore.hostStoreName, instanceId: args.nestStore.instanceId });
   } else {
     store.state = args.state;
     store.onChange((state: any) => store.state = state );

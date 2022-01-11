@@ -1,14 +1,15 @@
 import { errorMessages, libState, testState } from '../src/constant';
 import { createStore } from '../src/core';
-import { detachNestedStore, enableNesting } from '../src/nest';
+import { detachNestedStore, importOlikNestingModule } from '../src/nest';
+import { StoreInternal } from '../src/type-internal';
 import { currentAction } from './_utility';
 
 describe('nest', () => {
 
-  const containerName = 'ParentStore';
+  const hostStoreName = 'ParentStore';
 
   beforeAll(() => {
-    enableNesting();
+    importOlikNestingModule();
   })
 
   beforeEach(() => {
@@ -22,9 +23,9 @@ describe('nest', () => {
     const stateOfNestedStore = {
       one: ''
     };
-    const selectContainer = createStore({ name: containerName, state: stateOfContainerStore });
+    const selectContainer = createStore({ name: hostStoreName, state: stateOfContainerStore });
     const nameOfNestedStore = 'myComp';
-    createStore({ name: nameOfNestedStore, state: stateOfNestedStore, tryToNestWithinStore: containerName });
+    createStore({ name: nameOfNestedStore, state: stateOfNestedStore, nestStore: { hostStoreName, instanceId: 0 } });
     expect(selectContainer.state).toEqual({ ...stateOfContainerStore, nested: { [nameOfNestedStore]: { 0: stateOfNestedStore } } });
   })
 
@@ -36,9 +37,9 @@ describe('nest', () => {
     const stateOfNestedStore = {
       one: ''
     };
-    const store = createStore({ name: containerName, state: stateOfContainerStore });
+    const store = createStore({ name: hostStoreName, state: stateOfContainerStore });
     const nameOfNestedStore = 'myComp';
-    const selectNested = createStore({ name: nameOfNestedStore, state: stateOfNestedStore, tryToNestWithinStore: containerName });
+    const selectNested = createStore({ name: nameOfNestedStore, state: stateOfNestedStore, nestStore: { hostStoreName, instanceId: 0 } });
     expect(selectNested.state.one).toEqual('');
     selectNested.one.replace('test');
     expect(currentAction(store)).toEqual({
@@ -56,9 +57,9 @@ describe('nest', () => {
     const stateOfNestedStore = {
       one: ''
     }; 
-    const selectContainer = createStore({ name: containerName, state: stateOfContainerStore });
+    const selectContainer = createStore({ name: hostStoreName, state: stateOfContainerStore });
     const nameOfNestedStore = 'myComp';
-    const selectNested = createStore({ name: nameOfNestedStore, state: stateOfNestedStore, tryToNestWithinStore: containerName });
+    const selectNested = createStore({ name: nameOfNestedStore, state: stateOfNestedStore, nestStore: { hostStoreName, instanceId: 0 } });
     expect(selectNested.state.one).toEqual('');
     selectContainer.nested.myComp['0'].one.replace('test');
     expect(selectNested.state.one).toEqual('test');
@@ -68,7 +69,7 @@ describe('nest', () => {
     const stateOfNestedStore = { test: '' };
     const nameOfNestedStore = 'myComp';
     const payload = 'another';
-    const selectNested = createStore({ name: nameOfNestedStore, state: stateOfNestedStore, tryToNestWithinStore: containerName });
+    const selectNested = createStore({ name: nameOfNestedStore, state: stateOfNestedStore, nestStore: { hostStoreName, instanceId: 0 } });
     selectNested.test.replace(payload);
     expect(selectNested.test.state).toEqual(payload);
   })
@@ -80,9 +81,9 @@ describe('nest', () => {
     const stateOfNestedStore = {
       one: ''
     };
-    const selectContainer = createStore({ name: containerName, state: stateOfContainerStore });
+    const selectContainer = createStore({ name: hostStoreName, state: stateOfContainerStore });
     const nameOfNestedStore = 'myComp';
-    const selectNested = createStore({ name: nameOfNestedStore, state: stateOfNestedStore, tryToNestWithinStore: containerName });
+    const selectNested = createStore({ name: nameOfNestedStore, state: stateOfNestedStore, nestStore: { hostStoreName, instanceId: 0 } });
     expect(selectContainer.state).toEqual({ test: '', nested: { [nameOfNestedStore]: { 0: { one: '' } } } });
     detachNestedStore(selectNested);
     expect(selectContainer.state).toEqual({ test: '', nested: {} });
@@ -93,10 +94,10 @@ describe('nest', () => {
       test: '',
     };
     const stateOfNestedStore = { one: '' };
-    const selectContainer = createStore({ name: containerName, state: stateOfContainerStore });
+    const selectContainer = createStore({ name: hostStoreName, state: stateOfContainerStore });
     const nameOfNestedStore = 'myComp';
-    const selectNested1 = createStore({ name: nameOfNestedStore, state: stateOfNestedStore, tryToNestWithinStore: containerName });
-    const selectNested2 = createStore({ name: nameOfNestedStore, state: stateOfNestedStore, tryToNestWithinStore: containerName });
+    const selectNested1 = createStore({ name: nameOfNestedStore, state: stateOfNestedStore, nestStore: { hostStoreName, instanceId: 0 } });
+    const selectNested2 = createStore({ name: nameOfNestedStore, state: stateOfNestedStore, nestStore: { hostStoreName, instanceId: 1 } });
     expect(selectContainer.state).toEqual({ ...stateOfContainerStore, nested: { [nameOfNestedStore]: { 0: stateOfNestedStore, 1: stateOfNestedStore } } });
     detachNestedStore(selectNested1);
     expect(selectContainer.state).toEqual({ ...stateOfContainerStore, nested: { [nameOfNestedStore]: { 1: stateOfNestedStore } } });
@@ -112,11 +113,11 @@ describe('nest', () => {
       one: ''
     };
     const nameOfNestedStore = 'myComp';
-    const selectContainer = createStore({ name: containerName, state: stateOfContainerStore });
+    const selectContainer = createStore({ name: hostStoreName, state: stateOfContainerStore });
     const componentName = 'myComp';
-    const selectNested1 = createStore({ name: nameOfNestedStore, state: stateOfNestedStore, tryToNestWithinStore: containerName });
+    const selectNested1 = createStore({ name: nameOfNestedStore, state: stateOfNestedStore, nestStore: { hostStoreName, instanceId: 0 } });
     selectNested1.one.replace('test1');
-    const selectNested2 = createStore({ name: nameOfNestedStore, state: stateOfNestedStore, tryToNestWithinStore: containerName });
+    const selectNested2 = createStore({ name: nameOfNestedStore, state: stateOfNestedStore, nestStore: { hostStoreName, instanceId: 1 } });
     selectNested2.one.replace('test2');
     expect(selectContainer.state).toEqual({ test: '', nested: { [componentName]: { 0: { one: 'test1' }, 1: { one: 'test2' } } } });
   })
@@ -126,9 +127,9 @@ describe('nest', () => {
       test: '',
     };
     const stateOfNestedStore = new Array<string>();
-    const selectContainer = createStore({ name: containerName, state: stateOfContainerStore });
+    const selectContainer = createStore({ name: hostStoreName, state: stateOfContainerStore });
     const nameOfNestedStore = 'myComp';
-    const selectNested = createStore({ name: nameOfNestedStore, state: stateOfNestedStore, tryToNestWithinStore: containerName });
+    const selectNested = createStore({ name: nameOfNestedStore, state: stateOfNestedStore, nestStore: { hostStoreName, instanceId: 0 } });
     selectNested.insertOne('test');
     expect(selectContainer.state).toEqual({ test: '', nested: { [nameOfNestedStore]: { 0: ['test'] } } });
   })
@@ -138,9 +139,9 @@ describe('nest', () => {
       test: '',
     };
     const stateOfNestedStore = 0;
-    const selectContainer = createStore({ name: containerName, state: stateOfContainerStore });
+    const selectContainer = createStore({ name: hostStoreName, state: stateOfContainerStore });
     const nameOfNestedStore = 'myComp';
-    const selectNested = createStore({ name: nameOfNestedStore, state: stateOfNestedStore, tryToNestWithinStore: containerName });
+    const selectNested = createStore({ name: nameOfNestedStore, state: stateOfNestedStore, nestStore: { hostStoreName, instanceId: 0 } });
     selectNested.replace(1);
     expect(selectContainer.state).toEqual({ test: '', nested: { [nameOfNestedStore]: { [stateOfNestedStore]: 1 } } });
   })
@@ -150,32 +151,33 @@ describe('nest', () => {
       test: '',
     };
     const stateOfNestedStore = 0;
-    const selectContainer = createStore({ name: containerName, state: stateOfContainerStore });
+    const selectContainer = createStore({ name: hostStoreName, state: stateOfContainerStore });
     const nameOfNestedStore1 = 'myComp';
     const instanceName = '0';
-    const selectNested1 = createStore({ name: nameOfNestedStore1, state: stateOfNestedStore, tryToNestWithinStore: containerName });
+    const selectNested1 = createStore({ name: nameOfNestedStore1, state: stateOfNestedStore, nestStore: { hostStoreName, instanceId: 0 } });
     const nameOfNestedStore2 = 'myComp2';
-    const selectNested2 = createStore({ name: nameOfNestedStore2, state: stateOfNestedStore, tryToNestWithinStore: containerName });
+    const selectNested2 = createStore({ name: nameOfNestedStore2, state: stateOfNestedStore, nestStore: { hostStoreName, instanceId: 0 } });
     expect(selectContainer.state).toEqual({ test: '', nested: { [nameOfNestedStore1]: { 0: 0 }, [nameOfNestedStore2]: { 0: 0 } } });
   })
 
   it('should throw an error if the containing stores state is a primitive', () => {
-    createStore({ name: containerName, state: 0 });
-    expect(() => createStore({ name: 'test', state: 0, tryToNestWithinStore: containerName }))
+    createStore({ name: hostStoreName, state: 0 });
+    expect(() => createStore({ name: 'test', state: 0, nestStore: { hostStoreName, instanceId: 0 } }))
       .toThrow(errorMessages.INVALID_CONTAINER_FOR_COMPONENT_STORES);
   })
 
   it('should throw an error if the containing stores state is an array', () => {
-    createStore({ name: containerName, state: new Array<string>() });
-    expect(() => createStore({ name: 'test', state: 0, tryToNestWithinStore: containerName }))
+    createStore({ name: hostStoreName, state: new Array<string>() });
+    expect(() => createStore({ name: 'test', state: 0, nestStore: { hostStoreName, instanceId: 0 } }))
       .toThrow(errorMessages.INVALID_CONTAINER_FOR_COMPONENT_STORES);
   })
 
   it('should work without a container store', () => {
+    testState.logLevel = 'debug';
     libState.stores = {}
     const selectNested = createStore({
       name: 'test',
-      tryToNestWithinStore: containerName,
+      nestStore: { hostStoreName, instanceId: 0 },
       state: {
         object: { property: 'a' },
         array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],

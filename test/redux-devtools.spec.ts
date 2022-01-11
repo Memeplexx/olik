@@ -1,6 +1,6 @@
 import { errorMessages, testState } from '../src/constant';
 import { createStore } from '../src/core';
-import { enableReduxDevtools } from '../src/redux-devtools';
+import { importOlikReduxDevtoolsModule } from '../src/redux-devtools';
 import { currentAction, windowAugmentedWithReduxDevtoolsImpl } from './_utility';
 
 describe('devtools', () => {
@@ -9,7 +9,7 @@ describe('devtools', () => {
 
   beforeAll(() => {
     testState.fakeWindowObjectForReduxDevtools = windowAugmentedWithReduxDevtoolsImpl;
-    enableReduxDevtools();
+    importOlikReduxDevtoolsModule();
   })
 
   beforeEach(() => {
@@ -76,7 +76,7 @@ describe('devtools', () => {
   it('should throttle tightly packed updates', done => {
     const state = { test: 0 };
     const select = createStore({ name, state, trackWithReduxDevtools: true });
-    enableReduxDevtools({  batchActions: 200 })
+    importOlikReduxDevtoolsModule({  batchActions: 200 })
     const payload: number[] = [];
     const updateCount = 6;
     for (let i = 0; i < updateCount; i++) {
@@ -96,7 +96,7 @@ describe('devtools', () => {
   })
 
   it('should abbreviate action types correctly', () => {
-    enableReduxDevtools({ limitSearchArgLength: 5 })
+    importOlikReduxDevtoolsModule({ limitSearchArgLength: 5 })
     const select = createStore({ name, state: [{ id: 'qwertyuiop', val: [{ id: 'asdfghjkl', val: 0 }] } ], trackWithReduxDevtools: true });
     select.find.id.eq('qwertyuiop').val.find.id.in(['asdfghjkl']).val.increment(1);
     expect(testState.currentActionForReduxDevtools.type).toEqual('find.id.eq(qwert).val.find.id.in(asdfg).val.increment()');

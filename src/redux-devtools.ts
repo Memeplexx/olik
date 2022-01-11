@@ -3,7 +3,7 @@ import { Read, ReduxDevtoolsOptions, Replace, ReplaceAll } from './type';
 import { StoreInternal, WindowAugmentedWithReduxDevtools } from './type-internal';
 
 
-export function enableReduxDevtools(
+export function importOlikReduxDevtoolsModule(
   options?: ReduxDevtoolsOptions,
 ) {
   const { limitSearchArgLength, traceActions, batchActions } = options || {};

@@ -448,10 +448,19 @@ export interface OptionsForMakingAStore<S> {
    */
   state: S,
   /**
-   * The name of the store in which this store should be nested.
-   * This will be ignored if the library could not find a store matching the name provided.
+   * Supply an object here if you wish to nest this store.
    */
-  tryToNestWithinStore?: string;
+  nestStore?: {
+    /**
+     * The name of the store in which this store should be nested.
+     * This will be ignored if the library could not find a store matching the name provided.
+     */
+    hostStoreName: string;
+    /**
+     * The name that will distinguish this instance from other instances with the same name.
+     */
+    instanceId: string | number;
+  },
   /**
    * Whether or not to track this store with the Redux Devtools Extension.
    */
@@ -494,7 +503,7 @@ export interface ReduxDevtoolsOptions {
    * This effectively acts like a 'throttle' + 'debounce'.
    * The default value is `0`.
    */
-   batchActions?: number;
+  batchActions?: number;
 }
 
 export interface EnableAsyncActionsArgs {
@@ -509,6 +518,7 @@ export interface EnableAsyncActionsArgs {
 export interface EnableNestedStoreArgs {
   storeName: string;
   containerName: string;
+  instanceId: string | number;
 }
 
 export type Store<S> = (S extends Array<any> ? UpdatableArray<S, 'isFilter', 'notQueried', MaxRecursionDepth>
