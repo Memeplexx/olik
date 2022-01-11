@@ -10,10 +10,14 @@ sidebar_label: 'Nesting stores'
 
 🥚 Let's begin with the following store:
 ```ts
-import { createStore, enableNesting, enableReduxDevtools } from 'olik'
+import {
+  createStore,
+  importOlikNestingModule,
+  importOlikReduxDevtoolsModule
+} from 'olik'
 
-enableNesting()
-enableReduxDevtools()
+importOlikNestingModule()
+importOlikReduxDevtoolsModule()
 
 const store = createStore({
   name: document.title,
@@ -23,7 +27,7 @@ const store = createStore({
 
 ### Creating a nested store
 To create a nested store, you must provide the name of its container store. If the container store could not found, then your nested store will be registered as a separate store. This allows you to build your component outside your application.
-```ts
+```ts {8}
 import { createStore, detachNestedStore } from 'olik'
 
 class MyComponent {
@@ -31,7 +35,7 @@ class MyComponent {
   // Define store to manage component state & attempt to nest it
   const nestedStore = createStore({
     name: 'MyComponent',
-    tryNestWithinStore: document.title,
+    nestStore: { hostStoreName: document.title, instanceId: 1 },
     state: { num: 0 },
   })
   

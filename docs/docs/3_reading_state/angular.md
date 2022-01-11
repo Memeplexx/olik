@@ -11,6 +11,8 @@ sidebar_position: 2
 
 🥚 Let's begin with the following store:
 ```ts
+import { createStore } from 'olik'
+
 const store = createStore({
   name: document.title,
   state: {

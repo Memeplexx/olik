@@ -8,7 +8,7 @@ sidebar_position: 2
 🥚 Let's begin with the following store and service:
 
 ```ts
-import { createStore } from 'olik-ng'
+import { createStore } from 'olik'
 
 const get = createStore({
   name: document.title,

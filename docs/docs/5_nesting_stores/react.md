@@ -7,22 +7,26 @@ sidebar_position: 1
 
 🥚 Let's begin with the following store:
 
-```ts {6}
+```ts
+import { createStore, importOlikNestingModule } from 'olik'
+
 export const store = createStore({
   name: document.title,
   state: { str: '' }
 })
 
-enableNesting()
+importOlikNestingModule()
 ```
 
 ### **Creating** a nested a store
 The `useNestedStore()` hook returns a store which will exist for the lifetime of your component
-```tsx {5}
+```tsx
 const IncrementorComponent = (props: { id: number }) => {
+  
   const nestedStore = useNestedStore({
     name: 'Incrementor',
-    tryToNestWithinStore: document.title,
+    hostStoreName: document.title,
+    instanceId: props.id,
     state: { num: 0 },
   })
 
