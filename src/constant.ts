@@ -12,7 +12,6 @@ export const errorMessages = {
   INVALID_STATE_INPUT: (illegal: any) => `State must be serializable as JSON. Value of '${illegal.toString()}' is not permitted`,
   ASYNC_UPDATES_NOT_ENABLED: 'Cannot perform an async update until you enable it. Please import and invoke `enableAsyncActionPayloads()` before creating your store',
   NESTED_STORES_NOT_ENABLED: 'Cannot nest this store until you enable nesting. Please import and invoke `enableNesting()` before creating your store',
-  REDUX_DEVTOOLS_NOT_ENABLED: 'Cannot track with Redux Devtools until you enable it. Please import and invoke `enableReduxDevtools()` before creating your store',
 } as const;
 
 export const libState = {

@@ -461,10 +461,6 @@ export interface OptionsForMakingAStore<S> {
      */
     instanceId: string | number;
   },
-  /**
-   * Whether or not to track this store with the Redux Devtools Extension.
-   */
-  trackWithReduxDevtools?: boolean;
 }
 
 export interface OptionsForMergingAStore<S> {

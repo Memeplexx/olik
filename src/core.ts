@@ -85,8 +85,7 @@ export const createStore = <S>(
   };
   const store = recurseProxy({}, true, []);
   libState.stores[args.name] = store;
-  if (args.trackWithReduxDevtools) {
-    if (!libState.reduxDevtools) { throw new Error(errorMessages.REDUX_DEVTOOLS_NOT_ENABLED); }
+  if (libState.reduxDevtools) {
     libState.reduxDevtools.init(internals.storeName);
   }
   if (args.nestStore) {
