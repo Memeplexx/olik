@@ -36,6 +36,8 @@ export function App() {
 
 ### Deriving computationally expensive state
 ```tsx
+import { derive } from 'olik'
+
 export function App() {
   
   const todos = derive(store.todos, store.showDone)

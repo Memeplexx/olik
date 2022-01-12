@@ -41,11 +41,13 @@ export class MyComponent {
 ### Deriving computationally expensive state
 The `derive()` function allows you to derive computationally expensive state.
 ```ts
+import { derive } from 'olik'
+
 @Component({...})
 export class MyComponent {
   completedTodos$ = derive(store.todos, store.showDone)
     .with((todos, showDone) => todos.filter(todo => todo.done === showDone))
-    .observe();
+    .observe()
 }
 ```
 [**Demo 🥚**](https://codesandbox.io/s/olik-ng-memoise-supgo?file=/src/app/app.component.ts)

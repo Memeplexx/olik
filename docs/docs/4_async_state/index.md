@@ -21,7 +21,7 @@ const store = createStore({
 enableAsyncActionPayloads();
 ```
 
-### Fetching state
+### Reading state
 ```ts
 const fetchTodos = () => fetch('http://api/todos')
   .then(res => res.json())

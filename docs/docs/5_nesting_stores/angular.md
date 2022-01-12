@@ -23,7 +23,7 @@ export class IncrementorComponent implements OnDestroy {
 
   nestedStore = createStore({
     name: 'Incrementor',
-    tryToNestWithinStore: document.title,
+    nestStore: { hostStoreName: document.title, instanceId: 1 },
     state: { num: 0 },
   })
 
