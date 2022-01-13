@@ -9,43 +9,55 @@ sidebar_position: 1
 
 ---
 
-### Installing
+### Installation
 
-If you're **not using a framework**:
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+<Tabs>
+<TabItem value="no framework" label="No framework">
 
 ```bash
 npm install olik
 ```
 
-If you're using **React**:
+</TabItem>
+<TabItem value="react" label="React">
 
 ```bash
 npm install olik olik-react
 ```
+
 ```ts
 import { augmentOlikForReact } from 'olik-react'
 
 augmentOlikForReact() // invoke before initializing store
 ```
 
-If you're using **Angular**:
+</TabItem>
+<TabItem value="angular" label="Angular">
 
 ```bash
 npm install olik olik-ng
 ```
+
 ```ts
 import { OlikNgModule } from 'olik-ng'
 
 @NgModule({ imports: [OlikNgModule] })
 export class AppModule {}
 ```
+
+</TabItem>
+</Tabs>
+
 ---
 
 ### Creating a store
 ```ts
 import { createStore, importOlikReduxDevtoolsModule } from 'olik'
 
-importOlikReduxDevtoolsModule()    // optional
+importOlikReduxDevtoolsModule()    // optional debugging tool
 
 export const store = createStore({
   name: document.title,            // can be any user-defined string
@@ -55,4 +67,5 @@ export const store = createStore({
 
 Although Olik works with arbitrarily deep state-trees, normalizing your state is still advised.
 [**This guide**](https://redux.js.org/recipes/structuring-reducers/normalizing-state-shape), from the Redux docs, explains the benefits of normalizing your state tree.
+
 

@@ -26,7 +26,7 @@ const store = createStore({
 ```
 
 ### Creating a nested store
-To create a nested store, you must provide the name of its container store. If the container store could not found, then your nested store will be registered as a separate store. This allows you to build your component outside your application.
+To create a nested store, you must provide the name of its host store. If the host store could not found, then your nested store will be registered as a separate store. This allows you to build your component outside your application.
 ```ts {8}
 import { createStore, detachNestedStore } from 'olik'
 
@@ -35,8 +35,11 @@ class MyComponent {
   // Define store to manage component state & attempt to nest it
   const nestedStore = createStore({
     name: 'MyComponent',
-    nestStore: { hostStoreName: document.title, instanceId: 1 },
     state: { num: 0 },
+    nestStore: {
+      hostStoreName: document.title, // the store in which you want to nest
+      instanceId: 1, // will distinguish instances of the this store
+    },
   })
   
   // Detach store from container when it is no longer being used
