@@ -1,0 +1,157 @@
+---
+sidebar_label: 'Reading state'
+---
+
+# Reading state
+
+#### Olik supports synchonous reads and the ability to listen for updates to a node  
+
+---
+
+🥚 Let's begin with the following store:
+```ts
+import { createStore } from 'olik'
+
+const store = createStore({
+  name: document.title,
+  state: {
+    todos: new Array<{ id: number, title: string, done: boolean }>(),
+    showDone: false,
+  }
+});
+```
+
+### Reading synchronously
+To read state associated with a node, you can use the `state` property.  
+The following statements are equivalent to each other:
+```ts
+const todos = store.todos.state;
+```
+```ts
+const todos = store.state.todos;
+```
+
+### Reacting to state changes
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+<Tabs groupId="frameworks">
+<TabItem value="no framework" label="No framework">
+
+```ts
+store.todos
+  .onChange(todos => /* update DOM */)
+
+sub.unsubscribe()
+// Remember to **always** unsubscribe to avoid a memory leak
+```
+
+</TabItem>
+<TabItem value="react" label="React">
+
+```tsx
+export function App() {
+
+  const todos = store.todos.useState();
+
+  return (/* rendered content */);
+}
+```
+[**Demo - no deps 🥚**](https://codesandbox.io/s/olik-react-usestate-hook-d3z0y?file=/src/App.tsx) &nbsp;&nbsp;&nbsp; [**Demo - with deps 🥚**](https://codesandbox.io/s/olik-react-usestate-with-deps-7pf9d?file=/src/App.tsx)
+
+</TabItem>
+<TabItem value="angular" label="Angular">
+
+```html
+<div *ngFor="let todo of todos$ | async">
+  {{todo.title}}
+</div>
+```
+```ts
+@Component({...})
+export class MyComponent {
+  todos$ = store.todos.observe();
+}
+```
+[**Demo 🥚**](https://codesandbox.io/s/olik-ng-read-iwyd3?file=/src/app/app.component.ts)
+
+### Consuming observables more easily
+
+The `combineComponentObservables()` is a *convenience* function that dramatically reduces the number of `async` pipes in your template and allows you to read your component observables, synchronously, without subscribing to them.
+
+```html
+<ng-container *ngIf="obs$ | async; let obs;">
+  <div>Todos for user: {{obs.username$}}</div>
+  <div *ngFor="let todo of obs.todos$"> {{todo.title}} </div>
+</ng-container>
+```
+```ts
+import { combineComponentObservables } from 'olik-ng';
+
+@Component({...})
+export class AppComponent implements AfterViewInit {
+
+  username$ = store.username.observe()
+  todos$ = store.todos.observe()
+  obs$ = combineComponentObservables<AppComponent>(this)
+  // NOTE: the above obs$ variable must NOT be renamed and 
+  // must be declared AFTER all other observables
+
+  ngAfterViewInit() {
+    console.log({ todos: this.obs$.todos$ }) // synchronous read
+  }
+}
+```
+[**Demo 🥚**](https://codesandbox.io/s/olik-ng-combinecomponentobservables-trh42?file=/src/app/app.component.ts)
+
+</TabItem>
+</Tabs>
+
+### Deriving computationally expensive state
+
+<Tabs groupId="frameworks">
+<TabItem value="no framework" label="No framework">
+
+```ts
+derive(store.todos, store.showDone)
+  .with((todos, showDone) => todos.filter(todo => todo.done === showDone))
+  .onChange(todos => ...)
+```
+
+</TabItem>
+<TabItem value="react" label="React">
+
+```tsx
+import { derive } from 'olik'
+
+export function App() {
+  
+  const todos = derive(store.todos, store.showDone)
+    .with((todos, showDone) => todos.filter(todo => todo.done === showDone))
+    .useState()
+
+  return (/* rendered content */);
+}
+```
+
+[**Demo - no deps 🥚**](https://codesandbox.io/s/olik-react-derivefrom-jv9dd?file=/src/App.tsx) &nbsp;&nbsp;&nbsp; [**Demo - with deps 🥚**](https://codesandbox.io/s/olik-react-derivefrom-with-deps-z7x4i?file=/src/App.tsx)
+
+</TabItem>
+<TabItem value="angular" label="Angular">
+
+```ts
+import { derive } from 'olik'
+
+@Component({...})
+export class MyComponent {
+  completedTodos$ = derive(store.todos, store.showDone)
+    .with((todos, showDone) => todos.filter(todo => todo.done === showDone))
+    .observe()
+}
+```
+[**Demo 🥚**](https://codesandbox.io/s/olik-ng-memoise-supgo?file=/src/app/app.component.ts)
+
+</TabItem>
+</Tabs>
+

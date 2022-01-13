@@ -1,0 +1,135 @@
+---
+sidebar_label: 'Async state'
+---
+
+# Async state
+
+#### The library allows you to update state with a function returning a promise.
+
+---
+
+🥚 Let's begin with the following store:
+```ts
+import { createStore, enableAsyncActionPayloads } from 'olik'
+
+type Todo = { id: number, title: string }
+const store = createStore({
+  name: document.title,
+  state: { todos: new Array<Todo>() }
+});
+
+enableAsyncActionPayloads();
+```
+
+### Reading state
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+<Tabs groupId="frameworks">
+<TabItem value="no framework" label="No framework">
+
+```ts
+const fetchTodos = () => fetch('http://api/todos')
+  .then(res => res.json())
+
+store.todos
+  .replaceAll(fetchTodos)
+```
+
+</TabItem>
+<TabItem value="react" label="React">
+
+```tsx
+export const fetchTodos = () =>
+  fetch('http://example.com/todos').then(res => res.json());
+
+const Component = () => {
+  const future = store.todos
+    .replaceAll(fetchTodos)
+    .useFuture();
+  return (
+    <>
+      {future.isLoading && <div>loading todos...</div>}
+      {future.wasRejected && <div>error loading todos: {future.error}</div>}
+      {future.wasResolved && future.storeValue.map(todo =>
+        <div key={todo.id}>{todo.title}</div>
+      )}
+    </>
+  )
+}
+```
+[**Demo 🥚 **](https://codesandbox.io/s/olik-react-fetch-nj702)
+
+</TabItem>
+<TabItem value="angular" label="Angular">
+
+```ts
+@Component({...})
+class MyComponent {
+
+  constructor(private httpClient: HttpClient) { }
+
+  todos$ = store.todos
+    .replaceAll(this.httpClient.get('http://example.com/todos'))
+    .asObservableFuture();
+  );
+}
+```
+```html
+<ng-container *ngIf="todos$ | async; let todos;">
+  <div *ngIf="todos.isLoading">
+    Fetching todos...
+  </div>
+  <div *ngIf="todos.wasRejected">
+    Failed to fetch todos with error {{todos.error}}
+  </div>
+  <ul *ngIf="todos.wasResolved">
+    <li *ngFor="let todo of todos.storeValue">
+      {{todo.title}}
+    </li>
+  </ul>
+</ng-container>
+```
+[**Demo 🥚**](https://codesandbox.io/s/olik-ng-async-5y3hd?file=/src/app/app.component.ts)
+
+</TabItem>
+</Tabs>
+
+### Writing state
+```ts
+const updateTodo = (todo: Todo) => () => fetch(`http://api/todo/${todo.id}`, {
+  method: 'POST',
+  body: JSON.stringify(todo),
+}).then(res => res.json())
+
+store.todos
+  .find.id.eq(3)
+  .replace(updateTodo(todo))
+```
+[**Demo 🥚**](https://codesandbox.io/s/writing-async-state-r8rs6?file=/src/index.ts)
+
+### Caching data
+The library uses your store as a cache and will not re-fetch for a specified period.
+```ts
+const fetchTodosFromAPI = () => fetch('http://api/todos')
+
+store.todos.replaceAll(fetchTodosFromAPI, { cacheFor: 1000 * 60 })
+```
+[**Demo 🥚**](https://codesandbox.io/s/olik-demo-caching-data-no-framework-3rvz9?file=/src/index.ts)
+
+### Invalidating caches
+The following code will un-do the above.
+```ts
+store.todos.invalidateCache()
+```
+[**Demo 🥚**](https://codesandbox.io/s/olik-demo-cache-invalidation-no-framework-efore?file=/src/index.ts)
+
+### Optimistic updates
+You can make immediate updates, which will be rolled back if an error is thrown.
+```ts
+const setUserAsAdminOnAPI = (isAdmin: boolean) =>
+  () => fetch('http://api/todos')
+store.user.isAdmin
+  .replace(setUserAsAdminOnAPI(true), { optimisticallyUpdateWith: true })
+```

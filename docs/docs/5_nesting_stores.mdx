@@ -1,0 +1,109 @@
+---
+sidebar_label: 'Nesting stores'
+---
+
+# Nesting stores
+
+#### You can nest a component-level store within your application-level store. This allows you to track its state together with your application state. 
+
+---
+
+🥚 Let's begin with the following store:
+```ts
+import {
+  createStore,
+  importOlikNestingModule,
+  importOlikReduxDevtoolsModule
+} from 'olik'
+
+importOlikNestingModule()
+importOlikReduxDevtoolsModule()
+
+const store = createStore({
+  name: document.title,
+  state: { str: '' },
+})
+```
+
+### Creating a nested store
+When creating a nested store, you must provide a `hostStoreName`. If the host store could not found, then your nested store will be registered as a separate store. This allows you to build your component independently of your application. You must also provide an `instanceId` which will distinguish instances of the nested store.
+
+import Tabs from '@theme/Tabs';
+import TabItem from '@theme/TabItem';
+
+<Tabs groupId="frameworks">
+<TabItem value="no framework" label="No framework">
+
+```ts
+import { createStore, detachNestedStore } from 'olik'
+
+class MyComponent {
+
+  const nestedStore = createStore({
+    name: 'MyComponent',
+    state: { num: 0 },
+    nestStore: {
+      hostStoreName: document.title,
+      instanceId: 1,
+    },
+  })
+  
+  // You should detach this store from its container when it is no longer being used
+  onComponentDestroyed = () => detachNestedStore(this.nestedStore)
+}
+```
+You should now see that your application state has a new property called `nested` which contains the state for `MyComponent`.
+
+[**Demo 🥚**](https://codesandbox.io/s/attached-component-store-d9xqk?file=/src/index.ts)
+
+</TabItem>
+<TabItem value="react" label="React">
+
+The `useNestedStore()` hook returns a store which will exist for the lifetime of your component
+```tsx
+import { useNestedStore } from 'olik-react'
+
+const IncrementorComponent = (props: { id: number }) => {
+  
+  const nestedStore = useNestedStore({
+    name: 'Incrementor',
+    hostStoreName: document.title,
+    instanceId: props.id,
+    state: { num: 0 },
+  })
+
+  return (/* rendered content */)
+}
+```
+[**Demo 🥚**](https://codesandbox.io/s/olik-react-nested-stores-ve6lj?file=/src/App.tsx)
+
+</TabItem>
+<TabItem value="angular" label="Angular">
+
+```ts
+import { createStore, detachNestedStore } from 'olik'
+
+@Component({ ... })
+export class IncrementorComponent implements OnDestroy {
+
+  nestedStore = createStore({
+    name: 'Incrementor',
+    state: { num: 0 },
+    nestStore: {
+      hostStoreName: document.title,
+      instanceId: 1,
+    },
+  })
+
+  ngOnDestroy() {
+    // You should detach this store from its container when it is no longer being used
+    detachNestedStore(this.nestedStore)
+  }
+}
+```
+[**Demo 🥚**](https://codesandbox.io/s/olik-ng-nested-stores-gt4bg?file=/src/app/incrementor/incrementor.component.ts)
+
+</TabItem>
+</Tabs>
+
+

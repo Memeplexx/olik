@@ -21,6 +21,7 @@ const store = createStore({
   }
 });
 ```
+
 ### Writing **object and primitive** nodes
 ```ts
 // REPLACE USERS AGE WITH 29
@@ -80,7 +81,7 @@ store.todos.done
 
 ### Writing **array element** nodes
 In order for the library to generate highly descriptive action types, searching for array elements looks a little different from what you might expect.<br/>
-Note: in the following examples `find()` is interchangeable with `filter()`.  
+Note: in the following examples `find` is interchangeable with `filter`.  
 
 ```ts
 // FIND A TODO BY ITS ID AND REPLACE IT
