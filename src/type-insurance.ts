@@ -148,8 +148,6 @@ function test() {
     .objArr.find.num.eq(3)
     .patch({ num: 4 });
 
-    // select.
-
   // select.objArray.find.num.eq(3).observe();
   // select.objArray.find.num.eq(3).useState();
 
@@ -164,8 +162,3 @@ function test() {
 
 //   todos.find.id.eq(3).status.replace()
 // }
-
-
-// const select = createStore('MyStore')({
-//   test: ''
-// });

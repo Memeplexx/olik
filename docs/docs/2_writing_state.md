@@ -75,7 +75,7 @@ store.todos.done
   .replaceAll(true)
 
 // INCREMENT URGENCY OF ALL TODOS BY 1
-store.todos.done
+store.todos.urgency
   .incrementAll(1)  
 ```
 
@@ -114,7 +114,7 @@ store.todos
 ---
 
 ### Performing **many writes** at once
-Avoid unnecessary render cycles by performing many updates at once.
+Avoid unnecessary render cycles by using the `transact()` function.
 ```ts
 import { transact } from /* whichever version of olik you've installed */
 

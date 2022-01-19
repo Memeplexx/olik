@@ -4,7 +4,7 @@ sidebar_label: 'Async state'
 
 # Async state
 
-#### The library allows you to update state with a function returning a promise.
+#### You can update state with a function returning a promise.
 
 ---
 
@@ -16,9 +16,9 @@ type Todo = { id: number, title: string }
 const store = createStore({
   name: document.title,
   state: { todos: new Array<Todo>() }
-});
+})
 
-enableAsyncActionPayloads();
+enableAsyncActionPayloads()
 ```
 
 ### Reading state
@@ -42,12 +42,12 @@ store.todos
 
 ```tsx
 export const fetchTodos = () =>
-  fetch('http://example.com/todos').then(res => res.json());
+  fetch('http://example.com/todos').then(res => res.json())
 
 const Component = () => {
   const future = store.todos
     .replaceAll(fetchTodos)
-    .useFuture();
+    .useFuture()
   return (
     <>
       {future.isLoading && <div>loading todos...</div>}
@@ -71,9 +71,9 @@ class MyComponent {
   constructor(private httpClient: HttpClient) { }
 
   todos$ = store.todos
-    .replaceAll(this.httpClient.get('http://example.com/todos'))
-    .asObservableFuture();
-  );
+    .replaceAll(() => this.httpClient.get('http://example.com/todos'))
+    .asObservableFuture()
+  )
 }
 ```
 ```html

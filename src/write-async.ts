@@ -10,7 +10,7 @@ export const importOlikAsyncModule = () => {
     if (libState.isInsideTransaction) { throw new Error(errorMessages.ASYNC_PAYLOAD_INSIDE_TRANSACTION); }
     const readCurrentState = () =>
       readState({ state: libState.stores[storeName].state, stateActions: [...stateActions, { type: 'action', name: 'state' }], cursor: { index: 0 } });
-    let state = { storeValue: readCurrentState(), error: null, isLoading: true, wasRejected: false, wasResolved: false } as FutureState<any>;
+    let state = { storeValue: readCurrentState(), error: null, isLoading: false, wasRejected: false, wasResolved: false } as FutureState<any>;
     if (libState.stores[storeName].state.cache?.[stateActions.map(sa => sa.actionType).join('.')]) {
       const result = new Proxy(new Promise<any>(resolve => resolve(readCurrentState())), {
         get: (target: any, prop: any) => {
@@ -33,7 +33,7 @@ export const importOlikAsyncModule = () => {
         snapshot = readCurrentState();
         setNewStateAndNotifyListeners({ storeName, stateActions: [...stateActions, { type: 'action', name: prop, arg: optimisticallyUpdateWith, actionType: `${prop}()` }] });
       }
-      state = { ...state, storeValue: readCurrentState() };
+      state = { ...state, isLoading: true, storeValue: readCurrentState() };
       const promise = (augmentations.async ? augmentations.async(arg) : arg()) as Promise<any>;
       return promise
         .then(promiseResult => {

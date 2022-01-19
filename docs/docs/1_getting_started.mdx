@@ -5,10 +5,6 @@ sidebar_position: 1
 
 # Getting started
 
-#### Olik is designed to be framework-agnostic, however wrapper libs exist for a growing number of frameworks.
-
----
-
 ### Installation
 
 import Tabs from '@theme/Tabs';
@@ -52,10 +48,12 @@ export class AppModule {}
 </Tabs>
 
 ### Creating a store
-```ts
-import { createStore, importOlikReduxDevtoolsModule } from 'olik'
 
-importOlikReduxDevtoolsModule()    // optional debugging tool
+Although Olik works with arbitrarily deep state-trees, normalizing your state is still advised.
+[**This guide**](https://redux.js.org/recipes/structuring-reducers/normalizing-state-shape), from the Redux docs, explains the benefits of normalizing your state tree.
+
+```ts
+import { createStore } from 'olik'
 
 export const store = createStore({
   name: document.title,            // can be any user-defined string
@@ -63,7 +61,12 @@ export const store = createStore({
 })
 ```
 
-Although Olik works with arbitrarily deep state-trees, normalizing your state is still advised.
-[**This guide**](https://redux.js.org/recipes/structuring-reducers/normalizing-state-shape), from the Redux docs, explains the benefits of normalizing your state tree.
+### Integrating with Redux Devtools
 
+You can integrate with the Redux Devtools by importing the related module before you create your store
 
+```ts
+import { importOlikReduxDevtoolsModule } from 'olik'
+
+importOlikReduxDevtoolsModule()
+```

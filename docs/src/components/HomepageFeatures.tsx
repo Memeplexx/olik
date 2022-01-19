@@ -10,32 +10,29 @@ type FeatureItem = {
 
 const FeatureList: FeatureItem[] = [
   {
-    title: 'Easy to Use',
+    title: 'Compact & Lightweight',
     image: '/img/undraw_docusaurus_mountain.svg',
     description: (
       <>
-        Docusaurus was designed from the ground up to be easily installed and
-        used to get your website up and running quickly.
+        Olik's 5kb API allows you to traverse, read, and update arbitrarily deep state trees without leaving your component code.
       </>
     ),
   },
   {
-    title: 'Focus on What Matters',
+    title: 'Typesafe & Explicit',
     image: '/img/undraw_docusaurus_tree.svg',
     description: (
       <>
-        Docusaurus lets you focus on your docs, and we&apos;ll do the chores. Go
-        ahead and move your docs into the <code>docs</code> directory.
+        Olik works like a light-weight query-builder which it uses to <b>describe your state updates for you</b> with perfect accuracy.
       </>
     ),
   },
   {
-    title: 'Powered by React',
+    title: 'Feature-rich',
     image: '/img/undraw_docusaurus_react.svg',
     description: (
       <>
-        Extend or customize your website layout by reusing React. Docusaurus can
-        be extended while reusing the same header and footer.
+        Transactions, nested stores, async support, caching, and optimistic updates are all available.
       </>
     ),
   },

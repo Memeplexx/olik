@@ -38,12 +38,6 @@ const config = {
         },
         items: [
           {
-            type: 'doc',
-            docId: 'getting_started',
-            position: 'left',
-            label: 'Tutorial',
-          },
-          {
             href: 'https://github.com/memeplexx/olik',
             label: 'GitHub',
             position: 'right',

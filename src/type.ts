@@ -44,7 +44,7 @@ export type Rec<X, Depth extends number> = {
 
 export type UpdatableObject<S, F extends FindOrFilter, Q extends QueryStatus, Depth extends number, NewDepth extends number = DecrementRecursion[Depth]> = Rec<
   & Patch<S>
-  & Remove<Depth>
+  & RemoveFromObject<Depth>
   & InvalidateCache
   & (F extends 'isFind' ? (Replace<S> & DeepMerge<S>) : {})
   & Readable<F extends 'isFilter' ? S[] : S>
@@ -59,14 +59,14 @@ export type UpdatableObject<S, F extends FindOrFilter, Q extends QueryStatus, De
 export type UpdatableArray<S extends Array<any>, F extends FindOrFilter, Q extends QueryStatus, Depth extends number, NewDepth extends number = DecrementRecursion[Depth]> = Rec<
   & Q extends 'queried'
   ? (
-    & Remove<Depth>
+    & RemoveFromArray<Depth>
     & InvalidateCache
     & (F extends 'isFind' ? Replace<S[0]> : {})
     & Or<S, F, NewDepth>
     & And<S, F, NewDepth>
     & (S[0] extends Array<any> ? {} : S[0] extends object ? UpdatableObject<S[0], F, Q, NewDepth> : UpdatablePrimitive<S[0], F, Q, NewDepth>)
   ) : (
-    & Remove<Depth>
+    & RemoveFromArray<Depth>
     & InvalidateCache
     & RemoveAll
     & InsertMany<S>
@@ -96,21 +96,30 @@ export type UpdateOptions<H> = (H extends () => AnyAsync<any> ? & CacheFor & Opt
 
 export type UpdatablePrimitive<S, F extends FindOrFilter, Q extends QueryStatus, Depth extends number> =
   & InvalidateCache
-  & Remove<Depth>
+  & RemoveFromObject<Depth>
   & (Q extends 'notQueried' ? ReplaceAll<S> : F extends 'isFind' ? Replace<S> : {})
   & (S extends number ? (Q extends 'notQueried' ? IncrementAll : Increment) : {})
   & Readable<F extends 'isFilter' ? S[] : S>
 
 
 export interface UpsertMatching<S> {
+  /**
+   * Insert element(s) if they do not already exist or update them if they do
+   */
   upsertMatching: { [K in keyof S]: S[K] extends object ? UpsertableObject<S, S> : UpsertablePrimitive<S> },
 }
 
 export interface Or<S extends Array<any>, F extends FindOrFilter, NewDepth extends number> {
+  /**
+   * Add an additional clause to widen your search
+   */
   or: Comparators<S, S[0], F, NewDepth> & (S[0] extends object ? Searchable<S, S[0], F, NewDepth> : {})
 }
 
 export interface And<S extends Array<any>, F extends FindOrFilter, NewDepth extends number> {
+  /**
+   * Add an additional clause to narrow your search
+   */
   and: Comparators<S, S[0], F, NewDepth> & (S[0] extends object ? Searchable<S, S[0], F, NewDepth> : {})
 }
 
@@ -142,13 +151,21 @@ export interface InvalidateCache {
   invalidateCache: () => void,
 }
 
-export type Remove<Depth extends number> = [Depth] extends [MaxRecursionDepth] ? {} : {
+export type RemoveFromObject<Depth extends number> = [Depth] extends [MaxRecursionDepth] ? {} : {
   /**
    * Remove the selected property from its parent object.  
    * 
    * **WARNING**: Performing this action has the potential to contradict the type-system. 
    * **Only** use this to remove properties from objects of type `{ [key: string]: any }` and 
    * **not** from objects with a known structure, for example `{ num: number, str: string }`.
+   */
+  remove(): void,
+  remove<X extends Payload<any>>(options: X): Future<any>;
+}
+
+export type RemoveFromArray<Depth extends number> = [Depth] extends [MaxRecursionDepth] ? {} : {
+  /**
+   * Remove the selected element from the array.  
    */
   remove(): void,
   remove<X extends Payload<any>>(options: X): Future<any>;
@@ -234,7 +251,7 @@ export interface InvalidateDerivation {
 
 export interface Read<S> {
   /**
-   * The current state from the selected node.
+   * The current state of the selected node.
    */
   state: DeepReadonly<S>;
 }
@@ -415,7 +432,7 @@ export interface FutureState<C> {
   wasRejected: boolean,
   wasResolved: boolean,
   error: any,
-  storeValue: C,
+  storeValue: DeepReadonly<C>,
 };
 
 export interface Future<C> extends Promise<C> {
