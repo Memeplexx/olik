@@ -17,7 +17,7 @@ export const importOlikAsyncModule = () => {
           if (prop === 'then' || prop === 'catch' || prop === 'finally') {
             const t = Promise.resolve(readCurrentState());
             return (t as any)[prop].bind(t);
-          } else if (prop === 'getFutureState') {
+          } else if (prop === 'state') {
             return state;
           } else {
             return (...args: any[]) => target[prop].apply(target, args);
@@ -68,8 +68,8 @@ export const importOlikAsyncModule = () => {
       setTimeout(() => { if (!promiseWasChained) { promiseResult().then((r) => resolve(r)); } });
     }), {
       get: (target: any, prop: any) => {
-        if (prop === 'getFutureState') {
-          return () => state;
+        if (prop === 'state') {
+          return state;
         } else if (prop === 'then' || prop === 'catch' || prop === 'finally') {
           promiseWasChained = true;
           const t = promiseResult();

@@ -439,7 +439,7 @@ export interface Future<C> extends Promise<C> {
   /**
    * Gets the current status for the UI to consume
    */
-  getFutureState: () => FutureState<C>,
+  state: FutureState<DeepReadonly<C>>,
 }
 
 export interface Augmentations {
