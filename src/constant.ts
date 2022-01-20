@@ -34,6 +34,7 @@ export const augmentations: Augmentations = {
   selection: {},
   future: {},
   derivation: {},
+  core: {},
   async: promise => promise(),
 };
 
