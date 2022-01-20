@@ -1,6 +1,6 @@
 import { augmentations, errorMessages, libState } from './constant';
 import { readState } from './read';
-import { OptionsForMakingAStore, StateAction, Store } from './type';
+import { OptionsForMakingAStore, StateAction, Store, StoreAugment } from './type';
 import { StoreInternals } from './type-internal';
 import { deepFreeze } from './utility';
 import { processPotentiallyAsyncUpdate } from './write';
@@ -9,7 +9,7 @@ import { setNewStateAndNotifyListeners } from './write-complete';
 
 export const createStore = <S>(
   args: OptionsForMakingAStore<S>
-): Store<S> => {
+): Store<S>& (S extends never ? {} : StoreAugment<S>) => {
   validateState(args.state);
   removeStaleCacheReferences(args.state);
   const internals = {
@@ -76,6 +76,8 @@ export const createStore = <S>(
           return recurseProxy({}, false, stateActions);
         } else if (augmentations.selection[prop]) {
           return augmentations.selection[prop](recurseProxy({}, false, stateActions));
+        } else if (augmentations.core[prop]) {
+          return augmentations.core[prop](recurseProxy({}, false, stateActions));
         } else {
           stateActions.push({ type: 'property', name: prop, actionType: prop });
           return recurseProxy({}, false, stateActions);

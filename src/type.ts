@@ -447,6 +447,7 @@ export interface Augmentations {
   future: { [name: string]: <C>(future: Future<C>) => (...args: any[]) => any };
   derivation: { [name: string]: <R>(derivation: Derivation<R>) => (...args: any[]) => any }
   async: <C>(fnReturningFutureAugmentation: () => any) => Promise<C>;
+  core: { [prop: string]: <C>(selection: Readable<C>) => any },
 }
 
 export interface Async<C> {
@@ -534,9 +535,13 @@ export interface EnableNestedStoreArgs {
   instanceId: string | number;
 }
 
-export type Store<S> = (S extends Array<any> ? UpdatableArray<S, 'isFilter', 'notQueried', MaxRecursionDepth>
+export type Store<S> = (S extends never ? {} : (S extends Array<any> ? UpdatableArray<S, 'isFilter', 'notQueried', MaxRecursionDepth>
   : S extends object ? UpdatableObject<S, 'isFind', 'queried', MaxRecursionDepth>
-  : UpdatablePrimitive<S, 'isFind', 'queried', MaxRecursionDepth>);
+  : UpdatablePrimitive<S, 'isFind', 'queried', MaxRecursionDepth>));
+
+
+export interface StoreAugment<S> { }
+  
 
 export interface ChangeListener {
   actions: StateAction[];
