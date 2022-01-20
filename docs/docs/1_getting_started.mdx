@@ -5,7 +5,7 @@ sidebar_position: 1
 
 # Getting started
 
-### Installation
+### Installation & Setup
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
@@ -45,12 +45,24 @@ export class AppModule {}
 ```
 
 </TabItem>
+<TabItem value="svelte" label="Svelte">
+
+```bash
+npm install olik olik-svelte
+```
+
+```ts
+import { augmentOlikForSvelte } from 'olik-svelte'
+
+augmentOlikForSvelte() // invoke before initializing store
+```
+
+</TabItem>
 </Tabs>
 
 ### Creating a store
 
-Although Olik works with arbitrarily deep state-trees, normalizing your state is still advised.
-[**This guide**](https://redux.js.org/recipes/structuring-reducers/normalizing-state-shape), from the Redux docs, explains the benefits of normalizing your state tree.
+Olik supports arbitrarily deep state-trees, however just like with Redux, [**normalizing**](https://redux.js.org/recipes/structuring-reducers/normalizing-state-shape) your state is still advised.
 
 ```ts
 import { createStore } from 'olik'
@@ -63,7 +75,7 @@ export const store = createStore({
 
 ### Integrating with Redux Devtools
 
-You can integrate with the Redux Devtools by importing the related module before you create your store
+You can integrate with the [**Redux Devtools**](https://github.com/reduxjs/redux-devtools) by importing the related module before you create your store.
 
 ```ts
 import { importOlikReduxDevtoolsModule } from 'olik'
