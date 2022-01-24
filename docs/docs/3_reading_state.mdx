@@ -109,9 +109,15 @@ export class AppComponent implements AfterViewInit {
 <TabItem value="svelte" label="Svelte">
 
 ```ts
+{#each todo as $store.todos}
+	<li> {todo.title} </li>
+{/each}
+```
+or
+```ts
 const todos = store.todos.observe();
 
-{#each todo as todos}
+{#each todo as $todos}
 	<li> {todo.title} </li>
 {/each}
 ```
