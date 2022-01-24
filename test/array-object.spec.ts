@@ -214,7 +214,7 @@ describe('array-object', () => {
     const payload = { id: 1, val: 5 };
     store
       .$upsertMatching.id
-      .withOne(payload);
+      .$withOne(payload);
     expect(currentAction(store)).toEqual({ type: 'upsertMatching.id.withOne()', payload });
     expect(store.$state).toEqual([payload, state[1], state[2]]);
   })
@@ -224,7 +224,7 @@ describe('array-object', () => {
     const payload = { id: 4, val: 5 };
     store
       .$upsertMatching.id
-      .withOne(payload);
+      .$withOne(payload);
     expect(currentAction(store)).toEqual({ type: 'upsertMatching.id.withOne()', payload });
     expect(store.$state).toEqual([...state, payload]);
   })
@@ -234,7 +234,7 @@ describe('array-object', () => {
     const payload = [{ id: 1, val: 5 }, { id: 5, val: 5 }];
     store
       .$upsertMatching.id
-      .withMany(payload);
+      .$withMany(payload);
     expect(currentAction(store)).toEqual({ type: 'upsertMatching.id.withMany()', payload });
     expect(store.$state).toEqual([payload[0], state[1], state[2], payload[1]]);
   })

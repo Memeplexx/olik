@@ -138,11 +138,11 @@ function test() {
 
   store.objArray
     .$upsertMatching.obj.num
-    .withOne({ num: 3, arr: [], objArr: [], obj: { num: 0 } });
+    .$withOne({ num: 3, arr: [], objArr: [], obj: { num: 0 } });
 
   store.objArray
     .$upsertMatching.obj.num
-    .withMany([{ num: 3, arr: [], objArr: [], obj: { num: 0 } }]);
+    .$withMany([{ num: 3, arr: [], objArr: [], obj: { num: 0 } }]);
 
   store.objArray
     .objArr.$find.num.$eq(3)

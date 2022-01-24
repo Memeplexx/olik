@@ -292,14 +292,14 @@ export interface WithOne<T> {
   /**
    * Upsert with an individual array element.
    */
-  withOne: <X extends Payload<T>>(element: X) => UpdateResult<X>,
+  $withOne: <X extends Payload<T>>(element: X) => UpdateResult<X>,
 }
 
 export interface WithMany<T> {
   /**
    * Upsert with an array of elements.
    */
-  withMany: <X extends Payload<T[]>>(array: X) => UpdateResult<X>,
+  $withMany: <X extends Payload<T[]>>(array: X) => UpdateResult<X>,
 }
 
 export interface CacheFor {

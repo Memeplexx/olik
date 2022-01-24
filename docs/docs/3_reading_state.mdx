@@ -25,10 +25,10 @@ const store = createStore({
 To read state associated with a node, you can use the `state` property.  
 The following statements are equivalent to each other:
 ```ts
-const todos = store.todos.state;
+const todos = store.todos.$state;
 ```
 ```ts
-const todos = store.state.todos;
+const todos = store.$state.todos;
 ```
 
 ### Reacting to state changes
@@ -41,7 +41,7 @@ import TabItem from '@theme/TabItem';
 
 ```ts
 store.todos
-  .onChange(todos => /* Update DOM */)
+  .$onChange(todos => /* Update DOM */)
 
 sub.unsubscribe()
 // Remember to **always** unsubscribe to avoid a memory leak
@@ -53,7 +53,7 @@ sub.unsubscribe()
 ```tsx
 export function App() {
 
-  const todos = store.todos.useState();
+  const todos = store.todos.$useState();
 
   return (/* rendered content */);
 }
@@ -71,7 +71,7 @@ export function App() {
 ```ts
 @Component({...})
 export class MyComponent {
-  todos$ = store.todos.observe();
+  todos$ = store.todos.$observe();
 }
 ```
 [**Demo 🥚**](https://codesandbox.io/s/olik-ng-read-iwyd3?file=/src/app/app.component.ts)
@@ -92,8 +92,8 @@ import { combineComponentObservables } from 'olik-ng';
 @Component({...})
 export class AppComponent implements AfterViewInit {
 
-  username$ = store.username.observe()
-  todos$ = store.todos.observe()
+  username$ = store.username.$observe()
+  todos$ = store.todos.$observe()
   obs$ = combineComponentObservables<AppComponent>(this)
   // NOTE: the above obs$ variable must NOT be renamed and 
   // must be declared AFTER all other observables
@@ -150,8 +150,8 @@ import { derive } from 'olik'
 export function MyComponent() {
   
   const todos = derive(store.todos, store.showDone)
-    .with((todos, showDone) => todos.filter(todo => todo.done === showDone))
-    .useState()
+    .$with((todos, showDone) => todos.filter(todo => todo.done === showDone))
+    .$useState()
 
   return (/* rendered content */);
 }
@@ -168,8 +168,8 @@ import { derive } from 'olik'
 @Component({...})
 export class MyComponent {
   completedTodos$ = derive(store.todos, store.showDone)
-    .with((todos, showDone) => todos.filter(todo => todo.done === showDone))
-    .observe()
+    .$with((todos, showDone) => todos.filter(todo => todo.done === showDone))
+    .$observe()
 }
 ```
 [**Demo 🥚**](https://codesandbox.io/s/olik-ng-memoise-supgo?file=/src/app/app.component.ts)
@@ -181,8 +181,8 @@ export class MyComponent {
 import { derive } from 'olik'
 
 completedTodos = derive(store.todos, store.showDone)
-  .with((todos, showDone) => todos.filter(todo => todo.done === showDone))
-  .observe()
+  .$with((todos, showDone) => todos.filter(todo => todo.done === showDone))
+  .$observe()
 ```
 [**Demo 🥚**](https://codesandbox.io/s/olik-ng-memoise-supgo?file=/src/app/app.component.ts)
 
