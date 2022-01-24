@@ -102,8 +102,7 @@ store.todos
 // FIND A TODO BY ITS ID AND REPLACE ITS URGENCY
 store.todos
   .$find.id.$eq(3)
-  .urgency
-  .$replace(5)
+  .urgency.$replace(5)
 
 // APPLY MULTIPLE SEARCH CLAUSES WITH DIFFERENT COMPARATORS
 store.todos

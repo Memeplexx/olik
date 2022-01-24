@@ -151,10 +151,29 @@ function test() {
   
 }
 
-// const updateTodoStatus = (id: number, status: TodoStatus) => {
-//   select.todos
-//     .find.id.eq(id)
-//     .status.replace(status);
+export const demo = () => {
+  const store = createStore({
+    name: 'my store',
+    state: {
+      user: { name: '', age: 0 },
+      todos: new Array<{ id: number, title: string, status: 'done' | 'todo' }>(),
+    }
+  });
 
-//   todos.find.id.eq(3).status.replace()
-// }
+  store.user.age
+    .$increment(1);
+  // { type: 'user.age.increment()', payload: 1 }
+
+  store.todos
+    .$find.id.$eq(3).status
+    .$replace('todo');
+  // { type: todos.find.id.eq(3).status.replace(), payload: 'todo' }
+
+  store.todos
+    .$filter.status.$eq('done')
+    .$remove();
+  // { type: todos.filter.status.eq(done).replace() }
+
+  store.user.name.$replace('test');
+  // { type: user.name.replace(), payload: 'test' }
+}
