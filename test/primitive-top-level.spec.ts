@@ -15,8 +15,8 @@ describe('top-level-primitive', () => {
     const select = createStore({ name, state });
     const payload = 1;
     select
-      .replace(payload);
-    expect(select.state).toEqual(1);
+      .$replace(payload);
+    expect(select.$state).toEqual(1);
     expect(currentAction(select)).toEqual({ type: 'replace()', payload });
   })
 
@@ -24,8 +24,8 @@ describe('top-level-primitive', () => {
     const select = createStore({ name, state });
     const payload = 1;
     select
-      .increment(payload);
-    expect(select.state).toEqual(1);
+      .$increment(payload);
+    expect(select.$state).toEqual(1);
     expect(currentAction(select)).toEqual({ type: 'increment()', payload });
   })
 

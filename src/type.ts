@@ -88,7 +88,7 @@ export type UpdatableArray<S extends Array<any>, F extends FindOrFilter, Q exten
             : UpdatablePrimitive<S[0][K], F, Q, NewDepth>)
         }
       )
-      : IncrementAll
+      : AddToAll
     )
   ), Depth>
 
@@ -98,7 +98,8 @@ export type UpdatablePrimitive<S, F extends FindOrFilter, Q extends QueryStatus,
   & InvalidateCache
   & RemoveFromObject<Depth>
   & (Q extends 'notQueried' ? ReplaceAll<S> : F extends 'isFind' ? Replace<S> : {})
-  & (S extends number ? (Q extends 'notQueried' ? IncrementAll : Increment) : {})
+  & (S extends number ? (Q extends 'notQueried' ? AddToAll : Add) : {})
+  & (S extends number ? (Q extends 'notQueried' ? SubtractFromAll : Subtract) : {})
   & Readable<F extends 'isFilter' ? S[] : S>
 
 
@@ -106,35 +107,35 @@ export interface UpsertMatching<S> {
   /**
    * Insert element(s) if they do not already exist or update them if they do
    */
-  upsertMatching: { [K in keyof S]: S[K] extends object ? UpsertableObject<S, S> : UpsertablePrimitive<S> },
+  $upsertMatching: { [K in keyof S]: S[K] extends object ? UpsertableObject<S, S> : UpsertablePrimitive<S> },
 }
 
 export interface Or<S extends Array<any>, F extends FindOrFilter, NewDepth extends number> {
   /**
    * Add an additional clause to widen your search
    */
-  or: Comparators<S, S[0], F, NewDepth> & (S[0] extends object ? Searchable<S, S[0], F, NewDepth> : {})
+  $or: Comparators<S, S[0], F, NewDepth> & (S[0] extends object ? Searchable<S, S[0], F, NewDepth> : {})
 }
 
 export interface And<S extends Array<any>, F extends FindOrFilter, NewDepth extends number> {
   /**
    * Add an additional clause to narrow your search
    */
-  and: Comparators<S, S[0], F, NewDepth> & (S[0] extends object ? Searchable<S, S[0], F, NewDepth> : {})
+  $and: Comparators<S, S[0], F, NewDepth> & (S[0] extends object ? Searchable<S, S[0], F, NewDepth> : {})
 }
 
 export interface Find<S extends Array<any>, NewDepth extends number> {
   /**
    * Find from the selected array
    */
-  find: Comparators<S, S[0], 'isFind', NewDepth> & (S[0] extends object ? Searchable<S, S[0], 'isFind', NewDepth> : {})
+  $find: Comparators<S, S[0], 'isFind', NewDepth> & (S[0] extends object ? Searchable<S, S[0], 'isFind', NewDepth> : {})
 }
 
 export interface Filter<S extends Array<any>, NewDepth extends number> {
   /**
    * Filter the selected array
    */
-  filter: Comparators<S, S[0], 'isFilter', NewDepth> & (S[0] extends object ? Searchable<S, S[0], 'isFilter', NewDepth> : {})
+  $filter: Comparators<S, S[0], 'isFilter', NewDepth> & (S[0] extends object ? Searchable<S, S[0], 'isFilter', NewDepth> : {})
 }
 
 export interface Unsubscribe {
@@ -148,7 +149,7 @@ export interface InvalidateCache {
   /**
    * Ensure that any data cached on the selected node is re-fetched the next time a promise is used to populate this node.
    */
-  invalidateCache: () => void,
+  $invalidateCache: () => void,
 }
 
 export type RemoveFromObject<Depth extends number> = [Depth] extends [MaxRecursionDepth] ? {} : {
@@ -159,101 +160,115 @@ export type RemoveFromObject<Depth extends number> = [Depth] extends [MaxRecursi
    * **Only** use this to remove properties from objects of type `{ [key: string]: any }` and 
    * **not** from objects with a known structure, for example `{ num: number, str: string }`.
    */
-  remove(): void,
-  remove<X extends Payload<any>>(options: X): Future<any>;
+  $remove(): void,
+  $remove<X extends Payload<any>>(options: X): Future<any>;
 }
 
 export type RemoveFromArray<Depth extends number> = [Depth] extends [MaxRecursionDepth] ? {} : {
   /**
    * Remove the selected element from the array.  
    */
-  remove(): void,
-  remove<X extends Payload<any>>(options: X): Future<any>;
+  $remove(): void,
+  $remove<X extends Payload<any>>(options: X): Future<any>;
 }
 
 export interface RemoveAll {
   /**
    * Remove all elements from the selected array node.
    */
-  removeAll(): void,
-  removeAll<X extends Payload<any>>(options: X): Future<any>;
+  $removeAll(): void,
+  $removeAll<X extends Payload<any>>(options: X): Future<any>;
 }
 
 export interface InsertOne<S> {
   /**
    * Insert the supplied array element into the selected array node. 
    */
-  insertOne<X extends Payload<S>>(element: X, options: UpdateOptions<X>): UpdateResult<X>;
+  $insertOne<X extends Payload<S>>(element: X, options: UpdateOptions<X>): UpdateResult<X>;
 }
 
 export interface InsertMany<S> {
   /**
    * Insert the supplied array into the selected array node. 
    */
-  insertMany<X extends Payload<S>>(element: X, options: UpdateOptions<X>): UpdateResult<X>;
+  $insertMany<X extends Payload<S>>(element: X, options: UpdateOptions<X>): UpdateResult<X>;
 }
 
 export interface Patch<S> {
   /**
    * Partially update the selected object node with the supplied state.
    */
-  patch<X extends Payload<Partial<S>>>(patch: X, options: UpdateOptions<X>): UpdateResult<X>;
+  $patch<X extends Payload<Partial<S>>>(patch: X, options: UpdateOptions<X>): UpdateResult<X>;
 }
 
 export interface PatchAll<S> {
   /**
    * Partially update all the selected object nodes with the supplied state.
    */
-  patchAll<X extends Payload<Partial<S>>>(patch: X, options: UpdateOptions<X>): UpdateResult<X>;
+  $patchAll<X extends Payload<Partial<S>>>(patch: X, options: UpdateOptions<X>): UpdateResult<X>;
 }
 
-export interface Increment {
+export interface Add {
   /**
    * Add the supplied number onto the selected node.
    */
-  increment<X extends Payload<number>>(by: X, options: UpdateOptions<X>): UpdateResult<X>;
+  $increment<X extends Payload<number>>(by: X, options: UpdateOptions<X>): UpdateResult<X>;
 }
 
-export interface IncrementAll {
+export interface Subtract {
+  /**
+   * Add the supplied number onto the selected node.
+   */
+  $decrement<X extends Payload<number>>(by: X, options: UpdateOptions<X>): UpdateResult<X>;
+}
+
+export interface AddToAll {
   /**
    * Add the supplied number onto all the selected nodes. 
    */
-  incrementAll<X extends Payload<number>>(by: X, options: UpdateOptions<X>): UpdateResult<X>;
+  $incrementAll<X extends Payload<number>>(by: X, options: UpdateOptions<X>): UpdateResult<X>;
+}
+
+export interface SubtractFromAll {
+  /**
+   * Add the supplied number onto all the selected nodes. 
+   */
+  $decrementAll<X extends Payload<number>>(by: X, options: UpdateOptions<X>): UpdateResult<X>;
 }
 
 export interface Replace<S> {
   /**
    * Replace the selected node with the supplied state.
    */
-  replace<X extends Payload<S>>(replacement: X, options: UpdateOptions<X>): UpdateResult<X>;
+  $replace<X extends Payload<S>>(replacement: X, options: UpdateOptions<X>): UpdateResult<X>;
 }
 
 export interface ReplaceAll<S> {
   /**
    * Replace all the selected nodes with the supplied state.
    */
-  replaceAll<X extends Payload<S>>(replacement: X, options: UpdateOptions<X>): UpdateResult<X>;
+  $replaceAll<X extends Payload<S>>(replacement: X, options: UpdateOptions<X>): UpdateResult<X>;
 }
 
 export interface DeepMerge<S> {
   /**
    * Recursively merge the supplied object into the selected node.
    */
-  deepMerge: <X extends Payload<DeepMergePayload<S>>>(toMerge: X, options: UpdateOptions<X>) => UpdateResult<X>;
+  $deepMerge: <X extends Payload<DeepMergePayload<S>>>(toMerge: X, options: UpdateOptions<X>) => UpdateResult<X>;
 }
 
 export interface InvalidateDerivation {
   /**
    * Ensure that, the next time this derivation is read, it is re-calculated.
    */
-  invalidate(): void,
+  $invalidate(): void,
 }
 
 export interface Read<S> {
   /**
    * The current state of the selected node.
    */
-  state: DeepReadonly<S>;
+  $state: DeepReadonly<S>;
 }
 
 export interface OnChange<S> {
@@ -267,7 +282,7 @@ export interface OnChange<S> {
    * 
    * subscription.unsubscribe();
    */
-  onChange(changeListener: (state: DeepReadonly<S>) => any): Unsubscribe;
+  $onChange(changeListener: (state: DeepReadonly<S>) => any): Unsubscribe;
 }
 
 export interface Readable<S> extends Read<S>, OnChange<S> {
@@ -343,63 +358,63 @@ export interface Eq<S, Response> {
   /**
    * Whether the selection is equal to the supplied value
    */
-  eq: (equalTo: S) => Response
+  $eq: (equalTo: S) => Response
 }
 
 export interface Ne<S, Response> {
   /**
    * Whether the selection is not equal to the supplied value
    */
-  ne: (notEqualTo: S) => Response
+  $ne: (notEqualTo: S) => Response
 }
 
 export interface In<S, Response> {
   /**
    * Whether the selection is within the supplied array
    */
-  in: (within: S[]) => Response
+  $in: (within: S[]) => Response
 }
 
 export interface Ni<S, Response> {
   /**
    * Whether the selection is not within the supplied array
    */
-  ni: (notWithin: S[]) => Response
+  $ni: (notWithin: S[]) => Response
 }
 
 export interface Gt<S, Response> {
   /**
    * Whether the selection is greater than the supplied value
    */
-  gt: (greaterThan: S) => Response
+  $gt: (greaterThan: S) => Response
 }
 
 export interface Gte<S, Response> {
   /**
    * Whether the selection is greater than or equal to the supplied value
    */
-  gte: (greaterThanOrEqualTo: S) => Response
+  $gte: (greaterThanOrEqualTo: S) => Response
 }
 
 export interface Lt<S, Response> {
   /**
    * Whether the selection is less than the supplied value
    */
-  lt: (lessThan: S) => Response
+  $lt: (lessThan: S) => Response
 }
 
 export interface Lte<S, Response> {
   /**
    * Whether the selection is less than or equal to the supplied value
    */
-  lte: (lessThanOrEqualTo: S) => Response
+  $lte: (lessThanOrEqualTo: S) => Response
 }
 
 export interface Match<Response> {
   /**
    * Whether the selection matches the supplied regular expression
    */
-  match: (matches: RegExp) => Response
+  $match: (matches: RegExp) => Response
 }
 
 export type Searchable<T, S, F extends FindOrFilter, Depth extends number, NewDepth extends number = DecrementRecursion[Depth]> = Rec<

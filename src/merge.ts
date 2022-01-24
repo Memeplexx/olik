@@ -6,11 +6,11 @@ export const mergeStoreIfPossible = <S>(
   { store, nameOfStoreToMergeInto }: OptionsForMergingAStore<S>
 ) => {
   const existingStore = libState.stores[nameOfStoreToMergeInto];
-  const state = store.state;
+  const state = store.$state;
   const internals = (store as StoreInternal<any>).internals;
   internals.mergedStoreInfo = { nameOfStoreToMergeInto, isMerged: !!existingStore };
   if (!existingStore) { return; }
-  const wrapperState = existingStore.state;
+  const wrapperState = existingStore.$state;
   if (['number', 'boolean', 'string'].some(type => typeof (wrapperState) === type) || Array.isArray(wrapperState)) {
     throw new Error(errorMessages.INVALID_EXISTING_STORE_FOR_MERGING);
   }

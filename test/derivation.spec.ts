@@ -22,7 +22,7 @@ describe('derivation', () => {
     ).with((arr, somenum) => {
       return arr.concat(somenum.toString())
     });
-    const result = mem.state;
+    const result = mem.$state;
     expect(result).toEqual(['1', '2', '3']);
   })
 
@@ -49,14 +49,14 @@ describe('derivation', () => {
       }
       return result;
     });
-    mem.onChange(() => eventReceived++);
-    const result = mem.state;
+    mem.$onChange(() => eventReceived++);
+    const result = mem.$state;
     expect(result.array.length).toEqual(10000);
-    const result2 = mem.state;
+    const result2 = mem.$state;
     expect(result2.array.length).toEqual(10000);
     expect(recalculating).toEqual(1);
-    select.counter.replace(4);
-    const result3 = mem.state;
+    select.counter.$replace(4);
+    const result3 = mem.$state;
     expect(recalculating).toEqual(2);
     expect(result3.counter).toEqual(4);
     expect(eventReceived).toEqual(1);
@@ -77,12 +77,12 @@ describe('derivation', () => {
     ).with((array, counter) => {
       recalculating++;
     });
-    mem.onChange(() => eventReceived++);
-    select.string.replace('hey');
-    expect(select.string.state).toEqual('hey');
+    mem.$onChange(() => eventReceived++);
+    select.string.$replace('hey');
+    expect(select.string.$state).toEqual('hey');
     expect(recalculating).toEqual(0);
     expect(eventReceived).toEqual(0);
-    select.counter.replace(2);
+    select.counter.$replace(2);
     expect(eventReceived).toEqual(1);
   })
 
@@ -99,13 +99,13 @@ describe('derivation', () => {
       return one + two;
     });
     let onChangeListenerCallCount = 0;
-    const onChangeListener = mem.onChange(() => onChangeListenerCallCount++);
-    select.two.replace(1);
-    expect(mem.state).toEqual('x1');
+    const onChangeListener = mem.$onChange(() => onChangeListenerCallCount++);
+    select.two.$replace(1);
+    expect(mem.$state).toEqual('x1');
     expect(onChangeListenerCallCount).toEqual(1);
     onChangeListener.unsubscribe();
-    select.two.replace(2);
-    expect(mem.state).toEqual('x2');
+    select.two.$replace(2);
+    expect(mem.$state).toEqual('x2');
     expect(onChangeListenerCallCount).toEqual(1);
   })
 
@@ -118,18 +118,18 @@ describe('derivation', () => {
     let recalculating = 0;
     const mem = derive(
       select.array
-        .find.id.eq(2)
+        .$find.id.$eq(2)
     ).with(val => {
       recalculating++;
     });
     select.array
-      .find.id.eq(2)
-      .patch({ value: 'twoo' });
-    mem.state;
+      .$find.id.$eq(2)
+      .$patch({ value: 'twoo' });
+    mem.$state;
     select.array
-      .find.id.eq(1)
-      .patch({ value: 'onee' });
-    mem.state;
+      .$find.id.$eq(1)
+      .$patch({ value: 'onee' });
+    mem.$state;
     expect(recalculating).toEqual(1);
   })
 
@@ -150,7 +150,7 @@ describe('derivation', () => {
     ).with((s1, s2) => {
       return s1 + s2;
     });
-    expect(mem2.state).toEqual('xx0');
+    expect(mem2.$state).toEqual('xx0');
     expect(originalMemoCalcCount).toEqual(1);
   })
 
@@ -161,17 +161,17 @@ describe('derivation', () => {
     const select = createStore({ name, state });
     let memoCalcCount = 0;
     const mem = derive(
-      select.array.find.id.eq(2),
+      select.array.$find.id.$eq(2),
     ).with(thing => {
       memoCalcCount++;
       return thing;
     });
-    mem.state;
-    mem.state;
-    select.array.find.id.eq(1).patch({ value: 'xxx' });
+    mem.$state;
+    mem.$state;
+    select.array.$find.id.$eq(1).$patch({ value: 'xxx' });
     expect(memoCalcCount).toEqual(1);
-    select.array.find.id.eq(2).patch({ value: 'xxx' });
-    mem.state;
+    select.array.$find.id.$eq(2).$patch({ value: 'xxx' });
+    mem.$state;
     expect(memoCalcCount).toEqual(2);
   })
 
@@ -182,21 +182,21 @@ describe('derivation', () => {
     const select = createStore({ name, state });
     let memoCalcCount = 0;
     const mem = derive(
-      select.array.filter.id.lte(2),
+      select.array.$filter.id.$lte(2),
     ).with(thing => {
       memoCalcCount++;
       return thing;
     });
-    mem.state;
-    mem.state;
+    mem.$state;
+    mem.$state;
     expect(memoCalcCount).toEqual(1);
-    select.array.find.id.eq(1).patch({ value: 'xxx' });
-    mem.state;
-    mem.state;
+    select.array.$find.id.$eq(1).$patch({ value: 'xxx' });
+    mem.$state;
+    mem.$state;
     expect(memoCalcCount).toEqual(2);
-    select.array.find.id.eq(2).patch({ value: 'xxx' });
-    mem.state;
-    mem.state;
+    select.array.$find.id.$eq(2).$patch({ value: 'xxx' });
+    mem.$state;
+    mem.$state;
     expect(memoCalcCount).toEqual(3);
   })
 
@@ -213,12 +213,12 @@ describe('derivation', () => {
       memoCalcCount++;
       return thing;
     });
-    mem.state;
-    mem.state;
+    mem.$state;
+    mem.$state;
     expect(memoCalcCount).toEqual(1);
-    mem.invalidate();
-    mem.state;
-    mem.state;
+    mem.$invalidate();
+    mem.$state;
+    mem.$state;
     expect(memoCalcCount).toEqual(2);
   })
 

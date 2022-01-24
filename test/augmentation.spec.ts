@@ -17,7 +17,7 @@ describe('augmentation', () => {
   it('should be able to augment a selection', () => {
     augment({
       selection: {
-        myThing: input => () => input.state,
+        myThing: input => () => input.$state,
       }
     })
     const state = { num: 42 };
@@ -29,7 +29,7 @@ describe('augmentation', () => {
   it('should be able to augment a selection on an array action', () => {
     augment({
       selection: {
-        myThing: input => () => input.state,
+        myThing: input => () => input.$state,
       }
     })
     const state = { array: [42] };
@@ -41,12 +41,12 @@ describe('augmentation', () => {
   it('should be able to augment a selection on an array element action', () => {
     augment({
       selection: {
-        myThing: input => () => input.state,
+        myThing: input => () => input.$state,
       }
     })
     const state = { array: [42] };
     const select = createStore({ name, state });
-    const res = (select.array.find.eq(42) as any).myThing();
+    const res = (select.array.$find.$eq(42) as any).myThing();
     expect(res).toEqual(42);
   })
 
@@ -94,7 +94,7 @@ describe('augmentation', () => {
     const select = createStore({ name, state });
     importOlikAsyncModule();
     const fetch = () => new Promise<{ id: number, num: number }>(resolve => setTimeout(() => resolve({ id: 1, num: 2 }), 5));
-    const res = (select.array.find.id.eq(1).replace(fetch) as any).myThing();
+    const res = (select.array.$find.id.$eq(1).$replace(fetch) as any).myThing();
     res.then((r: any) => {
       expect(r).toEqual({ id: 1, num: 2 });
       done();
@@ -112,7 +112,7 @@ describe('augmentation', () => {
       observer.next('test');
       observer.complete();
     });
-    const res = select.thing.replace(fetch as any as () => Promise<string>);
+    const res = select.thing.$replace(fetch as any as () => Promise<string>);
     res.then((r: any) => {
       done();
     });
@@ -121,7 +121,7 @@ describe('augmentation', () => {
   it('should be able to augment a derivation', done => {
     augment({
       derivation: {
-        myThing: input => () => input.state
+        myThing: input => () => input.$state
       }
     })
     const state = { one: 'abc', two: false };

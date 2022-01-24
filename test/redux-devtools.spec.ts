@@ -20,21 +20,21 @@ describe('devtools', () => {
     const state = { x: 0, y: 0 };
     const select = createStore({ name, state });
     select.x
-      .replace(3);
-    expect(select.state).toEqual({ x: 3, y: 0 });
+      .$replace(3);
+    expect(select.$state).toEqual({ x: 3, y: 0 });
     testState.fakeWindowObjectForReduxDevtools!.__REDUX_DEVTOOLS_EXTENSION__._mockInvokeSubscription({ type: 'DISPATCH', state: JSON.stringify(state), payload: { type: 'JUMP_TO_ACTION' }, source: '@devtools-extension' });
-    expect(select.state).toEqual(state);
+    expect(select.$state).toEqual(state);
     expect(currentAction(select).type).toEqual('replace()');
   });
 
   it('should correctly respond to devtools dispatches where the state is an array', () => {
     const state = ['a', 'b', 'c'];
     const select = createStore({ name, state });
-    select.replaceAll(['d', 'e', 'f']);
-    expect(select.state).toEqual(['d', 'e', 'f']);
+    select.$replaceAll(['d', 'e', 'f']);
+    expect(select.$state).toEqual(['d', 'e', 'f']);
     const state2 = ['g', 'h'];
     testState.fakeWindowObjectForReduxDevtools!.__REDUX_DEVTOOLS_EXTENSION__._mockInvokeSubscription({ type: 'DISPATCH', state: JSON.stringify(state2), payload: { type: 'JUMP_TO_ACTION' }, source: '@devtools-extension' });
-    expect(select.state).toEqual(state2);
+    expect(select.$state).toEqual(state2);
     expect(currentAction(select).type).toEqual('replaceAll()');
   });
 
@@ -48,13 +48,13 @@ describe('devtools', () => {
     const state = { num: 0 };
     const select = createStore({ name, state });
     select.num
-      .replace(1);
-    expect(select.state.num).toEqual(1);
+      .$replace(1);
+    expect(select.$state.num).toEqual(1);
     select.num
-      .replace(2);
-    expect(select.state.num).toEqual(2);
+      .$replace(2);
+    expect(select.$state.num).toEqual(2);
     testState.fakeWindowObjectForReduxDevtools!.__REDUX_DEVTOOLS_EXTENSION__._mockInvokeSubscription({ type: 'DISPATCH', payload: { type: 'ROLLBACK' }, source: '@devtools-extension', state: '{ "num": 1 }' });
-    expect(select.state.num).toEqual(1);
+    expect(select.$state.num).toEqual(1);
   });
 
   it('should throw an error should a devtools dispatch contain invalid JSON', () => {
@@ -70,7 +70,7 @@ describe('devtools', () => {
     const select = createStore({ name, state });
     testState.fakeWindowObjectForReduxDevtools!.__REDUX_DEVTOOLS_EXTENSION__
       ._mockInvokeSubscription({ type: 'ACTION', source: '@devtools-extension', payload: '{"type": "hello.replace()", "payload": 2}' });
-    expect(select.state.hello).toEqual(2);
+    expect(select.$state.hello).toEqual(2);
   });
 
   it('should throttle tightly packed updates', done => {
@@ -80,7 +80,7 @@ describe('devtools', () => {
     const payload: number[] = [];
     const updateCount = 6;
     for (let i = 0; i < updateCount; i++) {
-      select.test.replace(i);
+      select.test.$replace(i);
       expect(testState.currentActionForReduxDevtools).toEqual({ type: 'test.replace()', payload: 0 });
       testState.logLevel = 'none';
       payload.push(i);
@@ -98,7 +98,7 @@ describe('devtools', () => {
   it('should abbreviate action types correctly', () => {
     importOlikReduxDevtoolsModule({ limitSearchArgLength: 5 })
     const select = createStore({ name, state: [{ id: 'qwertyuiop', val: [{ id: 'asdfghjkl', val: 0 }] } ] });
-    select.find.id.eq('qwertyuiop').val.find.id.in(['asdfghjkl']).val.increment(1);
+    select.$find.id.$eq('qwertyuiop').val.$find.id.$in(['asdfghjkl']).val.$increment(1);
     expect(testState.currentActionForReduxDevtools.type).toEqual('find.id.eq(qwert).val.find.id.in(asdfg).val.increment()');
   })
 

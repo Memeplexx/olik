@@ -16,8 +16,8 @@ describe.skip('Performance', () => {
     const before = performance.now();
     for (let i = 0; i < 100; i++) {
       select.arr
-        .find.val.eq('')
-        .patch({ id: i });
+        .$find.val.$eq('')
+        .$patch({ id: i });
     }
     console.log(`Perf: ${performance.now() - before}`);
   })
@@ -27,7 +27,7 @@ describe.skip('Performance', () => {
     const select = createStore({ name, state });
     const before = performance.now();
     for (let i = 0; i < 100; i++) {
-      select.num.replace(i);
+      select.num.$replace(i);
     }
     console.log(`Perf: ${performance.now() - before}`);
   })

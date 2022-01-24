@@ -36,13 +36,13 @@ export function importOlikReduxDevtoolsModule(
         name: internals.storeName,
         ...(traceActions ? { trace: true, type: 'redux', traceLimit: 100 } : {})
       });
-      devTools.init(store.state);
+      devTools.init(store.$state);
       internals.reduxDevtools = { instance: devTools, disableDispatch: false };
   
       const setState = (state: any) => {
         internals.reduxDevtools!.disableDispatch = true;
         const selection = store as any as Replace<any> & ReplaceAll<any> & Read<any>;
-        selection[Array.isArray(selection.state) ? 'replaceAll' : 'replace'](state);
+        selection[Array.isArray(selection.$state) ? '$replaceAll' : '$replace'](state);
         internals.reduxDevtools!.disableDispatch = false;
       }
   
@@ -62,7 +62,7 @@ export function importOlikReduxDevtoolsModule(
           selection[action.substring(0, action.length - 2)](messagePayload.payload);
           libState.onInternalDispatch();
         } else if ('EXPORT' === message.type) {
-          const url = window.URL.createObjectURL(new Blob([JSON.stringify(store.state)], { type: 'application/json' }));
+          const url = window.URL.createObjectURL(new Blob([JSON.stringify(store.$state)], { type: 'application/json' }));
           document.body.appendChild(Object.assign(document.createElement('a'), {
             style: { display: 'none' },
             href: url,
@@ -74,7 +74,7 @@ export function importOlikReduxDevtoolsModule(
             setState(JSON.parse(message.state));
             libState.onInternalDispatch();
           } else if ('COMMIT' === message.payload.type) {
-            devTools!.init(store.state);
+            devTools!.init(store.$state);
           } else if ('ROLLBACK' === message.payload.type) {
             const parsedState = JSON.parse(message.state);
             setState(parsedState);
@@ -101,7 +101,7 @@ export function importOlikReduxDevtoolsModule(
               .replace(/\((.+?)\)/g, (substring, args) => `(${args.toString().substring(0, limitSearchArgLength || 6)})`),
           };
           testState.currentActionForReduxDevtools = newAction;
-          internals.reduxDevtools?.instance.send(newAction, store.state);
+          internals.reduxDevtools?.instance.send(newAction, store.$state);
         }
   
         // if the user is not batching actions, simply dispatch immediately, and return

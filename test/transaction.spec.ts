@@ -16,10 +16,10 @@ describe('transaction', () => {
     const state = { num: 0, str: '', bool: false };
     const select = createStore({ name, state });
     transact(
-      () => select.num.replace(1),
-      () => select.str.replace('x'),
+      () => select.num.$replace(1),
+      () => select.str.$replace('x'),
     );
-    expect(select.state).toEqual({ num: 1, str: 'x', bool: false });
+    expect(select.$state).toEqual({ num: 1, str: 'x', bool: false });
     expect(currentAction(select)).toEqual({
       type: 'num.replace(), str.replace()',
       actions: [
@@ -33,8 +33,8 @@ describe('transaction', () => {
     const state = { num: 0 };
     const select = createStore({ name, state });
     const payload = 1;
-    transact(() => select.num.replace(payload));
-    expect(select.num.state).toEqual(payload);
+    transact(() => select.num.$replace(payload));
+    expect(select.num.$state).toEqual(payload);
     expect(currentAction(select)).toEqual({ type: 'num.replace()', payload });
   })
 
@@ -43,8 +43,8 @@ describe('transaction', () => {
     const select = createStore({ name, state });
     importOlikAsyncModule();
     expect(() => transact(
-      () => select.num.replace(() => new Promise(resolve => resolve(1))),
-      () => select.str.replace('x'),
+      () => select.num.$replace(() => new Promise(resolve => resolve(1))),
+      () => select.str.$replace('x'),
     )).toThrow(errorMessages.ASYNC_PAYLOAD_INSIDE_TRANSACTION);
   })
 
@@ -52,8 +52,8 @@ describe('transaction', () => {
     const select1 = createStore({ name: 'a', state: { num: 0 } });
     const select2 = createStore({ name: 'b', state: { str: '' } });
     transact(
-      () => select1.num.increment(1),
-      () => select2.str.replace('x'),
+      () => select1.num.$increment(1),
+      () => select2.str.$replace('x'),
     );
     expect(currentAction(select1)).toEqual({
       type: 'num.increment()',
@@ -63,9 +63,9 @@ describe('transaction', () => {
       type: 'str.replace()',
       actions: [ { type: 'str.replace()', payload: 'x' } ]
     })
-    select1.num.increment(1);
+    select1.num.$increment(1);
     expect(currentAction(select1)).toEqual({ type: 'num.increment()', payload: 1 });
-    select2.str.replace('y');
+    select2.str.$replace('y');
     expect(currentAction(select2)).toEqual({ type: 'str.replace()', payload: 'y' });
   })
 

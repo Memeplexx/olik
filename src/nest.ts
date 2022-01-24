@@ -22,11 +22,11 @@ export const importOlikNestingModule = () => {
       storeArg.internals.nestedStoreInfo = { nestedStoreName: storeNameNew, instanceId, containerName, isNested: false };
       return complete(storeArg);
     }
-    const wrapperState = appStore.state;
+    const wrapperState = appStore.$state;
     if (['number', 'boolean', 'string'].some(type => typeof (wrapperState) === type) || Array.isArray(wrapperState)) {
       throw new Error(errorMessages.INVALID_CONTAINER_FOR_COMPONENT_STORES);
     }
-    appStore.nested[nestedStoreName][instanceId].replace(storeArg.state);
+    appStore.nested[nestedStoreName][instanceId].replace(storeArg.$state);
     delete libState.stores[nestedStoreName];
     storeArg.internals.storeName = containerName;
     storeArg.internals.nestedStoreInfo = { nestedStoreName: storeName, instanceId, containerName, isNested: true };
@@ -39,7 +39,7 @@ export const importOlikNestingModule = () => {
     const appStore = libState.stores[storeArg.internals.nestedStoreInfo?.containerName];
     const nestedStoreName = storeArg.internals.nestedStoreInfo.nestedStoreName;
     const instanceId = storeArg.internals.nestedStoreInfo.instanceId
-    const state = appStore.state.nested[nestedStoreName];
+    const state = appStore.$state.nested[nestedStoreName];
     if ((Object.keys(state).length === 1) && state[instanceId]) {
       appStore.nested[nestedStoreName].remove();
     } else {

@@ -17,7 +17,7 @@ describe('merge', () => {
     const select1 = createStore({ name: nameOfExistingStore, state: state1 });
     const select2 = createStore({ name: nameOfStoreToMerge, state: state2 });
     mergeStoreIfPossible({ store: select2, nameOfStoreToMergeInto: nameOfExistingStore });
-    expect(select1.state).toEqual({ ...state1, ...state2 });
+    expect(select1.$state).toEqual({ ...state1, ...state2 });
   })
 
   it('should transfer change listeners', () => {
@@ -26,17 +26,17 @@ describe('merge', () => {
     const select1 = createStore({ name: nameOfExistingStore, state: state1 });
     const select2 = createStore({ name: nameOfStoreToMerge, state: state2 });
     let count = 0;
-    const sub = select2.onChange(() => count++);
-    select2.three.replace('x');
+    const sub = select2.$onChange(() => count++);
+    select2.three.$replace('x');
     expect(count).toEqual(1);
     mergeStoreIfPossible({ store: select2, nameOfStoreToMergeInto: nameOfExistingStore });
-    select2.three.replace('y');
+    select2.three.$replace('y');
     expect(count).toEqual(3); // 3, no 2 (because merging the store caused a change listener to fire)
     sub.unsubscribe();
-    select2.three.replace('z');
+    select2.three.$replace('z');
     expect(count).toEqual(4);
-    expect(select1.state).toEqual({ ...state1, ...state2, three: 'z' });
-    expect(select2.state).toEqual({ ...state1, ...state2, three: 'z' });
+    expect(select1.$state).toEqual({ ...state1, ...state2, three: 'z' });
+    expect(select2.$state).toEqual({ ...state1, ...state2, three: 'z' });
   })
 
   it('should not throw an error if no store exists to merge into', () => {

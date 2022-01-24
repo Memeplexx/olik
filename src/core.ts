@@ -26,7 +26,8 @@ export const createStore = <S>(
   const recurseProxy = (s: any, topLevel: boolean, stateActions: StateAction[]): any => {
     if (typeof s !== 'object') { return null; }
     return new Proxy(s, {
-      get: (target, prop: string) => {
+      get: (target, dollarProp: string) => {
+        const prop = dollarProp.startsWith('$') ? dollarProp.split('$')[1] : dollarProp;
         stateActions = topLevel ? new Array<StateAction>() : stateActions;
         if ('internals' === prop) {
           return internals;

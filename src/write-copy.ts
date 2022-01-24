@@ -68,6 +68,8 @@ export const copyNewState = (
     return setCurrentActionReturningNewState({ storeName, stateActions, payload: { payload: action.arg }, newState: deepMerge(currentState, action.arg) });
   } else if (action.name === 'increment') {
     return setCurrentActionReturningNewState({ storeName, stateActions, payload: { payload: action.arg }, newState: currentState + action.arg });
+  } else if (action.name === 'decrement') {
+    return setCurrentActionReturningNewState({ storeName, stateActions, payload: { payload: action.arg }, newState: currentState - action.arg });
   } else if (action.name === 'removeAll') {
     return setCurrentActionReturningNewState({ storeName, stateActions, payload: null, newState: [] });
   } else if (action.name === 'replaceAll') {
@@ -76,6 +78,8 @@ export const copyNewState = (
     return setCurrentActionReturningNewState({ storeName, stateActions, payload: { payload: action.arg }, newState: (currentState as any[]).map(e => ({ ...e, ...action.arg })) });
   } else if (action.name === 'incrementAll') {
     return setCurrentActionReturningNewState({ storeName, stateActions, payload: { payload: action.arg }, newState: Array.isArray(currentState) ? currentState.map((e: any) => e + action.arg) : currentState + action.arg });
+  } else if (action.name === 'decrementAll') {
+    return setCurrentActionReturningNewState({ storeName, stateActions, payload: { payload: action.arg }, newState: Array.isArray(currentState) ? currentState.map((e: any) => e + action.arg) : currentState - action.arg });
   } else if (action.name === 'insertOne') {
     return setCurrentActionReturningNewState({ storeName, stateActions, payload: { payload: action.arg }, newState: [...currentState, action.arg] });
   } else if (action.name === 'insertMany') {

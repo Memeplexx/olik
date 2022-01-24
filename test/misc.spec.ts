@@ -14,10 +14,10 @@ describe('misc', () => {
     const select = createStore({ name, state });
     const changeNum = select.num;
     const changeBool = select.bool;
-    select.str.replace('x');
-    changeNum.increment(1);
-    changeBool.replace(true);
-    expect(select.state).toEqual({ num: 1, str: 'x', bool: true });
+    select.str.$replace('x');
+    changeNum.$increment(1);
+    changeBool.$replace(true);
+    expect(select.$state).toEqual({ num: 1, str: 'x', bool: true });
   })
 
   it('should not allow sets or maps', () => {
