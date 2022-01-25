@@ -10,7 +10,7 @@ describe('array-deep', () => {
     testState.logLevel = 'none';
   })
 
-  it('should select.arr.find.id.eq(2).patch({ val: 1 })', () => {
+  it('should find an element and patch it', () => {
     const state = { arr: [{ id: 1, val: 0, obj: { num: 0 } }, { id: 2, val: 0, obj: { num: 0 } }], obj: { num: 0 } };
     const store = createStore({ name, state });
     const payload = { val: 1 };
@@ -20,7 +20,7 @@ describe('array-deep', () => {
     expect(store.$state).toEqual({ ...state, arr: [state.arr[0], { ...state.arr[1], ...payload }] });
   })
 
-  it('should select.arr.find.id.eq(2).replace({ id: 4, val: 2 })', () => {
+  it('should find an element an replace it', () => {
     const state = { arr: [{ id: 1, val: 0 }, { id: 2, val: 0 }], obj: { num: 0 } };
     const store = createStore({ name, state });
     const stateBefore = store.$state;
@@ -40,7 +40,7 @@ describe('array-deep', () => {
     expect(store.$state).toEqual({ arr: [{ id: 1, val: 0 }, { id: 4, val: 2 }], obj: { num: 0 } });
   })
 
-  it('should select.arr.filter.id.in([1, 2]).patch({ val: 1 })', () => {
+  it('should filter elements and patch them', () => {
     const state = { arr: [{ id: 1, val: 0 }, { id: 2, val: 0 }, { id: 3, val: 0 }] };
     const store = createStore({ name, state });
     const payload = { val: 1 };
@@ -154,19 +154,30 @@ describe('array-deep', () => {
     })
   })
 
-  // it('', () => { 
-  //   const store = createStore({
-  //     name: 'my store',
-  //     state: {
-  //       user: { name: '', age: 0 },
-  //       // todos: new Array<{ id: number, title: string, status: 'done' | 'todo' }>(),
-  //       todos: [{ id: 1, status: 'done', title: 'one' }, { id: 2, status: 'done', title: 'two' }]
-  //     }
-  //   });
-  
-  //   store.todos.$filter.status.$eq('done').title.$remove();
-  //   console.log(store.$state);
+  it('should filter a list and remove a property from its element(s)', () => {
+    const state = {
+      user: { name: '', age: 0 },
+      todos: [{ id: 1, status: 'done', title: 'one' }, { id: 2, status: 'done', title: 'two' }]
+    };
+    const store = createStore({
+      name,
+      state,
+    });
+    store.todos.$filter.status.$eq('done').title.$remove();
+    expect(store.todos.$state).toEqual(state.todos.map(todo => ({ id: todo.id, status: todo.status })));
+  })
 
-  // })
+  it('should filter a list a replace a property on its element(s)', () => {
+    const state = {
+      user: { name: '', age: 0 },
+      todos: [{ id: 1, status: 'done', title: 'one', obj: { n: 0 } }, { id: 2, status: 'done', title: 'two', obj: { n: 0 } }]
+    };
+    const store = createStore({
+      name,
+      state,
+    });
+    store.todos.$filter.status.$eq('done').obj.$replace({ n: 1 });
+    expect(store.todos.$state).toEqual(state.todos.map(todo => ({ id: todo.id, status: todo.status, title: todo.title, obj: { n: 1 } })));
+  })
 
 });

@@ -12,10 +12,10 @@ describe.skip('Performance', () => {
 
   it('', () => {
     const state = { arr: [{ id: 1, val: '', obj: { num: 0 } }, { id: 2, val: '', obj: { num: 0 } }], obj: { num: 0 } };
-    const select = createStore({ name, state });
+    const store = createStore({ name, state });
     const before = performance.now();
     for (let i = 0; i < 100; i++) {
-      select.arr
+      store.arr
         .$find.val.$eq('')
         .$patch({ id: i });
     }

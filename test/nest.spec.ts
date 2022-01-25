@@ -173,7 +173,6 @@ describe('nest', () => {
   })
 
   it('should work without a container store', () => {
-    testState.logLevel = 'debug';
     libState.stores = {}
     const selectNested = createStore({
       name: 'test',

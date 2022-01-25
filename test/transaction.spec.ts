@@ -14,13 +14,13 @@ describe('transaction', () => {
 
   it('should support transactions', () => {
     const state = { num: 0, str: '', bool: false };
-    const select = createStore({ name, state });
+    const store = createStore({ name, state });
     transact(
-      () => select.num.$replace(1),
-      () => select.str.$replace('x'),
+      () => store.num.$replace(1),
+      () => store.str.$replace('x'),
     );
-    expect(select.$state).toEqual({ num: 1, str: 'x', bool: false });
-    expect(currentAction(select)).toEqual({
+    expect(store.$state).toEqual({ num: 1, str: 'x', bool: false });
+    expect(currentAction(store)).toEqual({
       type: 'num.replace(), str.replace()',
       actions: [
         { type: 'num.replace()', payload: 1 },
@@ -31,42 +31,42 @@ describe('transaction', () => {
 
   it('should support transactions with only 1 action', () => {
     const state = { num: 0 };
-    const select = createStore({ name, state });
+    const store = createStore({ name, state });
     const payload = 1;
-    transact(() => select.num.$replace(payload));
-    expect(select.num.$state).toEqual(payload);
-    expect(currentAction(select)).toEqual({ type: 'num.replace()', payload });
+    transact(() => store.num.$replace(payload));
+    expect(store.num.$state).toEqual(payload);
+    expect(currentAction(store)).toEqual({ type: 'num.replace()', payload });
   })
 
   it('should not support transactions if one of the actions has an async payload', () => {
     const state = { num: 0, str: '', bool: false };
-    const select = createStore({ name, state });
+    const store = createStore({ name, state });
     importOlikAsyncModule();
     expect(() => transact(
-      () => select.num.$replace(() => new Promise(resolve => resolve(1))),
-      () => select.str.$replace('x'),
+      () => store.num.$replace(() => new Promise(resolve => resolve(1))),
+      () => store.str.$replace('x'),
     )).toThrow(errorMessages.ASYNC_PAYLOAD_INSIDE_TRANSACTION);
   })
 
   it('should not throw errors is transactions traverse multiple stores', () => {
-    const select1 = createStore({ name: 'a', state: { num: 0 } });
-    const select2 = createStore({ name: 'b', state: { str: '' } });
+    const store1 = createStore({ name: 'a', state: { num: 0 } });
+    const store2 = createStore({ name: 'b', state: { str: '' } });
     transact(
-      () => select1.num.$increment(1),
-      () => select2.str.$replace('x'),
+      () => store1.num.$increment(1),
+      () => store2.str.$replace('x'),
     );
-    expect(currentAction(select1)).toEqual({
+    expect(currentAction(store1)).toEqual({
       type: 'num.increment()',
       actions: [ { type: 'num.increment()', payload: 1 } ]
     })
-    expect(currentAction(select2)).toEqual({
+    expect(currentAction(store2)).toEqual({
       type: 'str.replace()',
       actions: [ { type: 'str.replace()', payload: 'x' } ]
     })
-    select1.num.$increment(1);
-    expect(currentAction(select1)).toEqual({ type: 'num.increment()', payload: 1 });
-    select2.str.$replace('y');
-    expect(currentAction(select2)).toEqual({ type: 'str.replace()', payload: 'y' });
+    store1.num.$increment(1);
+    expect(currentAction(store1)).toEqual({ type: 'num.increment()', payload: 1 });
+    store2.str.$replace('y');
+    expect(currentAction(store2)).toEqual({ type: 'str.replace()', payload: 'y' });
   })
 
 });

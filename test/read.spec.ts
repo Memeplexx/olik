@@ -11,8 +11,8 @@ describe('read', () => {
 
   it('should read deep array element properties', () => {
     const state = { arr: [{ id: 1, val: 0, obj: { num: 1 } }, { id: 2, val: 0, obj: { num: 2 } }] };
-    const select = createStore({ name, state });
-    expect(select.arr.obj.num.$state).toEqual([1, 2]);
+    const store = createStore({ name, state });
+    expect(store.arr.obj.num.$state).toEqual([1, 2]);
   })
 
 });

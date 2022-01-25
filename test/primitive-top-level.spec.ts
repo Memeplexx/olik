@@ -12,21 +12,21 @@ describe('top-level-primitive', () => {
   })
 
   it('should replace a value', () => {
-    const select = createStore({ name, state });
+    const store = createStore({ name, state });
     const payload = 1;
-    select
+    store
       .$replace(payload);
-    expect(select.$state).toEqual(1);
-    expect(currentAction(select)).toEqual({ type: 'replace()', payload });
+    expect(store.$state).toEqual(1);
+    expect(currentAction(store)).toEqual({ type: 'replace()', payload });
   })
 
   it('should increment a value', () => {
-    const select = createStore({ name, state });
+    const store = createStore({ name, state });
     const payload = 1;
-    select
+    store
       .$increment(payload);
-    expect(select.$state).toEqual(1);
-    expect(currentAction(select)).toEqual({ type: 'increment()', payload });
+    expect(store.$state).toEqual(1);
+    expect(currentAction(store)).toEqual({ type: 'increment()', payload });
   })
 
 });

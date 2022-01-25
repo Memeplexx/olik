@@ -46,7 +46,11 @@ export type UpdatableObject<S, F extends FindOrFilter, Q extends QueryStatus, De
   & Patch<S>
   & RemoveFromObject<Depth>
   & InvalidateCache
-  & (F extends 'isFind' ? (Replace<S> & DeepMerge<S>) : {})
+
+  // & (F extends 'isFind' ? (Replace<S> & DeepMerge<S>) : {})
+  & Replace<S>
+  & DeepMerge<S>
+
   & Readable<F extends 'isFilter' ? S[] : S>
   & ({
     [K in keyof S]: S[K] extends Array<any>
@@ -97,6 +101,9 @@ export type UpdateOptions<H> = (H extends () => AnyAsync<any> ? & CacheFor & Opt
 export type UpdatablePrimitive<S, F extends FindOrFilter, Q extends QueryStatus, Depth extends number> =
   & InvalidateCache
   & RemoveFromObject<Depth>
+
+  & Replace<S> ///////
+  
   & (Q extends 'notQueried' ? ReplaceAll<S> : F extends 'isFind' ? Replace<S> : {})
   & (S extends number ? (Q extends 'notQueried' ? AddToAll : Add) : {})
   & (S extends number ? (Q extends 'notQueried' ? SubtractFromAll : Subtract) : {})

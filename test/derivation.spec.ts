@@ -15,10 +15,10 @@ describe('derivation', () => {
       array: ['1', '2'],
       counter: 3,
     };
-    const select = createStore({ name, state });
+    const store = createStore({ name, state });
     const mem = derive(
-      select.array,
-      select.counter,
+      store.array,
+      store.counter,
     ).with((arr, somenum) => {
       return arr.concat(somenum.toString())
     });
@@ -31,12 +31,12 @@ describe('derivation', () => {
       array: new Array<string>(),
       counter: 3,
     };
-    const select = createStore({ name, state });
+    const store = createStore({ name, state });
     let recalculating = 0;
     let eventReceived = 0;
     const mem = derive(
-      select.array,
-      select.counter,
+      store.array,
+      store.counter,
     ).with((array, counter) => {
       recalculating++;
       let result = {
@@ -55,7 +55,7 @@ describe('derivation', () => {
     const result2 = mem.$state;
     expect(result2.array.length).toEqual(10000);
     expect(recalculating).toEqual(1);
-    select.counter.$replace(4);
+    store.counter.$replace(4);
     const result3 = mem.$state;
     expect(recalculating).toEqual(2);
     expect(result3.counter).toEqual(4);
@@ -68,21 +68,21 @@ describe('derivation', () => {
       counter: 3,
       string: '',
     };
-    const select = createStore({ name, state });
+    const store = createStore({ name, state });
     let recalculating = 0;
     let eventReceived = 0;
     const mem = derive(
-      select.array,
-      select.counter,
+      store.array,
+      store.counter,
     ).with((array, counter) => {
       recalculating++;
     });
     mem.$onChange(() => eventReceived++);
-    select.string.$replace('hey');
-    expect(select.string.$state).toEqual('hey');
+    store.string.$replace('hey');
+    expect(store.string.$state).toEqual('hey');
     expect(recalculating).toEqual(0);
     expect(eventReceived).toEqual(0);
-    select.counter.$replace(2);
+    store.counter.$replace(2);
     expect(eventReceived).toEqual(1);
   })
 
@@ -91,20 +91,20 @@ describe('derivation', () => {
       one: 'x',
       two: 0,
     };
-    const select = createStore({ name, state });
+    const store = createStore({ name, state });
     const mem = derive(
-      select.one,
-      select.two,
+      store.one,
+      store.two,
     ).with((one, two) => {
       return one + two;
     });
     let onChangeListenerCallCount = 0;
     const onChangeListener = mem.$onChange(() => onChangeListenerCallCount++);
-    select.two.$replace(1);
+    store.two.$replace(1);
     expect(mem.$state).toEqual('x1');
     expect(onChangeListenerCallCount).toEqual(1);
     onChangeListener.unsubscribe();
-    select.two.$replace(2);
+    store.two.$replace(2);
     expect(mem.$state).toEqual('x2');
     expect(onChangeListenerCallCount).toEqual(1);
   })
@@ -114,19 +114,19 @@ describe('derivation', () => {
       array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
       object: { hello: 'world' },
     };
-    const select = createStore({ name, state });
+    const store = createStore({ name, state });
     let recalculating = 0;
     const mem = derive(
-      select.array
+      store.array
         .$find.id.$eq(2)
     ).with(val => {
       recalculating++;
     });
-    select.array
+    store.array
       .$find.id.$eq(2)
       .$patch({ value: 'twoo' });
     mem.$state;
-    select.array
+    store.array
       .$find.id.$eq(1)
       .$patch({ value: 'onee' });
     mem.$state;
@@ -135,17 +135,17 @@ describe('derivation', () => {
 
   it('should be able to derive from using a derivation as an argument', () => {
     const state = { num: 0, str: 'x' };
-    const select = createStore({ name, state });
+    const store = createStore({ name, state });
     let originalMemoCalcCount = 0;
     const mem = derive(
-      select.num,
-      select.str,
+      store.num,
+      store.str,
     ).with((num, str) => {
       originalMemoCalcCount++;
       return str + num;
     });
     const mem2 = derive(
-      select.str,
+      store.str,
       mem,
     ).with((s1, s2) => {
       return s1 + s2;
@@ -158,19 +158,19 @@ describe('derivation', () => {
     const state = {
       array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
     };
-    const select = createStore({ name, state });
+    const store = createStore({ name, state });
     let memoCalcCount = 0;
     const mem = derive(
-      select.array.$find.id.$eq(2),
+      store.array.$find.id.$eq(2),
     ).with(thing => {
       memoCalcCount++;
       return thing;
     });
     mem.$state;
     mem.$state;
-    select.array.$find.id.$eq(1).$patch({ value: 'xxx' });
+    store.array.$find.id.$eq(1).$patch({ value: 'xxx' });
     expect(memoCalcCount).toEqual(1);
-    select.array.$find.id.$eq(2).$patch({ value: 'xxx' });
+    store.array.$find.id.$eq(2).$patch({ value: 'xxx' });
     mem.$state;
     expect(memoCalcCount).toEqual(2);
   })
@@ -179,10 +179,10 @@ describe('derivation', () => {
     const state = {
       array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
     };
-    const select = createStore({ name, state });
+    const store = createStore({ name, state });
     let memoCalcCount = 0;
     const mem = derive(
-      select.array.$filter.id.$lte(2),
+      store.array.$filter.id.$lte(2),
     ).with(thing => {
       memoCalcCount++;
       return thing;
@@ -190,11 +190,11 @@ describe('derivation', () => {
     mem.$state;
     mem.$state;
     expect(memoCalcCount).toEqual(1);
-    select.array.$find.id.$eq(1).$patch({ value: 'xxx' });
+    store.array.$find.id.$eq(1).$patch({ value: 'xxx' });
     mem.$state;
     mem.$state;
     expect(memoCalcCount).toEqual(2);
-    select.array.$find.id.$eq(2).$patch({ value: 'xxx' });
+    store.array.$find.id.$eq(2).$patch({ value: 'xxx' });
     mem.$state;
     mem.$state;
     expect(memoCalcCount).toEqual(3);
@@ -205,10 +205,10 @@ describe('derivation', () => {
       num: 0,
       str: '',
     };
-    const select = createStore({ name, state });
+    const store = createStore({ name, state });
     let memoCalcCount = 0;
     const mem = derive(
-      select.num,
+      store.num,
     ).with(thing => {
       memoCalcCount++;
       return thing;

@@ -11,13 +11,13 @@ describe('misc', () => {
 
   it('should work with half-finished writes intermixed with reads', () => {
     const state = { num: 0, str: '', bool: false };
-    const select = createStore({ name, state });
-    const changeNum = select.num;
-    const changeBool = select.bool;
-    select.str.$replace('x');
+    const store = createStore({ name, state });
+    const changeNum = store.num;
+    const changeBool = store.bool;
+    store.str.$replace('x');
     changeNum.$increment(1);
     changeBool.$replace(true);
-    expect(select.$state).toEqual({ num: 1, str: 'x', bool: true });
+    expect(store.$state).toEqual({ num: 1, str: 'x', bool: true });
   })
 
   it('should not allow sets or maps', () => {

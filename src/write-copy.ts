@@ -1,4 +1,4 @@
-import { errorMessages } from './constant';
+import { errorMessages, testState } from './constant';
 import { constructQuery } from './query';
 import { StateAction } from './type';
 import { setCurrentActionReturningNewState } from './write-action';
@@ -42,15 +42,11 @@ export const copyNewState = (
       } else {
         if ('find' === action.name) {
           return (currentState as any[]).map((e, i) => i === findIndex
-            ? (typeof (e) === 'object'
-              ? { ...e, ...copyNewState({ storeName, currentState: e || {}, stateToUpdate: stateToUpdate[i] || {}, stateActions, cursor }) }
-              : copyNewState({ storeName, currentState: e, stateToUpdate: stateToUpdate[i], stateActions, cursor }))
+            ? copyNewState({ storeName, currentState: e, stateToUpdate: stateToUpdate[i], stateActions, cursor })
             : e);
         } else if ('filter' === action.name) {
           return (currentState as any[]).map((e, i) => query(e)
-            ? (typeof (e) === 'object'
-              ? { ...e, ...copyNewState({ storeName, currentState: e || {}, stateToUpdate: stateToUpdate[i] || {}, stateActions, cursor: { ...cursor } }) }
-              : copyNewState({ storeName, currentState: e, stateToUpdate: stateToUpdate[i], stateActions, cursor: { ...cursor } }))
+            ? copyNewState({ storeName, currentState: e, stateToUpdate: stateToUpdate[i], stateActions, cursor: { ...cursor } })
             : e);
         }
       }

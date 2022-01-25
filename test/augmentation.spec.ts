@@ -21,8 +21,8 @@ describe('augmentation', () => {
       }
     })
     const state = { num: 42 };
-    const select = createStore({ name, state });
-    const res = (select.num as any).myThing();
+    const store = createStore({ name, state });
+    const res = (store.num as any).myThing();
     expect(res).toEqual(42);
   })
 
@@ -33,8 +33,8 @@ describe('augmentation', () => {
       }
     })
     const state = { array: [42] };
-    const select = createStore({ name, state });
-    const res = (select.array as any).myThing();
+    const store = createStore({ name, state });
+    const res = (store.array as any).myThing();
     expect(res).toEqual([42]);
   })
 
@@ -45,8 +45,8 @@ describe('augmentation', () => {
       }
     })
     const state = { array: [42] };
-    const select = createStore({ name, state });
-    const res = (select.array.$find.$eq(42) as any).myThing();
+    const store = createStore({ name, state });
+    const res = (store.array.$find.$eq(42) as any).myThing();
     expect(res).toEqual(42);
   })
 
@@ -57,10 +57,10 @@ describe('augmentation', () => {
       }
     })
     const state = { num: 42 };
-    const select = createStore({ name, state });
+    const store = createStore({ name, state });
     importOlikAsyncModule();
     const fetch = () => new Promise(resolve => setTimeout(() => resolve(43), 5))
-    const res = (select.num as any).replace(fetch).myThing();
+    const res = (store.num as any).replace(fetch).myThing();
     res.then((r: any) => {
       expect(r).toEqual(43);
       done();
@@ -74,10 +74,10 @@ describe('augmentation', () => {
       }
     })
     const state = { array: [42] };
-    const select = createStore({ name, state });
+    const store = createStore({ name, state });
     importOlikAsyncModule();
     const fetch = () => new Promise(resolve => setTimeout(() => resolve([43]), 5))
-    const res = (select.array as any).replace(fetch).myThing();
+    const res = (store.array as any).replace(fetch).myThing();
     res.then((r: any) => {
       expect(r).toEqual([43]);
       done();
@@ -91,10 +91,10 @@ describe('augmentation', () => {
       }
     })
     const state = { array: [{id: 1, num: 1}] };
-    const select = createStore({ name, state });
+    const store = createStore({ name, state });
     importOlikAsyncModule();
     const fetch = () => new Promise<{ id: number, num: number }>(resolve => setTimeout(() => resolve({ id: 1, num: 2 }), 5));
-    const res = (select.array.$find.id.$eq(1).$replace(fetch) as any).myThing();
+    const res = (store.array.$find.id.$eq(1).$replace(fetch) as any).myThing();
     res.then((r: any) => {
       expect(r).toEqual({ id: 1, num: 2 });
       done();
@@ -106,13 +106,13 @@ describe('augmentation', () => {
       async: fnReturningFutureAugmentation => fnReturningFutureAugmentation().toPromise(),
     })
     const state = { thing: '' };
-    const select = createStore({ name, state });
+    const store = createStore({ name, state });
     importOlikAsyncModule();
     const fetch = () => new Observable(observer => {
       observer.next('test');
       observer.complete();
     });
-    const res = select.thing.$replace(fetch as any as () => Promise<string>);
+    const res = store.thing.$replace(fetch as any as () => Promise<string>);
     res.then((r: any) => {
       done();
     });
@@ -125,10 +125,10 @@ describe('augmentation', () => {
       }
     })
     const state = { one: 'abc', two: false };
-    const select = createStore({ name, state });
+    const store = createStore({ name, state });
     const result = (derive(
-      select.one,
-      select.two,
+      store.one,
+      store.two,
     ).with((one, two) => one + two) as any)
       .myThing();
     expect(result).toEqual('abcfalse');
