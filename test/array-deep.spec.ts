@@ -154,4 +154,19 @@ describe('array-deep', () => {
     })
   })
 
+  // it('', () => { 
+  //   const store = createStore({
+  //     name: 'my store',
+  //     state: {
+  //       user: { name: '', age: 0 },
+  //       // todos: new Array<{ id: number, title: string, status: 'done' | 'todo' }>(),
+  //       todos: [{ id: 1, status: 'done', title: 'one' }, { id: 2, status: 'done', title: 'two' }]
+  //     }
+  //   });
+  
+  //   store.todos.$filter.status.$eq('done').title.$remove();
+  //   console.log(store.$state);
+
+  // })
+
 });

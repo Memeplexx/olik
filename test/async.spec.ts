@@ -197,7 +197,7 @@ describe('async', () => {
     const payload = { id: 1, val: 5 };
     await store.arr
       .$upsertMatching.id
-      .withOne(resolve(payload));
+      .$withOne(resolve(payload));
     expect(currentAction(store)).toEqual({ type: 'arr.upsertMatching.id.withOne()', payload });
     expect(store.arr.$state).toEqual([payload, state.arr[1], state.arr[2]]);
   })
@@ -208,7 +208,7 @@ describe('async', () => {
     const payload = { id: 4, val: 5 };
     await store.arr
       .$upsertMatching.id
-      .withOne(resolve(payload));
+      .$withOne(resolve(payload));
     expect(currentAction(store)).toEqual({ type: 'arr.upsertMatching.id.withOne()', payload });
     expect(store.arr.$state).toEqual([...state.arr, payload]);
   })
@@ -219,7 +219,7 @@ describe('async', () => {
     const payload = [{ id: 1, val: 5 }, { id: 5, val: 5 }];
     await store.arr
       .$upsertMatching.id
-      .withMany(resolve(payload));
+      .$withMany(resolve(payload));
     expect(currentAction(store)).toEqual({ type: 'arr.upsertMatching.id.withMany()', payload });
     expect(store.arr.$state).toEqual([payload[0], state.arr[1], state.arr[2], payload[1]]);
   })

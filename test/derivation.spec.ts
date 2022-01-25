@@ -19,7 +19,7 @@ describe('derivation', () => {
     const mem = derive(
       select.array,
       select.counter,
-    ).$with((arr, somenum) => {
+    ).with((arr, somenum) => {
       return arr.concat(somenum.toString())
     });
     const result = mem.$state;
@@ -37,7 +37,7 @@ describe('derivation', () => {
     const mem = derive(
       select.array,
       select.counter,
-    ).$with((array, counter) => {
+    ).with((array, counter) => {
       recalculating++;
       let result = {
         array: new Array<string>(),
@@ -74,7 +74,7 @@ describe('derivation', () => {
     const mem = derive(
       select.array,
       select.counter,
-    ).$with((array, counter) => {
+    ).with((array, counter) => {
       recalculating++;
     });
     mem.$onChange(() => eventReceived++);
@@ -95,7 +95,7 @@ describe('derivation', () => {
     const mem = derive(
       select.one,
       select.two,
-    ).$with((one, two) => {
+    ).with((one, two) => {
       return one + two;
     });
     let onChangeListenerCallCount = 0;
@@ -119,7 +119,7 @@ describe('derivation', () => {
     const mem = derive(
       select.array
         .$find.id.$eq(2)
-    ).$with(val => {
+    ).with(val => {
       recalculating++;
     });
     select.array
@@ -140,14 +140,14 @@ describe('derivation', () => {
     const mem = derive(
       select.num,
       select.str,
-    ).$with((num, str) => {
+    ).with((num, str) => {
       originalMemoCalcCount++;
       return str + num;
     });
     const mem2 = derive(
       select.str,
       mem,
-    ).$with((s1, s2) => {
+    ).with((s1, s2) => {
       return s1 + s2;
     });
     expect(mem2.$state).toEqual('xx0');
@@ -162,7 +162,7 @@ describe('derivation', () => {
     let memoCalcCount = 0;
     const mem = derive(
       select.array.$find.id.$eq(2),
-    ).$with(thing => {
+    ).with(thing => {
       memoCalcCount++;
       return thing;
     });
@@ -183,7 +183,7 @@ describe('derivation', () => {
     let memoCalcCount = 0;
     const mem = derive(
       select.array.$filter.id.$lte(2),
-    ).$with(thing => {
+    ).with(thing => {
       memoCalcCount++;
       return thing;
     });
@@ -209,7 +209,7 @@ describe('derivation', () => {
     let memoCalcCount = 0;
     const mem = derive(
       select.num,
-    ).$with(thing => {
+    ).with(thing => {
       memoCalcCount++;
       return thing;
     });

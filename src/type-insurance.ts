@@ -167,13 +167,16 @@ export const demo = () => {
   store.todos
     .$find.id.$eq(3).status
     .$replace('todo');
-  // { type: todos.find.id.eq(3).status.replace(), payload: 'todo' }
+  // { type: 'todos.find.id.eq(3).status.replace()', payload: 'todo' }
 
   store.todos
     .$filter.status.$eq('done')
     .$remove();
-  // { type: todos.filter.status.eq(done).replace() }
+  // { type: 'todos.filter.status.eq(done).replace()' }
 
   store.user.name.$replace('test');
-  // { type: user.name.replace(), payload: 'test' }
+  // { type: 'user.name.replace()', payload: 'test' }
+
+  store.todos.$filter.status.$eq('done').title.$remove()
+
 }
