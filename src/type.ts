@@ -157,13 +157,16 @@ export interface InvalidateCache {
 
 export type InsertNode = {
   /**
-   * Insert a node onto its parent object.  
+   * Insert an object into the selected object.  
    * 
    * **WARNING**: Performing this action has the potential to contradict the type-system. 
-   * **Only** use this to add properties onto objects of type `{ [key: string]: any }` and 
-   * **not** from objects with a known structure, for example `{ num: number, str: string }`.
+   * **Only** use this to add objects onto objects of type `{ [key: string]: any }` and 
+   * **not** onto objects with a known structure, for example `{ num: number, str: string }`.
+   * 
+   * Also note that you cannot insert primitives or arrays into the selected object.
+   * The former has been enforced by the type system while the latter could not be.
    */
-  $insert<T, X extends Payload<T>>(replacement: X, options: UpdateOptions<X>): UpdateResult<X>;
+  $insert<X extends Payload<object>>(replacement: X, options: UpdateOptions<X>): UpdateResult<X>;
 }
 
 export type RemoveNode<Depth extends number> = [Depth] extends [MaxRecursionDepth] ? {} : {
