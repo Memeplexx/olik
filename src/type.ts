@@ -292,7 +292,7 @@ export interface OnChange<S> {
    * 
    * @example
    * const subscription = select.todos
-   *   .onChange(todos => console.log(`There are now ${todos.length} todos in the store`));
+   *   .$onChange(todos => console.log(`There are now ${todos.length} todos in the store`));
    * 
    * subscription.unsubscribe();
    */
@@ -321,9 +321,12 @@ export interface CacheFor {
    * Avoid unnecessary promise invocations by supplying the number of milliseconds that should elapse before the promise is invoked again.
    * To un-do this, you can call `invalidateCache()` on the node of the state tree, for example
    * @example
-   * select.todos.invalidateCache();
+   * select.todos
+   *   .$invalidateCache();
    * @example
-   * select.todos.find.id.eq(2).invalidateCache();
+   * select.todos
+   *   .$find.id.$eq(2)
+   *   .$invalidateCache();
    */
   cacheFor?: number;
 }
@@ -335,7 +338,7 @@ export interface OptimisticallyUpdateWith<H> {
    * @example
    * const newUsername = 'Jeff';
    * select.username
-   *   .replace(() => updateUsernameOnApi(newUsername), { optimisticallyUpdateWith: newUsername })
+   *   .$replace(() => updateUsernameOnApi(newUsername), { optimisticallyUpdateWith: newUsername })
    *   .catch(err => notifyUserOfError(err))
    */
   optimisticallyUpdateWith?: H extends () => AnyAsync<infer W> ? W : never,
@@ -568,9 +571,7 @@ export type Store<S> = (S extends never ? {} : (S extends Array<any> ? Updatable
   : S extends object ? UpdatableObject<S, 'isFind', 'queried', MaxRecursionDepth>
   : UpdatablePrimitive<S, 'isFind', 'queried', MaxRecursionDepth>));
 
-
 export interface StoreAugment<S> { }
-  
 
 export interface ChangeListener {
   actions: StateAction[];

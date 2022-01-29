@@ -52,8 +52,7 @@ describe('Object', () => {
     expect(store.$state).toEqual({ str: '', bool: false });
   })
 
-
-  it('', () => {
+  it('should listen to onChange events correctly', () => {
     const state = { num1: 0, num2: 0 };
     const store = createStore({ name, state });
     let rootChangeCount = 0;
@@ -105,6 +104,18 @@ describe('Object', () => {
     const select = createStore({ name, state });
     select.arr.$patch({ num: 9 });
     expect(select.arr.$state).toEqual([{ id: 1, num: 9 }, { id: 2, num: 9 }]);
-  });
+  })
+
+  it('should insert a node', () => {
+    const store = createStore({ name, state: { one: '' } });
+    store.$insert({ two: 1 })
+    expect(store.$state).toEqual({ one: '', two: 1 });
+  })
+
+  it('should insert a node sub property', () => {
+    const store = createStore({ name, state: { one: {} } });
+    store.one.$insert({ two: 1 })
+    expect(store.$state).toEqual({ one:  { two: 1 } });
+  })
 
 });

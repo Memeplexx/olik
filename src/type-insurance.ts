@@ -28,14 +28,9 @@ function test() {
     }
   });
 
-  // select.object.a.b.c.d.
-
   store.objArray
     .$find.obj.num.$eq(3)
     .$remove();
-
-  // select.array
-  //   .replace([0]);
 
   store.string
     .$replace('test');
@@ -43,9 +38,6 @@ function test() {
   store.array
     .$find.$eq(0)
     .$replace(0);
-
-  // select.arrayStr
-  //   .replace(['one'])
 
   store.objArray
     .$find.$eq({ num: 0, arr: [], objArr: [], obj: { num: 0 } })

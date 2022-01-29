@@ -26,8 +26,7 @@ export const importOlikNestingModule = () => {
     if (['number', 'boolean', 'string'].some(type => typeof (wrapperState) === type) || Array.isArray(wrapperState)) {
       throw new Error(errorMessages.INVALID_CONTAINER_FOR_COMPONENT_STORES);
     }
-    appStore.nested[nestedStoreName].$insert({ [instanceId]: storeArg.$state });
-    // appStore.nested[nestedStoreName][instanceId].$insert(storeArg.$state);
+    appStore.nested[nestedStoreName][instanceId].$insert(storeArg.$state);
     delete libState.stores[nestedStoreName];
     storeArg.internals.storeName = containerName;
     storeArg.internals.nestedStoreInfo = { nestedStoreName: storeName, instanceId, containerName, isNested: true };
