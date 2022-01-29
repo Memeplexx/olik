@@ -15,7 +15,7 @@ describe('misc', () => {
     const changeNum = store.num;
     const changeBool = store.bool;
     store.str.$replace('x');
-    changeNum.$increment(1);
+    changeNum.$add(1);
     changeBool.$replace(true);
     expect(store.$state).toEqual({ num: 1, str: 'x', bool: true });
   })

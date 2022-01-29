@@ -52,19 +52,19 @@ describe('transaction', () => {
     const store1 = createStore({ name: 'a', state: { num: 0 } });
     const store2 = createStore({ name: 'b', state: { str: '' } });
     transact(
-      () => store1.num.$increment(1),
+      () => store1.num.$add(1),
       () => store2.str.$replace('x'),
     );
     expect(currentAction(store1)).toEqual({
-      type: 'num.increment()',
-      actions: [ { type: 'num.increment()', payload: 1 } ]
+      type: 'num.add()',
+      actions: [ { type: 'num.add()', payload: 1 } ]
     })
     expect(currentAction(store2)).toEqual({
       type: 'str.replace()',
       actions: [ { type: 'str.replace()', payload: 'x' } ]
     })
-    store1.num.$increment(1);
-    expect(currentAction(store1)).toEqual({ type: 'num.increment()', payload: 1 });
+    store1.num.$add(1);
+    expect(currentAction(store1)).toEqual({ type: 'num.add()', payload: 1 });
     store2.str.$replace('y');
     expect(currentAction(store2)).toEqual({ type: 'str.replace()', payload: 'y' });
   })

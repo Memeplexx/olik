@@ -40,8 +40,8 @@ describe('Object', () => {
     const store = createStore({ name, state });
     const payload = 1;
     store.num
-      .$increment(payload);
-    expect(currentAction(store)).toEqual({ type: 'num.increment()', payload });
+      .$add(payload);
+    expect(currentAction(store)).toEqual({ type: 'num.add()', payload });
     expect(store.num.$state).toEqual(1);
   })
 
@@ -62,15 +62,15 @@ describe('Object', () => {
     store.$onChange(() => rootChangeCount++);
     const l1 = store.num1.$onChange(() => num1ChangeCount++);
     store.num2.$onChange(() => num2ChangeCount++);
-    store.num1.$increment(1);
+    store.num1.$add(1);
     expect(num1ChangeCount).toEqual(1);
     expect(num2ChangeCount).toEqual(0);
-    store.num2.$increment(2);
+    store.num2.$add(2);
     expect(num1ChangeCount).toEqual(1);
     expect(num2ChangeCount).toEqual(1);
     expect(rootChangeCount).toEqual(2);
     l1.unsubscribe();
-    store.num1.$increment(1);
+    store.num1.$add(1);
     expect(num1ChangeCount).toEqual(1);
   })
 
@@ -79,9 +79,9 @@ describe('Object', () => {
     const store = createStore({ name, state });
     let changeCount = 0;
     store.arr.$find.id.$eq(1).$onChange(() => changeCount++);
-    store.arr.$find.id.$eq(2).num.$increment(1);
+    store.arr.$find.id.$eq(2).num.$add(1);
     expect(changeCount).toEqual(0);
-    store.arr.$find.id.$eq(1).num.$increment(1);
+    store.arr.$find.id.$eq(1).num.$add(1);
     expect(changeCount).toEqual(1);
   })
 
@@ -96,7 +96,7 @@ describe('Object', () => {
     const select = createStore({ name, state });
     select.arr
       .$filter.id.$eq(1).$or.num.$eq(2)
-      .id.$increment(1);
+      .id.$add(1);
     expect(select.arr.$state).toEqual([{ id: 2, num: 1 }, { id: 3, num: 2 }]);
   })
 

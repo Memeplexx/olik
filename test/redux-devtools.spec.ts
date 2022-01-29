@@ -98,8 +98,8 @@ describe('devtools', () => {
   it('should abbreviate action types correctly', () => {
     importOlikReduxDevtoolsModule({ limitSearchArgLength: 5 })
     const store = createStore({ name, state: [{ id: 'qwertyuiop', val: [{ id: 'asdfghjkl', val: 0 }] } ] });
-    store.$find.id.$eq('qwertyuiop').val.$find.id.$in(['asdfghjkl']).val.$increment(1);
-    expect(testState.currentActionForReduxDevtools.type).toEqual('find.id.eq(qwert).val.find.id.in(asdfg).val.increment()');
+    store.$find.id.$eq('qwertyuiop').val.$find.id.$in(['asdfghjkl']).val.$add(1);
+    expect(testState.currentActionForReduxDevtools.type).toEqual('find.id.eq(qwert).val.find.id.in(asdfg).val.add()');
   })
 
 });

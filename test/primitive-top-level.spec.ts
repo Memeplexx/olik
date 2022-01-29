@@ -24,9 +24,9 @@ describe('top-level-primitive', () => {
     const store = createStore({ name, state });
     const payload = 1;
     store
-      .$increment(payload);
+      .$add(payload);
     expect(store.$state).toEqual(1);
-    expect(currentAction(store)).toEqual({ type: 'increment()', payload });
+    expect(currentAction(store)).toEqual({ type: 'add()', payload });
   })
 
 });

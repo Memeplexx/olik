@@ -42,8 +42,8 @@ describe('array-object', () => {
     const store = createStore({ name, state });
     const payload = 1;
     store.val
-      .$increment(payload);
-    expect(currentAction(store)).toEqual({ type: 'val.increment()', payload });
+      .$add(payload);
+    expect(currentAction(store)).toEqual({ type: 'val.add()', payload });
     expect(store.$state).toEqual([{ id: 1, val: 2 }, { id: 2, val: 3 }, { id: 3, val: 4 }]);
   })
 
@@ -89,8 +89,8 @@ describe('array-object', () => {
     const payload = 2;
     store
       .$find.id.$eq(2).val
-      .$increment(payload);
-    expect(currentAction(store)).toEqual({ type: 'find.id.eq(2).val.increment()', payload });
+      .$add(payload);
+    expect(currentAction(store)).toEqual({ type: 'find.id.eq(2).val.add()', payload });
     expect(store.$state).toEqual([state[0], { id: 2, val: 4 }, state[2]]);
   })
 
@@ -118,8 +118,8 @@ describe('array-object', () => {
     const payload = 1;
     store
       .$find.id.$eq(1).$or.id.$eq(2).val
-      .$increment(1);
-    expect(currentAction(store)).toEqual({ type: 'find.id.eq(1).or.id.eq(2).val.increment()', payload });
+      .$add(1);
+    expect(currentAction(store)).toEqual({ type: 'find.id.eq(1).or.id.eq(2).val.add()', payload });
     expect(store.$state).toEqual([{ id: 1, val: 2 }, state[1], state[2]]);
   })
 
@@ -147,8 +147,8 @@ describe('array-object', () => {
     const payload = 1;
     store
       .$find.id.$eq(1).$and.id.$lt(2).val
-      .$increment(payload);
-    expect(currentAction(store)).toEqual({ type: 'find.id.eq(1).and.id.lt(2).val.increment()', payload });
+      .$add(payload);
+    expect(currentAction(store)).toEqual({ type: 'find.id.eq(1).and.id.lt(2).val.add()', payload });
     expect(store.$state).toEqual([{ id: 1, val: 2 }, state[1], state[2]]);
   })
 
@@ -166,8 +166,8 @@ describe('array-object', () => {
     const payload = 1;
     store
       .$filter.id.$gt(1).val
-      .$increment(1);
-    expect(currentAction(store)).toEqual({ type: 'filter.id.gt(1).val.increment()', payload });
+      .$add(1);
+    expect(currentAction(store)).toEqual({ type: 'filter.id.gt(1).val.add()', payload });
     expect(store.$state).toEqual([state[0], { id: 2, val: 3 }, { id: 3, val: 4 }]);
   })
 
@@ -185,8 +185,8 @@ describe('array-object', () => {
     const payload = 1;
     store
       .$filter.id.$eq(1).$or.id.$eq(2).val
-      .$increment(1);
-    expect(currentAction(store)).toEqual({ type: 'filter.id.eq(1).or.id.eq(2).val.increment()', payload });
+      .$add(1);
+    expect(currentAction(store)).toEqual({ type: 'filter.id.eq(1).or.id.eq(2).val.add()', payload });
     expect(store.$state).toEqual([{ id: 1, val: 2 }, { id: 2, val: 3 }, state[2]]);
   })
 
@@ -204,8 +204,8 @@ describe('array-object', () => {
     const payload = 1;
     store
       .$filter.id.$gt(0).$and.id.$gt(1).val
-      .$increment(1);
-    expect(currentAction(store)).toEqual({ type: 'filter.id.gt(0).and.id.gt(1).val.increment()', payload });
+      .$add(1);
+    expect(currentAction(store)).toEqual({ type: 'filter.id.gt(0).and.id.gt(1).val.add()', payload });
     expect(store.$state).toEqual([state[0], { id: 2, val: 3 }, { id: 3, val: 4 }]);
   })
 

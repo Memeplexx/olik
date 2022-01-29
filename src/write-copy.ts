@@ -56,28 +56,28 @@ export const copyNewState = (
     } else {
       return { ...currentState, [action.name]: copyNewState({ storeName, currentState: (currentState || {})[action.name], stateToUpdate: ((stateToUpdate as any) || {})[action.name], stateActions, cursor }) };
     }
-  } else if (action.name === 'replace') {
-    return setCurrentActionReturningNewState({ storeName, stateActions, payload: { payload: action.arg }, newState: action.arg });
   } else if (action.name === 'patch') {
     if (Array.isArray(currentState)) {
       return setCurrentActionReturningNewState({ storeName, stateActions, payload: { payload: action.arg }, newState: (currentState as any[]).map(e => ({ ...e, ...action.arg })) });
     } else {
       return setCurrentActionReturningNewState({ storeName, stateActions, payload: { payload: action.arg }, newState: { ...currentState, ...(action.arg as any) } });
     }
-  } else if (action.name === 'deepMerge') {
-    return setCurrentActionReturningNewState({ storeName, stateActions, payload: { payload: action.arg }, newState: deepMerge(currentState, action.arg) });
-  } else if (action.name === 'increment') {
+  } else if (action.name === 'add') {
     if (Array.isArray(currentState)) {
       return setCurrentActionReturningNewState({ storeName, stateActions, payload: { payload: action.arg }, newState: Array.isArray(currentState) ? currentState.map((e: any) => e + action.arg) : currentState + action.arg });
     } else {
       return setCurrentActionReturningNewState({ storeName, stateActions, payload: { payload: action.arg }, newState: currentState + action.arg });
     }
-  } else if (action.name === 'decrement') {
+  } else if (action.name === 'subtract') {
     if (Array.isArray(currentState)) {
       return setCurrentActionReturningNewState({ storeName, stateActions, payload: { payload: action.arg }, newState: Array.isArray(currentState) ? currentState.map((e: any) => e + action.arg) : currentState - action.arg });
     } else {
       return setCurrentActionReturningNewState({ storeName, stateActions, payload: { payload: action.arg }, newState: currentState - action.arg });
     }
+  } else if (action.name === 'replace') {
+    return setCurrentActionReturningNewState({ storeName, stateActions, payload: { payload: action.arg }, newState: action.arg });
+  } else if (action.name === 'deepMerge') {
+    return setCurrentActionReturningNewState({ storeName, stateActions, payload: { payload: action.arg }, newState: deepMerge(currentState, action.arg) });
   } else if (action.name === 'clear') {
     return setCurrentActionReturningNewState({ storeName, stateActions, payload: null, newState: [] });
   } else if (action.name === 'insertOne') {

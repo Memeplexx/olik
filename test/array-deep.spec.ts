@@ -111,9 +111,9 @@ describe('array-deep', () => {
     store.arr
       .$find.id.$eq(2)
       .arr.$filter.id.$in([1, 2]).num
-      .$increment(payload);
+      .$add(payload);
     expect(currentAction(store)).toEqual({
-      type: 'arr.find.id.eq(2).arr.filter.id.in(1,2).num.increment()',
+      type: 'arr.find.id.eq(2).arr.filter.id.in(1,2).num.add()',
       payload,
     });
     expect(store.$state).toEqual({
@@ -136,9 +136,9 @@ describe('array-deep', () => {
     store.arr
       .$find.id.$eq(2)
       .arr.num
-      .$increment(payload);
+      .$add(payload);
     expect(currentAction(store)).toEqual({
-      type: 'arr.find.id.eq(2).arr.num.increment()',
+      type: 'arr.find.id.eq(2).arr.num.add()',
       payload,
     });
     expect(store.$state).toEqual({

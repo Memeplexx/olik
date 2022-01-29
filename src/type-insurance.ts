@@ -107,9 +107,9 @@ function test() {
 
   store.array
     .$find.$eq(3)
-    .$increment(3);
+    .$add(3);
 
-  store.number.$increment(3);
+  store.number.$add(3);
 
   const rr = store.array
     .$state;
@@ -158,7 +158,7 @@ export const demo = () => {
   });
 
   store.user.age
-    .$increment(1);
+    .$add(1);
   // { type: 'user.age.increment()', payload: 1 }
 
   store.todos

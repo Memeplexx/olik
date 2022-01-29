@@ -32,8 +32,8 @@ describe('array-primitive-deep', () => {
     const store = createStore({ name, state });
     const payload = 1;
     store.arr
-      .$increment(payload);
-    expect(currentAction(store)).toEqual({ type: 'arr.increment()', payload });
+      .$add(payload);
+    expect(currentAction(store)).toEqual({ type: 'arr.add()', payload });
     expect(store.$state).toEqual({ arr: [2, 3, 4] });
   })
 
@@ -79,8 +79,8 @@ describe('array-primitive-deep', () => {
     const payload = 2;
     store.arr
       .$find.$eq(2)
-      .$increment(payload);
-    expect(currentAction(store)).toEqual({ type: 'arr.find.eq(2).increment()', payload });
+      .$add(payload);
+    expect(currentAction(store)).toEqual({ type: 'arr.find.eq(2).add()', payload });
     expect(store.$state).toEqual({ arr: [1, 4, 3] });
   })
 
@@ -108,8 +108,8 @@ describe('array-primitive-deep', () => {
     const payload = 1;
     store.arr
       .$find.$eq(1).$or.$eq(2)
-      .$increment(1);
-    expect(currentAction(store)).toEqual({ type: 'arr.find.eq(1).or.eq(2).increment()', payload });
+      .$add(1);
+    expect(currentAction(store)).toEqual({ type: 'arr.find.eq(1).or.eq(2).add()', payload });
     expect(store.$state).toEqual({ arr: [2, 2, 3] });
   })
 
@@ -137,8 +137,8 @@ describe('array-primitive-deep', () => {
     const payload = 1;
     store.arr
       .$find.$eq(1).$and.$lt(2)
-      .$increment(payload);
-    expect(currentAction(store)).toEqual({ type: 'arr.find.eq(1).and.lt(2).increment()', payload });
+      .$add(payload);
+    expect(currentAction(store)).toEqual({ type: 'arr.find.eq(1).and.lt(2).add()', payload });
     expect(store.$state).toEqual({ arr: [2, 2, 3] });
   })
 
@@ -156,8 +156,8 @@ describe('array-primitive-deep', () => {
     const payload = 1;
     store.arr
       .$filter.$gt(1)
-      .$increment(1);
-    expect(currentAction(store)).toEqual({ type: 'arr.filter.gt(1).increment()', payload });
+      .$add(1);
+    expect(currentAction(store)).toEqual({ type: 'arr.filter.gt(1).add()', payload });
     expect(store.$state).toEqual({ arr: [1, 3, 4] });
   })
 
@@ -175,8 +175,8 @@ describe('array-primitive-deep', () => {
     const payload = 1;
     store.arr
       .$filter.$eq(1).$or.$eq(2)
-      .$increment(1);
-    expect(currentAction(store)).toEqual({ type: 'arr.filter.eq(1).or.eq(2).increment()', payload });
+      .$add(1);
+    expect(currentAction(store)).toEqual({ type: 'arr.filter.eq(1).or.eq(2).add()', payload });
     expect(store.$state).toEqual({ arr: [2, 3, 3] });
   })
 
@@ -194,8 +194,8 @@ describe('array-primitive-deep', () => {
     const payload = 1;
     store.arr
       .$filter.$gt(0).$and.$gt(1)
-      .$increment(1);
-    expect(currentAction(store)).toEqual({ type: 'arr.filter.gt(0).and.gt(1).increment()', payload });
+      .$add(1);
+    expect(currentAction(store)).toEqual({ type: 'arr.filter.gt(0).and.gt(1).add()', payload });
     expect(store.$state).toEqual({ arr: [1, 3, 4] });
   })
 

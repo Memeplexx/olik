@@ -89,7 +89,7 @@ export type UpdatableArray<S extends Array<any>, F extends FindOrFilter, Q exten
             : UpdatablePrimitive<S[0][K], F, Q, NewDepth>)
         }
       )
-      : IncrementArray
+      : AddArray
     )
   ), Depth>
 
@@ -100,8 +100,8 @@ export type UpdatablePrimitive<S, F extends FindOrFilter, Q extends QueryStatus,
   & RemoveNode<Depth>
   & Replace<S>
   & (Q extends 'notQueried' ? Replace<S> : F extends 'isFind' ? Replace<S> : {})
-  & (S extends number ? (Q extends 'notQueried' ? IncrementArray : Increment) : {})
-  & (S extends number ? (Q extends 'notQueried' ? DecrementArray : Decrement) : {})
+  & (S extends number ? (Q extends 'notQueried' ? AddArray : Add) : {})
+  & (S extends number ? (Q extends 'notQueried' ? SubtractArray : Subtract) : {})
   & Readable<F extends 'isFilter' ? S[] : S>
 
 
@@ -210,32 +210,32 @@ export interface PatchArray<S> {
   $patch<X extends Payload<Partial<S>>>(patch: X, options: UpdateOptions<X>): UpdateResult<X>;
 }
 
-export interface Increment {
+export interface Add {
   /**
    * Add the supplied number onto the selected number.
    */
-  $increment<X extends Payload<number>>(by: X, options: UpdateOptions<X>): UpdateResult<X>;
+  $add<X extends Payload<number>>(by: X, options: UpdateOptions<X>): UpdateResult<X>;
 }
 
-export interface Decrement {
+export interface Subtract {
   /**
    * Subtract the supplied number from the selected number.
    */
-  $decrement<X extends Payload<number>>(by: X, options: UpdateOptions<X>): UpdateResult<X>;
+  $subtract<X extends Payload<number>>(by: X, options: UpdateOptions<X>): UpdateResult<X>;
 }
 
-export interface IncrementArray {
+export interface AddArray {
   /**
-   * Add the supplied number onto all the selected array of numbers. 
+   * Add the supplied number onto each of the selected array of numbers. 
    */
-  $increment<X extends Payload<number>>(by: X, options: UpdateOptions<X>): UpdateResult<X>;
+  $add<X extends Payload<number>>(by: X, options: UpdateOptions<X>): UpdateResult<X>;
 }
 
-export interface DecrementArray {
+export interface SubtractArray {
   /**
-   * Subtract the supplied number from all the selected array of numbers. 
+   * Subtract the supplied number from each of the selected array of numbers. 
    */
-  $decrement<X extends Payload<number>>(by: X, options: UpdateOptions<X>): UpdateResult<X>;
+  $subtract<X extends Payload<number>>(by: X, options: UpdateOptions<X>): UpdateResult<X>;
 }
 
 export interface Replace<S> {
