@@ -1,3 +1,4 @@
+import { DeepMerge } from './type';
 import { errorMessages, libState } from './constant';
 import { OptionsForMergingAStore } from './type';
 import { StoreInternal } from './type-internal';
@@ -11,10 +12,11 @@ export const mergeStoreIfPossible = <S>(
   internals.mergedStoreInfo = { nameOfStoreToMergeInto, isMerged: !!existingStore };
   if (!existingStore) { return; }
   const wrapperState = existingStore.$state;
-  if (['number', 'boolean', 'string'].some(type => typeof (wrapperState) === type) || Array.isArray(wrapperState)) {
+  const stateIsInvalid = (s: any) => ['number', 'boolean', 'string'].some(type => typeof (s) === type) || Array.isArray(s);
+  if (stateIsInvalid(wrapperState)) {
     throw new Error(errorMessages.INVALID_EXISTING_STORE_FOR_MERGING);
   }
-  if (['number', 'boolean', 'string'].some(type => typeof (state) === type) || Array.isArray(state)) {
+  if (stateIsInvalid(state)) {
     throw new Error(errorMessages.INVALID_MERGING_STORE);
   }
   delete libState.stores[internals.storeName];
@@ -27,5 +29,5 @@ export const mergeStoreIfPossible = <S>(
       node.onChange(listener);
     });
     changeListeners.length = 0;
-  (existingStore as any).deepMerge(state);
+  (existingStore as any as DeepMerge<any>).$deepMerge(state);
 }

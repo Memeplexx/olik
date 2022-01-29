@@ -74,6 +74,8 @@ export const copyNewState = (
     } else {
       return setCurrentActionReturningNewState({ storeName, stateActions, payload: { payload: action.arg }, newState: currentState - action.arg });
     }
+  } else if (action.name === 'insert') {
+    return setCurrentActionReturningNewState({ storeName, stateActions, payload: { payload: action.arg }, newState: {...currentState, ...action.arg} });
   } else if (action.name === 'replace') {
     return setCurrentActionReturningNewState({ storeName, stateActions, payload: { payload: action.arg }, newState: action.arg });
   } else if (action.name === 'deepMerge') {

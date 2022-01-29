@@ -26,6 +26,7 @@ describe('nest', () => {
     const selectContainer = createStore({ name: hostStoreName, state: stateOfContainerStore });
     const nameOfNestedStore = 'myComp';
     createStore({ name: nameOfNestedStore, state: stateOfNestedStore, nestStore: { hostStoreName, instanceId: 0 } });
+    console.log(currentAction(selectContainer));
     expect(selectContainer.$state).toEqual({ ...stateOfContainerStore, nested: { [nameOfNestedStore]: { 0: stateOfNestedStore } } });
   })
 

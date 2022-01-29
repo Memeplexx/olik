@@ -6,7 +6,7 @@ export const importOlikNestingModule = () => {
 
   const complete = (store: any) => {
     store.state = store.state;
-    store.onChange((state: any) => store.state = state );
+    store.onChange((state: any) => store.state = state);
     return store;
   }
 
@@ -26,7 +26,8 @@ export const importOlikNestingModule = () => {
     if (['number', 'boolean', 'string'].some(type => typeof (wrapperState) === type) || Array.isArray(wrapperState)) {
       throw new Error(errorMessages.INVALID_CONTAINER_FOR_COMPONENT_STORES);
     }
-    appStore.nested[nestedStoreName][instanceId].replace(storeArg.$state);
+    appStore.nested[nestedStoreName].$insert({ [instanceId]: storeArg.$state });
+    // appStore.nested[nestedStoreName][instanceId].$insert(storeArg.$state);
     delete libState.stores[nestedStoreName];
     storeArg.internals.storeName = containerName;
     storeArg.internals.nestedStoreInfo = { nestedStoreName: storeName, instanceId, containerName, isNested: true };
@@ -41,9 +42,9 @@ export const importOlikNestingModule = () => {
     const instanceId = storeArg.internals.nestedStoreInfo.instanceId
     const state = appStore.$state.nested[nestedStoreName];
     if ((Object.keys(state).length === 1) && state[instanceId]) {
-      appStore.nested[nestedStoreName].remove();
+      appStore.nested[nestedStoreName].$remove();
     } else {
-      appStore.nested[nestedStoreName][instanceId].remove();
+      appStore.nested[nestedStoreName][instanceId].$remove();
     }
     storeArg.internals.nestedStoreInfo = undefined;
   }

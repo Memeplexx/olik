@@ -36,7 +36,7 @@ export const createStore = <S>(
           return libState.stores[containerName].nested[nestedStoreName][instanceId][prop];
         } else if (topLevel && internals.mergedStoreInfo?.isMerged) {
           return (libState.stores[internals.mergedStoreInfo.nameOfStoreToMergeInto] as any)[prop];
-        } else if (['replace', 'patch', 'deepMerge', 'remove', 'add', 'subtract', 'clear', 'insertOne', 'insertMany', 'withOne', 'withMany'].includes(prop)) {
+        } else if (['replace', 'patch', 'deepMerge', 'remove', 'insert', 'add', 'subtract', 'clear', 'insertOne', 'insertMany', 'withOne', 'withMany'].includes(prop)) {
           return processPotentiallyAsyncUpdate({ storeName: internals.storeName, stateActions, prop });
         } else if ('invalidateCache' === prop) {
           return () => {

@@ -45,6 +45,7 @@ export type Rec<X, Depth extends number> = {
 export type UpdatableObject<S, F extends FindOrFilter, Q extends QueryStatus, Depth extends number, NewDepth extends number = DecrementRecursion[Depth]> = Rec<
   & PatchObject<S>
   & RemoveNode<Depth>
+  & InsertNode
   & InvalidateCache
   & Replace<S>
   & DeepMerge<S>
@@ -154,6 +155,17 @@ export interface InvalidateCache {
   $invalidateCache: () => void,
 }
 
+export type InsertNode = {
+  /**
+   * Insert a node onto its parent object.  
+   * 
+   * **WARNING**: Performing this action has the potential to contradict the type-system. 
+   * **Only** use this to add properties onto objects of type `{ [key: string]: any }` and 
+   * **not** from objects with a known structure, for example `{ num: number, str: string }`.
+   */
+  $insert<T, X extends Payload<T>>(replacement: X, options: UpdateOptions<X>): UpdateResult<X>;
+}
+
 export type RemoveNode<Depth extends number> = [Depth] extends [MaxRecursionDepth] ? {} : {
   /**
    * Remove the selected node from its parent object.  
@@ -226,14 +238,14 @@ export interface Subtract {
 
 export interface AddArray {
   /**
-   * Add the supplied number onto each of the selected array of numbers. 
+   * Add the supplied number onto each of the numbers in the selected array. 
    */
   $add<X extends Payload<number>>(by: X, options: UpdateOptions<X>): UpdateResult<X>;
 }
 
 export interface SubtractArray {
   /**
-   * Subtract the supplied number from each of the selected array of numbers. 
+   * Subtract the supplied number from each of the numbers in the selected array. 
    */
   $subtract<X extends Payload<number>>(by: X, options: UpdateOptions<X>): UpdateResult<X>;
 }

@@ -180,4 +180,10 @@ describe('array-deep', () => {
     expect(store.todos.$state).toEqual(state.todos.map(todo => ({ id: todo.id, status: todo.status, title: todo.title, obj: { n: 1 } })));
   })
 
+  it('should insert a node', () => {
+    const store = createStore({ name, state: { one: '' } });
+    store.$insert({ two: 1 })
+    expect(store.$state).toEqual({ one: '', two: 1 });
+  })
+
 });
