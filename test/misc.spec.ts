@@ -25,5 +25,9 @@ describe('misc', () => {
     expect(() => createStore({name, state})).toThrow(errorMessages.INVALID_STATE_INPUT(new Set().toString()));
   })
 
+  it('should throw an error if a user uses a dollar prop in their state', () => {
+    expect(() => createStore({ name, state: { $hello: 'world' } })).toThrow(errorMessages.DOLLAR_USED_IN_STATE);
+  })
+
 });
 

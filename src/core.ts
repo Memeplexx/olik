@@ -118,7 +118,12 @@ export const validateState = (state: any) => {
         throwError(state);
       }
     }
-    Object.keys(state).forEach(key => validateState(state[key]));
+    Object.keys(state).forEach(key => {
+      if (key.startsWith('$')) {
+        throw new Error(errorMessages.DOLLAR_USED_IN_STATE);
+      }
+      validateState(state[key]);
+    });
   }
 }
 

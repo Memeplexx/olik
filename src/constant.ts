@@ -12,6 +12,7 @@ export const errorMessages = {
   INVALID_STATE_INPUT: (illegal: any) => `State must be serializable as JSON. Value of '${illegal.toString()}' is not permitted`,
   ASYNC_UPDATES_NOT_ENABLED: 'Cannot perform an async update until you enable it. Please import and invoke `importOlikAsyncModule()` before creating your store',
   NESTED_STORES_NOT_ENABLED: 'Cannot nest this store until you enable nesting. Please import and invoke `importOlikNestingModule()` before creating your store',
+  DOLLAR_USED_IN_STATE: `Your state cannot contain any properties which begin with a '$' symbol as this syntax is reserved for library functions`,
 } as const;
 
 export const libState = {
