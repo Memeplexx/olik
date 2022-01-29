@@ -16,16 +16,16 @@ describe('array-object', () => {
     const store = createStore({ name, state });
     const payload = [{ id: 5, val: 5 }, { id: 6, val: 6 }, { id: 7, val: 7 }];
     store
-      .$replaceAll(payload);
-    expect(currentAction(store)).toEqual({ type: 'replaceAll()', payload });
+      .$replace(payload);
+    expect(currentAction(store)).toEqual({ type: 'replace()', payload });
     expect(store.$state).toEqual(payload);
   })
 
   it('should remove all elements', () => {
     const store = createStore({ name, state });
     store
-      .$removeAll();
-    expect(currentAction(store)).toEqual({ type: 'removeAll()' });
+      .$clear();
+    expect(currentAction(store)).toEqual({ type: 'clear()' });
     expect(store.$state).toEqual([]);
   })
 
@@ -33,8 +33,8 @@ describe('array-object', () => {
     const store = createStore({ name, state });
     const payload = 9;
     store.val
-      .$replaceAll(payload);
-    expect(currentAction(store)).toEqual({ type: 'val.replaceAll()', payload });
+      .$replace(payload);
+    expect(currentAction(store)).toEqual({ type: 'val.replace()', payload });
     expect(store.$state).toEqual(state.map(s => ({ ...s, val: payload })));
   })
 
@@ -42,8 +42,8 @@ describe('array-object', () => {
     const store = createStore({ name, state });
     const payload = 1;
     store.val
-      .$incrementAll(payload);
-    expect(currentAction(store)).toEqual({ type: 'val.incrementAll()', payload });
+      .$increment(payload);
+    expect(currentAction(store)).toEqual({ type: 'val.increment()', payload });
     expect(store.$state).toEqual([{ id: 1, val: 2 }, { id: 2, val: 3 }, { id: 3, val: 4 }]);
   })
 

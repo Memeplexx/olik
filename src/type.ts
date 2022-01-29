@@ -43,14 +43,11 @@ export type Rec<X, Depth extends number> = {
 }[Depth extends -1 ? 'done' : 'recur']
 
 export type UpdatableObject<S, F extends FindOrFilter, Q extends QueryStatus, Depth extends number, NewDepth extends number = DecrementRecursion[Depth]> = Rec<
-  & Patch<S>
-  & RemoveFromObject<Depth>
+  & PatchObject<S>
+  & RemoveNode<Depth>
   & InvalidateCache
-
-  // & (F extends 'isFind' ? (Replace<S> & DeepMerge<S>) : {})
   & Replace<S>
   & DeepMerge<S>
-
   & Readable<F extends 'isFilter' ? S[] : S>
   & ({
     [K in keyof S]: S[K] extends Array<any>
@@ -70,12 +67,12 @@ export type UpdatableArray<S extends Array<any>, F extends FindOrFilter, Q exten
     & And<S, F, NewDepth>
     & (S[0] extends Array<any> ? {} : S[0] extends object ? UpdatableObject<S[0], F, Q, NewDepth> : UpdatablePrimitive<S[0], F, Q, NewDepth>)
   ) : (
-    & RemoveFromArray<Depth>
+    & RemoveNode<Depth>
     & InvalidateCache
-    & RemoveAll
+    & Clear
     & InsertMany<S>
     & InsertOne<S[0]>
-    & ReplaceAll<S>
+    & ReplaceArray<S>
     & Readable<F extends 'isFilter' ? S : S[0]>
     & (S[0] extends Array<any> ? {} : S[0] extends object ? UpsertMatching<S[0]> : {})
     & Find<S, NewDepth>
@@ -83,7 +80,7 @@ export type UpdatableArray<S extends Array<any>, F extends FindOrFilter, Q exten
     & (
       S[0] extends object
       ? (
-        & PatchAll<S[0]>
+        & PatchArray<S[0]>
         & { [K in keyof S[0]]:
           (S[0][K] extends Array<any>
             ? UpdatableArray<S[0][K], 'isFilter', 'notQueried', NewDepth>
@@ -92,7 +89,7 @@ export type UpdatableArray<S extends Array<any>, F extends FindOrFilter, Q exten
             : UpdatablePrimitive<S[0][K], F, Q, NewDepth>)
         }
       )
-      : AddToAll
+      : IncrementArray
     )
   ), Depth>
 
@@ -100,13 +97,11 @@ export type UpdateOptions<H> = (H extends () => AnyAsync<any> ? & CacheFor & Opt
 
 export type UpdatablePrimitive<S, F extends FindOrFilter, Q extends QueryStatus, Depth extends number> =
   & InvalidateCache
-  & RemoveFromObject<Depth>
-
-  & Replace<S> ///////
-  
-  & (Q extends 'notQueried' ? ReplaceAll<S> : F extends 'isFind' ? Replace<S> : {})
-  & (S extends number ? (Q extends 'notQueried' ? AddToAll : Add) : {})
-  & (S extends number ? (Q extends 'notQueried' ? SubtractFromAll : Subtract) : {})
+  & RemoveNode<Depth>
+  & Replace<S>
+  & (Q extends 'notQueried' ? Replace<S> : F extends 'isFind' ? Replace<S> : {})
+  & (S extends number ? (Q extends 'notQueried' ? IncrementArray : Increment) : {})
+  & (S extends number ? (Q extends 'notQueried' ? DecrementArray : Decrement) : {})
   & Readable<F extends 'isFilter' ? S[] : S>
 
 
@@ -159,9 +154,9 @@ export interface InvalidateCache {
   $invalidateCache: () => void,
 }
 
-export type RemoveFromObject<Depth extends number> = [Depth] extends [MaxRecursionDepth] ? {} : {
+export type RemoveNode<Depth extends number> = [Depth] extends [MaxRecursionDepth] ? {} : {
   /**
-   * Remove the selected property from its parent object.  
+   * Remove the selected node from its parent object.  
    * 
    * **WARNING**: Performing this action has the potential to contradict the type-system. 
    * **Only** use this to remove properties from objects of type `{ [key: string]: any }` and 
@@ -179,68 +174,68 @@ export type RemoveFromArray<Depth extends number> = [Depth] extends [MaxRecursio
   $remove<X extends Payload<any>>(options: X): Future<any>;
 }
 
-export interface RemoveAll {
+export interface Clear {
   /**
-   * Remove all elements from the selected array node.
+   * Remove all elements from the selected array.
    */
-  $removeAll(): void,
-  $removeAll<X extends Payload<any>>(options: X): Future<any>;
+  $clear(): void,
+  $clear<X extends Payload<any>>(options: X): Future<any>;
 }
 
 export interface InsertOne<S> {
   /**
-   * Insert the supplied array element into the selected array node. 
+   * Insert the supplied array element into the selected array. 
    */
   $insertOne<X extends Payload<S>>(element: X, options: UpdateOptions<X>): UpdateResult<X>;
 }
 
 export interface InsertMany<S> {
   /**
-   * Insert the supplied array into the selected array node. 
+   * Insert the supplied array into the selected array. 
    */
   $insertMany<X extends Payload<S>>(element: X, options: UpdateOptions<X>): UpdateResult<X>;
 }
 
-export interface Patch<S> {
+export interface PatchObject<S> {
   /**
    * Partially update the selected object node with the supplied state.
    */
   $patch<X extends Payload<Partial<S>>>(patch: X, options: UpdateOptions<X>): UpdateResult<X>;
 }
 
-export interface PatchAll<S> {
+export interface PatchArray<S> {
   /**
-   * Partially update all the selected object nodes with the supplied state.
+   * Partially update all the selected array elements with the supplied state.
    */
-  $patchAll<X extends Payload<Partial<S>>>(patch: X, options: UpdateOptions<X>): UpdateResult<X>;
+  $patch<X extends Payload<Partial<S>>>(patch: X, options: UpdateOptions<X>): UpdateResult<X>;
 }
 
-export interface Add {
+export interface Increment {
   /**
-   * Add the supplied number onto the selected node.
+   * Add the supplied number onto the selected number.
    */
   $increment<X extends Payload<number>>(by: X, options: UpdateOptions<X>): UpdateResult<X>;
 }
 
-export interface Subtract {
+export interface Decrement {
   /**
-   * Add the supplied number onto the selected node.
+   * Subtract the supplied number from the selected number.
    */
   $decrement<X extends Payload<number>>(by: X, options: UpdateOptions<X>): UpdateResult<X>;
 }
 
-export interface AddToAll {
+export interface IncrementArray {
   /**
-   * Add the supplied number onto all the selected nodes. 
+   * Add the supplied number onto all the selected array of numbers. 
    */
-  $incrementAll<X extends Payload<number>>(by: X, options: UpdateOptions<X>): UpdateResult<X>;
+  $increment<X extends Payload<number>>(by: X, options: UpdateOptions<X>): UpdateResult<X>;
 }
 
-export interface SubtractFromAll {
+export interface DecrementArray {
   /**
-   * Add the supplied number onto all the selected nodes. 
+   * Subtract the supplied number from all the selected array of numbers. 
    */
-  $decrementAll<X extends Payload<number>>(by: X, options: UpdateOptions<X>): UpdateResult<X>;
+  $decrement<X extends Payload<number>>(by: X, options: UpdateOptions<X>): UpdateResult<X>;
 }
 
 export interface Replace<S> {
@@ -250,11 +245,11 @@ export interface Replace<S> {
   $replace<X extends Payload<S>>(replacement: X, options: UpdateOptions<X>): UpdateResult<X>;
 }
 
-export interface ReplaceAll<S> {
+export interface ReplaceArray<S> {
   /**
-   * Replace all the selected nodes with the supplied state.
+   * Replace all elements in the selected array with a new array.
    */
-  $replaceAll<X extends Payload<S>>(replacement: X, options: UpdateOptions<X>): UpdateResult<X>;
+  $replace<X extends Payload<S>>(replacement: X, options: UpdateOptions<X>): UpdateResult<X>;
 }
 
 export interface DeepMerge<S> {

@@ -1,5 +1,5 @@
 import { errorMessages, libState, testState } from './constant';
-import { Read, ReduxDevtoolsOptions, Replace, ReplaceAll } from './type';
+import { Read, ReduxDevtoolsOptions, Replace } from './type';
 import { StoreInternal, WindowAugmentedWithReduxDevtools } from './type-internal';
 
 
@@ -41,8 +41,8 @@ export function importOlikReduxDevtoolsModule(
   
       const setState = (state: any) => {
         internals.reduxDevtools!.disableDispatch = true;
-        const selection = store as any as Replace<any> & ReplaceAll<any> & Read<any>;
-        selection[Array.isArray(selection.$state) ? '$replaceAll' : '$replace'](state);
+        const selection = store as any as Replace<any> & Read<any>;
+        selection.$replace(state);
         internals.reduxDevtools!.disableDispatch = false;
       }
   

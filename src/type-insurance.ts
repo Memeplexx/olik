@@ -95,18 +95,15 @@ function test() {
     .$remove();
 
   store.objArray
-    .num.$replaceAll(2);
+    .num.$replace(2);
 
   store.objArray
     .$find.num.$eq(3)
     .num.$replace(3)
 
-  store.arrayBool.$find.$eq(true).$remove();
-
   store.arrayTuple
     .$find.$in(['hello']).$and.$eq('world')
     .$replace('world');
-
 
   store.array
     .$find.$eq(3)
@@ -176,7 +173,5 @@ export const demo = () => {
 
   store.user.name.$replace('test');
   // { type: 'user.name.replace()', payload: 'test' }
-
-  store.todos.$filter.status.$eq('done').title.$remove()
 
 }

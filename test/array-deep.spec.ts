@@ -136,9 +136,9 @@ describe('array-deep', () => {
     store.arr
       .$find.id.$eq(2)
       .arr.num
-      .$incrementAll(payload);
+      .$increment(payload);
     expect(currentAction(store)).toEqual({
-      type: 'arr.find.id.eq(2).arr.num.incrementAll()',
+      type: 'arr.find.id.eq(2).arr.num.increment()',
       payload,
     });
     expect(store.$state).toEqual({

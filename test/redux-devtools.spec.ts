@@ -30,12 +30,12 @@ describe('devtools', () => {
   it('should correctly respond to devtools dispatches where the state is an array', () => {
     const state = ['a', 'b', 'c'];
     const store = createStore({ name, state });
-    store.$replaceAll(['d', 'e', 'f']);
+    store.$replace(['d', 'e', 'f']);
     expect(store.$state).toEqual(['d', 'e', 'f']);
     const state2 = ['g', 'h'];
     testState.fakeWindowObjectForReduxDevtools!.__REDUX_DEVTOOLS_EXTENSION__._mockInvokeSubscription({ type: 'DISPATCH', state: JSON.stringify(state2), payload: { type: 'JUMP_TO_ACTION' }, source: '@devtools-extension' });
     expect(store.$state).toEqual(state2);
-    expect(currentAction(store).type).toEqual('replaceAll()');
+    expect(currentAction(store).type).toEqual('replace()');
   });
 
   it('should handle a COMMIT without throwing an error', () => {

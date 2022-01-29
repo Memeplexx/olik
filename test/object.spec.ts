@@ -103,7 +103,7 @@ describe('Object', () => {
   it('should patch all elements in an array', () => {
     const state = { arr: [{ id: 1, num: 1 }, { id: 2, num: 2 }] };
     const select = createStore({ name, state });
-    select.arr.$patchAll({ num: 9 });
+    select.arr.$patch({ num: 9 });
     expect(select.arr.$state).toEqual([{ id: 1, num: 9 }, { id: 2, num: 9 }]);
   });
 

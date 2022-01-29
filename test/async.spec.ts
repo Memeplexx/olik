@@ -159,7 +159,7 @@ describe('async', () => {
   it('should be able to remove all elements from an array', async () => {
     const state = { arr: [1, 2, 3] };
     const store = createStore({ name, state });
-    await store.arr.$removeAll(resolve(null));
+    await store.arr.$clear(resolve(null));
     expect(store.arr.$state).toEqual([]);
   })
 

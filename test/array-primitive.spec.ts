@@ -15,16 +15,16 @@ describe('array-primitive', () => {
     const store = createStore({ name, state });
     const payload = [4, 5, 6];
     store
-      .$replaceAll(payload);
-    expect(currentAction(store)).toEqual({ type: 'replaceAll()', payload });
+      .$replace(payload);
+    expect(currentAction(store)).toEqual({ type: 'replace()', payload });
     expect(store.$state).toEqual([4, 5, 6]);
   })
 
   it('should remove all elements', () => {
     const store = createStore({ name, state });
     store
-      .$removeAll();
-    expect(currentAction(store)).toEqual({ type: 'removeAll()' });
+      .$clear();
+    expect(currentAction(store)).toEqual({ type: 'clear()' });
     expect(store.$state).toEqual([]);
   })
 
@@ -32,8 +32,8 @@ describe('array-primitive', () => {
     const store = createStore({ name, state });
     const payload = 1;
     store
-      .$incrementAll(payload);
-    expect(currentAction(store)).toEqual({ type: 'incrementAll()', payload });
+      .$increment(payload);
+    expect(currentAction(store)).toEqual({ type: 'increment()', payload });
     expect(store.$state).toEqual(state.map(e => e + 1));
   })
 
