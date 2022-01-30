@@ -5,8 +5,8 @@ import { StoreInternal } from './type-internal';
 export const importOlikNestingModule = () => {
 
   const complete = (store: any) => {
-    store.state = store.state;
-    store.onChange((state: any) => store.state = state);
+    store.$state = store.$state;
+    store.$onChange((state: any) => store.$state = state);
     return store;
   }
 

@@ -69,7 +69,7 @@ describe('devtools', () => {
     const state = { hello: 0 };
     const store = createStore({ name, state });
     testState.fakeWindowObjectForReduxDevtools!.__REDUX_DEVTOOLS_EXTENSION__
-      ._mockInvokeSubscription({ type: 'ACTION', source: '@devtools-extension', payload: '{"type": "hello.replace()", "payload": 2}' });
+      ._mockInvokeSubscription({ type: 'ACTION', source: '@devtools-extension', payload: '{"type": "hello.$replace()", "payload": 2}' });
     expect(store.$state.hello).toEqual(2);
   });
 

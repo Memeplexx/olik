@@ -26,7 +26,7 @@ export const mergeStoreIfPossible = <S>(
       let node = existingStore as any;
       actions.slice(0, actions.length - 1)
         .forEach(a => node = a.type === 'comparator' ? node[a.name](a.arg) : node[a.name]);
-      node.onChange(listener);
+      node.$onChange(listener);
     });
     changeListeners.length = 0;
   (existingStore as any as DeepMerge<any>).$deepMerge(state);
