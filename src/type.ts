@@ -47,7 +47,7 @@ export type UpdatableObject<S, F extends FindOrFilter, Q extends QueryStatus, De
   & RemoveNode<Depth>
   & InsertNode
   & InvalidateCache
-  & Replace<S>
+  & (Q extends 'notQueried' ? Replace<S> : F extends 'isFind' ? ReplaceArrayElement<S> : ReplaceArray<S>)
   & DeepMerge<S>
   & Readable<F extends 'isFilter' ? S[] : S>
   & ({
@@ -63,7 +63,7 @@ export type UpdatableArray<S extends Array<any>, F extends FindOrFilter, Q exten
   ? (
     & RemoveFromArray<Depth>
     & InvalidateCache
-    & (F extends 'isFind' ? Replace<S[0]> : {})
+    & (F extends 'isFind' ? ReplaceArrayElement<S[0]> : {})
     & Or<S, F, NewDepth>
     & And<S, F, NewDepth>
     & (S[0] extends Array<any> ? {} : S[0] extends object ? UpdatableObject<S[0], F, Q, NewDepth> : UpdatablePrimitive<S[0], F, Q, NewDepth>)
@@ -99,13 +99,9 @@ export type UpdateOptions<H> = (H extends () => AnyAsync<any> ? & CacheFor & Opt
 export type UpdatablePrimitive<S, F extends FindOrFilter, Q extends QueryStatus, Depth extends number> =
   & InvalidateCache
   & RemoveNode<Depth>
-
-  // & Replace<S>
-  // & (Q extends 'notQueried' ? Replace<S> : F extends 'isFind' ? Replace<S> : {})
-  & (Q extends 'notQueried' ? ReplaceArray<S> : Replace<S>)
-
-  & (S extends number ? (Q extends 'notQueried' ? AddArray : Add) : {})
-  & (S extends number ? (Q extends 'notQueried' ? SubtractArray : Subtract) : {})
+  & (Q extends 'notQueried' ? Replace<S> : F extends 'isFind' ? ReplaceArrayElement<S> : ReplaceArray<S>)
+  & (S extends number ? (F extends 'isFind' ? Add : AddArray) : {})
+  & (S extends number ? (F extends 'isFind' ? Subtract : SubtractArray) : {})
   & Readable<F extends 'isFilter' ? S[] : S>
 
 
@@ -259,6 +255,13 @@ export interface SubtractArray {
 export interface Replace<S> {
   /**
    * Replace the selected node with the supplied state.
+   */
+  $replace<X extends Payload<S>>(replacement: X, options: UpdateOptions<X>): UpdateResult<X>;
+}
+
+export interface ReplaceArrayElement<S> {
+  /**
+   * Replace the selected array element with a new element.
    */
   $replace<X extends Payload<S>>(replacement: X, options: UpdateOptions<X>): UpdateResult<X>;
 }
@@ -574,8 +577,8 @@ export interface EnableNestedStoreArgs {
 }
 
 export type Store<S> = (S extends never ? {} : (S extends Array<any> ? UpdatableArray<S, 'isFilter', 'notQueried', MaxRecursionDepth>
-  : S extends object ? UpdatableObject<S, 'isFind', 'queried', MaxRecursionDepth>
-  : UpdatablePrimitive<S, 'isFind', 'queried', MaxRecursionDepth>));
+  : S extends object ? UpdatableObject<S, 'isFind', 'notQueried', MaxRecursionDepth>
+  : UpdatablePrimitive<S, 'isFind', 'notQueried', MaxRecursionDepth>));
 
 export interface StoreAugment<S> { }
 

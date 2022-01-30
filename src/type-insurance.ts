@@ -167,6 +167,35 @@ export const demo = () => {
 
   // store.todos.status.$replace
   // store.user.name.
-  // store.todos.$filter.id.$eq(3).status.
+  store.todos.$filter.id.$eq(3).status.$replace('done');
+  store.todos.$find.id.$eq(3).status.$replace
 
+  store.todos.$filter.id.$eq(3).id.$add(1);
+  store.todos.$find.id.$eq(3).id.$add(1);
+
+  store.user.age.$replace(3);
+  store.user.name.$replace('ss');
+
+}
+
+export const demo2 = () => {
+  const store = createStore({
+    name: '??',
+    state: {
+      arr: [
+        { id: 1, obj: { id: 1, str: '', num: 0 } }
+      ]
+    }
+  });
+  store.arr.$filter.id.$eq(3).obj.$replace;
+  store.arr.$find.id.$eq(3).obj.$replace;
+}
+
+export const demo3 = () => {
+  const store = createStore({
+    name: '???',
+    state: [{ id: 1, val: '' }]
+  });
+  store.$find.id.$eq(3).$replace
+  store.$filter.id.$eq(3).$replace
 }
