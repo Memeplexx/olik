@@ -166,5 +166,7 @@ export const demo = () => {
   // { type: 'user.name.replace()', payload: 'test' }
 
   // store.todos.status.$replace
+  // store.user.name.
+  // store.todos.$filter.id.$eq(3).status.
 
 }

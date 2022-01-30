@@ -99,8 +99,11 @@ export type UpdateOptions<H> = (H extends () => AnyAsync<any> ? & CacheFor & Opt
 export type UpdatablePrimitive<S, F extends FindOrFilter, Q extends QueryStatus, Depth extends number> =
   & InvalidateCache
   & RemoveNode<Depth>
-  & Replace<S>
-  & (Q extends 'notQueried' ? Replace<S> : F extends 'isFind' ? Replace<S> : {})
+
+  // & Replace<S>
+  // & (Q extends 'notQueried' ? Replace<S> : F extends 'isFind' ? Replace<S> : {})
+  & (Q extends 'notQueried' ? ReplaceArray<S> : Replace<S>)
+
   & (S extends number ? (Q extends 'notQueried' ? AddArray : Add) : {})
   & (S extends number ? (Q extends 'notQueried' ? SubtractArray : Subtract) : {})
   & Readable<F extends 'isFilter' ? S[] : S>
