@@ -60,7 +60,7 @@ describe('augmentation', () => {
     const store = createStore({ name, state });
     importOlikAsyncModule();
     const fetch = () => new Promise(resolve => setTimeout(() => resolve(43), 5))
-    const res = (store.num as any).replace(fetch).myThing();
+    const res = (store.num as any).$replace(fetch).myThing();
     res.then((r: any) => {
       expect(r).toEqual(43);
       done();
@@ -77,7 +77,7 @@ describe('augmentation', () => {
     const store = createStore({ name, state });
     importOlikAsyncModule();
     const fetch = () => new Promise(resolve => setTimeout(() => resolve([43]), 5))
-    const res = (store.array as any).replace(fetch).myThing();
+    const res = (store.array as any).$replace(fetch).myThing();
     res.then((r: any) => {
       expect(r).toEqual([43]);
       done();
