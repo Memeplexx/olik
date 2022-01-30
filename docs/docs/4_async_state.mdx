@@ -34,7 +34,7 @@ const fetchTodos = () => fetch('http://api/todos')
   .then(res => res.json())
 
 store.todos
-  .replaceAll(fetchTodos)
+  .$replace(fetchTodos)
 ```
 
 </TabItem>
@@ -46,7 +46,7 @@ export const fetchTodos = () =>
 
 const Component = () => {
   const future = store.todos
-    .$replaceAll(fetchTodos)
+    .$replace(fetchTodos)
     .$useFuture()
   return (
     <>
@@ -71,7 +71,7 @@ class MyComponent {
   constructor(private httpClient: HttpClient) { }
 
   todos$ = store.todos
-    .$replaceAll(() => this.httpClient.get('http://example.com/todos'))
+    .$replace(() => this.httpClient.get('http://example.com/todos'))
     .$asObservableFuture()
   )
 }
@@ -114,14 +114,16 @@ The library uses your store as a cache and will not re-fetch for a specified per
 ```ts
 const fetchTodosFromAPI = () => fetch('http://api/todos')
 
-store.todos.$replaceAll(fetchTodosFromAPI, { cacheFor: 1000 * 60 })
+store.todos
+  .$replaceAll(fetchTodosFromAPI, { cacheFor: 1000 * 60 })
 ```
 [**Demo 🥚**](https://codesandbox.io/s/olik-demo-caching-data-no-framework-3rvz9?file=/src/index.ts)
 
 ### Invalidating caches
 The following code will un-do the above.
 ```ts
-store.todos.$invalidateCache()
+store.todos
+  .$invalidateCache()
 ```
 [**Demo 🥚**](https://codesandbox.io/s/olik-demo-cache-invalidation-no-framework-efore?file=/src/index.ts)
 

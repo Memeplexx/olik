@@ -5,7 +5,7 @@ export function derive<X extends Readable<any>[]>(...args: X) {
   let previousParams = new Array<any>();
   let previousResult = null as any;
   return {
-    with: <R>(calculation: (...inputs: DerivationCalculationInputs<X>) => R) => {
+    $with: <R>(calculation: (...inputs: DerivationCalculationInputs<X>) => R) => {
       const getValue = () => {
         const params = (args as Array<Readable<any>>).map(arg => arg.$state);
         if (previousParams.length && params.every((v, i) => {

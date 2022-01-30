@@ -129,7 +129,7 @@ describe('augmentation', () => {
     const result = (derive(
       store.one,
       store.two,
-    ).with((one, two) => one + two) as any)
+    ).$with((one, two) => one + two) as any)
       .myThing();
     expect(result).toEqual('abcfalse');
     done();

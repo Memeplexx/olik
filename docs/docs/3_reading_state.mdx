@@ -22,7 +22,7 @@ const store = createStore({
 ```
 
 ### Reading synchronously
-To read state associated with a node, you can use the `state` property.  
+To read state associated with a node, you can use the `$state` property.  
 The following statements are equivalent to each other:
 ```ts
 const todos = store.todos.$state;
@@ -115,7 +115,7 @@ export class AppComponent implements AfterViewInit {
 ```
 or
 ```ts
-const todos = store.todos.observe();
+const todos = store.todos.$observe();
 
 {#each todo as $todos}
 	<li> {todo.title} </li>
@@ -135,7 +135,7 @@ import { derive } from 'olik'
 
 const sub = derive(store.todos, store.showDone)
   .with((todos, showDone) => todos.filter(todo => todo.done === showDone))
-  .onChange(todos => /* Update DOM */)
+  .$onChange(todos => /* Update DOM */)
 
 sub.unsubscribe()
 // Remember to **always** unsubscribe to avoid a memory leak

@@ -28,9 +28,9 @@ const store = createStore({
 store.user.age
   .$replace(29)
 
-// INCREMENT USERS AGE BY 1
+// ADD 1 TO USERS AGE
 store.user.age
-  .$increment(1)
+  .$add(1)
 
 // UPDATE SOME, BUT NOT ALL, USERS DETAILS
 store.user
@@ -44,13 +44,9 @@ store.user
 ### Writing **array** nodes
 
 ```ts
-// REPLACE ALL TODOS
-store.todos
-  .$replaceAll(arrayOfTodos)
-
 // REMOVE ALL TODOS
 store.todos
-  .$removeAll()
+  .$clear()
 
 // INSERT ONE TODO
 store.todos
@@ -69,14 +65,6 @@ store.todos
 store.todos
   .$upsertMatching.id
   .$withMany(arrayOfTodos)
-
-// MARK ALL TODOS AS DONE
-store.todos.done
-  .$replaceAll(true)
-
-// INCREMENT URGENCY OF ALL TODOS BY 1
-store.todos.urgency
-  .$incrementAll(1)  
 ```
 
 ### Writing **array element** nodes
@@ -119,6 +107,6 @@ import { transact } from /* whichever version of olik you've installed */
 
 transact(
   () => store.user.$patch({ firstName: 'James', lastName: 'White' }),
-  () => store.todos.$removeAll(),
+  () => store.todos.$clear(),
 )
 ```

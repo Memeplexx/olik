@@ -137,7 +137,6 @@ function test() {
     .objArr.$find.num.$eq(3)
     .$patch({ num: 4 });
 
-  
 }
 
 export const demo = () => {
@@ -165,5 +164,7 @@ export const demo = () => {
 
   store.user.name.$replace('test');
   // { type: 'user.name.replace()', payload: 'test' }
+
+  // store.todos.status.$replace
 
 }
