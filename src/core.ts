@@ -33,12 +33,12 @@ export const createStore = <S>(
           return internals;
         } else if (topLevel && !!internals.nestedStoreInfo?.isNested) {
           const { nestedStoreInfo: { containerName, instanceId, nestedStoreName } } = internals;
-          return libState.stores[containerName].nested[nestedStoreName][instanceId][prop];
+          return libState.stores[containerName].nested[nestedStoreName][instanceId][dollarProp];
         } else if (topLevel && internals.mergedStoreInfo?.isMerged) {
-          return (libState.stores[internals.mergedStoreInfo.nameOfStoreToMergeInto] as any)[prop];
-        } else if (['replace', 'patch', 'deepMerge', 'remove', 'insert', 'add', 'subtract', 'clear', 'insertOne', 'insertMany', 'withOne', 'withMany'].includes(prop)) {
+          return (libState.stores[internals.mergedStoreInfo.nameOfStoreToMergeInto] as any)[dollarProp];
+        } else if (['$replace', '$patch', '$deepMerge', '$remove', '$insert', '$add', '$subtract', '$clear', '$insertOne', '$insertMany', '$withOne', '$withMany'].includes(dollarProp)) {
           return processPotentiallyAsyncUpdate({ storeName: internals.storeName, stateActions, prop });
-        } else if ('invalidateCache' === prop) {
+        } else if ('$invalidateCache' === dollarProp) {
           return () => {
             const actionType = stateActions.map(sa => sa.actionType).join('.');
             const newStateActions = [
@@ -52,27 +52,27 @@ export const createStore = <S>(
               /* This can happen if a cache has already expired */
             }
           }
-        } else if ('upsertMatching' === prop) {
+        } else if ('$upsertMatching' === dollarProp) {
           stateActions.push({ type: 'upsertMatching', name: prop, actionType: prop });
           return recurseProxy({}, false, stateActions);
-        } else if ('state' === prop) {
+        } else if ('$state' === dollarProp) {
           return deepFreeze(readState({ state: internals.state, stateActions: [...stateActions, { type: 'action', name: prop }], cursor: { index: 0 } }));
-        } else if ('onChange' === prop) {
+        } else if ('$onChange' === dollarProp) {
           return (listener: (arg: any) => any) => {
             const stateActionsCopy = [...stateActions, { type: 'action', name: prop }] as StateAction[];
             const element = { actions: stateActionsCopy, listener };
             internals.changeListeners.push(element);
             return { unsubscribe: () => internals.changeListeners.splice(internals.changeListeners.findIndex(e => e === element), 1) }
           }
-        } else if (['and', 'or'].includes(prop)) {
+        } else if (['$and', '$or'].includes(dollarProp)) {
           stateActions.push({ type: 'searchConcat', name: prop, actionType: prop });
           return recurseProxy({}, false, stateActions);
-        } else if (['eq', 'ne', 'in', 'ni', 'gt', 'gte', 'lt', 'lte', 'match'].includes(prop)) {
+        } else if (['$eq', '$ne', '$in', '$ni', '$gt', '$gte', '$lt', '$lte', '$match'].includes(dollarProp)) {
           return (arg: any) => {
             stateActions.push({ type: 'comparator', name: prop, arg, actionType: `${prop}(${arg})` });
             return recurseProxy({}, false, stateActions);
           }
-        } else if (['find', 'filter'].includes(prop)) {
+        } else if (['$find', '$filter'].includes(dollarProp)) {
           stateActions.push({ type: 'search', name: prop, actionType: prop });
           return recurseProxy({}, false, stateActions);
         } else if (augmentations.selection[prop]) {
@@ -95,8 +95,8 @@ export const createStore = <S>(
     if (!libState.nestStore) { throw new Error(errorMessages.NESTED_STORES_NOT_ENABLED); }
     return libState.nestStore({ storeName: internals.storeName, containerName: args.nestStore.hostStoreName, instanceId: args.nestStore.instanceId });
   } else {
-    store.state = args.state;
-    store.onChange((state: any) => store.state = state );
+    store.$state = args.state;
+    store.$onChange((state: any) => store.state = state );
     return libState.stores[args.name] as any;
   }
 }
