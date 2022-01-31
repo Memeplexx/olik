@@ -29,7 +29,7 @@ export const createStore = <S>(
       get: (target, dollarProp: string) => {
         const prop = dollarProp.startsWith('$') ? dollarProp.split('$')[1] : dollarProp;
         stateActions = topLevel ? new Array<StateAction>() : stateActions;
-        if ('internals' === prop) {
+        if ('$internals' === dollarProp) {
           return internals;
         } else if (topLevel && !!internals.nestedStoreInfo?.isNested) {
           const { nestedStoreInfo: { containerName, instanceId, nestedStoreName } } = internals;

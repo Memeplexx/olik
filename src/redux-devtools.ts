@@ -12,7 +12,7 @@ export function importOlikReduxDevtoolsModule(
       storeName: string
     ) => {
       const store = libState.stores[storeName];
-      const internals = (store as StoreInternal<any>).internals;
+      const internals = (store as StoreInternal<any>).$internals;
   
       // do not continue if store has been nested or merged
       if (!!internals.nestedStoreInfo?.isNested || !!internals.mergedStoreInfo?.isMerged) { return; }
@@ -88,7 +88,7 @@ export function importOlikReduxDevtoolsModule(
     },
     dispatch: (storeName) => {
       const store = libState.stores[storeName];
-      const internals = store.internals;
+      const internals = store.$internals;
   
       // Dispatch to devtools
       if (internals.reduxDevtools && !internals.reduxDevtools.disableDispatch) {

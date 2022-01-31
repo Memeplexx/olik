@@ -5,7 +5,7 @@ export const setCurrentActionReturningNewState = (
   { newState, payload, stateActions, storeName }: 
   { storeName: string, stateActions: ReadonlyArray<StateAction>, payload: null | {}, newState: any, }
 ) => {
-  const internals = libState.stores[storeName].internals;
+  const internals = libState.stores[storeName].$internals;
   const currentAction = internals.currentAction;
   const type = stateActions.map(sa => sa.actionType).join('.');
   internals.currentAction = !libState.isInsideTransaction ? { type, ...payload }

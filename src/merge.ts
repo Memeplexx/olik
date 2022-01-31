@@ -8,7 +8,7 @@ export const mergeStoreIfPossible = <S>(
 ) => {
   const existingStore = libState.stores[nameOfStoreToMergeInto];
   const state = store.$state;
-  const internals = (store as StoreInternal<any>).internals;
+  const internals = (store as StoreInternal<any>).$internals;
   internals.mergedStoreInfo = { nameOfStoreToMergeInto, isMerged: !!existingStore };
   if (!existingStore) { return; }
   const wrapperState = existingStore.$state;

@@ -51,7 +51,7 @@ export interface StoreInternals<S> {
 
 export type StoreInternal<S> = StoreLike<S> & {
   nested: any,
-  internals: StoreInternals<S>,
+  $internals: StoreInternals<S>,
 };
 
 export interface QuerySpec {

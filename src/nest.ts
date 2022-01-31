@@ -13,13 +13,13 @@ export const importOlikNestingModule = () => {
   libState.nestStore = ({ containerName, storeName, instanceId }) => {
     const storeArg = libState.stores[storeName] as StoreInternal<any>;
     const appStore = libState.stores[containerName];
-    const nestedStoreName = storeArg.internals.storeName;
+    const nestedStoreName = storeArg.$internals.storeName;
     if (!appStore) {
       delete libState.stores[storeName];
       const storeNameNew = `${nestedStoreName} | ${instanceId}`;
       libState.stores[storeNameNew] = storeArg;
-      storeArg.internals.storeName = storeNameNew;
-      storeArg.internals.nestedStoreInfo = { nestedStoreName: storeNameNew, instanceId, containerName, isNested: false };
+      storeArg.$internals.storeName = storeNameNew;
+      storeArg.$internals.nestedStoreInfo = { nestedStoreName: storeNameNew, instanceId, containerName, isNested: false };
       return complete(storeArg);
     }
     const wrapperState = appStore.$state;
@@ -28,24 +28,24 @@ export const importOlikNestingModule = () => {
     }
     appStore.nested[nestedStoreName][instanceId].$insert(storeArg.$state);
     delete libState.stores[nestedStoreName];
-    storeArg.internals.storeName = containerName;
-    storeArg.internals.nestedStoreInfo = { nestedStoreName: storeName, instanceId, containerName, isNested: true };
+    storeArg.$internals.storeName = containerName;
+    storeArg.$internals.nestedStoreInfo = { nestedStoreName: storeName, instanceId, containerName, isNested: true };
     return complete(storeArg);
   }
 
   libState.detachNestedStore = store => {
     const storeArg = store as StoreInternal<any>;
-    if (!storeArg.internals.nestedStoreInfo?.isNested) { return; }
-    const appStore = libState.stores[storeArg.internals.nestedStoreInfo?.containerName];
-    const nestedStoreName = storeArg.internals.nestedStoreInfo.nestedStoreName;
-    const instanceId = storeArg.internals.nestedStoreInfo.instanceId
+    if (!storeArg.$internals.nestedStoreInfo?.isNested) { return; }
+    const appStore = libState.stores[storeArg.$internals.nestedStoreInfo?.containerName];
+    const nestedStoreName = storeArg.$internals.nestedStoreInfo.nestedStoreName;
+    const instanceId = storeArg.$internals.nestedStoreInfo.instanceId
     const state = appStore.$state.nested[nestedStoreName];
     if ((Object.keys(state).length === 1) && state[instanceId]) {
       appStore.nested[nestedStoreName].$remove();
     } else {
       appStore.nested[nestedStoreName][instanceId].$remove();
     }
-    storeArg.internals.nestedStoreInfo = undefined;
+    storeArg.$internals.nestedStoreInfo = undefined;
   }
 }
 
