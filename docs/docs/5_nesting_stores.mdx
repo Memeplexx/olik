@@ -41,11 +41,8 @@ class MyComponent {
 
   const nestedStore = createStore({
     name: 'MyComponent',
+    nestStore: { hostStoreName: document.title, instanceId: 1 },
     state: { num: 0 },
-    nestStore: {
-      hostStoreName: document.title,
-      instanceId: 1,
-    },
   })
   
   // You should detach this store from its container when it is no longer being used
@@ -63,10 +60,10 @@ The `useNestedStore()` hook returns a store which will exist for the lifetime of
 ```tsx
 import { useNestedStore } from 'olik-react'
 
-const IncrementorComponent = (props: { id: number }) => {
+export function MyComponent(props: { id: string }) {
   
   const nestedStore = useNestedStore({
-    name: 'Incrementor',
+    name: 'MyComponent',
     hostStoreName: document.title,
     instanceId: props.id,
     state: { num: 0 },
@@ -78,21 +75,35 @@ const IncrementorComponent = (props: { id: number }) => {
 [**Demo 🥚**](https://codesandbox.io/s/olik-react-nested-stores-ve6lj?file=/src/App.tsx)
 
 </TabItem>
+<TabItem value="svelte" label="Svelte">
+
+```ts
+<script lang="ts">
+  import { createStore } from 'olik';
+
+  export let id: number;
+
+  const store = createStore({
+    name: "MyComponent",
+    nestStore: { hostStoreName: document.title, instanceId: id },
+    state: { num: 0 },
+  });
+</script>
+```
+
+</TabItem>
 <TabItem value="angular" label="Angular">
 
 ```ts
 import { createStore, detachNestedStore } from 'olik'
 
 @Component({ ... })
-export class IncrementorComponent implements OnDestroy {
+export class MyComponent implements OnDestroy {
 
   nestedStore = createStore({
-    name: 'Incrementor',
+    name: 'MyComponent',
+    nestStore: { hostStoreName: document.title, instanceId: 1 },
     state: { num: 0 },
-    nestStore: {
-      hostStoreName: document.title,
-      instanceId: 1,
-    },
   })
 
   ngOnDestroy() {

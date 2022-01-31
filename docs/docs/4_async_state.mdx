@@ -94,6 +94,29 @@ class MyComponent {
 [**Demo 🥚**](https://codesandbox.io/s/olik-ng-async-5y3hd?file=/src/app/app.component.ts)
 
 </TabItem>
+<TabItem value="svelte" label="Svelte">
+
+```ts
+const future = store.todos
+  .$replace(() => fetch('http://example.com/todos').then(res => res.json()))
+  .$observe({ fetchImmediately: true });
+
+{#if $future.isLoading}
+  <div>loading...</div>
+{/if}
+{#if $future.wasResolved}
+  {#each $future.storeValue as todo2}
+    <li>{todo2.title}</li>
+  {/each}
+{/if}
+{#if $future.wasRejected}
+  <div>Sorry, the following error occurred: {$future.error}</div>
+{/if}
+
+<button on:click={future.get}>Re-fetch</button>
+```
+
+</TabItem>
 </Tabs>
 
 ### Writing state

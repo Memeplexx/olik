@@ -75,10 +75,10 @@ export const createStore = <S>(
         } else if (['$find', '$filter'].includes(dollarProp)) {
           stateActions.push({ type: 'search', name: prop, actionType: prop });
           return recurseProxy({}, false, stateActions);
-        } else if (augmentations.selection[prop]) {
-          return augmentations.selection[prop](recurseProxy({}, false, stateActions));
-        } else if (augmentations.core[prop]) {
-          return augmentations.core[prop](recurseProxy({}, false, stateActions));
+        } else if (augmentations.selection[dollarProp]) {
+          return augmentations.selection[dollarProp](recurseProxy({}, false, stateActions));
+        } else if (augmentations.core[dollarProp]) {
+          return augmentations.core[dollarProp](recurseProxy({}, false, stateActions));
         } else {
           stateActions.push({ type: 'property', name: prop, actionType: prop });
           return recurseProxy({}, false, stateActions);

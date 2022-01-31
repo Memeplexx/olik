@@ -109,7 +109,7 @@ export class AppComponent implements AfterViewInit {
 <TabItem value="svelte" label="Svelte">
 
 ```ts
-{#each todo as $store.todos}
+{#each $store.todos as todo}
 	<li> {todo.title} </li>
 {/each}
 ```
@@ -117,7 +117,7 @@ or
 ```ts
 const todos = store.todos.$observe();
 
-{#each todo as $todos}
+{#each $todos as todo}
 	<li> {todo.title} </li>
 {/each}
 ```
@@ -134,7 +134,7 @@ const todos = store.todos.$observe();
 import { derive } from 'olik'
 
 const sub = derive(store.todos, store.showDone)
-  .with((todos, showDone) => todos.filter(todo => todo.done === showDone))
+  .$with((todos, showDone) => todos.filter(todo => todo.done === showDone))
   .$onChange(todos => /* Update DOM */)
 
 sub.unsubscribe()
@@ -180,7 +180,7 @@ export class MyComponent {
 ```ts
 import { derive } from 'olik'
 
-completedTodos = derive(store.todos, store.showDone)
+const completedTodos = derive(store.todos, store.showDone)
   .$with((todos, showDone) => todos.filter(todo => todo.done === showDone))
   .$observe()
 ```
