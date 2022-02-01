@@ -1,6 +1,6 @@
 export type FindOrFilter = 'isFind' | 'isFilter';
 
-export type QueryStatus = 'notQueried' | 'queried';
+export type QueryStatus = 'notQueried' | 'queried' | 'notArray';
 
 export interface DeepReadonlyArray<T> extends ReadonlyArray<DeepReadonly<T>> {
 }
@@ -43,12 +43,12 @@ export type Rec<X, Depth extends number> = {
 }[Depth extends -1 ? 'done' : 'recur']
 
 export type UpdatableObject<S, F extends FindOrFilter, Q extends QueryStatus, Depth extends number, NewDepth extends number = DecrementRecursion[Depth]> = Rec<
-  & PatchObject<S>
-  & RemoveNode<Depth>
-  & InsertNode
   & InvalidateCache
-  & (Q extends 'notQueried' ? Replace<S> : F extends 'isFind' ? ReplaceArrayElement<S> : ReplaceArray<S>)
-  & DeepMerge<S>
+  & RemoveNode<Depth>
+  & (Q extends 'notArray' ? InsertNode : {})
+  & (Q extends 'notArray' ? PatchObject<S> : F extends 'isFind' ? PatchArrayElement<S> : PatchArray<S>)
+  & (Q extends 'notArray' ? Replace<S> : F extends 'isFind' ? ReplaceArrayElement<S> : ReplaceArray<S>)
+  & (Q extends 'notArray' ? DeepMerge<S> : F extends 'isFind' ? DeepMergeArrayElement<S> : DeepMergeArray<S>)
   & Readable<F extends 'isFilter' ? S[] : S>
   & ({
     [K in keyof S]: S[K] extends Array<any>
@@ -61,11 +61,11 @@ export type UpdatableObject<S, F extends FindOrFilter, Q extends QueryStatus, De
 export type UpdatableArray<S extends Array<any>, F extends FindOrFilter, Q extends QueryStatus, Depth extends number, NewDepth extends number = DecrementRecursion[Depth]> = Rec<
   & Q extends 'queried'
   ? (
-    & RemoveFromArray<Depth>
     & InvalidateCache
-    & (F extends 'isFind' ? ReplaceArrayElement<S[0]> : {})
     & Or<S, F, NewDepth>
     & And<S, F, NewDepth>
+    & (F extends 'isFind' ? ReplaceArrayElement<S[0]> : {})
+    & (F extends 'isFind' ? RemoveArrayElement<Depth> : RemoveArray<Depth>)
     & (S[0] extends Array<any> ? {} : S[0] extends object ? UpdatableObject<S[0], F, Q, NewDepth> : UpdatablePrimitive<S[0], F, Q, NewDepth>)
   ) : (
     & RemoveNode<Depth>
@@ -74,10 +74,10 @@ export type UpdatableArray<S extends Array<any>, F extends FindOrFilter, Q exten
     & InsertMany<S>
     & InsertOne<S[0]>
     & ReplaceArray<S>
-    & Readable<F extends 'isFilter' ? S : S[0]>
-    & (S[0] extends Array<any> ? {} : S[0] extends object ? UpsertMatching<S[0]> : {})
     & Find<S, NewDepth>
     & Filter<S, NewDepth>
+    & Readable<F extends 'isFilter' ? S : S[0]>
+    & (S[0] extends Array<any> ? {} : S[0] extends object ? UpsertMatching<S[0]> : {})
     & (
       S[0] extends object
       ? (
@@ -99,11 +99,10 @@ export type UpdateOptions<H> = (H extends () => AnyAsync<any> ? & CacheFor & Opt
 export type UpdatablePrimitive<S, F extends FindOrFilter, Q extends QueryStatus, Depth extends number> =
   & InvalidateCache
   & RemoveNode<Depth>
-  & (Q extends 'notQueried' ? Replace<S> : F extends 'isFind' ? ReplaceArrayElement<S> : ReplaceArray<S>)
+  & (Q extends 'notArray' ? Replace<S> : F extends 'isFind' ? ReplaceArrayElement<S> : ReplaceArray<S>)
   & (S extends number ? (F extends 'isFind' ? Add : AddArray) : {})
   & (S extends number ? (F extends 'isFind' ? Subtract : SubtractArray) : {})
   & Readable<F extends 'isFilter' ? S[] : S>
-
 
 export interface UpsertMatching<S> {
   /**
@@ -180,9 +179,17 @@ export type RemoveNode<Depth extends number> = [Depth] extends [MaxRecursionDept
   $remove<X extends Payload<any>>(options: X): Future<any>;
 }
 
-export type RemoveFromArray<Depth extends number> = [Depth] extends [MaxRecursionDepth] ? {} : {
+export type RemoveArrayElement<Depth extends number> = [Depth] extends [MaxRecursionDepth] ? {} : {
   /**
    * Remove the selected element from the array.  
+   */
+  $remove(): void,
+  $remove<X extends Payload<any>>(options: X): Future<any>;
+}
+
+export type RemoveArray<Depth extends number> = [Depth] extends [MaxRecursionDepth] ? {} : {
+  /**
+   * Remove the selected elements from the array.  
    */
   $remove(): void,
   $remove<X extends Payload<any>>(options: X): Future<any>;
@@ -213,6 +220,13 @@ export interface InsertMany<S> {
 export interface PatchObject<S> {
   /**
    * Partially update the selected object node with the supplied state.
+   */
+  $patch<X extends Payload<Partial<S>>>(patch: X, options: UpdateOptions<X>): UpdateResult<X>;
+}
+
+export interface PatchArrayElement<S> {
+  /**
+   * Partially update the selected array element with the supplied state.
    */
   $patch<X extends Payload<Partial<S>>>(patch: X, options: UpdateOptions<X>): UpdateResult<X>;
 }
@@ -268,7 +282,7 @@ export interface ReplaceArrayElement<S> {
 
 export interface ReplaceArray<S> {
   /**
-   * Replace all elements in the selected array with a new array.
+   * Replace all elements in the selected array with the provided array element.
    */
   $replace<X extends Payload<S>>(replacement: X, options: UpdateOptions<X>): UpdateResult<X>;
 }
@@ -276,6 +290,20 @@ export interface ReplaceArray<S> {
 export interface DeepMerge<S> {
   /**
    * Recursively merge the supplied object into the selected node.
+   */
+  $deepMerge: <X extends Payload<DeepMergePayload<S>>>(toMerge: X, options: UpdateOptions<X>) => UpdateResult<X>;
+}
+
+export interface DeepMergeArrayElement<S> {
+  /**
+   * Recursively merge the supplied object into the selected array element.
+   */
+  $deepMerge: <X extends Payload<DeepMergePayload<S>>>(toMerge: X, options: UpdateOptions<X>) => UpdateResult<X>;
+}
+
+export interface DeepMergeArray<S> {
+  /**
+   * Recursively merge the supplied object into all of the selected array elements.
    */
   $deepMerge: <X extends Payload<DeepMergePayload<S>>>(toMerge: X, options: UpdateOptions<X>) => UpdateResult<X>;
 }
@@ -577,8 +605,8 @@ export interface EnableNestedStoreArgs {
 }
 
 export type Store<S> = (S extends never ? {} : (S extends Array<any> ? UpdatableArray<S, 'isFilter', 'notQueried', MaxRecursionDepth>
-  : S extends object ? UpdatableObject<S, 'isFind', 'notQueried', MaxRecursionDepth>
-  : UpdatablePrimitive<S, 'isFind', 'notQueried', MaxRecursionDepth>));
+  : S extends object ? UpdatableObject<S, 'isFind', 'notArray', MaxRecursionDepth>
+  : UpdatablePrimitive<S, 'isFind', 'notArray', MaxRecursionDepth>));
 
 export interface StoreAugment<S> { }
 

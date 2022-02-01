@@ -189,6 +189,7 @@ export const demo2 = () => {
   });
   store.arr.$filter.id.$eq(3).obj.$replace;
   store.arr.$find.id.$eq(3).obj.$replace;
+  store.arr.$replace
 }
 
 export const demo3 = () => {
@@ -197,5 +198,4 @@ export const demo3 = () => {
     state: [{ id: 1, val: '' }]
   });
   store.$find.id.$eq(3).$replace
-  store.$filter.id.$eq(3).$replace
 }
