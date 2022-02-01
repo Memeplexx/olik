@@ -75,23 +75,6 @@ export function MyComponent(props: { id: string }) {
 [**Demo 🥚**](https://codesandbox.io/s/olik-react-nested-stores-ve6lj?file=/src/App.tsx)
 
 </TabItem>
-<TabItem value="svelte" label="Svelte">
-
-```ts
-<script lang="ts">
-  import { createStore } from 'olik';
-
-  export let id: number;
-
-  const store = createStore({
-    name: "MyComponent",
-    nestStore: { hostStoreName: document.title, instanceId: id },
-    state: { num: 0 },
-  });
-</script>
-```
-
-</TabItem>
 <TabItem value="angular" label="Angular">
 
 ```ts
@@ -113,6 +96,23 @@ export class MyComponent implements OnDestroy {
 }
 ```
 [**Demo 🥚**](https://codesandbox.io/s/olik-ng-nested-stores-gt4bg?file=/src/app/incrementor/incrementor.component.ts)
+
+</TabItem>
+<TabItem value="svelte" label="Svelte">
+
+```ts
+<script lang="ts">
+  import { createStore } from 'olik';
+
+  export let id: number;
+
+  const store = createStore({
+    name: "MyComponent",
+    nestStore: { hostStoreName: document.title, instanceId: id },
+    state: { num: 0 },
+  });
+</script>
+```
 
 </TabItem>
 </Tabs>
