@@ -356,7 +356,7 @@ export interface WithMany<T> {
 export interface CacheFor {
   /**
    * Avoid unnecessary promise invocations by supplying the number of milliseconds that should elapse before the promise is invoked again.
-   * To un-do this, you can call `invalidateCache()` on the node of the state tree, for example
+   * To un-do this, you can call `$invalidateCache()` on the node of the state tree, for example
    * @example
    * select.todos
    *   .$invalidateCache();

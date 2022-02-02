@@ -176,6 +176,8 @@ export const demo = () => {
   store.user.age.$replace(3);
   store.user.name.$replace('ss');
 
+  store.todos.$find.id.$eq(3).status.$replace('done');
+
 }
 
 export const demo2 = () => {

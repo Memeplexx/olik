@@ -64,6 +64,9 @@ augmentOlikForSvelte() // invoke before initializing store
 
 Olik supports arbitrarily deep state-trees, however just like with Redux, [**normalizing**](https://redux.js.org/recipes/structuring-reducers/normalizing-state-shape) your state is still advised.
 
+<Tabs groupId="create">
+<TabItem value="no-types" label="With inferred types">
+
 ```ts
 import { createStore } from 'olik'
 
@@ -72,6 +75,25 @@ export const store = createStore({
   state: { hello: 'world' }        // can be any plain Javascript object
 })
 ```
+
+</TabItem>
+<TabItem value="with-types" label="With declared types">
+
+```ts
+import { createStore } from 'olik'
+
+export interface State {
+  hello: string;
+}
+
+export const store = createStore<State>({
+  name: document.title,            // can be any user-defined string
+  state: { hello: 'world' }        // can be any plain Javascript object
+})
+```
+
+</TabItem>
+</Tabs>
 
 ### Integrating with Redux Devtools
 

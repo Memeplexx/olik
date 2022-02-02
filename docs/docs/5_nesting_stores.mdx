@@ -26,7 +26,9 @@ const store = createStore({
 ```
 
 ### Creating a nested store
-When creating a nested store, you must provide a `hostStoreName`. If the host store could not found, then your nested store will be registered as a separate store. This allows you to build your component independently of your application. You must also provide an `instanceId` which will distinguish instances of the nested store.
+To nest a store, you must provide the following arguments when creating it:  
+* `hostStoreName` - If the host store could not found, then your nested store will be registered as a separate store. This allows you to build your components independently of your application. 
+* `instanceId` -  This will distinguish multiple instances of the nested store within the container store.
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';

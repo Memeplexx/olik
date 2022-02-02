@@ -30,23 +30,17 @@ import TabItem from '@theme/TabItem';
 <TabItem value="no framework" label="No framework">
 
 ```ts
-const fetchTodos = () => fetch('http://api/todos')
-  .then(res => res.json())
-
 store.todos
-  .$replace(fetchTodos)
+  .$replace(() => fetch('http://api/todos').then(res => res.json()))
 ```
 
 </TabItem>
 <TabItem value="react" label="React">
 
 ```tsx
-export const fetchTodos = () =>
-  fetch('http://example.com/todos').then(res => res.json())
-
 const Component = () => {
   const future = store.todos
-    .$replace(fetchTodos)
+    .$replace(() => fetch('http://example.com/todos').then(res => res.json()))
     .$useFuture()
   return (
     <>
@@ -135,15 +129,14 @@ store.todos
 ### Caching data
 The library uses your store as a cache and will not re-fetch for a specified period.
 ```ts
-const fetchTodosFromAPI = () => fetch('http://api/todos')
-
 store.todos
-  .$replaceAll(fetchTodosFromAPI, { cacheFor: 1000 * 60 })
+  .$replace(() => fetch('http://api/todos').then(res => res.json()),
+  { cacheFor: 1000 * 60 })
 ```
 [**Demo 🥚**](https://codesandbox.io/s/olik-demo-caching-data-no-framework-3rvz9?file=/src/index.ts)
 
 ### Invalidating caches
-The following code will un-do the above.
+The following ensures that any data cached on the selected node is re-fetched the next time a promise is used to populate this node.
 ```ts
 store.todos
   .$invalidateCache()
@@ -153,8 +146,9 @@ store.todos
 ### Optimistic updates
 You can make immediate updates, which will be rolled back if an error is thrown.
 ```ts
-const setUserAsAdminOnAPI = (isAdmin: boolean) =>
-  () => fetch('http://api/todos')
-store.user.isAdmin
-  .$replace(setUserAsAdminOnAPI(true), { optimisticallyUpdateWith: true })
+const updateUserStatus = (isAdmin: boolean) => {
+  store.user.isAdmin
+    .$replace(() => fetch(`http://api/user/admin/${isAdmin}`).then(res => res.json())),
+    { optimisticallyUpdateWith: isAdmin })
+}
 ```
