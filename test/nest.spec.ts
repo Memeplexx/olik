@@ -1,7 +1,6 @@
 import { errorMessages, libState, testState } from '../src/constant';
 import { createStore } from '../src/core';
-import { detachNestedStore, importOlikNestingModule } from '../src/nest';
-import { StoreInternal } from '../src/type-internal';
+import { importOlikNestingModule } from '../src/nest';
 import { currentAction } from './_utility';
 
 describe('nest', () => {
@@ -85,7 +84,7 @@ describe('nest', () => {
     const nameOfNestedStore = 'myComp';
     const selectNested = createStore({ name: nameOfNestedStore, state: stateOfNestedStore, nestStore: { hostStoreName, instanceId: 0 } });
     expect(selectContainer.$state).toEqual({ test: '', nested: { [nameOfNestedStore]: { 0: { one: '' } } } });
-    detachNestedStore(selectNested);
+    selectNested.$detachStore();
     expect(selectContainer.$state).toEqual({ test: '', nested: {} });
   })
 
@@ -99,9 +98,9 @@ describe('nest', () => {
     const selectNested1 = createStore({ name: nameOfNestedStore, state: stateOfNestedStore, nestStore: { hostStoreName, instanceId: 0 } });
     const selectNested2 = createStore({ name: nameOfNestedStore, state: stateOfNestedStore, nestStore: { hostStoreName, instanceId: 1 } });
     expect(selectContainer.$state).toEqual({ ...stateOfContainerStore, nested: { [nameOfNestedStore]: { 0: stateOfNestedStore, 1: stateOfNestedStore } } });
-    detachNestedStore(selectNested1);
+    selectNested1.$detachStore();
     expect(selectContainer.$state).toEqual({ ...stateOfContainerStore, nested: { [nameOfNestedStore]: { 1: stateOfNestedStore } } });
-    detachNestedStore(selectNested2);
+    selectNested2.$detachStore();
     expect(selectContainer.$state).toEqual({ ...stateOfContainerStore, nested: {} });
   })
 
@@ -185,7 +184,9 @@ describe('nest', () => {
     });
     selectNested.object.property.$replace('test');
     expect(selectNested.$state.object.property).toEqual('test');
-    detachNestedStore(selectNested);
+    selectNested.$detachStore();
   });
+
+ 
 
 });

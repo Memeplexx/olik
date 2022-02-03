@@ -33,20 +33,17 @@ export const importOlikNestingModule = () => {
     return complete(storeArg);
   }
 
-  libState.detachNestedStore = store => {
-    const storeArg = store as StoreInternal<any>;
-    if (!storeArg.$internals.nestedStoreInfo?.isNested) { return; }
-    const appStore = libState.stores[storeArg.$internals.nestedStoreInfo?.containerName];
-    const nestedStoreName = storeArg.$internals.nestedStoreInfo.nestedStoreName;
-    const instanceId = storeArg.$internals.nestedStoreInfo.instanceId
-    const state = appStore.$state.nested[nestedStoreName];
+  libState.detachNestedStore = args => {
+    const { containerName, instanceId, nestedStoreName } = args.nestedStoreInfo!;
+    const hostStore = libState.stores[containerName];
+    const state = hostStore.nested?.[nestedStoreName]?.$state;
+    if (!state) { return; }
     if ((Object.keys(state).length === 1) && state[instanceId]) {
-      appStore.nested[nestedStoreName].$remove();
+      hostStore.nested[nestedStoreName].$remove();
     } else {
-      appStore.nested[nestedStoreName][instanceId].$remove();
+      hostStore.nested[nestedStoreName][instanceId].$remove();
     }
-    storeArg.$internals.nestedStoreInfo = undefined;
+    args.nestedStoreInfo = undefined;
   }
 }
 
-export const detachNestedStore = (store: StoreLike<any>) => libState.detachNestedStore?.(store);

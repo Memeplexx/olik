@@ -5,6 +5,6 @@ export { transact } from './transact';
 export { mergeStoreIfPossible } from './merge';
 export { getStoreByName } from './utility';
 export * from './type';
-export { importOlikNestingModule, detachNestedStore } from './nest';
+export { importOlikNestingModule } from './nest';
 export { importOlikReduxDevtoolsModule, listenToDevtoolsDispatch } from './redux-devtools';
 export { importOlikAsyncModule } from './write-async'

@@ -192,6 +192,7 @@ export const demo2 = () => {
   store.arr.$filter.id.$eq(3).obj.$replace;
   store.arr.$find.id.$eq(3).obj.$replace;
   store.arr.$replace
+  store.arr.$find.id.$gt(3).$replace
 }
 
 export const demo3 = () => {

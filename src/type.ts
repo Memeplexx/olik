@@ -534,6 +534,9 @@ export interface OptionsForMakingAStore<S> {
    * The initial state of your store. Can be any serializable object
    */
   state: S,
+}
+
+export interface OptionsForMakingANestedStore {
   /**
    * Supply an object here if you wish to nest this store.
    */
@@ -547,7 +550,7 @@ export interface OptionsForMakingAStore<S> {
      * The name that will distinguish this instance from other instances with the same name.
      */
     instanceId: string | number;
-  },
+  }
 }
 
 export interface OptionsForMergingAStore<S> {

@@ -1,6 +1,5 @@
-import { StoreLike } from '.';
 import { Augmentations, EnableAsyncActionsArgs, EnableNestedStoreArgs } from './type';
-import { StoreInternal, WindowAugmentedWithReduxDevtools } from './type-internal';
+import { StoreInternal, StoreInternals, WindowAugmentedWithReduxDevtools } from './type-internal';
 
 export const errorMessages = {
   FIND_RETURNS_NO_MATCHES: 'Could not find array element',
@@ -21,7 +20,7 @@ export const libState = {
   onInternalDispatch: () => null,
   asyncUpdate: undefined as undefined | ((args: EnableAsyncActionsArgs) => Promise<any>),
   nestStore: undefined as undefined | ((args: EnableNestedStoreArgs) => any),
-  detachNestedStore: undefined as undefined | ((args: StoreLike<any>) => any),
+  detachNestedStore: undefined as undefined | ((args: StoreInternals<any>) => any),
   reduxDevtools: undefined as undefined | { init: ((storeName: string) => any), dispatch: ((storeName: string) => any) }
 }
 

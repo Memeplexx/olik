@@ -1,15 +1,22 @@
 import { augmentations, errorMessages, libState } from './constant';
 import { readState } from './read';
-import { OptionsForMakingAStore, StateAction, Store, StoreAugment } from './type';
+import { OptionsForMakingAStore, OptionsForMakingANestedStore, StateAction, Store, StoreAugment } from './type';
 import { StoreInternals } from './type-internal';
 import { deepFreeze } from './utility';
 import { processPotentiallyAsyncUpdate } from './write';
 import { setNewStateAndNotifyListeners } from './write-complete';
 
+export function createStore<S>(
+  args: OptionsForMakingAStore<S> & OptionsForMakingANestedStore
+): Store<S> & (S extends never ? {} : StoreAugment<S>) & { $detachStore: () => void };
 
-export const createStore = <S>(
+export function createStore<S>(
   args: OptionsForMakingAStore<S>
-): Store<S>& (S extends never ? {} : StoreAugment<S>) => {
+): Store<S> & (S extends never ? {} : StoreAugment<S>)
+
+export function createStore<S>(
+  args: OptionsForMakingAStore<S> & OptionsForMakingANestedStore
+): Store<S> & (S extends never ? {} : StoreAugment<S>) {
   validateState(args.state);
   removeStaleCacheReferences(args.state);
   const internals = {
@@ -33,7 +40,9 @@ export const createStore = <S>(
           return internals;
         } else if (topLevel && !!internals.nestedStoreInfo?.isNested) {
           const { nestedStoreInfo: { containerName, instanceId, nestedStoreName } } = internals;
-          return libState.stores[containerName].nested[nestedStoreName][instanceId][dollarProp];
+          return '$detachStore' === dollarProp
+            ? () => libState.detachNestedStore?.(internals)
+            : libState.stores[containerName].nested[nestedStoreName][instanceId][dollarProp];
         } else if (topLevel && internals.mergedStoreInfo?.isMerged) {
           return (libState.stores[internals.mergedStoreInfo.nameOfStoreToMergeInto] as any)[dollarProp];
         } else if (['$replace', '$patch', '$deepMerge', '$remove', '$insert', '$add', '$subtract', '$clear', '$insertOne', '$insertMany', '$withOne', '$withMany'].includes(dollarProp)) {
@@ -75,6 +84,8 @@ export const createStore = <S>(
         } else if (['$find', '$filter'].includes(dollarProp)) {
           stateActions.push({ type: 'search', name: prop, actionType: prop });
           return recurseProxy({}, false, stateActions);
+        } else if ('$detachStore' === dollarProp) {
+          return () => null; // noop: for stores which could not be nested
         } else if (augmentations.selection[dollarProp]) {
           return augmentations.selection[dollarProp](recurseProxy({}, false, stateActions));
         } else if (augmentations.core[dollarProp]) {
@@ -96,7 +107,7 @@ export const createStore = <S>(
     return libState.nestStore({ storeName: internals.storeName, containerName: args.nestStore.hostStoreName, instanceId: args.nestStore.instanceId });
   } else {
     store.$state = args.state;
-    store.$onChange((state: any) => store.state = state );
+    store.$onChange((state: any) => store.state = state);
     return libState.stores[args.name] as any;
   }
 }

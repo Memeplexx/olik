@@ -37,18 +37,18 @@ import TabItem from '@theme/TabItem';
 <TabItem value="no framework" label="No framework">
 
 ```ts
-import { createStore, detachNestedStore } from 'olik'
+import { createStore } from 'olik'
 
 class MyComponent {
 
-  const nestedStore = createStore({
+  const store = createStore({
     name: 'MyComponent',
     nestStore: { hostStoreName: document.title, instanceId: 1 },
     state: { num: 0 },
   })
   
   // You should detach this store from its container when it is no longer being used
-  onComponentDestroyed = () => detachNestedStore(this.nestedStore)
+  onComponentDestroyed = () => this.store.$detachStore()
 }
 ```
 You should now see that your application state has a new property called `nested` which contains the state for `MyComponent`.
@@ -64,7 +64,7 @@ import { useNestedStore } from 'olik-react'
 
 export function MyComponent(props: { id: string }) {
   
-  const nestedStore = useNestedStore({
+  const store = useNestedStore({
     name: 'MyComponent',
     hostStoreName: document.title,
     instanceId: props.id,
@@ -80,12 +80,12 @@ export function MyComponent(props: { id: string }) {
 <TabItem value="angular" label="Angular">
 
 ```ts
-import { createStore, detachNestedStore } from 'olik'
+import { createStore } from 'olik'
 
 @Component({ ... })
 export class MyComponent implements OnDestroy {
 
-  nestedStore = createStore({
+  store = createStore({
     name: 'MyComponent',
     nestStore: { hostStoreName: document.title, instanceId: 1 },
     state: { num: 0 },
@@ -93,7 +93,7 @@ export class MyComponent implements OnDestroy {
 
   ngOnDestroy() {
     // You should detach this store from its container when it is no longer being used
-    detachNestedStore(this.nestedStore)
+    this.store.$detachStore();
   }
 }
 ```
@@ -113,6 +113,9 @@ export class MyComponent implements OnDestroy {
     nestStore: { hostStoreName: document.title, instanceId: id },
     state: { num: 0 },
   });
+
+  // You should detach this store from its container when it is no longer being used
+  onDestroy(() => store.$detachStore())
 </script>
 ```
 
