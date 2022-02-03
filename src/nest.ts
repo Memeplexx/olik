@@ -1,5 +1,5 @@
 import { StoreLike } from '.';
-import { booleanNumberString, errorMessages, libState } from './constant';
+import { booleanNumberString, errorMessages, libState, testState } from './constant';
 import { StoreInternal } from './type-internal';
 
 export const importOlikNestingModule = () => {
@@ -43,6 +43,10 @@ export const importOlikNestingModule = () => {
     } else {
       hostStore.nested[nestedStoreName][instanceId].$remove();
     }
+    const changeListenerPath = `nested.${nestedStoreName}.${instanceId}.onChange`;
+    hostStore.$internals.changeListeners
+      .filter(c => c.actions.map(a => a.name).join('.') === changeListenerPath)
+      .forEach(c => c.unsubscribe());
     args.nestedStoreInfo = undefined;
   }
 }

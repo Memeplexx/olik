@@ -1,6 +1,7 @@
 import { errorMessages, libState, testState } from '../src/constant';
 import { createStore } from '../src/core';
 import { importOlikNestingModule } from '../src/nest';
+import { StoreInternal } from '../src/type-internal';
 import { currentAction } from './_utility';
 
 describe('nest', () => {
@@ -187,6 +188,13 @@ describe('nest', () => {
     selectNested.$detachStore();
   });
 
- 
+  it('should remove change listeners when a nested store is detached', () => {
+    const store = createStore({ name: hostStoreName, state: { hello: 'world' } });
+    const child = createStore({ name: 'child', state: { num: 0 }, nestStore: { hostStoreName, instanceId: 1 } });
+    const { changeListeners } = (store as any as StoreInternal<any>).$internals;
+    expect(changeListeners.length).toEqual(2); // includes root listener for parent and child store
+    child.$detachStore();
+    expect(changeListeners.length).toEqual(1); // includes root listener for parent store only
+  })
 
 });

@@ -616,6 +616,7 @@ export interface StoreAugment<S> { }
 export interface ChangeListener {
   actions: StateAction[];
   listener: (arg: any) => any;
+  unsubscribe: () => void;
 }
 
 export interface NestStoreRef {

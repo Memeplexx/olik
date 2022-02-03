@@ -69,9 +69,10 @@ export function createStore<S>(
         } else if ('$onChange' === dollarProp) {
           return (listener: (arg: any) => any) => {
             const stateActionsCopy = [...stateActions, { type: 'action', name: prop }] as StateAction[];
-            const element = { actions: stateActionsCopy, listener };
+            const unsubscribe = () => internals.changeListeners.splice(internals.changeListeners.findIndex(e => e === element), 1);
+            const element = { actions: stateActionsCopy, listener, unsubscribe };
             internals.changeListeners.push(element);
-            return { unsubscribe: () => internals.changeListeners.splice(internals.changeListeners.findIndex(e => e === element), 1) }
+            return { unsubscribe }
           }
         } else if (andOr.includes(dollarProp)) {
           stateActions.push({ type: 'searchConcat', name: prop, actionType: prop });
