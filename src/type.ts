@@ -164,7 +164,7 @@ export type InsertNode = {
    * Also note that you cannot insert primitives or arrays into the selected object.
    * The former has been enforced by the type system while the latter could not be.
    */
-  $insert<X extends Payload<object>>(replacement: X, options: UpdateOptions<X>): UpdateResult<X>;
+  $insert<X extends Payload<object>>(insertion: X, options: UpdateOptions<X>): UpdateResult<X>;
 }
 
 export type RemoveNode<Depth extends number> = [Depth] extends [MaxRecursionDepth] ? {} : {

@@ -109,7 +109,7 @@ export class MyComponent implements OnDestroy {
   export let id: number;
 
   const store = createStore({
-    name: "MyComponent",
+    name: 'MyComponent',
     nestStore: { hostStoreName: document.title, instanceId: id },
     state: { num: 0 },
   });
