@@ -1,4 +1,4 @@
-import { augmentations, errorMessages, libState } from './constant';
+import { augmentations, booleanNumberString, errorMessages, libState } from './constant';
 import { readState } from './read';
 import { OptionsForMakingAStore, OptionsForMakingANestedStore, StateAction, Store, StoreAugment } from './type';
 import { StoreInternals } from './type-internal';
@@ -45,7 +45,7 @@ export function createStore<S>(
             : libState.stores[containerName].nested[nestedStoreName][instanceId][dollarProp];
         } else if (topLevel && internals.mergedStoreInfo?.isMerged) {
           return (libState.stores[internals.mergedStoreInfo.nameOfStoreToMergeInto] as any)[dollarProp];
-        } else if (['$replace', '$patch', '$deepMerge', '$remove', '$insert', '$add', '$subtract', '$clear', '$insertOne', '$insertMany', '$withOne', '$withMany'].includes(dollarProp)) {
+        } else if (updateFunctions.includes(dollarProp)) {
           return processPotentiallyAsyncUpdate({ storeName: internals.storeName, stateActions, prop });
         } else if ('$invalidateCache' === dollarProp) {
           return () => {
@@ -73,15 +73,15 @@ export function createStore<S>(
             internals.changeListeners.push(element);
             return { unsubscribe: () => internals.changeListeners.splice(internals.changeListeners.findIndex(e => e === element), 1) }
           }
-        } else if (['$and', '$or'].includes(dollarProp)) {
+        } else if (andOr.includes(dollarProp)) {
           stateActions.push({ type: 'searchConcat', name: prop, actionType: prop });
           return recurseProxy({}, false, stateActions);
-        } else if (['$eq', '$ne', '$in', '$ni', '$gt', '$gte', '$lt', '$lte', '$match'].includes(dollarProp)) {
+        } else if (comparators.includes(dollarProp)) {
           return (arg: any) => {
             stateActions.push({ type: 'comparator', name: prop, arg, actionType: `${prop}(${arg})` });
             return recurseProxy({}, false, stateActions);
           }
-        } else if (['$find', '$filter'].includes(dollarProp)) {
+        } else if (findFilter.includes(dollarProp)) {
           stateActions.push({ type: 'search', name: prop, actionType: prop });
           return recurseProxy({}, false, stateActions);
         } else if ('$detachStore' === dollarProp) {
@@ -112,13 +112,18 @@ export function createStore<S>(
   }
 }
 
+const updateFunctions = ['$replace', '$patch', '$deepMerge', '$remove', '$insert', '$add', '$subtract', '$clear', '$insertOne', '$insertMany', '$withOne', '$withMany'];
+const comparators = ['$eq', '$ne', '$in', '$ni', '$gt', '$gte', '$lt', '$lte', '$match'];
+const andOr = ['$and', '$or'];
+const findFilter = ['$find', '$filter'];
+
 export const validateState = (state: any) => {
   const throwError = (illegal: any) => {
     throw new Error(errorMessages.INVALID_STATE_INPUT(illegal));
   };
   if (
     state !== null
-    && !['boolean', 'number', 'string'].some(type => typeof state === type)
+    && !booleanNumberString.some(type => typeof state === type)
   ) {
     if (!Array.isArray(state)) {
       if (typeof state !== "object") {

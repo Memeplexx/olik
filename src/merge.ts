@@ -1,5 +1,5 @@
 import { DeepMerge } from './type';
-import { errorMessages, libState } from './constant';
+import { booleanNumberString, errorMessages, libState } from './constant';
 import { OptionsForMergingAStore } from './type';
 import { StoreInternal } from './type-internal';
 
@@ -12,7 +12,7 @@ export const mergeStoreIfPossible = <S>(
   internals.mergedStoreInfo = { nameOfStoreToMergeInto, isMerged: !!existingStore };
   if (!existingStore) { return; }
   const wrapperState = existingStore.$state;
-  const stateIsInvalid = (s: any) => ['number', 'boolean', 'string'].some(type => typeof (s) === type) || Array.isArray(s);
+  const stateIsInvalid = (s: any) => booleanNumberString.some(type => typeof (s) === type) || Array.isArray(s);
   if (stateIsInvalid(wrapperState)) {
     throw new Error(errorMessages.INVALID_EXISTING_STORE_FOR_MERGING);
   }

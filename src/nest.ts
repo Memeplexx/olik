@@ -1,5 +1,5 @@
 import { StoreLike } from '.';
-import { errorMessages, libState } from './constant';
+import { booleanNumberString, errorMessages, libState } from './constant';
 import { StoreInternal } from './type-internal';
 
 export const importOlikNestingModule = () => {
@@ -23,7 +23,7 @@ export const importOlikNestingModule = () => {
       return complete(storeArg);
     }
     const wrapperState = appStore.$state;
-    if (['number', 'boolean', 'string'].some(type => typeof (wrapperState) === type) || Array.isArray(wrapperState)) {
+    if (booleanNumberString.some(type => typeof (wrapperState) === type) || Array.isArray(wrapperState)) {
       throw new Error(errorMessages.INVALID_CONTAINER_FOR_COMPONENT_STORES);
     }
     appStore.nested[nestedStoreName][instanceId].$insert(storeArg.$state);

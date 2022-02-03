@@ -3,6 +3,8 @@ import { Read, ReduxDevtoolsOptions, Replace } from './type';
 import { StoreInternal, WindowAugmentedWithReduxDevtools } from './type-internal';
 
 
+export const jumpToStateAction = ['JUMP_TO_STATE', 'JUMP_TO_ACTION'];
+
 export function importOlikReduxDevtoolsModule(
   options?: ReduxDevtoolsOptions,
 ) {
@@ -70,7 +72,7 @@ export function importOlikReduxDevtoolsModule(
           })).click();
           window.URL.revokeObjectURL(url);
         } else if ('DISPATCH' === message.type && message.payload) {
-          if (['JUMP_TO_STATE', 'JUMP_TO_ACTION'].includes(message.payload.type)) {
+          if (jumpToStateAction.includes(message.payload.type)) {
             setState(JSON.parse(message.state));
             libState.onInternalDispatch();
           } else if ('COMMIT' === message.payload.type) {

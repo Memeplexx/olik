@@ -3,6 +3,8 @@ import { constructQuery } from './query';
 import { StateAction } from './type';
 import { setCurrentActionReturningNewState } from './write-action';
 
+export const removeInvalidateCache = ['remove', 'invalidateCache'];
+
 export const copyNewState = (
   { storeName, currentState, stateToUpdate, stateActions, cursor }:
   { storeName: string, currentState: any, stateToUpdate: any, stateActions: ReadonlyArray<StateAction>, cursor: { index: number } }
@@ -50,7 +52,7 @@ export const copyNewState = (
             : e);
         }
       }
-    } else if (['remove', 'invalidateCache'].includes(stateActions[cursor.index].name)) {
+    } else if (removeInvalidateCache.includes(stateActions[cursor.index].name)) {
       const { [stateActions[cursor.index - 1].name]: other, ...otherState } = currentState;
       return setCurrentActionReturningNewState({ storeName, stateActions, payload: null, newState: otherState })
     } else {

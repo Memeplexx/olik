@@ -48,3 +48,5 @@ export const comparisons = {
   lte: (val, arg) => val <= arg,
   match: (val, arg) => arg.test(val),
 } as { [comparator: string]: (val: any, arg: any) => boolean };
+
+export const booleanNumberString = ['boolean', 'number', 'string'];

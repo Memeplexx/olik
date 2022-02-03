@@ -2,6 +2,8 @@ import { comparisons } from './constant';
 import { StateAction } from './type';
 import { QuerySpec } from './type-internal';
 
+const actionProperty = ['action', 'property'];
+
 export const constructQuery = (
   { cursor, stateActions }: { stateActions: ReadonlyArray<StateAction>, cursor: { index: number } }
 ) => {
@@ -18,7 +20,7 @@ export const constructQuery = (
     }
     queries.push({
       query: constructQuery(),
-      concat: ['action', 'property'].includes(stateActions[cursor.index].type) ? 'last' : stateActions[cursor.index].name as 'and' | 'or'
+      concat: actionProperty.includes(stateActions[cursor.index].type) ? 'last' : stateActions[cursor.index].name as 'and' | 'or'
     });
     if (stateActions[cursor.index].type === 'searchConcat') {
       cursor.index++;
