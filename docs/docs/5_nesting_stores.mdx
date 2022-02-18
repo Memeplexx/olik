@@ -34,7 +34,7 @@ import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
 <Tabs groupId="frameworks">
-<TabItem value="no framework" label="No framework">
+<TabItem value="native" label={<div className="tab-ts"></div>}>
 
 ```ts
 import { createStore } from 'olik'
@@ -56,9 +56,8 @@ You should now see that your application state has a new property called `nested
 [**Demo 🥚**](https://codesandbox.io/s/attached-component-store-d9xqk?file=/src/index.ts)
 
 </TabItem>
-<TabItem value="react" label="React">
+<TabItem value="react" label={<div className="tab-react"></div>}>
 
-The `useNestedStore()` hook returns a store which will exist for the lifetime of your component
 ```tsx
 import { useNestedStore } from 'olik-react'
 
@@ -77,7 +76,7 @@ export function MyComponent(props: { id: string }) {
 [**Demo 🥚**](https://codesandbox.io/s/olik-react-nested-stores-ve6lj?file=/src/App.tsx)
 
 </TabItem>
-<TabItem value="angular" label="Angular">
+<TabItem value="angular" label={<div className="tab-ng"></div>}>
 
 ```ts
 import { createStore } from 'olik'
@@ -100,7 +99,7 @@ export class MyComponent implements OnDestroy {
 [**Demo 🥚**](https://codesandbox.io/s/olik-ng-nested-stores-gt4bg?file=/src/app/incrementor/incrementor.component.ts)
 
 </TabItem>
-<TabItem value="svelte" label="Svelte">
+<TabItem value="svelte" label={<div className="tab-svelte"></div>}>
 
 ```ts
 <script lang="ts">

@@ -27,7 +27,7 @@ import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
 <Tabs groupId="frameworks">
-<TabItem value="no framework" label="No framework">
+<TabItem value="native" label={<div className="tab-ts"></div>}>
 
 ```ts
 store.todos
@@ -35,7 +35,7 @@ store.todos
 ```
 
 </TabItem>
-<TabItem value="react" label="React">
+<TabItem value="react" label={<div className="tab-react"></div>}>
 
 ```tsx
 const Component = () => {
@@ -56,7 +56,7 @@ const Component = () => {
 [**Demo 🥚 **](https://codesandbox.io/s/olik-react-fetch-nj702)
 
 </TabItem>
-<TabItem value="angular" label="Angular">
+<TabItem value="angular" label={<div className="tab-ng"></div>}>
 
 ```ts
 @Component({...})
@@ -88,7 +88,7 @@ class MyComponent {
 [**Demo 🥚**](https://codesandbox.io/s/olik-ng-async-5y3hd?file=/src/app/app.component.ts)
 
 </TabItem>
-<TabItem value="svelte" label="Svelte">
+<TabItem value="svelte" label={<div className="tab-svelte"></div>}>
 
 ```ts
 const future = store.todos
@@ -99,8 +99,8 @@ const future = store.todos
   <div>loading...</div>
 {/if}
 {#if $future.wasResolved}
-  {#each $future.storeValue as todo2}
-    <li>{todo2.title}</li>
+  {#each $future.storeValue as todo}
+    <li>{todo.title}</li>
   {/each}
 {/if}
 {#if $future.wasRejected}

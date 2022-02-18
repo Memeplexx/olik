@@ -37,7 +37,7 @@ import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
 <Tabs groupId="frameworks">
-<TabItem value="no framework" label="No framework">
+<TabItem value="native" label={<div className="tab-ts"></div>}>
 
 ```ts
 store.todos
@@ -48,7 +48,7 @@ sub.unsubscribe()
 ```
 
 </TabItem>
-<TabItem value="react" label="React">
+<TabItem value="react" label={<div className="tab-react"></div>}>
 
 ```tsx
 export function App() {
@@ -61,7 +61,7 @@ export function App() {
 [**Demo - no deps 🥚**](https://codesandbox.io/s/olik-react-usestate-hook-d3z0y?file=/src/App.tsx) &nbsp;&nbsp;&nbsp; [**Demo - with deps 🥚**](https://codesandbox.io/s/olik-react-usestate-with-deps-7pf9d?file=/src/App.tsx)
 
 </TabItem>
-<TabItem value="angular" label="Angular">
+<TabItem value="angular" label={<div className="tab-ng"></div>}>
 
 ```html
 <div *ngFor="let todo of todos$ | async">
@@ -106,7 +106,7 @@ export class AppComponent implements AfterViewInit {
 [**Demo 🥚**](https://codesandbox.io/s/olik-ng-combinecomponentobservables-trh42?file=/src/app/app.component.ts)
 
 </TabItem>
-<TabItem value="svelte" label="Svelte">
+<TabItem value="svelte" label={<div className="tab-svelte"></div>}>
 
 ```ts
 {#each $store.todos as todo}
@@ -128,7 +128,7 @@ const todos = store.todos.$observe();
 ### Deriving computationally expensive state
 
 <Tabs groupId="frameworks">
-<TabItem value="no framework" label="No framework">
+<TabItem value="native" label={<div className="tab-ts"></div>}>
 
 ```ts
 import { derive } from 'olik'
@@ -142,7 +142,7 @@ sub.unsubscribe()
 ```
 
 </TabItem>
-<TabItem value="react" label="React">
+<TabItem value="react" label={<div className="tab-react"></div>}>
 
 ```tsx
 import { derive } from 'olik'
@@ -160,7 +160,7 @@ export function MyComponent() {
 [**Demo - no deps 🥚**](https://codesandbox.io/s/olik-react-derivefrom-jv9dd?file=/src/App.tsx) &nbsp;&nbsp;&nbsp; [**Demo - with deps 🥚**](https://codesandbox.io/s/olik-react-derivefrom-with-deps-z7x4i?file=/src/App.tsx)
 
 </TabItem>
-<TabItem value="angular" label="Angular">
+<TabItem value="angular" label={<div className="tab-ng"></div>}>
 
 ```ts
 import { derive } from 'olik'
@@ -175,7 +175,7 @@ export class MyComponent {
 [**Demo 🥚**](https://codesandbox.io/s/olik-ng-memoise-supgo?file=/src/app/app.component.ts)
 
 </TabItem>
-<TabItem value="svelte" label="Svelte">
+<TabItem value="svelte" label={<div className="tab-svelte"></div>}>
 
 ```ts
 import { derive } from 'olik'
@@ -184,8 +184,6 @@ const completedTodos = derive(store.todos, store.showDone)
   .$with((todos, showDone) => todos.filter(todo => todo.done === showDone))
   .$observe()
 ```
-[**Demo 🥚**](https://codesandbox.io/s/olik-ng-memoise-supgo?file=/src/app/app.component.ts)
-
 </TabItem>
 </Tabs>
 

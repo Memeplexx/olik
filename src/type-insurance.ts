@@ -1,8 +1,9 @@
+import { transact } from '.';
 import { createStore } from './core';
 
 type Test = { num: number, arr: Array<number>, objArr: Array<{ num: number }>, obj: { num: number } };
 
-interface State {
+interface Statee {
   number: number,
   string: string,
   array: number[],
@@ -14,7 +15,7 @@ interface State {
 }
 
 function test() {
-  const store = createStore<State>({
+  const store = createStore<Statee>({
     name: 'My Store',
     state: {
       number: 0,
@@ -193,6 +194,7 @@ export const demo2 = () => {
   store.arr.$find.id.$eq(3).obj.$replace;
   store.arr.$replace
   store.arr.$find.id.$gt(3).$replace
+
 }
 
 export const demo3 = () => {
@@ -200,5 +202,37 @@ export const demo3 = () => {
     name: '???',
     state: [{ id: 1, val: '' }]
   });
-  store.$find.id.$eq(3).$replace
 }
+
+
+
+
+const updateUserOnApi = (user: User) => () => new Promise<User>(resolve => resolve(user));
+
+type Todo = { id: number, title: string, status: 'done' | 'todo' };
+type User = { name: '', age: number };
+type State = { user: User; todos: Todo[] }
+
+const store = createStore<State>({
+  name: document.title,
+  state: { user: { name: '', age: 0 }, todos: [] }
+})
+
+
+function addToUsersAge(toAdd: number) {
+  store.user.age.$add(toAdd);
+  // { type: user.age.add(), payload: 3 }
+}
+
+
+function completeTodo(todoId: number) {
+  store.todos.$find.id.$eq(todoId).status.$replace('done');
+  // { type: todos.find.id.eq(3).status.replace(), payload: 'done' }
+}
+
+
+function updateUserDetails(user: User) {
+  store.user.$replace(updateUserOnApi(user), { optimisticallyUpdateWith: user });
+  // { type: user.replace(), payload: { name: 'James', age: 33 } }
+}
+

@@ -3,21 +3,63 @@
  * and scoped locally.
  */
 
-.heroBanner {
-  padding: 4rem 0;
+.header {
+  background-color: #262620;
   text-align: center;
-  position: relative;
-  overflow: hidden;
+  padding: 4rem 0;
 }
 
-@media screen and (max-width: 966px) {
-  .heroBanner {
-    padding: 2rem;
-  }
-}
-
-.buttons {
+.title {
   display: flex;
   align-items: center;
   justify-content: center;
+  color: #FFF;
+}
+
+.subtitle {
+  filter: drop-shadow(4px 4px 4px black);
+  color: #9a9a9a;
+  font-size: 22px;
+}
+
+.logo {
+  margin-right: 10px;
+}
+
+.frameworks {
+  display: grid;
+  grid-auto-flow: column;
+  align-content: center;
+  gap: 8px;
+  filter: drop-shadow(0px 0px 4px black);
+  transition: all 0.4s ease-out;
+  opacity: 0.4;
+  border-right: 2px solid white;
+  padding-right: 8px;
+}
+
+.start {
+  display: grid;
+  justify-content: center;
+  grid-auto-flow: column;
+  gap: 8px;
+  text-decoration: none!important;
+  transform: scale(1);
+  transition: all 0.4s ease-out;
+  font-weight: bold;
+}
+
+.start:hover {
+  filter:initial;
+  filter: drop-shadow(0px 0px 4px rgb(101, 84, 255));
+}
+
+.start:hover .frameworks {
+  filter: drop-shadow(0px 0px 4px black);
+  opacity: 1;
+}
+
+.starttext {
+  font-size: 22px;
+  color: #1e87f0;
 }

@@ -1,0 +1,30 @@
+---
+sidebar_label: 'Motivation'
+sidebar_position: 0
+---
+# Motivation
+
+Existing state libs require developers to update state behind a **facade of user-defined abstractions**.
+For example, behind a user-defined function (like with Redux or Zustand), or a user-defined atom hook (like Recoil or React Query).
+
+These user-defined abstractions introduce a set of ambiguities, namely:
+* **What** state is available?
+* **Which** state is being updated?
+* **How** is state being updated?
+
+Olik's goal is to shift the job of defining state update abstractions from the developer to the library.
+Olik's goal is to make managing 'managed' state as easy and transparent as updating 'local' state.
+* A **fluent api** means that state can be ***discovered*** from within components.
+* **Standard** update primitives **eliminate ambiguity** by clearly deliniating replace / insert / merge / etc operations.
+* State updates are **described for you with perfect accuracy** from within the devtools.
+* The need to test state update logic is eliminated because that logic is encapsulated within the library.
+* While the library weighs in at 5kb, the application-bundle size should be even smaller because the developer is not required to define any state-update abstractions.
+
+Furthermore, Olik supports component stores which will automatically nest inside a global store (if it exists).
+The goal is to shift local component state into your store(s) by making it as easy (if not easier) to work with.
+
+
+
+Existing state managers require developers to update state indirectly, behind a facade of abstractions.
+
+Olik is designed to lower the barrier to entry so that more state can be managed globally

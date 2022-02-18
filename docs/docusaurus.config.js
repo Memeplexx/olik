@@ -12,7 +12,7 @@ const config = {
   baseUrl: '/Olik/',
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
-  favicon: 'img/favicon.ico',
+  favicon: 'img/Egg-cracked.svg',
   organizationName: 'memeplexx', // Usually your GitHub org/user name.
   projectName: 'olik', // Usually your repo name.
   presets: [
@@ -34,7 +34,7 @@ const config = {
         title: 'Olik',
         logo: {
           alt: 'My Site Logo',
-          src: 'img/logo.svg',
+          src: 'img/Egg-cracked.svg',
         },
         items: [
           {

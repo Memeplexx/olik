@@ -32,7 +32,7 @@ describe('async', () => {
     const store = createStore({ name, state });
     const rejection = 'test';
     store.num
-      .$replace(reject(rejection))
+      .$replace(reject<number>(rejection))
       .catch(e => expect(e).toEqual(rejection))
       .finally(done)
   })
@@ -44,7 +44,7 @@ describe('async', () => {
     let promiseCount = 0;
     const promise = () => {
       promiseCount++;
-      return new Promise(resolve => setTimeout(() => resolve(payload), 10));
+      return new Promise<number>(resolve => setTimeout(() => resolve(payload), 10));
     }
     await store.num
       .$replace(promise, { cacheFor: 1000 });
@@ -194,7 +194,7 @@ describe('async', () => {
   it('should upsert one array element where a match could be found', async () => {
     const state = { arr: [{ id: 1, num: 1 }, { id: 2, num: 2 }, { id: 3, num: 3 }] };
     const store = createStore({ name, state });
-    const payload = { id: 1, val: 5 };
+    const payload = { id: 1, num: 5 };
     await store.arr
       .$upsertMatching.id
       .$withOne(resolve(payload));
@@ -205,7 +205,7 @@ describe('async', () => {
   it('should upsert one array element where a match could not be found', async () => {
     const state = { arr: [{ id: 1, num: 1 }, { id: 2, num: 2 }, { id: 3, num: 3 }] };
     const store = createStore({ name, state });
-    const payload = { id: 4, val: 5 };
+    const payload = { id: 4, num: 5 };
     await store.arr
       .$upsertMatching.id
       .$withOne(resolve(payload));
@@ -216,7 +216,7 @@ describe('async', () => {
   it('should upsert array elements where one matches and another does not', async () => {
     const state = { arr: [{ id: 1, num: 1 }, { id: 2, num: 2 }, { id: 3, num: 3 }] };
     const store = createStore({ name, state });
-    const payload = [{ id: 1, val: 5 }, { id: 5, val: 5 }];
+    const payload = [{ id: 1, num: 5 }, { id: 5, num: 5 }];
     await store.arr
       .$upsertMatching.id
       .$withMany(resolve(payload));
@@ -240,5 +240,10 @@ describe('async', () => {
     await new Promise(resolve => setTimeout(() => resolve(null), 20));
     expect(store.$state).toEqual({ num: 1, cache: {} });
   })
+
+  // it('', async () => {
+  //   const store = createStore({ name, state: { num: 0 } });
+  //   store.num.$replace(() => Promise.resolve(3));
+  // })
 
 });

@@ -40,4 +40,30 @@ body {
 
 h1, h2, h3, h4, h5, h6 {
   font-family: inherit;
+  filter: drop-shadow(0px 0px 4px #747eff);
+}
+
+.tab-ts {
+  background: url(/img/Typescript.svg) no-repeat center;
+  width: 20px;
+  height: 20px;
+}
+
+.tab-react {
+  background: url(/img/React.svg) no-repeat center;
+  width: 20px;
+  height: 20px;
+}
+
+.tab-ng {
+  background: url(/img/Angular.svg) no-repeat center;
+  width: 20px;
+  height: 20px;
+  
+}
+
+.tab-svelte {
+  background: url(/img/Svelte.svg) no-repeat center;
+  width: 20px;
+  height: 20px;
 }

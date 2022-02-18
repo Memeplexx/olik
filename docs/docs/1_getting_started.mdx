@@ -11,14 +11,14 @@ import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
 
 <Tabs groupId="frameworks">
-<TabItem value="no framework" label="No framework">
+<TabItem value="native" label={<div className="tab-ts"></div>}>
 
 ```bash
 npm install olik
 ```
 
 </TabItem>
-<TabItem value="react" label="React">
+<TabItem value="react" label={<div className="tab-react"></div>}>
 
 ```bash
 npm install olik olik-react
@@ -31,7 +31,7 @@ augmentOlikForReact() // invoke before initializing store
 ```
 
 </TabItem>
-<TabItem value="angular" label="Angular">
+<TabItem value="angular" label={<div className="tab-ng"></div>}>
 
 ```bash
 npm install olik olik-ng
@@ -45,7 +45,7 @@ export class AppModule {}
 ```
 
 </TabItem>
-<TabItem value="svelte" label="Svelte">
+<TabItem value="svelte" label={<div className="tab-svelte"></div>}>
 
 ```bash
 npm install olik olik-svelte

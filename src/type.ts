@@ -148,7 +148,7 @@ export interface Unsubscribe {
 
 export interface InvalidateCache {
   /**
-   * Ensure that any data cached on the selected node is re-fetched the next time a promise is used to populate this node.
+   * Ensure that any data cached on the selected node is re-fetched the next time a request is made to asynchronously populate this node.
    */
   $invalidateCache: () => void,
 }
@@ -242,28 +242,28 @@ export interface Add {
   /**
    * Add the supplied number onto the selected number.
    */
-  $add<X extends Payload<number>>(by: X, options: UpdateOptions<X>): UpdateResult<X>;
+  $add<X extends Payload<number>>(toAdd: X, options: UpdateOptions<X>): UpdateResult<X>;
 }
 
 export interface Subtract {
   /**
    * Subtract the supplied number from the selected number.
    */
-  $subtract<X extends Payload<number>>(by: X, options: UpdateOptions<X>): UpdateResult<X>;
+  $subtract<X extends Payload<number>>(toSubtract: X, options: UpdateOptions<X>): UpdateResult<X>;
 }
 
 export interface AddArray {
   /**
    * Add the supplied number onto each of the numbers in the selected array. 
    */
-  $add<X extends Payload<number>>(by: X, options: UpdateOptions<X>): UpdateResult<X>;
+  $add<X extends Payload<number>>(toAdd: X, options: UpdateOptions<X>): UpdateResult<X>;
 }
 
 export interface SubtractArray {
   /**
    * Subtract the supplied number from each of the numbers in the selected array. 
    */
-  $subtract<X extends Payload<number>>(by: X, options: UpdateOptions<X>): UpdateResult<X>;
+  $subtract<X extends Payload<number>>(toSubtract: X, options: UpdateOptions<X>): UpdateResult<X>;
 }
 
 export interface Replace<S> {
@@ -271,6 +271,9 @@ export interface Replace<S> {
    * Replace the selected node with the supplied state.
    */
   $replace<X extends Payload<S>>(replacement: X, options: UpdateOptions<X>): UpdateResult<X>;
+
+  // $replace(replacement: S): void,
+  // $replace<X extends Promise<S>>(options: X): Future<any>;
 }
 
 export interface ReplaceArrayElement<S> {
@@ -471,6 +474,13 @@ export interface Match<Response> {
   $match: (matches: RegExp) => Response
 }
 
+export interface DetachStore {
+  /**
+   * If this store is nested, this will remove it from it's parent and remove all change listeners.
+   */
+  $detachStore: () => void,
+}
+
 export type Searchable<T, S, F extends FindOrFilter, Depth extends number, NewDepth extends number = DecrementRecursion[Depth]> = Rec<
   {
     [K in keyof S]: (S[K] extends object
@@ -519,10 +529,11 @@ export interface Augmentations {
   core: { [prop: string]: <C>(selection: Readable<C>) => any },
 }
 
-export interface Async<C> {
+export interface RxjsObservable<C> {
+  subscribe: (subscriber: (val: C) => any) => any,
 }
 
-export type AnyAsync<C> = Async<C> | Promise<C>;
+export type AnyAsync<C> = RxjsObservable<C> | Promise<C>;
 
 export interface OptionsForMakingAStore<S> {
   /**

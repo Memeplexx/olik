@@ -1,6 +1,6 @@
 import { augmentations, booleanNumberString, errorMessages, libState } from './constant';
 import { readState } from './read';
-import { OptionsForMakingAStore, OptionsForMakingANestedStore, StateAction, Store, StoreAugment } from './type';
+import { OptionsForMakingAStore, OptionsForMakingANestedStore, StateAction, Store, StoreAugment, DetachStore } from './type';
 import { StoreInternals } from './type-internal';
 import { deepFreeze } from './utility';
 import { processPotentiallyAsyncUpdate } from './write';
@@ -8,7 +8,7 @@ import { setNewStateAndNotifyListeners } from './write-complete';
 
 export function createStore<S>(
   args: OptionsForMakingAStore<S> & OptionsForMakingANestedStore
-): Store<S> & (S extends never ? {} : StoreAugment<S>) & { $detachStore: () => void };
+): Store<S> & (S extends never ? {} : StoreAugment<S>) & DetachStore;
 
 export function createStore<S>(
   args: OptionsForMakingAStore<S>
