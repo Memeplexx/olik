@@ -97,7 +97,7 @@ export const toIsoStringInCurrentTz = (date: Date) => {
 }
 
 export const defineQuery = <T>(
-  arg: { query: () => Promise<T>, cache?: number, eager?: T }
+  arg: { query: () => AnyAsync<T>, cache?: number, eager?: T }
 ): [() => AnyAsync<T>, UpdateOptions<T>] => {
   return [arg.query, { cache: arg.cache, eager: arg.eager } as any];
 };
