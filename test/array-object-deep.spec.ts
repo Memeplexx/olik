@@ -209,33 +209,33 @@ describe('array-object-deep', () => {
     expect(store.arr.$state).toEqual([state.arr[0], { id: 2, val: 3 }, { id: 3, val: 4 }]);
   })
 
-  it('should upsert one array element where a match could be found', () => {
+  it('should repsert one array element where a match could be found', () => {
     const store = createStore({ name, state });
     const payload = { id: 1, val: 5 };
     store.arr
-      .$upsertMatching.id
+      .$repsertMatching.id
       .$withOne(payload);
-    expect(currentAction(store)).toEqual({ type: 'arr.upsertMatching.id.withOne()', payload });
+    expect(currentAction(store)).toEqual({ type: 'arr.repsertMatching.id.withOne()', payload });
     expect(store.arr.$state).toEqual([payload, state.arr[1], state.arr[2]]);
   })
 
-  it('should upsert one array element where a match could not be found', () => {
+  it('should repsert one array element where a match could not be found', () => {
     const store = createStore({ name, state });
     const payload = { id: 4, val: 5 };
     store.arr
-      .$upsertMatching.id
+      .$repsertMatching.id
       .$withOne(payload);
-    expect(currentAction(store)).toEqual({ type: 'arr.upsertMatching.id.withOne()', payload });
+    expect(currentAction(store)).toEqual({ type: 'arr.repsertMatching.id.withOne()', payload });
     expect(store.arr.$state).toEqual([...state.arr, payload]);
   })
 
-  it('should upsert array elements where one matches and another does not', () => {
+  it('should repsert array elements where one matches and another does not', () => {
     const store = createStore({ name, state });
     const payload = [{ id: 1, val: 5 }, { id: 5, val: 5 }];
     store.arr
-      .$upsertMatching.id
+      .$repsertMatching.id
       .$withMany(payload);
-    expect(currentAction(store)).toEqual({ type: 'arr.upsertMatching.id.withMany()', payload });
+    expect(currentAction(store)).toEqual({ type: 'arr.repsertMatching.id.withMany()', payload });
     expect(store.arr.$state).toEqual([payload[0], state.arr[1], state.arr[2], payload[1]]);
   })
 

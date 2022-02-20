@@ -84,8 +84,6 @@ store.todos
   .$remove()
 ```
 
----
-
 ### Performing **many writes** at once
 Avoid unnecessary render cycles by using the `transact()` function.
 ```ts

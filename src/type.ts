@@ -23,12 +23,12 @@ export type DeepMergePayload<T> =
   T extends object ? DeepMergePayloadObject<T> :
   T;
 
-export type UpsertableObject<T, S> = WithOne<T> & WithMany<T> & { [K in keyof S]: S[K] extends object ? UpsertableObject<T, S[K]> : UpsertablePrimitive<T> }
+export type RepsertableObject<T, S> = WithOne<T> & WithMany<T> & { [K in keyof S]: S[K] extends object ? RepsertableObject<T, S[K]> : RepsertablePrimitive<T> }
 
-export interface UpsertablePrimitive<T> extends WithOne<T>, WithMany<T> {
+export interface RepsertablePrimitive<T> extends WithOne<T>, WithMany<T> {
 }
 
-type Payload<S> = S | (() => AnyAsync<S>);
+export type Payload<S> = S | (() => AnyAsync<S>);
 type UpdateResult<X> = X extends (() => AnyAsync<infer R>) ? Future<R> : void;
 
 export type DecrementRecursion = [-1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30];
@@ -77,7 +77,7 @@ export type UpdatableArray<S extends Array<any>, F extends FindOrFilter, Q exten
     & Find<S, NewDepth>
     & Filter<S, NewDepth>
     & Readable<F extends 'isFilter' ? S : S[0]>
-    & (S[0] extends Array<any> ? {} : S[0] extends object ? UpsertMatching<S[0]> : {})
+    & (S[0] extends Array<any> ? {} : S[0] extends object ? RepsertMatching<S[0]> : {})
     & (
       S[0] extends object
       ? (
@@ -94,7 +94,7 @@ export type UpdatableArray<S extends Array<any>, F extends FindOrFilter, Q exten
     )
   ), Depth>
 
-export type UpdateOptions<H> = (H extends () => AnyAsync<any> ? & CacheFor & OptimisticallyUpdateWith<H> : {}) | void;
+export type UpdateOptions<H> = (H extends () => AnyAsync<any> ? & Cache & Eager<H> : {}) | void;
 
 export type UpdatablePrimitive<S, F extends FindOrFilter, Q extends QueryStatus, Depth extends number> =
   & InvalidateCache
@@ -104,11 +104,11 @@ export type UpdatablePrimitive<S, F extends FindOrFilter, Q extends QueryStatus,
   & (S extends number ? (F extends 'isFind' ? Subtract : SubtractArray) : {})
   & Readable<F extends 'isFilter' ? S[] : S>
 
-export interface UpsertMatching<S> {
+export interface RepsertMatching<S> {
   /**
-   * Insert element(s) if they do not already exist or update them if they do
+   * Replace element(s) if they already exist or insert them if they don't
    */
-  $upsertMatching: { [K in keyof S]: S[K] extends object ? UpsertableObject<S, S> : UpsertablePrimitive<S> },
+  $repsertMatching: { [K in keyof S]: S[K] extends object ? RepsertableObject<S, S> : RepsertablePrimitive<S> },
 }
 
 export interface Or<S extends Array<any>, F extends FindOrFilter, NewDepth extends number> {
@@ -344,19 +344,19 @@ export interface Readable<S> extends Read<S>, OnChange<S> {
 
 export interface WithOne<T> {
   /**
-   * Upsert with an individual array element.
+   * Repsert with an individual array element.
    */
   $withOne: <X extends Payload<T>>(element: X) => UpdateResult<X>,
 }
 
 export interface WithMany<T> {
   /**
-   * Upsert with an array of elements.
+   * Repsert with an array of elements.
    */
   $withMany: <X extends Payload<T[]>>(array: X) => UpdateResult<X>,
 }
 
-export interface CacheFor {
+export interface Cache {
   /**
    * Avoid unnecessary promise invocations by supplying the number of milliseconds that should elapse before the promise is invoked again.
    * To un-do this, you can call `$invalidateCache()` on the node of the state tree, for example
@@ -368,20 +368,20 @@ export interface CacheFor {
    *   .$find.id.$eq(2)
    *   .$invalidateCache();
    */
-  cacheFor?: number;
+  cache?: number;
 }
 
-export interface OptimisticallyUpdateWith<H> {
+export interface Eager<H> {
   /**
    * Allows you to set an initial value to update the store with.
    * If the promise is rejected, this value will be reverted to what it was before the promise was invoked.
    * @example
    * const newUsername = 'Jeff';
    * select.username
-   *   .$replace(() => updateUsernameOnApi(newUsername), { optimisticallyUpdateWith: newUsername })
+   *   .$replace(() => updateUsernameOnApi(newUsername), { eager: newUsername })
    *   .catch(err => notifyUserOfError(err))
    */
-  optimisticallyUpdateWith?: H extends () => AnyAsync<infer W> ? W : never,
+  eager?: H extends () => AnyAsync<infer W> ? W : never,
 }
 
 export type UpdatableAny<T, F extends FindOrFilter, Q extends QueryStatus, Depth extends number, NewDepth extends number = DecrementRecursion[Depth]> = Rec<
@@ -491,7 +491,7 @@ export type Searchable<T, S, F extends FindOrFilter, Depth extends number, NewDe
   Depth>
 
 export interface StateAction {
-  type: 'property' | 'search' | 'comparator' | 'action' | 'searchConcat' | 'upsertMatching';
+  type: 'property' | 'search' | 'comparator' | 'action' | 'searchConcat' | 'repsertMatching';
   name: string;
   arg?: any;
   actionType?: string;
@@ -607,8 +607,8 @@ export interface EnableAsyncActionsArgs {
   storeName: string,
   stateActions: StateAction[],
   prop: string,
-  cacheFor?: number,
-  optimisticallyUpdateWith?: any,
+  cache?: number,
+  eager?: any,
   arg: any,
 }
 

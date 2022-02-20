@@ -31,7 +31,7 @@ import TabItem from '@theme/TabItem';
 
 ```ts
 store.todos
-  .$replace(() => fetch('http://api/todos').then(res => res.json()))
+  .$replace(() => fetch('http://api.dev/todos').then(res => res.json()))
 ```
 
 </TabItem>
@@ -40,7 +40,7 @@ store.todos
 ```tsx
 const Component = () => {
   const future = store.todos
-    .$replace(() => fetch('http://example.com/todos').then(res => res.json()))
+    .$replace(() => fetch('http://api.dev/todos').then(res => res.json()))
     .$useFuture()
   return (
     <>
@@ -65,7 +65,7 @@ class MyComponent {
   constructor(private httpClient: HttpClient) { }
 
   todos$ = store.todos
-    .$replace(() => this.httpClient.get('http://example.com/todos'))
+    .$replace(() => this.httpClient.get('http://api.dev/todos'))
     .$asObservableFuture()
   )
 }
@@ -92,7 +92,7 @@ class MyComponent {
 
 ```ts
 const future = store.todos
-  .$replace(() => fetch('http://example.com/todos').then(res => res.json()))
+  .$replace(() => fetch('https://api.dev/todos').then(res => res.json()))
   .$observe({ fetchImmediately: true });
 
 {#if $future.isLoading}
@@ -115,7 +115,7 @@ const future = store.todos
 
 ### Writing state
 ```ts
-const updateTodo = (todo: Todo) => () => fetch(`http://api/todo/${todo.id}`, {
+const updateTodo = (todo: Todo) => () => fetch(`https://api.dev/todo/${todo.id}`, {
   method: 'POST',
   body: JSON.stringify(todo),
 }).then(res => res.json())
@@ -127,11 +127,11 @@ store.todos
 [**Demo 🥚**](https://codesandbox.io/s/writing-async-state-r8rs6?file=/src/index.ts)
 
 ### Caching data
-The library uses your store as a cache and will not re-fetch for a specified period.
+The library uses your store as a cache and will not re-fetch for a specified number of milliseconds.
 ```ts
 store.todos
-  .$replace(() => fetch('http://api/todos').then(res => res.json()),
-  { cacheFor: 1000 * 60 })
+  .$replace(() => fetch('https://api/todos').then(res => res.json()),
+  { cache: 1000 * 60 })
 ```
 [**Demo 🥚**](https://codesandbox.io/s/olik-demo-caching-data-no-framework-3rvz9?file=/src/index.ts)
 
@@ -143,12 +143,39 @@ store.todos
 ```
 [**Demo 🥚**](https://codesandbox.io/s/olik-demo-cache-invalidation-no-framework-efore?file=/src/index.ts)
 
-### Optimistic updates
+### Eager updates
 You can make immediate updates, which will be rolled back if an error is thrown.
 ```ts
 const updateUserStatus = (isAdmin: boolean) => {
   store.user.isAdmin
-    .$replace(() => fetch(`http://api/user/admin/${isAdmin}`).then(res => res.json())),
-    { optimisticallyUpdateWith: isAdmin })
+    .$replace(
+      () => fetch(`https://api/user/admin/${isAdmin}`).then(res => res.json()),
+      { eager: isAdmin }
+    ),
+}
+```
+
+### Co-locating endpoints
+It may be more scalable to extract & centralize the declaration of your API endpoints in another file.
+```ts title="endpoints.ts"
+import { defineQuery } from 'olik';
+
+const fetchTodos = defineQuery({
+  query: () => fetch(`https://api.dev/todos`).then(res => res.json()),
+  cache: 1000 * 60,
+})
+
+const updateTodo = (arg: Todo) => defineQuery({
+  query: () => fetch(`https://api.dev/todos`).then(res => res.json()),
+  eager: arg,
+});
+```
+```ts title="component.ts"
+const fetchAllTodos = () => {
+  store.todos.$replace(...fetchTodos);
+}
+
+const updateTodo = (todo: Todo) => {
+  store.todos.$find.id.$eq(3).$replace(...updateTodo(todo));
 }
 ```

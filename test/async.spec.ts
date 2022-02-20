@@ -1,7 +1,7 @@
 import { errorMessages, testState } from '../src/constant';
 import { createStore } from '../src/core';
+import { defineQuery, importOlikAsyncModule } from '../src/write-async';
 import { currentAction } from './_utility';
-import { importOlikAsyncModule } from '../src/write-async';
 
 
 const resolve = <T>(data: T, timeout = 10) => () => new Promise<T>(resolve => setTimeout(() => resolve(data), timeout));
@@ -47,7 +47,7 @@ describe('async', () => {
       return new Promise<number>(resolve => setTimeout(() => resolve(payload), 10));
     }
     await store.num
-      .$replace(promise, { cacheFor: 1000 });
+      .$replace(promise, { cache: 1000 });
     await store.num
       .$replace(promise);
     expect(promiseCount).toEqual(1);
@@ -82,7 +82,7 @@ describe('async', () => {
     const replacement = 1;
     const replacement2 = 2;
     store.num
-      .$replace(resolve(replacement), { cacheFor: 1000 })
+      .$replace(resolve(replacement), { cache: 1000 })
       .then(() => {
         expect(currentAction(store).type).toEqual('cache.num.replace()');
         expect(store.num.$state).toEqual(replacement);
@@ -106,29 +106,29 @@ describe('async', () => {
     const state = { num: 0 };
     const store = createStore({ name, state });
     const replacement = 1;
-    const optimisticallyUpdateWith = 9;
+    const eager = 9;
     store.num
-      .$replace(resolve(replacement), { optimisticallyUpdateWith })
+      .$replace(resolve(replacement), { eager })
       .then(() => {
         expect(store.num.$state).toEqual(replacement);
         done();
       });
-    expect(store.num.$state).toEqual(optimisticallyUpdateWith);
+    expect(store.num.$state).toEqual(eager);
   })
 
   it('should rollback optimistic updates upon failure', done => {
     const state = { num: 0 };
     const store = createStore({ name, state });
-    const optimisticallyUpdateWith = 9;
+    const eager = 9;
     const error = 'Test';
     store.num
-      .$replace(reject<number>(error), { optimisticallyUpdateWith })
+      .$replace(reject<number>(error), { eager })
       .catch(e => {
         expect(e).toEqual(error);
         expect(store.num.$state).toEqual(0);
         done();
       });
-    expect(store.num.$state).toEqual(optimisticallyUpdateWith);
+    expect(store.num.$state).toEqual(eager);
   });
 
   it('should automatically expire caches appropriately', done => {
@@ -137,7 +137,7 @@ describe('async', () => {
     const replacement = 1;
     const replacement2 = 2;
     store.num
-      .$replace(resolve(replacement), { cacheFor: 10 })
+      .$replace(resolve(replacement), { cache: 10 })
       .then(() => store.num
         .$replace(resolve(replacement2))
         .then(() => expect(store.num.$state).toEqual(replacement)));
@@ -191,36 +191,36 @@ describe('async', () => {
     expect(store.arr.$state).toEqual([1, 2, 3, 4, 5]);
   })
 
-  it('should upsert one array element where a match could be found', async () => {
+  it('should repsert one array element where a match could be found', async () => {
     const state = { arr: [{ id: 1, num: 1 }, { id: 2, num: 2 }, { id: 3, num: 3 }] };
     const store = createStore({ name, state });
     const payload = { id: 1, num: 5 };
     await store.arr
-      .$upsertMatching.id
+      .$repsertMatching.id
       .$withOne(resolve(payload));
-    expect(currentAction(store)).toEqual({ type: 'arr.upsertMatching.id.withOne()', payload });
+    expect(currentAction(store)).toEqual({ type: 'arr.repsertMatching.id.withOne()', payload });
     expect(store.arr.$state).toEqual([payload, state.arr[1], state.arr[2]]);
   })
 
-  it('should upsert one array element where a match could not be found', async () => {
+  it('should repsert one array element where a match could not be found', async () => {
     const state = { arr: [{ id: 1, num: 1 }, { id: 2, num: 2 }, { id: 3, num: 3 }] };
     const store = createStore({ name, state });
     const payload = { id: 4, num: 5 };
     await store.arr
-      .$upsertMatching.id
+      .$repsertMatching.id
       .$withOne(resolve(payload));
-    expect(currentAction(store)).toEqual({ type: 'arr.upsertMatching.id.withOne()', payload });
+    expect(currentAction(store)).toEqual({ type: 'arr.repsertMatching.id.withOne()', payload });
     expect(store.arr.$state).toEqual([...state.arr, payload]);
   })
 
-  it('should upsert array elements where one matches and another does not', async () => {
+  it('should repsert array elements where one matches and another does not', async () => {
     const state = { arr: [{ id: 1, num: 1 }, { id: 2, num: 2 }, { id: 3, num: 3 }] };
     const store = createStore({ name, state });
     const payload = [{ id: 1, num: 5 }, { id: 5, num: 5 }];
     await store.arr
-      .$upsertMatching.id
+      .$repsertMatching.id
       .$withMany(resolve(payload));
-    expect(currentAction(store)).toEqual({ type: 'arr.upsertMatching.id.withMany()', payload });
+    expect(currentAction(store)).toEqual({ type: 'arr.repsertMatching.id.withMany()', payload });
     expect(store.arr.$state).toEqual([payload[0], state.arr[1], state.arr[2], payload[1]]);
   })
 
@@ -235,15 +235,21 @@ describe('async', () => {
 
   it('should remove stale cache references', async () => {
     const store = createStore({ name, state: { num: 0 } });
-    await store.num.$replace(resolve(1), { cacheFor: 10 });
+    await store.num.$replace(resolve(1), { cache: 10 });
     expect((store.$state as any).cache.num).toBeTruthy();
     await new Promise(resolve => setTimeout(() => resolve(null), 20));
     expect(store.$state).toEqual({ num: 1, cache: {} });
   })
 
-  // it('', async () => {
-  //   const store = createStore({ name, state: { num: 0 } });
-  //   store.num.$replace(() => Promise.resolve(3));
-  // })
+  it('should support externally defined query with an eager update', async () => {
+    const store = createStore({ name, state: { num: 0 } });
+    const updateNum = (arg: number) => defineQuery({
+      query: resolve(arg),
+      eager: arg
+    });
+    store.num.$replace(...updateNum(3)).then(() => expect(store.num.$state).toEqual(3));
+    expect(store.num.$state).toEqual(3)
+  })
 
 });
+

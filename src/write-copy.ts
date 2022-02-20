@@ -13,7 +13,7 @@ export const copyNewState = (
     return (currentState as any[]).map((e, i) => (typeof (currentState[i]) === 'object')
       ? { ...currentState[i], ...copyNewState({ storeName, currentState: currentState[i] || {}, stateToUpdate: stateToUpdate[i] || {}, stateActions, cursor: { ...cursor } }) }
       : copyNewState({ storeName, currentState: currentState[i] || {}, stateToUpdate: stateToUpdate[i] || {}, stateActions, cursor: { ...cursor } }));
-  } else if (Array.isArray(currentState) && (stateActions[cursor.index].type === 'upsertMatching')) {
+  } else if (Array.isArray(currentState) && (stateActions[cursor.index].type === 'repsertMatching')) {
     cursor.index++;
     const queryPaths = stateActions
       .slice(cursor.index, cursor.index + stateActions.slice(cursor.index).findIndex(sa => sa.type === 'action'))
@@ -21,14 +21,14 @@ export const copyNewState = (
         cursor.index++;
         return prev.concat(curr);
       }, new Array<StateAction>());
-    const upsert = stateActions[cursor.index++];
-    const upsertArgs = [...(Array.isArray(upsert.arg) ? upsert.arg : [upsert.arg])];
+    const repsert = stateActions[cursor.index++];
+    const repsertArgs = [...(Array.isArray(repsert.arg) ? repsert.arg : [repsert.arg])];
     const result = (currentState as any[]).map(e => {
       const elementValue = queryPaths.reduce((prev, curr) => prev = prev[curr.name], e);
-      const foundIndex = upsertArgs.findIndex(ua => queryPaths.reduce((prev, curr) => prev = prev[curr.name], ua) === elementValue);
-      return foundIndex !== -1 ? upsertArgs.splice(foundIndex, 1)[0] : e;
+      const foundIndex = repsertArgs.findIndex(ua => queryPaths.reduce((prev, curr) => prev = prev[curr.name], ua) === elementValue);
+      return foundIndex !== -1 ? repsertArgs.splice(foundIndex, 1)[0] : e;
     });
-    return setCurrentActionReturningNewState({ storeName, stateActions, payload: { payload: upsert.arg }, newState: [...result, ...upsertArgs] });
+    return setCurrentActionReturningNewState({ storeName, stateActions, payload: { payload: repsert.arg }, newState: [...result, ...repsertArgs] });
   }
   const action = stateActions[cursor.index++];
   if (cursor.index < stateActions.length) {

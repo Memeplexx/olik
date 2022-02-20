@@ -209,33 +209,33 @@ describe('array-object', () => {
     expect(store.$state).toEqual([state[0], { id: 2, val: 3 }, { id: 3, val: 4 }]);
   })
 
-  it('should upsert one array element where a match could be found', () => {
+  it('should repsert one array element where a match could be found', () => {
     const store = createStore({ name, state });
     const payload = { id: 1, val: 5 };
     store
-      .$upsertMatching.id
+      .$repsertMatching.id
       .$withOne(payload);
-    expect(currentAction(store)).toEqual({ type: 'upsertMatching.id.withOne()', payload });
+    expect(currentAction(store)).toEqual({ type: 'repsertMatching.id.withOne()', payload });
     expect(store.$state).toEqual([payload, state[1], state[2]]);
   })
 
-  it('should upsert one array element where a match could not be found', () => {
+  it('should repsert one array element where a match could not be found', () => {
     const store = createStore({ name, state });
     const payload = { id: 4, val: 5 };
     store
-      .$upsertMatching.id
+      .$repsertMatching.id
       .$withOne(payload);
-    expect(currentAction(store)).toEqual({ type: 'upsertMatching.id.withOne()', payload });
+    expect(currentAction(store)).toEqual({ type: 'repsertMatching.id.withOne()', payload });
     expect(store.$state).toEqual([...state, payload]);
   })
 
-  it('should upsert array elements where one matches and another does not', () => {
+  it('should repsert array elements where one matches and another does not', () => {
     const store = createStore({ name, state });
     const payload = [{ id: 1, val: 5 }, { id: 5, val: 5 }];
     store
-      .$upsertMatching.id
+      .$repsertMatching.id
       .$withMany(payload);
-    expect(currentAction(store)).toEqual({ type: 'upsertMatching.id.withMany()', payload });
+    expect(currentAction(store)).toEqual({ type: 'repsertMatching.id.withMany()', payload });
     expect(store.$state).toEqual([payload[0], state[1], state[2], payload[1]]);
   })
 

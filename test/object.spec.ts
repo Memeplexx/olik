@@ -84,7 +84,7 @@ describe('Object', () => {
     expect(changeCount).toEqual(1);
   })
 
-  it('shopuld filter array elements correctly', () => {
+  it('should filter array elements correctly', () => {
     const state = { arr: [{ id: 1, num: 1 }, { id: 2, num: 2 }] };
     const select = createStore({ name, state });
     expect(select.arr.$filter.id.$eq(1).$or.num.$eq(2).id.$state).toEqual([1, 2]);

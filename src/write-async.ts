@@ -1,11 +1,11 @@
 import { augmentations, errorMessages, libState } from './constant';
 import { readState } from './read';
-import { EnableAsyncActionsArgs, FutureState, StateAction } from './type';
+import { AnyAsync, EnableAsyncActionsArgs, FutureState, StateAction, UpdateOptions } from './type';
 import { setNewStateAndNotifyListeners } from './write-complete';
 
 export const importOlikAsyncModule = () => {
   libState.asyncUpdate = (
-    { storeName, stateActions, prop, cacheFor, optimisticallyUpdateWith, arg }: EnableAsyncActionsArgs
+    { storeName, stateActions, prop, cache, eager, arg }: EnableAsyncActionsArgs
   ) => {
     if (libState.isInsideTransaction) { throw new Error(errorMessages.ASYNC_PAYLOAD_INSIDE_TRANSACTION); }
     const readCurrentState = () =>
@@ -29,9 +29,9 @@ export const importOlikAsyncModule = () => {
     }
     const promiseResult = () => {
       let snapshot: any = undefined;
-      if (optimisticallyUpdateWith) {
+      if (eager) {
         snapshot = readCurrentState();
-        setNewStateAndNotifyListeners({ storeName, stateActions: [...stateActions, { type: 'action', name: prop, arg: optimisticallyUpdateWith, actionType: `${prop}()` }] });
+        setNewStateAndNotifyListeners({ storeName, stateActions: [...stateActions, { type: 'action', name: prop, arg: eager, actionType: `${prop}()` }] });
       }
       state = { ...state, isLoading: true, storeValue: readCurrentState() };
       const promise = (augmentations.async ? augmentations.async(arg) : arg()) as Promise<any>;
@@ -39,7 +39,7 @@ export const importOlikAsyncModule = () => {
         .then(promiseResult => {
           setNewStateAndNotifyListeners({ storeName, stateActions: [...stateActions, { type: 'action', name: prop, arg: promiseResult, actionType: `${prop}()` }] });
           state = { ...state, wasResolved: true, wasRejected: false, isLoading: false, storeValue: readCurrentState() };
-          if (cacheFor) {
+          if (cache) {
             const statePath = stateActions.map(sa => sa.actionType).join('.');
             const actions = [
               { type: 'property', name: 'cache', actionType: 'cache' },
@@ -52,7 +52,7 @@ export const importOlikAsyncModule = () => {
               } catch (e) {
                 // Ignoring. This may happen due to the user manually invalidating a cache. If that has happened, we don't want an error to be thrown.
               }
-            }, cacheFor);
+            }, cache);
           }
           return readCurrentState();
         }).catch(error => {
@@ -95,3 +95,9 @@ export const toIsoStringInCurrentTz = (date: Date) => {
   return date.getFullYear() + '-' + pad(date.getMonth() + 1) + '-' + pad(date.getDate()) + 'T' + pad(date.getHours())
     + ':' + pad(date.getMinutes()) + ':' + pad(date.getSeconds()) + dif + pad(tzo / 60) + ':' + pad(tzo % 60);
 }
+
+export const defineQuery = <T>(
+  arg: { query: () => Promise<T>, cache?: number, eager?: T }
+): [() => AnyAsync<T>, UpdateOptions<T>] => {
+  return [arg.query, { cache: arg.cache, eager: arg.eager } as any];
+};

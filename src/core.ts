@@ -61,8 +61,8 @@ export function createStore<S>(
               /* This can happen if a cache has already expired */
             }
           }
-        } else if ('$upsertMatching' === dollarProp) {
-          stateActions.push({ type: 'upsertMatching', name: prop, actionType: prop });
+        } else if ('$repsertMatching' === dollarProp) {
+          stateActions.push({ type: 'repsertMatching', name: prop, actionType: prop });
           return recurseProxy({}, false, stateActions);
         } else if ('$state' === dollarProp) {
           return deepFreeze(readState({ state: internals.state, stateActions: [...stateActions, { type: 'action', name: prop }], cursor: { index: 0 } }));

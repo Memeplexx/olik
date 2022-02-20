@@ -127,11 +127,11 @@ function test() {
     .$state;
 
   store.objArray
-    .$upsertMatching.obj.num
+    .$repsertMatching.obj.num
     .$withOne({ num: 3, arr: [], objArr: [], obj: { num: 0 } });
 
   store.objArray
-    .$upsertMatching.obj.num
+    .$repsertMatching.obj.num
     .$withMany([{ num: 3, arr: [], objArr: [], obj: { num: 0 } }]);
 
   store.objArray
@@ -232,7 +232,7 @@ function completeTodo(todoId: number) {
 
 
 function updateUserDetails(user: User) {
-  store.user.$replace(updateUserOnApi(user), { optimisticallyUpdateWith: user });
+  store.user.$replace(updateUserOnApi(user), { eager: user });
   // { type: user.replace(), payload: { name: 'James', age: 33 } }
 }
 
