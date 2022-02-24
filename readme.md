@@ -10,4 +10,4 @@
 
 [Docs](https://memeplexx.github.io/olik/)
 
-<img src="./assets/recording-with-comments.gif" width="500" /> 
+<img src="./assets/recording-with-comments.gif" style="max-width=100%" /> 
