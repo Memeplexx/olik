@@ -56,7 +56,7 @@ store.todos
 store.todos
   .$insertOne(todo)
 
-// Insert element(s) if they do not already exist or update them if they do
+// Insert element(s) if they do not already exist or replace them if they do
 store.todos
   .$repsertMatching.id
   .$withOne(todo)
