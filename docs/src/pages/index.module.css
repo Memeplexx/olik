@@ -24,6 +24,7 @@
 
 .logo {
   margin-right: 10px;
+  filter: drop-shadow(0px 0px 4px #747eff);
 }
 
 .frameworks {

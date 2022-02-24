@@ -4,11 +4,14 @@ sidebar_label: 'Nesting stores'
 
 # Nesting stores
 
-#### You can nest a component-level store within your application-level store. This allows you to track its state together with your application state. 
+#### A component-level store can be ***nested*** within the application-level store. This allows tracking component-level state together with application-level state. Should no application-level store exist, a completely new store will be created. This allows you to build your components with Olik, bu without your application-level store.
 
 ---
 
-🥚 Let's begin with the following store:
+<div className="lets-begin">
+  <img/> Let's begin with the following store:
+</div>
+
 ```ts
 import {
   createStore,
@@ -24,6 +27,8 @@ const store = createStore({
   state: { str: '' },
 })
 ```
+
+---
 
 ### Creating a nested store
 To nest a store, you must provide the following arguments when creating it:  

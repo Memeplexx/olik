@@ -6,7 +6,7 @@
 
 /* You can override the default Infima variables here. */
 :root {
-  --ifm-color-primary: #1E87F0;
+  --ifm-color-primary: #1e87f0;
   --ifm-color-primary-dark: rgb(33, 175, 144);
   --ifm-color-primary-darker: rgb(31, 165, 136);
   --ifm-color-primary-darkest: rgb(26, 136, 112);
@@ -23,7 +23,7 @@
   padding: 0 var(--ifm-pre-padding);
 }
 
-html[data-theme='dark'] .docusaurus-highlight-code-line {
+html[data-theme="dark"] .docusaurus-highlight-code-line {
   background-color: rgba(0, 0, 0, 0.3);
 }
 
@@ -36,11 +36,13 @@ body {
   font-family: "Comfortaa", sans-serif;
 }
 
-
-
-h1, h2, h3, h4, h5, h6 {
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
   font-family: inherit;
-  filter: drop-shadow(0px 0px 4px #747eff);
 }
 
 .tab-ts {
@@ -59,11 +61,43 @@ h1, h2, h3, h4, h5, h6 {
   background: url(/img/Angular.svg) no-repeat center;
   width: 20px;
   height: 20px;
-  
 }
 
 .tab-svelte {
   background: url(/img/Svelte.svg) no-repeat center;
   width: 20px;
   height: 20px;
+}
+
+hr {
+  border-style: none;
+  background-color: #525252;
+  height: 2px;
+}
+
+.lets-begin {
+  display: grid;
+  grid-auto-flow: column;
+  column-gap: 8px;
+  grid-template-columns: 20px;
+  align-items: self-end;
+  margin-bottom: 10px;
+}
+
+.lets-begin img {
+  content: url("/img/Egg-cracked.svg");
+  width: 20px;
+  filter: saturate(0);
+}
+
+.demo {
+  display: grid;
+  grid-auto-flow: column;
+  column-gap: 8px;
+}
+
+.demo img {
+  content: url("/img/Egg-cracked.svg");
+  width: 20px;
+  filter: saturate(0);
 }

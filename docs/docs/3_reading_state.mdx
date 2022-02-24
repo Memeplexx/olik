@@ -8,7 +8,10 @@ sidebar_label: 'Reading state'
 
 ---
 
-🥚 Let's begin with the following store:
+<div className="lets-begin">
+  <img/> Let's begin with the following store:
+</div>
+
 ```ts
 import { createStore } from 'olik'
 
@@ -21,6 +24,8 @@ const store = createStore({
 });
 ```
 
+---
+
 ### Reading synchronously
 To read state associated with a node, you can use the `$state` property.  
 The following statements are equivalent to each other:
@@ -30,6 +35,8 @@ const todos = store.todos.$state;
 ```ts
 const todos = store.$state.todos;
 ```
+
+---
 
 ### Reacting to state changes
 
@@ -124,6 +131,8 @@ const todos = store.todos.$observe();
 
 </TabItem>
 </Tabs>
+
+---
 
 ### Deriving computationally expensive state
 

@@ -4,11 +4,14 @@ sidebar_label: 'Async state'
 
 # Async state
 
-#### You can update state with a function returning a promise.
+#### Asynchronous updates are almost identical to synchronous updates, except that the payload is a function returning a promise.
 
 ---
 
-🥚 Let's begin with the following store:
+<div className="lets-begin">
+  <img/> Let's begin with the following store:
+</div>
+
 ```ts
 import { createStore, enableAsyncActionPayloads } from 'olik'
 
@@ -20,6 +23,8 @@ const store = createStore({
 
 enableAsyncActionPayloads()
 ```
+
+---
 
 ### Reading state
 
@@ -113,6 +118,8 @@ const future = store.todos
 </TabItem>
 </Tabs>
 
+---
+
 ### Writing state
 ```ts
 const updateTodo = (todo: Todo) => () => fetch(`https://api.dev/todo/${todo.id}`, {
@@ -126,6 +133,8 @@ store.todos
 ```
 [**Demo 🥚**](https://codesandbox.io/s/writing-async-state-r8rs6?file=/src/index.ts)
 
+---
+
 ### Caching data
 The library uses your store as a cache and will not re-fetch for a specified number of milliseconds.
 ```ts
@@ -134,6 +143,8 @@ store.todos
   { cache: 1000 * 60 })
 ```
 [**Demo 🥚**](https://codesandbox.io/s/olik-demo-caching-data-no-framework-3rvz9?file=/src/index.ts)
+
+---
 
 ### Invalidating caches
 The following ensures that any data cached on the selected node is re-fetched the next time a promise is used to populate this node.
@@ -155,8 +166,10 @@ const updateUserStatus = (isAdmin: boolean) => {
 }
 ```
 
+---
+
 ### Co-locating endpoints
-It may be more scalable to extract & centralize the declaration of your API endpoints in another file.
+It may be more manageable to extract & centralize the declaration of your API endpoints in another file.
 ```ts title="endpoints.ts"
 import { defineQuery } from 'olik';
 
