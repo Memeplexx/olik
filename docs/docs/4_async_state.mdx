@@ -160,22 +160,22 @@ It may be more scalable to extract & centralize the declaration of your API endp
 ```ts title="endpoints.ts"
 import { defineQuery } from 'olik';
 
-const fetchTodos = defineQuery({
+const fetchTodosQuery = defineQuery({
   query: () => fetch(`https://api.dev/todos`).then(res => res.json()),
   cache: 1000 * 60,
 })
 
-const updateTodo = (arg: Todo) => defineQuery({
+const updateTodoQuery = (arg: Todo) => defineQuery({
   query: () => fetch(`https://api.dev/todos`).then(res => res.json()),
   eager: arg,
 });
 ```
 ```ts title="component.ts"
-const fetchAllTodos = () => {
-  store.todos.$replace(...fetchTodos);
+const fetchTodos = () => {
+  store.todos.$replace(...fetchTodosQuery);
 }
 
 const updateTodo = (todo: Todo) => {
-  store.todos.$find.id.$eq(3).$replace(...updateTodo(todo));
+  store.todos.$find.id.$eq(3).$replace(...updateTodoQuery(todo));
 }
 ```

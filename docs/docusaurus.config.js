@@ -9,7 +9,7 @@ const config = {
   title: 'Olik',
   tagline: 'Ultra-explicit, fluent state-management',
   url: 'https://memeplexx.github.io',
-  baseUrl: '/Olik/',
+  baseUrl: '/olik/',
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
   favicon: 'img/Egg-cracked.svg',
