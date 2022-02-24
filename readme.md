@@ -1,7 +1,5 @@
 <img src="./assets/readme-banner.png" style="max-width=100%" /> 
 
-# OLIK: fluent state-surgery
-
 ![Version](https://img.shields.io/npm/v/olik.svg)
 [![Build Status](https://travis-ci.org/Memeplexx/olik.svg?branch=master)](https://travis-ci.org/Memeplexx/olik.svg?branch=master)
 [![Coverage Status](https://coveralls.io/repos/github/Memeplexx/Olik/badge.svg?branch=master)](https://coveralls.io/github/Memeplexx/Olik?branch=master)
