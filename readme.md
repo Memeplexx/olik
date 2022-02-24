@@ -7,4 +7,4 @@
 ![Dependency count](https://badgen.net/bundlephobia/dependency-count/olik)
 [📖 Docs](https://memeplexx.github.io/olik/)
 
-<img src="./assets/recording-with-comments.gif" style="max-width: 100%; max-height: 600px" /> 
+<img src="./assets/recording-with-comments.gif" style="padding-right: 200px; box-sizing: border-box; background-color: #262620;" />  
