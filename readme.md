@@ -1,4 +1,4 @@
-<img src="./assets/readme-banner.png" style="max-width=100%" /> 
+<img src="./assets/banner_2.png" style="max-width=100%" /> 
 
 ![Version](https://img.shields.io/npm/v/olik.svg)
 [![Build Status](https://travis-ci.org/Memeplexx/olik.svg?branch=master)](https://travis-ci.org/Memeplexx/olik.svg?branch=master)
