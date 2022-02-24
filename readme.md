@@ -4,7 +4,7 @@
 ![Version](https://img.shields.io/npm/v/olik?style=flat-square&colorA=262620&colorB=000)
 ![Coverage Status](https://img.shields.io/coveralls/github/Memeplexx/olik?style=flat-square&colorA=262620&colorB=000)
 ![Package Size](https://img.shields.io/bundlephobia/minzip/olik?style=flat-square&colorA=262620&colorB=000)
-[View documentation <img height="30px" src="https://github.com/Memeplexx/olik/blob/master/assets/documentation.png" />](https://memeplexx.github.io/olik)
+[<img height="20px" src="https://github.com/Memeplexx/olik/blob/master/assets/documentation.png" />](https://memeplexx.github.io/olik)
 
 <img src="https://github.com/Memeplexx/olik/blob/master/assets/recording-with-comments.gif" style="width: 600px" />  
 
