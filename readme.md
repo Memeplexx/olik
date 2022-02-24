@@ -7,5 +7,4 @@
 
 <img src="https://github.com/Memeplexx/olik/blob/master/assets/recording-with-comments.gif" style="width: 600px" />  
 
-
-[<img width="40px" src="https://github.com/Memeplexx/olik/blob/master/assets/docs-footer.svg" />](https://memeplexx.github.io/olik)
+[<img width="40px" src="https://github.com/Memeplexx/olik/blob/master/assets/docs-footer.png" />](https://memeplexx.github.io/olik)
