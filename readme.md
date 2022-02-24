@@ -4,8 +4,9 @@
 ![Version](https://img.shields.io/npm/v/olik?style=flat-square&colorA=000000)
 ![Coverage Status](https://img.shields.io/coveralls/github/Memeplexx/Olik?style=flat-square&colorA=000000)
 ![Package Size](https://img.shields.io/bundlephobia/minzip/olik?style=flat-square&colorA=000000)
-![Dependency count](https://badgen.net/bundlephobia/dependency-count/olik)
 
 <img src="./assets/recording-with-comments.gif" style="width: 600px;" />  
 
+<p align="right">
 For more information, please check out the [📖 docs](https://memeplexx.github.io/olik/)
+</p>
