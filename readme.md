@@ -8,4 +8,4 @@
 
 <img src="https://github.com/Memeplexx/olik/blob/master/assets/recording-with-comments.gif" style="width: 600px" />  
 
-[<img height="20px" src="https://github.com/Memeplexx/olik/blob/master/assets/documentation.png" />](https://memeplexx.github.io/olik)
+[<img height="30px" src="https://github.com/Memeplexx/olik/blob/master/assets/documentation.png" />](https://memeplexx.github.io/olik)
