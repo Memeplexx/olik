@@ -1,10 +1,10 @@
 <img src="./assets/banner_2.png" style="max-width=100%" /> 
 
-![Version](https://img.shields.io/npm/v/olik.svg)
-[![Build Status](https://travis-ci.org/Memeplexx/olik.svg?branch=master)](https://travis-ci.org/Memeplexx/olik.svg?branch=master)
-[![Coverage Status](https://coveralls.io/repos/github/Memeplexx/Olik/badge.svg?branch=master)](https://coveralls.io/github/Memeplexx/Olik?branch=master)
-![Package Size](https://badgen.net/bundlephobia/minzip/olik)
+![Build status](https://img.shields.io/travis/com/memeplexx/olik?style=flat-square&colorA=000000)
+![Version](https://img.shields.io/npm/v/olik?style=flat-square&colorA=000000)
+![Coverage Status](https://img.shields.io/coveralls/github/Memeplexx/Olik?style=flat-square&colorA=000000)
+![Package Size](https://img.shields.io/bundlephobia/minzip/olik?style=flat-square&colorA=000000)
 ![Dependency count](https://badgen.net/bundlephobia/dependency-count/olik)
 [📖 Docs](https://memeplexx.github.io/olik/)
 
-<img src="./assets/recording-with-comments.gif" style="width: 120%;" />  
+<img src="./assets/recording-with-comments.gif" style="width: 600px;" />  
