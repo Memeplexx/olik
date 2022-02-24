@@ -8,3 +8,9 @@
 [📖 Docs](https://memeplexx.github.io/olik/)
 
 <img src="./assets/recording-with-comments.gif" style="padding-right: 200px; box-sizing: border-box; background-color: #262620;" />  
+
+<style>
+  img {
+    padding-right: 200px; box-sizing: border-box; background-color: #262620;
+  }
+</style>
