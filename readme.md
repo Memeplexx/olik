@@ -6,4 +6,4 @@
 ![Package Size](https://img.shields.io/bundlephobia/minzip/olik?style=flat-square&colorA=262620&colorB=3C52A4)
 
 <img src="https://github.com/Memeplexx/olik/blob/master/assets/recording-with-comments.gif" style="width: 600px" />  
-[<img src="https://github.com/Memeplexx/olik/blob/master/assets/docs.svg" width=300>](https://memeplexx.github.io/olik/)
+[<img width="100px" src="https://github.com/Memeplexx/olik/blob/master/assets/docs.svg" />](https://memeplexx.github.io/olik)
