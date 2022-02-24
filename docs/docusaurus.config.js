@@ -12,7 +12,7 @@ const config = {
   baseUrl: '/olik/',
   onBrokenLinks: 'throw',
   onBrokenMarkdownLinks: 'warn',
-  favicon: 'img/Egg-cracked.svg',
+  favicon: 'img/Egg-cracked.svg?v=1',
   organizationName: 'memeplexx', // Usually your GitHub org/user name.
   projectName: 'olik', // Usually your repo name.
   presets: [
@@ -46,25 +46,6 @@ const config = {
       },
       footer: {
         style: 'dark',
-        // links: [
-        //   {
-        //     title: 'Community',
-        //     items: [
-        //       {
-        //         label: 'Stack Overflow',
-        //         href: 'https://stackoverflow.com/questions/tagged/docusaurus',
-        //       },
-        //       {
-        //         label: 'Discord',
-        //         href: 'https://discordapp.com/invite/docusaurus',
-        //       },
-        //       {
-        //         label: 'Twitter',
-        //         href: 'https://twitter.com/docusaurus',
-        //       },
-        //     ],
-        //   },
-        // ],
         copyright: `Copyright © ${new Date().getFullYear()} Olik, Inc. Built with Docusaurus.`,
       },
       prism: {
