@@ -1,30 +1,104 @@
 ---
-sidebar_label: 'Motivation'
+sidebar_label: 'Intro & Motivation'
 sidebar_position: 0
 ---
-# Motivation
 
-Existing state libs require developers to update state behind a **facade of user-defined abstractions**.
-For example, behind a user-defined function (like with Redux or Zustand), or a user-defined atom hook (like Recoil or React Query).
+# Intro & Motivation
 
-These user-defined abstractions introduce a set of ambiguities, namely:
-* **What** state is available?
-* **Which** state is being updated?
-* **How** is state being updated?
+Ever since the advent of Redux, many libraries have rushed in to address its ergonomic shortcomings by co-locating state, actions, and state update logic:
 
-Olik's goal is to shift the job of defining state update abstractions from the developer to the library.
-Olik's goal is to make managing 'managed' state as easy and transparent as updating 'local' state.
-* A **fluent api** means that state can be ***discovered*** from within components.
-* **Standard** update primitives **eliminate ambiguity** by clearly deliniating replace / insert / merge / etc operations.
-* State updates are **described for you with perfect accuracy** from within the devtools.
-* The need to test state update logic is eliminated because that logic is encapsulated within the library.
-* While the library weighs in at 5kb, the application-bundle size should be even smaller because the developer is not required to define any state-update abstractions.
+```ts
+// Redux Toolkit
+export const todosSlice = createSlice({
+  name: "todos",
+  initialState:[],
+  reducers:{
+    addTask: (state, action) => {/* state update logic */},
+    deleteTask: (state, action) => {/* state update logic */},
+  }
+});
 
-Furthermore, Olik supports component stores which will automatically nest inside a global store (if it exists).
-The goal is to shift local component state into your store(s) by making it as easy (if not easier) to work with.
+// Recoil
+function Todo() {
+  const [todoList, setTodoList] = useRecoilState([]);
+  const addTask = (todo: Todo) => {/* state update logic */};
+  const deleteTask = (id: number) => {/* state update logic */};
+}
 
+// Zustand
+const useStore = create(set => ({
+  state: [],
+  addTask: () => {/* state update logic */},
+  deleteTask: () => {/* state update logic */},
+}))
+```
 
+This pattern is great, but it can be improved upon:  
+* Within each state update function, we find ourselves repeating similar, but not identical, CRUD logic over and over.
+* There is an unnecessary layer of abstraction between components and managed state where a function name may contradict its implementation.
+* This extra layer of abstraction discourages us from moving component state into the store where it can be more easily tracked.
 
-Existing state managers require developers to update state indirectly, behind a facade of abstractions.
+So how does Olik address these issues? Let's just jump right in…
 
-Olik is designed to lower the barrier to entry so that more state can be managed globally
+```bash
+npm install olik-react
+```
+```ts
+import { createStore } from 'olik';
+
+const store = createStore({
+  name: document.title,
+  state: {
+    user: { name: '', age: 0 },
+    todos: new Array<{
+      id: number; title: string; status: 'todo' | 'done'; urgency: number;
+    }>()
+  },
+});
+```
+
+Now, for some interactions:
+
+```ts
+// replace the users age
+store.user.age.$replace(28);
+
+// insert one todo
+store.todos.$insertOne(todo);
+
+// find a todo by its id, and replace it
+store.todos.$find.id.$eq(3).$replace(todo);
+
+// remove all todos which are not urgent
+store.todos.$filter.urgency.$lt(2).$remove();
+
+// find a todo by its id, and change its status as 'done'
+store.todos.$find.status.$eq(5).status.$replace('done');
+
+// read state
+const todos = store.todos.$state;
+
+// listen to state changes to the user's name
+const subscription = store.user.name
+  .$onChange(name => console.log(`name is now "${name}"`))
+
+// listen to changes to 'pending' todos
+store.todos.$filter.status.$eq('pending')
+  .$onChange(todos => console.log(todos));
+
+// make an asynchronous update
+store.todos
+  .$replace(() => fetch('https://api.dev/todos').then(r => r.json()));
+```
+
+Olik is the first state manager to use a completely fluent API. 
+
+By chaining together a standard set composable state search and update primitives, we can make surgically precise updates to our immutable state tree with zero ambiguity, in complete type-safety, to any depth, right from our components.  
+
+The fluent API allows the library to describe our actions for us with perfect accuracy from within the Devtools extension.  
+
+Nested stores are also supported which help us manage and debug component state with or without application state.  
+
+If you have all features enabled, this library weighs in at 5kb, however it will arguably have the least effect on your application bundle size because it doesn't require any infrastructural code, immutable updaters, or immutable update hepers (like Immer).  
+
+Finally, Olik is not built with any particular framework in mind. So far, it can be used without a framework, with React, Angular, or Svelte.  
