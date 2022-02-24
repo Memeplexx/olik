@@ -1,4 +1,4 @@
-<img src="./assets/logo.svg" width="200" height="200" /> 
+<img src="./assets/readme-banner.png" style="max-width=100%" /> 
 
 # OLIK: fluent state-surgery
 
