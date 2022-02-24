@@ -7,7 +7,6 @@
 [![Coverage Status](https://coveralls.io/repos/github/Memeplexx/Olik/badge.svg?branch=master)](https://coveralls.io/github/Memeplexx/Olik?branch=master)
 ![Package Size](https://badgen.net/bundlephobia/minzip/olik)
 ![Dependency count](https://badgen.net/bundlephobia/dependency-count/olik)
-
-[Docs](https://memeplexx.github.io/olik/)
+[📖 Docs](https://memeplexx.github.io/olik/)
 
 <img src="./assets/recording-with-comments.gif" style="max-width=100%" /> 
