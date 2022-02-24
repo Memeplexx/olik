@@ -1,3 +1,4 @@
+<span style="background-color: #262620;">
 <img src="./assets/banner_2.png" style="max-width=100%" /> 
 
 ![Build status](https://img.shields.io/travis/com/memeplexx/olik?style=flat-square&colorA=262620&colorB=3C52A4)
@@ -10,3 +11,4 @@
 ---
 
 # [📖 documentation](https://memeplexx.github.io/olik/)
+</span>
