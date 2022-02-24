@@ -7,7 +7,7 @@
 ![Dependency count](https://badgen.net/bundlephobia/dependency-count/olik)
 [📖 Docs](https://memeplexx.github.io/olik/)
 
-```
+```ts
 // replace the users age
 store.user.age.$replace(28);
 
