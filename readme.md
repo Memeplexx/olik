@@ -8,8 +8,4 @@
 
 <img src="./assets/recording-with-comments.gif" style="width: 600px" />  
 
----
-
-# [📖 documentation](https://memeplexx.github.io/olik/)
-
-<p style="background-color: #262620;">test</p>
+[<img src="./assets/docs-footer.png" />](https://memeplexx.github.io/olik/)
