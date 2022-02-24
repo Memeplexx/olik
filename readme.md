@@ -7,6 +7,6 @@
 ![Dependency count](https://badgen.net/bundlephobia/dependency-count/olik)
 [📖 Docs](https://memeplexx.github.io/olik/)
 
-<div style="background-color: #262620;">
-  <img src="./assets/recording-with-comments.gif" style="max-width=100%; height: 600px" /> 
-</div>
+<span style="background-color: #262620; width: 100%;">
+  <img src="./assets/recording-with-comments.gif" style="max-width: 100%; height: 600px" /> 
+</span>
