@@ -19,8 +19,10 @@ export default function Home(): JSX.Element {
           <p className={styles.subtitle}>Ultra explicit · inline · state surgery</p>
           <Link className={styles.start} to="/docs/getting_started">
             <div className={styles.frameworks}>
+              <img src={useBaseUrl('./img/Javascript.svg')} height={20} />
+              <img src={useBaseUrl('./img/Typescript.svg')} height={20} />
               <img src={useBaseUrl('./img/React.svg')} height={20} />
-              <img src={useBaseUrl('./img/Angular.svg')} height={20} />
+              <img src={useBaseUrl('./img/Angular.svg')} height={28} style={{marginTop:'-4px'}} />
               <img src={useBaseUrl('./img/Svelte.svg')} height={20} />
             </div>
             <div className={styles.starttext}>start&nbsp;&gt;</div>
