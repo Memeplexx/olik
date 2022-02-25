@@ -60,35 +60,44 @@ const store = createStore({
 Now, for some interactions:
 
 ```ts
-// replace the users age
+// Replace the users age
 store.user.age.$replace(28);
 
-// insert one todo
+// Insert one todo
 store.todos.$insertOne(todo);
 
-// find a todo by its id, and replace it
+// Find a todo by its id, and replace it
 store.todos.$find.id.$eq(3).$replace(todo);
 
-// remove all todos which are not urgent
+// Remove all todos which are not urgent
 store.todos.$filter.urgency.$lt(2).$remove();
 
-// find a todo by its id, and change its status as 'done'
+// Find a todo by its id, and change its status as 'done'
 store.todos.$find.status.$eq(5).status.$replace('done');
 
-// read state
+// Read state
 const todos = store.todos.$state;
 
-// listen to state changes to the user's name
+// Listen to state changes to the user's name
 const subscription = store.user.name
   .$onChange(name => console.log(`name is now "${name}"`))
 
-// listen to changes to 'pending' todos
+// Listen to changes to 'pending' todos
 store.todos.$filter.status.$eq('pending')
   .$onChange(todos => console.log(todos));
 
-// make an asynchronous update
+// Make an asynchronous update
 store.todos
   .$replace(() => fetch('https://api.dev/todos').then(r => r.json()));
+
+// Observe state in React
+store.todos.$find.id.$eq(3).useState();
+
+// Observe state in Angular
+store.todos.$find.id.$eq(3).observe();
+
+// Observe state in Svelte
+const todos = $store.todos.$find.id.$eq(3);
 ```
 
 Olik is the first state manager to use a completely fluent API. 
@@ -99,6 +108,6 @@ The fluent API allows the library to describe our actions for us with perfect ac
 
 Nested stores are also supported which help us manage and debug component state with or without application state.  
 
-If you have all features enabled, this library weighs in at 5kb, however it will arguably have the least effect on your application bundle size because it doesn't require any infrastructural code, immutable updaters, or immutable update hepers (like Immer).  
+If you have all features enabled, this library weighs in at 5kb, however it will arguably have the least effect on your application bundle size because it doesn't require any infrastructural code, immutable updaters, or immutable update helpers (like Immer).  
 
 Finally, Olik is not built with any particular framework in mind. So far, it can be used without a framework, with React, Angular, or Svelte.  
