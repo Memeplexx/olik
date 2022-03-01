@@ -1,4 +1,4 @@
-import { ChangeListener, Read, StoreLike } from "./type"
+import { ChangeListener, StoreLike } from './type';
 
 export type DevtoolsInstance = {
   init: (state: any) => any,
@@ -52,9 +52,9 @@ export interface StoreInternals<S> {
 export type StoreInternal<S> = StoreLike<S> & {
   nested: any,
   $internals: StoreInternals<S>,
-};
+}
 
 export interface QuerySpec {
   query: (e: any) => boolean,
   concat: 'and' | 'or' | 'last'
-};
+}

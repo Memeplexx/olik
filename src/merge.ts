@@ -1,6 +1,5 @@
-import { DeepMerge } from './type';
+import { DeepMerge, OptionsForMergingAStore } from './type';
 import { booleanNumberString, errorMessages, libState } from './constant';
-import { OptionsForMergingAStore } from './type';
 import { StoreInternal } from './type-internal';
 
 export const mergeStoreIfPossible = <S>(

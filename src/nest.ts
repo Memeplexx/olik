@@ -1,17 +1,15 @@
-import { StoreLike } from '.';
-import { booleanNumberString, errorMessages, libState, testState } from './constant';
+import { booleanNumberString, errorMessages, libState } from './constant';
 import { StoreInternal } from './type-internal';
 
 export const importOlikNestingModule = () => {
 
   const complete = (store: any) => {
-    store.$state = store.$state;
     store.$onChange((state: any) => store.$state = state);
     return store;
   }
 
   libState.nestStore = ({ containerName, storeName, instanceId }) => {
-    const storeArg = libState.stores[storeName] as StoreInternal<any>;
+    const storeArg: StoreInternal<any> = libState.stores[storeName];
     const appStore = libState.stores[containerName];
     const nestedStoreName = storeArg.$internals.storeName;
     if (!appStore) {

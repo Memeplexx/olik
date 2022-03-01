@@ -190,10 +190,10 @@ export const demo2 = () => {
       ]
     }
   });
-  store.arr.$filter.id.$eq(3).obj.$replace;
-  store.arr.$find.id.$eq(3).obj.$replace;
-  store.arr.$replace
-  store.arr.$find.id.$gt(3).$replace
+  store.arr.$filter.id.$eq(3).obj.$replace({id: 1, num: 1, str: ''});
+  store.arr.$find.id.$eq(3).obj.$replace({id: 1, num: 1, str: ''});
+  store.arr.$replace([])
+  store.arr.$find.id.$gt(3).$replace({id: 1, obj: { id: 1, num: 1, str: '' }})
 
 }
 
@@ -210,7 +210,7 @@ export const demo3 = () => {
 const updateUserOnApi = (user: User) => () => new Promise<User>(resolve => resolve(user));
 
 type Todo = { id: number, title: string, status: 'done' | 'todo' };
-type User = { name: '', age: number };
+type User = { name: string, age: number };
 type State = { user: User; todos: Todo[] }
 
 const store = createStore<State>({
@@ -235,4 +235,3 @@ function updateUserDetails(user: User) {
   store.user.$replace(updateUserOnApi(user), { eager: user });
   // { type: user.replace(), payload: { name: 'James', age: 33 } }
 }
-
