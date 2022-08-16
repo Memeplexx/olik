@@ -241,3 +241,22 @@ store.todos.$filter.status.$eq('done').$replace // additional impl required
 
 store.todos.$filter.status.$eq('done').$remove();
 // { type: 'todos.filter.status.eq(done).remove()' }
+
+
+
+store.todos.$filter.status.$eq('done').$replace([]);
+
+
+const storee = createStore({
+  state: {
+    todos: [''],
+    things: [{ id: 1, name: '' }],
+    val: '',
+  },
+  name: 'x',
+});
+storee.val.$replace('sss');
+storee.todos.$replace(['ss']);
+storee.todos.$filter.$eq('').$replace('ss');
+storee.things.$filter.id.$eq(3).$replace([{ id: 2, name: '' }]);
+storee.things.$filter.id.$eq(3).name.$replace('');

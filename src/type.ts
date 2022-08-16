@@ -2,6 +2,8 @@ export type FindOrFilter = 'isFind' | 'isFilter';
 
 export type QueryStatus = 'notQueried' | 'queried' | 'notArray';
 
+export type ImmediateParentIsAFilter = 'yes' | 'no';
+
 export interface DeepReadonlyArray<T> extends ReadonlyArray<DeepReadonly<T>> {
 }
 
@@ -42,18 +44,18 @@ export type Rec<X, Depth extends number> = {
   recur: X
 }[Depth extends -1 ? 'done' : 'recur']
 
-export type UpdatableObject<S, F extends FindOrFilter, Q extends QueryStatus, Depth extends number, NewDepth extends number = DecrementRecursion[Depth]> = Rec<
+export type UpdatableObject<S, F extends FindOrFilter, Q extends QueryStatus, I extends ImmediateParentIsAFilter, Depth extends number, NewDepth extends number = DecrementRecursion[Depth]> = Rec<
   & InvalidateCache
   & RemoveNode<Depth>
   & (Q extends 'notArray' ? InsertNode : {})
   & (Q extends 'notArray' ? PatchObject<S> : F extends 'isFind' ? PatchArrayElement<S> : PatchArray<S>)
-  & (Q extends 'notArray' ? Replace<S> : F extends 'isFind' ? ReplaceArrayElement<S> : ReplaceArray<S>)
+  & (Q extends 'notArray' ? Replace<S> : F extends 'isFind' ? ReplaceArrayElement<S> : ReplaceArray<S, I>)
   & (Q extends 'notArray' ? DeepMerge<S> : F extends 'isFind' ? DeepMergeArrayElement<S> : DeepMergeArray<S>)
   & Readable<F extends 'isFilter' ? S[] : S>
   & ({
     [K in keyof S]: S[K] extends Array<any>
     ? UpdatableArray<S[K], 'isFilter', 'notQueried', NewDepth>
-    : S[K] extends object ? UpdatableObject<S[K], F, Q, NewDepth>
+    : S[K] extends object ? UpdatableObject<S[K], F, Q, 'no', NewDepth>
     : UpdatablePrimitive<S[K], F, Q, NewDepth>
   })
   , Depth>
@@ -66,14 +68,14 @@ export type UpdatableArray<S extends Array<any>, F extends FindOrFilter, Q exten
     & And<S, F, NewDepth>
     & (F extends 'isFind' ? ReplaceArrayElement<S[0]> : {})
     & (F extends 'isFind' ? RemoveArrayElement<Depth> : RemoveArray<Depth>)
-    & (S[0] extends Array<any> ? {} : S[0] extends object ? UpdatableObject<S[0], F, Q, NewDepth> : UpdatablePrimitive<S[0], F, Q, NewDepth>)
+    & (S[0] extends Array<any> ? {} : S[0] extends object ? UpdatableObject<S[0], F, Q, 'yes', NewDepth> : UpdatablePrimitive<S[0], F, Q, NewDepth>)
   ) : (
     & RemoveNode<Depth>
     & InvalidateCache
     & Clear
     & InsertMany<S>
     & InsertOne<S[0]>
-    & ReplaceArray<S>
+    & ReplaceArray<S, 'no'>
     & Find<S, NewDepth>
     & Filter<S, NewDepth>
     & Readable<F extends 'isFilter' ? S : S[0]>
@@ -86,7 +88,7 @@ export type UpdatableArray<S extends Array<any>, F extends FindOrFilter, Q exten
           (S[0][K] extends Array<any>
             ? UpdatableArray<S[0][K], 'isFilter', 'notQueried', NewDepth>
             : S[0][K] extends object
-            ? UpdatableObject<S[0][K], F, Q, NewDepth>
+            ? UpdatableObject<S[0][K], F, Q, 'yes', NewDepth>
             : UpdatablePrimitive<S[0][K], F, Q, NewDepth>)
         }
       )
@@ -99,7 +101,7 @@ export type UpdateOptions<H> = (H extends () => AnyAsync<any> ? & Cache & Eager<
 export type UpdatablePrimitive<S, F extends FindOrFilter, Q extends QueryStatus, Depth extends number> =
   & InvalidateCache
   & RemoveNode<Depth>
-  & (Q extends 'notArray' ? Replace<S> : F extends 'isFind' ? ReplaceArrayElement<S> : ReplaceArray<S>)
+  & (Q extends 'notArray' ? Replace<S> : F extends 'isFind' ? ReplaceArrayElement<S> : ReplaceArray<S, 'no'>)
   & (S extends number ? (F extends 'isFind' ? Add : AddArray) : {})
   & (S extends number ? (F extends 'isFind' ? Subtract : SubtractArray) : {})
   & Readable<F extends 'isFilter' ? S[] : S>
@@ -270,7 +272,7 @@ export interface Replace<S> {
   /**
    * Replace the selected node with the supplied state.
    */
-  $replace<X extends Payload<S>>(replacement: X, options: UpdateOptions<X>): UpdateResult<X>;
+  $replace<X extends Payload<S>>(replacement: X, options?: UpdateOptions<X>): UpdateResult<X>;
 
   // $replace(replacement: S): void,
   // $replace<X extends Promise<S>>(options: X): Future<any>;
@@ -283,11 +285,11 @@ export interface ReplaceArrayElement<S> {
   $replace<X extends Payload<S>>(replacement: X, options: UpdateOptions<X>): UpdateResult<X>;
 }
 
-export interface ReplaceArray<S> {
+export interface ReplaceArray<S, I extends ImmediateParentIsAFilter> {
   /**
-   * Replace all elements in the selected array with the provided array element.
+   * Replace the selected elements with the provided array element(s).
    */
-  $replace<X extends Payload<S>>(replacement: X, options: UpdateOptions<X>): UpdateResult<X>;
+  $replace<X extends Payload<I extends 'yes' ? S[] : S>>(replacement: X, options: UpdateOptions<X>): UpdateResult<X>;
 }
 
 export interface DeepMerge<S> {
@@ -390,7 +392,7 @@ export type UpdatableAny<T, F extends FindOrFilter, Q extends QueryStatus, Depth
   T extends Array<any>
   ? UpdatableArray<T, F, Q, NewDepth>
   : T extends object
-  ? UpdatableObject<T, F, Q, NewDepth>
+  ? UpdatableObject<T, F, Q, 'yes', NewDepth>
   : UpdatablePrimitive<T, F, Q, NewDepth>
   ,
   Depth>
@@ -621,7 +623,7 @@ export interface EnableNestedStoreArgs {
 }
 
 export type Store<S> = (S extends never ? {} : (S extends Array<any> ? UpdatableArray<S, 'isFilter', 'notQueried', MaxRecursionDepth>
-  : S extends object ? UpdatableObject<S, 'isFind', 'notArray', MaxRecursionDepth>
+  : S extends object ? UpdatableObject<S, 'isFind', 'notArray', 'yes', MaxRecursionDepth>
   : UpdatablePrimitive<S, 'isFind', 'notArray', MaxRecursionDepth>));
 
 export interface StoreAugment<S> { }

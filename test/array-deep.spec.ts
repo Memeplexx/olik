@@ -170,14 +170,27 @@ describe('array-deep', () => {
   it('should filter a list a replace a property on its element(s)', () => {
     const state = {
       user: { name: '', age: 0 },
-      todos: [{ id: 1, status: 'done', title: 'one', obj: { n: 0 } }, { id: 2, status: 'done', title: 'two', obj: { n: 0 } }]
+      todos: [{ id: 1, status: 'done', title: 'one', obj: { n: 0 } }, { id: 2, status: 'done', title: 'two', obj: { n: 0 } }, { id: 3, status: 'todo', title: 'three', obj: { n: 0 } }]
     };
     const store = createStore({
       name,
       state,
     });
-    store.todos.$filter.status.$eq('done').obj.$replace({ n: 1 });
-    expect(store.todos.$state).toEqual(state.todos.map(todo => ({ id: todo.id, status: todo.status, title: todo.title, obj: { n: 1 } })));
+    const payload = { n: 1 };
+    store.todos.$filter.status.$eq('done').obj.$replace(payload);
+    expect(store.todos.$state).toEqual(state.todos.map(todo => ({ ...todo, obj: todo.status === 'done' ? payload : todo.obj })));
+  })
+
+  it('should filter a list and replace one of its element(s)', () => {
+    const store = createStore({
+      name,
+      state: {
+        todos: [{ id: 1, status: 'pending' }, { id: 2, status: 'pending' }, { id: 3, status: 'todo' }],
+      }
+    });
+    const payload = [{ id: 4, status: 'done' }, { id: 5, status: 'done' }];
+    store.todos.$filter.status.$eq('pending').$replace(payload);
+    expect(store.$state.todos).toEqual([{ id: 3, status: 'todo' }, ...payload])
   })
 
 });
