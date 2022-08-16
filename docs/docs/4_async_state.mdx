@@ -26,7 +26,7 @@ enableAsyncActionPayloads()
 
 ---
 
-### Reading state
+### Reading async state
 
 import Tabs from '@theme/Tabs';
 import TabItem from '@theme/TabItem';
@@ -120,7 +120,7 @@ const future = store.todos
 
 ---
 
-### Writing state
+### Writing async state
 Let's start with the following function
 ```ts
 const updateTodo = (todo: Todo) => () => fetch(`https://api.dev/todo/${todo.id}`, {
@@ -178,7 +178,7 @@ const updateUserStatus = (isAdmin: boolean) => {
 
 ---
 
-### Co-locating endpoints using `defineQuery()
+### Co-locating endpoints using `defineQuery()`
 It may be more managable to define your endpoints, caching, and optimistic updates in one place.
 ```ts title="endpoints.ts"
 import { defineQuery } from 'olik';
