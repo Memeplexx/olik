@@ -121,15 +121,25 @@ const future = store.todos
 ---
 
 ### Writing state
+Let's start with the following function
 ```ts
 const updateTodo = (todo: Todo) => () => fetch(`https://api.dev/todo/${todo.id}`, {
   method: 'POST',
   body: JSON.stringify(todo),
 }).then(res => res.json())
-
+```
+Updating state (assuming that the API returnes the updated todo)
+```ts
 store.todos
   .$find.id.$eq(3)
-  .$replace(updateTodo(todo))
+  .$replace(updateTodo(todo));
+```
+Update state (assuming that the API does not return the updated todo)
+```ts
+updateTodo(todo)
+  .then(() => store.todos
+    .$find.id.$eq(3)
+    .$replace(todo));
 ```
 [**Demo 🥚**](https://codesandbox.io/s/writing-async-state-r8rs6?file=/src/index.ts)
 
@@ -168,8 +178,8 @@ const updateUserStatus = (isAdmin: boolean) => {
 
 ---
 
-### Co-locating endpoints
-It may be more manageable to extract & centralize the declaration of your API endpoints in another file.
+### Co-locating endpoints using `defineQuery()
+It may be more managable to define your endpoints, caching, and optimistic updates in one place.
 ```ts title="endpoints.ts"
 import { defineQuery } from 'olik';
 
