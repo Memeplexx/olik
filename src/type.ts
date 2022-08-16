@@ -249,14 +249,14 @@ export interface Subtract {
   /**
    * Subtract the supplied number from the selected number.
    */
-  $subtract<X extends Payload<number>>(toSubtract: X, options: UpdateOptions<X>): UpdateResult<X>;
+  $subtract<X extends Payload<number>>(subtractBy: X, options: UpdateOptions<X>): UpdateResult<X>;
 }
 
 export interface AddArray {
   /**
    * Add the supplied number onto each of the numbers in the selected array. 
    */
-  $add<X extends Payload<number>>(toAdd: X, options: UpdateOptions<X>): UpdateResult<X>;
+  $add<X extends Payload<number>>(addTo: X, options: UpdateOptions<X>): UpdateResult<X>;
 }
 
 export interface SubtractArray {
@@ -293,6 +293,8 @@ export interface ReplaceArray<S> {
 export interface DeepMerge<S> {
   /**
    * Recursively merge the supplied object into the selected node.
+   * 
+   * **WARNING**: Performing this action has the potential to contradict the type-system.
    */
   $deepMerge: <X extends Payload<DeepMergePayload<S>>>(toMerge: X, options: UpdateOptions<X>) => UpdateResult<X>;
 }

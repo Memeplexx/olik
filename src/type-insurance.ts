@@ -235,3 +235,9 @@ function updateUserDetails(user: User) {
   store.user.$replace(updateUserOnApi(user), { eager: user });
   // { type: user.replace(), payload: { name: 'James', age: 33 } }
 }
+
+store.todos.$filter.status.$eq('done').$replace // additional impl required
+
+
+store.todos.$filter.status.$eq('done').$remove();
+// { type: 'todos.filter.status.eq(done).remove()' }
