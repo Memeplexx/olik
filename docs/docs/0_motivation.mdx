@@ -60,43 +60,54 @@ const store = createStore({
 Now, for some interactions:
 
 ```ts
-// Replace the users age
 store.user.age.$replace(28);
-
-// Insert one todo
+// { type: 'user.age.replace()', payload: 28 }
+```
+```ts
 store.todos.$insertOne(todo);
-
-// Find a todo by its id, and replace it
+// { type: 'todos.insertOne()', payload: { ... } }
+```
+```ts
 store.todos.$find.id.$eq(3).$replace(todo);
-
-// Remove all todos which are not urgent
+// { type: 'todos.find.id.eq(3.replace()', payload: { ... } }}
+```
+```ts
 store.todos.$filter.urgency.$lt(2).$remove();
-
-// Find a todo by its id, and change its status as 'done'
+// { type: 'todos.filter.urgency.lt(2).remove()' }
+```
+```ts
 store.todos.$find.status.$eq(5).status.$replace('done');
-
+// { type: 'todos.find.status.eq(5).status.$replace()', payload: 'done' }
+```
+```ts
 // Read state
 const todos = store.todos.$state;
-
+```
+```ts
 // Listen to state changes to the user's name
 const subscription = store.user.name
   .$onChange(name => console.log(`name is now "${name}"`))
-
+```
+```ts
 // Listen to changes to 'pending' todos
 store.todos.$filter.status.$eq('pending')
   .$onChange(todos => console.log(todos));
-
+```
+```ts
 // Make an asynchronous update
 store.todos
   .$replace(() => fetch('https://api.dev/todos').then(r => r.json()));
-
-// Observe state in React
+```
+```ts
+// Observe state in React (need to install additional dependency: olik-react)
 store.todos.$find.id.$eq(3).useState();
-
-// Observe state in Angular
+```
+```ts
+// Observe state in Angular (need to install additional dependency: olik-ng)
 store.todos.$find.id.$eq(3).observe();
-
-// Observe state in Svelte
+```
+```ts
+// Observe state in Svelte (need to install additional dependency: olik-svelte)
 const todos = $store.todos.$find.id.$eq(3);
 ```
 
