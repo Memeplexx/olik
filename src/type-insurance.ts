@@ -260,3 +260,6 @@ storee.todos.$replace(['ss']);
 storee.todos.$filter.$eq('').$replace('ss');
 storee.things.$filter.id.$eq(3).$replace([{ id: 2, name: '' }]);
 storee.things.$filter.id.$eq(3).name.$replace('');
+
+
+storee.val.$replace('xxxx');

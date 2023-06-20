@@ -100,7 +100,7 @@ export function createStore<S>(
   };
   const store = recurseProxy({}, true, []);
   libState.stores[args.name] = store;
-  if (libState.reduxDevtools) {
+  if (libState.reduxDevtools && typeof window !== 'undefined') {
     libState.reduxDevtools.init(internals.storeName);
   }
   if (args.nestStore) {

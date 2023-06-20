@@ -5,6 +5,12 @@ import { StoreInternal, WindowAugmentedWithReduxDevtools } from './type-internal
 
 export const jumpToStateAction = ['JUMP_TO_STATE', 'JUMP_TO_ACTION'];
 
+export function connectOlikReduxDevtoolsToStore(options: {
+  storeName: string
+}) {
+  libState.reduxDevtools!.init(options.storeName);
+}
+
 export function importOlikReduxDevtoolsModule(
   options?: ReduxDevtoolsOptions,
 ) {

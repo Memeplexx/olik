@@ -1,7 +1,7 @@
 import { libState } from './constant';
 
 
-export const deepFreeze = <T extends Object>(o: T): T => {
+export const deepFreeze = <T extends object>(o: T): T => {
   Object.freeze(o);
   if (o == null || o === undefined) { return o; }
   (Object.getOwnPropertyNames(o) as Array<keyof T>).forEach(prop => {
@@ -9,7 +9,7 @@ export const deepFreeze = <T extends Object>(o: T): T => {
       && o[prop] !== null
       && (typeof (o[prop]) === 'object' || typeof (o[prop]) === 'function')
       && !Object.isFrozen(o[prop])) {
-      deepFreeze(o[prop]);
+      deepFreeze(o[prop] as object);
     }
   });
   return o;
