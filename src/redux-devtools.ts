@@ -13,7 +13,9 @@ export function connectOlikReduxDevtoolsToStore(options: ReduxDevtoolsOptionsRet
 export function importOlikReduxDevtoolsModule(
   options?: ReduxDevtoolsOptions,
 ) {
-  const { limitSearchArgLength, traceActions, batchActions } = options || {};
+  const { limitSearchArgLength, limitPayloadArgLength, traceActions, batchActions } = options || {};
+  const searchArgLength = limitSearchArgLength || 6;
+  const payloadArgLength = limitPayloadArgLength || 100;
   libState.reduxDevtools = {
     init: (
       storeName: string
@@ -102,10 +104,13 @@ export function importOlikReduxDevtoolsModule(
         const currentAction = internals.currentAction;
         const dispatchToDevtools = (batched?: any[]) => {
           const action = batched ? { ...currentAction, batched } : currentAction;
+
+          const typeString = (action.type as string)
+            .replace(/\((.+?)\)/g, (substring, args) => `(${args.toString().substring(0, searchArgLength)})`);
+          const typeStringRev = action.payload === undefined ? typeString : typeString.substring(0, typeString.length - 1) + JSON.stringify(action.payload).replace(/['"]+/g, '').substring(0, payloadArgLength) + ')';
           const newAction = {
             ...action,
-            type: (action.type as string)
-              .replace(/\((.+?)\)/g, (substring, args) => `(${args.toString().substring(0, limitSearchArgLength || 6)})`),
+            type: typeStringRev,
           };
           testState.currentActionForReduxDevtools = newAction;
           internals.reduxDevtools?.instance.send(newAction, store.$state);

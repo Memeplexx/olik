@@ -585,6 +585,17 @@ export interface ReduxDevtoolsOptions {
    */
   limitSearchArgLength?: number;
   /**
+   * Limit the length of payloads within the action type.  
+   * 
+   * For example, by default, the following action type:
+   * `todos.replace({ one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8 })`
+   * could be abbreviated to
+   * `todos.replace({ one: 1, two: 2, three: 3 })`  
+   * 
+   * Default value is `100`
+   */
+  limitPayloadArgLength?: number;
+  /**
    * Sometimes actions with the same `type` may be dispatched many times in a short period.
    * An example of this might be tracking the users mouse cursor position.
    * To prevent these actions from spamming the debug logs, we can 'batch' those actions
