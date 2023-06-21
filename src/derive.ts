@@ -1,5 +1,5 @@
 import { augmentations } from './constant';
-import { DeepReadonly, Derivation, DerivationCalculationInputs, Readable, Unsubscribe } from './type';
+import { Derivation, DerivationCalculationInputs, Readable, Unsubscribe } from './type';
 
 export function derive<X extends Readable<any>[]>(...args: X) {
   let previousParams = new Array<any>();
@@ -20,11 +20,11 @@ export function derive<X extends Readable<any>[]>(...args: X) {
         previousResult = result;
         return result;
       }
-      const changeListeners = new Set<(value: DeepReadonly<R>) => any>();
+      const changeListeners = new Set<(value: R) => any>();
       const result = (new class {
         get $state() { return getValue(); }
         $invalidate = () => previousParams.length = 0;
-        $onChange = (listener: (value: DeepReadonly<R>) => any) => {
+        $onChange = (listener: (value: R) => any) => {
           changeListeners.add(listener);
           const unsubscribes: Unsubscribe[] = args
             .map(ops => ops.$onChange(() => listener(getValue())));

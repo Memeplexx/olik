@@ -9,7 +9,7 @@ export const deepFreeze = <T extends object>(o: T): T => {
       && o[prop] !== null
       && (typeof (o[prop]) === 'object' || typeof (o[prop]) === 'function')
       && !Object.isFrozen(o[prop])) {
-      deepFreeze(o[prop] as object);
+      deepFreeze(o[prop] as unknown as object);
     }
   });
   return o;

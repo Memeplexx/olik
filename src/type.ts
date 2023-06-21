@@ -4,18 +4,6 @@ export type QueryStatus = 'notQueried' | 'queried' | 'notArray';
 
 export type ImmediateParentIsAFilter = 'yes' | 'no';
 
-export interface DeepReadonlyArray<T> extends ReadonlyArray<DeepReadonly<T>> {
-}
-
-export type DeepReadonlyObject<T> = {
-  readonly [P in keyof T]: DeepReadonly<T[P]>;
-};
-
-export type DeepReadonly<T> =
-  T extends (infer R)[] ? DeepReadonlyArray<R> :
-  T extends object ? DeepReadonlyObject<T> :
-  T;
-
 export type DeepMergePayloadObject<T> = Partial<{
   [P in keyof T]: DeepMergePayload<T[P]>;
 }> & { [x: string]: any }
@@ -326,7 +314,7 @@ export interface Read<S> {
   /**
    * The current state of the selected node.
    */
-  $state: DeepReadonly<S>;
+  $state: S;
 }
 
 export interface OnChange<S> {
@@ -340,7 +328,7 @@ export interface OnChange<S> {
    * 
    * subscription.unsubscribe();
    */
-  $onChange(changeListener: (state: DeepReadonly<S>) => any): Unsubscribe;
+  $onChange(changeListener: (state: S) => any): Unsubscribe;
 }
 
 export interface Readable<S> extends Read<S>, OnChange<S> {
@@ -515,14 +503,14 @@ export interface FutureState<C> {
   wasRejected: boolean,
   wasResolved: boolean,
   error: any,
-  storeValue: DeepReadonly<C>,
+  storeValue: C,
 };
 
 export interface Future<C> extends Promise<C> {
   /**
    * Gets the current status for the UI to consume
    */
-  state: FutureState<DeepReadonly<C>>,
+  state: FutureState<C>,
 }
 
 export interface Augmentations {
@@ -605,6 +593,13 @@ export interface ReduxDevtoolsOptions {
    * The default value is `0`.
    */
   batchActions?: number;
+}
+
+export interface ReduxDevtoolsOptionsRetroactive extends ReduxDevtoolsOptions {
+  /**
+   * The name of the store that you want to track
+   */
+  storeName: string;
 }
 
 export interface EnableAsyncActionsArgs {

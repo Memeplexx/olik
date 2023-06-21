@@ -263,3 +263,22 @@ storee.things.$filter.id.$eq(3).name.$replace('');
 
 
 storee.val.$replace('xxxx');
+
+
+const storeee = createStore({
+  name: 'xxx',
+  state: {
+    arr: new Array<TagId>(),
+  }
+});
+const nums = storeee.arr.$state;
+const num = nums[0];
+storeee.arr.$replace(nums);
+// storeee.arr.$add(num);
+
+
+
+type TagId = number & { kind: 'tagId' };
+const tagIds = [{id: 0 as TagId}].map(tag => tag.id);
+const ids = storeee.arr.$state;
+storeee.arr.$replace(ids.some(id => tagIds.includes(id)) ? ids.filter(i => !tagIds.includes(i)) : [...ids, ...tagIds]);
