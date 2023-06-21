@@ -1,13 +1,12 @@
 import { errorMessages, libState, testState } from './constant';
-import { Read, ReduxDevtoolsOptions, Replace } from './type';
+import { Read, ReduxDevtoolsOptions, ReduxDevtoolsOptionsRetroactive, Replace } from './type';
 import { StoreInternal, WindowAugmentedWithReduxDevtools } from './type-internal';
 
 
 export const jumpToStateAction = ['JUMP_TO_STATE', 'JUMP_TO_ACTION'];
 
-export function connectOlikReduxDevtoolsToStore(options: {
-  storeName: string
-}) {
+export function connectOlikReduxDevtoolsToStore(options: ReduxDevtoolsOptionsRetroactive) {
+  importOlikReduxDevtoolsModule(options);
   libState.reduxDevtools!.init(options.storeName);
 }
 
