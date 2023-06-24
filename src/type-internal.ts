@@ -36,17 +36,14 @@ export interface BatchedAction {
 export interface NestedStoreInfo {
   nestedStoreName: string,
   instanceId: number | string,
-  containerName: string,
   isNested: boolean,
 }
 
 export interface MergedStoreInfo {
-  nameOfStoreToMergeInto: string,
   isMerged: boolean;
 }
 
 export interface StoreInternals<S> {
-  storeName: string,
   state: S,
   changeListeners: ChangeListener[],
   nestedStoreInfo?: NestedStoreInfo,
@@ -54,10 +51,6 @@ export interface StoreInternals<S> {
   currentAction: { [key: string]: any },
   oldStateSelected: any;
   batchedAction: BatchedAction,
-  reduxDevtools?: {
-    instance: DevtoolsInstance,
-    disableDispatch: boolean,
-  },
   olikDevtools?: {
     instance: DevtoolsInstance,
     disableDispatch: boolean,

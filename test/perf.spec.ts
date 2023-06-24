@@ -5,8 +5,6 @@ import { fromJS, List, Map } from 'immutable';
 
 describe.skip('Performance', () => {
 
-  const name = 'AppStore';
-
   beforeEach(() => {
     testState.logLevel = 'none';
   })
@@ -34,7 +32,7 @@ describe.skip('Performance', () => {
 
   it('Olik Perf (shallow)', () => {
     const state = { num: 0, str: '' };
-    const select = createStore({ name, state });
+    const select = createStore({ state });
     const before = performance.now();
     for (let i = 0; i < 1000; i++) {
       select.num.$replace(i);
@@ -67,7 +65,7 @@ describe.skip('Performance', () => {
 
   it('Olik Perf (deep)', () => {
     const state = { arr: [{ id: 1, val: '', obj: { num: 0 } }, { id: 2, val: '', obj: { num: 0 } }], obj: { num: 0 } };
-    const store = createStore({ name, state });
+    const store = createStore({ state });
     const before = performance.now();
     for (let i = 0; i < 1000; i++) {
       store.arr

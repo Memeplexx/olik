@@ -4,7 +4,6 @@ import { currentAction } from './_utility';
 
 describe('array-query', () => {
 
-  const name = 'AppStore';
   const state = { arr: [{ id: 1, num: 1 }, { id: 2, num: 2 }, { id: 3, num: 3 }] }
 
   beforeEach(() => {
@@ -12,7 +11,7 @@ describe('array-query', () => {
   })
 
   it('should find an element with one clause and another and replace it', () => {
-    const store = createStore({ name, state });
+    const store = createStore({ state });
     const payload = { id: 4, num: 4 };
     store.arr
       .$find.id.$eq(1).$and.id.$lt(2)
@@ -21,7 +20,7 @@ describe('array-query', () => {
   });
 
   it('should find an element with one clause and another and patch it', () => {
-    const store = createStore({ name, state });
+    const store = createStore({ state });
     const payload = { num: 4 };
     store.arr
       .$find.id.$eq(1).$and.id.$lt(2)
@@ -30,7 +29,7 @@ describe('array-query', () => {
   });
 
   it('should find an element with one clause and another and remove it', () => {
-    const store = createStore({ name, state });
+    const store = createStore({ state });
     store.arr
       .$find.id.$eq(1).$and.id.$lt(2)
       .$remove();
@@ -38,7 +37,7 @@ describe('array-query', () => {
   });
 
   it('should find an element with one clause or another and replace it', () => {
-    const store = createStore({ name, state });
+    const store = createStore({ state });
     const payload = { id: 4, num: 4 };
     store.arr
       .$find.id.$eq(1).$or.id.$lt(2)
@@ -47,7 +46,7 @@ describe('array-query', () => {
   });
 
   it('should find an element with one clause or another and patch it', () => {
-    const store = createStore({ name, state });
+    const store = createStore({ state });
     const payload = { num: 4 };
     store.arr
       .$find.id.$eq(1).$or.id.$lt(2)
@@ -56,7 +55,7 @@ describe('array-query', () => {
   });
 
   it('should find an element with one clause or another and remove it', () => {
-    const store = createStore({ name, state });
+    const store = createStore({ state });
     store.arr
       .$find.id.$eq(1).$or.id.$lt(2)
       .$remove();
@@ -64,7 +63,7 @@ describe('array-query', () => {
   });
 
   it('should filter elements with one clause and another and patch them', () => {
-    const store = createStore({ name, state });
+    const store = createStore({ state });
     const payload = { num: 4 };
     store.arr
       .$filter.id.$eq(1).$and.id.$lt(3)
@@ -73,7 +72,7 @@ describe('array-query', () => {
   });
 
   it('should filter elements with one clause and another and remove them', () => {
-    const store = createStore({ name, state });
+    const store = createStore({ state });
     store.arr
       .$filter.id.$eq(1).$and.id.$lt(3)
       .$remove();
@@ -81,7 +80,7 @@ describe('array-query', () => {
   });
 
   it('should filter elements with one clause or another and patch them', () => {
-    const store = createStore({ name, state });
+    const store = createStore({ state });
     const payload = { num: 4 };
     store.arr
       .$filter.id.$eq(1).$or.id.$lt(3)
@@ -90,7 +89,7 @@ describe('array-query', () => {
   });
 
   it('should filter elements with one clause or another and remove them', () => {
-    const store = createStore({ name, state });
+    const store = createStore({ state });
     store.arr
       .$filter.id.$eq(1).$or.id.$lt(3)
       .$remove();
@@ -98,7 +97,7 @@ describe('array-query', () => {
   });
 
   it('should find an element by a clause and a clause or a clause, and then replace it', () => {
-    const store = createStore({ name, state });
+    const store = createStore({ state });
     const payload = { id: 4, num: 4 };
     store.arr
       .$find.id.$eq(1)
@@ -113,7 +112,7 @@ describe('array-query', () => {
   })
 
   it('should find an element by a clause and a clause or a clause, and then remove it', () => {
-    const store = createStore({ name, state });
+    const store = createStore({ state });
     store.arr
       .$find.id.$eq(1)
       .$and.id.$eq(2)
@@ -126,7 +125,7 @@ describe('array-query', () => {
   })
 
   it('should find an element by a clause or a clause and a clause, and then replace it', () => {
-    const store = createStore({ name, state });
+    const store = createStore({ state });
     const payload = { id: 4, num: 4 };
     store.arr
       .$find.id.$eq(4)
@@ -141,7 +140,7 @@ describe('array-query', () => {
   })
 
   it('should find an element by a clause or a clause and a clause, and then remove it', () => {
-    const store = createStore({ name, state });
+    const store = createStore({ state });
     store.arr
       .$find.id.$eq(4)
       .$or.id.$eq(3)
@@ -154,7 +153,7 @@ describe('array-query', () => {
   })
 
   it('should find an element by a clause and a clause or a clause and a clause, and then replace it', () => {
-    const store = createStore({ name, state });
+    const store = createStore({ state });
     const payload = { id: 4, num: 4 };
     store.arr
       .$find.id.$eq(1)
@@ -170,7 +169,7 @@ describe('array-query', () => {
   })
 
   it('should find an element by a clause and a clause or a clause and a clause, and then remove it', () => {
-    const store = createStore({ name, state });
+    const store = createStore({ state });
     store.arr
       .$find.id.$eq(1)
       .$and.num.$eq(1)

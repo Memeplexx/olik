@@ -529,31 +529,15 @@ export type AnyAsync<C> = RxjsObservable<C> | Promise<C>;
 
 export interface OptionsForMakingAStore<S> {
   /**
-   * The name that will identify your store in the devtools extension.
-   * The default value is `document.title`.
-   */
-  name: string,
-  /**
    * The initial state of your store. Can be any serializable object
    */
   state: S,
-}
-
-export interface OptionsForMakingANestedStore {
   /**
-   * Supply an object here if you wish to nest this store.
+   * Supplying a key here will ensure that the store returned is nested under that key in the application store.
+   * This is useful if you want to manage component state independently of the rest of the application state.
+   * If there is no application store, then this will be ignored.
    */
-  nestStore?: {
-    /**
-     * The name of the store in which this store should be nested.
-     * This will be ignored if the library could not find a store matching the name provided.
-     */
-    hostStoreName: string;
-    /**
-     * The name that will distinguish this instance from other instances with the same name.
-     */
-    instanceId: string | number;
-  }
+  key?: string;
 }
 
 export interface OptionsForMergingAStore<S> {
@@ -621,7 +605,6 @@ export interface OlikDevtoolsOptionsRetroactive {
 }
 
 export interface EnableAsyncActionsArgs {
-  storeName: string,
   stateActions: StateAction[],
   prop: string,
   cache?: number,
@@ -631,7 +614,6 @@ export interface EnableAsyncActionsArgs {
 
 export interface EnableNestedStoreArgs {
   storeName: string;
-  containerName: string;
   instanceId: string | number;
 }
 

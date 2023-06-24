@@ -6,14 +6,13 @@ import { currentAction } from './_utility';
 describe('Object', () => {
 
   const state = { num: 0, str: '', bool: false };
-  const name = 'AppStore';
 
   beforeEach(() => {
     testState.logLevel = 'none';
   })
 
   it('should replace an object property', () => {
-    const store = createStore({ name, state });
+    const store = createStore({ state });
     const payload = 1;
     store.num
       .$replace(payload);
@@ -22,7 +21,7 @@ describe('Object', () => {
   })
 
   it('should patch an object', () => {
-    const store = createStore({ name, state });
+    const store = createStore({ state });
     const payload = { bool: true, str: 'x' };
     store.$patch({ bool: true, str: 'x' });
     expect(currentAction(store)).toEqual({ type: 'patch()', payload });
@@ -31,13 +30,13 @@ describe('Object', () => {
 
   it('should deep merge an object', () => {
     const state = { num: 0, obj: { num: 0, str: '', arr: [{ id: 1, num: 1 }] } };
-    const store = createStore({ name, state });
+    const store = createStore({ state });
     store.$deepMerge({ num: 9, str: 'x', obj: { xxx: '', arr: [{ fff: 's' }] } });
     expect(store.$state).toEqual({ num: 9, str: 'x', obj: { xxx: '', arr: [{ fff: 's' }], num: 0, str: '' } });
   })
 
   it('should increment an object property', () => {
-    const store = createStore({ name, state });
+    const store = createStore({ state });
     const payload = 1;
     store.num
       .$add(payload);
@@ -46,7 +45,7 @@ describe('Object', () => {
   })
 
   it('should remove an object property', () => {
-    const store = createStore({ name, state });
+    const store = createStore({ state });
     store.num
       .$remove();
     expect(store.$state).toEqual({ str: '', bool: false });
@@ -54,7 +53,7 @@ describe('Object', () => {
 
   it('should listen to onChange events correctly', () => {
     const state = { num1: 0, num2: 0 };
-    const store = createStore({ name, state });
+    const store = createStore({ state });
     let rootChangeCount = 0;
     let num1ChangeCount = 0;
     let num2ChangeCount = 0;
@@ -75,7 +74,7 @@ describe('Object', () => {
 
   it('should fire onChange correctly when updating an array element', () => {
     const state = { arr: [{ id: 1, num: 1 }, { id: 2, num: 2 }] };
-    const store = createStore({ name, state });
+    const store = createStore({ state });
     let changeCount = 0;
     store.arr.$find.id.$eq(1).$onChange(() => changeCount++);
     store.arr.$find.id.$eq(2).num.$add(1);
@@ -86,13 +85,13 @@ describe('Object', () => {
 
   it('should filter array elements correctly', () => {
     const state = { arr: [{ id: 1, num: 1 }, { id: 2, num: 2 }] };
-    const select = createStore({ name, state });
+    const select = createStore({ state });
     expect(select.arr.$filter.id.$eq(1).$or.num.$eq(2).id.$state).toEqual([1, 2]);
   })
 
   it('should filter array elements and increment their property', () => {
     const state = { arr: [{ id: 1, num: 1 }, { id: 2, num: 2 }] };
-    const select = createStore({ name, state });
+    const select = createStore({ state });
     select.arr
       .$filter.id.$eq(1).$or.num.$eq(2)
       .id.$add(1);
@@ -101,19 +100,19 @@ describe('Object', () => {
 
   it('should patch all elements in an array', () => {
     const state = { arr: [{ id: 1, num: 1 }, { id: 2, num: 2 }] };
-    const select = createStore({ name, state });
+    const select = createStore({ state });
     select.arr.$patch({ num: 9 });
     expect(select.arr.$state).toEqual([{ id: 1, num: 9 }, { id: 2, num: 9 }]);
   })
 
   it('should insert a node', () => {
-    const store = createStore({ name, state: { one: '' } });
+    const store = createStore({ state: { one: '' } });
     store.$insert({ two: 1 })
     expect(store.$state).toEqual({ one: '', two: 1 });
   })
 
   it('should insert a node sub property', () => {
-    const store = createStore({ name, state: { one: {} } });
+    const store = createStore({ state: { one: {} } });
     store.one.$insert({ two: 1 })
     expect(store.$state).toEqual({ one:  { two: 1 } });
   })

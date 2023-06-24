@@ -5,13 +5,13 @@ import { setNewStateAndNotifyListeners } from './write-complete';
 
 export const importOlikAsyncModule = () => {
   libState.asyncUpdate = (
-    { storeName, stateActions, prop, cache, eager, arg }: EnableAsyncActionsArgs
+    { stateActions, prop, cache, eager, arg }: EnableAsyncActionsArgs
   ) => {
     if (libState.isInsideTransaction) { throw new Error(errorMessages.ASYNC_PAYLOAD_INSIDE_TRANSACTION); }
     const readCurrentState = () =>
-      readState({ state: libState.stores[storeName].$state, stateActions: [...stateActions, { type: 'action', name: 'state' }], cursor: { index: 0 } });
+      readState({ state: libState.store.$state, stateActions: [...stateActions, { type: 'action', name: 'state' }], cursor: { index: 0 } });
     let state = { storeValue: readCurrentState(), error: null, isLoading: false, wasRejected: false, wasResolved: false } as FutureState<any>;
-    if (libState.stores[storeName].$state.cache?.[stateActions.map(sa => sa.actionType).join('.')]) {
+    if (libState.store.$state.cache?.[stateActions.map(sa => sa.actionType).join('.')]) {
       const result = new Proxy(new Promise<any>(resolve => resolve(readCurrentState())), {
         get: (target: any, prop: any) => {
           if (prop === 'then' || prop === 'catch' || prop === 'finally') {
@@ -31,13 +31,13 @@ export const importOlikAsyncModule = () => {
       let snapshot: any = undefined;
       if (eager) {
         snapshot = readCurrentState();
-        setNewStateAndNotifyListeners({ storeName, stateActions: [...stateActions, { type: 'action', name: prop, arg: eager, actionType: `${prop}()` }] });
+        setNewStateAndNotifyListeners({ stateActions: [...stateActions, { type: 'action', name: prop, arg: eager, actionType: `${prop}()` }] });
       }
       state = { ...state, isLoading: true, storeValue: readCurrentState() };
       const promise = (augmentations.async ? augmentations.async(arg) : arg()) as Promise<any>;
       return promise
         .then(promiseResult => {
-          setNewStateAndNotifyListeners({ storeName, stateActions: [...stateActions, { type: 'action', name: prop, arg: promiseResult, actionType: `${prop}()` }] });
+          setNewStateAndNotifyListeners({ stateActions: [...stateActions, { type: 'action', name: prop, arg: promiseResult, actionType: `${prop}()` }] });
           state = { ...state, wasResolved: true, wasRejected: false, isLoading: false, storeValue: readCurrentState() };
           if (cache) {
             const statePath = stateActions.map(sa => sa.actionType).join('.');
@@ -45,10 +45,10 @@ export const importOlikAsyncModule = () => {
               { type: 'property', name: 'cache', actionType: 'cache' },
               { type: 'property', name: statePath, actionType: statePath },
             ] as StateAction[];
-            setNewStateAndNotifyListeners({ storeName, stateActions: [...actions, { type: 'action', name: 'replace', arg: toIsoStringInCurrentTz(new Date()), actionType: 'replace()' }] });
+            setNewStateAndNotifyListeners({ stateActions: [...actions, { type: 'action', name: 'replace', arg: toIsoStringInCurrentTz(new Date()), actionType: 'replace()' }] });
             setTimeout(() => {
               try {
-                setNewStateAndNotifyListeners({ storeName, stateActions: [...actions, { type: 'action', name: 'remove', actionType: 'remove()' }] })
+                setNewStateAndNotifyListeners({ stateActions: [...actions, { type: 'action', name: 'remove', actionType: 'remove()' }] })
               } catch (e) {
                 // Ignoring. This may happen due to the user manually invalidating a cache. If that has happened, we don't want an error to be thrown.
               }
@@ -57,7 +57,7 @@ export const importOlikAsyncModule = () => {
           return readCurrentState();
         }).catch(error => {
           if (snapshot !== undefined) {
-            setNewStateAndNotifyListeners({ storeName, stateActions: [...stateActions, { type: 'action', name: prop, arg: snapshot, actionType: `${prop}()` }] });
+            setNewStateAndNotifyListeners({ stateActions: [...stateActions, { type: 'action', name: prop, arg: snapshot, actionType: `${prop}()` }] });
           }
           state = { ...state, wasRejected: true, wasResolved: false, isLoading: false, error };
           throw error;

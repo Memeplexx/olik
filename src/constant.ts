@@ -15,14 +15,13 @@ export const errorMessages = {
 } as const;
 
 export const libState = {
-  stores: {} as { [storeName: string]: StoreInternal<any> },
+  store: undefined as any as StoreInternal<any>,
   isInsideTransaction: false,
   onInternalDispatch: () => null,
   asyncUpdate: undefined as undefined | ((args: EnableAsyncActionsArgs) => Promise<any>),
   nestStore: undefined as undefined | ((args: EnableNestedStoreArgs) => any),
   detachNestedStore: undefined as undefined | ((args: StoreInternals<any>) => any),
-  reduxDevtools: undefined as undefined | { init: ((storeName: string) => any), dispatch: ((storeName: string) => any) },
-  olikDevtools: undefined as undefined | { init: ((storeName: string) => any), dispatch: ((storeName: string) => any) },
+  olikDevtools: undefined as undefined | { dispatch: (() => any) },
 }
 
 export const testState = {

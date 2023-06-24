@@ -16,7 +16,6 @@ interface Statee {
 
 function test() {
   const store = createStore<Statee>({
-    name: 'My Store',
     state: {
       number: 0,
       string: '',
@@ -142,7 +141,6 @@ function test() {
 
 export const demo = () => {
   const store = createStore({
-    name: 'my store',
     state: {
       user: { name: '', age: 0 },
       todos: new Array<{ id: number, title: string, status: 'done' | 'todo' }>(),
@@ -183,7 +181,6 @@ export const demo = () => {
 
 export const demo2 = () => {
   const store = createStore({
-    name: '??',
     state: {
       arr: [
         { id: 1, obj: { id: 1, str: '', num: 0 } }
@@ -199,7 +196,6 @@ export const demo2 = () => {
 
 export const demo3 = () => {
   const store = createStore({
-    name: '???',
     state: [{ id: 1, val: '' }]
   });
 }
@@ -214,7 +210,6 @@ type User = { name: string, age: number };
 type State = { user: User; todos: Todo[] }
 
 const store = createStore<State>({
-  name: document.title,
   state: { user: { name: '', age: 0 }, todos: [] }
 })
 
@@ -253,7 +248,6 @@ const storee = createStore({
     things: [{ id: 1, name: '' }],
     val: '',
   },
-  name: 'x',
 });
 storee.val.$replace('sss');
 storee.todos.$replace(['ss']);
@@ -266,7 +260,6 @@ storee.val.$replace('xxxx');
 
 
 const storeee = createStore({
-  name: 'xxx',
   state: {
     arr: new Array<TagId>(),
   }

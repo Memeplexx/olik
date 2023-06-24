@@ -5,7 +5,6 @@ import { currentAction } from './_utility';
 
 describe('array-object-deep', () => {
 
-  const name = 'AppStore';
   const state = { arr: [{ id: 1, val: 1 }, { id: 2, val: 2 }, { id: 3, val: 3 }] };
 
   beforeEach(() => {
@@ -13,7 +12,7 @@ describe('array-object-deep', () => {
   })
 
   it('should replace all elements', () => {
-    const store = createStore({ name, state });
+    const store = createStore({ state });
     const payload = [{ id: 5, val: 5 }, { id: 6, val: 6 }, { id: 7, val: 7 }];
     store.arr
       .$replace(payload);
@@ -22,7 +21,7 @@ describe('array-object-deep', () => {
   })
 
   it('should remove all elements', () => {
-    const store = createStore({ name, state });
+    const store = createStore({ state });
     store.arr
       .$clear();
     expect(currentAction(store)).toEqual({ type: 'arr.clear()' });
@@ -30,7 +29,7 @@ describe('array-object-deep', () => {
   })
 
   it('should replace all elements properties', () => {
-    const store = createStore({ name, state });
+    const store = createStore({ state });
     const payload = 9;
     store.arr.val
       .$replace(payload);
@@ -39,7 +38,7 @@ describe('array-object-deep', () => {
   })
 
   it('should increment all elements properties', () => {
-    const store = createStore({ name, state });
+    const store = createStore({ state });
     const payload = 1;
     store.arr.val
       .$add(payload);
@@ -48,7 +47,7 @@ describe('array-object-deep', () => {
   })
 
   it('should be able to insert one element', () => {
-    const store = createStore({ name, state });
+    const store = createStore({ state });
     const payload = { id: 4, val: 4 };
     store.arr
       .$insertOne(payload);
@@ -57,7 +56,7 @@ describe('array-object-deep', () => {
   })
 
   it('should be able to insert many elements', () => {
-    const store = createStore({ name, state });
+    const store = createStore({ state });
     const payload = [{ id: 4, val: 4 }, { id: 5, val: 5 }];
     store.arr
       .$insertMany(payload);
@@ -66,7 +65,7 @@ describe('array-object-deep', () => {
   })
 
   it('should find an element and replace it', () => {
-    const store = createStore({ name, state });
+    const store = createStore({ state });
     const payload = { id: 4, val: 4 };
     store.arr
       .$find.id.$eq(2)
@@ -76,7 +75,7 @@ describe('array-object-deep', () => {
   })
 
   it('should find an element and remove it', () => {
-    const store = createStore({ name, state });
+    const store = createStore({ state });
     store.arr
       .$find.id.$eq(2)
       .$remove();
@@ -85,7 +84,7 @@ describe('array-object-deep', () => {
   })
 
   it('should find an element property and increment it', () => {
-    const store = createStore({ name, state });
+    const store = createStore({ state });
     const payload = 2;
     store.arr
       .$find.id.$eq(2).val
@@ -95,7 +94,7 @@ describe('array-object-deep', () => {
   })
 
   it('should find an element by one clause or another and replace it', () => {
-    const store = createStore({ name, state });
+    const store = createStore({ state });
     const payload = { id: 9, val: 9 };
     store.arr
       .$find.id.$eq(1).$or.id.$eq(2)
@@ -105,7 +104,7 @@ describe('array-object-deep', () => {
   })
 
   it('should find an element by one clause or another and remove it', () => {
-    const store = createStore({ name, state });
+    const store = createStore({ state });
     store.arr
       .$find.id.$eq(1).$or.id.$eq(2)
       .$remove();
@@ -114,7 +113,7 @@ describe('array-object-deep', () => {
   })
 
   it('should find an element by one clause or another and increment it', () => {
-    const store = createStore({ name, state });
+    const store = createStore({ state });
     const payload = 1;
     store.arr
       .$find.id.$eq(1).$or.id.$eq(2).val
@@ -124,7 +123,7 @@ describe('array-object-deep', () => {
   })
 
   it('should find an element by one clause and another and replace it', () => {
-    const store = createStore({ name, state });
+    const store = createStore({ state });
     const payload = { id: 9, val: 9 };
     store.arr
       .$find.id.$gt(1).$and.id.$lt(3)
@@ -134,7 +133,7 @@ describe('array-object-deep', () => {
   })
 
   it('should find an element by one clause and another and remove it', () => {
-    const store = createStore({ name, state });
+    const store = createStore({ state });
     store.arr
       .$find.id.$gt(1).$and.id.$lt(3)
       .$remove();
@@ -143,7 +142,7 @@ describe('array-object-deep', () => {
   })
 
   it('should find an element by one clause and another and increment it', () => {
-    const store = createStore({ name, state });
+    const store = createStore({ state });
     const payload = 1;
     store.arr
       .$find.id.$eq(1).$and.id.$lt(2).val
@@ -153,7 +152,7 @@ describe('array-object-deep', () => {
   })
 
   it('should filter elements and remove them', () => {
-    const store = createStore({ name, state });
+    const store = createStore({ state });
     store.arr
       .$filter.id.$gt(1)
       .$remove();
@@ -162,7 +161,7 @@ describe('array-object-deep', () => {
   })
 
   it('should filter elements and increment them', () => {
-    const store = createStore({ name, state });
+    const store = createStore({ state });
     const payload = 1;
     store.arr
       .$filter.id.$gt(1).val
@@ -172,7 +171,7 @@ describe('array-object-deep', () => {
   })
 
   it('should filter elements by one clause or another and remove them', () => {
-    const store = createStore({ name, state });
+    const store = createStore({ state });
     store.arr
       .$filter.id.$eq(1).$or.id.$eq(2)
       .$remove();
@@ -181,7 +180,7 @@ describe('array-object-deep', () => {
   })
 
   it('should filter elements by one clause or another and increment them', () => {
-    const store = createStore({ name, state });
+    const store = createStore({ state });
     const payload = 1;
     store.arr
       .$filter.id.$eq(1).$or.id.$eq(2).val
@@ -191,7 +190,7 @@ describe('array-object-deep', () => {
   })
 
   it('should filter elements by one clause and another and remove them', () => {
-    const store = createStore({ name, state });
+    const store = createStore({ state });
     store.arr
       .$filter.id.$gt(0).$and.id.$lt(3)
       .$remove();
@@ -200,7 +199,7 @@ describe('array-object-deep', () => {
   })
 
   it('should filter elements by one clause and another and increment them', () => {
-    const store = createStore({ name, state });
+    const store = createStore({ state });
     const payload = 1;
     store.arr
       .$filter.id.$gt(0).$and.id.$gt(1).val
@@ -210,7 +209,7 @@ describe('array-object-deep', () => {
   })
 
   it('should repsert one array element where a match could be found', () => {
-    const store = createStore({ name, state });
+    const store = createStore({ state });
     const payload = { id: 1, val: 5 };
     store.arr
       .$repsertMatching.id
@@ -220,7 +219,7 @@ describe('array-object-deep', () => {
   })
 
   it('should repsert one array element where a match could not be found', () => {
-    const store = createStore({ name, state });
+    const store = createStore({ state });
     const payload = { id: 4, val: 5 };
     store.arr
       .$repsertMatching.id
@@ -230,7 +229,7 @@ describe('array-object-deep', () => {
   })
 
   it('should repsert array elements where one matches and another does not', () => {
-    const store = createStore({ name, state });
+    const store = createStore({ state });
     const payload = [{ id: 1, val: 5 }, { id: 5, val: 5 }];
     store.arr
       .$repsertMatching.id

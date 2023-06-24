@@ -6,13 +6,13 @@ import { setCurrentActionReturningNewState } from './write-action';
 export const removeInvalidateCache = ['remove', 'invalidateCache'];
 
 export const copyNewState = (
-  { storeName, currentState, stateToUpdate, stateActions, cursor }:
-    { storeName: string, currentState: any, stateToUpdate: any, stateActions: ReadonlyArray<StateAction>, cursor: { index: number } }
+  { currentState, stateToUpdate, stateActions, cursor }:
+    { currentState: any, stateToUpdate: any, stateActions: ReadonlyArray<StateAction>, cursor: { index: number } }
 ): any => {
   if (Array.isArray(currentState) && (stateActions[cursor.index].type === 'property')) {
     return (currentState as any[]).map((e, i) => (typeof (currentState[i]) === 'object')
-      ? { ...currentState[i], ...copyNewState({ storeName, currentState: currentState[i] || {}, stateToUpdate: stateToUpdate[i] || {}, stateActions, cursor: { ...cursor } }) }
-      : copyNewState({ storeName, currentState: currentState[i] || {}, stateToUpdate: stateToUpdate[i] || {}, stateActions, cursor: { ...cursor } }));
+      ? { ...currentState[i], ...copyNewState({ currentState: currentState[i] || {}, stateToUpdate: stateToUpdate[i] || {}, stateActions, cursor: { ...cursor } }) }
+      : copyNewState({ currentState: currentState[i] || {}, stateToUpdate: stateToUpdate[i] || {}, stateActions, cursor: { ...cursor } }));
   } else if (Array.isArray(currentState) && (stateActions[cursor.index].type === 'repsertMatching')) {
     cursor.index++;
     const queryPaths = stateActions
@@ -28,7 +28,7 @@ export const copyNewState = (
       const foundIndex = repsertArgs.findIndex(ua => queryPaths.reduce((prev, curr) => prev = prev[curr.name], ua) === elementValue);
       return foundIndex !== -1 ? repsertArgs.splice(foundIndex, 1)[0] : e;
     });
-    return setCurrentActionReturningNewState({ storeName, stateActions, payload: { payload: repsert.arg }, newState: [...result, ...repsertArgs], currentState });
+    return setCurrentActionReturningNewState({ stateActions, payload: { payload: repsert.arg }, newState: [...result, ...repsertArgs], currentState });
   }
   const action = stateActions[cursor.index++];
   if (cursor.index < stateActions.length) {
@@ -40,61 +40,61 @@ export const copyNewState = (
         if (findIndex === -1) { throw new Error(errorMessages.FIND_RETURNS_NO_MATCHES); }
       }
       if (stateActions[cursor.index].name === 'remove') {
-        return setCurrentActionReturningNewState({ storeName, stateActions, payload: null, newState: 'find' === action.name ? (currentState as any[]).filter((e, i) => findIndex !== i) : (currentState as any[]).filter(e => !query(e)), currentState });
+        return setCurrentActionReturningNewState({ stateActions, payload: null, newState: 'find' === action.name ? (currentState as any[]).filter((e, i) => findIndex !== i) : (currentState as any[]).filter(e => !query(e)), currentState });
       } else {
         if ('find' === action.name) {
           return (currentState as any[]).map((e, i) => i === findIndex
-            ? copyNewState({ storeName, currentState: e, stateToUpdate: stateToUpdate[i], stateActions, cursor })
+            ? copyNewState({ currentState: e, stateToUpdate: stateToUpdate[i], stateActions, cursor })
             : e);
         } else if ('filter' === action.name) {
           if (stateActions[cursor.index]?.name === 'replace') {
             return [
               ...(currentState as any[]).filter(e => !query(e)),
-              ...copyNewState({ storeName, currentState, stateToUpdate: stateToUpdate, stateActions, cursor }),
+              ...copyNewState({ currentState, stateToUpdate: stateToUpdate, stateActions, cursor }),
             ];
           } else {
             return (currentState as any[]).map((e, i) => query(e)
-              ? copyNewState({ storeName, currentState: e, stateToUpdate: stateToUpdate[i], stateActions, cursor: { ...cursor } })
+              ? copyNewState({ currentState: e, stateToUpdate: stateToUpdate[i], stateActions, cursor: { ...cursor } })
               : e);
           }
         }
       }
     } else if (removeInvalidateCache.includes(stateActions[cursor.index].name)) {
       const { [stateActions[cursor.index - 1].name]: other, ...otherState } = currentState;
-      return setCurrentActionReturningNewState({ storeName, stateActions, payload: null, newState: otherState, currentState })
+      return setCurrentActionReturningNewState({ stateActions, payload: null, newState: otherState, currentState })
     } else {
-      return { ...currentState, [action.name]: copyNewState({ storeName, currentState: (currentState || {})[action.name], stateToUpdate: ((stateToUpdate as any) || {})[action.name], stateActions, cursor }) };
+      return { ...currentState, [action.name]: copyNewState({ currentState: (currentState || {})[action.name], stateToUpdate: ((stateToUpdate as any) || {})[action.name], stateActions, cursor }) };
     }
   } else if (action.name === 'patch') {
     if (Array.isArray(currentState)) {
-      return setCurrentActionReturningNewState({ storeName, stateActions, payload: { payload: action.arg }, newState: (currentState as any[]).map(e => ({ ...e, ...action.arg })), currentState });
+      return setCurrentActionReturningNewState({ stateActions, payload: { payload: action.arg }, newState: (currentState as any[]).map(e => ({ ...e, ...action.arg })), currentState });
     } else {
-      return setCurrentActionReturningNewState({ storeName, stateActions, payload: { payload: action.arg }, newState: { ...currentState, ...(action.arg as any) }, currentState });
+      return setCurrentActionReturningNewState({ stateActions, payload: { payload: action.arg }, newState: { ...currentState, ...(action.arg as any) }, currentState });
     }
   } else if (action.name === 'add') {
     if (Array.isArray(currentState)) {
-      return setCurrentActionReturningNewState({ storeName, stateActions, payload: { payload: action.arg }, newState: Array.isArray(currentState) ? currentState.map((e: any) => e + action.arg) : currentState + action.arg, currentState });
+      return setCurrentActionReturningNewState({ stateActions, payload: { payload: action.arg }, newState: Array.isArray(currentState) ? currentState.map((e: any) => e + action.arg) : currentState + action.arg, currentState });
     } else {
-      return setCurrentActionReturningNewState({ storeName, stateActions, payload: { payload: action.arg }, newState: currentState + action.arg, currentState });
+      return setCurrentActionReturningNewState({ stateActions, payload: { payload: action.arg }, newState: currentState + action.arg, currentState });
     }
   } else if (action.name === 'subtract') {
     if (Array.isArray(currentState)) {
-      return setCurrentActionReturningNewState({ storeName, stateActions, payload: { payload: action.arg }, newState: Array.isArray(currentState) ? currentState.map((e: any) => e + action.arg) : currentState - action.arg, currentState });
+      return setCurrentActionReturningNewState({ stateActions, payload: { payload: action.arg }, newState: Array.isArray(currentState) ? currentState.map((e: any) => e + action.arg) : currentState - action.arg, currentState });
     } else {
-      return setCurrentActionReturningNewState({ storeName, stateActions, payload: { payload: action.arg }, newState: currentState - action.arg, currentState });
+      return setCurrentActionReturningNewState({ stateActions, payload: { payload: action.arg }, newState: currentState - action.arg, currentState });
     }
   } else if (action.name === 'insert') {
-    return setCurrentActionReturningNewState({ storeName, stateActions, payload: { payload: action.arg }, newState: currentState === undefined ? action.arg : { ...currentState, ...action.arg }, currentState });
+    return setCurrentActionReturningNewState({ stateActions, payload: { payload: action.arg }, newState: currentState === undefined ? action.arg : { ...currentState, ...action.arg }, currentState });
   } else if (action.name === 'replace') {
-    return setCurrentActionReturningNewState({ storeName, stateActions, payload: { payload: action.arg }, newState: action.arg, currentState });
+    return setCurrentActionReturningNewState({ stateActions, payload: { payload: action.arg }, newState: action.arg, currentState });
   } else if (action.name === 'deepMerge') {
-    return setCurrentActionReturningNewState({ storeName, stateActions, payload: { payload: action.arg }, newState: deepMerge(currentState, action.arg), currentState });
+    return setCurrentActionReturningNewState({ stateActions, payload: { payload: action.arg }, newState: deepMerge(currentState, action.arg), currentState });
   } else if (action.name === 'clear') {
-    return setCurrentActionReturningNewState({ storeName, stateActions, payload: null, newState: [], currentState });
+    return setCurrentActionReturningNewState({ stateActions, payload: null, newState: [], currentState });
   } else if (action.name === 'insertOne') {
-    return setCurrentActionReturningNewState({ storeName, stateActions, payload: { payload: action.arg }, newState: [...currentState, action.arg], currentState });
+    return setCurrentActionReturningNewState({ stateActions, payload: { payload: action.arg }, newState: [...currentState, action.arg], currentState });
   } else if (action.name === 'insertMany') {
-    return setCurrentActionReturningNewState({ storeName, stateActions, payload: { payload: action.arg }, newState: [...currentState, ...action.arg], currentState });
+    return setCurrentActionReturningNewState({ stateActions, payload: { payload: action.arg }, newState: [...currentState, ...action.arg], currentState });
   }
 }
 

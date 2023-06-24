@@ -1,26 +1,18 @@
 import { augmentations, booleanNumberString, errorMessages, libState } from './constant';
 import { readState } from './read';
-import { OptionsForMakingAStore, OptionsForMakingANestedStore, StateAction, Store, StoreAugment, DetachStore } from './type';
+import { OptionsForMakingAStore, StateAction, Store, StoreAugment, DetachStore } from './type';
 import { StoreInternals } from './type-internal';
 import { deepFreeze } from './utility';
 import { processPotentiallyAsyncUpdate } from './write';
 import { setNewStateAndNotifyListeners } from './write-complete';
 
-export function createStore<S>(
-  args: OptionsForMakingAStore<S> & OptionsForMakingANestedStore
-): Store<S> & (S extends never ? {} : StoreAugment<S>) & DetachStore;
 
 export function createStore<S>(
   args: OptionsForMakingAStore<S>
-): Store<S> & (S extends never ? {} : StoreAugment<S>)
-
-export function createStore<S>(
-  args: OptionsForMakingAStore<S> & OptionsForMakingANestedStore
 ): Store<S> & (S extends never ? {} : StoreAugment<S>) {
   validateState(args.state);
   removeStaleCacheReferences(args.state);
   const internals = {
-    storeName: args.name,
     state: JSON.parse(JSON.stringify(args.state)),
     changeListeners: [],
     currentAction: { type: '' },
@@ -40,14 +32,14 @@ export function createStore<S>(
         if ('$internals' === dollarProp) {
           return internals;
         } else if (topLevel && !!internals.nestedStoreInfo?.isNested) {
-          const { nestedStoreInfo: { containerName, instanceId, nestedStoreName } } = internals;
+          const { nestedStoreInfo: { instanceId, nestedStoreName } } = internals;
           return '$detachStore' === dollarProp
             ? () => libState.detachNestedStore?.(internals)
-            : libState.stores[containerName].nested[nestedStoreName][instanceId][dollarProp];
+            : libState.store.nested[nestedStoreName][instanceId][dollarProp];
         } else if (topLevel && internals.mergedStoreInfo?.isMerged) {
-          return (libState.stores[internals.mergedStoreInfo.nameOfStoreToMergeInto] as any)[dollarProp];
+          return (libState.store as any)[dollarProp];
         } else if (updateFunctions.includes(dollarProp)) {
-          return processPotentiallyAsyncUpdate({ storeName: internals.storeName, stateActions, prop });
+          return processPotentiallyAsyncUpdate({ stateActions, prop });
         } else if ('$invalidateCache' === dollarProp) {
           return () => {
             const actionType = stateActions.map(sa => sa.actionType).join('.');
@@ -57,7 +49,7 @@ export function createStore<S>(
               { type: 'action', name: 'remove', actionType: 'remove()' },
             ] as StateAction[];
             try {
-              setNewStateAndNotifyListeners({ storeName: internals.storeName, stateActions: newStateActions });
+              setNewStateAndNotifyListeners({ stateActions: newStateActions });
             } catch (e) {
               /* This can happen if a cache has already expired */
             }
@@ -100,21 +92,15 @@ export function createStore<S>(
     });
   };
   const store = recurseProxy({}, true, []);
-  libState.stores[args.name] = store;
-  if (libState.reduxDevtools && typeof window !== 'undefined') {
-    libState.reduxDevtools.init(internals.storeName);
-  }
-  if (libState.olikDevtools && typeof window !== 'undefined') {
-    libState.olikDevtools.init(internals.storeName);
-  }
-  if (args.nestStore) {
-    if (!libState.nestStore) { throw new Error(errorMessages.NESTED_STORES_NOT_ENABLED); }
-    return libState.nestStore({ storeName: internals.storeName, containerName: args.nestStore.hostStoreName, instanceId: args.nestStore.instanceId });
-  } else {
+  libState.store = store;
+  // if (args.nestStore) {
+  //   if (!libState.nestStore) { throw new Error(errorMessages.NESTED_STORES_NOT_ENABLED); }
+  //   return libState.nestStore({ storeName: internals.storeName, instanceId: args.nestStore.instanceId });
+  // } else {
     store.$state = args.state;
     store.$onChange((state: any) => store.state = state);
-    return libState.stores[args.name] as any;
-  }
+    return libState.store as any;
+  // }
 }
 
 const updateFunctions = ['$replace', '$patch', '$deepMerge', '$remove', '$insert', '$add', '$subtract', '$clear', '$insertOne', '$insertMany', '$withOne', '$withMany'];

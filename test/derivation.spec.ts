@@ -15,7 +15,7 @@ describe('derivation', () => {
       array: ['1', '2'],
       counter: 3,
     };
-    const store = createStore({ name, state });
+    const store = createStore({ state });
     const mem = derive(
       store.array,
       store.counter,
@@ -31,7 +31,7 @@ describe('derivation', () => {
       array: new Array<string>(),
       counter: 3,
     };
-    const store = createStore({ name, state });
+    const store = createStore({ state });
     let recalculating = 0;
     let eventReceived = 0;
     const mem = derive(
@@ -68,7 +68,7 @@ describe('derivation', () => {
       counter: 3,
       string: '',
     };
-    const store = createStore({ name, state });
+    const store = createStore({ state });
     let recalculating = 0;
     let eventReceived = 0;
     const mem = derive(
@@ -91,7 +91,7 @@ describe('derivation', () => {
       one: 'x',
       two: 0,
     };
-    const store = createStore({ name, state });
+    const store = createStore({ state });
     const mem = derive(
       store.one,
       store.two,
@@ -114,7 +114,7 @@ describe('derivation', () => {
       array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
       object: { hello: 'world' },
     };
-    const store = createStore({ name, state });
+    const store = createStore({ state });
     let recalculating = 0;
     const mem = derive(
       store.array
@@ -135,7 +135,7 @@ describe('derivation', () => {
 
   it('should be able to derive from using a derivation as an argument', () => {
     const state = { num: 0, str: 'x' };
-    const store = createStore({ name, state });
+    const store = createStore({ state });
     let originalMemoCalcCount = 0;
     const mem = derive(
       store.num,
@@ -158,7 +158,7 @@ describe('derivation', () => {
     const state = {
       array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
     };
-    const store = createStore({ name, state });
+    const store = createStore({ state });
     let memoCalcCount = 0;
     const mem = derive(
       store.array.$find.id.$eq(2),
@@ -179,7 +179,7 @@ describe('derivation', () => {
     const state = {
       array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
     };
-    const store = createStore({ name, state });
+    const store = createStore({ state });
     let memoCalcCount = 0;
     const mem = derive(
       store.array.$filter.id.$lte(2),
@@ -205,7 +205,7 @@ describe('derivation', () => {
       num: 0,
       str: '',
     };
-    const store = createStore({ name, state });
+    const store = createStore({ state });
     let memoCalcCount = 0;
     const mem = derive(
       store.num,

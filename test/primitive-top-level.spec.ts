@@ -4,7 +4,6 @@ import { currentAction } from './_utility';
 
 describe('top-level-primitive', () => {
 
-  const name = 'AppStore';
   const state = 0;
 
   beforeEach(() => {
@@ -12,7 +11,7 @@ describe('top-level-primitive', () => {
   })
 
   it('should replace a value', () => {
-    const store = createStore({ name, state });
+    const store = createStore({ state });
     const payload = 1;
     store
       .$replace(payload);
@@ -21,7 +20,7 @@ describe('top-level-primitive', () => {
   })
 
   it('should increment a value', () => {
-    const store = createStore({ name, state });
+    const store = createStore({ state });
     const payload = 1;
     store
       .$add(payload);
