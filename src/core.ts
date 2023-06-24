@@ -24,6 +24,7 @@ export function createStore<S>(
     state: JSON.parse(JSON.stringify(args.state)),
     changeListeners: [],
     currentAction: { type: '' },
+    oldStateSelected: args.state,
     batchedAction: {
       type: '',
       payloads: [],
@@ -102,6 +103,9 @@ export function createStore<S>(
   libState.stores[args.name] = store;
   if (libState.reduxDevtools && typeof window !== 'undefined') {
     libState.reduxDevtools.init(internals.storeName);
+  }
+  if (libState.olikDevtools && typeof window !== 'undefined') {
+    libState.olikDevtools.init(internals.storeName);
   }
   if (args.nestStore) {
     if (!libState.nestStore) { throw new Error(errorMessages.NESTED_STORES_NOT_ENABLED); }

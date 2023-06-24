@@ -20,4 +20,7 @@ export const setNewStateAndNotifyListeners = (
   if (!!libState.reduxDevtools && !!internals.reduxDevtools) {
     libState.reduxDevtools.dispatch(storeName);
   }
+  if (!!libState.olikDevtools && !!internals.olikDevtools) {
+    libState.olikDevtools.dispatch(storeName);
+  }
 }

@@ -613,6 +613,13 @@ export interface ReduxDevtoolsOptionsRetroactive extends ReduxDevtoolsOptions {
   storeName: string;
 }
 
+export interface OlikDevtoolsOptionsRetroactive {
+  /**
+   * The name of the store that you want to track
+   */
+  storeName: string;
+}
+
 export interface EnableAsyncActionsArgs {
   storeName: string,
   stateActions: StateAction[],

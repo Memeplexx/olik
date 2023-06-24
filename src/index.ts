@@ -7,4 +7,5 @@ export { getStoreByName } from './utility';
 export * from './type';
 export { importOlikNestingModule } from './nest';
 export { importOlikReduxDevtoolsModule, listenToDevtoolsDispatch, connectOlikReduxDevtoolsToStore } from './redux-devtools';
+export { importOlikDevtoolsModule/*, listenToDevtoolsDispatch*/, connectOlikDevtoolsToStore } from './olik-devtools';
 export { importOlikAsyncModule, defineQuery } from './write-async'

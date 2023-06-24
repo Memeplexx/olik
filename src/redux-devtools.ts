@@ -107,7 +107,9 @@ export function importOlikReduxDevtoolsModule(
 
           const typeString = (action.type as string)
             .replace(/\((.+?)\)/g, (substring, args) => `(${args.toString().substring(0, searchArgLength)})`);
-          const typeStringRev = action.payload === undefined ? typeString : typeString.substring(0, typeString.length - 1) + JSON.stringify(action.payload).replace(/['"]+/g, '').substring(0, payloadArgLength) + ')';
+          const typeStringRev = action.payload === undefined
+            ? typeString
+            : typeString.substring(0, typeString.length - 1) + JSON.stringify(action.payload).replace(/['"]+/g, '').substring(0, payloadArgLength) + ')';
           const newAction = {
             ...action,
             type: typeStringRev,

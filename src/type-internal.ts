@@ -17,6 +17,16 @@ export type WindowAugmentedWithReduxDevtools = {
   }
 }
 
+export type WindowAugmentedWithOlikDevtools = {
+  __OLIK_DEVTOOLS_EXTENSION__: {
+    connect: (options?: any) => DevtoolsInstance;
+    disconnect: () => any;
+    send: (action: { type: string, payload?: any }, state: any, options: { name: string }) => any;
+    _mockInvokeSubscription: (message: { type: string, payload: any, state?: any, source: any }) => any,
+    _subscribers: Array<(message: { type: string, payload: any, state?: any, source: any }) => any>,
+  }
+}
+
 export interface BatchedAction {
   type: string,
   payloads: any[],
@@ -42,8 +52,13 @@ export interface StoreInternals<S> {
   nestedStoreInfo?: NestedStoreInfo,
   mergedStoreInfo?: MergedStoreInfo;
   currentAction: { [key: string]: any },
+  oldStateSelected: any;
   batchedAction: BatchedAction,
   reduxDevtools?: {
+    instance: DevtoolsInstance,
+    disableDispatch: boolean,
+  },
+  olikDevtools?: {
     instance: DevtoolsInstance,
     disableDispatch: boolean,
   },

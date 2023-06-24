@@ -1,5 +1,5 @@
 import { Augmentations, EnableAsyncActionsArgs, EnableNestedStoreArgs } from './type';
-import { StoreInternal, StoreInternals, WindowAugmentedWithReduxDevtools } from './type-internal';
+import { StoreInternal, StoreInternals, WindowAugmentedWithOlikDevtools, WindowAugmentedWithReduxDevtools } from './type-internal';
 
 export const errorMessages = {
   FIND_RETURNS_NO_MATCHES: 'Could not find array element',
@@ -21,12 +21,15 @@ export const libState = {
   asyncUpdate: undefined as undefined | ((args: EnableAsyncActionsArgs) => Promise<any>),
   nestStore: undefined as undefined | ((args: EnableNestedStoreArgs) => any),
   detachNestedStore: undefined as undefined | ((args: StoreInternals<any>) => any),
-  reduxDevtools: undefined as undefined | { init: ((storeName: string) => any), dispatch: ((storeName: string) => any) }
+  reduxDevtools: undefined as undefined | { init: ((storeName: string) => any), dispatch: ((storeName: string) => any) },
+  olikDevtools: undefined as undefined | { init: ((storeName: string) => any), dispatch: ((storeName: string) => any) },
 }
 
 export const testState = {
   currentActionForReduxDevtools: {} as { [type: string]: string },
+  currentActionForOlikDevtools: {} as { [type: string]: string },
   fakeWindowObjectForReduxDevtools: null as null | WindowAugmentedWithReduxDevtools,
+  fakeWindowObjectForOlikDevtools: null as null | WindowAugmentedWithOlikDevtools,
   logLevel: 'none' as ('debug' | 'none'),
 }
 
