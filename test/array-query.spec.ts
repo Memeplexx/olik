@@ -1,5 +1,5 @@
-import { testState } from '../src/constant';
 import { createStore } from '../src/core';
+import { resetLibraryState } from '../src/utility';
 import { currentAction } from './_utility';
 
 describe('array-query', () => {
@@ -7,7 +7,7 @@ describe('array-query', () => {
   const state = { arr: [{ id: 1, num: 1 }, { id: 2, num: 2 }, { id: 3, num: 3 }] }
 
   beforeEach(() => {
-    testState.logLevel = 'none';
+    resetLibraryState();
   })
 
   it('should find an element with one clause and another and replace it', () => {

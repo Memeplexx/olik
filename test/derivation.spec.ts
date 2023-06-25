@@ -1,13 +1,11 @@
-import { testState } from '../src/constant';
 import { createStore } from '../src/core';
 import { derive } from '../src/derive';
+import { resetLibraryState } from '../src/utility';
 
 describe('derivation', () => {
 
-  const name = 'AppStore';
-
   beforeEach(() => {
-    testState.logLevel = 'none';
+    resetLibraryState();;
   })
 
   it('should support derivations', () => {

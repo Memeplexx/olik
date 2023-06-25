@@ -1,10 +1,11 @@
-import { errorMessages, testState } from '../src/constant';
+import { errorMessages } from '../src/constant';
 import { createStore } from '../src/core';
+import { resetLibraryState } from '../src/utility';
 
 describe('misc', () => {
 
   beforeEach(() => {
-    testState.logLevel = 'none';
+    resetLibraryState();
   })
 
   it('should work with half-finished writes intermixed with reads', () => {

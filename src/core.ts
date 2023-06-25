@@ -1,27 +1,22 @@
 import { augmentations, booleanNumberString, errorMessages, libState } from './constant';
 import { readState } from './read';
-import { OptionsForMakingAStore, StateAction, Store, StoreAugment, DetachStore } from './type';
+import { OptionsForMakingAStore, StateAction, Store, StoreAugment } from './type';
 import { StoreInternals } from './type-internal';
 import { deepFreeze } from './utility';
 import { processPotentiallyAsyncUpdate } from './write';
 import { setNewStateAndNotifyListeners } from './write-complete';
 
-
 export function createStore<S>(
   args: OptionsForMakingAStore<S>
 ): Store<S> & (S extends never ? {} : StoreAugment<S>) {
+  validateKeyedState(args);
   validateState(args.state);
   removeStaleCacheReferences(args.state);
   const internals = {
     state: JSON.parse(JSON.stringify(args.state)),
     changeListeners: [],
     currentAction: { type: '' },
-    oldStateSelected: args.state,
-    batchedAction: {
-      type: '',
-      payloads: [],
-      timeoutHandle: 0,
-    },
+    initialState: args.state,
   } as StoreInternals<S>;
   const recurseProxy = (s: any, topLevel: boolean, stateActions: StateAction[]): any => {
     if (typeof s !== 'object') { return null; }
@@ -31,11 +26,6 @@ export function createStore<S>(
         stateActions = topLevel ? new Array<StateAction>() : stateActions;
         if ('$internals' === dollarProp) {
           return internals;
-        } else if (topLevel && !!internals.nestedStoreInfo?.isNested) {
-          const { nestedStoreInfo: { instanceId, nestedStoreName } } = internals;
-          return '$detachStore' === dollarProp
-            ? () => libState.detachNestedStore?.(internals)
-            : libState.store.nested[nestedStoreName][instanceId][dollarProp];
         } else if (topLevel && internals.mergedStoreInfo?.isMerged) {
           return (libState.store as any)[dollarProp];
         } else if (updateFunctions.includes(dollarProp)) {
@@ -91,22 +81,46 @@ export function createStore<S>(
       }
     });
   };
-  const store = recurseProxy({}, true, []);
-  libState.store = store;
-  // if (args.nestStore) {
-  //   if (!libState.nestStore) { throw new Error(errorMessages.NESTED_STORES_NOT_ENABLED); }
-  //   return libState.nestStore({ storeName: internals.storeName, instanceId: args.nestStore.instanceId });
-  // } else {
-    store.$state = args.state;
-    store.$onChange((state: any) => store.state = state);
-    return libState.store as any;
-  // }
+  if (args.key) {
+    if (!libState.store) {
+      internals.state = {} as any;
+      libState.store = recurseProxy({}, true, []);
+    }
+    (libState.store as any)[args.key].$insert(args.state);
+    return new Proxy({}, {
+      get: (_, prop: string) => {
+        if (prop === '$detachStore') {
+          (libState.store as any)[args.key!].$remove();
+        }
+        return (libState.store as any)[args.key!][prop];
+      }
+    }) as any;
+  } else {
+    if (libState.store) {
+      (libState.store as any).$insert(args.state);
+      return libState.store as any;
+    }
+    return libState.store = recurseProxy({}, true, []);
+  }
 }
 
 const updateFunctions = ['$replace', '$patch', '$deepMerge', '$remove', '$insert', '$add', '$subtract', '$clear', '$insertOne', '$insertMany', '$withOne', '$withMany'];
 const comparators = ['$eq', '$ne', '$in', '$ni', '$gt', '$gte', '$lt', '$lte', '$match'];
 const andOr = ['$and', '$or'];
 const findFilter = ['$find', '$filter'];
+
+export const validateKeyedState = <S>(args: OptionsForMakingAStore<S>) => {
+  if (!args.key) { return; }
+  const state = libState.store?.$state;
+  if (state === null || state === undefined) { return; }
+  if ((booleanNumberString.some(type => typeof (state) === type) || Array.isArray(state))) {
+    throw new Error(errorMessages.INVALID_CONTAINER_FOR_COMPONENT_STORES);
+  }
+  const initialStateOfHostStore = libState.store.$internals.initialState;
+  if (initialStateOfHostStore[args.key] !== undefined) {
+    throw new Error(errorMessages.KEY_ALREADY_IN_USE(args.key));
+  }
+}
 
 export const validateState = (state: any) => {
   const throwError = (illegal: any) => {

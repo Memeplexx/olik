@@ -1,5 +1,5 @@
-import { testState } from '../src/constant';
 import { createStore } from '../src/core';
+import { resetLibraryState } from '../src/utility';
 import { currentAction } from './_utility';
 
 
@@ -8,7 +8,7 @@ describe('array-object', () => {
   const state = [{ id: 1, val: 1 }, { id: 2, val: 2 }, { id: 3, val: 3 }];
 
   beforeEach(() => {
-    testState.logLevel = 'none';
+    resetLibraryState();
   })
 
   it('should replace all elements', () => {

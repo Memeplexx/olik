@@ -1,13 +1,14 @@
-import { errorMessages, testState } from '../src/constant';
+import { errorMessages } from '../src/constant';
 import { createStore } from '../src/core';
 import { transact } from '../src/transact';
 import { currentAction } from './_utility';
 import { importOlikAsyncModule } from '../src/write-async';
+import { resetLibraryState } from '../src/utility';
 
 describe('transaction', () => {
 
   beforeEach(() => {
-    testState.logLevel = 'none';
+    resetLibraryState();
   })
 
   it('should support transactions', () => {

@@ -1,11 +1,11 @@
-import { testState } from '../src/constant';
 import { createStore } from '../src/core';
+import { resetLibraryState } from '../src/utility';
 import { currentAction } from './_utility';
 
 describe('array-deep', () => {
 
   beforeEach(() => {
-    testState.logLevel = 'none';
+    resetLibraryState();
   })
 
   it('should find an element and patch it', () => {

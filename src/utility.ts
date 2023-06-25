@@ -1,4 +1,4 @@
-import { libState } from './constant';
+import { libState, testState } from './constant';
 
 
 export const deepFreeze = <T extends object>(o: T): T => {
@@ -15,6 +15,10 @@ export const deepFreeze = <T extends object>(o: T): T => {
   return o;
 }
 
-export const getStoreByName = (name: string) => libState.stores[name];
+export const getStore = () => libState.store;
 
-
+export const resetLibraryState = () => {
+  testState.logLevel = 'none';
+  libState.store = undefined as any;
+  libState.isInsideTransaction = false;
+};

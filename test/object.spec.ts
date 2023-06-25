@@ -1,5 +1,5 @@
-import { testState } from '../src/constant';
 import { createStore } from '../src/core';
+import { resetLibraryState } from '../src/utility';
 import { currentAction } from './_utility';
 
 
@@ -8,7 +8,7 @@ describe('Object', () => {
   const state = { num: 0, str: '', bool: false };
 
   beforeEach(() => {
-    testState.logLevel = 'none';
+    resetLibraryState();
   })
 
   it('should replace an object property', () => {

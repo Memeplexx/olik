@@ -1,21 +1,19 @@
 import { errorMessages, libState, testState } from './constant';
-import { OlikDevtoolsOptionsRetroactive, Read, Replace } from './type';
+import { Read, Replace } from './type';
 import { StoreInternal, WindowAugmentedWithOlikDevtools } from './type-internal';
 
 
 export const jumpToStateAction = ['JUMP_TO_STATE', 'JUMP_TO_ACTION'];
 
-export function connectOlikDevtoolsToStore(options: OlikDevtoolsOptionsRetroactive) {
+export function connectOlikDevtoolsToStore() {
   importOlikDevtoolsModule();
-  libState.olikDevtools!.init(options.storeName);
+  libState.olikDevtools!.init();
 }
 
 export function importOlikDevtoolsModule() {
   libState.olikDevtools = {
-    init: (
-      storeName: string
-    ) => {
-      const store = libState.stores[storeName];
+    init: () => {
+      const store = libState.store;
       const internals = (store as StoreInternal<any>).$internals;
   
       // do not continue if store has been nested or merged
@@ -36,9 +34,7 @@ export function importOlikDevtoolsModule() {
       if (devTools) { return; }
   
       // Register devtools extension
-      devTools = windowObj.__OLIK_DEVTOOLS_EXTENSION__.connect({
-        name: internals.storeName,
-      });
+      devTools = windowObj.__OLIK_DEVTOOLS_EXTENSION__.connect();
       devTools.init(store.$state);
       internals.olikDevtools = { instance: devTools, disableDispatch: false };
   
@@ -69,7 +65,7 @@ export function importOlikDevtoolsModule() {
           document.body.appendChild(Object.assign(document.createElement('a'), {
             style: { display: 'none' },
             href: url,
-            download: `${internals.storeName}.json`
+            download: `store.json`
           })).click();
           window.URL.revokeObjectURL(url);
         } else if ('DISPATCH' === message.type && message.payload) {
@@ -89,15 +85,15 @@ export function importOlikDevtoolsModule() {
         }
       });
     },
-    dispatch: (storeName) => {
-      const store = libState.stores[storeName];
+    dispatch: (stateReader, mutator) => {
+      const store = libState.store;
       const internals = store.$internals;
   
       // Dispatch to devtools
       if (internals.olikDevtools && !internals.olikDevtools.disableDispatch) {
         const currentAction = internals.currentAction;
         testState.currentActionForOlikDevtools = currentAction;
-        internals.olikDevtools?.instance.send(currentAction, store.$state/*, internals.oldStateSelected*/);
+        internals.olikDevtools?.instance.send(currentAction, store.$state, stateReader, mutator);
       }
     }
   }

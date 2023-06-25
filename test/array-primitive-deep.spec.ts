@@ -1,5 +1,5 @@
-import { testState } from '../src/constant';
 import { createStore } from '../src/core';
+import { resetLibraryState } from '../src/utility';
 import { currentAction } from './_utility';
 
 describe('array-primitive-deep', () => {
@@ -7,7 +7,7 @@ describe('array-primitive-deep', () => {
   const state = { arr: [1, 2, 3] };
 
   beforeEach(() => {
-    testState.logLevel = 'none';
+    resetLibraryState();
   })
 
   it('should replace all elements', () => {

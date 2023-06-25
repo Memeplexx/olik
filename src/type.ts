@@ -468,7 +468,7 @@ export interface Match<Response> {
 
 export interface DetachStore {
   /**
-   * If this store is nested, this will remove it from it's parent and remove all change listeners.
+   * If this store is nested, this will remove it from it's parent.
    */
   $detachStore: () => void,
 }
@@ -597,13 +597,6 @@ export interface ReduxDevtoolsOptionsRetroactive extends ReduxDevtoolsOptions {
   storeName: string;
 }
 
-export interface OlikDevtoolsOptionsRetroactive {
-  /**
-   * The name of the store that you want to track
-   */
-  storeName: string;
-}
-
 export interface EnableAsyncActionsArgs {
   stateActions: StateAction[],
   prop: string,
@@ -617,10 +610,11 @@ export interface EnableNestedStoreArgs {
   instanceId: string | number;
 }
 
-export type Store<S> = (S extends never ? {} : (S extends Array<any> ? UpdatableArray<S, 'isFilter', 'notQueried', MaxRecursionDepth>
+export type Store<S> = (S extends never ? { } : (S extends Array<any> ? UpdatableArray<S, 'isFilter', 'notQueried', MaxRecursionDepth>
   : S extends object ? UpdatableObject<S, 'isFind', 'notArray', 'yes', MaxRecursionDepth>
-  : UpdatablePrimitive<S, 'isFind', 'notArray', MaxRecursionDepth>));
+  : UpdatablePrimitive<S, 'isFind', 'notArray', MaxRecursionDepth>) & DetachStore);
 
+// do NOT remove. Needed by framework-libraries
 export interface StoreAugment<S> { }
 
 export interface ChangeListener {
@@ -636,3 +630,15 @@ export interface NestStoreRef {
 export interface StoreLike<S> extends Read<S>, OnChange<S>, InvalidateCache, Replace<S> {
 }
 
+export type DevtoolsInstance = {
+  init: (state: any) => any,
+  subscribe: (listener: (message: { type: string, payload: any, state?: any, source: string }) => any) => any,
+  unsubscribe: () => any,
+  send: (action: {  }, state: any, stateReader: (s: any) => any, mutator: string) => any
+}
+
+export type OlikDevtoolsExtension = {
+  connect: (options?: any) => DevtoolsInstance;
+  disconnect: () => any;
+  send: (action: { type: string, payload?: any }, state: any, stateReader: (s: any) => any, mutator: string) => any;
+}

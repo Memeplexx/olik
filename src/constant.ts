@@ -1,17 +1,15 @@
-import { Augmentations, EnableAsyncActionsArgs, EnableNestedStoreArgs } from './type';
-import { StoreInternal, StoreInternals, WindowAugmentedWithOlikDevtools, WindowAugmentedWithReduxDevtools } from './type-internal';
+import { Augmentations, EnableAsyncActionsArgs } from './type';
+import { StoreInternal, WindowAugmentedWithOlikDevtools } from './type-internal';
 
 export const errorMessages = {
   FIND_RETURNS_NO_MATCHES: 'Could not find array element',
   ASYNC_PAYLOAD_INSIDE_TRANSACTION: 'Transactions do not currently support asynchronous payloads',
   DEVTOOL_DISPATCHED_INVALID_JSON: 'Invalid action dispatched from the devtools. Please dispatch a valid plain javascript object. All keys and values that are strings must be enclosed in double-quotes',
   INVALID_CONTAINER_FOR_COMPONENT_STORES: `The state which your container store manages must be an object in order for it to host your nested store`,
-  INVALID_EXISTING_STORE_FOR_MERGING: `The state which your existing store manages must be a non-array object in order to support merging`,
-  INVALID_MERGING_STORE: `The store you're merging must be an non-array object in order for it to merge`,
   INVALID_STATE_INPUT: (illegal: any) => `State must be serializable as JSON. Value of '${illegal.toString()}' is not permitted`,
   ASYNC_UPDATES_NOT_ENABLED: 'Cannot perform an async update until you enable it. Please import and invoke `importOlikAsyncModule()` before creating your store',
-  NESTED_STORES_NOT_ENABLED: 'Cannot nest this store until you enable nesting. Please import and invoke `importOlikNestingModule()` before creating your store',
   DOLLAR_USED_IN_STATE: `Your state cannot contain any properties which begin with a '$' symbol as this syntax is reserved for library functions`,
+  KEY_ALREADY_IN_USE: (illegal: string) => `The key '${illegal}' is already in use in the application store. Please choose a different key for your inner store`,
 } as const;
 
 export const libState = {
@@ -19,15 +17,12 @@ export const libState = {
   isInsideTransaction: false,
   onInternalDispatch: () => null,
   asyncUpdate: undefined as undefined | ((args: EnableAsyncActionsArgs) => Promise<any>),
-  nestStore: undefined as undefined | ((args: EnableNestedStoreArgs) => any),
-  detachNestedStore: undefined as undefined | ((args: StoreInternals<any>) => any),
-  olikDevtools: undefined as undefined | { dispatch: (() => any) },
+  olikDevtools: undefined as undefined | { dispatch: ( stateReader: (state: any) => any, mutator: string ) => any, init: () => void },
 }
 
 export const testState = {
   currentActionForReduxDevtools: {} as { [type: string]: string },
   currentActionForOlikDevtools: {} as { [type: string]: string },
-  fakeWindowObjectForReduxDevtools: null as null | WindowAugmentedWithReduxDevtools,
   fakeWindowObjectForOlikDevtools: null as null | WindowAugmentedWithOlikDevtools,
   logLevel: 'none' as ('debug' | 'none'),
 }

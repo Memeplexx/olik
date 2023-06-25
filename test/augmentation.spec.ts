@@ -1,17 +1,15 @@
 import { Observable } from 'rxjs';
 
 import { augment } from '../src/augment';
-import { testState, libState } from '../src/constant';
 import { createStore } from '../src/core';
 import { derive } from '../src/derive';
 import { importOlikAsyncModule } from '../src/write-async';
+import { resetLibraryState } from '../src/utility';
 
 describe('augmentation', () => {
 
-  const name = 'AppStore';
-
   beforeEach(() => {
-    testState.logLevel = 'none';
+    resetLibraryState();
   })
 
   it('should be able to augment a selection', () => {

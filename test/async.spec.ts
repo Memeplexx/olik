@@ -1,5 +1,6 @@
-import { errorMessages, testState } from '../src/constant';
+import { errorMessages } from '../src/constant';
 import { createStore } from '../src/core';
+import { resetLibraryState } from '../src/utility';
 import { defineQuery, importOlikAsyncModule } from '../src/write-async';
 import { currentAction } from './_utility';
 
@@ -10,7 +11,7 @@ const reject = <T>(rejection: any, timeout = 10) => () => new Promise<T>((resolv
 describe('async', () => {
 
   beforeEach(() => {
-    testState.logLevel = 'none';
+    resetLibraryState();
     importOlikAsyncModule();
   })
 

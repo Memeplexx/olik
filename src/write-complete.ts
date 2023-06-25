@@ -18,6 +18,6 @@ export const setNewStateAndNotifyListeners = (
     }
   })
   if (!!libState.olikDevtools && !!internals.olikDevtools) {
-    libState.olikDevtools.dispatch();
+    libState.olikDevtools.dispatch(s => readState({ state: s, stateActions, cursor: { index: 0 } }), stateActions[stateActions.length - 1].name);
   }
 }

@@ -1,12 +1,12 @@
-import { testState } from '../src/constant';
 import { createStore } from '../src/core';
 import { produce } from 'immer';
 import { fromJS, List, Map } from 'immutable';
+import { resetLibraryState } from '../src/utility';
 
 describe.skip('Performance', () => {
 
   beforeEach(() => {
-    testState.logLevel = 'none';
+    resetLibraryState();
   })
 
   it('Immer Perf (shallow)', () => {

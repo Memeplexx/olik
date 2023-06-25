@@ -1,8 +1,11 @@
 import { createStore } from '../src/core';
+import { resetLibraryState } from '../src/utility';
 
 describe('immutability', () => {
 
-  const name = 'AppStore';
+  beforeEach(() => {
+    resetLibraryState();;
+  })
 
   const state = {
     object: { property: 'one', property2: 'two' },
