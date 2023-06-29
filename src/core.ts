@@ -85,7 +85,7 @@ export function createStore<S>(
     if (!libState.store) {
       libState.store = recurseProxy({}, true, []);
     }
-    (libState.store as any)[args.key].$insert(args.state);
+    (libState.store as any)[args.key].$setNew(args.state);
     const innerStore = new Proxy({}, {
       get: (_, prop: string) => {
         if (prop === '$destroyStore') {
@@ -104,14 +104,14 @@ export function createStore<S>(
     return innerStore;
   } else {
     if (libState.store) {
-      (libState.store as any).$insert(args.state);
+      (libState.store as any).$setNew(args.state);
       return libState.store as any;
     }
     return libState.store = recurseProxy({}, true, []);
   }
 }
 
-const updateFunctions = ['$set', '$setSome', '$setSomeDeep', '$delete', '$insert', '$add', '$subtract', '$clear', '$push', '$withOne', '$withMany'];
+const updateFunctions = ['$set', '$setSome', '$setSomeDeep', '$delete', '$setNew', '$add', '$subtract', '$clear', '$push', '$withOne', '$withMany'];
 const comparators = ['$eq', '$ne', '$in', '$ni', '$gt', '$gte', '$lt', '$lte', '$match'];
 const andOr = ['$and', '$or'];
 const findFilter = ['$find', '$filter'];

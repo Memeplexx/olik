@@ -83,7 +83,7 @@ export const copyNewState = (
     } else {
       return setCurrentActionReturningNewState({ stateActions, payload: action.arg, newState: currentState - action.arg, currentState });
     }
-  } else if (action.name === 'insert') {
+  } else if (action.name === 'setNew') {
     return setCurrentActionReturningNewState({ stateActions, payload: action.arg, newState: currentState === undefined ? action.arg : { ...currentState, ...action.arg }, currentState });
   } else if (action.name === 'set') {
     return setCurrentActionReturningNewState({ stateActions, payload: action.arg, newState: action.arg, currentState });

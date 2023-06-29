@@ -107,13 +107,13 @@ describe('Object', () => {
 
   it('should insert a node', () => {
     const store = createStore({ state: { one: '' } });
-    store.$insert({ two: 1 })
+    store.$setNew({ two: 1 })
     expect(store.$state).toEqual({ one: '', two: 1 });
   })
 
   it('should insert a node sub property', () => {
     const store = createStore({ state: { one: {} } });
-    store.one.$insert({ two: 1 })
+    store.one.$setNew({ two: 1 })
     expect(store.$state).toEqual({ one:  { two: 1 } });
   })
 

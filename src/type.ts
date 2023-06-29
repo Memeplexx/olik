@@ -35,7 +35,7 @@ export type Rec<X, Depth extends number> = {
 export type UpdatableObject<S, F extends FindOrFilter, Q extends QueryStatus, I extends ImmediateParentIsAFilter, Depth extends number, NewDepth extends number = DecrementRecursion[Depth]> = Rec<
   & InvalidateCache
   & DeleteNode<Depth>
-  & (Q extends 'notArray' ? InsertNode : {})
+  & (Q extends 'notArray' ? SetNewNode : {})
   & (Q extends 'notArray' ? SetSomeObject<S> : F extends 'isFind' ? SetSomeArrayElement<S> : SetSomeArray<S>)
   & (Q extends 'notArray' ? Set<S> : F extends 'isFind' ? SetArrayElement<S> : SetArray<S, I>)
   & (Q extends 'notArray' ? SetSomeDeep<S> : F extends 'isFind' ? SetSomeDeepArrayElement<S> : SetSomeDeepArray<S>)
@@ -142,7 +142,7 @@ export interface InvalidateCache {
   $invalidateCache: () => void,
 }
 
-export type InsertNode = {
+export type SetNewNode = {
   /**
    * Insert an object into the selected object.  
    * 
@@ -153,7 +153,7 @@ export type InsertNode = {
    * Also note that you cannot insert primitives or arrays into the selected object.
    * The former has been enforced by the type system while the latter could not be.
    */
-  $insert<X extends Payload<object>>(insertion: X, options: UpdateOptions<X>): UpdateResult<X>;
+  $setNew<X extends Payload<object>>(insertion: X, options: UpdateOptions<X>): UpdateResult<X>;
 }
 
 export type DeleteNode<Depth extends number> = [Depth] extends [MaxRecursionDepth] ? {} : {
