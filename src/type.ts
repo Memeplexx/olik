@@ -66,7 +66,7 @@ export type UpdatableArray<S extends Array<any>, F extends FindOrFilter, Q exten
     & Find<S, NewDepth>
     & Filter<S, NewDepth>
     & Readable<F extends 'isFilter' ? S : S[0]>
-    & (S[0] extends Array<any> ? {} : S[0] extends object ? RepsertMatching<S[0]> : {})
+    & (S[0] extends Array<any> ? {} : S[0] extends object ? MergeMatching<S[0]> : {})
     & (
       S[0] extends object
       ? (
@@ -93,11 +93,11 @@ export type UpdatablePrimitive<S, F extends FindOrFilter, Q extends QueryStatus,
   & (S extends number ? (F extends 'isFind' ? Subtract : SubtractArray) : {})
   & Readable<F extends 'isFilter' ? S[] : S>
 
-export interface RepsertMatching<S> {
+export interface MergeMatching<S> {
   /**
    * Replace element(s) if they already exist or insert them if they don't
    */
-  $repsertMatching: { [K in keyof S]: S[K] extends object ? RepsertableObject<S, S> : RepsertablePrimitive<S> },
+  $mergeMatching: { [K in keyof S]: S[K] extends object ? RepsertableObject<S, S> : RepsertablePrimitive<S> },
 }
 
 export interface Or<S extends Array<any>, F extends FindOrFilter, NewDepth extends number> {
@@ -472,7 +472,7 @@ export type Searchable<T, S, F extends FindOrFilter, Depth extends number, NewDe
   Depth>
 
 export interface StateAction {
-  type: 'property' | 'search' | 'comparator' | 'action' | 'searchConcat' | 'repsertMatching';
+  type: 'property' | 'search' | 'comparator' | 'action' | 'searchConcat' | 'mergeMatching';
   name: string;
   arg?: any;
   actionType?: string;

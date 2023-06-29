@@ -212,9 +212,9 @@ describe('array-object-deep', () => {
     const store = createStore({ state });
     const payload = { id: 1, val: 5 };
     store.arr
-      .$repsertMatching.id
+      .$mergeMatching.id
       .$withOne(payload);
-    expect(currentAction(store)).toEqual({ type: 'arr.repsertMatching.id.withOne()', payload });
+    expect(currentAction(store)).toEqual({ type: 'arr.mergeMatching.id.withOne()', payload });
     expect(store.arr.$state).toEqual([payload, state.arr[1], state.arr[2]]);
   })
 
@@ -222,9 +222,9 @@ describe('array-object-deep', () => {
     const store = createStore({ state });
     const payload = { id: 4, val: 5 };
     store.arr
-      .$repsertMatching.id
+      .$mergeMatching.id
       .$withOne(payload);
-    expect(currentAction(store)).toEqual({ type: 'arr.repsertMatching.id.withOne()', payload });
+    expect(currentAction(store)).toEqual({ type: 'arr.mergeMatching.id.withOne()', payload });
     expect(store.arr.$state).toEqual([...state.arr, payload]);
   })
 
@@ -232,9 +232,9 @@ describe('array-object-deep', () => {
     const store = createStore({ state });
     const payload = [{ id: 1, val: 5 }, { id: 5, val: 5 }];
     store.arr
-      .$repsertMatching.id
+      .$mergeMatching.id
       .$withMany(payload);
-    expect(currentAction(store)).toEqual({ type: 'arr.repsertMatching.id.withMany()', payload });
+    expect(currentAction(store)).toEqual({ type: 'arr.mergeMatching.id.withMany()', payload });
     expect(store.arr.$state).toEqual([payload[0], state.arr[1], state.arr[2], payload[1]]);
   })
 

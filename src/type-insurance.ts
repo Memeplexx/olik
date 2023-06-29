@@ -126,11 +126,11 @@ function test() {
     .$state;
 
   store.objArray
-    .$repsertMatching.obj.num
+    .$mergeMatching.obj.num
     .$withOne({ num: 3, arr: [], objArr: [], obj: { num: 0 } });
 
   store.objArray
-    .$repsertMatching.obj.num
+    .$mergeMatching.obj.num
     .$withMany([{ num: 3, arr: [], objArr: [], obj: { num: 0 } }]);
 
   store.objArray

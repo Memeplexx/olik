@@ -13,7 +13,7 @@ export const copyNewState = (
     return (currentState as any[]).map((e, i) => (typeof (currentState[i]) === 'object')
       ? { ...currentState[i], ...copyNewState({ currentState: currentState[i] || {}, stateToUpdate: stateToUpdate[i] || {}, stateActions, cursor: { ...cursor } }) }
       : copyNewState({ currentState: currentState[i] || {}, stateToUpdate: stateToUpdate[i] || {}, stateActions, cursor: { ...cursor } }));
-  } else if (Array.isArray(currentState) && (stateActions[cursor.index].type === 'repsertMatching')) {
+  } else if (Array.isArray(currentState) && (stateActions[cursor.index].type === 'mergeMatching')) {
     cursor.index++;
     const queryPaths = stateActions
       .slice(cursor.index, cursor.index + stateActions.slice(cursor.index).findIndex(sa => sa.type === 'action'))
