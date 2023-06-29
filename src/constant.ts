@@ -1,4 +1,4 @@
-import { Augmentations, EnableAsyncActionsArgs } from './type';
+import { Augmentations, EnableAsyncActionsArgs, OlikAction } from './type';
 import { StoreInternal, WindowAugmentedWithOlikDevtools } from './type-internal';
 
 export const errorMessages = {
@@ -14,6 +14,8 @@ export const errorMessages = {
 
 export const libState = {
   store: undefined as any as StoreInternal<any>,
+  detached: [] as string[],
+  innerStores: new Map<string, StoreInternal<any>>(),
   isInsideTransaction: false,
   onInternalDispatch: () => null,
   asyncUpdate: undefined as undefined | ((args: EnableAsyncActionsArgs) => Promise<any>),
@@ -21,8 +23,7 @@ export const libState = {
 }
 
 export const testState = {
-  currentActionForReduxDevtools: {} as { [type: string]: string },
-  currentActionForOlikDevtools: {} as { [type: string]: string },
+  currentActionForOlikDevtools: {} as OlikAction,
   fakeWindowObjectForOlikDevtools: null as null | WindowAugmentedWithOlikDevtools,
   logLevel: 'none' as ('debug' | 'none'),
 }

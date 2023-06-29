@@ -21,7 +21,7 @@ describe('transaction', () => {
     expect(store.$state).toEqual({ num: 1, str: 'x', bool: false });
     expect(currentAction(store)).toEqual({
       type: 'num.replace(), str.replace()',
-      actions: [
+      payload: [
         { type: 'num.replace()', payload: 1 },
         { type: 'str.replace()', payload: 'x' },
       ]

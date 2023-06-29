@@ -1,7 +1,7 @@
 import { augmentations, booleanNumberString, errorMessages, libState } from './constant';
 import { readState } from './read';
 import { OptionsForMakingAStore, StateAction, Store, StoreAugment } from './type';
-import { StoreInternals } from './type-internal';
+import { StoreInternal, StoreInternals } from './type-internal';
 import { deepFreeze } from './utility';
 import { processPotentiallyAsyncUpdate } from './write';
 import { setNewStateAndNotifyListeners } from './write-complete';
@@ -22,6 +22,7 @@ export function createStore<S>(
     if (typeof s !== 'object') { return null; }
     return new Proxy(s, {
       get: (target, dollarProp: string) => {
+        if (typeof(dollarProp) === 'symbol') { return; }
         const prop = dollarProp.startsWith('$') ? dollarProp.split('$')[1] : dollarProp;
         stateActions = topLevel ? new Array<StateAction>() : stateActions;
         if ('$internals' === dollarProp) {
@@ -68,8 +69,6 @@ export function createStore<S>(
         } else if (findFilter.includes(dollarProp)) {
           stateActions.push({ type: 'search', name: prop, actionType: prop });
           return recurseProxy({}, false, stateActions);
-        } else if ('$detachStore' === dollarProp) {
-          return () => null; // noop: for stores which could not be nested
         } else if (augmentations.selection[dollarProp]) {
           return augmentations.selection[dollarProp](recurseProxy({}, false, stateActions));
         } else if (augmentations.core[dollarProp]) {
@@ -82,19 +81,27 @@ export function createStore<S>(
     });
   };
   if (args.key) {
+    internals.state = {} as any;
     if (!libState.store) {
-      internals.state = {} as any;
       libState.store = recurseProxy({}, true, []);
     }
     (libState.store as any)[args.key].$insert(args.state);
-    return new Proxy({}, {
+    const innerStore = new Proxy({}, {
       get: (_, prop: string) => {
-        if (prop === '$detachStore') {
-          (libState.store as any)[args.key!].$remove();
+        if (prop === '$destroyStore') {
+          return () => {
+            const changeListeners = libState.store.$internals.changeListeners;
+            changeListeners.filter(l => l.actions[0].name === args.key).forEach(l => l.unsubscribe());
+            (libState.store as any)[args.key!].$remove();
+            libState.detached.push(args.key!);
+            libState.innerStores.delete(args.key!);
+          }
         }
         return (libState.store as any)[args.key!][prop];
       }
     }) as any;
+    libState.innerStores.set(args.key, innerStore);
+    return innerStore;
   } else {
     if (libState.store) {
       (libState.store as any).$insert(args.state);
@@ -156,3 +163,11 @@ export const removeStaleCacheReferences = (state: any) => {
     }
   }
 }
+
+// export const registerChangeListener = (listener: (arg: any) => any) => {
+//   const stateActionsCopy = [...stateActions, { type: 'action', name: prop }] as StateAction[];
+//   const unsubscribe = () => internals.changeListeners.splice(internals.changeListeners.findIndex(e => e === element), 1);
+//   const element = { actions: stateActionsCopy, listener, unsubscribe };
+//   internals.changeListeners.push(element);
+//   return { unsubscribe }
+// }

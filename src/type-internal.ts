@@ -1,4 +1,4 @@
-import { ChangeListener, DevtoolsInstance, OlikDevtoolsExtension, StoreLike } from './type';
+import { ChangeListener, DevtoolsInstance, OlikAction, OlikDevtoolsExtension, StoreLike } from './type';
 
 
 export type WindowAugmentedWithOlikDevtools = {
@@ -20,7 +20,7 @@ export interface StoreInternals<S> {
   changeListeners: ChangeListener[],
   nestedStoreInfo?: NestedStoreInfo,
   mergedStoreInfo?: MergedStoreInfo;
-  currentAction: { [key: string]: any },
+  currentAction: OlikAction,
   initialState: any;
   olikDevtools?: {
     instance: DevtoolsInstance,

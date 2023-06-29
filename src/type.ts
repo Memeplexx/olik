@@ -466,11 +466,11 @@ export interface Match<Response> {
   $match: (matches: RegExp) => Response
 }
 
-export interface DetachStore {
+export interface DestroyStore {
   /**
-   * If this store is nested, this will remove it from it's parent.
+   * To be called to remove this store and all its subscriptions.
    */
-  $detachStore: () => void,
+  $destroyStore: () => void,
 }
 
 export type Searchable<T, S, F extends FindOrFilter, Depth extends number, NewDepth extends number = DecrementRecursion[Depth]> = Rec<
@@ -612,7 +612,7 @@ export interface EnableNestedStoreArgs {
 
 export type Store<S> = (S extends never ? { } : (S extends Array<any> ? UpdatableArray<S, 'isFilter', 'notQueried', MaxRecursionDepth>
   : S extends object ? UpdatableObject<S, 'isFind', 'notArray', 'yes', MaxRecursionDepth>
-  : UpdatablePrimitive<S, 'isFind', 'notArray', MaxRecursionDepth>) & DetachStore);
+  : UpdatablePrimitive<S, 'isFind', 'notArray', MaxRecursionDepth>) & DestroyStore);
 
 // do NOT remove. Needed by framework-libraries
 export interface StoreAugment<S> { }
@@ -630,11 +630,13 @@ export interface NestStoreRef {
 export interface StoreLike<S> extends Read<S>, OnChange<S>, InvalidateCache, Replace<S> {
 }
 
+export type OlikAction = { type: string, payload?: any };
+
 export type DevtoolsInstance = {
   init: (state: any) => any,
   subscribe: (listener: (message: { type: string, payload: any, state?: any, source: string }) => any) => any,
   unsubscribe: () => any,
-  send: (action: {  }, state: any, stateReader: (s: any) => any, mutator: string) => any
+  send: (action: OlikAction, state: any, stateReader: (s: any) => any, mutator: string) => any
 }
 
 export type OlikDevtoolsExtension = {

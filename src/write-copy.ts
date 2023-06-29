@@ -28,7 +28,7 @@ export const copyNewState = (
       const foundIndex = repsertArgs.findIndex(ua => queryPaths.reduce((prev, curr) => prev = prev[curr.name], ua) === elementValue);
       return foundIndex !== -1 ? repsertArgs.splice(foundIndex, 1)[0] : e;
     });
-    return setCurrentActionReturningNewState({ stateActions, payload: { payload: repsert.arg }, newState: [...result, ...repsertArgs], currentState });
+    return setCurrentActionReturningNewState({ stateActions, payload: repsert.arg, newState: [...result, ...repsertArgs], currentState });
   }
   const action = stateActions[cursor.index++];
   if (cursor.index < stateActions.length) {
@@ -67,34 +67,34 @@ export const copyNewState = (
     }
   } else if (action.name === 'patch') {
     if (Array.isArray(currentState)) {
-      return setCurrentActionReturningNewState({ stateActions, payload: { payload: action.arg }, newState: (currentState as any[]).map(e => ({ ...e, ...action.arg })), currentState });
+      return setCurrentActionReturningNewState({ stateActions, payload: action.arg, newState: (currentState as any[]).map(e => ({ ...e, ...action.arg })), currentState });
     } else {
-      return setCurrentActionReturningNewState({ stateActions, payload: { payload: action.arg }, newState: { ...currentState, ...(action.arg as any) }, currentState });
+      return setCurrentActionReturningNewState({ stateActions, payload: action.arg, newState: { ...currentState, ...(action.arg as any) }, currentState });
     }
   } else if (action.name === 'add') {
     if (Array.isArray(currentState)) {
-      return setCurrentActionReturningNewState({ stateActions, payload: { payload: action.arg }, newState: Array.isArray(currentState) ? currentState.map((e: any) => e + action.arg) : currentState + action.arg, currentState });
+      return setCurrentActionReturningNewState({ stateActions, payload: action.arg, newState: Array.isArray(currentState) ? currentState.map((e: any) => e + action.arg) : currentState + action.arg, currentState });
     } else {
-      return setCurrentActionReturningNewState({ stateActions, payload: { payload: action.arg }, newState: currentState + action.arg, currentState });
+      return setCurrentActionReturningNewState({ stateActions, payload: action.arg, newState: currentState + action.arg, currentState });
     }
   } else if (action.name === 'subtract') {
     if (Array.isArray(currentState)) {
-      return setCurrentActionReturningNewState({ stateActions, payload: { payload: action.arg }, newState: Array.isArray(currentState) ? currentState.map((e: any) => e + action.arg) : currentState - action.arg, currentState });
+      return setCurrentActionReturningNewState({ stateActions, payload: action.arg, newState: Array.isArray(currentState) ? currentState.map((e: any) => e + action.arg) : currentState - action.arg, currentState });
     } else {
-      return setCurrentActionReturningNewState({ stateActions, payload: { payload: action.arg }, newState: currentState - action.arg, currentState });
+      return setCurrentActionReturningNewState({ stateActions, payload: action.arg, newState: currentState - action.arg, currentState });
     }
   } else if (action.name === 'insert') {
-    return setCurrentActionReturningNewState({ stateActions, payload: { payload: action.arg }, newState: currentState === undefined ? action.arg : { ...currentState, ...action.arg }, currentState });
+    return setCurrentActionReturningNewState({ stateActions, payload: action.arg, newState: currentState === undefined ? action.arg : { ...currentState, ...action.arg }, currentState });
   } else if (action.name === 'replace') {
-    return setCurrentActionReturningNewState({ stateActions, payload: { payload: action.arg }, newState: action.arg, currentState });
+    return setCurrentActionReturningNewState({ stateActions, payload: action.arg, newState: action.arg, currentState });
   } else if (action.name === 'deepMerge') {
-    return setCurrentActionReturningNewState({ stateActions, payload: { payload: action.arg }, newState: deepMerge(currentState, action.arg), currentState });
+    return setCurrentActionReturningNewState({ stateActions, payload: action.arg, newState: deepMerge(currentState, action.arg), currentState });
   } else if (action.name === 'clear') {
     return setCurrentActionReturningNewState({ stateActions, payload: null, newState: [], currentState });
   } else if (action.name === 'insertOne') {
-    return setCurrentActionReturningNewState({ stateActions, payload: { payload: action.arg }, newState: [...currentState, action.arg], currentState });
+    return setCurrentActionReturningNewState({ stateActions, payload: action.arg, newState: [...currentState, action.arg], currentState });
   } else if (action.name === 'insertMany') {
-    return setCurrentActionReturningNewState({ stateActions, payload: { payload: action.arg }, newState: [...currentState, ...action.arg], currentState });
+    return setCurrentActionReturningNewState({ stateActions, payload: action.arg , newState: [...currentState, ...action.arg], currentState });
   }
 }
 

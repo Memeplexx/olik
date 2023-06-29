@@ -17,8 +17,12 @@ export const deepFreeze = <T extends object>(o: T): T => {
 
 export const getStore = () => libState.store;
 
+export const getInnerStores = () => libState.innerStores;
+
 export const resetLibraryState = () => {
   testState.logLevel = 'none';
   libState.store = undefined as any;
   libState.isInsideTransaction = false;
+  libState.innerStores.clear();
+  libState.detached = [];
 };

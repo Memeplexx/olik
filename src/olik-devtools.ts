@@ -93,7 +93,7 @@ export function importOlikDevtoolsModule() {
       if (internals.olikDevtools && !internals.olikDevtools.disableDispatch) {
         const currentAction = internals.currentAction;
         testState.currentActionForOlikDevtools = currentAction;
-        internals.olikDevtools?.instance.send(currentAction, store.$state, stateReader, mutator);
+        internals.olikDevtools?.instance.send(currentAction, /*store.$state*/internals.state, stateReader, mutator);
       }
     }
   }

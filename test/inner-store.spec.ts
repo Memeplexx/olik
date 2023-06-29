@@ -49,13 +49,8 @@ describe('inner store', () => {
   it('should be able to detach an inner store', () => {
     const store = createStore({ state });
     const inner = createStore({ state: innerState, key });
-    let numChanges = 0;
-    store.$onChange(change => {
-      numChanges++;
-    });
-    inner.$detachStore();
-    expect(store.$state).toEqual(state);
-    expect(numChanges).toEqual(1);
+    inner.$destroyStore();
+    expect(libState.detached).toEqual([key]);
   })
 
   it('should be able to update the inner store from the outer store', () => {
@@ -95,6 +90,22 @@ describe('inner store', () => {
     createStore({ state: { test: '' } });
     expect(() => createStore({ state: {}, key: 'test' }))
       .toThrow(errorMessages.KEY_ALREADY_IN_USE('test'));
+  })
+
+  it('should cancel all onChange events', () => {
+    const store = createStore({ state });
+    const inner = createStore({ state: innerState, key });
+    let numChanges = 0;
+    store.object.$onChange(() => {
+      numChanges++;
+    })
+    inner.$onChange(() => {
+      numChanges++;
+    });
+    inner.$destroyStore();
+    expect(numChanges).toEqual(0);
+    store.object.property.$replace('ddd');
+    expect(numChanges).toEqual(1);
   })
 
 });

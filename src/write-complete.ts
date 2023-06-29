@@ -18,6 +18,8 @@ export const setNewStateAndNotifyListeners = (
     }
   })
   if (!!libState.olikDevtools && !!internals.olikDevtools) {
-    libState.olikDevtools.dispatch(s => readState({ state: s, stateActions, cursor: { index: 0 } }), stateActions[stateActions.length - 1].name);
+    const stateActionsCopy = stateActions.slice();
+    stateActionsCopy[stateActionsCopy.length - 1] = { ...stateActionsCopy[stateActionsCopy.length - 1], name: 'state' };
+    libState.olikDevtools.dispatch(state => readState({ state, stateActions: stateActionsCopy, cursor: { index: 0 } }), stateActions[stateActions.length - 1].name);
   }
 }
