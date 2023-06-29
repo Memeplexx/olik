@@ -45,7 +45,7 @@ export const importOlikAsyncModule = () => {
               { type: 'property', name: 'cache', actionType: 'cache' },
               { type: 'property', name: statePath, actionType: statePath },
             ] as StateAction[];
-            setNewStateAndNotifyListeners({ stateActions: [...actions, { type: 'action', name: 'replace', arg: toIsoStringInCurrentTz(new Date()), actionType: 'replace()' }] });
+            setNewStateAndNotifyListeners({ stateActions: [...actions, { type: 'action', name: 'set', arg: toIsoStringInCurrentTz(new Date()), actionType: 'set()' }] });
             setTimeout(() => {
               try {
                 setNewStateAndNotifyListeners({ stateActions: [...actions, { type: 'action', name: 'remove', actionType: 'remove()' }] })

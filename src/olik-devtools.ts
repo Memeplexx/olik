@@ -1,5 +1,5 @@
 import { errorMessages, libState, testState } from './constant';
-import { Read, Replace } from './type';
+import { Read, Set } from './type';
 import { StoreInternal, WindowAugmentedWithOlikDevtools } from './type-internal';
 
 
@@ -40,8 +40,8 @@ export function importOlikDevtoolsModule() {
   
       const setState = (state: any) => {
         internals.olikDevtools!.disableDispatch = true;
-        const selection = store as any as Replace<any> & Read<any>;
-        selection.$replace(state);
+        const selection = store as any as Set<any> & Read<any>;
+        selection.$set(state);
         internals.olikDevtools!.disableDispatch = false;
       }
   

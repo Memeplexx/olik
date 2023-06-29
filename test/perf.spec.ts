@@ -35,7 +35,7 @@ describe.skip('Performance', () => {
     const select = createStore({ state });
     const before = performance.now();
     for (let i = 0; i < 1000; i++) {
-      select.num.$replace(i);
+      select.num.$set(i);
     }
     console.log(`Olik Perf (shallow): ${performance.now() - before}`);
   })
@@ -70,7 +70,7 @@ describe.skip('Performance', () => {
     for (let i = 0; i < 1000; i++) {
       store.arr
         .$find.val.$eq('')
-        .id.$replace(i);
+        .id.$set(i);
     }
     console.log(`Olik Perf (deep): ${performance.now() - before}`);
   })

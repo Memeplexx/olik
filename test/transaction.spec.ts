@@ -15,15 +15,15 @@ describe('transaction', () => {
     const state = { num: 0, str: '', bool: false };
     const store = createStore({ state });
     transact(
-      () => store.num.$replace(1),
-      () => store.str.$replace('x'),
+      () => store.num.$set(1),
+      () => store.str.$set('x'),
     );
     expect(store.$state).toEqual({ num: 1, str: 'x', bool: false });
     expect(currentAction(store)).toEqual({
-      type: 'num.replace(), str.replace()',
+      type: 'num.set(), str.set()',
       payload: [
-        { type: 'num.replace()', payload: 1 },
-        { type: 'str.replace()', payload: 'x' },
+        { type: 'num.set()', payload: 1 },
+        { type: 'str.set()', payload: 'x' },
       ]
     })
   })
@@ -32,9 +32,9 @@ describe('transaction', () => {
     const state = { num: 0 };
     const store = createStore({ state });
     const payload = 1;
-    transact(() => store.num.$replace(payload));
+    transact(() => store.num.$set(payload));
     expect(store.num.$state).toEqual(payload);
-    expect(currentAction(store)).toEqual({ type: 'num.replace()', payload });
+    expect(currentAction(store)).toEqual({ type: 'num.set()', payload });
   })
 
   it('should not support transactions if one of the actions has an async payload', () => {
@@ -42,8 +42,8 @@ describe('transaction', () => {
     const store = createStore({ state });
     importOlikAsyncModule();
     expect(() => transact(
-      () => store.num.$replace(() => new Promise(resolve => resolve(1))),
-      () => store.str.$replace('x'),
+      () => store.num.$set(() => new Promise(resolve => resolve(1))),
+      () => store.str.$set('x'),
     )).toThrow(errorMessages.ASYNC_PAYLOAD_INSIDE_TRANSACTION);
   })
 

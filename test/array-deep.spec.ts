@@ -25,9 +25,9 @@ describe('array-deep', () => {
     const payload = { id: 4, val: 2 };
     store.arr
       .$find.id.$eq(2)
-      .$replace(payload);
+      .$set(payload);
     expect(currentAction(store)).toEqual({
-      type: 'arr.find.id.eq(2).replace()',
+      type: 'arr.find.id.eq(2).set()',
       payload,
     });
     const stateAfter = store.$state;
@@ -58,9 +58,9 @@ describe('array-deep', () => {
     const payload = 1;
     store.arr
       .$find.id.$eq(2).val
-      .$replace(payload);
+      .$set(payload);
     expect(currentAction(store)).toEqual({
-      type: 'arr.find.id.eq(2).val.replace()',
+      type: 'arr.find.id.eq(2).val.set()',
       payload,
     });
     expect(store.$state).toEqual({
@@ -82,9 +82,9 @@ describe('array-deep', () => {
     store.arr
       .$find.id.$eq(2)
       .arr.$find.id.$eq(1).num
-      .$replace(payload);
+      .$set(payload);
     expect(currentAction(store)).toEqual({
-      type: 'arr.find.id.eq(2).arr.find.id.eq(1).num.replace()',
+      type: 'arr.find.id.eq(2).arr.find.id.eq(1).num.set()',
       payload,
     });
     expect(store.$state).toEqual({
@@ -169,7 +169,7 @@ describe('array-deep', () => {
     };
     const store = createStore({ state });
     const payload = { n: 1 };
-    store.todos.$filter.status.$eq('done').obj.$replace(payload);
+    store.todos.$filter.status.$eq('done').obj.$set(payload);
     expect(store.todos.$state).toEqual(state.todos.map(todo => ({ ...todo, obj: todo.status === 'done' ? payload : todo.obj })));
   })
 
@@ -180,7 +180,7 @@ describe('array-deep', () => {
       }
     });
     const payload = [{ id: 4, status: 'done' }, { id: 5, status: 'done' }];
-    store.todos.$filter.status.$eq('pending').$replace(payload);
+    store.todos.$filter.status.$eq('pending').$set(payload);
     expect(store.$state.todos).toEqual([{ id: 3, status: 'todo' }, ...payload])
   })
 

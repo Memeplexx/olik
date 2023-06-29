@@ -20,10 +20,10 @@ describe('async', () => {
     const store = createStore({ state });
     const payload = 1;
     const asyncResult = await store.num
-      .$replace(resolve(payload));
+      .$set(resolve(payload));
     expect(store.num.$state).toEqual(payload);
     expect(asyncResult).toEqual(payload);
-    expect(currentAction(store)).toEqual({ type: 'num.replace()', payload });
+    expect(currentAction(store)).toEqual({ type: 'num.set()', payload });
   })
 
   it('should catch a rejection', done => {
@@ -31,7 +31,7 @@ describe('async', () => {
     const store = createStore({ state });
     const rejection = 'test';
     store.num
-      .$replace(reject<number>(rejection))
+      .$set(reject<number>(rejection))
       .catch(e => expect(e).toEqual(rejection))
       .finally(done)
   })
@@ -46,9 +46,9 @@ describe('async', () => {
       return new Promise<number>(resolve => setTimeout(() => resolve(payload), 10));
     }
     await store.num
-      .$replace(promise, { cache: 1000 });
+      .$set(promise, { cache: 1000 });
     await store.num
-      .$replace(promise);
+      .$set(promise);
     expect(promiseCount).toEqual(1);
   })
 
@@ -65,13 +65,13 @@ describe('async', () => {
     const asyncResult = 1;
     const syncResult = 2;
     store.num
-      .$replace(resolve(asyncResult))
+      .$set(resolve(asyncResult))
       .then(r => {
         expect(r).toEqual(asyncResult);
         expect(store.num.$state).toEqual(asyncResult);
         done();
       });
-    store.num.$replace(syncResult);
+    store.num.$set(syncResult);
     expect(store.num.$state).toEqual(syncResult);
   })
 
@@ -81,18 +81,18 @@ describe('async', () => {
     const replacement = 1;
     const replacement2 = 2;
     store.num
-      .$replace(resolve(replacement), { cache: 1000 })
+      .$set(resolve(replacement), { cache: 1000 })
       .then(() => {
-        expect(currentAction(store).type).toEqual('cache.num.replace()');
+        expect(currentAction(store).type).toEqual('cache.num.set()');
         expect(store.num.$state).toEqual(replacement);
-        store.num.$replace(resolve(replacement2))
+        store.num.$set(resolve(replacement2))
           .then(result => {
             expect(result).toEqual(replacement);
             expect(store.num.$state).toEqual(replacement);
             expect(store.cache.num.$state).toBeTruthy();
             store.num.$invalidateCache();
             expect(store.cache.$state).toEqual({});
-            store.num.$replace(resolve(replacement2))
+            store.num.$set(resolve(replacement2))
               .then(() => {
                 expect(store.num.$state).toEqual(replacement2);
                 done();
@@ -107,7 +107,7 @@ describe('async', () => {
     const replacement = 1;
     const eager = 9;
     store.num
-      .$replace(resolve(replacement), { eager })
+      .$set(resolve(replacement), { eager })
       .then(() => {
         expect(store.num.$state).toEqual(replacement);
         done();
@@ -121,7 +121,7 @@ describe('async', () => {
     const eager = 9;
     const error = 'Test';
     store.num
-      .$replace(reject<number>(error), { eager })
+      .$set(reject<number>(error), { eager })
       .catch(e => {
         expect(e).toEqual(error);
         expect(store.num.$state).toEqual(0);
@@ -136,13 +136,13 @@ describe('async', () => {
     const replacement = 1;
     const replacement2 = 2;
     store.num
-      .$replace(resolve(replacement), { cache: 10 })
+      .$set(resolve(replacement), { cache: 10 })
       .then(() => store.num
-        .$replace(resolve(replacement2))
+        .$set(resolve(replacement2))
         .then(() => expect(store.num.$state).toEqual(replacement)));
     setTimeout(() => {
       store.num
-        .$replace(resolve(replacement2))
+        .$set(resolve(replacement2))
         .then(() => expect(store.num.$state).toEqual(replacement2))
         .then(() => done());
     }, 100);
@@ -172,7 +172,7 @@ describe('async', () => {
   it('should be able to replace an array element', async () => {
     const state = { arr: [1, 2, 3] };
     const store = createStore({ state });
-    await store.arr.$find.$eq(2).$replace(resolve(4));
+    await store.arr.$find.$eq(2).$set(resolve(4));
     expect(store.arr.$state).toEqual([1, 4, 3]);
   })
 
@@ -228,13 +228,13 @@ describe('async', () => {
     const store = createStore({ state });
     await store.arr
       .$find.id.$eq(4)
-      .$replace(resolve({ id: 4, num: 4 }))
+      .$set(resolve({ id: 4, num: 4 }))
       .catch(e => expect(e.message).toEqual(errorMessages.FIND_RETURNS_NO_MATCHES))
   })
 
   it('should remove stale cache references', async () => {
     const store = createStore({ state: { num: 0 } });
-    await store.num.$replace(resolve(1), { cache: 10 });
+    await store.num.$set(resolve(1), { cache: 10 });
     expect((store.$state as any).cache.num).toBeTruthy();
     await new Promise(resolve => setTimeout(() => resolve(null), 20));
     expect(store.$state).toEqual({ num: 1, cache: {} });
@@ -246,7 +246,7 @@ describe('async', () => {
       query: resolve(arg),
       eager: arg
     });
-    store.num.$replace(...updateNum(3)).then(() => expect(store.num.$state).toEqual(3));
+    store.num.$set(...updateNum(3)).then(() => expect(store.num.$state).toEqual(3));
     expect(store.num.$state).toEqual(3)
   })
 

@@ -33,53 +33,53 @@ function test() {
     .$remove();
 
   store.string
-    .$replace('test');
+    .$set('test');
 
   store.array
     .$find.$eq(0)
-    .$replace(0);
+    .$set(0);
 
   store.objArray
     .$find.$eq({ num: 0, arr: [], objArr: [], obj: { num: 0 } })
-    .num.$replace(3)
+    .num.$set(3)
 
   store.objArray
     .$find.num.$eq(0)
-    .$replace({ num: 2, arr: [], objArr: [], obj: { num: 0 } });
+    .$set({ num: 2, arr: [], objArr: [], obj: { num: 0 } });
 
   store.objArray
     .$find.num.$eq(0)
-    .num.$replace(3);
+    .num.$set(3);
 
   store.objArray
     .$find.arr.$eq([])
-    .$replace({ num: 3, arr: [], objArr: [], obj: { num: 0 } });
+    .$set({ num: 3, arr: [], objArr: [], obj: { num: 0 } });
 
   store.objArray
     .$find.num.$eq(3)
     .arr.$find.$eq(0)
-    .$replace(0);
+    .$set(0);
 
   store.objArray
     .$find.num.$eq(3)
     .objArr.$find.$eq({ num: 3 })
-    .$replace({ num: 2 });
+    .$set({ num: 2 });
 
   store.objArray
     .$find.num.$eq(3)
     .objArr.$find.num.$eq(3)
-    .$replace({ num: 2 });
+    .$set({ num: 2 });
 
   store.object
     .$patch({ two: 'd' });
 
   store.array
     .$find.$in([0])
-    .$replace(0);
+    .$set(0);
 
   store.objArray
     .$find.$in([{ arr: [], num: 0, objArr: [], obj: { num: 0 } }])
-    .$replace({ arr: [], num: 0, objArr: [], obj: { num: 0 } });
+    .$set({ arr: [], num: 0, objArr: [], obj: { num: 0 } });
 
 
   store.objArray
@@ -87,15 +87,15 @@ function test() {
     .$remove();
 
   store.objArray
-    .num.$replace(2);
+    .num.$set(2);
 
   store.objArray
     .$find.num.$eq(3)
-    .num.$replace(3)
+    .num.$set(3)
 
   store.arrayTuple
     .$find.$in(['hello']).$and.$eq('world')
-    .$replace('world');
+    .$set('world');
 
   store.array
     .$find.$eq(3)
@@ -153,29 +153,29 @@ export const demo = () => {
 
   store.todos
     .$find.id.$eq(3).status
-    .$replace('todo');
-  // { type: 'todos.find.id.eq(3).status.replace()', payload: 'todo' }
+    .$set('todo');
+  // { type: 'todos.find.id.eq(3).status.set()', payload: 'todo' }
 
   store.todos
     .$filter.status.$eq('done')
     .$remove();
-  // { type: 'todos.filter.status.eq(done).replace()' }
+  // { type: 'todos.filter.status.eq(done).set()' }
 
-  store.user.name.$replace('test');
-  // { type: 'user.name.replace()', payload: 'test' }
+  store.user.name.$set('test');
+  // { type: 'user.name.set()', payload: 'test' }
 
-  // store.todos.status.$replace
+  // store.todos.status.$set
   // store.user.name.
-  store.todos.$filter.id.$eq(3).status.$replace('done');
-  store.todos.$find.id.$eq(3).status.$replace
+  store.todos.$filter.id.$eq(3).status.$set('done');
+  store.todos.$find.id.$eq(3).status.$set
 
   store.todos.$filter.id.$eq(3).id.$add(1);
   store.todos.$find.id.$eq(3).id.$add(1);
 
-  store.user.age.$replace(3);
-  store.user.name.$replace('ss');
+  store.user.age.$set(3);
+  store.user.name.$set('ss');
 
-  store.todos.$find.id.$eq(3).status.$replace('done');
+  store.todos.$find.id.$eq(3).status.$set('done');
 
 }
 
@@ -187,10 +187,10 @@ export const demo2 = () => {
       ]
     }
   });
-  store.arr.$filter.id.$eq(3).obj.$replace({id: 1, num: 1, str: ''});
-  store.arr.$find.id.$eq(3).obj.$replace({id: 1, num: 1, str: ''});
-  store.arr.$replace([])
-  store.arr.$find.id.$gt(3).$replace({id: 1, obj: { id: 1, num: 1, str: '' }})
+  store.arr.$filter.id.$eq(3).obj.$set({id: 1, num: 1, str: ''});
+  store.arr.$find.id.$eq(3).obj.$set({id: 1, num: 1, str: ''});
+  store.arr.$set([])
+  store.arr.$find.id.$gt(3).$set({id: 1, obj: { id: 1, num: 1, str: '' }})
 
 }
 
@@ -221,17 +221,17 @@ function addToUsersAge(toAdd: number) {
 
 
 function completeTodo(todoId: number) {
-  store.todos.$find.id.$eq(todoId).status.$replace('done');
-  // { type: todos.find.id.eq(3).status.replace(), payload: 'done' }
+  store.todos.$find.id.$eq(todoId).status.$set('done');
+  // { type: todos.find.id.eq(3).status.set(), payload: 'done' }
 }
 
 
 function updateUserDetails(user: User) {
-  store.user.$replace(updateUserOnApi(user), { eager: user });
-  // { type: user.replace(), payload: { name: 'James', age: 33 } }
+  store.user.$set(updateUserOnApi(user), { eager: user });
+  // { type: user.set(), payload: { name: 'James', age: 33 } }
 }
 
-store.todos.$filter.status.$eq('done').$replace // additional impl required
+store.todos.$filter.status.$eq('done').$set // additional impl required
 
 
 store.todos.$filter.status.$eq('done').$remove();
@@ -239,7 +239,7 @@ store.todos.$filter.status.$eq('done').$remove();
 
 
 
-store.todos.$filter.status.$eq('done').$replace([]);
+store.todos.$filter.status.$eq('done').$set([]);
 
 
 const storee = createStore({
@@ -249,29 +249,13 @@ const storee = createStore({
     val: '',
   },
 });
-storee.val.$replace('sss');
-storee.todos.$replace(['ss']);
-storee.todos.$filter.$eq('').$replace('ss');
-storee.things.$filter.id.$eq(3).$replace([{ id: 2, name: '' }]);
-storee.things.$filter.id.$eq(3).name.$replace('');
+storee.val.$set('sss');
+storee.todos.$set(['ss']);
+storee.todos.$filter.$eq('').$set('ss');
+storee.things.$filter.id.$eq(3).$set([{ id: 2, name: '' }]);
+storee.things.$filter.id.$eq(3).name.$set('');
 
 
-storee.val.$replace('xxxx');
+storee.val.$set('xxxx');
 
 
-const storeee = createStore({
-  state: {
-    arr: new Array<TagId>(),
-  }
-});
-const nums = storeee.arr.$state;
-const num = nums[0];
-storeee.arr.$replace(nums);
-// storeee.arr.$add(num);
-
-
-
-type TagId = number & { kind: 'tagId' };
-const tagIds = [{id: 0 as TagId}].map(tag => tag.id);
-const ids = storeee.arr.$state;
-storeee.arr.$replace(ids.some(id => tagIds.includes(id)) ? ids.filter(i => !tagIds.includes(i)) : [...ids, ...tagIds]);

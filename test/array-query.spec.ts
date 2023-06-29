@@ -15,7 +15,7 @@ describe('array-query', () => {
     const payload = { id: 4, num: 4 };
     store.arr
       .$find.id.$eq(1).$and.id.$lt(2)
-      .$replace(payload);
+      .$set(payload);
     expect(store.$state).toEqual({ ...state, arr: [payload, state.arr[1], state.arr[2]] })
   });
 
@@ -41,7 +41,7 @@ describe('array-query', () => {
     const payload = { id: 4, num: 4 };
     store.arr
       .$find.id.$eq(1).$or.id.$lt(2)
-      .$replace(payload);
+      .$set(payload);
     expect(store.$state).toEqual({ ...state, arr: [payload, state.arr[1], state.arr[2]] })
   });
 
@@ -103,9 +103,9 @@ describe('array-query', () => {
       .$find.id.$eq(1)
       .$and.id.$eq(2)
       .$or.id.$eq(3)
-      .$replace(payload);
+      .$set(payload);
     expect(currentAction(store)).toEqual({
-      type: `arr.find.id.eq(1).and.id.eq(2).or.id.eq(3).replace()`,
+      type: `arr.find.id.eq(1).and.id.eq(2).or.id.eq(3).set()`,
       payload,
     });
     expect(store.$state).toEqual({ arr: [state.arr[0], state.arr[1], payload] });
@@ -131,9 +131,9 @@ describe('array-query', () => {
       .$find.id.$eq(4)
       .$or.id.$eq(3)
       .$and.num.$eq(3)
-      .$replace(payload);
+      .$set(payload);
     expect(currentAction(store)).toEqual({
-      type: `arr.find.id.eq(4).or.id.eq(3).and.num.eq(3).replace()`,
+      type: `arr.find.id.eq(4).or.id.eq(3).and.num.eq(3).set()`,
       payload,
     });
     expect(store.$state).toEqual({ arr: [state.arr[0], state.arr[1], payload] });
@@ -160,9 +160,9 @@ describe('array-query', () => {
       .$and.num.$eq(1)
       .$or.id.$eq(3)
       .$and.num.$eq(3)
-      .$replace(payload);
+      .$set(payload);
     expect(currentAction(store)).toEqual({
-      type: `arr.find.id.eq(1).and.num.eq(1).or.id.eq(3).and.num.eq(3).replace()`,
+      type: `arr.find.id.eq(1).and.num.eq(1).or.id.eq(3).and.num.eq(3).set()`,
       payload,
     });
     expect(store.$state).toEqual({ arr: [payload, state.arr[1], state.arr[2]] });

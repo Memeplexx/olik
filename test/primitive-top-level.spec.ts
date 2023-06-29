@@ -14,9 +14,9 @@ describe('top-level-primitive', () => {
     const store = createStore({ state });
     const payload = 1;
     store
-      .$replace(payload);
+      .$set(payload);
     expect(store.$state).toEqual(1);
-    expect(currentAction(store)).toEqual({ type: 'replace()', payload });
+    expect(currentAction(store)).toEqual({ type: 'set()', payload });
   })
 
   it('should increment a value', () => {

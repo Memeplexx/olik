@@ -15,8 +15,8 @@ describe('array-object', () => {
     const store = createStore({ state });
     const payload = [{ id: 5, val: 5 }, { id: 6, val: 6 }, { id: 7, val: 7 }];
     store
-      .$replace(payload);
-    expect(currentAction(store)).toEqual({ type: 'replace()', payload });
+      .$set(payload);
+    expect(currentAction(store)).toEqual({ type: 'set()', payload });
     expect(store.$state).toEqual(payload);
   })
 
@@ -32,8 +32,8 @@ describe('array-object', () => {
     const store = createStore({ state });
     const payload = 9;
     store.val
-      .$replace(payload);
-    expect(currentAction(store)).toEqual({ type: 'val.replace()', payload });
+      .$set(payload);
+    expect(currentAction(store)).toEqual({ type: 'val.set()', payload });
     expect(store.$state).toEqual(state.map(s => ({ ...s, val: payload })));
   })
 
@@ -69,8 +69,8 @@ describe('array-object', () => {
     const payload = { id: 4, val: 4 };
     store
       .$find.id.$eq(2)
-      .$replace(payload);
-    expect(currentAction(store)).toEqual({ type: 'find.id.eq(2).replace()', payload });
+      .$set(payload);
+    expect(currentAction(store)).toEqual({ type: 'find.id.eq(2).set()', payload });
     expect(store.$state).toEqual([state[0], payload, state[2]]);
   })
 
@@ -98,8 +98,8 @@ describe('array-object', () => {
     const payload = { id: 9, val: 9 };
     store
       .$find.id.$eq(1).$or.id.$eq(2)
-      .$replace(payload);
-    expect(currentAction(store)).toEqual({ type: 'find.id.eq(1).or.id.eq(2).replace()', payload });
+      .$set(payload);
+    expect(currentAction(store)).toEqual({ type: 'find.id.eq(1).or.id.eq(2).set()', payload });
     expect(store.$state).toEqual([payload, state[1], state[2]]);
   })
 
@@ -127,8 +127,8 @@ describe('array-object', () => {
     const payload = { id: 9, val: 9 };
     store
       .$find.id.$gt(1).$and.id.$lt(3)
-      .$replace(payload);
-    expect(currentAction(store)).toEqual({ type: 'find.id.gt(1).and.id.lt(3).replace()', payload });
+      .$set(payload);
+    expect(currentAction(store)).toEqual({ type: 'find.id.gt(1).and.id.lt(3).set()', payload });
     expect(store.$state).toEqual([state[0], { id: 9, val: 9 }, state[2]]);
   })
 

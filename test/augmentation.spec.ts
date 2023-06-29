@@ -58,7 +58,7 @@ describe('augmentation', () => {
     const store = createStore({ state });
     importOlikAsyncModule();
     const fetch = () => new Promise(resolve => setTimeout(() => resolve(43), 5))
-    const res = (store.num as any).$replace(fetch).myThing();
+    const res = (store.num as any).$set(fetch).myThing();
     res.then((r: any) => {
       expect(r).toEqual(43);
       done();
@@ -75,7 +75,7 @@ describe('augmentation', () => {
     const store = createStore({ state });
     importOlikAsyncModule();
     const fetch = () => new Promise(resolve => setTimeout(() => resolve([43]), 5))
-    const res = (store.array as any).$replace(fetch).myThing();
+    const res = (store.array as any).$set(fetch).myThing();
     res.then((r: any) => {
       expect(r).toEqual([43]);
       done();
@@ -92,7 +92,7 @@ describe('augmentation', () => {
     const store = createStore({ state });
     importOlikAsyncModule();
     const fetch = () => new Promise<{ id: number, num: number }>(resolve => setTimeout(() => resolve({ id: 1, num: 2 }), 5));
-    const res = (store.array.$find.id.$eq(1).$replace(fetch) as any).myThing();
+    const res = (store.array.$find.id.$eq(1).$set(fetch) as any).myThing();
     res.then((r: any) => {
       expect(r).toEqual({ id: 1, num: 2 });
       done();
@@ -110,7 +110,7 @@ describe('augmentation', () => {
       observer.next('test');
       observer.complete();
     });
-    const res = store.thing.$replace(fetch as any as () => Promise<string>);
+    const res = store.thing.$set(fetch as any as () => Promise<string>);
     res.then((r: any) => {
       done();
     });

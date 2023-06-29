@@ -21,7 +21,7 @@ describe('inner store', () => {
     const store = createStore({ state });
     const inner = createStore({ state: innerState, key });
     expect(store.$state).toEqual({ ...state, [key]: innerState });
-    inner.hello.$replace('another');
+    inner.hello.$set('another');
     expect(store.$state).toEqual({ ...state, [key]: { ...innerState, hello: 'another' } });
   })
 
@@ -30,7 +30,7 @@ describe('inner store', () => {
     const inner = createStore({ state: innerState, key });
     let numChanges = 0;
     store.$onChange(change => numChanges++);
-    inner.hello.$replace('another');
+    inner.hello.$set('another');
     expect(numChanges).toEqual(1);
   })
 
@@ -42,7 +42,7 @@ describe('inner store', () => {
       expect(change).toEqual({ ...innerState, hello: 'another' });
       numChanges++;
     });
-    inner.hello.$replace('another');
+    inner.hello.$set('another');
     expect(numChanges).toEqual(1);
   })
 
@@ -57,7 +57,7 @@ describe('inner store', () => {
     const store = createStore({ state });
     const inner = createStore({ state: innerState, key });
     const storeTyped = store as Store<typeof state & { inner: typeof innerState }>;
-    storeTyped.inner.hello.$replace('another');
+    storeTyped.inner.hello.$set('another');
     expect(store.$state).toEqual({ ...state, [key]: { ...innerState, hello: 'another' } });
   });
 
@@ -104,7 +104,7 @@ describe('inner store', () => {
     });
     inner.$destroyStore();
     expect(numChanges).toEqual(0);
-    store.object.property.$replace('ddd');
+    store.object.property.$set('ddd');
     expect(numChanges).toEqual(1);
   })
 

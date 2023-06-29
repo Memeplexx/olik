@@ -37,7 +37,7 @@ export type UpdatableObject<S, F extends FindOrFilter, Q extends QueryStatus, I 
   & RemoveNode<Depth>
   & (Q extends 'notArray' ? InsertNode : {})
   & (Q extends 'notArray' ? PatchObject<S> : F extends 'isFind' ? PatchArrayElement<S> : PatchArray<S>)
-  & (Q extends 'notArray' ? Replace<S> : F extends 'isFind' ? ReplaceArrayElement<S> : ReplaceArray<S, I>)
+  & (Q extends 'notArray' ? Set<S> : F extends 'isFind' ? SetArrayElement<S> : SetArray<S, I>)
   & (Q extends 'notArray' ? DeepMerge<S> : F extends 'isFind' ? DeepMergeArrayElement<S> : DeepMergeArray<S>)
   & Readable<F extends 'isFilter' ? S[] : S>
   & ({
@@ -54,7 +54,7 @@ export type UpdatableArray<S extends Array<any>, F extends FindOrFilter, Q exten
     & InvalidateCache
     & Or<S, F, NewDepth>
     & And<S, F, NewDepth>
-    & (F extends 'isFind' ? ReplaceArrayElement<S[0]> : {})
+    & (F extends 'isFind' ? SetArrayElement<S[0]> : {})
     & (F extends 'isFind' ? RemoveArrayElement<Depth> : RemoveArray<Depth>)
     & (S[0] extends Array<any> ? {} : S[0] extends object ? UpdatableObject<S[0], F, Q, 'yes', NewDepth> : UpdatablePrimitive<S[0], F, Q, NewDepth>)
   ) : (
@@ -62,7 +62,7 @@ export type UpdatableArray<S extends Array<any>, F extends FindOrFilter, Q exten
     & InvalidateCache
     & Clear
     & Push<S[0] | S>
-    & ReplaceArray<S, 'no'>
+    & SetArray<S, 'no'>
     & Find<S, NewDepth>
     & Filter<S, NewDepth>
     & Readable<F extends 'isFilter' ? S : S[0]>
@@ -88,7 +88,7 @@ export type UpdateOptions<H> = (H extends () => AnyAsync<any> ? & Cache & Eager<
 export type UpdatablePrimitive<S, F extends FindOrFilter, Q extends QueryStatus, Depth extends number> =
   & InvalidateCache
   & RemoveNode<Depth>
-  & (Q extends 'notArray' ? Replace<S> : F extends 'isFind' ? ReplaceArrayElement<S> : ReplaceArray<S, 'no'>)
+  & (Q extends 'notArray' ? Set<S> : F extends 'isFind' ? SetArrayElement<S> : SetArray<S, 'no'>)
   & (S extends number ? (F extends 'isFind' ? Add : AddArray) : {})
   & (S extends number ? (F extends 'isFind' ? Subtract : SubtractArray) : {})
   & Readable<F extends 'isFilter' ? S[] : S>
@@ -248,28 +248,25 @@ export interface SubtractArray {
   $subtract<X extends Payload<number>>(toSubtract: X, options: UpdateOptions<X>): UpdateResult<X>;
 }
 
-export interface Replace<S> {
+export interface Set<S> {
   /**
    * Replace the selected node with the supplied state.
    */
-  $replace<X extends Payload<S>>(replacement: X, options?: UpdateOptions<X>): UpdateResult<X>;
-
-  // $replace(replacement: S): void,
-  // $replace<X extends Promise<S>>(options: X): Future<any>;
+  $set<X extends Payload<S>>(replacement: X, options?: UpdateOptions<X>): UpdateResult<X>;
 }
 
-export interface ReplaceArrayElement<S> {
+export interface SetArrayElement<S> {
   /**
    * Replace the selected array element with a new element.
    */
-  $replace<X extends Payload<S>>(replacement: X, options: UpdateOptions<X>): UpdateResult<X>;
+  $set<X extends Payload<S>>(replacement: X, options: UpdateOptions<X>): UpdateResult<X>;
 }
 
-export interface ReplaceArray<S, I extends ImmediateParentIsAFilter> {
+export interface SetArray<S, I extends ImmediateParentIsAFilter> {
   /**
    * Replace the selected elements with the provided array element(s).
    */
-  $replace<X extends Payload<I extends 'yes' ? S[] : S>>(replacement: X, options: UpdateOptions<X>): UpdateResult<X>;
+  $set<X extends Payload<I extends 'yes' ? S[] : S>>(replacement: X, options: UpdateOptions<X>): UpdateResult<X>;
 }
 
 export interface DeepMerge<S> {
@@ -362,7 +359,7 @@ export interface Eager<H> {
    * @example
    * const newUsername = 'Jeff';
    * select.username
-   *   .$replace(() => updateUsernameOnApi(newUsername), { eager: newUsername })
+   *   .$set(() => updateUsernameOnApi(newUsername), { eager: newUsername })
    *   .catch(err => notifyUserOfError(err))
    */
   eager?: H extends () => AnyAsync<infer W> ? W : never,
@@ -564,9 +561,9 @@ export interface ReduxDevtoolsOptions {
    * Limit the length of payloads within the action type.  
    * 
    * For example, by default, the following action type:
-   * `todos.replace({ one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8 })`
+   * `todos.set({ one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8 })`
    * could be abbreviated to
-   * `todos.replace({ one: 1, two: 2, three: 3 })`  
+   * `todos.set({ one: 1, two: 2, three: 3 })`  
    * 
    * Default value is `100`
    */
@@ -619,7 +616,7 @@ export interface NestStoreRef {
   detach(): void,
 }
 
-export interface StoreLike<S> extends Read<S>, OnChange<S>, InvalidateCache, Replace<S> {
+export interface StoreLike<S> extends Read<S>, OnChange<S>, InvalidateCache, Set<S> {
 }
 
 export type OlikAction = { type: string, payload?: any };

@@ -15,8 +15,8 @@ describe('Object', () => {
     const store = createStore({ state });
     const payload = 1;
     store.num
-      .$replace(payload);
-    expect(currentAction(store)).toEqual({ type: 'num.replace()', payload });
+      .$set(payload);
+    expect(currentAction(store)).toEqual({ type: 'num.set()', payload });
     expect(store.num.$state).toEqual(1);
   })
 

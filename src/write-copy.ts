@@ -47,7 +47,7 @@ export const copyNewState = (
             ? copyNewState({ currentState: e, stateToUpdate: stateToUpdate[i], stateActions, cursor })
             : e);
         } else if ('filter' === action.name) {
-          if (stateActions[cursor.index]?.name === 'replace') {
+          if (stateActions[cursor.index]?.name === 'set') {
             return [
               ...(currentState as any[]).filter(e => !query(e)),
               ...copyNewState({ currentState, stateToUpdate: stateToUpdate, stateActions, cursor }),
@@ -85,7 +85,7 @@ export const copyNewState = (
     }
   } else if (action.name === 'insert') {
     return setCurrentActionReturningNewState({ stateActions, payload: action.arg, newState: currentState === undefined ? action.arg : { ...currentState, ...action.arg }, currentState });
-  } else if (action.name === 'replace') {
+  } else if (action.name === 'set') {
     return setCurrentActionReturningNewState({ stateActions, payload: action.arg, newState: action.arg, currentState });
   } else if (action.name === 'deepMerge') {
     return setCurrentActionReturningNewState({ stateActions, payload: action.arg, newState: deepMerge(currentState, action.arg), currentState });

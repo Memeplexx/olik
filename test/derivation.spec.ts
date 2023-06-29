@@ -53,7 +53,7 @@ describe('derivation', () => {
     const result2 = mem.$state;
     expect(result2.array.length).toEqual(10000);
     expect(recalculating).toEqual(1);
-    store.counter.$replace(4);
+    store.counter.$set(4);
     const result3 = mem.$state;
     expect(recalculating).toEqual(2);
     expect(result3.counter).toEqual(4);
@@ -76,11 +76,11 @@ describe('derivation', () => {
       recalculating++;
     });
     mem.$onChange(() => eventReceived++);
-    store.string.$replace('hey');
+    store.string.$set('hey');
     expect(store.string.$state).toEqual('hey');
     expect(recalculating).toEqual(0);
     expect(eventReceived).toEqual(0);
-    store.counter.$replace(2);
+    store.counter.$set(2);
     expect(eventReceived).toEqual(1);
   })
 
@@ -98,11 +98,11 @@ describe('derivation', () => {
     });
     let onChangeListenerCallCount = 0;
     const onChangeListener = mem.$onChange(() => onChangeListenerCallCount++);
-    store.two.$replace(1);
+    store.two.$set(1);
     expect(mem.$state).toEqual('x1');
     expect(onChangeListenerCallCount).toEqual(1);
     onChangeListener.unsubscribe();
-    store.two.$replace(2);
+    store.two.$set(2);
     expect(mem.$state).toEqual('x2');
     expect(onChangeListenerCallCount).toEqual(1);
   })
