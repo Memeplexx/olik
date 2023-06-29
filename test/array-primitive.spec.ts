@@ -40,8 +40,8 @@ describe('array-primitive', () => {
     const store = createStore({ state });
     const payload = 4;
     store
-      .$insertOne(payload);
-    expect(currentAction(store)).toEqual({ type: 'insertOne()', payload });
+      .$push(payload);
+    expect(currentAction(store)).toEqual({ type: 'push()', payload });
     expect(store.$state).toEqual([...state, payload]);
   })
 
@@ -49,8 +49,8 @@ describe('array-primitive', () => {
     const store = createStore({ state });
     const payload = [4, 5, 6];
     store
-      .$insertMany(payload);
-    expect(currentAction(store)).toEqual({ type: 'insertMany()', payload });
+      .$push(payload);
+    expect(currentAction(store)).toEqual({ type: 'push()', payload });
     expect(store.$state).toEqual([...state, ...payload]);
   })
 

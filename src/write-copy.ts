@@ -91,10 +91,9 @@ export const copyNewState = (
     return setCurrentActionReturningNewState({ stateActions, payload: action.arg, newState: deepMerge(currentState, action.arg), currentState });
   } else if (action.name === 'clear') {
     return setCurrentActionReturningNewState({ stateActions, payload: null, newState: [], currentState });
-  } else if (action.name === 'insertOne') {
-    return setCurrentActionReturningNewState({ stateActions, payload: action.arg, newState: [...currentState, action.arg], currentState });
-  } else if (action.name === 'insertMany') {
-    return setCurrentActionReturningNewState({ stateActions, payload: action.arg , newState: [...currentState, ...action.arg], currentState });
+  } else if (action.name === 'push') {
+    const newState = Array.isArray(action.arg) ? [...currentState, ...action.arg] : [...currentState, action.arg];
+    return setCurrentActionReturningNewState({ stateActions, payload: action.arg, newState, currentState });
   }
 }
 

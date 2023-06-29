@@ -61,8 +61,7 @@ export type UpdatableArray<S extends Array<any>, F extends FindOrFilter, Q exten
     & RemoveNode<Depth>
     & InvalidateCache
     & Clear
-    & InsertMany<S>
-    & InsertOne<S[0]>
+    & Push<S[0] | S>
     & ReplaceArray<S, 'no'>
     & Find<S, NewDepth>
     & Filter<S, NewDepth>
@@ -193,18 +192,11 @@ export interface Clear {
   $clear<X extends Payload<any>>(options: X): Future<any>;
 }
 
-export interface InsertOne<S> {
+export interface Push<S> {
   /**
-   * Insert the supplied array element into the selected array. 
+   * Push the supplied array element onto the end of the selected array. 
    */
-  $insertOne<X extends Payload<S>>(element: X, options: UpdateOptions<X>): UpdateResult<X>;
-}
-
-export interface InsertMany<S> {
-  /**
-   * Insert the supplied array into the selected array. 
-   */
-  $insertMany<X extends Payload<S>>(element: X, options: UpdateOptions<X>): UpdateResult<X>;
+  $push<X extends Payload<S>>(element: X, options: UpdateOptions<X>): UpdateResult<X>;
 }
 
 export interface PatchObject<S> {

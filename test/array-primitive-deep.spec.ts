@@ -40,8 +40,8 @@ describe('array-primitive-deep', () => {
     const store = createStore({ state });
     const payload = 4;
     store.arr
-      .$insertOne(payload);
-    expect(currentAction(store)).toEqual({ type: 'arr.insertOne()', payload });
+      .$push(payload);
+    expect(currentAction(store)).toEqual({ type: 'arr.push()', payload });
     expect(store.$state).toEqual({ arr: [1, 2, 3, 4] });
   })
 
@@ -49,8 +49,8 @@ describe('array-primitive-deep', () => {
     const store = createStore({ state });
     const payload = [4, 5, 6];
     store.arr
-      .$insertMany(payload);
-    expect(currentAction(store)).toEqual({ type: 'arr.insertMany()', payload });
+      .$push(payload);
+    expect(currentAction(store)).toEqual({ type: 'arr.push()', payload });
     expect(store.$state).toEqual({ arr: [1, 2, 3, 4, 5, 6] });
   })
 

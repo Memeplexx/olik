@@ -179,14 +179,14 @@ describe('async', () => {
   it('should be able to insert one array element', async () => {
     const state = { arr: [1, 2, 3] };
     const store = createStore({ state });
-    await store.arr.$insertOne(resolve(4));
+    await store.arr.$push(resolve(4));
     expect(store.arr.$state).toEqual([1, 2, 3, 4]);
   })
 
   it('should be able to insert many array elements', async () => {
     const state = { arr: [1, 2, 3] };
     const store = createStore({ state });
-    await store.arr.$insertMany(resolve([4, 5]));
+    await store.arr.$push(resolve([4, 5]));
     expect(store.arr.$state).toEqual([1, 2, 3, 4, 5]);
   })
 

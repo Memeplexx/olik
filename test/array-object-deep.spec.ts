@@ -50,8 +50,8 @@ describe('array-object-deep', () => {
     const store = createStore({ state });
     const payload = { id: 4, val: 4 };
     store.arr
-      .$insertOne(payload);
-    expect(currentAction(store)).toEqual({ type: 'arr.insertOne()', payload });
+      .$push(payload);
+    expect(currentAction(store)).toEqual({ type: 'arr.push()', payload });
     expect(store.arr.$state).toEqual([...state.arr, payload]);
   })
 
@@ -59,8 +59,8 @@ describe('array-object-deep', () => {
     const store = createStore({ state });
     const payload = [{ id: 4, val: 4 }, { id: 5, val: 5 }];
     store.arr
-      .$insertMany(payload);
-    expect(currentAction(store)).toEqual({ type: 'arr.insertMany()', payload });
+      .$push(payload);
+    expect(currentAction(store)).toEqual({ type: 'arr.push()', payload });
     expect(store.arr.$state).toEqual([...state.arr, ...payload]);
   })
 
