@@ -14,7 +14,7 @@ describe('array-deep', () => {
     const payload = { val: 1 };
     store.arr
       .$find.id.$eq(2)
-      .$patch(payload);
+      .$setSome(payload);
     expect(store.$state).toEqual({ ...state, arr: [state.arr[0], { ...state.arr[1], ...payload }] });
   })
 
@@ -44,9 +44,9 @@ describe('array-deep', () => {
     const payload = { val: 1 };
     store.arr
       .$filter.id.$in([1, 2])
-      .$patch(payload);
+      .$setSome(payload);
     expect(currentAction(store)).toEqual({
-      type: 'arr.filter.id.in(1,2).patch()',
+      type: 'arr.filter.id.in(1,2).setSome()',
       payload,
     });
     expect(store.$state).toEqual({ arr: [{ id: 1, val: 1 }, { id: 2, val: 1 }, { id: 3, val: 0 }] });

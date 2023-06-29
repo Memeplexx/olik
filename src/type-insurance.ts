@@ -71,7 +71,7 @@ function test() {
     .$set({ num: 2 });
 
   store.object
-    .$patch({ two: 'd' });
+    .$setSome({ two: 'd' });
 
   store.array
     .$find.$in([0])
@@ -135,7 +135,7 @@ function test() {
 
   store.objArray
     .objArr.$find.num.$eq(3)
-    .$patch({ num: 4 });
+    .$setSome({ num: 4 });
 
 }
 

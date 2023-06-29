@@ -122,11 +122,11 @@ describe('derivation', () => {
     });
     store.array
       .$find.id.$eq(2)
-      .$patch({ value: 'twoo' });
+      .$setSome({ value: 'twoo' });
     mem.$state;
     store.array
       .$find.id.$eq(1)
-      .$patch({ value: 'onee' });
+      .$setSome({ value: 'onee' });
     mem.$state;
     expect(recalculating).toEqual(1);
   })
@@ -166,9 +166,9 @@ describe('derivation', () => {
     });
     mem.$state;
     mem.$state;
-    store.array.$find.id.$eq(1).$patch({ value: 'xxx' });
+    store.array.$find.id.$eq(1).$setSome({ value: 'xxx' });
     expect(memoCalcCount).toEqual(1);
-    store.array.$find.id.$eq(2).$patch({ value: 'xxx' });
+    store.array.$find.id.$eq(2).$setSome({ value: 'xxx' });
     mem.$state;
     expect(memoCalcCount).toEqual(2);
   })
@@ -188,11 +188,11 @@ describe('derivation', () => {
     mem.$state;
     mem.$state;
     expect(memoCalcCount).toEqual(1);
-    store.array.$find.id.$eq(1).$patch({ value: 'xxx' });
+    store.array.$find.id.$eq(1).$setSome({ value: 'xxx' });
     mem.$state;
     mem.$state;
     expect(memoCalcCount).toEqual(2);
-    store.array.$find.id.$eq(2).$patch({ value: 'xxx' });
+    store.array.$find.id.$eq(2).$setSome({ value: 'xxx' });
     mem.$state;
     mem.$state;
     expect(memoCalcCount).toEqual(3);

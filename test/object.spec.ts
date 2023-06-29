@@ -23,15 +23,15 @@ describe('Object', () => {
   it('should patch an object', () => {
     const store = createStore({ state });
     const payload = { bool: true, str: 'x' };
-    store.$patch({ bool: true, str: 'x' });
-    expect(currentAction(store)).toEqual({ type: 'patch()', payload });
+    store.$setSome({ bool: true, str: 'x' });
+    expect(currentAction(store)).toEqual({ type: 'setSome()', payload });
     expect(store.$state).toEqual({ ...state, ...payload });
   })
 
   it('should deep merge an object', () => {
     const state = { num: 0, obj: { num: 0, str: '', arr: [{ id: 1, num: 1 }] } };
     const store = createStore({ state });
-    store.$deepMerge({ num: 9, str: 'x', obj: { xxx: '', arr: [{ fff: 's' }] } });
+    store.$setSomeDeep({ num: 9, str: 'x', obj: { xxx: '', arr: [{ fff: 's' }] } });
     expect(store.$state).toEqual({ num: 9, str: 'x', obj: { xxx: '', arr: [{ fff: 's' }], num: 0, str: '' } });
   })
 
@@ -101,7 +101,7 @@ describe('Object', () => {
   it('should patch all elements in an array', () => {
     const state = { arr: [{ id: 1, num: 1 }, { id: 2, num: 2 }] };
     const select = createStore({ state });
-    select.arr.$patch({ num: 9 });
+    select.arr.$setSome({ num: 9 });
     expect(select.arr.$state).toEqual([{ id: 1, num: 9 }, { id: 2, num: 9 }]);
   })
 

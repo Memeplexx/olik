@@ -65,7 +65,7 @@ export const copyNewState = (
     } else {
       return { ...currentState, [action.name]: copyNewState({ currentState: (currentState || {})[action.name], stateToUpdate: ((stateToUpdate as any) || {})[action.name], stateActions, cursor }) };
     }
-  } else if (action.name === 'patch') {
+  } else if (action.name === 'setSome') {
     if (Array.isArray(currentState)) {
       return setCurrentActionReturningNewState({ stateActions, payload: action.arg, newState: (currentState as any[]).map(e => ({ ...e, ...action.arg })), currentState });
     } else {
@@ -87,7 +87,7 @@ export const copyNewState = (
     return setCurrentActionReturningNewState({ stateActions, payload: action.arg, newState: currentState === undefined ? action.arg : { ...currentState, ...action.arg }, currentState });
   } else if (action.name === 'set') {
     return setCurrentActionReturningNewState({ stateActions, payload: action.arg, newState: action.arg, currentState });
-  } else if (action.name === 'deepMerge') {
+  } else if (action.name === 'setSomeDeep') {
     return setCurrentActionReturningNewState({ stateActions, payload: action.arg, newState: deepMerge(currentState, action.arg), currentState });
   } else if (action.name === 'clear') {
     return setCurrentActionReturningNewState({ stateActions, payload: null, newState: [], currentState });

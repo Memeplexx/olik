@@ -24,7 +24,7 @@ describe('array-query', () => {
     const payload = { num: 4 };
     store.arr
       .$find.id.$eq(1).$and.id.$lt(2)
-      .$patch(payload);
+      .$setSome(payload);
     expect(store.$state).toEqual({ ...state, arr: [{ ...state.arr[0], ...payload }, state.arr[1], state.arr[2]] })
   });
 
@@ -50,7 +50,7 @@ describe('array-query', () => {
     const payload = { num: 4 };
     store.arr
       .$find.id.$eq(1).$or.id.$lt(2)
-      .$patch(payload);
+      .$setSome(payload);
     expect(store.$state).toEqual({ ...state, arr: [{ ...state.arr[0], ...payload }, state.arr[1], state.arr[2]] })
   });
 
@@ -67,7 +67,7 @@ describe('array-query', () => {
     const payload = { num: 4 };
     store.arr
       .$filter.id.$eq(1).$and.id.$lt(3)
-      .$patch(payload);
+      .$setSome(payload);
     expect(store.$state).toEqual({ ...state, arr: [{ ...state.arr[0], ...payload }, state.arr[1], state.arr[2]] })
   });
 
@@ -84,7 +84,7 @@ describe('array-query', () => {
     const payload = { num: 4 };
     store.arr
       .$filter.id.$eq(1).$or.id.$lt(3)
-      .$patch(payload);
+      .$setSome(payload);
     expect(store.$state).toEqual({ ...state, arr: [{ ...state.arr[0], ...payload }, { ...state.arr[1], ...payload }, state.arr[2]] })
   });
 

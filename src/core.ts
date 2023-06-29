@@ -111,7 +111,7 @@ export function createStore<S>(
   }
 }
 
-const updateFunctions = ['$set', '$patch', '$deepMerge', '$delete', '$insert', '$add', '$subtract', '$clear', '$push', '$withOne', '$withMany'];
+const updateFunctions = ['$set', '$setSome', '$setSomeDeep', '$delete', '$insert', '$add', '$subtract', '$clear', '$push', '$withOne', '$withMany'];
 const comparators = ['$eq', '$ne', '$in', '$ni', '$gt', '$gte', '$lt', '$lte', '$match'];
 const andOr = ['$and', '$or'];
 const findFilter = ['$find', '$filter'];
