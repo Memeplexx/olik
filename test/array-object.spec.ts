@@ -78,8 +78,8 @@ describe('array-object', () => {
     const store = createStore({ state });
     store
       .$find.id.$eq(2)
-      .$remove();
-    expect(currentAction(store)).toEqual({ type: 'find.id.eq(2).remove()' });
+      .$delete();
+    expect(currentAction(store)).toEqual({ type: 'find.id.eq(2).delete()' });
     expect(store.$state).toEqual([state[0], state[2]]);
   })
 
@@ -107,8 +107,8 @@ describe('array-object', () => {
     const store = createStore({ state });
     store
       .$find.id.$eq(1).$or.id.$eq(2)
-      .$remove();
-    expect(currentAction(store)).toEqual({ type: 'find.id.eq(1).or.id.eq(2).remove()' });
+      .$delete();
+    expect(currentAction(store)).toEqual({ type: 'find.id.eq(1).or.id.eq(2).delete()' });
     expect(store.$state).toEqual([state[1], state[2]]);
   })
 
@@ -136,8 +136,8 @@ describe('array-object', () => {
     const store = createStore({ state });
     store
       .$find.id.$gt(1).$and.id.$lt(3)
-      .$remove();
-    expect(currentAction(store)).toEqual({ type: 'find.id.gt(1).and.id.lt(3).remove()' });
+      .$delete();
+    expect(currentAction(store)).toEqual({ type: 'find.id.gt(1).and.id.lt(3).delete()' });
     expect(store.$state).toEqual([state[0], state[2]]);
   })
 
@@ -155,8 +155,8 @@ describe('array-object', () => {
     const store = createStore({ state });
     store
       .$filter.id.$gt(1)
-      .$remove();
-    expect(currentAction(store)).toEqual({ type: 'filter.id.gt(1).remove()' });
+      .$delete();
+    expect(currentAction(store)).toEqual({ type: 'filter.id.gt(1).delete()' });
     expect(store.$state).toEqual([state[0]]);
   })
 
@@ -174,8 +174,8 @@ describe('array-object', () => {
     const store = createStore({ state });
     store
       .$filter.id.$eq(1).$or.id.$eq(2)
-      .$remove();
-    expect(currentAction(store)).toEqual({ type: 'filter.id.eq(1).or.id.eq(2).remove()' });
+      .$delete();
+    expect(currentAction(store)).toEqual({ type: 'filter.id.eq(1).or.id.eq(2).delete()' });
     expect(store.$state).toEqual([state[2]]);
   })
 
@@ -193,8 +193,8 @@ describe('array-object', () => {
     const store = createStore({ state });
     store
       .$filter.id.$gt(0).$and.id.$lt(3)
-      .$remove();
-    expect(currentAction(store)).toEqual({ type: 'filter.id.gt(0).and.id.lt(3).remove()' });
+      .$delete();
+    expect(currentAction(store)).toEqual({ type: 'filter.id.gt(0).and.id.lt(3).delete()' });
     expect(store.$state).toEqual([state[2]]);
   })
 

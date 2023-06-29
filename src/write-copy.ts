@@ -3,7 +3,7 @@ import { constructQuery } from './query';
 import { StateAction } from './type';
 import { setCurrentActionReturningNewState } from './write-action';
 
-export const removeInvalidateCache = ['remove', 'invalidateCache'];
+export const removeInvalidateCache = ['delete', 'invalidateCache'];
 
 export const copyNewState = (
   { currentState, stateToUpdate, stateActions, cursor }:
@@ -39,7 +39,7 @@ export const copyNewState = (
         findIndex = (currentState as any[]).findIndex(query);
         if (findIndex === -1) { throw new Error(errorMessages.FIND_RETURNS_NO_MATCHES); }
       }
-      if (stateActions[cursor.index].name === 'remove') {
+      if (stateActions[cursor.index].name === 'delete') {
         return setCurrentActionReturningNewState({ stateActions, payload: null, newState: 'find' === action.name ? (currentState as any[]).filter((e, i) => findIndex !== i) : (currentState as any[]).filter(e => !query(e)), currentState });
       } else {
         if ('find' === action.name) {

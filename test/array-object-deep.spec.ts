@@ -78,8 +78,8 @@ describe('array-object-deep', () => {
     const store = createStore({ state });
     store.arr
       .$find.id.$eq(2)
-      .$remove();
-    expect(currentAction(store)).toEqual({ type: 'arr.find.id.eq(2).remove()' });
+      .$delete();
+    expect(currentAction(store)).toEqual({ type: 'arr.find.id.eq(2).delete()' });
     expect(store.arr.$state).toEqual([state.arr[0], state.arr[2]]);
   })
 
@@ -107,8 +107,8 @@ describe('array-object-deep', () => {
     const store = createStore({ state });
     store.arr
       .$find.id.$eq(1).$or.id.$eq(2)
-      .$remove();
-    expect(currentAction(store)).toEqual({ type: 'arr.find.id.eq(1).or.id.eq(2).remove()' });
+      .$delete();
+    expect(currentAction(store)).toEqual({ type: 'arr.find.id.eq(1).or.id.eq(2).delete()' });
     expect(store.arr.$state).toEqual([state.arr[1], state.arr[2]]);
   })
 
@@ -136,8 +136,8 @@ describe('array-object-deep', () => {
     const store = createStore({ state });
     store.arr
       .$find.id.$gt(1).$and.id.$lt(3)
-      .$remove();
-    expect(currentAction(store)).toEqual({ type: 'arr.find.id.gt(1).and.id.lt(3).remove()' });
+      .$delete();
+    expect(currentAction(store)).toEqual({ type: 'arr.find.id.gt(1).and.id.lt(3).delete()' });
     expect(store.arr.$state).toEqual([state.arr[0], state.arr[2]]);
   })
 
@@ -155,8 +155,8 @@ describe('array-object-deep', () => {
     const store = createStore({ state });
     store.arr
       .$filter.id.$gt(1)
-      .$remove();
-    expect(currentAction(store)).toEqual({ type: 'arr.filter.id.gt(1).remove()' });
+      .$delete();
+    expect(currentAction(store)).toEqual({ type: 'arr.filter.id.gt(1).delete()' });
     expect(store.arr.$state).toEqual([state.arr[0]]);
   })
 
@@ -174,8 +174,8 @@ describe('array-object-deep', () => {
     const store = createStore({ state });
     store.arr
       .$filter.id.$eq(1).$or.id.$eq(2)
-      .$remove();
-    expect(currentAction(store)).toEqual({ type: 'arr.filter.id.eq(1).or.id.eq(2).remove()' });
+      .$delete();
+    expect(currentAction(store)).toEqual({ type: 'arr.filter.id.eq(1).or.id.eq(2).delete()' });
     expect(store.arr.$state).toEqual([state.arr[2]]);
   })
 
@@ -193,8 +193,8 @@ describe('array-object-deep', () => {
     const store = createStore({ state });
     store.arr
       .$filter.id.$gt(0).$and.id.$lt(3)
-      .$remove();
-    expect(currentAction(store)).toEqual({ type: 'arr.filter.id.gt(0).and.id.lt(3).remove()' });
+      .$delete();
+    expect(currentAction(store)).toEqual({ type: 'arr.filter.id.gt(0).and.id.lt(3).delete()' });
     expect(store.arr.$state).toEqual([state.arr[2]]);
   })
 

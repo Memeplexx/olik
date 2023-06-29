@@ -48,7 +48,7 @@ export const importOlikAsyncModule = () => {
             setNewStateAndNotifyListeners({ stateActions: [...actions, { type: 'action', name: 'set', arg: toIsoStringInCurrentTz(new Date()), actionType: 'set()' }] });
             setTimeout(() => {
               try {
-                setNewStateAndNotifyListeners({ stateActions: [...actions, { type: 'action', name: 'remove', actionType: 'remove()' }] })
+                setNewStateAndNotifyListeners({ stateActions: [...actions, { type: 'action', name: 'delete', actionType: 'delete()' }] })
               } catch (e) {
                 // Ignoring. This may happen due to the user manually invalidating a cache. If that has happened, we don't want an error to be thrown.
               }

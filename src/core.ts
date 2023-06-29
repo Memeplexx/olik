@@ -37,7 +37,7 @@ export function createStore<S>(
             const newStateActions = [
               { type: 'property', name: 'cache', actionType: 'cache' },
               { type: 'property', name: actionType, actionType },
-              { type: 'action', name: 'remove', actionType: 'remove()' },
+              { type: 'action', name: 'delete', actionType: 'delete()' },
             ] as StateAction[];
             try {
               setNewStateAndNotifyListeners({ stateActions: newStateActions });
@@ -92,7 +92,7 @@ export function createStore<S>(
           return () => {
             const changeListeners = libState.store.$internals.changeListeners;
             changeListeners.filter(l => l.actions[0].name === args.key).forEach(l => l.unsubscribe());
-            (libState.store as any)[args.key!].$remove();
+            (libState.store as any)[args.key!].$delete();
             libState.detached.push(args.key!);
             libState.innerStores.delete(args.key!);
           }
@@ -111,7 +111,7 @@ export function createStore<S>(
   }
 }
 
-const updateFunctions = ['$set', '$patch', '$deepMerge', '$remove', '$insert', '$add', '$subtract', '$clear', '$push', '$withOne', '$withMany'];
+const updateFunctions = ['$set', '$patch', '$deepMerge', '$delete', '$insert', '$add', '$subtract', '$clear', '$push', '$withOne', '$withMany'];
 const comparators = ['$eq', '$ne', '$in', '$ni', '$gt', '$gte', '$lt', '$lte', '$match'];
 const andOr = ['$and', '$or'];
 const findFilter = ['$find', '$filter'];

@@ -47,7 +47,7 @@ describe('Object', () => {
   it('should remove an object property', () => {
     const store = createStore({ state });
     store.num
-      .$remove();
+      .$delete();
     expect(store.$state).toEqual({ str: '', bool: false });
   })
 

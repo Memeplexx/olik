@@ -32,7 +32,7 @@ describe('array-query', () => {
     const store = createStore({ state });
     store.arr
       .$find.id.$eq(1).$and.id.$lt(2)
-      .$remove();
+      .$delete();
     expect(store.$state).toEqual({ ...state, arr: [state.arr[1], state.arr[2]] })
   });
 
@@ -58,7 +58,7 @@ describe('array-query', () => {
     const store = createStore({ state });
     store.arr
       .$find.id.$eq(1).$or.id.$lt(2)
-      .$remove();
+      .$delete();
     expect(store.$state).toEqual({ ...state, arr: [state.arr[1], state.arr[2]] })
   });
 
@@ -75,7 +75,7 @@ describe('array-query', () => {
     const store = createStore({ state });
     store.arr
       .$filter.id.$eq(1).$and.id.$lt(3)
-      .$remove();
+      .$delete();
     expect(store.$state).toEqual({ ...state, arr: [state.arr[1], state.arr[2]] })
   });
 
@@ -92,7 +92,7 @@ describe('array-query', () => {
     const store = createStore({ state });
     store.arr
       .$filter.id.$eq(1).$or.id.$lt(3)
-      .$remove();
+      .$delete();
     expect(store.$state).toEqual({ ...state, arr: [state.arr[2]] })
   });
 
@@ -117,9 +117,9 @@ describe('array-query', () => {
       .$find.id.$eq(1)
       .$and.id.$eq(2)
       .$or.id.$eq(3)
-      .$remove();
+      .$delete();
     expect(currentAction(store)).toEqual({
-      type: `arr.find.id.eq(1).and.id.eq(2).or.id.eq(3).remove()`,
+      type: `arr.find.id.eq(1).and.id.eq(2).or.id.eq(3).delete()`,
     });
     expect(store.$state).toEqual({ arr: [state.arr[0], state.arr[1]] });
   })
@@ -145,9 +145,9 @@ describe('array-query', () => {
       .$find.id.$eq(4)
       .$or.id.$eq(3)
       .$and.num.$eq(3)
-      .$remove();
+      .$delete();
     expect(currentAction(store)).toEqual({
-      type: `arr.find.id.eq(4).or.id.eq(3).and.num.eq(3).remove()`,
+      type: `arr.find.id.eq(4).or.id.eq(3).and.num.eq(3).delete()`,
     });
     expect(store.$state).toEqual({ arr: [state.arr[0], state.arr[1]] });
   })
@@ -175,9 +175,9 @@ describe('array-query', () => {
       .$and.num.$eq(1)
       .$or.id.$eq(3)
       .$and.num.$eq(3)
-      .$remove();
+      .$delete();
     expect(currentAction(store)).toEqual({
-      type: `arr.find.id.eq(1).and.num.eq(1).or.id.eq(3).and.num.eq(3).remove()`,
+      type: `arr.find.id.eq(1).and.num.eq(1).or.id.eq(3).and.num.eq(3).delete()`,
     });
     expect(store.$state).toEqual({ arr: [state.arr[1], state.arr[2]] });
   })

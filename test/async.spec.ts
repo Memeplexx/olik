@@ -151,7 +151,7 @@ describe('async', () => {
   it('should be able to remove an array element', async () => {
     const state = { arr: [1, 2, 3] };
     const store = createStore({ state });
-    await store.arr.$find.$eq(3).$remove(resolve(null));
+    await store.arr.$find.$eq(3).$delete(resolve(null));
     expect(store.arr.$state).toEqual([1, 2]);
   })
 
@@ -165,7 +165,7 @@ describe('async', () => {
   it('should be able to remove an object property', async () => {
     const state = { num: 0 };
     const store = createStore({ state });
-    await store.num.$remove(resolve(null));
+    await store.num.$delete(resolve(null));
     expect(store.$state).toEqual({});
   })
 

@@ -158,7 +158,7 @@ describe('array-deep', () => {
       todos: [{ id: 1, status: 'done', title: 'one' }, { id: 2, status: 'done', title: 'two' }]
     };
     const store = createStore({ state });
-    store.todos.$filter.status.$eq('done').title.$remove();
+    store.todos.$filter.status.$eq('done').title.$delete();
     expect(store.todos.$state).toEqual(state.todos.map(todo => ({ id: todo.id, status: todo.status })));
   })
 

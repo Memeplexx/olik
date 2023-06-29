@@ -34,7 +34,7 @@ export type Rec<X, Depth extends number> = {
 
 export type UpdatableObject<S, F extends FindOrFilter, Q extends QueryStatus, I extends ImmediateParentIsAFilter, Depth extends number, NewDepth extends number = DecrementRecursion[Depth]> = Rec<
   & InvalidateCache
-  & RemoveNode<Depth>
+  & DeleteNode<Depth>
   & (Q extends 'notArray' ? InsertNode : {})
   & (Q extends 'notArray' ? PatchObject<S> : F extends 'isFind' ? PatchArrayElement<S> : PatchArray<S>)
   & (Q extends 'notArray' ? Set<S> : F extends 'isFind' ? SetArrayElement<S> : SetArray<S, I>)
@@ -55,10 +55,10 @@ export type UpdatableArray<S extends Array<any>, F extends FindOrFilter, Q exten
     & Or<S, F, NewDepth>
     & And<S, F, NewDepth>
     & (F extends 'isFind' ? SetArrayElement<S[0]> : {})
-    & (F extends 'isFind' ? RemoveArrayElement<Depth> : RemoveArray<Depth>)
+    & (F extends 'isFind' ? DeleteArrayElement<Depth> : DeleteArray<Depth>)
     & (S[0] extends Array<any> ? {} : S[0] extends object ? UpdatableObject<S[0], F, Q, 'yes', NewDepth> : UpdatablePrimitive<S[0], F, Q, NewDepth>)
   ) : (
-    & RemoveNode<Depth>
+    & DeleteNode<Depth>
     & InvalidateCache
     & Clear
     & Push<S[0] | S>
@@ -87,7 +87,7 @@ export type UpdateOptions<H> = (H extends () => AnyAsync<any> ? & Cache & Eager<
 
 export type UpdatablePrimitive<S, F extends FindOrFilter, Q extends QueryStatus, Depth extends number> =
   & InvalidateCache
-  & RemoveNode<Depth>
+  & DeleteNode<Depth>
   & (Q extends 'notArray' ? Set<S> : F extends 'isFind' ? SetArrayElement<S> : SetArray<S, 'no'>)
   & (S extends number ? (F extends 'isFind' ? Add : AddArray) : {})
   & (S extends number ? (F extends 'isFind' ? Subtract : SubtractArray) : {})
@@ -156,7 +156,7 @@ export type InsertNode = {
   $insert<X extends Payload<object>>(insertion: X, options: UpdateOptions<X>): UpdateResult<X>;
 }
 
-export type RemoveNode<Depth extends number> = [Depth] extends [MaxRecursionDepth] ? {} : {
+export type DeleteNode<Depth extends number> = [Depth] extends [MaxRecursionDepth] ? {} : {
   /**
    * Remove the selected node from its parent object.  
    * 
@@ -164,24 +164,24 @@ export type RemoveNode<Depth extends number> = [Depth] extends [MaxRecursionDept
    * **Only** use this to remove properties from objects of type `{ [key: string]: any }` and 
    * **not** from objects with a known structure, for example `{ num: number, str: string }`.
    */
-  $remove(): void,
-  $remove<X extends Payload<any>>(options: X): Future<any>;
+  $delete(): void,
+  $delete<X extends Payload<any>>(options: X): Future<any>;
 }
 
-export type RemoveArrayElement<Depth extends number> = [Depth] extends [MaxRecursionDepth] ? {} : {
+export type DeleteArrayElement<Depth extends number> = [Depth] extends [MaxRecursionDepth] ? {} : {
   /**
    * Remove the selected element from the array.  
    */
-  $remove(): void,
-  $remove<X extends Payload<any>>(options: X): Future<any>;
+  $delete(): void,
+  $delete<X extends Payload<any>>(options: X): Future<any>;
 }
 
-export type RemoveArray<Depth extends number> = [Depth] extends [MaxRecursionDepth] ? {} : {
+export type DeleteArray<Depth extends number> = [Depth] extends [MaxRecursionDepth] ? {} : {
   /**
    * Remove the selected elements from the array.  
    */
-  $remove(): void,
-  $remove<X extends Payload<any>>(options: X): Future<any>;
+  $delete(): void,
+  $delete<X extends Payload<any>>(options: X): Future<any>;
 }
 
 export interface Clear {
@@ -550,9 +550,9 @@ export interface ReduxDevtoolsOptions {
    * Limit the length of search args so as to prevent very long action types.  
    * 
    * For example, by default, the following action type:
-   * `todos.find.id.eq(c985ab52-6645-11ec-90d6-0242ac120003).remove()`
+   * `todos.find.id.eq(c985ab52-6645-11ec-90d6-0242ac120003).delete()`
    * will be abbreviated to
-   * `todos.find.id.eq(c985ab).remove()`  
+   * `todos.find.id.eq(c985ab).delete()`  
    * 
    * Default value is `6`
    */

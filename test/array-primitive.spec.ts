@@ -68,8 +68,8 @@ describe('array-primitive', () => {
     const store = createStore({ state });
     store
       .$find.$eq(2)
-      .$remove();
-    expect(currentAction(store)).toEqual({ type: 'find.eq(2).remove()' });
+      .$delete();
+    expect(currentAction(store)).toEqual({ type: 'find.eq(2).delete()' });
     expect(store.$state).toEqual([1, 3]);
   })
 
@@ -97,8 +97,8 @@ describe('array-primitive', () => {
     const store = createStore({ state });
     store
       .$find.$eq(1).$or.$eq(2)
-      .$remove();
-    expect(currentAction(store)).toEqual({ type: 'find.eq(1).or.eq(2).remove()' });
+      .$delete();
+    expect(currentAction(store)).toEqual({ type: 'find.eq(1).or.eq(2).delete()' });
     expect(store.$state).toEqual([2, 3]);
   })
 
@@ -126,8 +126,8 @@ describe('array-primitive', () => {
     const store = createStore({ state });
     store
       .$find.$gt(1).$and.$lt(3)
-      .$remove();
-    expect(currentAction(store)).toEqual({ type: 'find.gt(1).and.lt(3).remove()' });
+      .$delete();
+    expect(currentAction(store)).toEqual({ type: 'find.gt(1).and.lt(3).delete()' });
     expect(store.$state).toEqual([1, 3]);
   })
 
@@ -145,8 +145,8 @@ describe('array-primitive', () => {
     const store = createStore({ state });
     store
       .$filter.$gt(1)
-      .$remove();
-    expect(currentAction(store)).toEqual({ type: 'filter.gt(1).remove()' });
+      .$delete();
+    expect(currentAction(store)).toEqual({ type: 'filter.gt(1).delete()' });
     expect(store.$state).toEqual([1]);
   })
 
@@ -164,8 +164,8 @@ describe('array-primitive', () => {
     const store = createStore({ state });
     store
       .$filter.$eq(1).$or.$eq(2)
-      .$remove();
-    expect(currentAction(store)).toEqual({ type: 'filter.eq(1).or.eq(2).remove()' });
+      .$delete();
+    expect(currentAction(store)).toEqual({ type: 'filter.eq(1).or.eq(2).delete()' });
     expect(store.$state).toEqual([3]);
   })
 
@@ -183,8 +183,8 @@ describe('array-primitive', () => {
     const store = createStore({ state });
     store
       .$filter.$gt(0).$and.$lt(3)
-      .$remove();
-    expect(currentAction(store)).toEqual({ type: 'filter.gt(0).and.lt(3).remove()' });
+      .$delete();
+    expect(currentAction(store)).toEqual({ type: 'filter.gt(0).and.lt(3).delete()' });
     expect(store.$state).toEqual([3]);
   })
 

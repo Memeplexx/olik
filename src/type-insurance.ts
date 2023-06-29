@@ -30,7 +30,7 @@ function test() {
 
   store.objArray
     .$find.obj.num.$eq(3)
-    .$remove();
+    .$delete();
 
   store.string
     .$set('test');
@@ -84,7 +84,7 @@ function test() {
 
   store.objArray
     .$find.num.$eq(3).$or.arr.$eq([])
-    .$remove();
+    .$delete();
 
   store.objArray
     .num.$set(2);
@@ -158,7 +158,7 @@ export const demo = () => {
 
   store.todos
     .$filter.status.$eq('done')
-    .$remove();
+    .$delete();
   // { type: 'todos.filter.status.eq(done).set()' }
 
   store.user.name.$set('test');
@@ -234,8 +234,8 @@ function updateUserDetails(user: User) {
 store.todos.$filter.status.$eq('done').$set // additional impl required
 
 
-store.todos.$filter.status.$eq('done').$remove();
-// { type: 'todos.filter.status.eq(done).remove()' }
+store.todos.$filter.status.$eq('done').$delete();
+// { type: 'todos.filter.status.eq(done).delete()' }
 
 
 
@@ -254,8 +254,5 @@ storee.todos.$set(['ss']);
 storee.todos.$filter.$eq('').$set('ss');
 storee.things.$filter.id.$eq(3).$set([{ id: 2, name: '' }]);
 storee.things.$filter.id.$eq(3).name.$set('');
-
-
-storee.val.$set('xxxx');
 
 

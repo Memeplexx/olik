@@ -68,8 +68,8 @@ describe('array-primitive-deep', () => {
     const store = createStore({ state });
     store.arr
       .$find.$eq(2)
-      .$remove();
-    expect(currentAction(store)).toEqual({ type: 'arr.find.eq(2).remove()' });
+      .$delete();
+    expect(currentAction(store)).toEqual({ type: 'arr.find.eq(2).delete()' });
     expect(store.$state).toEqual({ arr: [1, 3] });
   })
 
@@ -97,8 +97,8 @@ describe('array-primitive-deep', () => {
     const store = createStore({ state });
     store.arr
       .$find.$eq(1).$or.$eq(2)
-      .$remove();
-    expect(currentAction(store)).toEqual({ type: 'arr.find.eq(1).or.eq(2).remove()' });
+      .$delete();
+    expect(currentAction(store)).toEqual({ type: 'arr.find.eq(1).or.eq(2).delete()' });
     expect(store.$state).toEqual({ arr: [2, 3] });
   })
 
@@ -126,8 +126,8 @@ describe('array-primitive-deep', () => {
     const store = createStore({ state });
     store.arr
       .$find.$gt(1).$and.$lt(3)
-      .$remove();
-    expect(currentAction(store)).toEqual({ type: 'arr.find.gt(1).and.lt(3).remove()' });
+      .$delete();
+    expect(currentAction(store)).toEqual({ type: 'arr.find.gt(1).and.lt(3).delete()' });
     expect(store.$state).toEqual({ arr: [1, 3] });
   })
 
@@ -145,8 +145,8 @@ describe('array-primitive-deep', () => {
     const store = createStore({ state });
     store.arr
       .$filter.$gt(1)
-      .$remove();
-    expect(currentAction(store)).toEqual({ type: 'arr.filter.gt(1).remove()' });
+      .$delete();
+    expect(currentAction(store)).toEqual({ type: 'arr.filter.gt(1).delete()' });
     expect(store.$state).toEqual({ arr: [1] });
   })
 
@@ -164,8 +164,8 @@ describe('array-primitive-deep', () => {
     const store = createStore({ state });
     store.arr
       .$filter.$eq(1).$or.$eq(2)
-      .$remove();
-    expect(currentAction(store)).toEqual({ type: 'arr.filter.eq(1).or.eq(2).remove()' });
+      .$delete();
+    expect(currentAction(store)).toEqual({ type: 'arr.filter.eq(1).or.eq(2).delete()' });
     expect(store.$state).toEqual({ arr: [3] });
   })
 
@@ -183,8 +183,8 @@ describe('array-primitive-deep', () => {
     const store = createStore({ state });
     store.arr
       .$filter.$gt(0).$and.$lt(3)
-      .$remove();
-    expect(currentAction(store)).toEqual({ type: 'arr.filter.gt(0).and.lt(3).remove()' });
+      .$delete();
+    expect(currentAction(store)).toEqual({ type: 'arr.filter.gt(0).and.lt(3).delete()' });
     expect(store.$state).toEqual({ arr: [3] });
   })
 
