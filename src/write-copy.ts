@@ -73,13 +73,15 @@ export const copyNewState = (
     }
   } else if (action.name === 'add') {
     if (Array.isArray(currentState)) {
-      return setCurrentActionReturningNewState({ stateActions, payload: action.arg, newState: Array.isArray(currentState) ? currentState.map((e: any) => e + action.arg) : currentState + action.arg, currentState });
+      // return setCurrentActionReturningNewState({ stateActions, payload: action.arg, newState: Array.isArray(currentState) ? currentState.map((e: any) => e + action.arg) : currentState + action.arg, currentState });
+      return setCurrentActionReturningNewState({ stateActions, payload: action.arg, newState: currentState.map((e: any) => e + action.arg), currentState });
     } else {
       return setCurrentActionReturningNewState({ stateActions, payload: action.arg, newState: currentState + action.arg, currentState });
     }
   } else if (action.name === 'subtract') {
     if (Array.isArray(currentState)) {
-      return setCurrentActionReturningNewState({ stateActions, payload: action.arg, newState: Array.isArray(currentState) ? currentState.map((e: any) => e + action.arg) : currentState - action.arg, currentState });
+      // return setCurrentActionReturningNewState({ stateActions, payload: action.arg, newState: Array.isArray(currentState) ? currentState.map((e: any) => e + action.arg) : currentState - action.arg, currentState });
+      return setCurrentActionReturningNewState({ stateActions, payload: action.arg, newState:  currentState.map((e: any) => e + action.arg), currentState });
     } else {
       return setCurrentActionReturningNewState({ stateActions, payload: action.arg, newState: currentState - action.arg, currentState });
     }
@@ -94,6 +96,12 @@ export const copyNewState = (
   } else if (action.name === 'push') {
     const newState = Array.isArray(action.arg) ? [...currentState, ...action.arg] : [...currentState, action.arg];
     return setCurrentActionReturningNewState({ stateActions, payload: action.arg, newState, currentState });
+  } else if (action.name === 'toggle') {
+    if (Array.isArray(currentState)) {
+      return setCurrentActionReturningNewState({ stateActions, payload: null, newState: currentState.map((e: boolean) => !e), currentState });
+    }  else {
+      return setCurrentActionReturningNewState({ stateActions, payload: null, newState: !currentState, currentState });
+    }
   }
 }
 

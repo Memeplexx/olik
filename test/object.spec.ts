@@ -20,6 +20,14 @@ describe('Object', () => {
     expect(store.num.$state).toEqual(1);
   })
 
+  it('should toggle an object property', () => {
+    const store = createStore({ state });
+    store.bool
+      .$toggle();
+    expect(currentAction(store)).toEqual({ type: 'bool.toggle()' });
+    expect(store.bool.$state).toEqual(true);
+  })
+
   it('should patch an object', () => {
     const store = createStore({ state });
     const payload = { bool: true, str: 'x' };

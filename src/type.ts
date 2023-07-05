@@ -63,6 +63,7 @@ export type UpdatableArray<S extends Array<any>, F extends FindOrFilter, Q exten
     & Clear
     & Push<S[0] | S>
     & SetArray<S, 'no'>
+    & (S[0] extends boolean ? ToggleArray : {})/////
     & Find<S, NewDepth>
     & Filter<S, NewDepth>
     & Readable<F extends 'isFilter' ? S : S[0]>
@@ -91,6 +92,7 @@ export type UpdatablePrimitive<S, F extends FindOrFilter, Q extends QueryStatus,
   & (Q extends 'notArray' ? Set<S> : F extends 'isFind' ? SetArrayElement<S> : SetArray<S, 'no'>)
   & (S extends number ? (F extends 'isFind' ? Add : AddArray) : {})
   & (S extends number ? (F extends 'isFind' ? Subtract : SubtractArray) : {})
+  & (S extends boolean ? (F extends 'isFind' ? Toggle : ToggleArray) : {})
   & Readable<F extends 'isFilter' ? S[] : S>
 
 export interface MergeMatching<S> {
@@ -234,11 +236,19 @@ export interface Subtract {
   $subtract<X extends Payload<number>>(subtractBy: X, options: UpdateOptions<X>): UpdateResult<X>;
 }
 
+export interface Toggle {
+  $toggle(): UpdateResult<boolean>;
+}
+
 export interface AddArray {
   /**
    * Add the supplied number onto each of the numbers in the selected array. 
    */
   $add<X extends Payload<number>>(addTo: X, options: UpdateOptions<X>): UpdateResult<X>;
+}
+
+export interface ToggleArray {
+  $toggle(): UpdateResult<boolean>;
 }
 
 export interface SubtractArray {

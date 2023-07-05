@@ -10,6 +10,14 @@ describe('array-primitive', () => {
     resetLibraryState();
   })
 
+  it('should toggle all elements', () => {
+    const store = createStore({ state: [true, true, false] });
+    store
+      .$toggle();
+    expect(currentAction(store)).toEqual({ type: 'toggle()' });
+    expect(store.$state).toEqual([false, false, true]);
+  })
+
   it('should replace all elements', () => {
     const store = createStore({ state });
     const payload = [4, 5, 6];
@@ -52,6 +60,15 @@ describe('array-primitive', () => {
       .$push(payload);
     expect(currentAction(store)).toEqual({ type: 'push()', payload });
     expect(store.$state).toEqual([...state, ...payload]);
+  })
+
+  it('should find an element and toggle it', () => {
+    const store = createStore({ state: [true, true, false, false] });
+    store
+      .$find.$eq(false)
+      .$toggle();
+    expect(currentAction(store)).toEqual({ type: 'find.eq(false).toggle()' });
+    expect(store.$state).toEqual([true, true, true, false]);
   })
 
   it('should find an element and replace it', () => {
@@ -139,6 +156,15 @@ describe('array-primitive', () => {
       .$add(payload);
     expect(currentAction(store)).toEqual({ type: 'find.eq(1).and.lt(2).add()', payload });
     expect(store.$state).toEqual([2, 2, 3]);
+  })
+
+  it('should filter elements and toggle then', () => {
+    const store = createStore({ state: [true, true, false, false] });
+    store
+      .$filter.$eq(false)
+      .$toggle();
+    expect(currentAction(store)).toEqual({ type: 'filter.eq(false).toggle()' });
+    expect(store.$state).toEqual([true, true, true, true]);
   })
 
   it('should filter elements and remove them', () => {

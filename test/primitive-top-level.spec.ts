@@ -28,5 +28,13 @@ describe('top-level-primitive', () => {
     expect(currentAction(store)).toEqual({ type: 'add()', payload });
   })
 
+  it('should toggle a boolean', () => {
+    const store = createStore({ state: false });
+    store
+      .$toggle();
+    expect(store.$state).toEqual(true);
+    expect(currentAction(store)).toEqual({ type: 'toggle()' });
+  })
+
 });
 
