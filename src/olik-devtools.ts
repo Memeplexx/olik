@@ -1,11 +1,34 @@
 import { errorMessages, libState, testState } from './constant';
-import { Read, Set } from './type';
+import { DevtoolsInstance, Read, Set } from './type';
 import { StoreInternal, WindowAugmentedWithOlikDevtools } from './type-internal';
 
 
 export const jumpToStateAction = ['JUMP_TO_STATE', 'JUMP_TO_ACTION'];
 
 export function connectOlikDevtoolsToStore() {
+
+  (window as any)['__OLIK_DEVTOOLS_EXTENSION__'] = {
+    connect: () => ({
+      init: () => { }, // to be removed
+      subscribe: () => { },
+      send: (action, state, selector, mutator) => {
+        window.postMessage({
+          action: { type: action.type, payload: action.payload, state },
+          state: libState.store.$state,
+          source: 'olik-devtools-extension'
+        }, '*');
+      },
+      unsubscribe: () => { },
+    } as DevtoolsInstance),
+    disconnect: () => { },
+  };
+
+  const olikStateDiv = document.createElement('div');
+  olikStateDiv.id = 'olik-state';
+  olikStateDiv.style.display = 'none';
+  olikStateDiv.innerHTML = JSON.stringify(libState.store.$state);
+  document.body.appendChild(olikStateDiv);
+
   importOlikDevtoolsModule();
   libState.olikDevtools!.init();
 }
@@ -15,36 +38,36 @@ export function importOlikDevtoolsModule() {
     init: () => {
       const store = libState.store;
       const internals = (store as StoreInternal<any>).$internals;
-  
+
       // do not continue if store has been nested or merged
       if (!!internals.nestedStoreInfo?.isNested || !!internals.mergedStoreInfo?.isMerged) { return; }
-  
+
       // mock out the window object for testing purposes
       const windowObj = (testState.fakeWindowObjectForOlikDevtools || window) as WindowAugmentedWithOlikDevtools;
-  
+
       // If user does not have devtools installed or enabled, warn & return.
       if (!windowObj.__OLIK_DEVTOOLS_EXTENSION__) {
         console.warn('Please add the Olik Devtools Component');
         return;
       }
-  
+
       // If a devtools instance has already been registered, do not re-create that instance.
       // This problem really only presents its self when hot-reloading is being used
       let devTools = internals.olikDevtools?.instance;
       if (devTools) { return; }
-  
+
       // Register devtools extension
       devTools = windowObj.__OLIK_DEVTOOLS_EXTENSION__.connect();
       devTools.init(store.$state);
       internals.olikDevtools = { instance: devTools, disableDispatch: false };
-  
+
       const setState = (state: any) => {
         internals.olikDevtools!.disableDispatch = true;
         const selection = store as any as Set<any> & Read<any>;
         selection.$set(state);
         internals.olikDevtools!.disableDispatch = false;
       }
-  
+
       // Ensure that the store responds to events emitted from the devtools extension
       devTools.subscribe(message => {
         if ('ACTION' === message.type) {
@@ -88,12 +111,12 @@ export function importOlikDevtoolsModule() {
     dispatch: (stateReader, mutator) => {
       const store = libState.store;
       const internals = store.$internals;
-  
+
       // Dispatch to devtools
       if (internals.olikDevtools && !internals.olikDevtools.disableDispatch) {
         const currentAction = internals.currentAction;
         testState.currentActionForOlikDevtools = currentAction;
-        internals.olikDevtools?.instance.send(currentAction, /*store.$state*/internals.state, stateReader, mutator);
+        internals.olikDevtools?.instance.send(currentAction, internals.state, stateReader, mutator);
       }
     }
   }
