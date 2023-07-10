@@ -17,7 +17,7 @@ export const setNewStateAndNotifyListeners = (
       listener(selectedNewState);
     }
   })
-  if (!!libState.olikDevtools && !!internals.olikDevtools) {
+  if (!!libState.olikDevtools /*&& !!internals.olikDevtools*/) {
     const stateActionsCopy = stateActions.slice();
     stateActionsCopy[stateActionsCopy.length - 1] = { ...stateActionsCopy[stateActionsCopy.length - 1], name: 'state' };
     libState.olikDevtools.dispatch(state => readState({ state, stateActions: stateActionsCopy, cursor: { index: 0 } }), stateActions[stateActions.length - 1].name);

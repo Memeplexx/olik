@@ -28,5 +28,14 @@ describe('misc', () => {
     expect(() => createStore({ state: { $hello: 'world' } })).toThrow(errorMessages.DOLLAR_USED_IN_STATE);
   })
 
+  // it('', () => {
+  //   const store = createStore({ state: { arr: [{ id: 1, text: 'one' }] } });
+  //   let s: any = store.arr;
+  //   s = s.$find.id;
+  //   s.$state;
+  //   s = s.$eq(1);
+  //   s = s.text;
+  // })
+
 });
 

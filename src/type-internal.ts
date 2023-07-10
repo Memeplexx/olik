@@ -22,10 +22,10 @@ export interface StoreInternals<S> {
   mergedStoreInfo?: MergedStoreInfo;
   currentAction: OlikAction,
   initialState: any;
-  olikDevtools?: {
-    instance: DevtoolsInstance,
-    disableDispatch: boolean,
-  },
+  // olikDevtools?: {
+  //   instance: DevtoolsInstance,
+  //   disableDispatch: boolean,
+  // },
 }
 
 export type StoreInternal<S> = StoreLike<S> & {
