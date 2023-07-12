@@ -1,7 +1,7 @@
-import { augmentations, booleanNumberString, errorMessages, libState } from './constant';
+import { andOr, augmentations, booleanNumberString, comparators, errorMessages, findFilter, libState, updateFunctions } from './constant';
 import { readState } from './read';
 import { OptionsForMakingAStore, StateAction, Store, StoreAugment } from './type';
-import { StoreInternal, StoreInternals } from './type-internal';
+import { StoreInternals } from './type-internal';
 import { deepFreeze } from './utility';
 import { processPotentiallyAsyncUpdate } from './write';
 import { setNewStateAndNotifyListeners } from './write-complete';
@@ -49,7 +49,16 @@ export function createStore<S>(
           stateActions.push({ type: 'mergeMatching', name: prop, actionType: prop });
           return recurseProxy({}, false, stateActions);
         } else if ('$state' === dollarProp) {
-          return deepFreeze(readState({ state: internals.state, stateActions: [...stateActions, { type: 'action', name: prop }], cursor: { index: 0 } }));
+          const tryFetchResult = (stateActions: StateAction[]): any => {
+            try {
+              return deepFreeze(readState({ state: internals.state, stateActions: [...stateActions, { type: 'action', name: prop }], cursor: { index: 0 } }));
+            } catch (e) {
+              stateActions.pop();
+              return tryFetchResult(stateActions);
+            }
+          }
+          const result = tryFetchResult(stateActions.slice());
+          return result === undefined ? null : result;
         } else if ('$onChange' === dollarProp) {
           return (listener: (arg: any) => any) => {
             const stateActionsCopy = [...stateActions, { type: 'action', name: prop }] as StateAction[];
@@ -110,11 +119,6 @@ export function createStore<S>(
     return libState.store = recurseProxy({}, true, []);
   }
 }
-
-const updateFunctions = ['$set', '$setSome', '$setSomeDeep', '$delete', '$setNew', '$add', '$subtract', '$clear', '$push', '$withOne', '$withMany', '$toggle'];
-const comparators = ['$eq', '$ne', '$in', '$ni', '$gt', '$gte', '$lt', '$lte', '$match'];
-const andOr = ['$and', '$or'];
-const findFilter = ['$find', '$filter'];
 
 export const validateKeyedState = <S>(args: OptionsForMakingAStore<S>) => {
   if (!args.key) { return; }

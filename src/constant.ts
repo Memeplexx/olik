@@ -48,3 +48,7 @@ export const comparisons = {
 } as { [comparator: string]: (val: any, arg: any) => boolean };
 
 export const booleanNumberString = ['boolean', 'number', 'string'];
+export const updateFunctions = ['$set', '$setSome', '$setSomeDeep', '$delete', '$setNew', '$add', '$subtract', '$clear', '$push', '$withOne', '$withMany', '$toggle'];
+export const comparators = ['$eq', '$ne', '$in', '$ni', '$gt', '$gte', '$lt', '$lte', '$match'];
+export const andOr = ['$and', '$or'];
+export const findFilter = ['$find', '$filter'];

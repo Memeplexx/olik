@@ -6,3 +6,4 @@ export { getStore, getInnerStores, resetLibraryState } from './utility';
 export * from './type';
 export { /*importOlikDevtoolsModule,*/ connectOlikDevtoolsToStore } from './olik-devtools';
 export { importOlikAsyncModule, defineQuery } from './write-async'
+export * from './constant';

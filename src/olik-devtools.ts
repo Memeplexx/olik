@@ -144,7 +144,7 @@ export function connectOlikDevtoolsToStore() {
       window.postMessage({
         action: {
           type: typeStringRev,
-          payload: currentAction.payload, 
+          payload: currentAction.payload,
           state: internals.state,
         },
         state: libState.store.$state,
@@ -152,9 +152,48 @@ export function connectOlikDevtoolsToStore() {
       }, location.origin);
     },
   };
+
+  if (document.getElementById('olik-state')) { return; }
+
   const olikStateDiv = document.createElement('div');
   olikStateDiv.id = 'olik-state';
   olikStateDiv.style.display = 'none';
   olikStateDiv.innerHTML = JSON.stringify(libState.store.$state);
   document.body.appendChild(olikStateDiv);
+
+  const olikActionDiv = document.createElement('div');
+  olikActionDiv.id = 'olik-action';
+  olikActionDiv.style.display = 'none';
+  document.body.appendChild(olikActionDiv);
+
+  new MutationObserver(() => {
+    const actionType = olikActionDiv.innerHTML;
+    let subStore = libState.store as any;
+    const segments = actionType.split('.');
+    if (segments[0] === 'store') {
+      segments.shift();
+    }
+    segments.forEach(key => {
+      // const arg = key.match(/\(([^)]+)\)/)?.[1];
+      const arg = key.match(/\(([^)]*)\)/)?.[1];
+      const containsParenthesis = arg !== null && arg !== undefined;
+      if (containsParenthesis) {
+        const functionName = key.split('(')[0];
+        let typedArg = !isNaN(Number(arg)) ? parseFloat(arg as any) // <-- Hmm
+          : arg === 'true' ? true : arg === 'false' ? false
+            : arg;
+        if (typeof(typedArg) === 'string') {
+          if (typedArg.startsWith(`'`) || typedArg.startsWith(`"`)) {
+            typedArg = typedArg.slice(1);
+          }
+          if (typedArg.endsWith(`'`) || typedArg.endsWith(`"`)) {
+            typedArg = typedArg.slice(0, -1);
+          }
+        }
+        subStore = subStore[functionName](typedArg!);
+      } else {
+        subStore = subStore[key];
+      }
+    })
+  }).observe(olikActionDiv, { attributes: true, childList: true, subtree: true });
 }
