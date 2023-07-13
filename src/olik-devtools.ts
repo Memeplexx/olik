@@ -168,7 +168,7 @@ export function connectOlikDevtoolsToStore() {
 
   new MutationObserver(() => {
     const actionType = olikActionDiv.innerHTML;
-    let subStore = libState.store as any;
+    let subStore = libState.store;
     const segments = actionType.split('.');
     if (segments[0] === 'store') {
       segments.shift();
@@ -179,7 +179,7 @@ export function connectOlikDevtoolsToStore() {
       const containsParenthesis = arg !== null && arg !== undefined;
       if (containsParenthesis) {
         const functionName = key.split('(')[0];
-        let typedArg = !isNaN(Number(arg)) ? parseFloat(arg as any) // <-- Hmm
+        let typedArg = !isNaN(Number(arg)) ? parseFloat(arg)
           : arg === 'true' ? true : arg === 'false' ? false
             : arg;
         if (typeof(typedArg) === 'string') {
