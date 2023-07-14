@@ -549,17 +549,6 @@ export interface OptionsForMakingAStore<S> {
   key?: string;
 }
 
-export interface OptionsForMergingAStore<S extends RecursiveRecord> {
-  /**
-   * The store to be merged
-   */
-  store: StoreLike<S>,
-  /**
-   * The name of the store with which this store should be merged
-   */
-  nameOfStoreToMergeInto: string,
-}
-
 export interface ReduxDevtoolsOptions {
   /**
    * Whether or not to display the 'trace' tab in the devtools.
@@ -635,9 +624,6 @@ export interface ChangeListener {
 
 export interface NestStoreRef {
   detach(): void,
-}
-
-export interface StoreLike<S extends RecursiveRecord> extends Read<S>, OnChange<S>, InvalidateCache, Set<S> {
 }
 
 export type OlikAction = { type: string, payload?: unknown };

@@ -21,7 +21,7 @@ export const getInnerStores = () => libState.innerStores;
 
 export const resetLibraryState = () => {
   testState.logLevel = 'none';
-  libState.store = undefined as StoreInternal<RecursiveRecord> | undefined;
+  libState.store = undefined as StoreInternal | undefined;
   libState.isInsideTransaction = false;
   libState.innerStores.clear();
   libState.detached = [];
