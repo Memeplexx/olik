@@ -1,15 +1,15 @@
 import { libState, testState } from './constant';
-import { Primitive, RecursiveRecord, Store } from './type';
+import { RecursiveRecord, Store } from './type';
+import { is } from './type-check';
 import { StoreInternal } from './type-internal';
 
 
-export const deepFreeze = <T extends RecursiveRecord | Primitive>(o: T): T => {
+export const deepFreeze = <T>(o: T): T => {
   Object.freeze(o);
   if (o == null || o === undefined) { return o; }
-  Object.keys(o).forEach(prop => {
-    const val = (o as RecursiveRecord)[prop];
-    if (!Object.isFrozen(val)) {
-      deepFreeze(val as RecursiveRecord);
+  (Object.keys(o) as (Array<keyof typeof o>)).forEach(prop => {
+    if (is.record(o) || is.arrayOf.actual(o)) {
+      deepFreeze(o[prop]);
     }
   })
   return o;

@@ -1,11 +1,11 @@
 import { augmentations } from './constant';
-import { Derivation, DerivationCalculationInputs, Primitive, Readable, RecursiveRecord, Unsubscribe } from './type';
+import { Derivation, DerivationCalculationInputs, Readable, Unsubscribe } from './type';
 
-export function derive<X extends Readable<RecursiveRecord | Primitive | Array<RecursiveRecord | Primitive>>[]>(...args: X) {
+export function derive<X extends Readable<unknown>[]>(...args: X) {
   let previousParams = new Array<unknown>();
   let previousResult = null as unknown;
   return {
-    $with: <R extends RecursiveRecord | Primitive | Array<RecursiveRecord | Primitive>>(calculation: (...inputs: DerivationCalculationInputs<X>) => R) => {
+    $with: <R>(calculation: (...inputs: DerivationCalculationInputs<X>) => R) => {
       const getValue = () => {
         const params = args.map(arg => arg.$state) as DerivationCalculationInputs<X>;
         if (previousParams.length && params.every((v, i) => {

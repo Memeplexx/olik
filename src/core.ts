@@ -19,7 +19,7 @@ export function createStore<S extends RecursiveRecord>(
     currentAction: { type: '' },
     initialState: args.state,
   } as StoreInternals<S>;
-  const recurseProxy = (s: RecursiveRecord, topLevel: boolean, stateActions: StateAction[]): Store<RecursiveRecord | Primitive> & StoreInternal<RecursiveRecord> => {
+  const recurseProxy = (s: RecursiveRecord, topLevel: boolean, stateActions: StateAction[]): Store<RecursiveRecord> & StoreInternal<RecursiveRecord> => {
     return new Proxy(s, {
       get: (target, dollarProp: string) => {
         const prop = dollarProp.startsWith('$') ? dollarProp.split('$')[1] : dollarProp;
@@ -86,7 +86,7 @@ export function createStore<S extends RecursiveRecord>(
           return recurseProxy({}, false, stateActions);
         }
       }
-    }) as Store<RecursiveRecord | Primitive> & StoreInternal<RecursiveRecord>;
+    }) as Store<RecursiveRecord> & StoreInternal<RecursiveRecord>;
   };
   if (args.key) {
     internals.state = {} as S;

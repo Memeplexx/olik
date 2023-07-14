@@ -1,4 +1,4 @@
-import { Augmentations, EnableAsyncActionsArgs, OlikAction, Primitive, RecursiveRecord, Store } from './type';
+import { Augmentations, EnableAsyncActionsArgs, OlikAction, RecursiveRecord, Store } from './type';
 import { StoreInternal, WindowAugmentedWithOlikDevtools } from './type-internal';
 
 
@@ -21,7 +21,7 @@ export const libState = {
   isInsideTransaction: false,
   onInternalDispatch: () => null,
   asyncUpdate: undefined as undefined | ((args: EnableAsyncActionsArgs) => Promise<unknown>),
-  olikDevtools: undefined as undefined | { dispatch: ( stateReader: (state: RecursiveRecord | Primitive | Array<RecursiveRecord | Primitive>) => unknown, mutator: string ) => unknown, init: () => void },
+  olikDevtools: undefined as undefined | { dispatch: ( stateReader: (state: RecursiveRecord) => unknown, mutator: string ) => unknown, init: () => void },
 }
 
 export const testState = {

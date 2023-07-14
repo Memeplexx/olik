@@ -75,6 +75,7 @@ export const mustBe = {
 }
 
 // const e = mustBe.recordOf.number({k: 3})
+// const ee = mustBe.recordOf.function('');
 
 
 export const either = (arg: unknown) => {

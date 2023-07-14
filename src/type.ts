@@ -500,11 +500,11 @@ export interface StateAction {
 
 type DerivationCalculationInput<E> = E extends Readable<infer W> ? W : never;
 
-export type DerivationCalculationInputs<T extends Array<Readable<RecursiveRecord | Primitive | Array<RecursiveRecord | Primitive>>>> = {
+export type DerivationCalculationInputs<T extends Array<Readable<unknown>>> = {
   [K in keyof T]: DerivationCalculationInput<T[K]>;
 }
 
-export interface Derivation<R extends RecursiveRecord | Primitive | Array<RecursiveRecord | Primitive>> extends Read<R>, OnChange<R>, InvalidateDerivation {
+export interface Derivation<R> extends Read<R>, OnChange<R>, InvalidateDerivation {
 }
 
 export interface FutureState<C> {
@@ -523,11 +523,11 @@ export interface Future<C> extends Promise<C> {
 }
 
 export interface Augmentations {
-  selection: { [name: string]: <C extends RecursiveRecord | Primitive>(selection: Readable<C>) => (...args: unknown[]) => unknown },
-  future: { [name: string]: <C extends RecursiveRecord | Primitive>(future: Future<C>) => (...args: unknown[]) => unknown };
-  derivation: { [name: string]: <R extends RecursiveRecord | Primitive | Array<RecursiveRecord | Primitive>>(derivation: Derivation<R>) => (...args: unknown[]) => unknown }
-  async: <C extends RecursiveRecord | Primitive>(fnReturningFutureAugmentation: () => Promise<C>) => Promise<C>;
-  core: { [prop: string]: <C extends RecursiveRecord | Primitive>(selection: Readable<C>) => unknown },
+  selection: { [name: string]: <C>(selection: Readable<C>) => (...args: unknown[]) => unknown },
+  future: { [name: string]: <C>(future: Future<C>) => (...args: unknown[]) => unknown };
+  derivation: { [name: string]: <R>(derivation: Derivation<R>) => (...args: unknown[]) => unknown }
+  async: <C>(fnReturningFutureAugmentation: () => Promise<C>) => Promise<C>;
+  core: { [prop: string]: <C>(selection: Readable<C>) => unknown },
 }
 
 export interface RxjsObservable<C> {
@@ -611,7 +611,7 @@ export interface EnableAsyncActionsArgs {
   prop: string,
   cache?: number,
   eager?: unknown,
-  arg: RecursiveRecord | Primitive | Array<RecursiveRecord | Primitive>,
+  arg: unknown,
 }
 
 export interface EnableNestedStoreArgs {

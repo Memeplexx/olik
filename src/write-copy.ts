@@ -23,7 +23,7 @@ export const copyNewState = (
   if (is.arrayOf.record(currentState) && (stateActions[cursor.index].type === 'property')) {
     return currentState.map((e, i) => is.record(currentState[i])
       ? { ...currentState[i], ...mustBe.record(copyNewState({ currentState: currentState[i] || {}, stateToUpdate: (mustBe.arrayOf.record(stateToUpdate)[i] || {}), stateActions, cursor: { ...cursor } })) }
-      : copyNewState({ currentState: currentState[i] || {}, stateToUpdate: (stateToUpdate as Array<RecursiveRecord>)[i] || {}, stateActions, cursor: { ...cursor } }) as Actual);
+      : copyNewState({ currentState: currentState[i], stateToUpdate: mustBe.arrayOf.actual(stateToUpdate)[i], stateActions, cursor: { ...cursor } }) as Actual);
   } else if (is.arrayOf.actual(currentState) && (stateActions[cursor.index].type === 'mergeMatching')) {
     cursor.index++;
     const queryPaths = stateActions

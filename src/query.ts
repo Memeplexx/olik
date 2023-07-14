@@ -1,5 +1,6 @@
 import { comparisons } from './constant';
-import { RecursiveRecord, StateAction } from './type';
+import { StateAction } from './type';
+import { mustBe } from './type-check';
 import { QuerySpec } from './type-internal';
 
 const actionProperty = ['action', 'property'];
@@ -16,7 +17,7 @@ export const constructQuery = (
           return prev.concat(curr);
         }, new Array<StateAction>());
       const comparator = stateActions[cursor.index++];
-      return (e: unknown) => comparisons[comparator.name](queryPaths.reduce((prev, curr) => prev = (prev as RecursiveRecord)[curr.name], e), comparator.arg);
+      return (e: unknown) => comparisons[comparator.name](queryPaths.reduce((prev, curr) => prev = mustBe.record(prev)[curr.name], e), comparator.arg);
     }
     queries.push({
       query: constructQuery(),

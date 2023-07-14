@@ -13,7 +13,7 @@ export const importOlikAsyncModule = () => {
       readState({ state: libState.store!.$state, stateActions: [...stateActions, { type: 'action', name: 'state' }], cursor: { index: 0 } });
     let state = { storeValue: readCurrentState(), error: null, isLoading: false, wasRejected: false, wasResolved: false } as FutureState<unknown>;
     if ((libState.store!.$state.cache as RecursiveRecord)?.[stateActions.map(sa => sa.actionType).join('.')]) {
-      const result = new Proxy(new Promise(resolve => resolve(readCurrentState() as RecursiveRecord)), {
+      const result = new Proxy(new Promise(resolve => resolve(readCurrentState())), {
         get: (target, prop: string) => {
           if (prop === 'then' || prop === 'catch' || prop === 'finally') {
             const t = Promise.resolve(readCurrentState());
@@ -24,11 +24,11 @@ export const importOlikAsyncModule = () => {
             return (...args: Array<Actual>) => mustBe.recordOf.function(target)[prop]!(args);
           }
         }
-      }) as Promise<RecursiveRecord>;
+      });
       const resultCast = result as unknown as { [key: string]: (a: unknown) => undefined };
       // const resultCast = mustBe.recordOf.function(result);
       const futureCast = augmentations.future as unknown as { [key: string]: (a: unknown) => (a: unknown) => undefined };
-      // const futureCast = mustBe.recordOf.function<unknown, (a: unknown) => undefined>(augmentations.future);
+      // const futureCast = mustBe.recordOf.function(augmentations.future);
       Object.keys(augmentations.future).forEach(name => resultCast[name] = futureCast[name](result));
       return result;
     }
@@ -36,14 +36,15 @@ export const importOlikAsyncModule = () => {
       let snapshot: unknown = undefined;
       if (eager) {
         snapshot = readCurrentState();
-        setNewStateAndNotifyListeners({ stateActions: [...stateActions, { type: 'action', name: prop, arg: eager as RecursiveRecord | Primitive, actionType: `${prop}()` }] });
+        setNewStateAndNotifyListeners({ stateActions: [...stateActions, { type: 'action', name: prop, arg: eager as Actual, actionType: `${prop}()` }] });
       }
       state = { ...state, isLoading: true, storeValue: readCurrentState() };
-      const argCast = arg as unknown as () => Promise<RecursiveRecord | Primitive>;
+      const argCast = arg as unknown as () => Promise<unknown>;
+      // const argCast = mustBe.function(arg);
       const promise = (augmentations.async ? augmentations.async(argCast) : argCast());
       return promise
         .then(promiseResult => {
-          setNewStateAndNotifyListeners({ stateActions: [...stateActions, { type: 'action', name: prop, arg: promiseResult as RecursiveRecord | Primitive, actionType: `${prop}()` }] });
+          setNewStateAndNotifyListeners({ stateActions: [...stateActions, { type: 'action', name: prop, arg: promiseResult as Actual, actionType: `${prop}()` }] });
           state = { ...state, wasResolved: true, wasRejected: false, isLoading: false, storeValue: readCurrentState() };
           if (cache) {
             const statePath = stateActions.map(sa => sa.actionType).join('.');
@@ -87,8 +88,8 @@ export const importOlikAsyncModule = () => {
       }
     })
     const resultCast = result as unknown as { [key: string]: (...args: unknown[]) => unknown };
-    Object.keys(augmentations.future).forEach(name => resultCast[name] = augmentations.future[name](result as Future<RecursiveRecord | Primitive>));
-    return result as Promise<RecursiveRecord | Primitive>;
+    Object.keys(augmentations.future).forEach(name => resultCast[name] = augmentations.future[name](result as Future<unknown>));
+    return result as Promise<unknown>;
   }
 }
 
