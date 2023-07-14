@@ -1,10 +1,10 @@
 import { libState } from './constant';
-import { Primitive, RecursiveRecord, StateAction } from './type';
+import { Actual, StateAction } from './type';
 
 export const setCurrentActionReturningNewState = (
   { newState, payload, stateActions }:
-    { stateActions: ReadonlyArray<StateAction>, payload: undefined | null | RecursiveRecord | Primitive | Array<RecursiveRecord | Primitive>, newState: RecursiveRecord | Primitive | Array<RecursiveRecord | Primitive> }
-): RecursiveRecord | Primitive | Array<RecursiveRecord | Primitive> => {
+    { stateActions: ReadonlyArray<StateAction>, payload: undefined | null | Actual, newState: Actual }
+): Actual => {
   const internals = libState.store!.$internals;
   const currentAction = internals.currentAction;
   const type = stateActions.map(sa => sa.actionType).join('.');

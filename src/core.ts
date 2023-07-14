@@ -1,7 +1,7 @@
 import { andOr, augmentations, booleanNumberString, comparators, errorMessages, findFilter, libState, updateFunctions } from './constant';
 import { readState } from './read';
 import { OptionsForMakingAStore, Primitive, RecursiveRecord, StateAction, Store, StoreAugment } from './type';
-import { is, mustBe } from './type-check';
+import { is } from './type-check';
 import { StoreInternal, StoreInternals } from './type-internal';
 import { deepFreeze } from './utility';
 import { processPotentiallyAsyncUpdate } from './write';
@@ -93,7 +93,7 @@ export function createStore<S extends RecursiveRecord>(
     if (!libState.store) {
       libState.store = recurseProxy({}, true, []);
     }
-    libState.store![args.key!].$setNew(args.state);
+    libState.store!.$setNew({[args.key!]: args.state});
     const innerStore = new Proxy({} as Store<RecursiveRecord>, {
       get: (_, prop: string) => {
         if (prop === '$destroyStore') {
@@ -123,7 +123,7 @@ export const validateKeyedState = <S>(args: OptionsForMakingAStore<S>) => {
   if (!args.key) { return; }
   const state = libState.store?.$state;
   if (state === null || state === undefined) { return; }
-  if ((booleanNumberString.some(type => typeof (state) === type) || Array.isArray(state))) {
+  if ((booleanNumberString.some(type => typeof (state) === type) || is.arrayOf.actual(state))) {
     throw new Error(errorMessages.INVALID_CONTAINER_FOR_COMPONENT_STORES);
   }
   const initialStateOfHostStore = libState.store!.$internals.initialState;

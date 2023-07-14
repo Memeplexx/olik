@@ -12,7 +12,7 @@ export interface RecursiveRecord {
 
 export type Primitive = string | null | number | boolean;
 
-export type Actual = string | number | boolean | symbol | object;
+export type Actual = string | number | boolean | Record<string, unknown> | Array<unknown>;
 
 export type SetSomeDeepPayloadObject<T> = Partial<{
   [P in keyof T]: SetSomeDeepPayload<T[P]>;

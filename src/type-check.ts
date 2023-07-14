@@ -1,4 +1,4 @@
-import { RecursiveRecord, Actual } from "./type";
+import { Actual } from "./type";
 
 
 
@@ -7,7 +7,7 @@ const checks = {
   number: (arg: unknown) => typeof (arg) === 'number',
   string: (arg: unknown) => typeof (arg) === 'string',
   function: (arg: unknown) => typeof arg === 'function',
-  object: (arg: unknown) => typeof arg === 'object',
+  record: (arg: unknown) => typeof arg === 'object' && arg !== null && !Array.isArray(arg),
 }
 
 const checkElseThrow = <T>(check: (val: unknown) => boolean) => {
@@ -24,7 +24,7 @@ const checkArrayMustBe = {
   number: (arg: unknown): arg is Array<number> => checks.number(arg),
   string: (arg: unknown): arg is Array<string> => checks.string(arg),
   function: <Input, Output>(arg: unknown): arg is Array<(input: Input) => Output> => checks.function(arg),
-  object: (arg: unknown): arg is Array<RecursiveRecord> => checks.object(arg),
+  record: (arg: unknown): arg is Array<Record<string, unknown>> => checks.record(arg),
 } satisfies { [key in keyof typeof checks]: (arg: unknown) => boolean }
 
 const checkMustBe = {
@@ -32,7 +32,7 @@ const checkMustBe = {
   number: checkElseThrow<number>(value => checks.number(value)),
   string: checkElseThrow<string>(value => checks.string(value)),
   function: checkElseThrow(value => checks.function(value)),
-  object: checkElseThrow<RecursiveRecord>(value => checks.object(value)),
+  record: checkElseThrow<Record<string, unknown>>(value => checks.record(value)),
 } satisfies { [key in keyof typeof checks]: (arg: unknown) => unknown }
 
 export const mustBe = {
@@ -57,6 +57,16 @@ export const mustBe = {
 
 
 
+export const either = (arg: unknown) => {
+  return {
+    else: (val: Actual) => {
+      if (checks.actual(arg)) {
+        return arg as Actual;
+      }
+      return val;
+    }
+  }
+}
 
 
 
@@ -66,7 +76,7 @@ const checkIs = {
   number: (arg: unknown): arg is number => checks.number(arg),
   string: (arg: unknown): arg is string => checks.string(arg),
   function: <Input, Output>(arg: unknown): arg is ((input: Input) => Output) => checks.function(arg),
-  object: (arg: unknown): arg is RecursiveRecord => checks.object(arg),
+  record: (arg: unknown): arg is Record<string, unknown> => checks.record(arg),
 } satisfies { [key in keyof typeof checks]: (arg: unknown) => boolean }
 
 const checkArrayIs = {
@@ -74,7 +84,7 @@ const checkArrayIs = {
   number: (arg: unknown): arg is Array<number> => checks.number(arg),
   string: (arg: unknown): arg is Array<string> => checks.string(arg),
   function: <Input, Output>(arg: unknown): arg is (input: Input) => Output => checks.function(arg),
-  object: (arg: unknown): arg is Array<RecursiveRecord> => checks.object(arg),
+  record: (arg: unknown): arg is Array<Record<string, unknown>> => checks.record(arg),
 } satisfies { [key in keyof typeof checks]: (arg: unknown) => boolean }
 
 export const is = {
@@ -98,13 +108,13 @@ const arg = 2 as unknown;
 if (is.number(arg)) {
   arg.toFixed()
 }
-if (is.object(arg)) {
+if (is.record(arg)) {
   arg.one;
 }
 if (is.arrayOf.number(arg)) {
   arg[0].toFixed()
 }
-if (is.arrayOf.object(arg)) {
+if (is.arrayOf.record(arg)) {
   arg[0].one;
 }
 

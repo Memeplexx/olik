@@ -1,7 +1,7 @@
 import { errorMessages } from './constant';
 import { constructQuery } from './query';
-import { Primitive, RecursiveRecord, StateAction } from './type';
-import { is, mustBe } from './type-check';
+import { Actual, RecursiveRecord, StateAction } from './type';
+import { either, is, mustBe } from './type-check';
 import { setCurrentActionReturningNewState } from './write-action';
 
 export const removeInvalidateCache = ['delete', 'invalidateCache'];
@@ -14,17 +14,17 @@ export const copyNewState = (
     cursor
   }:
     {
-      currentState: RecursiveRecord | Primitive | Array<RecursiveRecord | Primitive>,
-      stateToUpdate: RecursiveRecord | Primitive | Array<RecursiveRecord | Primitive>,
+      currentState: unknown,
+      stateToUpdate: Actual,
       stateActions: ReadonlyArray<StateAction>,
       cursor: { index: number }
     }
-): RecursiveRecord | Primitive | Array<RecursiveRecord | Primitive> => {
-  if (Array.isArray(currentState) && (stateActions[cursor.index].type === 'property')) {
-    return currentState.map((e, i) => is.object(currentState[i])
-      ? { ...mustBe.object(currentState[i]), ...mustBe.object(copyNewState({ currentState: currentState[i] || {}, stateToUpdate: (mustBe.arrayOf.object(stateToUpdate)[i] || {}), stateActions, cursor: { ...cursor } })) }
-      : copyNewState({ currentState: currentState[i] || {}, stateToUpdate: (stateToUpdate as Array<RecursiveRecord>)[i] || {}, stateActions, cursor: { ...cursor } }) as  RecursiveRecord | Primitive);
-  } else if (Array.isArray(currentState) && (stateActions[cursor.index].type === 'mergeMatching')) {
+): Actual => {
+  if (is.arrayOf.record(currentState) && (stateActions[cursor.index].type === 'property')) {
+    return currentState.map((e, i) => is.record(currentState[i])
+      ? { ...currentState[i], ...mustBe.record(copyNewState({ currentState: currentState[i] || {}, stateToUpdate: (mustBe.arrayOf.record(stateToUpdate)[i] || {}), stateActions, cursor: { ...cursor } })) }
+      : copyNewState({ currentState: currentState[i] || {}, stateToUpdate: (stateToUpdate as Array<RecursiveRecord>)[i] || {}, stateActions, cursor: { ...cursor } }) as Actual);
+  } else if (is.arrayOf.actual(currentState) && (stateActions[cursor.index].type === 'mergeMatching')) {
     cursor.index++;
     const queryPaths = stateActions
       .slice(cursor.index, cursor.index + stateActions.slice(cursor.index).findIndex(sa => sa.type === 'action'))
@@ -33,9 +33,9 @@ export const copyNewState = (
         return prev.concat(curr);
       }, new Array<StateAction>());
     const repsert = stateActions[cursor.index++];
-    const repsertArgs = [...(Array.isArray(repsert.arg) ? repsert.arg : [repsert.arg!])];
+    const repsertArgs = [...(is.arrayOf.actual(repsert.arg) ? repsert.arg : [repsert.arg!])];
     const result = currentState.map(e => {
-      const elementValue = queryPaths.reduce((prev, curr) => prev = prev[curr.name] as RecursiveRecord, mustBe.object(e));
+      const elementValue = queryPaths.reduce((prev, curr) => prev = prev[curr.name] as RecursiveRecord, mustBe.record(e));
       const foundIndex = repsertArgs.findIndex(ua => queryPaths.reduce((prev, curr) => prev = (prev as RecursiveRecord)[curr.name] as RecursiveRecord, ua) === elementValue);
       return foundIndex !== -1 ? repsertArgs.splice(foundIndex, 1)[0]! : e;
     });
@@ -43,7 +43,7 @@ export const copyNewState = (
   }
   const action = stateActions[cursor.index++];
   if (cursor.index < stateActions.length) {
-    if (action.type === 'search' && Array.isArray(currentState)) {
+    if (action.type === 'search' && is.arrayOf.actual(currentState)) {
       const query = constructQuery({ stateActions, cursor });
       let findIndex = -1;
       if ('find' === action.name) {
@@ -55,59 +55,67 @@ export const copyNewState = (
       } else {
         if ('find' === action.name) {
           return currentState.map((e, i) => i === findIndex
-            ? copyNewState({ currentState: e, stateToUpdate: mustBe.object(stateToUpdate)[i], stateActions, cursor }) as RecursiveRecord
+            ? copyNewState({ currentState: e, stateToUpdate: mustBe.arrayOf.record(stateToUpdate)[i], stateActions, cursor })
             : e);
         } else if ('filter' === action.name) {
           if (stateActions[cursor.index]?.name === 'set') {
             return [
               ...currentState.filter(e => !query(e)),
-              ...(mustBe.arrayOf.object(copyNewState({ currentState, stateToUpdate: stateToUpdate, stateActions, cursor }))),
+              ...(mustBe.arrayOf.record(copyNewState({ currentState, stateToUpdate: stateToUpdate, stateActions, cursor }))),
             ];
           } else {
             return currentState.map((e, i) => query(e)
-              ? copyNewState({ currentState: e, stateToUpdate: mustBe.arrayOf.object(stateToUpdate)[i], stateActions, cursor: { ...cursor } }) as RecursiveRecord
+              ? copyNewState({ currentState: e, stateToUpdate: mustBe.arrayOf.record(stateToUpdate)[i], stateActions, cursor: { ...cursor } })
               : e);
           }
         }
       }
     } else if (removeInvalidateCache.includes(stateActions[cursor.index].name)) {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { [stateActions[cursor.index - 1].name]: other, ...otherState } = mustBe.object(currentState);
+      const { [stateActions[cursor.index - 1].name]: other, ...otherState } = mustBe.record(currentState);
       return setCurrentActionReturningNewState({ stateActions, payload: null, newState: otherState })
     } else {
-      return { ...currentState as RecursiveRecord, [action.name]: copyNewState({ currentState: mustBe.object(currentState || {})[action.name], stateToUpdate: mustBe.object(stateToUpdate || {})[action.name], stateActions, cursor }) };
+      return {
+        ...currentState as RecursiveRecord,
+        [action.name]: copyNewState({
+          currentState: mustBe.record(either(currentState).else({}))[action.name],
+          stateToUpdate: either(mustBe.record(either(stateToUpdate).else({}))[action.name]).else({}),
+          stateActions,
+          cursor
+        })
+      };
     }
   } else if (action.name === 'setSome') {
-    if (Array.isArray(currentState)) {
-      return setCurrentActionReturningNewState({ stateActions, payload: action.arg, newState: currentState.map(e => ({ ...mustBe.object(e), ...mustBe.object(action.arg) })) });
+    if (is.arrayOf.actual(currentState)) {
+      return setCurrentActionReturningNewState({ stateActions, payload: action.arg, newState: currentState.map(e => ({ ...mustBe.record(e), ...mustBe.record(action.arg) })) });
     } else {
-      return setCurrentActionReturningNewState({ stateActions, payload: action.arg, newState: { ...mustBe.object(currentState), ...mustBe.object(action.arg) } });
+      return setCurrentActionReturningNewState({ stateActions, payload: action.arg, newState: { ...mustBe.record(currentState), ...mustBe.record(action.arg) } });
     }
   } else if (action.name === 'add') {
-    if (Array.isArray(currentState)) {
+    if (is.arrayOf.actual(currentState)) {
       return setCurrentActionReturningNewState({ stateActions, payload: action.arg, newState: currentState.map(e => mustBe.number(e) + mustBe.number(action.arg)) });
     } else {
       return setCurrentActionReturningNewState({ stateActions, payload: action.arg, newState: mustBe.number(currentState) + mustBe.number(action.arg) });
     }
   } else if (action.name === 'subtract') {
-    if (Array.isArray(currentState)) {
+    if (is.arrayOf.actual(currentState)) {
       return setCurrentActionReturningNewState({ stateActions, payload: action.arg, newState: currentState.map(e => mustBe.number(e) + mustBe.number(action.arg)) });
     } else {
       return setCurrentActionReturningNewState({ stateActions, payload: action.arg, newState: mustBe.number(currentState) - mustBe.number(action.arg) });
     }
   } else if (action.name === 'setNew') {
-    return setCurrentActionReturningNewState({ stateActions, payload: action.arg, newState: currentState === undefined ? action.arg! : { ...mustBe.object(currentState), ...mustBe.object(action.arg) } });
+    return setCurrentActionReturningNewState({ stateActions, payload: action.arg, newState: currentState === undefined ? action.arg! : { ...mustBe.record(currentState), ...mustBe.record(action.arg) } });
   } else if (action.name === 'set') {
     return setCurrentActionReturningNewState({ stateActions, payload: action.arg, newState: action.arg! });
   } else if (action.name === 'setSomeDeep') {
-    return setCurrentActionReturningNewState({ stateActions, payload: action.arg, newState: deepMerge(mustBe.object(currentState), mustBe.object(action.arg)) });
+    return setCurrentActionReturningNewState({ stateActions, payload: action.arg, newState: deepMerge(mustBe.record(currentState), mustBe.record(action.arg)) });
   } else if (action.name === 'clear') {
     return setCurrentActionReturningNewState({ stateActions, payload: null, newState: [] });
   } else if (action.name === 'push') {
-    const newState = Array.isArray(action.arg) ? [...mustBe.arrayOf.object(currentState), ...action.arg] : [...mustBe.arrayOf.object(currentState), action.arg!];
+    const newState = is.arrayOf.actual(action.arg) ? [...mustBe.arrayOf.actual(currentState), ...action.arg] : [...mustBe.arrayOf.actual(currentState), action.arg!];
     return setCurrentActionReturningNewState({ stateActions, payload: action.arg, newState });
   } else if (action.name === 'toggle') {
-    if (Array.isArray(currentState)) {
+    if (is.arrayOf.actual(currentState)) {
       return setCurrentActionReturningNewState({ stateActions, payload: null, newState: currentState.map(e => !e) });
     } else {
       return setCurrentActionReturningNewState({ stateActions, payload: null, newState: !currentState });
@@ -116,17 +124,17 @@ export const copyNewState = (
   throw new Error();
 }
 
-export const deepMerge = (old: RecursiveRecord, payload: RecursiveRecord) => {
-  const mergeDeep = (target: RecursiveRecord, source: RecursiveRecord) => {
+export const deepMerge = (old: Record<string, unknown>, payload: Record<string, unknown>) => {
+  const mergeDeep = (target: Record<string, unknown>, source: Record<string, unknown>) => {
     const output = Object.assign({}, target);
-    if (is.object(target) && is.object(source)) {
+    if (is.record(target) && is.record(source)) {
       Object.keys(source).forEach(key => {
         const val = source[key];
-        if (is.object(val) && !is.arrayOf.actual(val)) {
+        if (is.record(val) && !is.arrayOf.actual(val)) {
           if (!(key in target)) {
             Object.assign(output, { [key]: val });
           } else {
-            output[key] = mergeDeep(mustBe.object(target[key]), mustBe.object(val));
+            output[key] = mergeDeep(mustBe.record(target[key]), mustBe.record(val));
           }
         } else {
           Object.assign(output, { [key]: val });
