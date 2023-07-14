@@ -1,6 +1,7 @@
 import { augmentations, errorMessages, libState } from './constant';
 import { readState } from './read';
 import { AnyAsync, EnableAsyncActionsArgs, Future, FutureState, Primitive, RecursiveRecord, StateAction, UpdateOptions } from './type';
+import { mustBe } from './type-check';
 import { setNewStateAndNotifyListeners } from './write-complete';
 
 export const importOlikAsyncModule = () => {
@@ -21,6 +22,7 @@ export const importOlikAsyncModule = () => {
             return state;
           } else {
             const targetCast = target as unknown as { [key: string]: (a: (number | RecursiveRecord)[]) => undefined };
+            // const targetCast = mustBe.record(target);
             return (...args: Array<RecursiveRecord | number>) => targetCast[prop]!(args);
           }
         }
@@ -31,7 +33,7 @@ export const importOlikAsyncModule = () => {
       return result;
     }
     const promiseResult = () => {
-      let snapshot: undefined | RecursiveRecord | Primitive | Array<RecursiveRecord | Primitive> = undefined;
+      let snapshot: unknown = undefined;
       if (eager) {
         snapshot = readCurrentState();
         setNewStateAndNotifyListeners({ stateActions: [...stateActions, { type: 'action', name: prop, arg: eager as RecursiveRecord | Primitive, actionType: `${prop}()` }] });
@@ -68,7 +70,7 @@ export const importOlikAsyncModule = () => {
         });
     }
     let promiseWasChained = false;
-    const result = new Proxy<Promise<RecursiveRecord | Primitive | Array<RecursiveRecord | Primitive>> | RecursiveRecord>(new Promise(resolve => {
+    const result = new Proxy<Promise<unknown>>(new Promise(resolve => {
       setTimeout(() => { if (!promiseWasChained) { promiseResult().then((r) => resolve(r)); } });
     }), {
       get: (target, prop: string) => {
@@ -80,7 +82,7 @@ export const importOlikAsyncModule = () => {
           return t[prop].bind(t);
         } else { // must be an augmentation
           promiseWasChained = true;
-          return (target as RecursiveRecord)[prop];
+          return mustBe.record(target)[prop];
         }
       }
     })

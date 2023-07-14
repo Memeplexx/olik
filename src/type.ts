@@ -10,11 +10,9 @@ export interface RecursiveRecord {
   [key: string]: ThingOrArrayOfThings<RecursiveRecord | Primitive>;
 }
 
-export type Primitive = string | null | number | boolean;
+export type Primitive = string | number | boolean;
 
-export type Primitive2 = string | number | boolean;
-
-export type Actual = string | number | boolean | Record<string, unknown> | Array<unknown>;
+export type Actual = Primitive | Record<string, unknown> | Array<unknown>;
 
 export type SetSomeDeepPayloadObject<T> = Partial<{
   [P in keyof T]: SetSomeDeepPayload<T[P]>;
@@ -496,7 +494,7 @@ export type Searchable<T, S, F extends FindOrFilter, Depth extends number, NewDe
 export interface StateAction {
   type: 'property' | 'search' | 'comparator' | 'action' | 'searchConcat' | 'mergeMatching';
   name: string;
-  arg?: RecursiveRecord | Primitive | Array<RecursiveRecord | Primitive>;
+  arg?: unknown;
   actionType?: string;
 }
 

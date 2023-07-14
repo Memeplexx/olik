@@ -1,10 +1,10 @@
 import { libState } from './constant';
-import { Actual, StateAction } from './type';
+import { StateAction } from './type';
 
 export const setCurrentActionReturningNewState = (
   { newState, payload, stateActions }:
-    { stateActions: ReadonlyArray<StateAction>, payload: undefined | null | Actual, newState: Actual }
-): Actual => {
+    { stateActions: ReadonlyArray<StateAction>, payload: unknown, newState: unknown }
+): unknown => {
   const internals = libState.store!.$internals;
   const currentAction = internals.currentAction;
   const type = stateActions.map(sa => sa.actionType).join('.');

@@ -19,7 +19,7 @@ export const copyNewState = (
       stateActions: ReadonlyArray<StateAction>,
       cursor: { index: number }
     }
-): Actual => {
+): unknown => {
   if (is.arrayOf.record(currentState) && (stateActions[cursor.index].type === 'property')) {
     return currentState.map((e, i) => is.record(currentState[i])
       ? { ...currentState[i], ...mustBe.record(copyNewState({ currentState: currentState[i] || {}, stateToUpdate: (mustBe.arrayOf.record(stateToUpdate)[i] || {}), stateActions, cursor: { ...cursor } })) }

@@ -1,4 +1,4 @@
-import { Actual, Primitive2 } from "./type";
+import { Actual, Primitive } from "./type";
 
 
 
@@ -24,7 +24,7 @@ const checkArrayMustBe = {
   actual: (arg: unknown): arg is Array<Actual> => checks.actual(arg),
   number: (arg: unknown): arg is Array<number> => checks.number(arg),
   string: (arg: unknown): arg is Array<string> => checks.string(arg),
-  primitive: (arg: unknown): arg is Array<Primitive2> => checks.primitive(arg),
+  primitive: (arg: unknown): arg is Array<Primitive> => checks.primitive(arg),
   function: <Input, Output>(arg: unknown): arg is Array<(input: Input) => Output> => checks.function(arg),
   record: (arg: unknown): arg is Array<Record<string, unknown>> => checks.record(arg),
 } satisfies { [key in keyof typeof checks]: (arg: unknown) => boolean }
@@ -33,7 +33,7 @@ const checkMustBe = {
   actual: checkElseThrow<Actual>(value => checks.actual(value)),
   number: checkElseThrow<number>(value => checks.number(value)),
   string: checkElseThrow<string>(value => checks.string(value)),
-  primitive: checkElseThrow<Primitive2>(value => checks.primitive(value)),
+  primitive: checkElseThrow<Primitive>(value => checks.primitive(value)),
   function: checkElseThrow(value => checks.function(value)),
   record: checkElseThrow<Record<string, unknown>>(value => checks.record(value)),
 } satisfies { [key in keyof typeof checks]: (arg: unknown) => unknown }
@@ -78,7 +78,7 @@ const checkIs = {
   actual: (arg: unknown): arg is Actual => checks.actual(arg),
   number: (arg: unknown): arg is number => checks.number(arg),
   string: (arg: unknown): arg is string => checks.string(arg),
-  primitive: (arg: unknown): arg is Primitive2 => checks.primitive(arg),
+  primitive: (arg: unknown): arg is Primitive => checks.primitive(arg),
   function: <Input, Output>(arg: unknown): arg is ((input: Input) => Output) => checks.function(arg),
   record: (arg: unknown): arg is Record<string, unknown> => checks.record(arg),
 } satisfies { [key in keyof typeof checks]: (arg: unknown) => boolean }
@@ -87,7 +87,7 @@ const checkArrayIs = {
   actual: (arg: unknown): arg is Array<Actual> => checks.actual(arg),
   number: (arg: unknown): arg is Array<number> => checks.number(arg),
   string: (arg: unknown): arg is Array<string> => checks.string(arg),
-  primitive: (arg: unknown): arg is Array<Primitive2> => checks.primitive(arg),
+  primitive: (arg: unknown): arg is Array<Primitive> => checks.primitive(arg),
   function: <Input, Output>(arg: unknown): arg is (input: Input) => Output => checks.function(arg),
   record: (arg: unknown): arg is Array<Record<string, unknown>> => checks.record(arg),
 } satisfies { [key in keyof typeof checks]: (arg: unknown) => boolean }
