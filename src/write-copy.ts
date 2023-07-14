@@ -1,6 +1,6 @@
 import { errorMessages } from './constant';
 import { constructQuery } from './query';
-import { Actual, RecursiveRecord, StateAction } from './type';
+import { Actual, StateAction } from './type';
 import { either, is, mustBe } from './type-check';
 import { setCurrentActionReturningNewState } from './write-action';
 
@@ -35,8 +35,8 @@ export const copyNewState = (
     const repsert = stateActions[cursor.index++];
     const repsertArgs = [...(is.arrayOf.actual(repsert.arg) ? repsert.arg : [repsert.arg!])];
     const result = currentState.map(e => {
-      const elementValue = queryPaths.reduce((prev, curr) => prev = prev[curr.name] as RecursiveRecord, mustBe.record(e));
-      const foundIndex = repsertArgs.findIndex(ua => queryPaths.reduce((prev, curr) => prev = (prev as RecursiveRecord)[curr.name] as RecursiveRecord, ua) === elementValue);
+      const elementValue = queryPaths.reduce((prev, curr) => mustBe.actual(mustBe.record(prev)[curr.name]), mustBe.actual(e));
+      const foundIndex = repsertArgs.findIndex(ua => queryPaths.reduce((prev, curr) => prev = mustBe.actual(mustBe.record(prev)[curr.name]), ua) === elementValue);
       return foundIndex !== -1 ? repsertArgs.splice(foundIndex, 1)[0]! : e;
     });
     return setCurrentActionReturningNewState({ stateActions, payload: repsert.arg, newState: [...result, ...repsertArgs] });
