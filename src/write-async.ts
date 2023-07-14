@@ -1,6 +1,6 @@
 import { augmentations, errorMessages, libState } from './constant';
 import { readState } from './read';
-import { Actual, AnyAsync, EnableAsyncActionsArgs, Future, FutureState, RecursiveRecord, StateAction, UpdateOptions } from './type';
+import { Actual, AnyAsync, EnableAsyncActionsArgs, Future, FutureState, StateAction, UpdateOptions } from './type';
 import { mustBe } from './type-check';
 import { setNewStateAndNotifyListeners } from './write-complete';
 
@@ -12,7 +12,7 @@ export const importOlikAsyncModule = () => {
     const readCurrentState = () =>
       readState({ state: libState.store!.$state, stateActions: [...stateActions, { type: 'action', name: 'state' }], cursor: { index: 0 } });
     let state = { storeValue: readCurrentState(), error: null, isLoading: false, wasRejected: false, wasResolved: false } as FutureState<unknown>;
-    if ((libState.store!.$state.cache as RecursiveRecord)?.[stateActions.map(sa => sa.actionType).join('.')]) {
+    if (libState.store!.$state.cache?.[stateActions.map(sa => sa.actionType).join('.')]) {
       const result = new Proxy(new Promise(resolve => resolve(readCurrentState())), {
         get: (target, prop: string) => {
           if (prop === 'then' || prop === 'catch' || prop === 'finally') {
