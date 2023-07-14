@@ -86,7 +86,7 @@ export function createStore<S extends RecursiveRecord>(
           return recurseProxy({}, false, stateActions);
         }
       }
-    }) as Store<RecursiveRecord> & StoreInternal;
+    }) as StoreInternal;
   };
   if (args.key) {
     internals.state = {} as S;
