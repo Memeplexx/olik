@@ -76,7 +76,7 @@ export const copyNewState = (
       return setCurrentActionReturningNewState({ stateActions, payload: null, newState: otherState })
     } else {
       return {
-        ...currentState as RecursiveRecord,
+        ...mustBe.record(either(currentState).else({})),
         [action.name]: copyNewState({
           currentState: mustBe.record(either(currentState).else({}))[action.name],
           stateToUpdate: either(mustBe.record(either(stateToUpdate).else({}))[action.name]).else({}),

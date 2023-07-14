@@ -1,6 +1,6 @@
 import { augmentations, errorMessages, libState } from './constant';
 import { readState } from './read';
-import { Actual, AnyAsync, EnableAsyncActionsArgs, Future, FutureState, Primitive, RecursiveRecord, StateAction, UpdateOptions } from './type';
+import { Actual, AnyAsync, EnableAsyncActionsArgs, Future, FutureState, RecursiveRecord, StateAction, UpdateOptions } from './type';
 import { mustBe } from './type-check';
 import { setNewStateAndNotifyListeners } from './write-complete';
 

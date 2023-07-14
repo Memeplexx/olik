@@ -1,6 +1,6 @@
 import { andOr, augmentations, booleanNumberString, comparators, errorMessages, findFilter, libState, updateFunctions } from './constant';
 import { readState } from './read';
-import { OptionsForMakingAStore, Primitive, RecursiveRecord, StateAction, Store, StoreAugment } from './type';
+import { OptionsForMakingAStore, RecursiveRecord, StateAction, Store, StoreAugment } from './type';
 import { is } from './type-check';
 import { StoreInternal, StoreInternals } from './type-internal';
 import { deepFreeze } from './utility';
@@ -13,13 +13,13 @@ export function createStore<S extends RecursiveRecord>(
   validateKeyedState(args);
   validateState(args.state);
   removeStaleCacheReferences(args.state);
-  const internals = {
+  const internals: StoreInternals<S> = {
     state: JSON.parse(JSON.stringify(args.state)),
     changeListeners: [],
     currentAction: { type: '' },
     initialState: args.state,
-  } as StoreInternals<S>;
-  const recurseProxy = (s: RecursiveRecord, topLevel: boolean, stateActions: StateAction[]): Store<RecursiveRecord> & StoreInternal<RecursiveRecord> => {
+  };
+  const recurseProxy = (s: Record<string, unknown>, topLevel: boolean, stateActions: StateAction[]): Store<Record<string, unknown>> & StoreInternal<RecursiveRecord> => {
     return new Proxy(s, {
       get: (target, dollarProp: string) => {
         const prop = dollarProp.startsWith('$') ? dollarProp.split('$')[1] : dollarProp;
@@ -50,7 +50,7 @@ export function createStore<S extends RecursiveRecord>(
         } else if ('$state' === dollarProp) {
           const tryFetchResult = (stateActions: StateAction[]): unknown => {
             try {
-              return deepFreeze(readState({ state: internals.state, stateActions: [...stateActions, { type: 'action', name: prop }], cursor: { index: 0 } }) as RecursiveRecord | Primitive);
+              return deepFreeze(readState({ state: internals.state, stateActions: [...stateActions, { type: 'action', name: prop }], cursor: { index: 0 } }));
             } catch (e) {
               stateActions.pop();
               return tryFetchResult(stateActions);
@@ -70,7 +70,7 @@ export function createStore<S extends RecursiveRecord>(
           stateActions.push({ type: 'searchConcat', name: prop, actionType: prop });
           return recurseProxy({}, false, stateActions);
         } else if (comparators.includes(dollarProp)) {
-          return (arg?: RecursiveRecord) => {
+          return (arg?: unknown) => {
             stateActions.push({ type: 'comparator', name: prop, arg, actionType: `${prop}(${arg})` });
             return recurseProxy({}, false, stateActions);
           }
@@ -94,7 +94,7 @@ export function createStore<S extends RecursiveRecord>(
       libState.store = recurseProxy({}, true, []);
     }
     libState.store!.$setNew({[args.key!]: args.state});
-    const innerStore = new Proxy({} as Store<RecursiveRecord>, {
+    const innerStore = new Proxy({}, {
       get: (_, prop: string) => {
         if (prop === '$destroyStore') {
           return () => {
@@ -107,7 +107,7 @@ export function createStore<S extends RecursiveRecord>(
         }
         return libState.store![args.key!][prop];
       }
-    });
+    }) as Store<RecursiveRecord>;
     libState.innerStores.set(args.key, innerStore);
     return innerStore as Store<S>;
   } else {
