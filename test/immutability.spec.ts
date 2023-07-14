@@ -4,7 +4,7 @@ import { resetLibraryState } from '../src/utility';
 describe('immutability', () => {
 
   beforeEach(() => {
-    resetLibraryState();;
+    resetLibraryState();
   })
 
   const state = {
@@ -30,7 +30,7 @@ describe('immutability', () => {
     const store = createStore({ state });
     const payload = { id: 2, name: 'hey' };
     store.arr.$find.id.$eq(1).$set(payload);
-    expect(() => (store.$state as any).arr = []).toThrow();
+    expect(() => store.$state.arr = []).toThrow();
   })
 
 });

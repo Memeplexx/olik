@@ -1,6 +1,6 @@
 import { augmentations, errorMessages, libState } from './constant';
 import { readState } from './read';
-import { AnyAsync, EnableAsyncActionsArgs, FutureState, StateAction, UpdateOptions } from './type';
+import { AnyAsync, EnableAsyncActionsArgs, Future, FutureState, Primitive, RecursiveRecord, StateAction, UpdateOptions } from './type';
 import { setNewStateAndNotifyListeners } from './write-complete';
 
 export const importOlikAsyncModule = () => {
@@ -9,35 +9,39 @@ export const importOlikAsyncModule = () => {
   ) => {
     if (libState.isInsideTransaction) { throw new Error(errorMessages.ASYNC_PAYLOAD_INSIDE_TRANSACTION); }
     const readCurrentState = () =>
-      readState({ state: libState.store.$state, stateActions: [...stateActions, { type: 'action', name: 'state' }], cursor: { index: 0 } });
-    let state = { storeValue: readCurrentState(), error: null, isLoading: false, wasRejected: false, wasResolved: false } as FutureState<any>;
-    if (libState.store.$state.cache?.[stateActions.map(sa => sa.actionType).join('.')]) {
-      const result = new Proxy(new Promise<any>(resolve => resolve(readCurrentState())), {
-        get: (target: any, prop: any) => {
+      readState({ state: libState.store!.$state, stateActions: [...stateActions, { type: 'action', name: 'state' }], cursor: { index: 0 } });
+    let state = { storeValue: readCurrentState(), error: null, isLoading: false, wasRejected: false, wasResolved: false } as FutureState<unknown>;
+    if ((libState.store!.$state.cache as RecursiveRecord)?.[stateActions.map(sa => sa.actionType).join('.')]) {
+      const result = new Proxy(new Promise(resolve => resolve(readCurrentState() as RecursiveRecord)), {
+        get: (target, prop: string) => {
           if (prop === 'then' || prop === 'catch' || prop === 'finally') {
             const t = Promise.resolve(readCurrentState());
-            return (t as any)[prop].bind(t);
+            return t[prop].bind(t);
           } else if (prop === 'state') {
             return state;
           } else {
-            return (...args: any[]) => target[prop].apply(target, args);
+            const targetCast = target as unknown as { [key: string]: (a: (number | RecursiveRecord)[]) => undefined };
+            return (...args: Array<RecursiveRecord | number>) => targetCast[prop]!(args);
           }
         }
-      });
-      Object.keys(augmentations.future).forEach(name => (result as any)[name] = augmentations.future[name](result));
+      }) as Promise<RecursiveRecord>;
+      const resultCast = result as unknown as { [key: string]: (a: (number | RecursiveRecord)[]) => undefined };
+      const futureCast = augmentations.future as unknown as { [key: string]: (a: Promise<RecursiveRecord>) => (a: (number | RecursiveRecord)[]) => undefined };
+      Object.keys(augmentations.future).forEach(name => resultCast[name] = futureCast[name](result));
       return result;
     }
     const promiseResult = () => {
-      let snapshot: any = undefined;
+      let snapshot: undefined | RecursiveRecord | Primitive | Array<RecursiveRecord | Primitive> = undefined;
       if (eager) {
         snapshot = readCurrentState();
-        setNewStateAndNotifyListeners({ stateActions: [...stateActions, { type: 'action', name: prop, arg: eager, actionType: `${prop}()` }] });
+        setNewStateAndNotifyListeners({ stateActions: [...stateActions, { type: 'action', name: prop, arg: eager as RecursiveRecord | Primitive, actionType: `${prop}()` }] });
       }
       state = { ...state, isLoading: true, storeValue: readCurrentState() };
-      const promise = (augmentations.async ? augmentations.async(arg) : arg()) as Promise<any>;
+      const argCast = arg as unknown as () => Promise<RecursiveRecord | Primitive>;
+      const promise = (augmentations.async ? augmentations.async(argCast) : argCast());
       return promise
         .then(promiseResult => {
-          setNewStateAndNotifyListeners({ stateActions: [...stateActions, { type: 'action', name: prop, arg: promiseResult, actionType: `${prop}()` }] });
+          setNewStateAndNotifyListeners({ stateActions: [...stateActions, { type: 'action', name: prop, arg: promiseResult as RecursiveRecord | Primitive, actionType: `${prop}()` }] });
           state = { ...state, wasResolved: true, wasRejected: false, isLoading: false, storeValue: readCurrentState() };
           if (cache) {
             const statePath = stateActions.map(sa => sa.actionType).join('.');
@@ -64,24 +68,25 @@ export const importOlikAsyncModule = () => {
         });
     }
     let promiseWasChained = false;
-    const result: any = new Proxy(new Promise<any>(resolve => {
+    const result = new Proxy<Promise<RecursiveRecord | Primitive | Array<RecursiveRecord | Primitive>> | RecursiveRecord>(new Promise(resolve => {
       setTimeout(() => { if (!promiseWasChained) { promiseResult().then((r) => resolve(r)); } });
     }), {
-      get: (target: any, prop: any) => {
+      get: (target, prop: string) => {
         if (prop === 'state') {
           return state;
         } else if (prop === 'then' || prop === 'catch' || prop === 'finally') {
           promiseWasChained = true;
           const t = promiseResult();
-          return (t as any)[prop].bind(t);
+          return t[prop].bind(t);
         } else { // must be an augmentation
           promiseWasChained = true;
-          return target[prop];
+          return (target as RecursiveRecord)[prop];
         }
       }
     })
-    Object.keys(augmentations.future).forEach(name => (result as any)[name] = augmentations.future[name](result));
-    return result
+    const resultCast = result as unknown as { [key: string]: (...args: unknown[]) => unknown };
+    Object.keys(augmentations.future).forEach(name => resultCast[name] = augmentations.future[name](result as Future<RecursiveRecord | Primitive>));
+    return result as Promise<RecursiveRecord | Primitive>;
   }
 }
 
@@ -98,6 +103,6 @@ export const toIsoStringInCurrentTz = (date: Date) => {
 
 export const defineQuery = <T>(
   arg: { query: () => AnyAsync<T>, cache?: number, eager?: T }
-): [() => AnyAsync<T>, UpdateOptions<T>] => {
-  return [arg.query, { cache: arg.cache, eager: arg.eager } as any];
+): [() => AnyAsync<T>, UpdateOptions<() => AnyAsync<T>>] => {
+  return [arg.query, { cache: arg.cache, eager: arg.eager } as UpdateOptions<() => AnyAsync<T>>];
 };

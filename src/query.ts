@@ -1,5 +1,5 @@
 import { comparisons } from './constant';
-import { StateAction } from './type';
+import { RecursiveRecord, StateAction } from './type';
 import { QuerySpec } from './type-internal';
 
 const actionProperty = ['action', 'property'];
@@ -16,7 +16,7 @@ export const constructQuery = (
           return prev.concat(curr);
         }, new Array<StateAction>());
       const comparator = stateActions[cursor.index++];
-      return (e: any) => comparisons[comparator.name](queryPaths.reduce((prev, curr) => prev = prev[curr.name], e), comparator.arg);
+      return (e: unknown) => comparisons[comparator.name](queryPaths.reduce((prev, curr) => prev = (prev as RecursiveRecord)[curr.name], e), comparator.arg);
     }
     queries.push({
       query: constructQuery(),
@@ -29,8 +29,8 @@ export const constructQuery = (
     return queries;
   }
   const queries = concatenateQueries([]);
-  const ors = new Array<(arg: any) => boolean>();
-  const ands = new Array<(arg: any) => boolean>();
+  const ors = new Array<(arg: unknown) => boolean>();
+  const ands = new Array<(arg: unknown) => boolean>();
   for (let i = 0; i < queries.length; i++) {
     const previousClauseWasAnAnd = queries[i - 1] && queries[i - 1].concat === 'and';
     if (queries[i].concat === 'and' || previousClauseWasAnAnd) {
@@ -45,5 +45,5 @@ export const constructQuery = (
       ors.push(queries[i].query);
     }
   }
-  return (e: any) => ors.some(fn => fn(e));
+  return (e: unknown) => ors.some(fn => fn(e));
 }

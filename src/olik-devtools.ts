@@ -1,6 +1,7 @@
 import { errorMessages, libState, testState } from './constant';
-import { DevtoolsInstance, Read, Set } from './type';
+import { DevtoolsInstance, Read, RecursiveRecord, Set } from './type';
 import { StoreInternal, WindowAugmentedWithOlikDevtools } from './type-internal';
+import { deserialize } from './utility';
 
 
 // export const jumpToStateAction = ['JUMP_TO_STATE', 'JUMP_TO_ACTION'];
@@ -127,8 +128,8 @@ import { StoreInternal, WindowAugmentedWithOlikDevtools } from './type-internal'
 export function connectOlikDevtoolsToStore() {
   libState.olikDevtools = {
     init: () => { },
-    dispatch: (stateReader, mutator) => {
-      const store = libState.store;
+    dispatch: (/*stateReader, mutator*/) => {
+      const store = libState.store!;
       const internals = store.$internals;
       // if (!!internals.olikDevtools!.disableDispatch) { return; }
       const currentAction = internals.currentAction;
@@ -147,7 +148,7 @@ export function connectOlikDevtoolsToStore() {
           payload: currentAction.payload,
           state: internals.state,
         },
-        state: libState.store.$state,
+        state: libState.store!.$state,
         source: 'olik-devtools-extension'
       }, location.origin);
     },
@@ -158,7 +159,7 @@ export function connectOlikDevtoolsToStore() {
   const olikStateDiv = document.createElement('div');
   olikStateDiv.id = 'olik-state';
   olikStateDiv.style.display = 'none';
-  olikStateDiv.innerHTML = JSON.stringify(libState.store.$state);
+  olikStateDiv.innerHTML = JSON.stringify(libState.store!.$state);
   document.body.appendChild(olikStateDiv);
 
   const olikActionDiv = document.createElement('div');
@@ -168,31 +169,21 @@ export function connectOlikDevtoolsToStore() {
 
   new MutationObserver(() => {
     const actionType = olikActionDiv.innerHTML;
-    let subStore = libState.store;
+    let subStore = libState.store!;
     const segments = actionType.split('.');
     if (segments[0] === 'store') {
       segments.shift();
     }
     segments.forEach(key => {
-      // const arg = key.match(/\(([^)]+)\)/)?.[1];
       const arg = key.match(/\(([^)]*)\)/)?.[1];
       const containsParenthesis = arg !== null && arg !== undefined;
       if (containsParenthesis) {
         const functionName = key.split('(')[0];
-        let typedArg = !isNaN(Number(arg)) ? parseFloat(arg)
-          : arg === 'true' ? true : arg === 'false' ? false
-            : arg;
-        if (typeof(typedArg) === 'string') {
-          if (typedArg.startsWith(`'`) || typedArg.startsWith(`"`)) {
-            typedArg = typedArg.slice(1);
-          }
-          if (typedArg.endsWith(`'`) || typedArg.endsWith(`"`)) {
-            typedArg = typedArg.slice(0, -1);
-          }
-        }
-        subStore = subStore[functionName](typedArg!);
+        const typedArg = deserialize(arg);
+        const functionToCall = subStore[functionName] as unknown as (arg: unknown) => StoreInternal<RecursiveRecord>;
+        subStore = functionToCall(typedArg!);
       } else {
-        subStore = subStore[key];
+        subStore = subStore[key] as unknown as StoreInternal<RecursiveRecord>;
       }
     })
   }).observe(olikActionDiv, { attributes: true, childList: true, subtree: true });

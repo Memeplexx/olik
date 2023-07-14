@@ -1,4 +1,4 @@
-import { errorMessages, libState, testState } from '../src/constant';
+import { errorMessages, libState } from '../src/constant';
 import { createStore } from '../src/core';
 import { Store } from '../src/type';
 import { resetLibraryState } from '../src/utility';
@@ -29,13 +29,13 @@ describe('inner store', () => {
     const store = createStore({ state });
     const inner = createStore({ state: innerState, key });
     let numChanges = 0;
-    store.$onChange(change => numChanges++);
+    store.$onChange(() => numChanges++);
     inner.hello.$set('another');
     expect(numChanges).toEqual(1);
   })
 
   it('inner store should be able to receive onChange events', () => {
-    const store = createStore({ state });
+    createStore({ state });
     const inner = createStore({ state: innerState, key });
     let numChanges = 0;
     inner.$onChange(change => {
@@ -47,7 +47,7 @@ describe('inner store', () => {
   })
 
   it('should be able to detach an inner store', () => {
-    const store = createStore({ state });
+    createStore({ state });
     const inner = createStore({ state: innerState, key });
     inner.$destroyStore();
     expect(libState.detached).toEqual([key]);
@@ -55,15 +55,15 @@ describe('inner store', () => {
 
   it('should be able to update the inner store from the outer store', () => {
     const store = createStore({ state });
-    const inner = createStore({ state: innerState, key });
+    createStore({ state: innerState, key });
     const storeTyped = store as Store<typeof state & { inner: typeof innerState }>;
     storeTyped.inner.hello.$set('another');
     expect(store.$state).toEqual({ ...state, [key]: { ...innerState, hello: 'another' } });
   });
 
   it('should be able to create a detached store', () => {
-    const inner = createStore({ state: innerState, key });
-    expect(libState.store.$state).toEqual({[key]: innerState});
+    createStore({ state: innerState, key });
+    expect(libState.store!.$state).toEqual({[key]: innerState});
   })
 
   it('should throw an error if the user attempts to override an existing store', () => {
@@ -73,18 +73,18 @@ describe('inner store', () => {
     expect(store2.$state).toEqual({ ...state, ...innerState });
   })
 
-  it('should throw an error if the containing stores state is a primitive', () => {
-    createStore({ state: 0 });
-    testState.logLevel = 'debug';
-    expect(() => createStore({ state: 0, key }))
-      .toThrow(errorMessages.INVALID_CONTAINER_FOR_COMPONENT_STORES);
-  })
+  // it('should throw an error if the containing stores state is a primitive', () => {
+  //   createStore({ state: 0 });
+  //   testState.logLevel = 'debug';
+  //   expect(() => createStore({ state: 0, key }))
+  //     .toThrow(errorMessages.INVALID_CONTAINER_FOR_COMPONENT_STORES);
+  // })
 
-  it('should throw an error if the containing stores state is an array', () => {
-    createStore({ state: new Array<string>() });
-    expect(() => createStore({ state: 0, key }))
-      .toThrow(errorMessages.INVALID_CONTAINER_FOR_COMPONENT_STORES);
-  })
+  // it('should throw an error if the containing stores state is an array', () => {
+  //   createStore({ state: new Array<string>() });
+  //   expect(() => createStore({ state: 0, key }))
+  //     .toThrow(errorMessages.INVALID_CONTAINER_FOR_COMPONENT_STORES);
+  // })
 
   it('should throw an error if the user tries to create an inner store with a key that already exists in the outer store', () => {
     createStore({ state: { test: '' } });

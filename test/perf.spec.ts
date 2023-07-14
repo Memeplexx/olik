@@ -1,6 +1,6 @@
 import { createStore } from '../src/core';
 import { produce } from 'immer';
-import { fromJS, List, Map } from 'immutable';
+import { fromJS, Map } from 'immutable';
 import { resetLibraryState } from '../src/utility';
 
 describe.skip('Performance', () => {
@@ -57,7 +57,7 @@ describe.skip('Performance', () => {
     const state = fromJS({ arr: [{ id: 1, val: '', obj: { num: 0 } }, { id: 2, val: '', obj: { num: 0 } }], obj: { num: 0 } });
     const before = performance.now();
     for (let i = 0; i < 1000; i++) {
-      state.updateIn(['arr', '0', 'id'], (value: number) => i)
+      state.updateIn(['arr', '0', 'id'], () => i)
       state.toJS();
     }
     console.log(`Immutable Perf (deep): ${performance.now() - before}`);

@@ -6,7 +6,7 @@ import { currentAction } from './_utility';
 
 
 const resolve = <T>(data: T, timeout = 10) => () => new Promise<T>(resolve => setTimeout(() => resolve(data), timeout));
-const reject = <T>(rejection: any, timeout = 10) => () => new Promise<T>((resolve, reject) => setTimeout(() => reject(rejection), timeout));
+const reject = <T>(rejection: unknown, timeout = 10) => () => new Promise<T>((resolve, reject) => setTimeout(() => reject(rejection), timeout));
 
 describe('async', () => {
 
@@ -233,19 +233,19 @@ describe('async', () => {
   })
 
   it('should remove stale cache references', async () => {
-    const store = createStore({ state: { num: 0 } });
+    const store = createStore<{num: number, cache?: { num: string }}>({ state: { num: 0 } });
     await store.num.$set(resolve(1), { cache: 10 });
-    expect((store.$state as any).cache.num).toBeTruthy();
+    expect(store.$state.cache!.num).toBeTruthy();
     await new Promise(resolve => setTimeout(() => resolve(null), 20));
     expect(store.$state).toEqual({ num: 1, cache: {} });
   })
 
   it('should support externally defined query with an eager update', async () => {
     const store = createStore({ state: { num: 0 } });
-    const updateNum = (arg: number) => defineQuery({
+    const updateNum = ((arg: number) => defineQuery({
       query: resolve(arg),
       eager: arg
-    });
+    }));
     store.num.$set(...updateNum(3)).then(() => expect(store.num.$state).toEqual(3));
     expect(store.num.$state).toEqual(3)
   })

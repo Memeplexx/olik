@@ -5,7 +5,7 @@ import { currentAction } from './_utility';
 
 describe('array-object', () => {
 
-  const state = [{ id: 1, val: 1 }, { id: 2, val: 2 }, { id: 3, val: 3 }];
+  const state = { arr: [{ id: 1, val: 1 }, { id: 2, val: 2 }, { id: 3, val: 3 }] };
 
   beforeEach(() => {
     resetLibraryState();
@@ -14,228 +14,228 @@ describe('array-object', () => {
   it('should replace all elements', () => {
     const store = createStore({ state });
     const payload = [{ id: 5, val: 5 }, { id: 6, val: 6 }, { id: 7, val: 7 }];
-    store
+    store.arr
       .$set(payload);
-    expect(currentAction(store)).toEqual({ type: 'set()', payload });
-    expect(store.$state).toEqual(payload);
+    expect(currentAction(store)).toEqual({ type: 'arr.set()', payload });
+    expect(store.$state.arr).toEqual(payload);
   })
 
   it('should remove all elements', () => {
     const store = createStore({ state });
-    store
+    store.arr
       .$clear();
-    expect(currentAction(store)).toEqual({ type: 'clear()' });
-    expect(store.$state).toEqual([]);
+    expect(currentAction(store)).toEqual({ type: 'arr.clear()' });
+    expect(store.$state.arr).toEqual([]);
   })
 
   it('should replace all elements properties', () => {
     const store = createStore({ state });
     const payload = 9;
-    store.val
+    store.arr.val
       .$set(payload);
-    expect(currentAction(store)).toEqual({ type: 'val.set()', payload });
-    expect(store.$state).toEqual(state.map(s => ({ ...s, val: payload })));
+    expect(currentAction(store)).toEqual({ type: 'arr.val.set()', payload });
+    expect(store.$state.arr).toEqual(state.arr.map(s => ({ ...s, val: payload })));
   })
 
   it('should increment all elements properties', () => {
     const store = createStore({ state });
     const payload = 1;
-    store.val
+    store.arr.val
       .$add(payload);
-    expect(currentAction(store)).toEqual({ type: 'val.add()', payload });
-    expect(store.$state).toEqual([{ id: 1, val: 2 }, { id: 2, val: 3 }, { id: 3, val: 4 }]);
+    expect(currentAction(store)).toEqual({ type: 'arr.val.add()', payload });
+    expect(store.$state.arr).toEqual([{ id: 1, val: 2 }, { id: 2, val: 3 }, { id: 3, val: 4 }]);
   })
 
   it('should be able to insert one element', () => {
     const store = createStore({ state });
     const payload = { id: 4, val: 4 };
-    store
+    store.arr
       .$push(payload);
-    expect(currentAction(store)).toEqual({ type: 'push()', payload });
-    expect(store.$state).toEqual([...state, payload]);
+    expect(currentAction(store)).toEqual({ type: 'arr.push()', payload });
+    expect(store.$state.arr).toEqual([...state.arr, payload]);
   })
 
   it('should be able to insert many elements', () => {
     const store = createStore({ state });
     const payload = [{ id: 4, val: 4 }, { id: 5, val: 5 }];
-    store
+    store.arr
       .$push(payload);
-    expect(currentAction(store)).toEqual({ type: 'push()', payload });
-    expect(store.$state).toEqual([...state, ...payload]);
+    expect(currentAction(store)).toEqual({ type: 'arr.push()', payload });
+    expect(store.$state.arr).toEqual([...state.arr, ...payload]);
   })
 
   it('should find an element and replace it', () => {
     const store = createStore({ state });
     const payload = { id: 4, val: 4 };
-    store
+    store.arr
       .$find.id.$eq(2)
       .$set(payload);
-    expect(currentAction(store)).toEqual({ type: 'find.id.eq(2).set()', payload });
-    expect(store.$state).toEqual([state[0], payload, state[2]]);
+    expect(currentAction(store)).toEqual({ type: 'arr.find.id.eq(2).set()', payload });
+    expect(store.$state.arr).toEqual([state.arr[0], payload, state.arr[2]]);
   })
 
   it('should find an element and remove it', () => {
     const store = createStore({ state });
-    store
+    store.arr
       .$find.id.$eq(2)
       .$delete();
-    expect(currentAction(store)).toEqual({ type: 'find.id.eq(2).delete()' });
-    expect(store.$state).toEqual([state[0], state[2]]);
+    expect(currentAction(store)).toEqual({ type: 'arr.find.id.eq(2).delete()' });
+    expect(store.$state.arr).toEqual([state.arr[0], state.arr[2]]);
   })
 
   it('should find an element property and increment it', () => {
     const store = createStore({ state });
     const payload = 2;
-    store
+    store.arr
       .$find.id.$eq(2).val
       .$add(payload);
-    expect(currentAction(store)).toEqual({ type: 'find.id.eq(2).val.add()', payload });
-    expect(store.$state).toEqual([state[0], { id: 2, val: 4 }, state[2]]);
+    expect(currentAction(store)).toEqual({ type: 'arr.find.id.eq(2).val.add()', payload });
+    expect(store.$state.arr).toEqual([state.arr[0], { id: 2, val: 4 }, state.arr[2]]);
   })
 
   it('should find an element by one clause or another and replace it', () => {
     const store = createStore({ state });
     const payload = { id: 9, val: 9 };
-    store
+    store.arr
       .$find.id.$eq(1).$or.id.$eq(2)
       .$set(payload);
-    expect(currentAction(store)).toEqual({ type: 'find.id.eq(1).or.id.eq(2).set()', payload });
-    expect(store.$state).toEqual([payload, state[1], state[2]]);
+    expect(currentAction(store)).toEqual({ type: 'arr.find.id.eq(1).or.id.eq(2).set()', payload });
+    expect(store.$state.arr).toEqual([payload, state.arr[1], state.arr[2]]);
   })
 
   it('should find an element by one clause or another and remove it', () => {
     const store = createStore({ state });
-    store
+    store.arr
       .$find.id.$eq(1).$or.id.$eq(2)
       .$delete();
-    expect(currentAction(store)).toEqual({ type: 'find.id.eq(1).or.id.eq(2).delete()' });
-    expect(store.$state).toEqual([state[1], state[2]]);
+    expect(currentAction(store)).toEqual({ type: 'arr.find.id.eq(1).or.id.eq(2).delete()' });
+    expect(store.$state.arr).toEqual([state.arr[1], state.arr[2]]);
   })
 
   it('should find an element by one clause or another and increment it', () => {
     const store = createStore({ state });
     const payload = 1;
-    store
+    store.arr
       .$find.id.$eq(1).$or.id.$eq(2).val
       .$add(1);
-    expect(currentAction(store)).toEqual({ type: 'find.id.eq(1).or.id.eq(2).val.add()', payload });
-    expect(store.$state).toEqual([{ id: 1, val: 2 }, state[1], state[2]]);
+    expect(currentAction(store)).toEqual({ type: 'arr.find.id.eq(1).or.id.eq(2).val.add()', payload });
+    expect(store.$state.arr).toEqual([{ id: 1, val: 2 }, state.arr[1], state.arr[2]]);
   })
 
   it('should find an element by one clause and another and replace it', () => {
     const store = createStore({ state });
     const payload = { id: 9, val: 9 };
-    store
+    store.arr
       .$find.id.$gt(1).$and.id.$lt(3)
       .$set(payload);
-    expect(currentAction(store)).toEqual({ type: 'find.id.gt(1).and.id.lt(3).set()', payload });
-    expect(store.$state).toEqual([state[0], { id: 9, val: 9 }, state[2]]);
+    expect(currentAction(store)).toEqual({ type: 'arr.find.id.gt(1).and.id.lt(3).set()', payload });
+    expect(store.$state.arr).toEqual([state.arr[0], { id: 9, val: 9 }, state.arr[2]]);
   })
 
   it('should find an element by one clause and another and remove it', () => {
     const store = createStore({ state });
-    store
+    store.arr
       .$find.id.$gt(1).$and.id.$lt(3)
       .$delete();
-    expect(currentAction(store)).toEqual({ type: 'find.id.gt(1).and.id.lt(3).delete()' });
-    expect(store.$state).toEqual([state[0], state[2]]);
+    expect(currentAction(store)).toEqual({ type: 'arr.find.id.gt(1).and.id.lt(3).delete()' });
+    expect(store.$state.arr).toEqual([state.arr[0], state.arr[2]]);
   })
 
   it('should find an element by one clause and another and increment it', () => {
     const store = createStore({ state });
     const payload = 1;
-    store
+    store.arr
       .$find.id.$eq(1).$and.id.$lt(2).val
       .$add(payload);
-    expect(currentAction(store)).toEqual({ type: 'find.id.eq(1).and.id.lt(2).val.add()', payload });
-    expect(store.$state).toEqual([{ id: 1, val: 2 }, state[1], state[2]]);
+    expect(currentAction(store)).toEqual({ type: 'arr.find.id.eq(1).and.id.lt(2).val.add()', payload });
+    expect(store.$state.arr).toEqual([{ id: 1, val: 2 }, state.arr[1], state.arr[2]]);
   })
 
   it('should filter elements and remove them', () => {
     const store = createStore({ state });
-    store
+    store.arr
       .$filter.id.$gt(1)
       .$delete();
-    expect(currentAction(store)).toEqual({ type: 'filter.id.gt(1).delete()' });
-    expect(store.$state).toEqual([state[0]]);
+    expect(currentAction(store)).toEqual({ type: 'arr.filter.id.gt(1).delete()' });
+    expect(store.$state.arr).toEqual([state.arr[0]]);
   })
 
   it('should filter elements and increment them', () => {
     const store = createStore({ state });
     const payload = 1;
-    store
+    store.arr
       .$filter.id.$gt(1).val
       .$add(1);
-    expect(currentAction(store)).toEqual({ type: 'filter.id.gt(1).val.add()', payload });
-    expect(store.$state).toEqual([state[0], { id: 2, val: 3 }, { id: 3, val: 4 }]);
+    expect(currentAction(store)).toEqual({ type: 'arr.filter.id.gt(1).val.add()', payload });
+    expect(store.$state.arr).toEqual([state.arr[0], { id: 2, val: 3 }, { id: 3, val: 4 }]);
   })
 
   it('should filter elements by one clause or another and remove them', () => {
     const store = createStore({ state });
-    store
+    store.arr
       .$filter.id.$eq(1).$or.id.$eq(2)
       .$delete();
-    expect(currentAction(store)).toEqual({ type: 'filter.id.eq(1).or.id.eq(2).delete()' });
-    expect(store.$state).toEqual([state[2]]);
+    expect(currentAction(store)).toEqual({ type: 'arr.filter.id.eq(1).or.id.eq(2).delete()' });
+    expect(store.$state.arr).toEqual([state.arr[2]]);
   })
 
   it('should filter elements by one clause or another and increment them', () => {
     const store = createStore({ state });
     const payload = 1;
-    store
+    store.arr
       .$filter.id.$eq(1).$or.id.$eq(2).val
       .$add(1);
-    expect(currentAction(store)).toEqual({ type: 'filter.id.eq(1).or.id.eq(2).val.add()', payload });
-    expect(store.$state).toEqual([{ id: 1, val: 2 }, { id: 2, val: 3 }, state[2]]);
+    expect(currentAction(store)).toEqual({ type: 'arr.filter.id.eq(1).or.id.eq(2).val.add()', payload });
+    expect(store.$state.arr).toEqual([{ id: 1, val: 2 }, { id: 2, val: 3 }, state.arr[2]]);
   })
 
   it('should filter elements by one clause and another and remove them', () => {
     const store = createStore({ state });
-    store
+    store.arr
       .$filter.id.$gt(0).$and.id.$lt(3)
       .$delete();
-    expect(currentAction(store)).toEqual({ type: 'filter.id.gt(0).and.id.lt(3).delete()' });
-    expect(store.$state).toEqual([state[2]]);
+    expect(currentAction(store)).toEqual({ type: 'arr.filter.id.gt(0).and.id.lt(3).delete()' });
+    expect(store.$state.arr).toEqual([state.arr[2]]);
   })
 
   it('should filter elements by one clause and another and increment them', () => {
     const store = createStore({ state });
     const payload = 1;
-    store
+    store.arr
       .$filter.id.$gt(0).$and.id.$gt(1).val
       .$add(1);
-    expect(currentAction(store)).toEqual({ type: 'filter.id.gt(0).and.id.gt(1).val.add()', payload });
-    expect(store.$state).toEqual([state[0], { id: 2, val: 3 }, { id: 3, val: 4 }]);
+    expect(currentAction(store)).toEqual({ type: 'arr.filter.id.gt(0).and.id.gt(1).val.add()', payload });
+    expect(store.$state.arr).toEqual([state.arr[0], { id: 2, val: 3 }, { id: 3, val: 4 }]);
   })
 
   it('should repsert one array element where a match could be found', () => {
     const store = createStore({ state });
     const payload = { id: 1, val: 5 };
-    store
+    store.arr
       .$mergeMatching.id
       .$withOne(payload);
-    expect(currentAction(store)).toEqual({ type: 'mergeMatching.id.withOne()', payload });
-    expect(store.$state).toEqual([payload, state[1], state[2]]);
+    expect(currentAction(store)).toEqual({ type: 'arr.mergeMatching.id.withOne()', payload });
+    expect(store.$state.arr).toEqual([payload, state.arr[1], state.arr[2]]);
   })
 
   it('should repsert one array element where a match could not be found', () => {
     const store = createStore({ state });
     const payload = { id: 4, val: 5 };
-    store
+    store.arr
       .$mergeMatching.id
       .$withOne(payload);
-    expect(currentAction(store)).toEqual({ type: 'mergeMatching.id.withOne()', payload });
-    expect(store.$state).toEqual([...state, payload]);
+    expect(currentAction(store)).toEqual({ type: 'arr.mergeMatching.id.withOne()', payload });
+    expect(store.$state.arr).toEqual([...state.arr, payload]);
   })
 
   it('should repsert array elements where one matches and another does not', () => {
     const store = createStore({ state });
     const payload = [{ id: 1, val: 5 }, { id: 5, val: 5 }];
-    store
+    store.arr
       .$mergeMatching.id
       .$withMany(payload);
-    expect(currentAction(store)).toEqual({ type: 'mergeMatching.id.withMany()', payload });
-    expect(store.$state).toEqual([payload[0], state[1], state[2], payload[1]]);
+    expect(currentAction(store)).toEqual({ type: 'arr.mergeMatching.id.withMany()', payload });
+    expect(store.$state.arr).toEqual([payload[0], state.arr[1], state.arr[2], payload[1]]);
   })
 
 });

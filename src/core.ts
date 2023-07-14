@@ -1,14 +1,15 @@
 import { andOr, augmentations, booleanNumberString, comparators, errorMessages, findFilter, libState, updateFunctions } from './constant';
 import { readState } from './read';
-import { OptionsForMakingAStore, StateAction, Store, StoreAugment } from './type';
-import { StoreInternals } from './type-internal';
+import { OptionsForMakingAStore, Primitive, RecursiveRecord, StateAction, Store, StoreAugment } from './type';
+import { is, mustBe } from './type-check';
+import { StoreInternal, StoreInternals } from './type-internal';
 import { deepFreeze } from './utility';
 import { processPotentiallyAsyncUpdate } from './write';
 import { setNewStateAndNotifyListeners } from './write-complete';
 
-export function createStore<S>(
+export function createStore<S extends RecursiveRecord>(
   args: OptionsForMakingAStore<S>
-): Store<S> & (S extends never ? {} : StoreAugment<S>) {
+): Store<S> & (S extends never ? unknown : StoreAugment<S>) {
   validateKeyedState(args);
   validateState(args.state);
   removeStaleCacheReferences(args.state);
@@ -18,17 +19,15 @@ export function createStore<S>(
     currentAction: { type: '' },
     initialState: args.state,
   } as StoreInternals<S>;
-  const recurseProxy = (s: any, topLevel: boolean, stateActions: StateAction[]): any => {
-    if (typeof s !== 'object') { return null; }
+  const recurseProxy = (s: RecursiveRecord, topLevel: boolean, stateActions: StateAction[]): Store<RecursiveRecord | Primitive> & StoreInternal<RecursiveRecord> => {
     return new Proxy(s, {
       get: (target, dollarProp: string) => {
-        if (typeof(dollarProp) === 'symbol') { return; }
         const prop = dollarProp.startsWith('$') ? dollarProp.split('$')[1] : dollarProp;
         stateActions = topLevel ? new Array<StateAction>() : stateActions;
         if ('$internals' === dollarProp) {
           return internals;
         } else if (topLevel && internals.mergedStoreInfo?.isMerged) {
-          return (libState.store as any)[dollarProp];
+          return (libState.store!)[dollarProp];
         } else if (updateFunctions.includes(dollarProp)) {
           return processPotentiallyAsyncUpdate({ stateActions, prop });
         } else if ('$invalidateCache' === dollarProp) {
@@ -49,9 +48,9 @@ export function createStore<S>(
           stateActions.push({ type: 'mergeMatching', name: prop, actionType: prop });
           return recurseProxy({}, false, stateActions);
         } else if ('$state' === dollarProp) {
-          const tryFetchResult = (stateActions: StateAction[]): any => {
+          const tryFetchResult = (stateActions: StateAction[]): unknown => {
             try {
-              return deepFreeze(readState({ state: internals.state, stateActions: [...stateActions, { type: 'action', name: prop }], cursor: { index: 0 } }));
+              return deepFreeze(readState({ state: internals.state, stateActions: [...stateActions, { type: 'action', name: prop }], cursor: { index: 0 } }) as RecursiveRecord | Primitive);
             } catch (e) {
               stateActions.pop();
               return tryFetchResult(stateActions);
@@ -60,7 +59,7 @@ export function createStore<S>(
           const result = tryFetchResult(stateActions.slice());
           return result === undefined ? null : result;
         } else if ('$onChange' === dollarProp) {
-          return (listener: (arg: any) => any) => {
+          return (listener: (arg: unknown) => unknown) => {
             const stateActionsCopy = [...stateActions, { type: 'action', name: prop }] as StateAction[];
             const unsubscribe = () => internals.changeListeners.splice(internals.changeListeners.findIndex(e => e === element), 1);
             const element = { actions: stateActionsCopy, listener, unsubscribe };
@@ -71,7 +70,7 @@ export function createStore<S>(
           stateActions.push({ type: 'searchConcat', name: prop, actionType: prop });
           return recurseProxy({}, false, stateActions);
         } else if (comparators.includes(dollarProp)) {
-          return (arg: any) => {
+          return (arg?: RecursiveRecord) => {
             stateActions.push({ type: 'comparator', name: prop, arg, actionType: `${prop}(${arg})` });
             return recurseProxy({}, false, stateActions);
           }
@@ -87,36 +86,36 @@ export function createStore<S>(
           return recurseProxy({}, false, stateActions);
         }
       }
-    });
+    }) as Store<RecursiveRecord | Primitive> & StoreInternal<RecursiveRecord>;
   };
   if (args.key) {
-    internals.state = {} as any;
+    internals.state = {} as S;
     if (!libState.store) {
       libState.store = recurseProxy({}, true, []);
     }
-    (libState.store as any)[args.key].$setNew(args.state);
-    const innerStore = new Proxy({}, {
+    libState.store![args.key!].$setNew(args.state);
+    const innerStore = new Proxy({} as Store<RecursiveRecord>, {
       get: (_, prop: string) => {
         if (prop === '$destroyStore') {
           return () => {
-            const changeListeners = libState.store.$internals.changeListeners;
+            const changeListeners = libState.store!.$internals.changeListeners;
             changeListeners.filter(l => l.actions[0].name === args.key).forEach(l => l.unsubscribe());
-            (libState.store as any)[args.key!].$delete();
+            libState.store![args.key!].$delete();
             libState.detached.push(args.key!);
             libState.innerStores.delete(args.key!);
           }
         }
-        return (libState.store as any)[args.key!][prop];
+        return libState.store![args.key!][prop];
       }
-    }) as any;
+    });
     libState.innerStores.set(args.key, innerStore);
-    return innerStore;
+    return innerStore as Store<S>;
   } else {
     if (libState.store) {
-      (libState.store as any).$setNew(args.state);
-      return libState.store as any;
+      libState.store.$setNew(args.state);
+      return libState.store as Store<S>;
     }
-    return libState.store = recurseProxy({}, true, []);
+    return (libState.store = recurseProxy({}, true, [])) as Store<S>;
   }
 }
 
@@ -127,14 +126,14 @@ export const validateKeyedState = <S>(args: OptionsForMakingAStore<S>) => {
   if ((booleanNumberString.some(type => typeof (state) === type) || Array.isArray(state))) {
     throw new Error(errorMessages.INVALID_CONTAINER_FOR_COMPONENT_STORES);
   }
-  const initialStateOfHostStore = libState.store.$internals.initialState;
+  const initialStateOfHostStore = libState.store!.$internals.initialState;
   if (initialStateOfHostStore[args.key] !== undefined) {
     throw new Error(errorMessages.KEY_ALREADY_IN_USE(args.key));
   }
 }
 
-export const validateState = (state: any) => {
-  const throwError = (illegal: any) => {
+export const validateState = (state: RecursiveRecord) => {
+  const throwError = (illegal: { toString(): string }) => {
     throw new Error(errorMessages.INVALID_STATE_INPUT(illegal));
   };
   if (
@@ -154,24 +153,26 @@ export const validateState = (state: any) => {
       if (key.startsWith('$')) {
         throw new Error(errorMessages.DOLLAR_USED_IN_STATE);
       }
-      validateState(state[key]);
+      validateState(state[key] as RecursiveRecord);
     });
   }
 }
+// export const validateState = (state: RecursiveRecord) => {
+//   mustBe.recursiveRecord(state);
+//   Object.keys(state).forEach(key => {
+//     if (key.startsWith('$')) {
+//       throw new Error(errorMessages.DOLLAR_USED_IN_STATE);
+//     }
+//     validateState(state[key] as RecursiveRecord);
+//   });
+// }
 
-export const removeStaleCacheReferences = (state: any) => {
+export const removeStaleCacheReferences = (state: RecursiveRecord) => {
   if (!state.cache) { return; }
-  for (let key in state.cache) {
-    if (new Date(state.cache[key]).getTime() <= Date.now()) {
-      delete state.cache[key];
+  const cache = state.cache as Record<string, string>;
+  for (const key in cache) {
+    if (new Date(cache[key]).getTime() <= Date.now()) {
+      delete cache[key];
     }
   }
 }
-
-// export const registerChangeListener = (listener: (arg: any) => any) => {
-//   const stateActionsCopy = [...stateActions, { type: 'action', name: prop }] as StateAction[];
-//   const unsubscribe = () => internals.changeListeners.splice(internals.changeListeners.findIndex(e => e === element), 1);
-//   const element = { actions: stateActionsCopy, listener, unsubscribe };
-//   internals.changeListeners.push(element);
-//   return { unsubscribe }
-// }

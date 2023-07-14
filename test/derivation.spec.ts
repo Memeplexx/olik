@@ -5,7 +5,7 @@ import { resetLibraryState } from '../src/utility';
 describe('derivation', () => {
 
   beforeEach(() => {
-    resetLibraryState();;
+    resetLibraryState();
   })
 
   it('should support derivations', () => {
@@ -37,7 +37,7 @@ describe('derivation', () => {
       store.counter,
     ).$with((array, counter) => {
       recalculating++;
-      let result = {
+      const result = {
         array: new Array<string>(),
         counter: 0,
       };
@@ -72,8 +72,9 @@ describe('derivation', () => {
     const mem = derive(
       store.array,
       store.counter,
-    ).$with((array, counter) => {
+    ).$with(() => {
       recalculating++;
+      return '';
     });
     mem.$onChange(() => eventReceived++);
     store.string.$set('hey');
@@ -117,8 +118,9 @@ describe('derivation', () => {
     const mem = derive(
       store.array
         .$find.id.$eq(2)
-    ).$with(val => {
+    ).$with(() => {
       recalculating++;
+      return '';
     });
     store.array
       .$find.id.$eq(2)
