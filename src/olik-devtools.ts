@@ -1,4 +1,5 @@
 import { libState, testState } from './constant';
+import { StoreInternal } from './type-internal';
 import { deserialize } from './utility';
 
 
@@ -54,7 +55,7 @@ export function connectOlikDevtoolsToStore() {
         const functionName = key.split('(')[0];
         const typedArg = deserialize(arg);
         const functionToCall = subStore[functionName];
-        subStore = functionToCall(typedArg!);
+        subStore = functionToCall(typedArg!) as StoreInternal;
       } else {
         subStore = subStore[key];
       }

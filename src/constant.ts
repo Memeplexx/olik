@@ -17,7 +17,7 @@ export const errorMessages = {
 export const libState = {
   store: undefined as undefined | StoreInternal,
   detached: [] as string[],
-  innerStores: new Map<string, Store<RecursiveRecord>>(),
+  innerStores: new Map<string, Store<unknown>>(),
   isInsideTransaction: false,
   onInternalDispatch: () => null,
   asyncUpdate: undefined as undefined | ((args: EnableAsyncActionsArgs) => Promise<unknown>),

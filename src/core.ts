@@ -19,7 +19,7 @@ export function createStore<S extends RecursiveRecord>(
     currentAction: { type: '' },
     initialState: args.state,
   };
-  const recurseProxy = (s: Record<string, unknown>, topLevel: boolean, stateActions: StateAction[]): Store<Record<string, unknown>> & StoreInternal => {
+  const recurseProxy = (s: Record<string, unknown>, topLevel: boolean, stateActions: StateAction[]): StoreInternal => {
     return new Proxy(s, {
       get: (target, dollarProp: string) => {
         const prop = dollarProp.startsWith('$') ? dollarProp.split('$')[1] : dollarProp;
@@ -60,7 +60,7 @@ export function createStore<S extends RecursiveRecord>(
           return result === undefined ? null : result;
         } else if ('$onChange' === dollarProp) {
           return (listener: (arg: unknown) => unknown) => {
-            const stateActionsCopy = [...stateActions, { type: 'action', name: prop }] as StateAction[];
+            const stateActionsCopy: StateAction[] = [...stateActions, { type: 'action', name: prop }];
             const unsubscribe = () => internals.changeListeners.splice(internals.changeListeners.findIndex(e => e === element), 1);
             const element = { actions: stateActionsCopy, listener, unsubscribe };
             internals.changeListeners.push(element);

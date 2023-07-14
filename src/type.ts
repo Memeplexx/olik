@@ -1,3 +1,5 @@
+import { StoreInternal } from "./type-internal";
+
 export type FindOrFilter = 'isFind' | 'isFilter';
 
 export type QueryStatus = 'notQueried' | 'queried' | 'notArray';
@@ -523,7 +525,7 @@ export interface Future<C> extends Promise<C> {
 }
 
 export interface Augmentations {
-  selection: { [name: string]: <C>(selection: Readable<C>) => (...args: unknown[]) => unknown },
+  selection: { [name: string]: (selection: StoreInternal) => (...args: unknown[]) => unknown },
   future: { [name: string]: <C>(future: Future<C>) => (...args: unknown[]) => unknown };
   derivation: { [name: string]: <R>(derivation: Derivation<R>) => (...args: unknown[]) => unknown }
   async: <C>(fnReturningFutureAugmentation: () => Promise<C>) => Promise<C>;

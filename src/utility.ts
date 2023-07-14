@@ -15,7 +15,7 @@ export const deepFreeze = <T>(o: T): T => {
   return o;
 }
 
-export const getStore = () => libState.store as Store<RecursiveRecord> | undefined;
+export const getStore = <T extends RecursiveRecord>() => libState.store as Store<T> | undefined;
 
 export const getInnerStores = () => libState.innerStores;
 
