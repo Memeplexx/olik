@@ -12,6 +12,8 @@ export interface RecursiveRecord {
 
 export type Primitive = string | null | number | boolean;
 
+export type Primitive2 = string | number | boolean;
+
 export type Actual = string | number | boolean | Record<string, unknown> | Array<unknown>;
 
 export type SetSomeDeepPayloadObject<T> = Partial<{
