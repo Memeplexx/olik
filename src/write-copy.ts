@@ -55,7 +55,7 @@ export const copyNewState = (
       } else {
         if ('find' === action.name) {
           return currentState.map((e, i) => i === findIndex
-            ? copyNewState({ currentState: e, stateToUpdate: mustBe.arrayOf.record(stateToUpdate)[i], stateActions, cursor })
+            ? copyNewState({ currentState: e, stateToUpdate: mustBe.arrayOf.actual(stateToUpdate)[i], stateActions, cursor })
             : e);
         } else if ('filter' === action.name) {
           if (stateActions[cursor.index]?.name === 'set') {
@@ -65,7 +65,7 @@ export const copyNewState = (
             ];
           } else {
             return currentState.map((e, i) => query(e)
-              ? copyNewState({ currentState: e, stateToUpdate: mustBe.arrayOf.record(stateToUpdate)[i], stateActions, cursor: { ...cursor } })
+              ? copyNewState({ currentState: e, stateToUpdate: mustBe.arrayOf.actual(stateToUpdate)[i], stateActions, cursor: { ...cursor } })
               : e);
           }
         }

@@ -1,6 +1,6 @@
 import { augmentations, errorMessages, libState } from './constant';
 import { readState } from './read';
-import { AnyAsync, EnableAsyncActionsArgs, Future, FutureState, Primitive, RecursiveRecord, StateAction, UpdateOptions } from './type';
+import { Actual, AnyAsync, EnableAsyncActionsArgs, Future, FutureState, Primitive, RecursiveRecord, StateAction, UpdateOptions } from './type';
 import { mustBe } from './type-check';
 import { setNewStateAndNotifyListeners } from './write-complete';
 
@@ -21,14 +21,14 @@ export const importOlikAsyncModule = () => {
           } else if (prop === 'state') {
             return state;
           } else {
-            const targetCast = target as unknown as { [key: string]: (a: (number | RecursiveRecord)[]) => undefined };
-            // const targetCast = mustBe.record(target);
-            return (...args: Array<RecursiveRecord | number>) => targetCast[prop]!(args);
+            return (...args: Array<Actual>) => mustBe.recordOf.function(target)[prop]!(args);
           }
         }
       }) as Promise<RecursiveRecord>;
-      const resultCast = result as unknown as { [key: string]: (a: (number | RecursiveRecord)[]) => undefined };
-      const futureCast = augmentations.future as unknown as { [key: string]: (a: Promise<RecursiveRecord>) => (a: (number | RecursiveRecord)[]) => undefined };
+      const resultCast = result as unknown as { [key: string]: (a: unknown) => undefined };
+      // const resultCast = mustBe.recordOf.function(result);
+      const futureCast = augmentations.future as unknown as { [key: string]: (a: unknown) => (a: unknown) => undefined };
+      // const futureCast = mustBe.recordOf.function<unknown, (a: unknown) => undefined>(augmentations.future);
       Object.keys(augmentations.future).forEach(name => resultCast[name] = futureCast[name](result));
       return result;
     }
