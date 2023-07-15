@@ -157,15 +157,6 @@ export const validateState = (state: RecursiveRecord) => {
     });
   }
 }
-// export const validateState = (state: RecursiveRecord) => {
-//   mustBe.recursiveRecord(state);
-//   Object.keys(state).forEach(key => {
-//     if (key.startsWith('$')) {
-//       throw new Error(errorMessages.DOLLAR_USED_IN_STATE);
-//     }
-//     validateState(state[key] as RecursiveRecord);
-//   });
-// }
 
 export const removeStaleCacheReferences = (state: RecursiveRecord) => {
   if (!state.cache) { return; }

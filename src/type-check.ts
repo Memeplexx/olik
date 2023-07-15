@@ -21,22 +21,21 @@ const checkElseThrow = <T>(check: (val: unknown) => boolean) => {
 }
 
 const checkArrayMustBe = {
-  actual: checkElseThrow<Array<Actual>>(value => checks.actual(value)),
-  number: checkElseThrow<Array<number>>(value => checks.number(value)),
-  string: checkElseThrow<Array<string>>(value => checks.string(value)),
-  primitive: checkElseThrow<Array<Primitive>>(value => checks.primitive(value)),
-  function: checkElseThrow(value => checks.function(value)),
-  record: checkElseThrow<Array<Record<string, unknown>>>(value => checks.record(value)),
+  actual: checkElseThrow<Array<Actual>>(checks.actual),
+  number: checkElseThrow<Array<number>>(checks.number),
+  string: checkElseThrow<Array<string>>(checks.string),
+  primitive: checkElseThrow<Array<Primitive>>(checks.primitive),
+  function: checkElseThrow(checks.function),
+  record: checkElseThrow<Array<Record<string, unknown>>>(checks.record),
 } satisfies { [key in keyof typeof checks]: (arg: unknown) => unknown }
 
 const checkMustBe = {
-  actual: checkElseThrow<Actual>(value => checks.actual(value)),
-  number: checkElseThrow<number>(value => checks.number(value)),
-  string: checkElseThrow<string>(value => checks.string(value)),
-  primitive: checkElseThrow<Primitive>(value => checks.primitive(value)),
-  // function: (<Input, Output>() => checkElseThrow<(a: Input) => Output>(value => checks.function(value)))(),
+  actual: checkElseThrow<Actual>(checks.actual),
+  number: checkElseThrow<number>(checks.number),
+  string: checkElseThrow<string>(checks.string),
+  primitive: checkElseThrow<Primitive>(checks.primitive),
   function: <Input, Output>(value: unknown) => checkElseThrow<(a: Input) => Output>(() => checks.function(value)),
-  record: checkElseThrow<Record<string, unknown>>(value => checks.record(value)),
+  record: checkElseThrow<Record<string, unknown>>(checks.record),
 } satisfies { [key in keyof typeof checks]: (arg: unknown) => unknown }
 
 export const mustBe = {
@@ -112,7 +111,7 @@ const checkArrayIs = {
 
 export const is = {
   ...checkIs,
-  arrayOf: new Proxy<typeof checkArrayIs>({} as typeof checkArrayIs, {
+  arrayOf: new Proxy({}, {
     get: (target, prop: keyof typeof checkArrayIs) => {
       return (arg: Array<unknown>) => {
         if (arg === null || arg === undefined || !Array.isArray(arg)) {
@@ -124,7 +123,7 @@ export const is = {
         return arg;
       }
     }
-  })
+  }) as typeof checkArrayIs
 }
 
 const arg = 2 as unknown;
