@@ -3,8 +3,7 @@ import { StateAction } from './type';
 import { either, is, mustBe } from './type-check';
 
 export const readState = (
-  { state, stateActions, cursor }:
-    { state: unknown, stateActions: StateAction[], cursor: { index: number } }
+  { state, stateActions, cursor }: { state: unknown, stateActions: StateAction[], cursor: { index: number } }
 ): unknown => {
   if (is.arrayOf.actual(state) && (stateActions[cursor.index].type === 'property')) {
     return state.map((e, i) => readState({ state: state[i], stateActions, cursor: { ...cursor } }));

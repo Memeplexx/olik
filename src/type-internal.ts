@@ -34,13 +34,13 @@ export type StoreInternal
   & DeleteNode<1>
   & OnChange<unknown>
   & {
-    [key in keyof RecursiveRecord]: StoreInternal & ((arg: unknown) => unknown)
+    [key in keyof RecursiveRecord]: StoreInternal & ((arg: unknown) => StoreInternal)
   }
   & {
     $internals: StoreInternals<RecursiveRecord>,
   }
   & {
-    $state: RecursiveRecord & { cache: Record<string, string> };
+    $state: RecursiveRecord & { cache?: Record<string, string> };
   };
 
 export interface QuerySpec {
