@@ -1,27 +1,28 @@
-import { andOr, augmentations, booleanNumberString, comparators, errorMessages, findFilter, libState, updateFunctions } from './constant';
+import { andOr, augmentations, comparators, errorMessages, findFilter, libState, updateFunctions } from './constant';
 import { readState } from './read';
 import { OptionsForMakingAStore, RecursiveRecord, StateAction, Store, StoreAugment } from './type';
-import { is } from './type-check';
+import { is, mustBe } from './type-check';
 import { StoreInternal, StoreInternals } from './type-internal';
 import { deepFreeze } from './utility';
 import { processPotentiallyAsyncUpdate } from './write';
 import { setNewStateAndNotifyListeners } from './write-complete';
 
-export function createStore<S extends RecursiveRecord>(
+export function createStore<S>(
   args: OptionsForMakingAStore<S>
 ): Store<S> & (S extends never ? unknown : StoreAugment<S>) {
   validateKeyedState(args);
+  const state = args.state as RecursiveRecord;
   validateState(args.state);
-  removeStaleCacheReferences(args.state);
-  const internals: StoreInternals<S> = {
+  removeStaleCacheReferences(state);
+  const internals: StoreInternals = {
     state: JSON.parse(JSON.stringify(args.state)),
     changeListeners: [],
     currentAction: { type: '' },
-    initialState: args.state,
+    initialState: state,
   };
-  const recurseProxy = (s: Record<string, unknown>, topLevel: boolean, stateActions: StateAction[]): StoreInternal => {
-    return new Proxy(s, {
-      get: (target, dollarProp: string) => {
+  const recurseProxy = (topLevel: boolean, stateActions: StateAction[]): StoreInternal => {
+    return new Proxy(<StoreInternal>{}, {
+      get: (_, dollarProp: string) => {
         const prop = dollarProp.startsWith('$') ? dollarProp.split('$')[1] : dollarProp;
         stateActions = topLevel ? new Array<StateAction>() : stateActions;
         if ('$internals' === dollarProp) {
@@ -37,7 +38,7 @@ export function createStore<S extends RecursiveRecord>(
               { type: 'property', name: 'cache', actionType: 'cache' },
               { type: 'property', name: actionType, actionType },
               { type: 'action', name: 'delete', actionType: 'delete()' },
-            ] as StateAction[];
+            ] satisfies StateAction[];
             try {
               setNewStateAndNotifyListeners({ stateActions: newStateActions });
             } catch (e) {
@@ -46,7 +47,7 @@ export function createStore<S extends RecursiveRecord>(
           }
         } else if ('$mergeMatching' === dollarProp) {
           stateActions.push({ type: 'mergeMatching', name: prop, actionType: prop });
-          return recurseProxy({}, false, stateActions);
+          return recurseProxy(false, stateActions);
         } else if ('$state' === dollarProp) {
           const tryFetchResult = (stateActions: StateAction[]): unknown => {
             try {
@@ -68,33 +69,33 @@ export function createStore<S extends RecursiveRecord>(
           }
         } else if (andOr.includes(dollarProp)) {
           stateActions.push({ type: 'searchConcat', name: prop, actionType: prop });
-          return recurseProxy({}, false, stateActions);
+          return recurseProxy(false, stateActions);
         } else if (comparators.includes(dollarProp)) {
           return (arg?: unknown) => {
             stateActions.push({ type: 'comparator', name: prop, arg, actionType: `${prop}(${arg})` });
-            return recurseProxy({}, false, stateActions);
+            return recurseProxy(false, stateActions);
           }
         } else if (findFilter.includes(dollarProp)) {
           stateActions.push({ type: 'search', name: prop, actionType: prop });
-          return recurseProxy({}, false, stateActions);
+          return recurseProxy(false, stateActions);
         } else if (augmentations.selection[dollarProp]) {
-          return augmentations.selection[dollarProp](recurseProxy({}, false, stateActions));
+          return augmentations.selection[dollarProp](recurseProxy(false, stateActions));
         } else if (augmentations.core[dollarProp]) {
-          return augmentations.core[dollarProp](recurseProxy({}, false, stateActions));
+          return augmentations.core[dollarProp](recurseProxy(false, stateActions));
         } else {
           stateActions.push({ type: 'property', name: prop, actionType: prop });
-          return recurseProxy({}, false, stateActions);
+          return recurseProxy(false, stateActions);
         }
       }
-    }) as StoreInternal;
+    });
   };
   if (args.key) {
-    internals.state = {} as S;
+    internals.state = {};
     if (!libState.store) {
-      libState.store = recurseProxy({}, true, []);
+      libState.store = recurseProxy(true, []);
     }
-    libState.store!.$setNew({[args.key!]: args.state});
-    const innerStore = new Proxy({}, {
+    libState.store!.$setNew({ [args.key!]: args.state });
+    const innerStore = new Proxy(<Store<typeof state>>{}, {
       get: (_, prop: string) => {
         if (prop === '$destroyStore') {
           return () => {
@@ -107,15 +108,15 @@ export function createStore<S extends RecursiveRecord>(
         }
         return libState.store![args.key!][prop];
       }
-    }) as Store<RecursiveRecord>;
+    });
     libState.innerStores.set(args.key, innerStore);
     return innerStore as Store<S>;
   } else {
     if (libState.store) {
-      libState.store.$setNew(args.state);
-      return libState.store as Store<S>;
+      libState.store.$setNew(state);
+      return <Store<S>>libState.store;
     }
-    return (libState.store = recurseProxy({}, true, [])) as Store<S>;
+    return (libState.store = recurseProxy(true, [])) as Store<S>;
   }
 }
 
@@ -123,44 +124,32 @@ export const validateKeyedState = <S>(args: OptionsForMakingAStore<S>) => {
   if (!args.key) { return; }
   const state = libState.store?.$state;
   if (state === null || state === undefined) { return; }
-  if ((booleanNumberString.some(type => typeof (state) === type) || is.arrayOf.actual(state))) {
-    throw new Error(errorMessages.INVALID_CONTAINER_FOR_COMPONENT_STORES);
-  }
   const initialStateOfHostStore = libState.store!.$internals.initialState;
   if (initialStateOfHostStore[args.key] !== undefined) {
     throw new Error(errorMessages.KEY_ALREADY_IN_USE(args.key));
   }
 }
 
-export const validateState = (state: RecursiveRecord) => {
+export const validateState = (state: unknown) => {
   const throwError = (illegal: { toString(): string }) => {
     throw new Error(errorMessages.INVALID_STATE_INPUT(illegal));
   };
-  if (
-    state !== null
-    && !booleanNumberString.some(type => typeof state === type)
-  ) {
-    if (!Array.isArray(state)) {
-      if (typeof state !== "object") {
-        throwError(state);
-      }
-      const proto = Object.getPrototypeOf(state);
-      if (proto != null && proto !== Object.prototype) {
-        throwError(state);
-      }
+  if (is.actual(state) && !is.primitive(state)) {
+    if (!is.array(state) && !is.record(state)) {
+      throwError(state);
     }
-    Object.keys(state).forEach(key => {
+    Object.entries(state).forEach(([key, val]) => {
       if (key.startsWith('$')) {
         throw new Error(errorMessages.DOLLAR_USED_IN_STATE);
       }
-      validateState(state[key] as RecursiveRecord);
+      validateState(val);
     });
   }
 }
 
 export const removeStaleCacheReferences = (state: RecursiveRecord) => {
   if (!state.cache) { return; }
-  const cache = state.cache as Record<string, string>;
+  const cache = mustBe.recordOf.string(state.cache);
   for (const key in cache) {
     if (new Date(cache[key]).getTime() <= Date.now()) {
       delete cache[key];

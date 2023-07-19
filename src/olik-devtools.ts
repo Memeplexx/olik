@@ -10,8 +10,8 @@ export function connectOlikDevtoolsToStore() {
       const internals = store.$internals;
       const currentAction = internals.currentAction;
       testState.currentActionForOlikDevtools = currentAction;
-      const typeString = (currentAction.type as string)
-        .replace(/\((.+?)\)/g, (substring, args) => `(${args.toString()})`);
+      const typeString = currentAction.type
+        .replace(/\((.+?)\)/g, (_, args) => `(${args.toString()})`);
       const typeStringRev = currentAction.payload === undefined
         ? typeString
         : typeString.substring(0, typeString.length - 1) + JSON.stringify(currentAction.payload) + ')';

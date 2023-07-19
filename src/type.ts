@@ -1,5 +1,3 @@
-import { StoreInternal } from "./type-internal";
-
 export type FindOrFilter = 'isFind' | 'isFilter';
 
 export type QueryStatus = 'notQueried' | 'queried' | 'notArray';
@@ -525,9 +523,9 @@ export interface Future<C> extends Promise<C> {
 }
 
 export interface Augmentations {
-  selection: { [name: string]: (selection: StoreInternal) => (...args: unknown[]) => unknown },
-  future: { [name: string]: <C>(future: Future<C>) => (...args: unknown[]) => unknown };
-  derivation: { [name: string]: <R>(derivation: Derivation<R>) => (...args: unknown[]) => unknown }
+  selection: { [name: string]: <C>(selection: Readable<C>) => (args: Actual[]) => unknown },
+  future: { [name: string]: <C>(future: Future<C>) => (args: Actual[]) => unknown };
+  derivation: { [name: string]: <R>(derivation: Derivation<R>) => (args: Actual[]) => unknown }
   async: <C>(fnReturningFutureAugmentation: () => Promise<C>) => Promise<C>;
   core: { [prop: string]: <C>(selection: Readable<C>) => unknown },
 }
@@ -554,11 +552,11 @@ export interface OptionsForMakingAStore<S> {
 export interface ReduxDevtoolsOptions {
   /**
    * Whether or not to display the 'trace' tab in the devtools.
-   * Set this to false for production builds as it negatively impacts performance.
+   * Set this to false for production builds because it negatively impacts performance.
    */
   traceActions?: boolean;
   /**
-   * Limit the length of search args so as to prevent very long action types.  
+   * Limit the length of search args so because to prevent very long action types.  
    * 
    * For example, by default, the following action type:
    * `todos.find.id.eq(c985ab52-6645-11ec-90d6-0242ac120003).delete()`

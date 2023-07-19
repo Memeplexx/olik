@@ -1,5 +1,4 @@
 import { libState, testState } from './constant';
-import { RecursiveRecord, Store } from './type';
 import { is } from './type-check';
 import { StoreInternal } from './type-internal';
 
@@ -7,7 +6,7 @@ import { StoreInternal } from './type-internal';
 export const deepFreeze = <T>(o: T): T => {
   Object.freeze(o);
   if (o == null || o === undefined) { return o; }
-  (Object.keys(o) as (Array<keyof typeof o>)).forEach(prop => {
+  (<Array<keyof typeof o>>Object.keys(o)).forEach(prop => {
     if (is.record(o) || is.arrayOf.actual(o)) {
       deepFreeze(o[prop]);
     }
@@ -15,7 +14,7 @@ export const deepFreeze = <T>(o: T): T => {
   return o;
 }
 
-export const getStore = <T extends RecursiveRecord>() => libState.store as Store<T> | undefined;
+export const getStore = () => libState.store;
 
 export const getInnerStores = () => libState.innerStores;
 
@@ -31,30 +30,30 @@ export const deserialize = <R>(arg?: string | null): R => {
 
   // IS THE STRING NULL OR UNDEFINED?
   if (arg === null || arg === undefined) {
-    return arg as R
+    return <R>arg
   }
 
   // IS THE STRING 'undefined'?
   if (arg === 'undefined') {
-    return undefined as R
+    return <R>undefined
   }
 
   // IS THE STRING EMPTY?
   if (arg === '') {
-    return arg as R
+    return <R>arg
   }
 
   // IS THE STRING A NUMBER?
   if (!isNaN(Number(arg))) {
-    return parseFloat(arg) as R;
+    return <R>parseFloat(arg)
   }
 
   // IS THE STRING A BOOLEAN?
   if (arg === 'true') {
-    return true as R
+    return <R>true
   }
   if (arg === 'false') {
-    return false as R
+    return <R>false
   }
 
   // IS THE STRING JSON?
@@ -71,6 +70,6 @@ export const deserialize = <R>(arg?: string | null): R => {
   } catch (e) {
 
     // WE'VE RUN OUT OF OPTIONS, JUST RETURN THE STRING
-    return arg as R
+    return <R>arg
   }
 }

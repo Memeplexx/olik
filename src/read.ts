@@ -6,7 +6,7 @@ export const readState = (
   { state, stateActions, cursor }: { state: unknown, stateActions: StateAction[], cursor: { index: number } }
 ): unknown => {
   if (is.arrayOf.actual(state) && (stateActions[cursor.index].type === 'property')) {
-    return state.map((e, i) => readState({ state: state[i], stateActions, cursor: { ...cursor } }));
+    return state.map((_, i) => readState({ state: state[i], stateActions, cursor: { ...cursor } }));
   }
   const action = stateActions[cursor.index++];
   if (cursor.index < stateActions.length) {

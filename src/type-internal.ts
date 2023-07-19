@@ -15,13 +15,13 @@ export interface MergedStoreInfo {
   isMerged: boolean;
 }
 
-export interface StoreInternals<S extends RecursiveRecord> {
-  state: S,
+export interface StoreInternals {
+  state: RecursiveRecord,
   changeListeners: ChangeListener[],
   nestedStoreInfo?: NestedStoreInfo,
   mergedStoreInfo?: MergedStoreInfo;
   currentAction: OlikAction,
-  initialState: S;
+  initialState: RecursiveRecord
   // olikDevtools?: {
   //   instance: DevtoolsInstance,
   //   disableDispatch: boolean,
@@ -37,7 +37,7 @@ export type StoreInternal
     [key in keyof RecursiveRecord]: StoreInternal & ((arg: unknown) => StoreInternal)
   }
   & {
-    $internals: StoreInternals<RecursiveRecord>,
+    $internals: StoreInternals,
   }
   & {
     $state: RecursiveRecord & { cache?: Record<string, string> };

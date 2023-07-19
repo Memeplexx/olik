@@ -7,27 +7,38 @@ export const errorMessages = {
   FIND_RETURNS_NO_MATCHES: 'Could not find array element',
   ASYNC_PAYLOAD_INSIDE_TRANSACTION: 'Transactions do not currently support asynchronous payloads',
   DEVTOOL_DISPATCHED_INVALID_JSON: 'Invalid action dispatched from the devtools. Please dispatch a valid plain javascript object. All keys and values that are strings must be enclosed in double-quotes',
-  INVALID_CONTAINER_FOR_COMPONENT_STORES: `The state which your container store manages must be an object in order for it to host your nested store`,
-  INVALID_STATE_INPUT: (illegal: { toString(): string }) => `State must be serializable as JSON. Value of '${illegal.toString()}' is not permitted`,
+  INVALID_STATE_INPUT: (illegal: { toString(): string }) => `State must be serializable to JSON. Value of '${illegal.toString()}' is not permitted`,
   ASYNC_UPDATES_NOT_ENABLED: 'Cannot perform an async update until you enable it. Please import and invoke `importOlikAsyncModule()` before creating your store',
-  DOLLAR_USED_IN_STATE: `Your state cannot contain any properties which begin with a '$' symbol as this syntax is reserved for library functions`,
+  DOLLAR_USED_IN_STATE: `Your state cannot contain any properties which begin with a '$' symbol because this syntax is reserved for library functions`,
   KEY_ALREADY_IN_USE: (illegal: string) => `The key '${illegal}' is already in use in the application store. Please choose a different key for your inner store`,
 } as const;
 
-export const libState = {
-  store: undefined as undefined | StoreInternal,
-  detached: [] as string[],
+export const libState: {
+  store: undefined | StoreInternal,
+  detached: string[],
+  innerStores: Map<string, Store<unknown>>,
+  isInsideTransaction: boolean,
+  onInternalDispatch: (action: OlikAction) => void,
+  asyncUpdate: undefined | ((args: EnableAsyncActionsArgs) => Promise<unknown>),
+  olikDevtools: undefined | { dispatch: ( stateReader: (state: RecursiveRecord) => unknown, mutator: string ) => unknown, init: () => void },
+} = {
+  store: undefined,
+  detached: [],
   innerStores: new Map<string, Store<unknown>>(),
   isInsideTransaction: false,
   onInternalDispatch: () => null,
-  asyncUpdate: undefined as undefined | ((args: EnableAsyncActionsArgs) => Promise<unknown>),
-  olikDevtools: undefined as undefined | { dispatch: ( stateReader: (state: RecursiveRecord) => unknown, mutator: string ) => unknown, init: () => void },
+  asyncUpdate: undefined,
+  olikDevtools: undefined,
 }
 
-export const testState = {
-  currentActionForOlikDevtools: {} as OlikAction,
-  fakeWindowObjectForOlikDevtools: null as null | WindowAugmentedWithOlikDevtools,
-  logLevel: 'none' as ('debug' | 'none'),
+export const testState: {
+  currentActionForOlikDevtools: OlikAction,
+  fakeWindowObjectForOlikDevtools: null | WindowAugmentedWithOlikDevtools,
+  logLevel: 'debug' | 'none',
+} = {
+  currentActionForOlikDevtools: { type: '' } as OlikAction,
+  fakeWindowObjectForOlikDevtools: null,
+  logLevel: 'none',
 }
 
 export const augmentations: Augmentations = {
@@ -39,13 +50,13 @@ export const augmentations: Augmentations = {
 };
 
 export const comparisons = {
-  eq: (val, arg) => val === arg,
-  in: (val, arg: Array<unknown>) => arg.includes(val),
-  ni: (val, arg: Array<unknown>) => !arg.includes(val),
-  gt: (val: number, arg: number) => val > arg,
-  lt: (val: number, arg: number) => val < arg,
-  gte: (val: number, arg: number) => val >= arg,
-  lte: (val: number, arg: number) => val <= arg,
+  eq: <T>(val: T, arg: T) => val === arg,
+  in: <T>(val: T, arg: Array<T>) => arg.includes(val),
+  ni: <T>(val: T, arg: Array<T>) => !arg.includes(val),
+  gt: <T>(val: T, arg: T) => val > arg,
+  lt: <T>(val: T, arg: T) => val < arg,
+  gte: <T>(val: T, arg: T) => val >= arg,
+  lte: <T>(val: T, arg: T) => val <= arg,
   match: (val: string, arg: RegExp) => arg.test(val),
 } as { [comparator: string]: (val: unknown, arg: unknown) => boolean };
 

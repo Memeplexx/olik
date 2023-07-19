@@ -21,7 +21,7 @@ export const copyNewState = (
     }
 ): unknown => {
   if (is.arrayOf.record(currentState) && (stateActions[cursor.index].type === 'property')) {
-    return currentState.map((e, i) => is.record(currentState[i])
+    return currentState.map((_, i) => is.record(currentState[i])
       ? { ...currentState[i], ...mustBe.record(copyNewState({ currentState: currentState[i] || {}, stateToUpdate: (mustBe.arrayOf.record(stateToUpdate)[i] || {}), stateActions, cursor: { ...cursor } })) }
       : copyNewState({ currentState: currentState[i], stateToUpdate: mustBe.arrayOf.actual(stateToUpdate)[i], stateActions, cursor: { ...cursor } }) as Actual);
   } else if (is.arrayOf.actual(currentState) && (stateActions[cursor.index].type === 'mergeMatching')) {
@@ -51,7 +51,7 @@ export const copyNewState = (
         if (findIndex === -1) { throw new Error(errorMessages.FIND_RETURNS_NO_MATCHES); }
       }
       if (stateActions[cursor.index].name === 'delete') {
-        return setCurrentActionReturningNewState({ stateActions, payload: null, newState: 'find' === action.name ? currentState.filter((e, i) => findIndex !== i) : currentState.filter(e => !query(e)) });
+        return setCurrentActionReturningNewState({ stateActions, payload: null, newState: 'find' === action.name ? currentState.filter((_, i) => findIndex !== i) : currentState.filter(e => !query(e)) });
       } else {
         if ('find' === action.name) {
           return currentState.map((e, i) => i === findIndex

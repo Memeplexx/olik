@@ -10,7 +10,7 @@
 //     resetLibraryState();
 //   })
 
-//   it('should toggle all elements', () => {
+//   test('should toggle all elements', () => {
 //     const store = createStore({ state: [true, true, false] });
 //     store
 //       .$toggle();
@@ -18,7 +18,7 @@
 //     expect(store.$state).toEqual([false, false, true]);
 //   })
 
-//   it('should replace all elements', () => {
+//   test('should replace all elements', () => {
 //     const store = createStore({ state });
 //     const payload = [4, 5, 6];
 //     store
@@ -27,7 +27,7 @@
 //     expect(store.$state).toEqual([4, 5, 6]);
 //   })
 
-//   it('should remove all elements', () => {
+//   test('should remove all elements', () => {
 //     const store = createStore({ state });
 //     store
 //       .$clear();
@@ -35,7 +35,7 @@
 //     expect(store.$state).toEqual([]);
 //   })
 
-//   it('should increment all elements', () => {
+//   test('should increment all elements', () => {
 //     const store = createStore({ state });
 //     const payload = 1;
 //     store
@@ -44,7 +44,7 @@
 //     expect(store.$state).toEqual(state.map(e => e + 1));
 //   })
 
-//   it('should be able to insert one primitive', () => {
+//   test('should be able to insert one primitive', () => {
 //     const store = createStore({ state });
 //     const payload = 4;
 //     store
@@ -53,7 +53,7 @@
 //     expect(store.$state).toEqual([...state, payload]);
 //   })
 
-//   it('should be able to insert many primitives', () => {
+//   test('should be able to insert many primitives', () => {
 //     const store = createStore({ state });
 //     const payload = [4, 5, 6];
 //     store
@@ -62,7 +62,7 @@
 //     expect(store.$state).toEqual([...state, ...payload]);
 //   })
 
-//   it('should find an element and toggle it', () => {
+//   test('should find an element and toggle it', () => {
 //     const store = createStore({ state: [true, true, false, false] });
 //     store
 //       .$find.$eq(false)
@@ -71,7 +71,7 @@
 //     expect(store.$state).toEqual([true, true, true, false]);
 //   })
 
-//   it('should find an element and replace it', () => {
+//   test('should find an element and replace it', () => {
 //     const store = createStore({ state });
 //     const payload = 9;
 //     store
@@ -81,7 +81,7 @@
 //     expect(store.$state).toEqual([1, payload, 3]);
 //   })
 
-//   it('should find an element and remove it', () => {
+//   test('should find an element and remove it', () => {
 //     const store = createStore({ state });
 //     store
 //       .$find.$eq(2)
@@ -90,7 +90,7 @@
 //     expect(store.$state).toEqual([1, 3]);
 //   })
 
-//   it('should find an element and increment it', () => {
+//   test('should find an element and increment it', () => {
 //     const store = createStore({ state });
 //     const payload = 2;
 //     store
@@ -100,7 +100,7 @@
 //     expect(store.$state).toEqual([1, 4, 3]);
 //   })
 
-//   it('should find an element by one clause or another and replace it', () => {
+//   test('should find an element by one clause or another and replace it', () => {
 //     const store = createStore({ state });
 //     const payload = 9;
 //     store
@@ -110,7 +110,7 @@
 //     expect(store.$state).toEqual([9, 2, 3]);
 //   })
 
-//   it('should find an element by one clause or another and remove it', () => {
+//   test('should find an element by one clause or another and remove it', () => {
 //     const store = createStore({ state });
 //     store
 //       .$find.$eq(1).$or.$eq(2)
@@ -119,7 +119,7 @@
 //     expect(store.$state).toEqual([2, 3]);
 //   })
 
-//   it('should find an element by one clause or another and increment it', () => {
+//   test('should find an element by one clause or another and increment it', () => {
 //     const store = createStore({ state });
 //     const payload = 1;
 //     store
@@ -129,7 +129,7 @@
 //     expect(store.$state).toEqual([2, 2, 3]);
 //   })
 
-//   it('should find an element by one clause and another and replace it', () => {
+//   test('should find an element by one clause and another and replace it', () => {
 //     const store = createStore({ state });
 //     const payload = 9;
 //     store
@@ -139,7 +139,7 @@
 //     expect(store.$state).toEqual([1, 9, 3]);
 //   })
 
-//   it('should find an element by one clause and another and remove it', () => {
+//   test('should find an element by one clause and another and remove it', () => {
 //     const store = createStore({ state });
 //     store
 //       .$find.$gt(1).$and.$lt(3)
@@ -148,7 +148,7 @@
 //     expect(store.$state).toEqual([1, 3]);
 //   })
 
-//   it('should find an element by one clause and another and increment it', () => {
+//   test('should find an element by one clause and another and increment it', () => {
 //     const store = createStore({ state });
 //     const payload = 1;
 //     store
@@ -158,7 +158,7 @@
 //     expect(store.$state).toEqual([2, 2, 3]);
 //   })
 
-//   it('should filter elements and toggle then', () => {
+//   test('should filter elements and toggle then', () => {
 //     const store = createStore({ state: [true, true, false, false] });
 //     store
 //       .$filter.$eq(false)
@@ -167,7 +167,7 @@
 //     expect(store.$state).toEqual([true, true, true, true]);
 //   })
 
-//   it('should filter elements and remove them', () => {
+//   test('should filter elements and remove them', () => {
 //     const store = createStore({ state });
 //     store
 //       .$filter.$gt(1)
@@ -176,7 +176,7 @@
 //     expect(store.$state).toEqual([1]);
 //   })
 
-//   it('should filter elements and increment them', () => {
+//   test('should filter elements and increment them', () => {
 //     const store = createStore({ state });
 //     const payload = 1;
 //     store
@@ -186,7 +186,7 @@
 //     expect(store.$state).toEqual([1, 3, 4]);
 //   })
 
-//   it('should filter elements by one clause or another and remove them', () => {
+//   test('should filter elements by one clause or another and remove them', () => {
 //     const store = createStore({ state });
 //     store
 //       .$filter.$eq(1).$or.$eq(2)
@@ -195,7 +195,7 @@
 //     expect(store.$state).toEqual([3]);
 //   })
 
-//   it('should filter elements by one clause or another and increment them', () => {
+//   test('should filter elements by one clause or another and increment them', () => {
 //     const store = createStore({ state });
 //     const payload = 1;
 //     store
@@ -205,7 +205,7 @@
 //     expect(store.$state).toEqual([2, 3, 3]);
 //   })
 
-//   it('should filter elements by one clause and another and remove them', () => {
+//   test('should filter elements by one clause and another and remove them', () => {
 //     const store = createStore({ state });
 //     store
 //       .$filter.$gt(0).$and.$lt(3)
@@ -214,7 +214,7 @@
 //     expect(store.$state).toEqual([3]);
 //   })
 
-//   it('should filter elements by one clause and another and increment them', () => {
+//   test('should filter elements by one clause and another and increment them', () => {
 //     const store = createStore({ state });
 //     const payload = 1;
 //     store

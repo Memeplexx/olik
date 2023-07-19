@@ -3,9 +3,9 @@
 // import { importOlikReduxDevtoolsModule } from '../src/redux-devtools';
 // import { currentAction, windowAugmentedWithReduxDevtoolsImpl } from './_utility';
 
-describe.skip('devtools', () => {
+test.skip('devtools', () => {
 
-  const name = 'AppStore';
+  // const name = 'AppStore';
 
   // beforeAll(() => {
   //   testState.fakeWindowObjectForReduxDevtools = windowAugmentedWithReduxDevtoolsImpl;

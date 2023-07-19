@@ -15,4 +15,4 @@ export const windowAugmentedWithOlikDevtoolsImpl = {
   }(),
 } as unknown as WindowAugmentedWithOlikDevtools;
 
-export const currentAction = <S extends RecursiveRecord>(store: Store<S>) => (store as StoreInternal<S>).$internals.currentAction;
+export const currentAction = <S extends RecursiveRecord>(store: Store<S>) => (store as StoreInternal).$internals.currentAction;
