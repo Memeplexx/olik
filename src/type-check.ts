@@ -8,7 +8,7 @@ const checks = {
   boolean: (arg: unknown): arg is boolean => typeof (arg) === 'boolean',
   primitive: (arg: unknown): arg is Primitive => ['number', 'string', 'boolean'].includes(typeof arg),
   function: <Input, Output>(arg: unknown): arg is ((a: Input) => Output) => typeof arg === 'function',
-  record: (arg: unknown): arg is { [key: string]: unknown } => typeof arg === 'object' && arg !== null && !Array.isArray(arg),
+  record: <Value>(arg: unknown): arg is { [key: string]: Value } => typeof arg === 'object' && arg !== null && !Array.isArray(arg),
   array: (arg: unknown): arg is Array<unknown> => Array.isArray(arg),
 }
 
@@ -20,7 +20,7 @@ export const mustBe = new Proxy({}, {
           return (arg: Array<unknown>) => {
             if (arg === null || arg === undefined || !Array.isArray(arg)) { throw new Error(); }
             if (arg.length > 0) { // only check first element in array
-              mustBe[prop](arg[0]);
+              mustBe.function(mustBe[prop])(arg[0]);
             }
             return arg;
           }
@@ -33,15 +33,16 @@ export const mustBe = new Proxy({}, {
             if (arg === null || arg === undefined || !checks.record(arg)) { throw new Error(); }
             const values = Object.values(arg);
             if (values.length > 0) { // only check first element in object
-              mustBe[prop](values[0]);
+              mustBe.function(mustBe[prop])(values[0]);
             }
             return arg;
           }
         }
       });
     } else {
+      const value = checks[prop] as (arg: unknown) => unknown;
       return ((arg: unknown) => {
-        if (!checks[prop](arg)) {
+        if (!value(arg)) {
           throw new Error();
         }
         return arg;
@@ -49,11 +50,12 @@ export const mustBe = new Proxy({}, {
     }
   }
 }) as { [key in keyof typeof checks]: typeof checks[key] extends (arg: unknown) => arg is infer H ?
-  key extends 'function' ? <Input, Output>(a: unknown) => (i: Input) => Output : ((a: unknown) => H) : never }
+  key extends 'function' ? <Input, Output>(a: unknown) => ((i: Input) => Output) 
+  : key extends 'record' ? <Value>(a: unknown) => { [k: string]: Value }
+  :  ((a: unknown) => H) 
+  : never }
   & {
-    arrayOf: { [key in keyof typeof checks]: typeof checks[key] extends (arg: unknown) => arg is infer H ? ((a: unknown) => Array<H>) : never }
-  }
-  & {
+    arrayOf: { [key in keyof typeof checks]: typeof checks[key] extends (arg: unknown) => arg is infer H ? ((a: unknown) => Array<H>) : never },
     recordOf: { [key in keyof typeof checks]: typeof checks[key] extends (arg: unknown) => arg is infer H ?
       key extends 'function' ? <Input, Output>(a: unknown) => { [k: string]: (i: Input) => Output } : ((a: unknown) => { [k: string]: H })
       : never }
@@ -69,7 +71,7 @@ export const is = {
           return false
         }
         if (arg.length > 0) { // only check first element in array
-          return is[prop](arg[0]);
+          return mustBe.function(is[prop])(arg[0]);
         }
         return arg;
       }

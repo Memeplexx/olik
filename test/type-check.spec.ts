@@ -1,4 +1,4 @@
-import { is } from '../src/type-check';
+import { is, mustBe } from '../src/type-check';
 import { expect, test } from 'vitest';
 
 test('', () => {
@@ -64,4 +64,9 @@ test('', () => {
 test('', () => {
   const arg = [[], []];
   expect(is.arrayOf.array(arg)).toEqual(true);
+})
+
+test('', () => {
+  const arg = { a: 1, b: 2 };
+  mustBe.record<number>(arg);
 })

@@ -1,4 +1,5 @@
 import { libState, testState } from './constant';
+import { Store } from './type';
 import { is } from './type-check';
 import { StoreInternal } from './type-internal';
 
@@ -14,7 +15,7 @@ export const deepFreeze = <T>(o: T): T => {
   return o;
 }
 
-export const getStore = () => libState.store;
+export const getStore = <S>() => libState.store as Store<S>;
 
 export const getInnerStores = () => libState.innerStores;
 
