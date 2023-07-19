@@ -12,33 +12,37 @@ const checks = {
   array: (arg: unknown): arg is Array<unknown> => Array.isArray(arg),
 }
 
+const mustBeArrayOf = new Proxy({}, {
+  get: (_, prop: keyof typeof checks) => {
+    return (arg: Array<unknown>) => {
+      if (arg === null || arg === undefined || !Array.isArray(arg)) { throw new Error(); }
+      if (arg.length > 0) { // only check first element in array
+        mustBe.function(mustBe[prop])(arg[0]);
+      }
+      return arg;
+    }
+  }
+});
+
+const mustBeRecordOf = new Proxy({}, {
+  get: (_, prop: keyof typeof checks) => {
+    return (arg: Record<string, unknown>) => {
+      if (arg === null || arg === undefined || !checks.record(arg)) { throw new Error(); }
+      const values = Object.values(arg);
+      if (values.length > 0) { // only check first element in object
+        mustBe.function(mustBe[prop])(values[0]);
+      }
+      return arg;
+    }
+  }
+});
+
 export const mustBe = new Proxy({}, {
   get: (_, prop: keyof typeof checks | 'arrayOf' | 'recordOf') => {
     if (prop === 'arrayOf') {
-      return new Proxy({}, {
-        get: (_, prop: keyof typeof checks) => {
-          return (arg: Array<unknown>) => {
-            if (arg === null || arg === undefined || !Array.isArray(arg)) { throw new Error(); }
-            if (arg.length > 0) { // only check first element in array
-              mustBe.function(mustBe[prop])(arg[0]);
-            }
-            return arg;
-          }
-        }
-      });
+      return mustBeArrayOf;
     } else if (prop === 'recordOf') {
-      return new Proxy({}, {
-        get: (_, prop: keyof typeof checks) => {
-          return (arg: Record<string, unknown>) => {
-            if (arg === null || arg === undefined || !checks.record(arg)) { throw new Error(); }
-            const values = Object.values(arg);
-            if (values.length > 0) { // only check first element in object
-              mustBe.function(mustBe[prop])(values[0]);
-            }
-            return arg;
-          }
-        }
-      });
+      return mustBeRecordOf;
     } else {
       const value = checks[prop] as (arg: unknown) => unknown;
       return ((arg: unknown) => {
@@ -61,22 +65,23 @@ export const mustBe = new Proxy({}, {
       : never }
   }
 
+const isArrayOf = new Proxy({}, {
+  get: (_, prop: keyof typeof checks) => {
+    return (arg: Array<unknown>) => {
+      if (arg === null || arg === undefined || !Array.isArray(arg)) {
+        return false
+      }
+      if (arg.length > 0) { // only check first element in array
+        return mustBe.function(is[prop])(arg[0]);
+      }
+      return arg;
+    }
+  }
+}) as { [key in keyof typeof checks]: typeof checks[key] extends (arg: unknown) => arg is infer H ? ((a: unknown) => a is H[]) : never };
 
 export const is = {
   ...checks,
-  arrayOf: new Proxy({}, {
-    get: (_, prop: keyof typeof checks) => {
-      return (arg: Array<unknown>) => {
-        if (arg === null || arg === undefined || !Array.isArray(arg)) {
-          return false
-        }
-        if (arg.length > 0) { // only check first element in array
-          return mustBe.function(is[prop])(arg[0]);
-        }
-        return arg;
-      }
-    }
-  }) as { [key in keyof typeof checks]: typeof checks[key] extends (arg: unknown) => arg is infer H ? ((a: unknown) => a is H[]) : never },
+  arrayOf: isArrayOf,
 }
 
 export const either = (arg: unknown) => {
