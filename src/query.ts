@@ -21,7 +21,7 @@ export const constructQuery = (
     }
     queries.push({
       query: constructQuery(),
-      concat: actionProperty.includes(stateActions[cursor.index].type) ? 'last' : stateActions[cursor.index].name as 'and' | 'or'
+      concat: actionProperty.includes(stateActions[cursor.index].type) ? '$last' : stateActions[cursor.index].name as '$and' | '$or'
     });
     if (stateActions[cursor.index].type === 'searchConcat') {
       cursor.index++;
@@ -33,16 +33,16 @@ export const constructQuery = (
   const ors = new Array<(arg: unknown) => boolean>();
   const ands = new Array<(arg: unknown) => boolean>();
   for (let i = 0; i < queries.length; i++) {
-    const previousClauseWasAnAnd = queries[i - 1] && queries[i - 1].concat === 'and';
-    if (queries[i].concat === 'and' || previousClauseWasAnAnd) {
+    const previousClauseWasAnAnd = queries[i - 1] && queries[i - 1].concat === '$and';
+    if (queries[i].concat === '$and' || previousClauseWasAnAnd) {
       ands.push(queries[i].query);
     }
-    if ((queries[i].concat === 'or' || queries[i].concat === 'last') && ands.length) {
+    if ((queries[i].concat === '$or' || queries[i].concat === '$last') && ands.length) {
       const andsCopy = ands.slice();
       ors.push(el => andsCopy.every(and => and(el)));
       ands.length = 0;
     }
-    if (!(queries[i].concat === 'and') && !previousClauseWasAnAnd) {
+    if (!(queries[i].concat === '$and') && !previousClauseWasAnAnd) {
       ors.push(queries[i].query);
     }
   }

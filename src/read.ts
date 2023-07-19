@@ -12,9 +12,9 @@ export const readState = (
   if (cursor.index < stateActions.length) {
     if (is.arrayOf.actual(state) && (action.type === 'search')) {
       const query = constructQuery({ stateActions, cursor });
-      if ('find' === action.name) {
+      if ('$find' === action.name) {
         return readState({ state: state.find(query)!, stateActions, cursor });
-      } else if ('filter' === action.name) {
+      } else if ('$filter' === action.name) {
         return state.filter(query).map(e => readState({ state: e, stateActions, cursor: { ...cursor } }));
       } else {
         throw new Error();
@@ -22,7 +22,7 @@ export const readState = (
     } else {
       return readState({ state: is.arrayOf.actual(state) || is.primitive(state) ? undefined : mustBe.record(either(state).else({}))[action.name], stateActions, cursor });
     }
-  } else if (action.name === 'state' || action.name === 'onChange') {
+  } else if (action.name === '$state' || action.name === '$onChange') {
     return state;
   } else {
     throw new Error();

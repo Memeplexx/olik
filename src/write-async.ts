@@ -10,7 +10,7 @@ export const importOlikAsyncModule = () => {
   ) => {
     if (libState.isInsideTransaction) { throw new Error(errorMessages.ASYNC_PAYLOAD_INSIDE_TRANSACTION); }
     const readCurrentState = () =>
-      readState({ state: libState.store!.$state, stateActions: [...stateActions, { type: 'action', name: 'state' }], cursor: { index: 0 } });
+      readState({ state: libState.store!.$state, stateActions: [...stateActions, { type: 'action', name: '$state' }], cursor: { index: 0 } });
     let state: FutureState<unknown> = { storeValue: readCurrentState(), error: null, isLoading: false, wasRejected: false, wasResolved: false };
     if (libState.store!.$state.cache?.[stateActions.map(sa => sa.actionType).join('.')]) {
       const result = new Proxy(new Promise(resolve => resolve(readCurrentState())), {
@@ -18,7 +18,7 @@ export const importOlikAsyncModule = () => {
           if (prop === 'then' || prop === 'catch' || prop === 'finally') {
             const t = Promise.resolve(readCurrentState());
             return t[prop].bind(t);
-          } else if (prop === 'state') {
+          } else if (prop === '$state') {
             return state;
           } else {
             return (...args: Array<Actual>) => mustBe.recordOf.function(target)[prop]!(args);
@@ -49,10 +49,10 @@ export const importOlikAsyncModule = () => {
               { type: 'property', name: 'cache', actionType: 'cache' },
               { type: 'property', name: statePath, actionType: statePath },
             ] satisfies StateAction[];
-            setNewStateAndNotifyListeners({ stateActions: [...actions, { type: 'action', name: 'set', arg: toIsoStringInCurrentTz(new Date()), actionType: 'set()' }] });
+            setNewStateAndNotifyListeners({ stateActions: [...actions, { type: 'action', name: '$set', arg: toIsoStringInCurrentTz(new Date()), actionType: '$set()' }] });
             setTimeout(() => {
               try {
-                setNewStateAndNotifyListeners({ stateActions: [...actions, { type: 'action', name: 'delete', actionType: 'delete()' }] })
+                setNewStateAndNotifyListeners({ stateActions: [...actions, { type: 'action', name: '$delete', actionType: '$delete()' }] })
               } catch (e) {
                 // Ignoring. This may happen due to the user manually invalidating a cache. If that has happened, we don't want an error to be thrown.
               }
@@ -72,7 +72,7 @@ export const importOlikAsyncModule = () => {
       setTimeout(() => { if (!promiseWasChained) { promiseResult().then((r) => resolve(r)); } });
     }), {
       get: (target, prop: string) => {
-        if (prop === 'state') {
+        if (prop === '$state') {
           return state;
         } else if (prop === 'then' || prop === 'catch' || prop === 'finally') {
           promiseWasChained = true;

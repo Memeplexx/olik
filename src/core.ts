@@ -22,22 +22,21 @@ export function createStore<S>(
   };
   const recurseProxy = (topLevel: boolean, stateActions: StateAction[]): StoreInternal => {
     return new Proxy(<StoreInternal>{}, {
-      get: (_, dollarProp: string) => {
-        const prop = dollarProp.startsWith('$') ? dollarProp.split('$')[1] : dollarProp;
+      get: (_, prop: string) => {
         stateActions = topLevel ? new Array<StateAction>() : stateActions;
-        if ('$internals' === dollarProp) {
+        if ('$internals' === prop) {
           return internals;
         } else if (topLevel && internals.mergedStoreInfo?.isMerged) {
-          return (libState.store!)[dollarProp];
-        } else if (updateFunctions.includes(dollarProp)) {
+          return (libState.store!)[prop];
+        } else if (updateFunctions.includes(prop)) {
           return processPotentiallyAsyncUpdate({ stateActions, prop });
-        } else if ('$invalidateCache' === dollarProp) {
+        } else if ('$invalidateCache' === prop) {
           return () => {
             const actionType = stateActions.map(sa => sa.actionType).join('.');
             const newStateActions = [
               { type: 'property', name: 'cache', actionType: 'cache' },
               { type: 'property', name: actionType, actionType },
-              { type: 'action', name: 'delete', actionType: 'delete()' },
+              { type: 'action', name: '$delete', actionType: '$delete()' },
             ] satisfies StateAction[];
             try {
               setNewStateAndNotifyListeners({ stateActions: newStateActions });
@@ -45,10 +44,10 @@ export function createStore<S>(
               /* This can happen if a cache has already expired */
             }
           }
-        } else if ('$mergeMatching' === dollarProp) {
+        } else if ('$mergeMatching' === prop) {
           stateActions.push({ type: 'mergeMatching', name: prop, actionType: prop });
           return recurseProxy(false, stateActions);
-        } else if ('$state' === dollarProp) {
+        } else if ('$state' === prop) {
           const tryFetchResult = (stateActions: StateAction[]): unknown => {
             try {
               return deepFreeze(readState({ state: internals.state, stateActions: [...stateActions, { type: 'action', name: prop }], cursor: { index: 0 } }));
@@ -59,7 +58,7 @@ export function createStore<S>(
           }
           const result = tryFetchResult(stateActions.slice());
           return result === undefined ? null : result;
-        } else if ('$onChange' === dollarProp) {
+        } else if ('$onChange' === prop) {
           return (listener: (arg: unknown) => unknown) => {
             const stateActionsCopy: StateAction[] = [...stateActions, { type: 'action', name: prop }];
             const unsubscribe = () => internals.changeListeners.splice(internals.changeListeners.findIndex(e => e === element), 1);
@@ -67,21 +66,21 @@ export function createStore<S>(
             internals.changeListeners.push(element);
             return { unsubscribe }
           }
-        } else if (andOr.includes(dollarProp)) {
+        } else if (andOr.includes(prop)) {
           stateActions.push({ type: 'searchConcat', name: prop, actionType: prop });
           return recurseProxy(false, stateActions);
-        } else if (comparators.includes(dollarProp)) {
+        } else if (comparators.includes(prop)) {
           return (arg?: unknown) => {
             stateActions.push({ type: 'comparator', name: prop, arg, actionType: `${prop}(${arg})` });
             return recurseProxy(false, stateActions);
           }
-        } else if (findFilter.includes(dollarProp)) {
+        } else if (findFilter.includes(prop)) {
           stateActions.push({ type: 'search', name: prop, actionType: prop });
           return recurseProxy(false, stateActions);
-        } else if (augmentations.selection[dollarProp]) {
-          return augmentations.selection[dollarProp](recurseProxy(false, stateActions));
-        } else if (augmentations.core[dollarProp]) {
-          return augmentations.core[dollarProp](recurseProxy(false, stateActions));
+        } else if (augmentations.selection[prop]) {
+          return augmentations.selection[prop](recurseProxy(false, stateActions));
+        } else if (augmentations.core[prop]) {
+          return augmentations.core[prop](recurseProxy(false, stateActions));
         } else {
           stateActions.push({ type: 'property', name: prop, actionType: prop });
           return recurseProxy(false, stateActions);

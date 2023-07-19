@@ -26,7 +26,7 @@ test('should find an element an replace it', () => {
     .$find.id.$eq(2)
     .$set(payload);
   expect(currentAction(store)).toEqual({
-    type: 'arr.find.id.eq(2).set()',
+    type: 'arr.$find.id.$eq(2).$set()',
     payload,
   });
   const stateAfter = store.$state;
@@ -45,7 +45,7 @@ test('should filter elements and patch them', () => {
     .$filter.id.$in([1, 2])
     .$setSome(payload);
   expect(currentAction(store)).toEqual({
-    type: 'arr.filter.id.in(1,2).setSome()',
+    type: 'arr.$filter.id.$in(1,2).$setSome()',
     payload,
   });
   expect(store.$state).toEqual({ arr: [{ id: 1, val: 1 }, { id: 2, val: 1 }, { id: 3, val: 0 }] });
@@ -59,7 +59,7 @@ test('should find an element and replace one of its properties', () => {
     .$find.id.$eq(2).val
     .$set(payload);
   expect(currentAction(store)).toEqual({
-    type: 'arr.find.id.eq(2).val.set()',
+    type: 'arr.$find.id.$eq(2).val.$set()',
     payload,
   });
   expect(store.$state).toEqual({
@@ -83,7 +83,7 @@ test('should find an element, find an element in the property array, and replace
     .arr.$find.id.$eq(1).num
     .$set(payload);
   expect(currentAction(store)).toEqual({
-    type: 'arr.find.id.eq(2).arr.find.id.eq(1).num.set()',
+    type: 'arr.$find.id.$eq(2).arr.$find.id.$eq(1).num.$set()',
     payload,
   });
   expect(store.$state).toEqual({
@@ -110,7 +110,7 @@ test('should find an element, filter elements in the property array, and all of 
     .arr.$filter.id.$in([1, 2]).num
     .$add(payload);
   expect(currentAction(store)).toEqual({
-    type: 'arr.find.id.eq(2).arr.filter.id.in(1,2).num.add()',
+    type: 'arr.$find.id.$eq(2).arr.$filter.id.$in(1,2).num.$add()',
     payload,
   });
   expect(store.$state).toEqual({
@@ -135,7 +135,7 @@ test('should find an element, filter elements in the property array, and all of 
     .arr.num
     .$add(payload);
   expect(currentAction(store)).toEqual({
-    type: 'arr.find.id.eq(2).arr.num.add()',
+    type: 'arr.$find.id.$eq(2).arr.num.$add()',
     payload,
   });
   expect(store.$state).toEqual({

@@ -19,10 +19,10 @@ test('should support transactions', () => {
   );
   expect(store.$state).toEqual({ num: 1, str: 'x', bool: false });
   expect(currentAction(store)).toEqual({
-    type: 'num.set(), str.set()',
+    type: 'num.$set(), str.$set()',
     payload: [
-      { type: 'num.set()', payload: 1 },
-      { type: 'str.set()', payload: 'x' },
+      { type: 'num.$set()', payload: 1 },
+      { type: 'str.$set()', payload: 'x' },
     ]
   })
 })
@@ -33,7 +33,7 @@ test('should support transactions with only 1 action', () => {
   const payload = 1;
   transact(() => store.num.$set(payload));
   expect(store.num.$state).toEqual(payload);
-  expect(currentAction(store)).toEqual({ type: 'num.set()', payload });
+  expect(currentAction(store)).toEqual({ type: 'num.$set()', payload });
 })
 
 test('should not support transactions if one of the actions has an async payload', () => {

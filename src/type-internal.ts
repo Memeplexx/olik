@@ -45,7 +45,7 @@ export type StoreInternal
 
 export interface QuerySpec {
   query: (e: unknown) => boolean,
-  concat: 'and' | 'or' | 'last'
+  concat: '$and' | '$or' | '$last'
 }
 
 export type OlikDevtoolsExtensionInternal = {

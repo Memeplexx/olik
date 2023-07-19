@@ -49,14 +49,14 @@ export const augmentations: Augmentations = {
 };
 
 export const comparisons = {
-  eq: <T>(val: T, arg: T) => val === arg,
-  in: <T>(val: T, arg: Array<T>) => arg.includes(val),
-  ni: <T>(val: T, arg: Array<T>) => !arg.includes(val),
-  gt: <T>(val: T, arg: T) => val > arg,
-  lt: <T>(val: T, arg: T) => val < arg,
-  gte: <T>(val: T, arg: T) => val >= arg,
-  lte: <T>(val: T, arg: T) => val <= arg,
-  match: (val: string, arg: RegExp) => arg.test(val),
+  $eq: <T>(val: T, arg: T) => val === arg,
+  $in: <T>(val: T, arg: Array<T>) => arg.includes(val),
+  $ni: <T>(val: T, arg: Array<T>) => !arg.includes(val),
+  $gt: <T>(val: T, arg: T) => val > arg,
+  $lt: <T>(val: T, arg: T) => val < arg,
+  $gte: <T>(val: T, arg: T) => val >= arg,
+  $lte: <T>(val: T, arg: T) => val <= arg,
+  $match: (val: string, arg: RegExp) => arg.test(val),
 } as { [comparator: string]: (val: unknown, arg: unknown) => boolean };
 
 export const booleanNumberString = ['boolean', 'number', 'string'];

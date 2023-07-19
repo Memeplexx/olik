@@ -4,7 +4,7 @@ import { Actual, StateAction } from './type';
 import { either, is, mustBe } from './type-check';
 import { setCurrentActionReturningNewState } from './write-action';
 
-export const removeInvalidateCache = ['delete', 'invalidateCache'];
+export const removeInvalidateCache = ['$delete', '$invalidateCache'];
 
 export const copyNewState = (
   {
@@ -46,19 +46,19 @@ export const copyNewState = (
     if (action.type === 'search' && is.arrayOf.actual(currentState)) {
       const query = constructQuery({ stateActions, cursor });
       let findIndex = -1;
-      if ('find' === action.name) {
+      if ('$find' === action.name) {
         findIndex = currentState.findIndex(query);
         if (findIndex === -1) { throw new Error(errorMessages.FIND_RETURNS_NO_MATCHES); }
       }
-      if (stateActions[cursor.index].name === 'delete') {
-        return setCurrentActionReturningNewState({ stateActions, payload: null, newState: 'find' === action.name ? currentState.filter((_, i) => findIndex !== i) : currentState.filter(e => !query(e)) });
+      if (stateActions[cursor.index].name === '$delete') {
+        return setCurrentActionReturningNewState({ stateActions, payload: null, newState: '$find' === action.name ? currentState.filter((_, i) => findIndex !== i) : currentState.filter(e => !query(e)) });
       } else {
-        if ('find' === action.name) {
+        if ('$find' === action.name) {
           return currentState.map((e, i) => i === findIndex
             ? copyNewState({ currentState: e, stateToUpdate: mustBe.arrayOf.actual(stateToUpdate)[i], stateActions, cursor })
             : e);
-        } else if ('filter' === action.name) {
-          if (stateActions[cursor.index]?.name === 'set') {
+        } else if ('$filter' === action.name) {
+          if (stateActions[cursor.index]?.name === '$set') {
             return [
               ...currentState.filter(e => !query(e)),
               ...(mustBe.arrayOf.record(copyNewState({ currentState, stateToUpdate: stateToUpdate, stateActions, cursor }))),
@@ -85,36 +85,36 @@ export const copyNewState = (
         })
       };
     }
-  } else if (action.name === 'setSome') {
+  } else if (action.name === '$setSome') {
     if (is.arrayOf.actual(currentState)) {
       return setCurrentActionReturningNewState({ stateActions, payload: action.arg, newState: currentState.map(e => ({ ...mustBe.record(e), ...mustBe.record(action.arg) })) });
     } else {
       return setCurrentActionReturningNewState({ stateActions, payload: action.arg, newState: { ...mustBe.record(currentState), ...mustBe.record(action.arg) } });
     }
-  } else if (action.name === 'add') {
+  } else if (action.name === '$add') {
     if (is.arrayOf.actual(currentState)) {
       return setCurrentActionReturningNewState({ stateActions, payload: action.arg, newState: currentState.map(e => mustBe.number(e) + mustBe.number(action.arg)) });
     } else {
       return setCurrentActionReturningNewState({ stateActions, payload: action.arg, newState: mustBe.number(currentState) + mustBe.number(action.arg) });
     }
-  } else if (action.name === 'subtract') {
+  } else if (action.name === '$subtract') {
     if (is.arrayOf.actual(currentState)) {
       return setCurrentActionReturningNewState({ stateActions, payload: action.arg, newState: currentState.map(e => mustBe.number(e) + mustBe.number(action.arg)) });
     } else {
       return setCurrentActionReturningNewState({ stateActions, payload: action.arg, newState: mustBe.number(currentState) - mustBe.number(action.arg) });
     }
-  } else if (action.name === 'setNew') {
+  } else if (action.name === '$setNew') {
     return setCurrentActionReturningNewState({ stateActions, payload: action.arg, newState: currentState === undefined ? action.arg! : { ...mustBe.record(currentState), ...mustBe.record(action.arg) } });
-  } else if (action.name === 'set') {
+  } else if (action.name === '$set') {
     return setCurrentActionReturningNewState({ stateActions, payload: action.arg, newState: action.arg! });
-  } else if (action.name === 'setSomeDeep') {
+  } else if (action.name === '$setSomeDeep') {
     return setCurrentActionReturningNewState({ stateActions, payload: action.arg, newState: deepMerge(mustBe.record(currentState), mustBe.record(action.arg)) });
-  } else if (action.name === 'clear') {
+  } else if (action.name === '$clear') {
     return setCurrentActionReturningNewState({ stateActions, payload: null, newState: [] });
-  } else if (action.name === 'push') {
+  } else if (action.name === '$push') {
     const newState = is.arrayOf.actual(action.arg) ? [...mustBe.arrayOf.actual(currentState), ...action.arg] : [...mustBe.arrayOf.actual(currentState), action.arg!];
     return setCurrentActionReturningNewState({ stateActions, payload: action.arg, newState });
-  } else if (action.name === 'toggle') {
+  } else if (action.name === '$toggle') {
     if (is.arrayOf.actual(currentState)) {
       return setCurrentActionReturningNewState({ stateActions, payload: null, newState: currentState.map(e => !e) });
     } else {

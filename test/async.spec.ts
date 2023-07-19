@@ -21,7 +21,7 @@ test('should perform a basic async update', async () => {
     .$set(resolve(payload));
   expect(store.num.$state).toEqual(payload);
   expect(asyncResult).toEqual(payload);
-  expect(currentAction(store)).toEqual({ type: 'num.set()', payload });
+  expect(currentAction(store)).toEqual({ type: 'num.$set()', payload });
 })
 
 test('should catch a rejection', async () => {
@@ -79,7 +79,7 @@ test('should support caching', () => {
   return store.num
     .$set(resolve(replacement), { cache: 1000 })
     .then(() => {
-      expect(currentAction(store).type).toEqual('cache.num.set()');
+      expect(currentAction(store).type).toEqual('cache.num.$set()');
       expect(store.num.$state).toEqual(replacement);
       return store.num.$set(resolve(replacement2));
     })
@@ -188,7 +188,7 @@ test('should repsert one array element where a match could be found', async () =
   await store.arr
     .$mergeMatching.id
     .$withOne(resolve(payload));
-  expect(currentAction(store)).toEqual({ type: 'arr.mergeMatching.id.withOne()', payload });
+  expect(currentAction(store)).toEqual({ type: 'arr.$mergeMatching.id.$withOne()', payload });
   expect(store.arr.$state).toEqual([payload, state.arr[1], state.arr[2]]);
 })
 
@@ -199,7 +199,7 @@ test('should repsert one array element where a match could not be found', async 
   await store.arr
     .$mergeMatching.id
     .$withOne(resolve(payload));
-  expect(currentAction(store)).toEqual({ type: 'arr.mergeMatching.id.withOne()', payload });
+  expect(currentAction(store)).toEqual({ type: 'arr.$mergeMatching.id.$withOne()', payload });
   expect(store.arr.$state).toEqual([...state.arr, payload]);
 })
 
@@ -210,7 +210,7 @@ test('should repsert array elements where one matches and another does not', asy
   await store.arr
     .$mergeMatching.id
     .$withMany(resolve(payload));
-  expect(currentAction(store)).toEqual({ type: 'arr.mergeMatching.id.withMany()', payload });
+  expect(currentAction(store)).toEqual({ type: 'arr.$mergeMatching.id.$withMany()', payload });
   expect(store.arr.$state).toEqual([payload[0], state.arr[1], state.arr[2], payload[1]]);
 })
 
