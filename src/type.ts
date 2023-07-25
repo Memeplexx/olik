@@ -494,7 +494,6 @@ export type Searchable<T, S, F extends FindOrFilter, Depth extends number, NewDe
 export interface StateAction {
   name: string;
   arg?: unknown;
-  actionType?: string;
 }
 
 type DerivationCalculationInput<E> = E extends Readable<infer W> ? W : never;

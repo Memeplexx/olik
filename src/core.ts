@@ -20,7 +20,7 @@ export function createStore<S>(
     currentAction: { type: '' },
     initialState: state,
   };
-  const recurseProxy = (topLevel: boolean, stateActions: StateAction[]): StoreInternal => {
+  const recurseProxy = (stateActions: StateAction[], topLevel = false): StoreInternal => {
     return new Proxy(<StoreInternal>{}, {
       get: (_, prop: string) => {
         stateActions = topLevel ? new Array<StateAction>() : stateActions;
@@ -30,21 +30,21 @@ export function createStore<S>(
           return processPotentiallyAsyncUpdate({ stateActions, prop });
         } else if ('$invalidateCache' === prop) {
           return () => {
-            const actionType = stateActions.map(sa => sa.actionType).join('.');
-            const newStateActions = [
-              { name: 'cache', actionType: 'cache' },
-              { name: actionType, actionType },
-              { name: '$delete', actionType: '$delete()' },
-            ] satisfies StateAction[];
             try {
-              setNewStateAndNotifyListeners({ stateActions: newStateActions });
+              setNewStateAndNotifyListeners({
+                stateActions: [
+                  { name: 'cache' },
+                  { name: stateActions.map(sa => sa.name).join('.') },
+                  { name: '$delete' },
+                ]
+              });
             } catch (e) {
               /* This can happen if a cache has already expired */
             }
           }
         } else if ('$mergeMatching' === prop) {
-          stateActions.push({ name: prop, actionType: prop });
-          return recurseProxy(false, stateActions);
+          stateActions.push({ name: prop });
+          return recurseProxy(stateActions);
         } else if ('$state' === prop) {
           const tryFetchResult = (stateActions: StateAction[]): unknown => {
             try {
@@ -65,23 +65,23 @@ export function createStore<S>(
             return { unsubscribe }
           }
         } else if (andOr.includes(prop)) {
-          stateActions.push({ name: prop, actionType: prop });
-          return recurseProxy(false, stateActions);
+          stateActions.push({ name: prop });
+          return recurseProxy(stateActions);
         } else if (comparators.includes(prop)) {
           return (arg?: unknown) => {
-            stateActions.push({ name: prop, arg, actionType: `${prop}(${arg})` });
-            return recurseProxy(false, stateActions);
+            stateActions.push({ name: prop, arg });
+            return recurseProxy(stateActions);
           }
         } else if (findFilter.includes(prop)) {
-          stateActions.push({ name: prop, actionType: prop });
-          return recurseProxy(false, stateActions);
+          stateActions.push({ name: prop });
+          return recurseProxy(stateActions);
         } else if (augmentations.selection[prop]) {
-          return augmentations.selection[prop](recurseProxy(false, stateActions));
+          return augmentations.selection[prop](recurseProxy(stateActions));
         } else if (augmentations.core[prop]) {
-          return augmentations.core[prop](recurseProxy(false, stateActions));
+          return augmentations.core[prop](recurseProxy(stateActions));
         } else {
-          stateActions.push({ name: prop, actionType: prop });
-          return recurseProxy(false, stateActions);
+          stateActions.push({ name: prop });
+          return recurseProxy(stateActions);
         }
       }
     });
@@ -89,7 +89,7 @@ export function createStore<S>(
   if (args.key) {
     internals.state = {};
     if (!libState.store) {
-      libState.store = recurseProxy(true, []);
+      libState.store = recurseProxy([], true);
     }
     libState.store!.$setNew({ [args.key!]: args.state });
     const innerStore = new Proxy(<Store<typeof state>>{}, {
@@ -113,7 +113,7 @@ export function createStore<S>(
       libState.store.$setNew(state);
       return <Store<S>>libState.store;
     }
-    return (libState.store = recurseProxy(true, [])) as Store<S>;
+    return (libState.store = recurseProxy([], true)) as Store<S>;
   }
 }
 
