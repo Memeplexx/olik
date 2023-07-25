@@ -5,7 +5,7 @@ import { deserialize } from './utility';
 export function connectOlikDevtoolsToStore() {
   libState.olikDevtools = {
     init: () => { },
-    dispatch: (/*stateReader, mutator*/) => {
+    dispatch: (stateReader) => {
       const store = libState.store!;
       const internals = store.$internals;
       const currentAction = internals.currentAction;
@@ -20,6 +20,7 @@ export function connectOlikDevtoolsToStore() {
           type: typeStringRev,
           payload: currentAction.payload,
           state: internals.state,
+          selectedState: stateReader(internals.state),
         },
         state: libState.store!.$state,
         source: 'olik-devtools-extension'

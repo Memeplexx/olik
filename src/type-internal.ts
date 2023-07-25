@@ -5,27 +5,12 @@ export type WindowAugmentedWithOlikDevtools = {
   __OLIK_DEVTOOLS_EXTENSION__: OlikDevtoolsExtension;
 }
 
-export interface NestedStoreInfo {
-  nestedStoreName: string,
-  instanceId: number | string,
-  isNested: boolean,
-}
-
-export interface MergedStoreInfo {
-  isMerged: boolean;
-}
-
 export interface StoreInternals {
   state: RecursiveRecord,
   changeListeners: ChangeListener[],
-  nestedStoreInfo?: NestedStoreInfo,
-  mergedStoreInfo?: MergedStoreInfo;
   currentAction: OlikAction,
-  initialState: RecursiveRecord
-  // olikDevtools?: {
-  //   instance: DevtoolsInstance,
-  //   disableDispatch: boolean,
-  // },
+  initialState: RecursiveRecord,
+  disableDevtoolsDispatch?: boolean;
 }
 
 export type StoreInternal 

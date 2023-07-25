@@ -26,8 +26,6 @@ export function createStore<S>(
         stateActions = topLevel ? new Array<StateAction>() : stateActions;
         if ('$internals' === prop) {
           return internals;
-        } else if (topLevel && internals.mergedStoreInfo?.isMerged) {
-          return (libState.store!)[prop];
         } else if (updateFunctions.includes(prop)) {
           return processPotentiallyAsyncUpdate({ stateActions, prop });
         } else if ('$invalidateCache' === prop) {
