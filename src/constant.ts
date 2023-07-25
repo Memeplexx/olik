@@ -61,6 +61,9 @@ export const comparisons = {
 
 export const booleanNumberString = ['boolean', 'number', 'string'];
 export const updateFunctions = ['$set', '$setSome', '$setSomeDeep', '$delete', '$setNew', '$add', '$subtract', '$clear', '$push', '$withOne', '$withMany', '$toggle'];
-export const comparators = ['$eq', '$ne', '$in', '$ni', '$gt', '$gte', '$lt', '$lte', '$match'];
+export const comparators = Object.keys(comparisons);
 export const andOr = ['$and', '$or'];
 export const findFilter = ['$find', '$filter'];
+export const reader = ['$onChange', '$state'];
+export const mergeMatching = ['$mergeMatching'];
+export const anyLibProp = [...updateFunctions, ...findFilter, ...andOr, ...comparators, ...reader, ...mergeMatching];

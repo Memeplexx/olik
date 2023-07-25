@@ -14,7 +14,7 @@ export const processPotentiallyAsyncUpdate = (
       if (!libState.asyncUpdate) { throw new Error(errorMessages.ASYNC_UPDATES_NOT_ENABLED) }
       return libState.asyncUpdate({ arg, cache, eager, prop, stateActions })
     } else {
-      setNewStateAndNotifyListeners({ stateActions: [...stateActions, { type: 'action', name: prop, arg, actionType: `${prop}()` }] });
+      setNewStateAndNotifyListeners({ stateActions: [...stateActions, { name: prop, arg, actionType: `${prop}()` }] });
     }
   }
 }

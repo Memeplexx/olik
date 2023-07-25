@@ -32,9 +32,9 @@ export function createStore<S>(
           return () => {
             const actionType = stateActions.map(sa => sa.actionType).join('.');
             const newStateActions = [
-              { type: 'property', name: 'cache', actionType: 'cache' },
-              { type: 'property', name: actionType, actionType },
-              { type: 'action', name: '$delete', actionType: '$delete()' },
+              { name: 'cache', actionType: 'cache' },
+              { name: actionType, actionType },
+              { name: '$delete', actionType: '$delete()' },
             ] satisfies StateAction[];
             try {
               setNewStateAndNotifyListeners({ stateActions: newStateActions });
@@ -43,12 +43,12 @@ export function createStore<S>(
             }
           }
         } else if ('$mergeMatching' === prop) {
-          stateActions.push({ type: 'mergeMatching', name: prop, actionType: prop });
+          stateActions.push({ name: prop, actionType: prop });
           return recurseProxy(false, stateActions);
         } else if ('$state' === prop) {
           const tryFetchResult = (stateActions: StateAction[]): unknown => {
             try {
-              return deepFreeze(readState({ state: internals.state, stateActions: [...stateActions, { type: 'action', name: prop }], cursor: { index: 0 } }));
+              return deepFreeze(readState({ state: internals.state, stateActions: [...stateActions, { name: prop }], cursor: { index: 0 } }));
             } catch (e) {
               stateActions.pop();
               return tryFetchResult(stateActions);
@@ -58,29 +58,29 @@ export function createStore<S>(
           return result === undefined ? null : result;
         } else if ('$onChange' === prop) {
           return (listener: (arg: unknown) => unknown) => {
-            const stateActionsCopy: StateAction[] = [...stateActions, { type: 'action', name: prop }];
+            const stateActionsCopy: StateAction[] = [...stateActions, { name: prop }];
             const unsubscribe = () => internals.changeListeners.splice(internals.changeListeners.findIndex(e => e === element), 1);
             const element = { actions: stateActionsCopy, listener, unsubscribe };
             internals.changeListeners.push(element);
             return { unsubscribe }
           }
         } else if (andOr.includes(prop)) {
-          stateActions.push({ type: 'searchConcat', name: prop, actionType: prop });
+          stateActions.push({ name: prop, actionType: prop });
           return recurseProxy(false, stateActions);
         } else if (comparators.includes(prop)) {
           return (arg?: unknown) => {
-            stateActions.push({ type: 'comparator', name: prop, arg, actionType: `${prop}(${arg})` });
+            stateActions.push({ name: prop, arg, actionType: `${prop}(${arg})` });
             return recurseProxy(false, stateActions);
           }
         } else if (findFilter.includes(prop)) {
-          stateActions.push({ type: 'search', name: prop, actionType: prop });
+          stateActions.push({ name: prop, actionType: prop });
           return recurseProxy(false, stateActions);
         } else if (augmentations.selection[prop]) {
           return augmentations.selection[prop](recurseProxy(false, stateActions));
         } else if (augmentations.core[prop]) {
           return augmentations.core[prop](recurseProxy(false, stateActions));
         } else {
-          stateActions.push({ type: 'property', name: prop, actionType: prop });
+          stateActions.push({ name: prop, actionType: prop });
           return recurseProxy(false, stateActions);
         }
       }

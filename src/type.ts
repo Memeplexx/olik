@@ -492,7 +492,6 @@ export type Searchable<T, S, F extends FindOrFilter, Depth extends number, NewDe
   Depth>
 
 export interface StateAction {
-  type: 'property' | 'search' | 'comparator' | 'action' | 'searchConcat' | 'mergeMatching';
   name: string;
   arg?: unknown;
   actionType?: string;

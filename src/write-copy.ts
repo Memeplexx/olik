@@ -1,4 +1,4 @@
-import { errorMessages } from './constant';
+import { anyLibProp, errorMessages, findFilter, updateFunctions } from './constant';
 import { constructQuery } from './query';
 import { Actual, StateAction } from './type';
 import { either, is, mustBe } from './type-check';
@@ -20,14 +20,14 @@ export const copyNewState = (
       cursor: { index: number }
     }
 ): unknown => {
-  if (is.arrayOf.record(currentState) && (stateActions[cursor.index].type === 'property')) {
+  if (is.arrayOf.record(currentState) && !anyLibProp.includes(stateActions[cursor.index].name)) {
     return currentState.map((_, i) => is.record(currentState[i])
       ? { ...currentState[i], ...mustBe.record(copyNewState({ currentState: currentState[i] || {}, stateToUpdate: (mustBe.arrayOf.record(stateToUpdate)[i] || {}), stateActions, cursor: { ...cursor } })) }
       : copyNewState({ currentState: currentState[i], stateToUpdate: mustBe.arrayOf.actual(stateToUpdate)[i], stateActions, cursor: { ...cursor } }) as Actual);
-  } else if (is.arrayOf.actual(currentState) && (stateActions[cursor.index].type === 'mergeMatching')) {
+  } else if (is.arrayOf.actual(currentState) && (stateActions[cursor.index].name === '$mergeMatching')) {
     cursor.index++;
     const queryPaths = stateActions
-      .slice(cursor.index, cursor.index + stateActions.slice(cursor.index).findIndex(sa => sa.type === 'action'))
+      .slice(cursor.index, cursor.index + stateActions.slice(cursor.index).findIndex(sa => updateFunctions.includes(sa.name)))
       .reduce((prev, curr) => {
         cursor.index++;
         return prev.concat(curr);
@@ -43,7 +43,7 @@ export const copyNewState = (
   }
   const action = stateActions[cursor.index++];
   if (cursor.index < stateActions.length) {
-    if (action.type === 'search' && is.arrayOf.actual(currentState)) {
+    if (findFilter.includes(action.name) && is.arrayOf.actual(currentState)) {
       const query = constructQuery({ stateActions, cursor });
       let findIndex = -1;
       if ('$find' === action.name) {

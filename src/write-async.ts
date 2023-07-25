@@ -10,7 +10,7 @@ export const importOlikAsyncModule = () => {
   ) => {
     if (libState.isInsideTransaction) { throw new Error(errorMessages.ASYNC_PAYLOAD_INSIDE_TRANSACTION); }
     const readCurrentState = () =>
-      readState({ state: libState.store!.$state, stateActions: [...stateActions, { type: 'action', name: '$state' }], cursor: { index: 0 } });
+      readState({ state: libState.store!.$state, stateActions: [...stateActions, { name: '$state' }], cursor: { index: 0 } });
     let state: FutureState<unknown> = { storeValue: readCurrentState(), error: null, isLoading: false, wasRejected: false, wasResolved: false };
     if (libState.store!.$state.cache?.[stateActions.map(sa => sa.actionType).join('.')]) {
       const result = new Proxy(new Promise(resolve => resolve(readCurrentState())), {
@@ -34,25 +34,25 @@ export const importOlikAsyncModule = () => {
       let snapshot: unknown = undefined;
       if (eager) {
         snapshot = readCurrentState();
-        setNewStateAndNotifyListeners({ stateActions: [...stateActions, { type: 'action', name: prop, arg: eager, actionType: `${prop}()` }] });
+        setNewStateAndNotifyListeners({ stateActions: [...stateActions, { name: prop, arg: eager, actionType: `${prop}()` }] });
       }
       state = { ...state, isLoading: true, storeValue: readCurrentState() };
       const argCast = mustBe.function<void, Promise<unknown>>(arg);
       const promise = (augmentations.async ? augmentations.async(argCast) : argCast());
       return promise
         .then(promiseResult => {
-          setNewStateAndNotifyListeners({ stateActions: [...stateActions, { type: 'action', name: prop, arg: promiseResult, actionType: `${prop}()` }] });
+          setNewStateAndNotifyListeners({ stateActions: [...stateActions, { name: prop, arg: promiseResult, actionType: `${prop}()` }] });
           state = { ...state, wasResolved: true, wasRejected: false, isLoading: false, storeValue: readCurrentState() };
           if (cache) {
             const statePath = stateActions.map(sa => sa.actionType).join('.');
             const actions = [
-              { type: 'property', name: 'cache', actionType: 'cache' },
-              { type: 'property', name: statePath, actionType: statePath },
+              { name: 'cache', actionType: 'cache' },
+              { name: statePath, actionType: statePath },
             ] satisfies StateAction[];
-            setNewStateAndNotifyListeners({ stateActions: [...actions, { type: 'action', name: '$set', arg: toIsoStringInCurrentTz(new Date()), actionType: '$set()' }] });
+            setNewStateAndNotifyListeners({ stateActions: [...actions, { name: '$set', arg: toIsoStringInCurrentTz(new Date()), actionType: '$set()' }] });
             setTimeout(() => {
               try {
-                setNewStateAndNotifyListeners({ stateActions: [...actions, { type: 'action', name: '$delete', actionType: '$delete()' }] })
+                setNewStateAndNotifyListeners({ stateActions: [...actions, { name: '$delete', actionType: '$delete()' }] })
               } catch (e) {
                 // Ignoring. This may happen due to the user manually invalidating a cache. If that has happened, we don't want an error to be thrown.
               }
@@ -61,7 +61,7 @@ export const importOlikAsyncModule = () => {
           return readCurrentState();
         }).catch(error => {
           if (snapshot !== undefined) {
-            setNewStateAndNotifyListeners({ stateActions: [...stateActions, { type: 'action', name: prop, arg: snapshot, actionType: `${prop}()` }] });
+            setNewStateAndNotifyListeners({ stateActions: [...stateActions, { name: prop, arg: snapshot, actionType: `${prop}()` }] });
           }
           state = { ...state, wasRejected: true, wasResolved: false, isLoading: false, error };
           throw error;

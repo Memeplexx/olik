@@ -1,3 +1,4 @@
+import { anyLibProp, findFilter } from './constant';
 import { constructQuery } from './query';
 import { StateAction } from './type';
 import { either, is, mustBe } from './type-check';
@@ -5,12 +6,12 @@ import { either, is, mustBe } from './type-check';
 export const readState = (
   { state, stateActions, cursor }: { state: unknown, stateActions: StateAction[], cursor: { index: number } }
 ): unknown => {
-  if (is.arrayOf.actual(state) && (stateActions[cursor.index].type === 'property')) {
+  if (is.arrayOf.actual(state) && !anyLibProp.includes(stateActions[cursor.index].name)) {
     return state.map((_, i) => readState({ state: state[i], stateActions, cursor: { ...cursor } }));
   }
   const action = stateActions[cursor.index++];
   if (cursor.index < stateActions.length) {
-    if (is.arrayOf.actual(state) && (action.type === 'search')) {
+    if (is.arrayOf.actual(state) && findFilter.includes(action.name)) {
       const query = constructQuery({ stateActions, cursor });
       if ('$find' === action.name) {
         return readState({ state: state.find(query)!, stateActions, cursor });
