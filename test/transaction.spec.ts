@@ -1,13 +1,18 @@
-import { errorMessages } from '../src/constant';
+import { errorMessages, testState } from '../src/constant';
 import { createStore } from '../src/core';
 import { transact } from '../src/transact';
-import { currentAction } from './_utility';
+import { currentAction, currentActions } from './_utility';
 import { importOlikAsyncModule } from '../src/write-async';
-import { resetLibraryState } from '../src/utility';
-import { test, expect, beforeEach } from 'vitest';
+import { test, expect, beforeEach, afterAll } from 'vitest';
+import { resetLibraryState } from '../src';
 
 beforeEach(() => {
   resetLibraryState();
+  testState.isTest = true;
+})
+
+afterAll(() => {
+  testState.isTest = false;
 })
 
 test('should support transactions', () => {
@@ -18,13 +23,10 @@ test('should support transactions', () => {
     () => store.str.$set('x'),
   );
   expect(store.$state).toEqual({ num: 1, str: 'x', bool: false });
-  expect(currentAction(store)).toEqual({
-    type: 'num.$set(), str.$set()',
-    payload: [
-      { type: 'num.$set()', payload: 1 },
-      { type: 'str.$set()', payload: 'x' },
-    ]
-  })
+  expect(currentActions(store)).toEqual([
+    { type: 'num.$set()', payload: 1 },
+    { type: 'str.$set()', payload: 'x' },
+  ])
 })
 
 test('should support transactions with only 1 action', () => {
@@ -33,7 +35,7 @@ test('should support transactions with only 1 action', () => {
   const payload = 1;
   transact(() => store.num.$set(payload));
   expect(store.num.$state).toEqual(payload);
-  expect(currentAction(store)).toEqual({ type: 'num.$set()', payload });
+  expect(currentAction(store)).toEqual({ type: 'num.$set()', payload })
 })
 
 test('should not support transactions if one of the actions has an async payload', () => {

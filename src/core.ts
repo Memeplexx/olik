@@ -18,6 +18,7 @@ export function createStore<S>(
     state: JSON.parse(JSON.stringify(args.state)),
     changeListeners: [],
     currentAction: { type: '' },
+    currentActions: [],
     initialState: state,
   };
   const recurseProxy = (stateActions: StateAction[], topLevel = false): StoreInternal => {

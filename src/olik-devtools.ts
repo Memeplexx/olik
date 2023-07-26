@@ -1,30 +1,29 @@
-import { libState, testState } from './constant';
+import { libState } from './constant';
 import { deserialize } from './utility';
 
 
 export function connectOlikDevtoolsToStore() {
   libState.olikDevtools = {
     init: () => { },
-    dispatch: (stateReader) => {
+    dispatch: (args) => {
       const store = libState.store!;
       const internals = store.$internals;
-      const currentAction = internals.currentAction;
-      testState.currentActionForOlikDevtools = currentAction;
-      const typeString = currentAction.type
-        .replace(/\((.+?)\)/g, (_, args) => `(${args.toString()})`);
-      const typeStringRev = currentAction.payload === undefined
-        ? typeString
-        : typeString.substring(0, typeString.length - 1) + JSON.stringify(currentAction.payload) + ')';
-      window.postMessage({
-        action: {
-          type: typeStringRev,
-          payload: currentAction.payload,
-          state: internals.state,
-          selectedState: stateReader(internals.state),
-        },
-        state: libState.store!.$state,
-        source: 'olik-devtools-extension'
-      }, location.origin);
+      const actions = internals.currentActions.length ? internals.currentActions : [internals.currentAction];
+      actions.forEach((action, i) => {
+        const typeString = action.type
+          .replace(/\((.+?)\)/g, (_, args) => `(${args.toString()})`);
+        const typeStringRev = action.payload === undefined
+          ? typeString
+          : typeString.substring(0, typeString.length - 1) + JSON.stringify(action.payload) + ')';
+        window.postMessage({
+          action: {
+            type: typeStringRev,
+            state: internals.state,
+            last: !args.insideTransaction || i === actions.length - 1,
+          },
+          source: 'olik-devtools-extension'
+        }, location.origin);
+      })
     },
   };
 

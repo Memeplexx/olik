@@ -9,6 +9,7 @@ export interface StoreInternals {
   state: RecursiveRecord,
   changeListeners: ChangeListener[],
   currentAction: OlikAction,
+  currentActions: OlikAction[],
   initialState: RecursiveRecord,
   disableDevtoolsDispatch?: boolean;
 }
