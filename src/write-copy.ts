@@ -51,7 +51,7 @@ export const copyNewState = (
         if (findIndex === -1) { throw new Error(errorMessages.FIND_RETURNS_NO_MATCHES); }
       }
       if (stateActions[cursor.index].name === '$delete') {
-        return setCurrentActionReturningNewState({ stateActions, payload: null, newState: '$find' === action.name ? currentState.filter((_, i) => findIndex !== i) : currentState.filter(e => !query(e)) });
+        return setCurrentActionReturningNewState({ stateActions, payload: undefined, newState: '$find' === action.name ? currentState.filter((_, i) => findIndex !== i) : currentState.filter(e => !query(e)) });
       } else {
         if ('$find' === action.name) {
           return currentState.map((e, i) => i === findIndex
@@ -73,7 +73,7 @@ export const copyNewState = (
     } else if (removeInvalidateCache.includes(stateActions[cursor.index].name)) {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { [stateActions[cursor.index - 1].name]: other, ...otherState } = mustBe.record(currentState);
-      return setCurrentActionReturningNewState({ stateActions, payload: null, newState: otherState })
+      return setCurrentActionReturningNewState({ stateActions, payload: undefined, newState: otherState })
     } else {
       return {
         ...mustBe.record(either(currentState).else({})),
@@ -110,15 +110,15 @@ export const copyNewState = (
   } else if (action.name === '$setSomeDeep') {
     return setCurrentActionReturningNewState({ stateActions, payload: action.arg, newState: deepMerge(mustBe.record(currentState), mustBe.record(action.arg)) });
   } else if (action.name === '$clear') {
-    return setCurrentActionReturningNewState({ stateActions, payload: null, newState: [] });
+    return setCurrentActionReturningNewState({ stateActions, payload: undefined, newState: [] });
   } else if (action.name === '$push') {
     const newState = is.arrayOf.actual(action.arg) ? [...mustBe.arrayOf.actual(currentState), ...action.arg] : [...mustBe.arrayOf.actual(currentState), action.arg!];
     return setCurrentActionReturningNewState({ stateActions, payload: action.arg, newState });
   } else if (action.name === '$toggle') {
     if (is.arrayOf.actual(currentState)) {
-      return setCurrentActionReturningNewState({ stateActions, payload: null, newState: currentState.map(e => !e) });
+      return setCurrentActionReturningNewState({ stateActions, payload: undefined, newState: currentState.map(e => !e) });
     } else {
-      return setCurrentActionReturningNewState({ stateActions, payload: null, newState: !currentState });
+      return setCurrentActionReturningNewState({ stateActions, payload: undefined, newState: !currentState });
     }
   }
   throw new Error();

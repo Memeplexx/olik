@@ -6,7 +6,7 @@ export const setCurrentActionReturningNewState = (
     { stateActions: ReadonlyArray<StateAction>, payload: unknown, newState: unknown }
 ): unknown => {
   const type = stateActions.map(sa => fixCurrentAction(sa)).join('.');
-  const action = { type, ...(payload !== null ? { payload } : {}) };
+  const action = { type, ...(payload !== undefined ? { payload } : {}) };
   if (libState.isInsideTransaction) {
     libState.currentActions.push(action);
   } else {
