@@ -2,7 +2,7 @@ import { andOr, augmentations, comparators, errorMessages, findFilter, libState,
 import { readState } from './read';
 import { OptionsForMakingAStore, RecursiveRecord, StateAction, Store, StoreAugment } from './type';
 import { is, mustBe } from './type-check';
-import { StoreInternal, StoreInternals } from './type-internal';
+import { StoreInternal } from './type-internal';
 import { deepFreeze } from './utility';
 import { processPotentiallyAsyncUpdate } from './write';
 import { setNewStateAndNotifyListeners } from './write-complete';
@@ -14,20 +14,19 @@ export function createStore<S>(
   const state = args.state as RecursiveRecord;
   validateState(args.state);
   removeStaleCacheReferences(state);
-  const internals: StoreInternals = {
-    state: JSON.parse(JSON.stringify(args.state)),
-    changeListeners: [],
-    currentAction: { type: '' },
-    currentActions: [],
-    initialState: state,
-  };
+  if (!libState.initialState) {
+    const state = args.key ? {} : JSON.parse(JSON.stringify(args.state));
+    libState.initialState = state;
+    libState.state = state;
+    libState.changeListeners = [];
+    libState.currentAction = { type: '' };
+    libState.currentActions = [];
+  }
   const recurseProxy = (stateActions: StateAction[], topLevel = false): StoreInternal => {
     return new Proxy(<StoreInternal>{}, {
       get: (_, prop: string) => {
         stateActions = topLevel ? new Array<StateAction>() : stateActions;
-        if ('$internals' === prop) {
-          return internals;
-        } else if (updateFunctions.includes(prop)) {
+        if (updateFunctions.includes(prop)) {
           return processPotentiallyAsyncUpdate({ stateActions, prop });
         } else if ('$invalidateCache' === prop) {
           return () => {
@@ -49,7 +48,7 @@ export function createStore<S>(
         } else if ('$state' === prop) {
           const tryFetchResult = (stateActions: StateAction[]): unknown => {
             try {
-              return deepFreeze(readState({ state: internals.state, stateActions: [...stateActions, { name: prop }], cursor: { index: 0 } }));
+              return deepFreeze(readState({ state: libState.state, stateActions: [...stateActions, { name: prop }], cursor: { index: 0 } }));
             } catch (e) {
               stateActions.pop();
               return tryFetchResult(stateActions);
@@ -60,9 +59,9 @@ export function createStore<S>(
         } else if ('$onChange' === prop) {
           return (listener: (arg: unknown) => unknown) => {
             const stateActionsCopy: StateAction[] = [...stateActions, { name: prop }];
-            const unsubscribe = () => internals.changeListeners.splice(internals.changeListeners.findIndex(e => e === element), 1);
+            const unsubscribe = () => libState.changeListeners.splice(libState.changeListeners.findIndex(e => e === element), 1);
             const element = { actions: stateActionsCopy, listener, unsubscribe };
-            internals.changeListeners.push(element);
+            libState.changeListeners.push(element);
             return { unsubscribe }
           }
         } else if (andOr.includes(prop)) {
@@ -88,7 +87,6 @@ export function createStore<S>(
     });
   };
   if (args.key) {
-    internals.state = {};
     if (!libState.store) {
       libState.store = recurseProxy([], true);
     }
@@ -97,8 +95,7 @@ export function createStore<S>(
       get: (_, prop: string) => {
         if (prop === '$destroyStore') {
           return () => {
-            const changeListeners = libState.store!.$internals.changeListeners;
-            changeListeners.filter(l => l.actions[0].name === args.key).forEach(l => l.unsubscribe());
+            libState.changeListeners.filter(l => l.actions[0].name === args.key).forEach(l => l.unsubscribe());
             libState.store![args.key!].$delete();
             libState.detached.push(args.key!);
             libState.innerStores.delete(args.key!);
@@ -120,9 +117,9 @@ export function createStore<S>(
 
 export const validateKeyedState = <S>(args: OptionsForMakingAStore<S>) => {
   if (!args.key) { return; }
-  const state = libState.store?.$state;
+  const state = libState.state;
   if (state === null || state === undefined) { return; }
-  const initialStateOfHostStore = libState.store!.$internals.initialState;
+  const initialStateOfHostStore = libState.initialState!;
   if (initialStateOfHostStore[args.key] !== undefined) {
     throw new Error(errorMessages.KEY_ALREADY_IN_USE(args.key));
   }

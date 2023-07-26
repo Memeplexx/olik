@@ -16,7 +16,7 @@
 //     store
 //       .$set(payload);
 //     expect(store.$state).toEqual(1);
-//     expect(currentAction(store)).toEqual({ type: 'set()', payload });
+//     expect(libState.currentAction).toEqual({ type: 'set()', payload });
 //   })
 
 //   it('should increment a value', () => {
@@ -25,7 +25,7 @@
 //     store
 //       .$add(payload);
 //     expect(store.$state).toEqual(1);
-//     expect(currentAction(store)).toEqual({ type: 'add()', payload });
+//     expect(libState.currentAction).toEqual({ type: 'add()', payload });
 //   })
 
 //   it('should toggle a boolean', () => {
@@ -33,7 +33,7 @@
 //     store
 //       .$toggle();
 //     expect(store.$state).toEqual(true);
-//     expect(currentAction(store)).toEqual({ type: 'toggle()' });
+//     expect(libState.currentAction).toEqual({ type: 'toggle()' });
 //   })
 
 // });

@@ -1,17 +1,8 @@
-import { ChangeListener, DeleteNode, OlikAction, OlikDevtoolsExtension, OnChange, RecursiveRecord, SetNewNode } from './type';
+import { DeleteNode, OlikDevtoolsExtension, OnChange, RecursiveRecord, SetNewNode } from './type';
 
 
 export type WindowAugmentedWithOlikDevtools = {
   __OLIK_DEVTOOLS_EXTENSION__: OlikDevtoolsExtension;
-}
-
-export interface StoreInternals {
-  state: RecursiveRecord,
-  changeListeners: ChangeListener[],
-  currentAction: OlikAction,
-  currentActions: OlikAction[],
-  initialState: RecursiveRecord,
-  disableDevtoolsDispatch?: boolean;
 }
 
 export type StoreInternal 
@@ -21,9 +12,6 @@ export type StoreInternal
   & OnChange<unknown>
   & {
     [key in keyof RecursiveRecord]: StoreInternal & ((arg: unknown) => StoreInternal)
-  }
-  & {
-    $internals: StoreInternals,
   }
   & {
     $state: RecursiveRecord & { cache?: Record<string, string> };

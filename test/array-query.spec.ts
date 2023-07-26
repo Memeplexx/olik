@@ -1,6 +1,6 @@
+import { libState } from '../src';
 import { createStore } from '../src/core';
 import { resetLibraryState } from '../src/utility';
-import { currentAction } from './_utility';
 import { test, expect, beforeEach } from 'vitest';
 
 const state = { arr: [{ id: 1, num: 1 }, { id: 2, num: 2 }, { id: 3, num: 3 }] }
@@ -103,7 +103,7 @@ test('should find an element by a clause and a clause or a clause, and then repl
     .$and.id.$eq(2)
     .$or.id.$eq(3)
     .$set(payload);
-  expect(currentAction(store)).toEqual({
+  expect(libState.currentAction).toEqual({
     type: `arr.$find.id.$eq(1).$and.id.$eq(2).$or.id.$eq(3).$set()`,
     payload,
   });
@@ -117,7 +117,7 @@ test('should find an element by a clause and a clause or a clause, and then remo
     .$and.id.$eq(2)
     .$or.id.$eq(3)
     .$delete();
-  expect(currentAction(store)).toEqual({
+  expect(libState.currentAction).toEqual({
     type: `arr.$find.id.$eq(1).$and.id.$eq(2).$or.id.$eq(3).$delete()`,
   });
   expect(store.$state).toEqual({ arr: [state.arr[0], state.arr[1]] });
@@ -131,7 +131,7 @@ test('should find an element by a clause or a clause and a clause, and then repl
     .$or.id.$eq(3)
     .$and.num.$eq(3)
     .$set(payload);
-  expect(currentAction(store)).toEqual({
+  expect(libState.currentAction).toEqual({
     type: `arr.$find.id.$eq(4).$or.id.$eq(3).$and.num.$eq(3).$set()`,
     payload,
   });
@@ -145,7 +145,7 @@ test('should find an element by a clause or a clause and a clause, and then remo
     .$or.id.$eq(3)
     .$and.num.$eq(3)
     .$delete();
-  expect(currentAction(store)).toEqual({
+  expect(libState.currentAction).toEqual({
     type: `arr.$find.id.$eq(4).$or.id.$eq(3).$and.num.$eq(3).$delete()`,
   });
   expect(store.$state).toEqual({ arr: [state.arr[0], state.arr[1]] });
@@ -160,7 +160,7 @@ test('should find an element by a clause and a clause or a clause and a clause, 
     .$or.id.$eq(3)
     .$and.num.$eq(3)
     .$set(payload);
-  expect(currentAction(store)).toEqual({
+  expect(libState.currentAction).toEqual({
     type: `arr.$find.id.$eq(1).$and.num.$eq(1).$or.id.$eq(3).$and.num.$eq(3).$set()`,
     payload,
   });
@@ -175,7 +175,7 @@ test('should find an element by a clause and a clause or a clause and a clause, 
     .$or.id.$eq(3)
     .$and.num.$eq(3)
     .$delete();
-  expect(currentAction(store)).toEqual({
+  expect(libState.currentAction).toEqual({
     type: `arr.$find.id.$eq(1).$and.num.$eq(1).$or.id.$eq(3).$and.num.$eq(3).$delete()`,
   });
   expect(store.$state).toEqual({ arr: [state.arr[1], state.arr[2]] });

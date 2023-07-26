@@ -73,19 +73,6 @@ test('should throw an error if the user attempts to override an existing store',
   expect(store2.$state).toEqual({ ...state, ...innerState });
 })
 
-// test('should throw an error if the containing stores state is a primitive', () => {
-//   createStore({ state: 0 });
-//   testState.logLevel = 'debug';
-//   expect(() => createStore({ state: 0, key }))
-//     .toThrow(errorMessages.INVALID_CONTAINER_FOR_COMPONENT_STORES);
-// })
-
-// test('should throw an error if the containing stores state is an array', () => {
-//   createStore({ state: new Array<string>() });
-//   expect(() => createStore({ state: 0, key }))
-//     .toThrow(errorMessages.INVALID_CONTAINER_FOR_COMPONENT_STORES);
-// })
-
 test('should throw an error if the user tries to create an inner store with a key that already exists in the outer store', () => {
   createStore({ state: { test: '' } });
   expect(() => createStore({ state: {}, key: 'test' }))

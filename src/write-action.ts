@@ -5,13 +5,12 @@ export const setCurrentActionReturningNewState = (
   { newState, payload, stateActions }:
     { stateActions: ReadonlyArray<StateAction>, payload: unknown, newState: unknown }
 ): unknown => {
-  const internals = libState.store!.$internals;
   const type = stateActions.map(sa => fixCurrentAction(sa)).join('.');
   const action = { type, ...(payload !== null ? { payload } : {}) };
   if (libState.isInsideTransaction) {
-    internals.currentActions.push(action);
+    libState.currentActions.push(action);
   } else {
-    internals.currentAction = action;
+    libState.currentAction = action;
   }
   return newState;
 }

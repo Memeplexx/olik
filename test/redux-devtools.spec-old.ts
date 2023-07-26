@@ -24,7 +24,7 @@ test.skip('devtools', () => {
   //   expect(store.$state).toEqual({ x: 3, y: 0 });
   //   testState.fakeWindowObjectForReduxDevtools!.__REDUX_DEVTOOLS_EXTENSION__._mockInvokeSubscription({ type: 'DISPATCH', state: JSON.stringify(state), payload: { type: 'JUMP_TO_ACTION' }, source: '@devtools-extension' });
   //   expect(store.$state).toEqual(state);
-  //   expect(currentAction(store).type).toEqual('replace()');
+  //   expect(libState.currentAction.type).toEqual('replace()');
   // });
 
   // it('should correctly respond to devtools dispatches where the state is an array', () => {
@@ -35,7 +35,7 @@ test.skip('devtools', () => {
   //   const state2 = ['g', 'h'];
   //   testState.fakeWindowObjectForReduxDevtools!.__REDUX_DEVTOOLS_EXTENSION__._mockInvokeSubscription({ type: 'DISPATCH', state: JSON.stringify(state2), payload: { type: 'JUMP_TO_ACTION' }, source: '@devtools-extension' });
   //   expect(store.$state).toEqual(state2);
-  //   expect(currentAction(store).type).toEqual('replace()');
+  //   expect(libState.currentAction.type).toEqual('replace()');
   // });
 
   // it('should handle a COMMIT without throwing an error', () => {

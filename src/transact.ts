@@ -4,15 +4,14 @@ export const transact = (...operations: (() => void)[]) => {
   if (!operations.length) { return; }
   if (operations.length === 1) { return operations[0](); }
   libState.isInsideTransaction = true;
-  const internals = libState.store!.$internals;
-  internals.currentActions = [];
+  libState.currentActions = [];
   operations.forEach(op => op());
-  if (libState.olikDevtools && !internals.disableDevtoolsDispatch) {
+  if (libState.olikDevtools && !libState.disableDevtoolsDispatch) {
     libState.olikDevtools.dispatch({insideTransaction: true});
   }
   const reset = () => {
     libState.isInsideTransaction = false;
-    internals.currentActions = [];
+    libState.currentActions = [];
   }
   if (testState.isTest) { 
     setTimeout(() => reset());

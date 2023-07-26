@@ -6,9 +6,7 @@ export function connectOlikDevtoolsToStore() {
   libState.olikDevtools = {
     init: () => { },
     dispatch: (args) => {
-      const store = libState.store!;
-      const internals = store.$internals;
-      const actions = internals.currentActions.length ? internals.currentActions : [internals.currentAction];
+      const actions = libState.currentActions.length ? libState.currentActions : [libState.currentAction];
       actions.forEach((action, i) => {
         const typeString = action.type
           .replace(/\((.+?)\)/g, (_, args) => `(${args.toString()})`);
@@ -18,7 +16,7 @@ export function connectOlikDevtoolsToStore() {
         window.postMessage({
           action: {
             type: typeStringRev,
-            state: internals.state,
+            state: libState.state,
             last: !args.insideTransaction || i === actions.length - 1,
           },
           source: 'olik-devtools-extension'
@@ -60,4 +58,10 @@ export function connectOlikDevtoolsToStore() {
       }
     })
   }).observe(olikActionDiv, { attributes: true, childList: true, subtree: true });
+
+  // new MutationObserver(() => {
+  //   libState.disableDevtoolsDispatch = true;
+  //   libState.store!.$set(JSON.parse(olikStateDiv.innerHTML));
+  //   libState.disableDevtoolsDispatch = false;
+  // }).observe(olikStateDiv, { attributes: true, childList: true, subtree: true });
 }

@@ -1,5 +1,4 @@
-import { RecursiveRecord, Store } from "../src/type";
-import { StoreInternal, WindowAugmentedWithOlikDevtools } from "../src/type-internal";
+import { WindowAugmentedWithOlikDevtools } from "../src/type-internal";
 
 export const windowAugmentedWithOlikDevtoolsImpl = {
   __OLIK_DEVTOOLS_EXTENSION__: new class {
@@ -14,7 +13,3 @@ export const windowAugmentedWithOlikDevtoolsImpl = {
     // _mockInvokeSubscription = (message: { type: string, payload: any, state?: any, source: any }) => this._subscribers.forEach(s => s(message));
   }(),
 } as unknown as WindowAugmentedWithOlikDevtools;
-
-export const currentAction = <S extends RecursiveRecord>(store: Store<S>) => (store as StoreInternal).$internals.currentAction;
-
-export const currentActions = <S extends RecursiveRecord>(store: Store<S>) => (store as StoreInternal).$internals.currentActions;

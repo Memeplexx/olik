@@ -1,7 +1,6 @@
 import { libState, testState } from './constant';
 import { Store } from './type';
 import { is } from './type-check';
-import { StoreInternal } from './type-internal';
 
 
 export const deepFreeze = <T>(o: T): T => {
@@ -21,10 +20,17 @@ export const getInnerStores = () => libState.innerStores;
 
 export const resetLibraryState = () => {
   testState.logLevel = 'none';
-  libState.store = undefined as StoreInternal | undefined;
+  libState.store = undefined;
   libState.isInsideTransaction = false;
   libState.innerStores.clear();
   libState.detached = [];
+
+  libState.state = undefined;
+  libState.changeListeners = [],
+  libState.currentAction = { type: '' },
+  libState.currentActions = [],
+  libState.initialState = undefined,
+  libState.disableDevtoolsDispatch = false;
 };
 
 export const deserialize = <R>(arg?: string | null): R => {

@@ -10,9 +10,9 @@ export const importOlikAsyncModule = () => {
   ) => {
     if (libState.isInsideTransaction) { throw new Error(errorMessages.ASYNC_PAYLOAD_INSIDE_TRANSACTION); }
     const readCurrentState = () =>
-      readState({ state: libState.store!.$state, stateActions: [...stateActions, { name: '$state' }], cursor: { index: 0 } });
+      readState({ state: libState.state, stateActions: [...stateActions, { name: '$state' }], cursor: { index: 0 } });
     let state: FutureState<unknown> = { storeValue: readCurrentState(), error: null, isLoading: false, wasRejected: false, wasResolved: false };
-    if (libState.store!.$state.cache?.[stateActions.map(sa => sa.name).join('.')]) {
+    if (libState.state && 'cache' in libState.state && mustBe.record(libState.state.cache)[stateActions.map(sa => sa.name).join('.')]) {
       const result = new Proxy(new Promise(resolve => resolve(readCurrentState())), {
         get: (target, prop: string) => {
           if (prop === 'then' || prop === 'catch' || prop === 'finally') {
