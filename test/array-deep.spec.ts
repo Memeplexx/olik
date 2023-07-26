@@ -45,7 +45,7 @@ test('should filter elements and patch them', () => {
     .$filter.id.$in([1, 2])
     .$setSome(payload);
   expect(libState.currentAction).toEqual({
-    type: 'arr.$filter.id.$in(1,2).$setSome()',
+    type: 'arr.$filter.id.$in([1,2]).$setSome()',
     payload,
   });
   expect(store.$state).toEqual({ arr: [{ id: 1, val: 1 }, { id: 2, val: 1 }, { id: 3, val: 0 }] });
@@ -110,7 +110,7 @@ test('should find an element, filter elements in the property array, and all of 
     .arr.$filter.id.$in([1, 2]).num
     .$add(payload);
   expect(libState.currentAction).toEqual({
-    type: 'arr.$find.id.$eq(2).arr.$filter.id.$in(1,2).num.$add()',
+    type: 'arr.$find.id.$eq(2).arr.$filter.id.$in([1,2]).num.$add()',
     payload,
   });
   expect(store.$state).toEqual({

@@ -21,6 +21,6 @@ const fixCurrentAction = (action: { name: string, arg?: unknown }) => {
     if (updateFunctions.includes(match)) {
       return `${match}()`;
     }
-    return `${match}(${action.arg === null || action.arg === undefined ? '' : action.arg})`;
+    return `${match}(${action.arg === null || action.arg === undefined ? '' : JSON.stringify(action.arg)})`;
   });
 }

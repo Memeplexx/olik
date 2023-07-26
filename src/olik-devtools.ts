@@ -59,9 +59,9 @@ export function connectOlikDevtoolsToStore() {
     })
   }).observe(olikActionDiv, { attributes: true, childList: true, subtree: true });
 
-  // new MutationObserver(() => {
-  //   libState.disableDevtoolsDispatch = true;
-  //   libState.store!.$set(JSON.parse(olikStateDiv.innerHTML));
-  //   libState.disableDevtoolsDispatch = false;
-  // }).observe(olikStateDiv, { attributes: true, childList: true, subtree: true });
+  new MutationObserver(() => {
+    libState.disableDevtoolsDispatch = true;
+    libState.store!.$set(JSON.parse(olikStateDiv.innerHTML));
+    libState.disableDevtoolsDispatch = false;
+  }).observe(olikStateDiv, { attributes: true, childList: true, subtree: true });
 }
