@@ -401,6 +401,7 @@ export type Comparators<T, S, F extends FindOrFilter, Depth extends number, NewD
   & Ni<S, Response>
   & (S extends string ?
     & Match<Response>
+    & Contains<Response>
     : unknown
   ) & (S extends string | number ?
     & Gt<S, Response>
@@ -473,6 +474,13 @@ export interface Match<Response> {
    * Whether the selection matches the supplied regular expression
    */
   $match: (matches: RegExp) => Response
+}
+
+export interface Contains<Response> {
+  /**
+   * Whether the selection contains the supplied regular expression
+   */
+  $contains: (string: string) => Response
 }
 
 export interface DestroyStore {

@@ -72,6 +72,7 @@ export const comparisons = {
   $gte: <T>(val: T, arg: T) => val >= arg,
   $lte: <T>(val: T, arg: T) => val <= arg,
   $match: (val: string, arg: RegExp) => arg.test(val),
+  $contains: (val: string, arg: string) => val.includes(arg),
 } as { [comparator: string]: (val: unknown, arg: unknown) => boolean };
 
 export const booleanNumberString = ['boolean', 'number', 'string'];
