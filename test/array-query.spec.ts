@@ -23,7 +23,7 @@ test('should find an element with one clause and another and patch it', () => {
   const payload = { num: 4 };
   store.arr
     .$find.id.$eq(1).$and.id.$lt(2)
-    .$setSome(payload);
+    .$patch(payload);
   expect(store.$state).toEqual({ ...state, arr: [{ ...state.arr[0], ...payload }, state.arr[1], state.arr[2]] })
 });
 
@@ -49,7 +49,7 @@ test('should find an element with one clause or another and patch it', () => {
   const payload = { num: 4 };
   store.arr
     .$find.id.$eq(1).$or.id.$lt(2)
-    .$setSome(payload);
+    .$patch(payload);
   expect(store.$state).toEqual({ ...state, arr: [{ ...state.arr[0], ...payload }, state.arr[1], state.arr[2]] })
 });
 
@@ -66,7 +66,7 @@ test('should filter elements with one clause and another and patch them', () => 
   const payload = { num: 4 };
   store.arr
     .$filter.id.$eq(1).$and.id.$lt(3)
-    .$setSome(payload);
+    .$patch(payload);
   expect(store.$state).toEqual({ ...state, arr: [{ ...state.arr[0], ...payload }, state.arr[1], state.arr[2]] })
 });
 
@@ -83,7 +83,7 @@ test('should filter elements with one clause or another and patch them', () => {
   const payload = { num: 4 };
   store.arr
     .$filter.id.$eq(1).$or.id.$lt(3)
-    .$setSome(payload);
+    .$patch(payload);
   expect(store.$state).toEqual({ ...state, arr: [{ ...state.arr[0], ...payload }, { ...state.arr[1], ...payload }, state.arr[2]] })
 });
 

@@ -29,15 +29,15 @@ test('should toggle an object property', () => {
 test('should patch an object', () => {
   const store = createStore({ state });
   const payload = { bool: true, str: 'x' };
-  store.$setSome({ bool: true, str: 'x' });
-  expect(libState.currentAction).toEqual({ type: '$setSome()', payload });
+  store.$patch({ bool: true, str: 'x' });
+  expect(libState.currentAction).toEqual({ type: '$patch()', payload });
   expect(store.$state).toEqual({ ...state, ...payload });
 })
 
 test('should deep merge an object', () => {
   const state = { num: 0, obj: { num: 0, str: '', arr: [{ id: 1, num: 1 }] } };
   const store = createStore({ state });
-  store.$setSomeDeep({ num: 9, str: 'x', obj: { xxx: '', arr: [{ fff: 's' }] } });
+  store.$patchDeep({ num: 9, str: 'x', obj: { xxx: '', arr: [{ fff: 's' }] } });
   expect(store.$state).toEqual({ num: 9, str: 'x', obj: { xxx: '', arr: [{ fff: 's' }], num: 0, str: '' } });
 })
 
@@ -107,7 +107,7 @@ test('should filter array elements and increment their property', () => {
 test('should patch all elements in an array', () => {
   const state = { arr: [{ id: 1, num: 1 }, { id: 2, num: 2 }] };
   const select = createStore({ state });
-  select.arr.$setSome({ num: 9 });
+  select.arr.$patch({ num: 9 });
   expect(select.arr.$state).toEqual([{ id: 1, num: 9 }, { id: 2, num: 9 }]);
 })
 

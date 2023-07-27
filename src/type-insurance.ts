@@ -69,7 +69,7 @@ store0.objArray
   .$set({ num: 2 });
 
 store0.object
-  .$setSome({ two: 'd' });
+  .$patch({ two: 'd' });
 
 store0.array
   .$find.$in([0])
@@ -129,7 +129,7 @@ store0.objArray
 
 store0.objArray
   .objArr.$find.num.$eq(3)
-  .$setSome({ num: 4 });
+  .$patch({ num: 4 });
 
 
 export const demo = () => {

@@ -13,7 +13,7 @@ test('should find an element and patch it', () => {
   const payload = { val: 1 };
   store.arr
     .$find.id.$eq(2)
-    .$setSome(payload);
+    .$patch(payload);
   expect(store.$state).toEqual({ ...state, arr: [state.arr[0], { ...state.arr[1], ...payload }] });
 })
 
@@ -43,9 +43,9 @@ test('should filter elements and patch them', () => {
   const payload = { val: 1 };
   store.arr
     .$filter.id.$in([1, 2])
-    .$setSome(payload);
+    .$patch(payload);
   expect(libState.currentAction).toEqual({
-    type: 'arr.$filter.id.$in([1,2]).$setSome()',
+    type: 'arr.$filter.id.$in([1,2]).$patch()',
     payload,
   });
   expect(store.$state).toEqual({ arr: [{ id: 1, val: 1 }, { id: 2, val: 1 }, { id: 3, val: 0 }] });

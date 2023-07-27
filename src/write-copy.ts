@@ -88,7 +88,7 @@ export const copyNewState = (
     }
   } else if (action.name === '$set') {
     return setCurrentActionReturningNewState({ stateActions, payload, newState: payload });
-  } else if (action.name === '$setSome') {
+  } else if (action.name === '$patch') {
     if (is.arrayOf.actual(currentState)) {
       return setCurrentActionReturningNewState({ stateActions, payload, newState: currentState.map(e => ({ ...mustBe.record(e), ...mustBe.record(payload) })) });
     } else {
@@ -108,7 +108,7 @@ export const copyNewState = (
     }
   } else if (action.name === '$setNew') {
     return setCurrentActionReturningNewState({ stateActions, payload, newState: currentState === undefined ? payload : { ...mustBe.record(currentState), ...mustBe.record(payload) } });
-  } else if (action.name === '$setSomeDeep') {
+  } else if (action.name === '$patchDeep') {
     return setCurrentActionReturningNewState({ stateActions, payload, newState: deepMerge(mustBe.record(currentState), mustBe.record(payload)) });
   } else if (action.name === '$clear') {
     return setCurrentActionReturningNewState({ stateActions, payload, newState: [] });

@@ -123,11 +123,11 @@ test('should derive on specific array element', () => {
   });
   store.array
     .$find.id.$eq(2)
-    .$setSome({ value: 'twoo' });
+    .$patch({ value: 'twoo' });
   mem.$state;
   store.array
     .$find.id.$eq(1)
-    .$setSome({ value: 'onee' });
+    .$patch({ value: 'onee' });
   mem.$state;
   expect(recalculating).toEqual(1);
 })
@@ -167,9 +167,9 @@ test('should derive with a find', () => {
   });
   mem.$state;
   mem.$state;
-  store.array.$find.id.$eq(1).$setSome({ value: 'xxx' });
+  store.array.$find.id.$eq(1).$patch({ value: 'xxx' });
   expect(memoCalcCount).toEqual(1);
-  store.array.$find.id.$eq(2).$setSome({ value: 'xxx' });
+  store.array.$find.id.$eq(2).$patch({ value: 'xxx' });
   mem.$state;
   expect(memoCalcCount).toEqual(2);
 })
@@ -189,11 +189,11 @@ test('should derive with a filter', () => {
   mem.$state;
   mem.$state;
   expect(memoCalcCount).toEqual(1);
-  store.array.$find.id.$eq(1).$setSome({ value: 'xxx' });
+  store.array.$find.id.$eq(1).$patch({ value: 'xxx' });
   mem.$state;
   mem.$state;
   expect(memoCalcCount).toEqual(2);
-  store.array.$find.id.$eq(2).$setSome({ value: 'xxx' });
+  store.array.$find.id.$eq(2).$patch({ value: 'xxx' });
   mem.$state;
   mem.$state;
   expect(memoCalcCount).toEqual(3);
