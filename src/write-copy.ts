@@ -22,7 +22,7 @@ export const copyNewState = (
 ): unknown => {
   if (is.arrayOf.record(currentState) && !anyLibProp.includes(stateActions[cursor.index].name)) {
     return currentState.map((_, i) => is.record(currentState[i])
-      ? { ...currentState[i], ...mustBe.record(copyNewState({ currentState: currentState[i] || {}, stateToUpdate: (mustBe.arrayOf.record(stateToUpdate)[i] || {}), stateActions, cursor: { ...cursor } })) }
+      ? { ...currentState[i], ...mustBe.record(copyNewState({ currentState: either(currentState[i]).else({}), stateToUpdate: either(mustBe.arrayOf.record(stateToUpdate)[i]).else({}), stateActions, cursor: { ...cursor } })) }
       : copyNewState({ currentState: currentState[i], stateToUpdate: mustBe.arrayOf.actual(stateToUpdate)[i], stateActions, cursor: { ...cursor } }) as Actual);
   } else if (is.arrayOf.actual(currentState) && (stateActions[cursor.index].name === '$mergeMatching')) {
     cursor.index++;
@@ -62,7 +62,7 @@ export const copyNewState = (
           if (stateActions[cursor.index]?.name === '$set') {
             return [
               ...currentState.filter(e => !query(e)),
-              ...(mustBe.arrayOf.record(copyNewState({ currentState, stateToUpdate, stateActions, cursor }))),
+              ...mustBe.arrayOf.record(copyNewState({ currentState, stateToUpdate, stateActions, cursor })),
             ];
           } else {
             return currentState.map((e, i) => query(e)
