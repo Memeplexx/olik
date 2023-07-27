@@ -39,8 +39,6 @@ test('Olik Perf (shallow)', () => {
   console.log(`Olik Perf (shallow): ${performance.now() - before}`);
 })
 
-
-
 test('Immer Perf (deep)', () => {
   let state = { arr: [{ id: 1, val: '', obj: { num: 0 } }, { id: 2, val: '', obj: { num: 0 } }], obj: { num: 0 } };
   const before = performance.now();
