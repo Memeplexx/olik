@@ -7,7 +7,7 @@ export const deepFreeze = <T>(o: T): T => {
   Object.freeze(o);
   if (o == null || o === undefined) { return o; }
   (<Array<keyof typeof o>>Object.keys(o)).forEach(prop => {
-    if (is.record(o) || is.arrayOf.actual(o)) {
+    if (is.record(o) || Array.isArray(o)) {
       deepFreeze(o[prop]);
     }
   })

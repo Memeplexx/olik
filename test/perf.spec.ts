@@ -66,8 +66,8 @@ test('Olik Perf (deep)', () => {
   const before = performance.now();
   for (let i = 0; i < 1000; i++) {
     store.arr
-      .$find.val.$eq('')
-      .id.$set(i);
+      .$find.val.$eq('').id
+      .$set(i);
   }
   console.log(`Olik Perf (deep): ${performance.now() - before}`);
 })

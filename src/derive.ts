@@ -1,6 +1,5 @@
 import { augmentations } from './constant';
 import { Derivation, DerivationCalculationInputs, Readable, Unsubscribe } from './type';
-import { mustBe } from './type-check';
 
 export function derive<X extends Readable<unknown>[]>(...args: X) {
   let previousParams = new Array<unknown>();
@@ -37,7 +36,7 @@ export function derive<X extends Readable<unknown>[]>(...args: X) {
           }
         }
       }()) as Derivation<R>;
-      Object.keys(augmentations.derivation).forEach(name => mustBe.record(result)[name] = augmentations.derivation[name](result));
+      Object.keys(augmentations.derivation).forEach(name => (result as unknown as Record<string, unknown>)[name] = augmentations.derivation[name](result));
       return result;
     }
   }

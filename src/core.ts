@@ -1,7 +1,7 @@
 import { andOr, augmentations, comparators, errorMessages, findFilter, libState, updateFunctions } from './constant';
 import { readState } from './read';
 import { OptionsForMakingAStore, RecursiveRecord, StateAction, Store, StoreAugment } from './type';
-import { is, mustBe } from './type-check';
+import { is } from './type-check';
 import { StoreInternal } from './type-internal';
 import { deepFreeze } from './utility';
 import { processPotentiallyAsyncUpdate } from './write';
@@ -144,7 +144,7 @@ export const validateState = (state: unknown) => {
 
 export const removeStaleCacheReferences = (state: RecursiveRecord) => {
   if (!state.cache) { return; }
-  const cache = mustBe.recordOf.string(state.cache);
+  const cache = state.cache as Record<string, string>;
   for (const key in cache) {
     if (new Date(cache[key]).getTime() <= Date.now()) {
       delete cache[key];

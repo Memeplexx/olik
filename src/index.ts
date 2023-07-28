@@ -8,4 +8,4 @@ export { connectOlikDevtoolsToStore } from './olik-devtools';
 export { importOlikAsyncModule, defineQuery } from './write-async'
 export * from './constant';
 export * from './type-check';
-export * from './read';
+export { readState } from './read';

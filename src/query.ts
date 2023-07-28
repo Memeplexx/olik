@@ -1,6 +1,5 @@
 import { andOr, anyLibProp, comparators, comparisons, reader, updateFunctions } from './constant';
 import { StateAction } from './type';
-import { mustBe } from './type-check';
 import { QuerySpec } from './type-internal';
 
 const action = [...updateFunctions, ...reader];
@@ -17,7 +16,7 @@ export const constructQuery = (
           return prev.concat(curr);
         }, new Array<StateAction>());
       const comparator = stateActions[cursor.index++];
-      return (e: unknown) => comparisons[comparator.name](queryPaths.reduce((prev, curr) => prev = mustBe.record(prev)[curr.name], e), comparator.arg);
+      return (e: unknown) => comparisons[comparator.name](queryPaths.reduce((prev, curr) => prev = (prev as Record<string, unknown>)[curr.name], e), comparator.arg);
     }
     queries.push({
       query: constructQuery(),

@@ -1,7 +1,6 @@
 import { augmentations, errorMessages, libState } from './constant';
 import { readState } from './read';
 import { Actual, AnyAsync, EnableAsyncActionsArgs, FutureState, StateAction, UpdateOptions } from './type';
-import { mustBe } from './type-check';
 import { setNewStateAndNotifyListeners } from './write-complete';
 
 export const importOlikAsyncModule = () => {
@@ -12,7 +11,7 @@ export const importOlikAsyncModule = () => {
     const readCurrentState = () =>
       readState({ state: libState.state, stateActions: [...stateActions, { name: '$state' }], cursor: { index: 0 } });
     let state: FutureState<unknown> = { storeValue: readCurrentState(), error: null, isLoading: false, wasRejected: false, wasResolved: false };
-    if (libState.state && 'cache' in libState.state && mustBe.record(libState.state.cache)[stateActions.map(sa => sa.name).join('.')]) {
+    if (libState.state && 'cache' in libState.state && (libState.state.cache as Record<string, unknown>)[stateActions.map(sa => sa.name).join('.')]) {
       const result = new Proxy(new Promise(resolve => resolve(readCurrentState())), {
         get: (target, prop: string) => {
           if (prop === 'then' || prop === 'catch' || prop === 'finally') {
@@ -21,12 +20,12 @@ export const importOlikAsyncModule = () => {
           } else if (prop === '$state') {
             return state;
           } else {
-            return (...args: Array<Actual>) => mustBe.recordOf.function(target)[prop]!(args);
+            return (...args: Array<Actual>) => (target as unknown as Record<string, (a: Actual[]) => unknown>)[prop]!(args);
           }
         }
       });
-      const resultCast = mustBe.recordOf.function(result);
-      const futureCast = mustBe.recordOf.function<unknown, (a: unknown) => undefined>(augmentations.future);
+      const resultCast = result as unknown as Record<string, () => unknown>;
+      const futureCast = augmentations.future as unknown as Record<string, (a: unknown) => () => unknown>;
       Object.keys(augmentations.future).forEach(name => resultCast[name] = futureCast[name](result));
       return result;
     }
@@ -37,7 +36,7 @@ export const importOlikAsyncModule = () => {
         setNewStateAndNotifyListeners({ stateActions: [...stateActions, { name: prop, arg: eager }] });
       }
       state = { ...state, isLoading: true, storeValue: readCurrentState() };
-      const argCast = mustBe.function<void, Promise<unknown>>(arg);
+      const argCast = arg as () => Promise<unknown>;
       const promise = (augmentations.async ? augmentations.async(argCast) : argCast());
       return promise
         .then(promiseResult => {
@@ -80,11 +79,11 @@ export const importOlikAsyncModule = () => {
           return t[prop].bind(t);
         } else { // must be an augmentation
           promiseWasChained = true;
-          return mustBe.record(target)[prop];
+          return (target as unknown as Record<string, unknown>)[prop];
         }
       }
     }) as { state: FutureState<unknown> } & Promise<unknown>;
-    const resultCast = mustBe.recordOf.function<Actual[], unknown>(result);
+    const resultCast = result as unknown as Record<string, (arg: Actual[]) => unknown>;
     Object.keys(augmentations.future).forEach(name => resultCast[name] = augmentations.future[name](result));
     return result;
   }
