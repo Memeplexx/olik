@@ -232,13 +232,3 @@ storee.things.$filter.id.$eq(3).$set([{ id: 2, name: '' }]);
 storee.things.$filter.id.$eq(3).name.$set('');
 // storee.arr.
 
-
-
-// const str = createStore({
-//   state: {
-//     nums: [0, 1]
-//   }
-// });
-
-// const getNum = () => Promise.resolve(9);
-// str.nums.$push(getNum);

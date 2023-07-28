@@ -4,6 +4,9 @@ export type QueryStatus = 'notQueried' | 'queried' | 'notArray';
 
 export type ImmediateParentIsAFilter = 'yes' | 'no';
 
+declare const brand: unique symbol;
+export type Brand<T, TBrand extends string> = T & { [brand]: TBrand };
+
 export type ThingOrArrayOfThings<T> = T | T[];
 
 export interface RecursiveRecord {
@@ -11,6 +14,8 @@ export interface RecursiveRecord {
 }
 
 export type Primitive = string | number | boolean;
+
+export type PossiblyBrandedPrimitive = Primitive & { [brand]?: string };
 
 export type Actual = Primitive | Record<string, unknown> | Array<unknown>;
 
@@ -53,8 +58,9 @@ export type UpdatableObject<S, F extends FindOrFilter, Q extends QueryStatus, I 
   & ({
     [K in keyof S]: S[K] extends Array<unknown>
     ? UpdatableArray<S[K], 'isFilter', 'notQueried', NewDepth>
-    : S[K] extends object ? UpdatableObject<S[K], F, Q, 'no', NewDepth>
-    : UpdatablePrimitive<S[K], F, Q, NewDepth>
+    : S[K] extends PossiblyBrandedPrimitive 
+    ? UpdatablePrimitive<S[K], F, Q, NewDepth>
+    : UpdatableObject<S[K], F, Q, 'no', NewDepth>
   })
   , Depth>
 
@@ -85,9 +91,9 @@ export type UpdatableArray<S extends Array<unknown>, F extends FindOrFilter, Q e
         & { [K in keyof S[0]]:
           (S[0][K] extends Array<unknown>
             ? UpdatableArray<S[0][K], 'isFilter', 'notQueried', NewDepth>
-            : S[0][K] extends object
-            ? UpdatableObject<S[0][K], F, Q, 'yes', NewDepth>
-            : UpdatablePrimitive<S[0][K], F, Q, NewDepth>)
+            : S[0][K] extends PossiblyBrandedPrimitive
+            ? UpdatablePrimitive<S[0][K], F, Q, NewDepth>
+            : UpdatableObject<S[0][K], F, Q, 'yes', NewDepth>)
         }
       )
       : AddArray
