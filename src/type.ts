@@ -21,7 +21,7 @@ export type Actual = Primitive | Record<string, unknown> | Array<unknown>;
 
 export type PatchDeepPayloadObject<T> = Partial<{
   [P in keyof T]: PatchDeepPayload<T[P]>;
-}> & { [x: string]: unknown }
+}> /*& { [x: string]: unknown }*/
 
 export type PatchDeepPayload<T> =
   T extends (infer R)[] ? Array<PatchDeepPayload<R>> :
@@ -221,21 +221,21 @@ export interface PatchObject<S> {
   /**
    * Partially update the selected object node with the supplied state.
    */
-  $patch<X extends Payload<Partial<S>>>(patch: X, options?: UpdateOptions<X>): UpdateResult<X>;
+  $patch(patch: Payload<Partial<S>>, options?: UpdateOptions<typeof patch>): UpdateResult<typeof patch>;
 }
 
 export interface PatchArrayElement<S> {
   /**
    * Partially update the selected array element with the supplied state.
    */
-  $patch<X extends Payload<Partial<S>>>(patch: X, options?: UpdateOptions<X>): UpdateResult<X>;
+  $patch(patch: Payload<Partial<S>>, options?: UpdateOptions<typeof patch>): UpdateResult<typeof patch>;
 }
 
 export interface PatchArray<S> {
   /**
    * Partially update all the selected array elements with the supplied state.
    */
-  $patch<X extends Payload<Partial<S>>>(patch: X, options?: UpdateOptions<X>): UpdateResult<X>;
+  $patch(patch: Payload<Partial<S>>, options?: UpdateOptions<typeof patch>): UpdateResult<typeof patch>;
 }
 
 export interface Add {
@@ -298,24 +298,22 @@ export interface SetArray<S, I extends ImmediateParentIsAFilter> {
 export interface PatchDeep<S> {
   /**
    * Recursively merge the supplied object into the selected node.
-   * 
-   * **WARNING**: Performing this action has the potential to contradict the type-system.
    */
-  $patchDeep: <X extends Payload<PatchDeepPayload<S>>>(toMerge: X, options?: UpdateOptions<X>) => UpdateResult<X>;
+  $patchDeep: (patch: Payload<PatchDeepPayload<S>>, options?: UpdateOptions<typeof patch>) => UpdateResult<typeof patch>;
 }
 
 export interface PatchDeepArrayElement<S> {
   /**
    * Recursively merge the supplied object into the selected array element.
    */
-  $patchDeep: <X extends Payload<PatchDeepPayload<S>>>(toMerge: X, options?: UpdateOptions<X>) => UpdateResult<X>;
+  $patchDeep: (patch: Payload<PatchDeepPayload<S>>, options?: UpdateOptions<typeof patch>) => UpdateResult<typeof patch>;
 }
 
 export interface PatchDeepArray<S> {
   /**
    * Recursively merge the supplied object into all of the selected array elements.
    */
-  $patchDeep: <X extends Payload<PatchDeepPayload<S>>>(toMerge: X, options?: UpdateOptions<X>) => UpdateResult<X>;
+  $patchDeep: (patch: Payload<PatchDeepPayload<S>>, options?: UpdateOptions<typeof patch>) => UpdateResult<typeof patch>;
 }
 
 export interface InvalidateDerivation {
