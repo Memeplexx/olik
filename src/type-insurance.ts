@@ -1,5 +1,6 @@
 import { createStore } from './core';
 
+
 type Test = { num: number, arr: Array<number>, objArr: Array<{ num: number }>, obj: { num: number } };
 
 type Statee = {
@@ -69,7 +70,7 @@ store0.objArray
   .$set({ num: 2 });
 
 store0.object
-  .$patch({ two: 'd' });
+  .$patch({ two: 'd', three: 3 });
 
 store0.array
   .$find.$in([0])
@@ -232,3 +233,30 @@ storee.things.$filter.id.$eq(3).$set([{ id: 2, name: '' }]);
 storee.things.$filter.id.$eq(3).name.$set('');
 // storee.arr.
 
+
+
+
+
+
+// const storey = createStore({
+//   state: {
+//     showOptionsFor: null,
+//     tagId: null,
+//   }
+// })
+
+// storey.$patch({
+//   showOptionsFdor: 'group',
+//   tagId: null,
+// });
+
+// // const thing: Payload<Partial<{ one: '', two: '' }>> = {
+// //   one: null,
+// //   two: ''
+// // }
+
+// const myFn = <X extends Partial<{ str: string, num: number }>>(arg: X) => {
+//   return arg;
+// }
+
+// myFn({thing: '', num: 3})

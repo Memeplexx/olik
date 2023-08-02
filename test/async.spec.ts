@@ -180,6 +180,14 @@ test('should be able to insert many array elements', async () => {
   expect(store.arr.$state).toEqual([1, 2, 3, 4, 5]);
 })
 
+// https://stackoverflow.com/questions/50065486/partial-type-in-function-return-value-not-as-strict-as-expected
+// test('', async () => { ///////////////////////////////////////////////////////
+//   const state = { str: '', num : 2 };
+//   const store = createStore({ state });
+//   const r = store.$patch(resolve({ num: 3 }));
+//   // const r = store.$patch(() => ({ num: 3, str: '' }));
+// })
+
 test('should repsert one array element where a match could be found', async () => {
   const state = { arr: [{ id: 1, num: 1 }, { id: 2, num: 2 }, { id: 3, num: 3 }] };
   const store = createStore({ state });

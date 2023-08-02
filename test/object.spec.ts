@@ -37,8 +37,8 @@ test('should patch an object', () => {
 test('should deep merge an object', () => {
   const state = { num: 0, obj: { num: 0, str: '', arr: [{ id: 1, num: 1 }] } };
   const store = createStore({ state });
-  store.$patchDeep({ num: 9, str: 'x', obj: { xxx: '', arr: [{ fff: 's' }] } });
-  expect(store.$state).toEqual({ num: 9, str: 'x', obj: { xxx: '', arr: [{ fff: 's' }], num: 0, str: '' } });
+  store.$patchDeep({ num: 9, obj: { str: 'x', arr: [{ num: 4 }] } });
+  expect(store.$state).toEqual({ num: 9, obj: { num: 0, str: 'x', arr: [{ num: 4 }] } });
 })
 
 test('should increment an object property', () => {

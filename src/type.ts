@@ -33,8 +33,7 @@ export type RepsertableObject<T, S> = WithOne<T> & WithMany<T> & { [K in keyof S
 export interface RepsertablePrimitive<T> extends WithOne<T>, WithMany<T> {
 }
 
-export type Payload<S> = S | (() => AnyAsync<S>);
-type UpdateResult<X> = X extends (() => AnyAsync<infer R>) ? Future<R> : void;
+type UpdateResult<X> = X extends (() => AnyAsync<infer R>) ? Future<R> : never;
 
 export type DecrementRecursion = [-1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30];
 export type LengthOfTuple<T extends number[]> = T extends { length: infer L } ? L : never;
@@ -100,7 +99,7 @@ export type UpdatableArray<S extends Array<unknown>, F extends FindOrFilter, Q e
     )
   ), Depth>
 
-export type UpdateOptions<H> = (H extends () => AnyAsync<unknown> ? & Cache & Eager<H> : unknown) | void;
+export type UpdateOptions<H> = Cache & Eager<H>;
 
 export type UpdatablePrimitive<S, F extends FindOrFilter, Q extends QueryStatus, Depth extends number> =
   & InvalidateCache
@@ -171,7 +170,8 @@ export type SetNewNode = {
    * Also note that you cannot insert primitives or arrays into the selected object.
    * The former has been enforced by the type system while the latter could not be.
    */
-  $setNew<X extends Payload<object>>(insertion: X, options?: UpdateOptions<X>): UpdateResult<X>;
+  $setNew(insertion: object, options?: UpdateOptions<typeof insertion>): UpdateResult<typeof insertion>;
+  $setNew(insertion: object): void;
 }
 
 export type DeleteNode<Depth extends number> = [Depth] extends [MaxRecursionDepth] ? unknown : {
@@ -183,7 +183,7 @@ export type DeleteNode<Depth extends number> = [Depth] extends [MaxRecursionDept
    * **not** from objects with a known structure, for example `{ num: number, str: string }`.
    */
   $delete(): void,
-  $delete<X extends Payload<unknown>>(options?: X): Future<unknown>;
+  $delete(fn: AnyAsyncFn<unknown>, options?: UpdateOptions<unknown>): Future<unknown>;
 }
 
 export type DeleteArrayElement<Depth extends number> = [Depth] extends [MaxRecursionDepth] ? unknown : {
@@ -191,7 +191,7 @@ export type DeleteArrayElement<Depth extends number> = [Depth] extends [MaxRecur
    * Remove the selected element from the array.  
    */
   $delete(): void,
-  $delete<X extends Payload<unknown>>(options?: X): Future<unknown>;
+  $delete(fn: AnyAsyncFn<unknown>, options?: UpdateOptions<unknown>): Future<unknown>;
 }
 
 export type DeleteArray<Depth extends number> = [Depth] extends [MaxRecursionDepth] ? unknown : {
@@ -199,7 +199,7 @@ export type DeleteArray<Depth extends number> = [Depth] extends [MaxRecursionDep
    * Remove the selected elements from the array.  
    */
   $delete(): void,
-  $delete<X extends Payload<unknown>>(options?: X): Future<unknown>;
+  $delete(fn: AnyAsyncFn<unknown>, options?: UpdateOptions<unknown>): Future<unknown>;
 }
 
 export interface Clear {
@@ -207,113 +207,197 @@ export interface Clear {
    * Remove all elements from the selected array.
    */
   $clear(): void,
-  $clear<X extends Payload<unknown>>(options?: X): Future<unknown>;
+  $clear(fn: AnyAsyncFn<unknown>, options?: UpdateOptions<unknown>): Future<unknown>;
 }
 
 export interface Push<S> {
   /**
-   * Push the supplied array element onto the end of the selected array. 
+   * Update the selected array, pushing the array element returned by the supplied async function.
    */
-  $push<X extends Payload<S>>(element: X, options?: UpdateOptions<X>): UpdateResult<X>;
+  $push(element: AnyAsyncFn<S>, options?: UpdateOptions<typeof element>): UpdateResult<typeof element>;
+  /**
+   * Update the selected array, pushing the supplied array element.
+   */
+  $push(element: S): void;
 }
 
 export interface PatchObject<S> {
   /**
-   * Partially update the selected object node with the supplied state.
+   * Update the selected object node, using the partial returned by the supplied async function.
    */
-  $patch(patch: Payload<Partial<S>>, options?: UpdateOptions<typeof patch>): UpdateResult<typeof patch>;
+  $patch(patch: AnyAsyncFn<Partial<S>>, options?: UpdateOptions<typeof patch>): UpdateResult<typeof patch>;
+  /**
+   * Update the selected object node, using the supplied partial.
+   */
+  $patch(patch: Partial<S>): void;
 }
 
 export interface PatchArrayElement<S> {
   /**
-   * Partially update the selected array element with the supplied state.
+   * Update the selected array element, using the partial returned by the supplied async function.
    */
-  $patch(patch: Payload<Partial<S>>, options?: UpdateOptions<typeof patch>): UpdateResult<typeof patch>;
+  $patch(patch: AnyAsyncFn<Partial<S>>, options?: UpdateOptions<typeof patch>): UpdateResult<typeof patch>;
+  /**
+   * Update the selected array element, using the supplied partial.
+   */
+  $patch(patch: Partial<S>): void;
 }
 
 export interface PatchArray<S> {
   /**
-   * Partially update all the selected array elements with the supplied state.
+   * Update all the selected array elements, using the partial returned by the supplied async function.
    */
-  $patch(patch: Payload<Partial<S>>, options?: UpdateOptions<typeof patch>): UpdateResult<typeof patch>;
+  $patch(patch: AnyAsyncFn<Partial<S>>, options?: UpdateOptions<typeof patch>): UpdateResult<typeof patch>;
+  /**
+   * Update all the selected array elements, using the supplied partial.
+   */
+  $patch(patch: Partial<S>): void;
 }
 
 export interface Add {
   /**
-   * Add the supplied number onto the selected number.
+   * Update the selected number, by adding the number returned by the supplied async function.
    */
-  $add<X extends Payload<number>>(toAdd: X, options?: UpdateOptions<X>): UpdateResult<X>;
+  $add(toAdd: AnyAsyncFn<number>, options?: UpdateOptions<typeof toAdd>): UpdateResult<typeof toAdd>;
+  /**
+   * Update the selected number, by adding the supplied number.
+   */
+  $add(toAdd: number): void;
 }
 
 export interface Subtract {
   /**
-   * Subtract the supplied number from the selected number.
+   * Update the selected number, by subtracting the number returned by the supplied async function.
    */
-  $subtract<X extends Payload<number>>(subtractBy: X, options?: UpdateOptions<X>): UpdateResult<X>;
+  $subtract(toSubtract: AnyAsyncFn<number>, options?: UpdateOptions<typeof toSubtract>): UpdateResult<typeof toSubtract>;
+  /**
+   * Update the selected number, by subtracting the supplied number.
+   */
+  $subtract(toSubtract: number): void;
 }
 
 export interface Toggle {
-  $toggle(): UpdateResult<boolean>;
+  /**
+   * Update the selected boolean, by inverting it
+   */
+  $toggle(): void;
 }
 
 export interface AddArray {
   /**
-   * Add the supplied number onto each of the numbers in the selected array. 
+   * Update the selected array, by adding the number returned by the supplied async function to each element.
    */
-  $add<X extends Payload<number>>(addTo: X, options?: UpdateOptions<X>): UpdateResult<X>;
+  $add(addTo: AnyAsyncFn<number>, options?: UpdateOptions<typeof addTo>): UpdateResult<typeof addTo>;
+  /**
+   * Update the selected array, by adding the supplied number to each element.
+   */
+  $add(addTo: number): void;
 }
 
 export interface ToggleArray {
-  $toggle(): UpdateResult<boolean>;
+  /**
+   * Update the selected boolean, by inverting it
+   */
+  $toggle(): void;
 }
 
 export interface SubtractArray {
   /**
-   * Subtract the supplied number from each of the numbers in the selected array. 
+   * Update the selected array, by adding the number returned by the supplied async function to each element.
    */
-  $subtract<X extends Payload<number>>(toSubtract: X, options?: UpdateOptions<X>): UpdateResult<X>;
+  $subtract(toSubtract: AnyAsyncFn<number>, options?: UpdateOptions<typeof toSubtract>): UpdateResult<typeof toSubtract>;
+  /**
+   * Update the selected array, by adding the supplied number to each element.
+   */
+  $subtract(toSubtract: number): void;
 }
 
 export interface Set<S> {
   /**
-   * Replace the selected node with the supplied state.
+   * Update the selected node, by replacing it with the value returned by the supplied async function.
    */
-  $set<X extends Payload<S>>(replacement: X, options?: UpdateOptions<X>): UpdateResult<X>;
+  $set(replacement: AnyAsyncFn<S>, options?: UpdateOptions<typeof replacement>): UpdateResult<typeof replacement>;
+  /**
+   * Update the selected node, by replacing it with the supplied value.
+   */
+  $set(replacement: S): void;
 }
 
 export interface SetArrayElement<S> {
   /**
-   * Replace the selected array element with a new element.
+   * Update the selected array element, by replacing it with the value returned by the supplied async function.
    */
-  $set<X extends Payload<S>>(replacement: X, options?: UpdateOptions<X>): UpdateResult<X>;
+  $set(replacement: AnyAsyncFn<S>): UpdateResult<typeof replacement>;
+  /**
+   * Update the selected array element, by replacing it with the supplied value.
+   */
+  $set(replacement: S): void;
 }
 
 export interface SetArray<S, I extends ImmediateParentIsAFilter> {
   /**
-   * Replace the selected elements with the provided array element(s).
+   * Update the selected array elements, by replacing it with the elements returned by the supplied async function.
    */
-  $set<X extends Payload<I extends 'yes' ? S[] : S>>(replacement: X, options?: UpdateOptions<X>): UpdateResult<X>;
+  $set(replacement: AnyAsyncFn<I extends 'yes' ? S[] : S>, options?: UpdateOptions<typeof replacement>): UpdateResult<typeof replacement>;
+  /**
+   * Update the selected array elements, by replacing each element with the supplied value.
+   */
+  $set(replacement: I extends 'yes' ? S[] : S): void;
 }
 
 export interface PatchDeep<S> {
   /**
-   * Recursively merge the supplied object into the selected node.
+   * Update the selected array elements, by recursively merging them with the elements returned by the supplied async function.
    */
-  $patchDeep: (patch: Payload<PatchDeepPayload<S>>, options?: UpdateOptions<typeof patch>) => UpdateResult<typeof patch>;
+  $patchDeep(patch: AnyAsyncFn<PatchDeepPayload<S>>, options?: UpdateOptions<typeof patch>): UpdateResult<typeof patch>;
+  /**
+   * Update the selected array elements, by recursively merging each element with the supplied value.
+   */
+  $patchDeep(patch: PatchDeepPayload<S>): void;
 }
 
 export interface PatchDeepArrayElement<S> {
   /**
-   * Recursively merge the supplied object into the selected array element.
+   * Update the selected array element, by recursively merging it with the elements returned by the supplied async function.
    */
-  $patchDeep: (patch: Payload<PatchDeepPayload<S>>, options?: UpdateOptions<typeof patch>) => UpdateResult<typeof patch>;
+  $patchDeep(patch: AnyAsyncFn<PatchDeepPayload<S>>, options?: UpdateOptions<typeof patch>): UpdateResult<typeof patch>;
+  /**
+   * Update the selected array element, by recursively merging it with the supplied value.
+   */
+  $patchDeep(patch: PatchDeepPayload<S>): void;
 }
 
 export interface PatchDeepArray<S> {
   /**
-   * Recursively merge the supplied object into all of the selected array elements.
+   * Update the selected array elements, by recursively merging them with the elements returned by the supplied async function.
    */
-  $patchDeep: (patch: Payload<PatchDeepPayload<S>>, options?: UpdateOptions<typeof patch>) => UpdateResult<typeof patch>;
+  $patchDeep(patch: AnyAsyncFn<PatchDeepPayload<S>>, options?: UpdateOptions<typeof patch>): UpdateResult<typeof patch>;
+  /**
+   * Update the selected array element2, by recursively merging them with the supplied value.
+   */
+  $patchDeep(patch: PatchDeepPayload<S>): void;
+}
+
+export interface WithOne<T> {
+  /**
+   * Update the selected array element, by replacing or inserting with the elements returned by the supplied async function.
+   */
+  $withOne(element: AnyAsyncFn<T>, options?: UpdateOptions<T>): UpdateResult<T>;
+  /**
+   * Update the selected array element, by replacing or inserting with the supplied value.
+   */
+  $withOne(element: T): void;
+}
+
+export interface WithMany<T> {
+  /**
+   * Repsert with an array of elements.
+   */
+  $withMany(array: AnyAsyncFn<T[]>): UpdateResult<typeof array>,
+  /**
+   * Repsert with an array of elements.
+   */
+  $withMany(array: T[]): void,
 }
 
 export interface InvalidateDerivation {
@@ -347,20 +431,6 @@ export interface OnChange<S> {
 export interface Readable<S> extends Read<S>, OnChange<S> {
 }
 
-export interface WithOne<T> {
-  /**
-   * Repsert with an individual array element.
-   */
-  $withOne: <X extends Payload<T>>(element: X) => UpdateResult<X>,
-}
-
-export interface WithMany<T> {
-  /**
-   * Repsert with an array of elements.
-   */
-  $withMany: <X extends Payload<T[]>>(array: X) => UpdateResult<X>,
-}
-
 export interface Cache {
   /**
    * Avoid unnecessary promise invocations by supplying the number of milliseconds that should elapse before the promise is invoked again.
@@ -386,7 +456,7 @@ export interface Eager<H> {
    *   .$set(() => updateUsernameOnApi(newUsername), { eager: newUsername })
    *   .catch(err => notifyUserOfError(err))
    */
-  eager?: H extends () => AnyAsync<infer W> ? W : never,
+  eager?: H extends AnyAsyncFn<infer W> ? W : never,
 }
 
 export type UpdatableAny<T, F extends FindOrFilter, Q extends QueryStatus, Depth extends number, NewDepth extends number = DecrementRecursion[Depth]> = Rec<
@@ -545,6 +615,8 @@ export interface RxjsObservable<C> {
 }
 
 export type AnyAsync<C> = RxjsObservable<C> | Promise<C>;
+
+export type AnyAsyncFn<C> = () => AnyAsync<C>;
 
 export interface OptionsForMakingAStore<S> {
   /**
