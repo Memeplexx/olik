@@ -8,14 +8,9 @@ export function connectOlikDevtoolsToStore() {
     dispatch: (args) => {
       const actions = libState.currentActions.length ? libState.currentActions : [libState.currentAction];
       actions.forEach((action, i) => {
-        const typeString = action.type
-          .replace(/\((.+?)\)/g, (_, args) => `(${args.toString()})`);
-        const typeStringRev = action.payload === undefined
-          ? typeString
-          : typeString.substring(0, typeString.length - 1) + JSON.stringify(action.payload) + ')';
         window.postMessage({
           action: {
-            type: typeStringRev,
+            ...action,
             state: libState.state,
             last: !args.insideTransaction || i === actions.length - 1,
           },
