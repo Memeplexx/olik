@@ -7,13 +7,13 @@ export const transact = (...operations: (() => void)[]) => {
   libState.currentActions = [];
   operations.forEach(op => op());
   if (libState.olikDevtools && !libState.disableDevtoolsDispatch) {
-    libState.olikDevtools.dispatch({insideTransaction: true});
+    libState.olikDevtools.dispatch({ insideTransaction: true });
   }
   const reset = () => {
     libState.isInsideTransaction = false;
     libState.currentActions = [];
   }
-  if (testState.isTest) { 
+  if (testState.isTest) {
     setTimeout(() => reset());
   } else {
     reset();
