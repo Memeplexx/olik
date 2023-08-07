@@ -34,7 +34,7 @@ test('should support transactions with only 1 action', () => {
   const payload = 1;
   transact(() => store.num.$set(payload));
   expect(store.num.$state).toEqual(payload);
-  expect(libState.currentAction).toEqual({ type: 'num.$set()', payload })
+  expect(libState.currentActions[0]).toEqual({ type: 'num.$set()', payload })
 })
 
 test('should not support transactions if one of the actions has an async payload', () => {

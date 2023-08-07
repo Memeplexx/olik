@@ -5,19 +5,11 @@ import { deserialize } from './utility';
 export function connectOlikDevtoolsToStore() {
   libState.olikDevtools = {
     init: () => { },
-    dispatch: (args) => {
-      const actions = libState.currentActions.length ? libState.currentActions : [libState.currentAction];
-      actions.forEach((action, i) => {
-        window.postMessage({
-          action: {
-            ...action,
-            state: libState.state,
-            last: !args.insideTransaction || i === actions.length - 1,
-          },
-          source: 'olik-devtools-extension'
-        }, location.origin);
-      })
-    },
+    dispatch: () => window.postMessage({
+      actions: libState.currentActions,
+      state: libState.state,
+      source: 'olik-devtools-extension'
+    }, location.origin),
   };
 
   if (document.getElementById('olik-state')) { return; }

@@ -20,10 +20,8 @@ export const libState: {
   onInternalDispatch: (action: OlikAction) => void,
   asyncUpdate: undefined | ((args: EnableAsyncActionsArgs) => Promise<unknown>),
   olikDevtools: undefined | { dispatch: (args: { insideTransaction?: boolean }) => unknown, init: () => void },
-
   state: undefined | RecursiveRecord,
   changeListeners: ChangeListener[],
-  currentAction: OlikAction,
   currentActions: OlikAction[],
   initialState: undefined | RecursiveRecord,
   disableDevtoolsDispatch?: boolean;
@@ -35,21 +33,19 @@ export const libState: {
   onInternalDispatch: () => null,
   asyncUpdate: undefined,
   olikDevtools: undefined,
-
   state: undefined,
   changeListeners: [],
-  currentAction: { type: '' },
   currentActions: [],
   initialState: undefined,
 }
 
 export const testState: {
-  currentActionForOlikDevtools: OlikAction,
+  currentActionsForOlikDevtools: OlikAction[],
   fakeWindowObjectForOlikDevtools: null | WindowAugmentedWithOlikDevtools,
   logLevel: 'debug' | 'none',
   isTest: boolean,
 } = {
-  currentActionForOlikDevtools: { type: '' } as OlikAction,
+  currentActionsForOlikDevtools: [],
   fakeWindowObjectForOlikDevtools: null,
   logLevel: 'none',
   isTest: false,

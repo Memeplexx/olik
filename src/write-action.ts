@@ -10,7 +10,7 @@ export const setCurrentActionReturningNewState = (
   if (libState.isInsideTransaction) {
     libState.currentActions.push(action);
   } else {
-    libState.currentAction = action;
+    libState.currentActions = [action];
   }
   return newState;
 }

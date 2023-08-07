@@ -14,7 +14,7 @@
 //     const store = createStore({ state: [true, true, false] });
 //     store
 //       .$toggle();
-//     expect(libState.currentAction).toEqual({ type: 'toggle()' });
+//     expect(libState.currentActions[0]).toEqual({ type: 'toggle()' });
 //     expect(store.$state).toEqual([false, false, true]);
 //   })
 
@@ -23,7 +23,7 @@
 //     const payload = [4, 5, 6];
 //     store
 //       .$set(payload);
-//     expect(libState.currentAction).toEqual({ type: 'set()', payload });
+//     expect(libState.currentActions[0]).toEqual({ type: 'set()', payload });
 //     expect(store.$state).toEqual([4, 5, 6]);
 //   })
 
@@ -31,7 +31,7 @@
 //     const store = createStore({ state });
 //     store
 //       .$clear();
-//     expect(libState.currentAction).toEqual({ type: 'clear()' });
+//     expect(libState.currentActions[0]).toEqual({ type: 'clear()' });
 //     expect(store.$state).toEqual([]);
 //   })
 
@@ -40,7 +40,7 @@
 //     const payload = 1;
 //     store
 //       .$add(payload);
-//     expect(libState.currentAction).toEqual({ type: 'add()', payload });
+//     expect(libState.currentActions[0]).toEqual({ type: 'add()', payload });
 //     expect(store.$state).toEqual(state.map(e => e + 1));
 //   })
 
@@ -49,7 +49,7 @@
 //     const payload = 4;
 //     store
 //       .$push(payload);
-//     expect(libState.currentAction).toEqual({ type: 'push()', payload });
+//     expect(libState.currentActions[0]).toEqual({ type: 'push()', payload });
 //     expect(store.$state).toEqual([...state, payload]);
 //   })
 
@@ -58,7 +58,7 @@
 //     const payload = [4, 5, 6];
 //     store
 //       .$push(payload);
-//     expect(libState.currentAction).toEqual({ type: 'push()', payload });
+//     expect(libState.currentActions[0]).toEqual({ type: 'push()', payload });
 //     expect(store.$state).toEqual([...state, ...payload]);
 //   })
 
@@ -67,7 +67,7 @@
 //     store
 //       .$find.$eq(false)
 //       .$toggle();
-//     expect(libState.currentAction).toEqual({ type: 'find.eq(false).toggle()' });
+//     expect(libState.currentActions[0]).toEqual({ type: 'find.eq(false).toggle()' });
 //     expect(store.$state).toEqual([true, true, true, false]);
 //   })
 
@@ -77,7 +77,7 @@
 //     store
 //       .$find.$eq(2)
 //       .$set(payload);
-//     expect(libState.currentAction).toEqual({ type: 'find.eq(2).set()', payload });
+//     expect(libState.currentActions[0]).toEqual({ type: 'find.eq(2).set()', payload });
 //     expect(store.$state).toEqual([1, payload, 3]);
 //   })
 
@@ -86,7 +86,7 @@
 //     store
 //       .$find.$eq(2)
 //       .$delete();
-//     expect(libState.currentAction).toEqual({ type: 'find.eq(2).delete()' });
+//     expect(libState.currentActions[0]).toEqual({ type: 'find.eq(2).delete()' });
 //     expect(store.$state).toEqual([1, 3]);
 //   })
 
@@ -96,7 +96,7 @@
 //     store
 //       .$find.$eq(2)
 //       .$add(payload);
-//     expect(libState.currentAction).toEqual({ type: 'find.eq(2).add()', payload });
+//     expect(libState.currentActions[0]).toEqual({ type: 'find.eq(2).add()', payload });
 //     expect(store.$state).toEqual([1, 4, 3]);
 //   })
 
@@ -106,7 +106,7 @@
 //     store
 //       .$find.$eq(1).$or.$eq(2)
 //       .$set(payload);
-//     expect(libState.currentAction).toEqual({ type: 'find.eq(1).or.eq(2).set()', payload });
+//     expect(libState.currentActions[0]).toEqual({ type: 'find.eq(1).or.eq(2).set()', payload });
 //     expect(store.$state).toEqual([9, 2, 3]);
 //   })
 
@@ -115,7 +115,7 @@
 //     store
 //       .$find.$eq(1).$or.$eq(2)
 //       .$delete();
-//     expect(libState.currentAction).toEqual({ type: 'find.eq(1).or.eq(2).delete()' });
+//     expect(libState.currentActions[0]).toEqual({ type: 'find.eq(1).or.eq(2).delete()' });
 //     expect(store.$state).toEqual([2, 3]);
 //   })
 
@@ -125,7 +125,7 @@
 //     store
 //       .$find.$eq(1).$or.$eq(2)
 //       .$add(1);
-//     expect(libState.currentAction).toEqual({ type: 'find.eq(1).or.eq(2).add()', payload });
+//     expect(libState.currentActions[0]).toEqual({ type: 'find.eq(1).or.eq(2).add()', payload });
 //     expect(store.$state).toEqual([2, 2, 3]);
 //   })
 
@@ -135,7 +135,7 @@
 //     store
 //       .$find.$gt(1).$and.$lt(3)
 //       .$set(payload);
-//     expect(libState.currentAction).toEqual({ type: 'find.gt(1).and.lt(3).set()', payload });
+//     expect(libState.currentActions[0]).toEqual({ type: 'find.gt(1).and.lt(3).set()', payload });
 //     expect(store.$state).toEqual([1, 9, 3]);
 //   })
 
@@ -144,7 +144,7 @@
 //     store
 //       .$find.$gt(1).$and.$lt(3)
 //       .$delete();
-//     expect(libState.currentAction).toEqual({ type: 'find.gt(1).and.lt(3).delete()' });
+//     expect(libState.currentActions[0]).toEqual({ type: 'find.gt(1).and.lt(3).delete()' });
 //     expect(store.$state).toEqual([1, 3]);
 //   })
 
@@ -154,7 +154,7 @@
 //     store
 //       .$find.$eq(1).$and.$lt(2)
 //       .$add(payload);
-//     expect(libState.currentAction).toEqual({ type: 'find.eq(1).and.lt(2).add()', payload });
+//     expect(libState.currentActions[0]).toEqual({ type: 'find.eq(1).and.lt(2).add()', payload });
 //     expect(store.$state).toEqual([2, 2, 3]);
 //   })
 
@@ -163,7 +163,7 @@
 //     store
 //       .$filter.$eq(false)
 //       .$toggle();
-//     expect(libState.currentAction).toEqual({ type: 'filter.eq(false).toggle()' });
+//     expect(libState.currentActions[0]).toEqual({ type: 'filter.eq(false).toggle()' });
 //     expect(store.$state).toEqual([true, true, true, true]);
 //   })
 
@@ -172,7 +172,7 @@
 //     store
 //       .$filter.$gt(1)
 //       .$delete();
-//     expect(libState.currentAction).toEqual({ type: 'filter.gt(1).delete()' });
+//     expect(libState.currentActions[0]).toEqual({ type: 'filter.gt(1).delete()' });
 //     expect(store.$state).toEqual([1]);
 //   })
 
@@ -182,7 +182,7 @@
 //     store
 //       .$filter.$gt(1)
 //       .$add(1);
-//     expect(libState.currentAction).toEqual({ type: 'filter.gt(1).add()', payload });
+//     expect(libState.currentActions[0]).toEqual({ type: 'filter.gt(1).add()', payload });
 //     expect(store.$state).toEqual([1, 3, 4]);
 //   })
 
@@ -191,7 +191,7 @@
 //     store
 //       .$filter.$eq(1).$or.$eq(2)
 //       .$delete();
-//     expect(libState.currentAction).toEqual({ type: 'filter.eq(1).or.eq(2).delete()' });
+//     expect(libState.currentActions[0]).toEqual({ type: 'filter.eq(1).or.eq(2).delete()' });
 //     expect(store.$state).toEqual([3]);
 //   })
 
@@ -201,7 +201,7 @@
 //     store
 //       .$filter.$eq(1).$or.$eq(2)
 //       .$add(1);
-//     expect(libState.currentAction).toEqual({ type: 'filter.eq(1).or.eq(2).add()', payload });
+//     expect(libState.currentActions[0]).toEqual({ type: 'filter.eq(1).or.eq(2).add()', payload });
 //     expect(store.$state).toEqual([2, 3, 3]);
 //   })
 
@@ -210,7 +210,7 @@
 //     store
 //       .$filter.$gt(0).$and.$lt(3)
 //       .$delete();
-//     expect(libState.currentAction).toEqual({ type: 'filter.gt(0).and.lt(3).delete()' });
+//     expect(libState.currentActions[0]).toEqual({ type: 'filter.gt(0).and.lt(3).delete()' });
 //     expect(store.$state).toEqual([3]);
 //   })
 
@@ -220,7 +220,7 @@
 //     store
 //       .$filter.$gt(0).$and.$gt(1)
 //       .$add(payload);
-//     expect(libState.currentAction).toEqual({ type: 'filter.gt(0).and.gt(1).add()', payload });
+//     expect(libState.currentActions[0]).toEqual({ type: 'filter.gt(0).and.gt(1).add()', payload });
 //     expect(store.$state).toEqual([payload, 3, 4]);
 //   })
 

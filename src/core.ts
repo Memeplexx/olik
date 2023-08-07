@@ -18,9 +18,6 @@ export function createStore<S>(
     const state = args.key ? {} : JSON.parse(JSON.stringify(args.state));
     libState.initialState = state;
     libState.state = state;
-    libState.changeListeners = [];
-    libState.currentAction = { type: '' };
-    libState.currentActions = [];
   }
   const recurseProxy = (stateActions: StateAction[], topLevel = false): StoreInternal => {
     return new Proxy(<StoreInternal>{}, {

@@ -24,10 +24,8 @@ export const resetLibraryState = () => {
   libState.isInsideTransaction = false;
   libState.innerStores.clear();
   libState.detached = [];
-
   libState.state = undefined;
   libState.changeListeners = [],
-  libState.currentAction = { type: '' },
   libState.currentActions = [],
   libState.initialState = undefined,
   libState.disableDevtoolsDispatch = false;
