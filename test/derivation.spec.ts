@@ -1,3 +1,4 @@
+import { testState } from '../src';
 import { createStore } from '../src/core';
 import { derive } from '../src/derive';
 import { resetLibraryState } from '../src/utility';
@@ -200,11 +201,12 @@ test('should derive with a filter', () => {
 })
 
 test('should invalidate a derivation', () => {
-  const state = {
-    num: 0,
-    str: '',
-  };
-  const store = createStore({ state });
+  const store = createStore({
+    state: {
+      num: 0,
+      str: '',
+    }
+  });
   let memoCalcCount = 0;
   const mem = derive(
     store.num,
@@ -219,4 +221,71 @@ test('should invalidate a derivation', () => {
   mem.$state;
   mem.$state;
   expect(memoCalcCount).toEqual(2);
+  testState.logLevel = 'none';
+})
+
+test('should share derivations via cache', () => {
+  const store = createStore({
+    state: {
+      str: 'a',
+      num: 1,
+    }
+  });
+  let memoCalcCount = 0;
+  const derivationFunctionShared = (num: number, str: string) => {
+    memoCalcCount++;
+    return str + num;
+  }
+
+  let derivationChangeCount1 = 0;
+  derive(
+    store.num,
+    store.str,
+  ).$with(
+    derivationFunctionShared
+  ).$onChange(() => derivationChangeCount1++);
+
+  let derivationChangeCount2 = 0;
+  derive(
+    store.num,
+    store.str,
+  ).$with(
+    derivationFunctionShared
+  ).$onChange(() => derivationChangeCount2++);
+
+  store.num.$add(1);
+
+  expect(memoCalcCount).toEqual(1);
+  expect(derivationChangeCount1).toEqual(1);
+  expect(derivationChangeCount2).toEqual(1);
+})
+
+test('', () => {
+  const store = createStore({
+    state: {
+      str: 'a',
+      num: 1,
+    }
+  });
+  let memoCalcCount = 0;
+
+  let derivationChangeCount1 = 0;
+  const d1 = () => {
+    derive(
+      store.num,
+      store.str,
+    ).$with((num: number, str: string) => {
+      memoCalcCount++;
+      return str + num;
+    }).$onChange(() => derivationChangeCount1++);
+  }
+
+  d1();
+  d1();
+  d1();
+
+  store.num.$add(1);
+
+  expect(memoCalcCount).toEqual(1);
+  console.log('...', derivationChangeCount1)
 })

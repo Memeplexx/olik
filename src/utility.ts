@@ -29,6 +29,7 @@ export const resetLibraryState = () => {
   libState.currentActions = [],
   libState.initialState = undefined,
   libState.disableDevtoolsDispatch = false;
+  libState.derivations = new Map();
 };
 
 export const deserialize = <R>(arg?: string | null): R => {

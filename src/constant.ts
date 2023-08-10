@@ -24,7 +24,8 @@ export const libState: {
   changeListeners: ChangeListener[],
   currentActions: OlikAction[],
   initialState: undefined | RecursiveRecord,
-  disableDevtoolsDispatch?: boolean;
+  disableDevtoolsDispatch?: boolean,
+  derivations: Map<Array<unknown>, unknown>,
 } = {
   store: undefined,
   detached: [],
@@ -37,6 +38,7 @@ export const libState: {
   changeListeners: [],
   currentActions: [],
   initialState: undefined,
+  derivations: new Map<Array<unknown>, unknown>(),
 }
 
 export const testState: {
