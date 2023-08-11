@@ -8,7 +8,9 @@ export function derive<X extends Readable<unknown>[]>(...args: X) {
     $with: <R>(calculation: (...inputs: DerivationCalculationInputs<X>) => R) => {
       const getValue = () => {
         const params = args.map(arg => arg.$state) as DerivationCalculationInputs<X>;
-        const kvp = [...libState.derivations.entries()].find(([previousParams]) => {
+        const kvp = [...libState.derivations.entries()]
+          .filter(([previousParams]) => previousParams.length === params.length)
+          .find(([previousParams]) => {
           return params.every((param, i) => {
             const previousParam = previousParams[i];
             // Start with a simple equality check.
