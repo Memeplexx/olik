@@ -708,6 +708,8 @@ export interface NestStoreRef {
   detach(): void,
 }
 
+export type TraceElement = { functionName: string, fileName: string, lineNumber: number, columnNumber: number }
+
 export type OlikAction = { type: string, payload?: unknown };
 
 export type DevtoolsInstance = {
@@ -721,4 +723,8 @@ export type OlikDevtoolsExtension = {
   connect: (options?: unknown) => DevtoolsInstance;
   disconnect: () => unknown;
   send: (action: { type: string, payload?: unknown }, state: unknown, stateReader: (s: unknown) => unknown, mutator: string) => unknown;
+}
+
+export type OlikDevtoolsOptions = {
+  trace?: boolean
 }

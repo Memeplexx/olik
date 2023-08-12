@@ -19,13 +19,14 @@ export const libState: {
   isInsideTransaction: boolean,
   onInternalDispatch: (action: OlikAction) => void,
   asyncUpdate: undefined | ((args: EnableAsyncActionsArgs) => Promise<unknown>),
-  olikDevtools: undefined | { dispatch: (args: { insideTransaction?: boolean }) => unknown, init: () => void },
+  olikDevtools: undefined | { dispatch: (args: { insideTransaction?: boolean }) => unknown, init: () => void, trace: boolean },
   state: undefined | RecursiveRecord,
   changeListeners: ChangeListener[],
   currentActions: OlikAction[],
   initialState: undefined | RecursiveRecord,
   disableDevtoolsDispatch?: boolean,
   derivations: Map<Array<unknown>, unknown>,
+  stacktraceError: null | Error,
 } = {
   store: undefined,
   detached: [],
@@ -39,6 +40,7 @@ export const libState: {
   currentActions: [],
   initialState: undefined,
   derivations: new Map<Array<unknown>, unknown>(),
+  stacktraceError: null,
 }
 
 export const testState: {

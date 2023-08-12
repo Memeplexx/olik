@@ -1,15 +1,31 @@
+import * as StackTrace from 'stacktrace-js';
 import { libState } from './constant';
 import { deserialize } from './utility';
 
 
-export function connectOlikDevtoolsToStore() {
+export function connectOlikDevtoolsToStore(options: { trace: boolean }) {
   libState.olikDevtools = {
     init: () => { },
-    dispatch: () => window.postMessage({
-      actions: libState.currentActions,
-      state: libState.state,
-      source: 'olik-devtools-extension'
-    }, location.origin),
+    trace: options.trace,
+    dispatch: () => {
+      const payload = {
+        actions: libState.currentActions,
+        state: libState.state,
+        source: 'olik-devtools-extension',
+      };
+      if (options.trace) {
+        StackTrace.fromError(libState.stacktraceError!)
+          .then(r => window.postMessage({
+            ...payload,
+            trace: r.map(rr => ({ functionName: rr.functionName, fileName: rr.fileName, lineNumber: rr.lineNumber, columnNumber: rr.columnNumber })),
+          }, location.origin))
+          .catch(console.error);
+      } else {
+        window.postMessage({
+          ...payload
+        }, location.origin);
+      }
+    },
   };
 
   if (document.getElementById('olik-state')) { return; }

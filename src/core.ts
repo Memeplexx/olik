@@ -24,6 +24,9 @@ export function createStore<S>(
       get: (_, prop: string) => {
         stateActions = topLevel ? new Array<StateAction>() : stateActions;
         if (updateFunctions.includes(prop)) {
+          if (libState.olikDevtools?.trace) {
+            libState.stacktraceError = new Error();
+          }
           return processPotentiallyAsyncUpdate({ stateActions, prop });
         } else if ('$invalidateCache' === prop) {
           return () => {

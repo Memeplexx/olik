@@ -1,6 +1,6 @@
 {
   "name": "olik",
-  "version": "1.0.11",
+  "version": "1.0.12",
   "type": "module",
   "main": "./dist/olik.umd.cjs",
   "module": "./dist/olik.js",
@@ -23,20 +23,19 @@
   "devDependencies": {
     "@types/jest": "^29.4.0",
     "@types/node": "^18.14.0",
+    "@typescript-eslint/eslint-plugin": "^6.0.0",
+    "@typescript-eslint/parser": "^6.0.0",
+    "eslint": "^8.44.0",
+    "immer": "^7.0.7",
+    "immutable": "^4.0.0-rc.12",
     "jest": "^29.4.3",
+    "rxjs": "~6.5.4",
     "ts-jest": "^29.0.5",
     "typescript": "5.0.4",
     "vite": "^4.4.0",
     "vite-plugin-dts": "^1.7.3",
-    "vitest": "^0.28.5",
-    "eslint": "^8.44.0",
-    "@typescript-eslint/eslint-plugin": "^6.0.0",
-    "@typescript-eslint/parser": "^6.0.0",
-    "immer": "^7.0.7",
-    "rxjs": "~6.5.4",
-    "immutable": "^4.0.0-rc.12"
+    "vitest": "^0.28.5"
   },
-
   "description": "This is a simple utility package",
   "author": "<YOUR_NAME>",
   "license": "MIT",
@@ -48,5 +47,15 @@
   "bugs": {
     "url": "https://github.com/<YOUR_USER_NAME>/my-ts-lib/issues"
   },
-  "keywords": ["some", "keywords", "to", "describe", "the", "package"]
+  "keywords": [
+    "some",
+    "keywords",
+    "to",
+    "describe",
+    "the",
+    "package"
+  ],
+  "dependencies": {
+    "stacktrace-js": "^2.0.2"
+  }
 }
