@@ -10,7 +10,7 @@ beforeEach(() => {
 })
 
 test('should replace an object property', () => {
-  const store = createStore({ state });
+  const store = createStore(state);
   const payload = 1;
   store.num
     .$set(payload);
@@ -19,7 +19,7 @@ test('should replace an object property', () => {
 })
 
 test('should toggle an object property', () => {
-  const store = createStore({ state });
+  const store = createStore(state);
   store.bool
     .$toggle();
   expect(libState.currentActions[0]).toEqual({ type: 'bool.$toggle()' });
@@ -27,7 +27,7 @@ test('should toggle an object property', () => {
 })
 
 test('should patch an object', () => {
-  const store = createStore({ state });
+  const store = createStore(state);
   const payload = { bool: true, str: 'x' };
   store.$patch({ bool: true, str: 'x' });
   expect(libState.currentActions[0]).toEqual({ type: '$patch()', payload });
@@ -36,13 +36,13 @@ test('should patch an object', () => {
 
 test('should deep merge an object', () => {
   const state = { num: 0, obj: { num: 0, str: '', arr: [{ id: 1, num: 1 }] } };
-  const store = createStore({ state });
+  const store = createStore(state);
   store.$patchDeep({ num: 9, obj: { str: 'x', arr: [{ num: 4 }] } });
   expect(store.$state).toEqual({ num: 9, obj: { num: 0, str: 'x', arr: [{ num: 4 }] } });
 })
 
 test('should increment an object property', () => {
-  const store = createStore({ state });
+  const store = createStore(state);
   const payload = 1;
   store.num
     .$add(payload);
@@ -51,7 +51,7 @@ test('should increment an object property', () => {
 })
 
 test('should remove an object property', () => {
-  const store = createStore({ state });
+  const store = createStore(state);
   store.num
     .$delete();
   expect(store.$state).toEqual({ str: '', bool: false });
@@ -59,7 +59,7 @@ test('should remove an object property', () => {
 
 test('should listen to onChange events correctly', () => {
   const state = { num1: 0, num2: 0 };
-  const store = createStore({ state });
+  const store = createStore(state);
   let rootChangeCount = 0;
   let num1ChangeCount = 0;
   let num2ChangeCount = 0;
@@ -80,7 +80,7 @@ test('should listen to onChange events correctly', () => {
 
 test('should fire onChange correctly when updating an array element', () => {
   const state = { arr: [{ id: 1, num: 1 }, { id: 2, num: 2 }] };
-  const store = createStore({ state });
+  const store = createStore(state);
   let changeCount = 0;
   store.arr.$find.id.$eq(1).$onChange(() => changeCount++);
   store.arr.$find.id.$eq(2).num.$add(1);
@@ -91,13 +91,13 @@ test('should fire onChange correctly when updating an array element', () => {
 
 test('should filter array elements correctly', () => {
   const state = { arr: [{ id: 1, num: 1 }, { id: 2, num: 2 }] };
-  const select = createStore({ state });
+  const select = createStore(state);
   expect(select.arr.$filter.id.$eq(1).$or.num.$eq(2).id.$state).toEqual([1, 2]);
 })
 
 test('should filter array elements and increment their property', () => {
   const state = { arr: [{ id: 1, num: 1 }, { id: 2, num: 2 }] };
-  const select = createStore({ state });
+  const select = createStore(state);
   select.arr
     .$filter.id.$eq(1).$or.num.$eq(2)
     .id.$add(1);
@@ -106,19 +106,19 @@ test('should filter array elements and increment their property', () => {
 
 test('should patch all elements in an array', () => {
   const state = { arr: [{ id: 1, num: 1 }, { id: 2, num: 2 }] };
-  const select = createStore({ state });
+  const select = createStore(state);
   select.arr.$patch({ num: 9 });
   expect(select.arr.$state).toEqual([{ id: 1, num: 9 }, { id: 2, num: 9 }]);
 })
 
 test('should insert a node', () => {
-  const store = createStore({ state: { one: '' } });
+  const store = createStore({ one: '' });
   store.$setNew({ two: 1 })
   expect(store.$state).toEqual({ one: '', two: 1 });
 })
 
 test('should insert a node sub property', () => {
-  const store = createStore({ state: { one: {} } });
+  const store = createStore({ one: {} });
   store.one.$setNew({ two: 1 })
   expect(store.$state).toEqual({ one: { two: 1 } });
 })

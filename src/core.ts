@@ -1,6 +1,6 @@
 import { andOr, augmentations, comparators, errorMessages, findFilter, libState, updateFunctions } from './constant';
 import { readState } from './read';
-import { OptionsForMakingAStore, Readable, RecursiveRecord, StateAction, Store, StoreAugment } from './type';
+import { Readable, StateAction, Store, StoreAugment } from './type';
 import { is } from './type-check';
 import { StoreInternal } from './type-internal';
 import { deepFreeze } from './utility';
@@ -8,24 +8,27 @@ import { processPotentiallyAsyncUpdate } from './write';
 import { setNewStateAndNotifyListeners } from './write-complete';
 
 
-export const createInnerStore = <S>(state: S) => ({
-  usingAccessor: <C extends Readable<unknown>>(accessor: (store: Store<S>) => C) => {
-    const store = createStore({ state });
+export const createInnerStore = <S extends Record<string, unknown>>(state: S) => ({
+  usingAccessor: <C extends Readable<unknown>>(accessor: (store: Store<S>) => C): C & (C extends never ? unknown : StoreAugment<C>) => {
+    if (!libState.store) {
+      libState.store = createStore(state) as unknown as StoreInternal;
+    } else {
+      libState.store.$patchDeep(state);
+    }
+    const store = libState.store as Store<S>;
     return new Proxy({}, {
       get: (_, prop: string) => accessor(store)[prop as keyof C]
     }) as C & (C extends never ? unknown : StoreAugment<C>);
   }
 })
 
-export function createStore<S>(
-  args: OptionsForMakingAStore<S>
+export function createStore<S extends Record<string, unknown>>(
+  initialState: S
 ): Store<S> & (S extends never ? unknown : StoreAugment<S>) {
-  validateKeyedState(args);
-  const state = args.state as RecursiveRecord;
-  validateState(args.state);
-  removeStaleCacheReferences(state);
+  validateState(initialState);
+  removeStaleCacheReferences(initialState);
   if (!libState.initialState) {
-    const state = args.key ? {} : deepFreeze(args.state)!;
+    const state = deepFreeze(initialState)!;
     libState.initialState = state;
     libState.state = state;
   }
@@ -36,6 +39,10 @@ export function createStore<S>(
         if (updateFunctions.includes(prop)) {
           if (libState.olikDevtools?.trace) {
             libState.stacktraceError = new Error();
+          }
+          if (prop === '$delete') {
+            const stateActionsStr = stateActions.map(sa => sa.name).join('.');
+            libState.changeListeners.filter(l => l.actions.map(a => a.name).join('.').startsWith(stateActionsStr)).forEach(l => l.unsubscribe());
           }
           return processPotentiallyAsyncUpdate({ stateActions, prop });
         } else if ('$invalidateCache' === prop) {
@@ -96,43 +103,7 @@ export function createStore<S>(
       }
     });
   };
-  if (args.key) {
-    if (!libState.store) {
-      libState.store = recurseProxy([], true);
-    }
-    libState.store!.$setNew({ [args.key!]: args.state });
-    const innerStore = new Proxy(<Store<typeof state>>{}, {
-      get: (_, prop: string) => {
-        if (prop === '$destroyStore') {
-          return () => {
-            libState.changeListeners.filter(l => l.actions[0].name === args.key).forEach(l => l.unsubscribe());
-            libState.store![args.key!].$delete();
-            libState.detached.push(args.key!);
-            libState.innerStores.delete(args.key!);
-          }
-        }
-        return libState.store![args.key!][prop];
-      }
-    });
-    libState.innerStores.set(args.key, innerStore);
-    return innerStore as Store<S>;
-  } else {
-    if (libState.store) {
-      libState.store.$setNew(state);
-      return <Store<S>>libState.store;
-    }
-    return (libState.store = recurseProxy([], true)) as Store<S>;
-  }
-}
-
-export const validateKeyedState = <S>(args: OptionsForMakingAStore<S>) => {
-  if (!args.key) { return; }
-  const state = libState.state;
-  if (state === null || state === undefined) { return; }
-  const initialStateOfHostStore = libState.initialState!;
-  if (initialStateOfHostStore[args.key] !== undefined) {
-    throw new Error(errorMessages.KEY_ALREADY_IN_USE(args.key));
-  }
+  return (libState.store = recurseProxy([], true)) as Store<S>;
 }
 
 export const validateState = (state: unknown) => {
@@ -152,7 +123,7 @@ export const validateState = (state: unknown) => {
   }
 }
 
-export const removeStaleCacheReferences = (state: RecursiveRecord) => {
+export const removeStaleCacheReferences = (state: Record<string, unknown>) => {
   if (!state.cache) { return; }
   const cache = state.cache as Record<string, string>;
   for (const key in cache) {

@@ -31,7 +31,7 @@ test('Immutable Perf (shallow)', () => {
 
 test('Olik Perf (shallow)', () => {
   const state = { num: 0, str: '' };
-  const select = createStore({ state });
+  const select = createStore(state);
   const before = performance.now();
   for (let i = 0; i < 1000; i++) {
     select.num.$set(i);
@@ -62,7 +62,7 @@ test('Immutable Perf (deep)', () => {
 
 test('Olik Perf (deep)', () => {
   const state = { arr: [{ id: 1, val: '', obj: { num: 0 } }, { id: 2, val: '', obj: { num: 0 } }], obj: { num: 0 } };
-  const store = createStore({ state });
+  const store = createStore(state);
   const before = performance.now();
   for (let i = 0; i < 1000; i++) {
     store.arr

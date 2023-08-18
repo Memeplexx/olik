@@ -9,7 +9,7 @@ beforeEach(() => {
 
 test('should find an element and patch it', () => {
   const state = { arr: [{ id: 1, val: 0, obj: { num: 0 } }, { id: 2, val: 0, obj: { num: 0 } }], obj: { num: 0 } };
-  const store = createStore({ state });
+  const store = createStore(state);
   const payload = { val: 1 };
   store.arr
     .$find.id.$eq(2)
@@ -19,7 +19,7 @@ test('should find an element and patch it', () => {
 
 test('should find an element an replace it', () => {
   const state = { arr: [{ id: 1, val: 0 }, { id: 2, val: 0 }], obj: { num: 0 } };
-  const store = createStore({ state });
+  const store = createStore(state);
   const stateBefore = store.$state;
   const payload = { id: 4, val: 2 };
   store.arr
@@ -39,7 +39,7 @@ test('should find an element an replace it', () => {
 
 test('should filter elements and patch them', () => {
   const state = { arr: [{ id: 1, val: 0 }, { id: 2, val: 0 }, { id: 3, val: 0 }] };
-  const store = createStore({ state });
+  const store = createStore(state);
   const payload = { val: 1 };
   store.arr
     .$filter.id.$in([1, 2])
@@ -53,7 +53,7 @@ test('should filter elements and patch them', () => {
 
 test('should find an element and replace one of its properties', () => {
   const state = { arr: [{ id: 1, val: 0, obj: { num: 0 } }, { id: 2, val: 0, obj: { num: 0 } }], obj: { num: 0 } };
-  const store = createStore({ state });
+  const store = createStore(state);
   const payload = 1;
   store.arr
     .$find.id.$eq(2).val
@@ -76,7 +76,7 @@ test('should find an element and replace one of its properties', () => {
 
 test('should find an element, find an element in the property array, and replace one if its properties', () => {
   const state = { arr: [{ id: 1, val: 0, arr: [{ id: 1, num: 1 }, { id: 2, num: 2 }] }, { id: 2, val: 0, arr: [{ id: 1, num: 1 }, { id: 2, num: 2 }] }], obj: { num: 0 } };
-  const store = createStore({ state });
+  const store = createStore(state);
   const payload = 9;
   store.arr
     .$find.id.$eq(2)
@@ -103,7 +103,7 @@ test('should find an element, find an element in the property array, and replace
 
 test('should find an element, filter elements in the property array, and all of its properties', () => {
   const state = { arr: [{ id: 1, val: 0, arr: [{ id: 1, num: 1 }, { id: 2, num: 2 }] }, { id: 2, val: 0, arr: [{ id: 1, num: 1 }, { id: 2, num: 2 }] }], obj: { num: 0 } };
-  const store = createStore({ state });
+  const store = createStore(state);
   const payload = 1;
   store.arr
     .$find.id.$eq(2)
@@ -128,7 +128,7 @@ test('should find an element, filter elements in the property array, and all of 
 
 test('should find an element, filter elements in the property array, and all of its properties', () => {
   const state = { arr: [{ id: 1, val: 0, arr: [{ id: 1, num: 1 }, { id: 2, num: 2 }] }, { id: 2, val: 0, arr: [{ id: 1, num: 1 }, { id: 2, num: 2 }] }], obj: { num: 0 } };
-  const store = createStore({ state });
+  const store = createStore(state);
   const payload = 1;
   store.arr
     .$find.id.$eq(2)
@@ -156,7 +156,7 @@ test('should filter a list and remove a property from its element(s)', () => {
     user: { name: '', age: 0 },
     todos: [{ id: 1, status: 'done', title: 'one' }, { id: 2, status: 'done', title: 'two' }]
   };
-  const store = createStore({ state });
+  const store = createStore(state);
   store.todos.$filter.status.$eq('done').title.$delete();
   expect(store.todos.$state).toEqual(state.todos.map(todo => ({ id: todo.id, status: todo.status })));
 })
@@ -166,7 +166,7 @@ test('should filter a list a replace a property on its element(s)', () => {
     user: { name: '', age: 0 },
     todos: [{ id: 1, status: 'done', title: 'one', obj: { n: 0 } }, { id: 2, status: 'done', title: 'two', obj: { n: 0 } }, { id: 3, status: 'todo', title: 'three', obj: { n: 0 } }]
   };
-  const store = createStore({ state });
+  const store = createStore(state);
   const payload = { n: 1 };
   store.todos.$filter.status.$eq('done').obj.$set(payload);
   expect(store.todos.$state).toEqual(state.todos.map(todo => ({ ...todo, obj: todo.status === 'done' ? payload : todo.obj })));
@@ -174,9 +174,7 @@ test('should filter a list a replace a property on its element(s)', () => {
 
 test('should filter a list and replace one of its element(s)', () => {
   const store = createStore({
-    state: {
-      todos: [{ id: 1, status: 'pending' }, { id: 2, status: 'pending' }, { id: 3, status: 'todo' }],
-    }
+    todos: [{ id: 1, status: 'pending' }, { id: 2, status: 'pending' }, { id: 3, status: 'todo' }],
   });
   const payload = [{ id: 4, status: 'done' }, { id: 5, status: 'done' }];
   store.todos.$filter.status.$eq('pending').$set(payload);

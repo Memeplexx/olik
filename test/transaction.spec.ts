@@ -16,7 +16,7 @@ afterAll(() => {
 
 test('should support transactions', () => {
   const state = { num: 0, str: '', bool: false };
-  const store = createStore({ state });
+  const store = createStore(state);
   transact(
     () => store.num.$set(1),
     () => store.str.$set('x'),
@@ -30,7 +30,7 @@ test('should support transactions', () => {
 
 test('should support transactions with only 1 action', () => {
   const state = { num: 0 };
-  const store = createStore({ state });
+  const store = createStore(state);
   const payload = 1;
   transact(() => store.num.$set(payload));
   expect(store.num.$state).toEqual(payload);
@@ -39,7 +39,7 @@ test('should support transactions with only 1 action', () => {
 
 test('should not support transactions if one of the actions has an async payload', () => {
   const state = { num: 0, str: '', bool: false };
-  const store = createStore({ state });
+  const store = createStore(state);
   importOlikAsyncModule();
   expect(() => transact(
     () => store.num.$set(() => new Promise(resolve => resolve(1))),

@@ -18,7 +18,7 @@ test('should be able to augment a selection', () => {
     }
   })
   const state = { num: 42 };
-  const store = createStore({ state });
+  const store = createStore(state);
   const res = (store.num as unknown as { myThing: () => unknown }).myThing();
   expect(res).toEqual(42);
 })
@@ -30,7 +30,7 @@ test('should be able to augment a selection on an array action', () => {
     }
   })
   const state = { array: [42] };
-  const store = createStore({ state });
+  const store = createStore(state);
   const res = (store.array as unknown as { myThing: () => unknown }).myThing();
   expect(res).toEqual([42]);
 })
@@ -42,7 +42,7 @@ test('should be able to augment a selection on an array element action', () => {
     }
   })
   const state = { array: [42] };
-  const store = createStore({ state });
+  const store = createStore(state);
   const res = (store.array.$find.$eq(42) as unknown as { myThing: () => unknown }).myThing();
   expect(res).toEqual(42);
 })
@@ -54,7 +54,7 @@ test('should be able to augment a future on a core action', () => {
     }
   })
   const state = { num: 42 };
-  const store = createStore({ state });
+  const store = createStore(state);
   importOlikAsyncModule();
   const fetch = () => new Promise<number>(resolve => setTimeout(() => resolve(43), 5))
   const res = (store.num.$set(fetch) as unknown as { myThing: () => Promise<unknown> }).myThing();
@@ -70,7 +70,7 @@ test('should be able to augment a future on an array action', async () => {
     }
   })
   const state = { array: [42] };
-  const store = createStore({ state });
+  const store = createStore(state);
   importOlikAsyncModule();
   const fetch = () => new Promise<number[]>(resolve => setTimeout(() => resolve([43]), 5))
   const res = (store.array.$set(fetch) as unknown as { myThing: () => Promise<unknown> }).myThing();
@@ -86,7 +86,7 @@ test('should be able to augment a future on an array element action', async () =
     }
   })
   const state = { array: [{ id: 1, num: 1 }] };
-  const store = createStore({ state });
+  const store = createStore(state);
   importOlikAsyncModule();
   const fetch = () => new Promise<{ id: number, num: number }>(resolve => setTimeout(() => resolve({ id: 1, num: 2 }), 5));
   const res = (store.array.$find.id.$eq(1).$set(fetch) as unknown as { myThing: () => Promise<unknown> }).myThing();
@@ -100,7 +100,7 @@ test('should be able to augment an async', async () => {
     async: fnReturningFutureAugmentation => (fnReturningFutureAugmentation() as unknown as { toPromise: () => ReturnType<typeof fnReturningFutureAugmentation> }).toPromise(),
   })
   const state = { thing: '' };
-  const store = createStore({ state });
+  const store = createStore(state);
   importOlikAsyncModule();
   const fetch = () => new Observable<string>(observer => {
     observer.next('test');
@@ -116,7 +116,7 @@ test('should be able to augment a derivation', () => {
     }
   })
   const state = { one: 'abc', two: false };
-  const store = createStore({ state });
+  const store = createStore(state);
   const result = (derive(
     store.one,
     store.two,

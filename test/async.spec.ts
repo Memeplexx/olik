@@ -14,7 +14,7 @@ beforeEach(() => {
 
 test('should perform a basic async update', async () => {
   const state = { num: 0 };
-  const store = createStore({ state });
+  const store = createStore(state);
   const payload = 1;
   const asyncResult = await store.num
     .$set(resolve(payload));
@@ -25,7 +25,7 @@ test('should perform a basic async update', async () => {
 
 test('should catch a rejection', async () => {
   const state = { num: 0 };
-  const store = createStore({ state });
+  const store = createStore(state);
   const rejection = 'test';
   store.num
     .$set(reject<number>(rejection))
@@ -34,7 +34,7 @@ test('should catch a rejection', async () => {
 
 test('should only invoke promise functions once if caching is involved', async () => {
   const state = { num: 0 };
-  const store = createStore({ state });
+  const store = createStore(state);
   const payload = 1;
   let promiseCount = 0;
   const promise = () => {
@@ -50,14 +50,14 @@ test('should only invoke promise functions once if caching is involved', async (
 
 test('should be able to invalidate a cache even if one does not yet exist', () => {
   const state = { num: 0 };
-  const store = createStore({ state });
+  const store = createStore(state);
   store.num
     .$invalidateCache();
 })
 
 test('should be able to update state before the promise has settled', () => {
   const state = { num: 0 };
-  const store = createStore({ state });
+  const store = createStore(state);
   const asyncResult = 1;
   const syncResult = 2;
   return store.num
@@ -72,7 +72,7 @@ test('should be able to update state before the promise has settled', () => {
 
 test('should support caching', () => {
   const state = { num: 0, cache: { num: '' } };
-  const store = createStore({ state });
+  const store = createStore(state);
   const replacement = 1;
   const replacement2 = 2;
   return store.num
@@ -97,7 +97,7 @@ test('should support caching', () => {
 
 test('should support optimistic updates', () => {
   const state = { num: 0 };
-  const store = createStore({ state });
+  const store = createStore(state);
   const replacement = 1;
   const eager = 9;
   setTimeout(() => expect(store.num.$state).toEqual(eager));
@@ -110,7 +110,7 @@ test('should support optimistic updates', () => {
 
 test('should rollback optimistic updates upon failure', async () => {
   const state = { num: 0 };
-  const store = createStore({ state });
+  const store = createStore(state);
   const eager = 9;
   const error = 'Test';
   setTimeout(() => expect(store.num.$state).toEqual(eager));
@@ -124,7 +124,7 @@ test('should rollback optimistic updates upon failure', async () => {
 
 test('should automatically expire caches appropriately', () => {
   const state = { num: 0 };
-  const store = createStore({ state });
+  const store = createStore(state);
   const replacement = 1;
   const replacement2 = 2;
   store.num
@@ -140,42 +140,42 @@ test('should automatically expire caches appropriately', () => {
 
 test('should be able to remove an array element', async () => {
   const state = { arr: [1, 2, 3] };
-  const store = createStore({ state });
+  const store = createStore(state);
   await store.arr.$find.$eq(3).$delete(resolve(null));
   expect(store.arr.$state).toEqual([1, 2]);
 })
 
 test('should be able to remove all elements from an array', async () => {
   const state = { arr: [1, 2, 3] };
-  const store = createStore({ state });
+  const store = createStore(state);
   await store.arr.$clear(resolve(null));
   expect(store.arr.$state).toEqual([]);
 })
 
 test('should be able to remove an object property', async () => {
   const state = { num: 0 };
-  const store = createStore({ state });
+  const store = createStore(state);
   await store.num.$delete(resolve(null));
   expect(store.$state).toEqual({});
 })
 
 test('should be able to replace an array element', async () => {
   const state = { arr: [1, 2, 3] };
-  const store = createStore({ state });
+  const store = createStore(state);
   await store.arr.$find.$eq(2).$set(resolve(4));
   expect(store.arr.$state).toEqual([1, 4, 3]);
 })
 
 test('should be able to insert one array element', async () => {
   const state = { arr: [1, 2, 3] };
-  const store = createStore({ state });
+  const store = createStore(state);
   await store.arr.$push(resolve(4));
   expect(store.arr.$state).toEqual([1, 2, 3, 4]);
 })
 
 test('should be able to insert many array elements', async () => {
   const state = { arr: [1, 2, 3] };
-  const store = createStore({ state });
+  const store = createStore(state);
   await store.arr.$push(resolve([4, 5]));
   expect(store.arr.$state).toEqual([1, 2, 3, 4, 5]);
 })
@@ -183,14 +183,14 @@ test('should be able to insert many array elements', async () => {
 // https://stackoverflow.com/questions/50065486/partial-type-in-function-return-value-not-as-strict-as-expected
 // test('', async () => { ///////////////////////////////////////////////////////
 //   const state = { str: '', num : 2 };
-//   const store = createStore({ state });
+//   const store = createStore(state);
 //   const r = store.$patch(resolve({ num: 3 }));
 //   // const r = store.$patch(() => ({ num: 3, str: '' }));
 // })
 
 test('should repsert one array element where a match could be found', async () => {
   const state = { arr: [{ id: 1, num: 1 }, { id: 2, num: 2 }, { id: 3, num: 3 }] };
-  const store = createStore({ state });
+  const store = createStore(state);
   const payload = { id: 1, num: 5 };
   await store.arr
     .$mergeMatching.id
@@ -201,7 +201,7 @@ test('should repsert one array element where a match could be found', async () =
 
 test('should repsert one array element where a match could not be found', async () => {
   const state = { arr: [{ id: 1, num: 1 }, { id: 2, num: 2 }, { id: 3, num: 3 }] };
-  const store = createStore({ state });
+  const store = createStore(state);
   const payload = { id: 4, num: 5 };
   await store.arr
     .$mergeMatching.id
@@ -212,7 +212,7 @@ test('should repsert one array element where a match could not be found', async 
 
 test('should repsert array elements where one matches and another does not', async () => {
   const state = { arr: [{ id: 1, num: 1 }, { id: 2, num: 2 }, { id: 3, num: 3 }] };
-  const store = createStore({ state });
+  const store = createStore(state);
   const payload = [{ id: 1, num: 5 }, { id: 5, num: 5 }];
   await store.arr
     .$mergeMatching.id
@@ -223,7 +223,7 @@ test('should repsert array elements where one matches and another does not', asy
 
 test('should throw an error if an array element could not be found', async () => {
   const state = { arr: [{ id: 1, num: 1 }, { id: 2, num: 2 }, { id: 3, num: 3 }] };
-  const store = createStore({ state });
+  const store = createStore(state);
   await store.arr
     .$find.id.$eq(4)
     .$set(resolve({ id: 4, num: 4 }))
@@ -231,7 +231,7 @@ test('should throw an error if an array element could not be found', async () =>
 })
 
 test('should remove stale cache references', async () => {
-  const store = createStore<{ num: number, cache?: { num: string } }>({ state: { num: 0 } });
+  const store = createStore<{ num: number, cache?: { num: string } }>({ num: 0 });
   await store.num.$set(resolve(1), { cache: 10 });
   expect(store.$state.cache!.num).toBeTruthy();
   await new Promise(resolve => setTimeout(() => resolve(null), 20));
@@ -239,7 +239,7 @@ test('should remove stale cache references', async () => {
 })
 
 test('should support externally defined query with an eager update', async () => {
-  const store = createStore({ state: { num: 0 } });
+  const store = createStore({ num: 0 });
   const updateNum = ((arg: number) => defineQuery({
     query: resolve(arg),
     eager: arg

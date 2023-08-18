@@ -10,7 +10,7 @@ beforeEach(() => {
 })
 
 test('should replace all elements', () => {
-  const store = createStore({ state });
+  const store = createStore(state);
   const payload = [4, 5, 6];
   store.arr
     .$set(payload);
@@ -19,7 +19,7 @@ test('should replace all elements', () => {
 })
 
 test('should remove all elements', () => {
-  const store = createStore({ state });
+  const store = createStore(state);
   store.arr
     .$clear();
   expect(libState.currentActions[0]).toEqual({ type: 'arr.$clear()' });
@@ -27,7 +27,7 @@ test('should remove all elements', () => {
 })
 
 test('should increment all elements', () => {
-  const store = createStore({ state });
+  const store = createStore(state);
   const payload = 1;
   store.arr
     .$add(payload);
@@ -36,7 +36,7 @@ test('should increment all elements', () => {
 })
 
 test('should be able to insert one primitive', () => {
-  const store = createStore({ state });
+  const store = createStore(state);
   const payload = 4;
   store.arr
     .$push(payload);
@@ -45,7 +45,7 @@ test('should be able to insert one primitive', () => {
 })
 
 test('should be able to insert many primitives', () => {
-  const store = createStore({ state });
+  const store = createStore(state);
   const payload = [4, 5, 6];
   store.arr
     .$push(payload);
@@ -54,7 +54,7 @@ test('should be able to insert many primitives', () => {
 })
 
 test('should find an element and replace it', () => {
-  const store = createStore({ state });
+  const store = createStore(state);
   const payload = 9;
   store.arr
     .$find.$eq(2)
@@ -64,7 +64,7 @@ test('should find an element and replace it', () => {
 })
 
 test('should find an element and remove it', () => {
-  const store = createStore({ state });
+  const store = createStore(state);
   store.arr
     .$find.$eq(2)
     .$delete();
@@ -73,7 +73,7 @@ test('should find an element and remove it', () => {
 })
 
 test('should find an element and increment it', () => {
-  const store = createStore({ state });
+  const store = createStore(state);
   const payload = 2;
   store.arr
     .$find.$eq(2)
@@ -83,7 +83,7 @@ test('should find an element and increment it', () => {
 })
 
 test('should find an element by one clause or another and replace it', () => {
-  const store = createStore({ state });
+  const store = createStore(state);
   const payload = 9;
   store.arr
     .$find.$eq(1).$or.$eq(2)
@@ -93,7 +93,7 @@ test('should find an element by one clause or another and replace it', () => {
 })
 
 test('should find an element by one clause or another and remove it', () => {
-  const store = createStore({ state });
+  const store = createStore(state);
   store.arr
     .$find.$eq(1).$or.$eq(2)
     .$delete();
@@ -102,7 +102,7 @@ test('should find an element by one clause or another and remove it', () => {
 })
 
 test('should find an element by one clause or another and increment it', () => {
-  const store = createStore({ state });
+  const store = createStore(state);
   const payload = 1;
   store.arr
     .$find.$eq(1).$or.$eq(2)
@@ -112,7 +112,7 @@ test('should find an element by one clause or another and increment it', () => {
 })
 
 test('should find an element by one clause and another and replace it', () => {
-  const store = createStore({ state });
+  const store = createStore(state);
   const payload = 9;
   store.arr
     .$find.$gt(1).$and.$lt(3)
@@ -122,7 +122,7 @@ test('should find an element by one clause and another and replace it', () => {
 })
 
 test('should find an element by one clause and another and remove it', () => {
-  const store = createStore({ state });
+  const store = createStore(state);
   store.arr
     .$find.$gt(1).$and.$lt(3)
     .$delete();
@@ -131,7 +131,7 @@ test('should find an element by one clause and another and remove it', () => {
 })
 
 test('should find an element by one clause and another and increment it', () => {
-  const store = createStore({ state });
+  const store = createStore(state);
   const payload = 1;
   store.arr
     .$find.$eq(1).$and.$lt(2)
@@ -141,7 +141,7 @@ test('should find an element by one clause and another and increment it', () => 
 })
 
 test('should filter elements and remove them', () => {
-  const store = createStore({ state });
+  const store = createStore(state);
   store.arr
     .$filter.$gt(1)
     .$delete();
@@ -150,7 +150,7 @@ test('should filter elements and remove them', () => {
 })
 
 test('should filter elements and increment them', () => {
-  const store = createStore({ state });
+  const store = createStore(state);
   const payload = 1;
   store.arr
     .$filter.$gt(1)
@@ -160,7 +160,7 @@ test('should filter elements and increment them', () => {
 })
 
 test('should filter elements by one clause or another and remove them', () => {
-  const store = createStore({ state });
+  const store = createStore(state);
   store.arr
     .$filter.$eq(1).$or.$eq(2)
     .$delete();
@@ -169,7 +169,7 @@ test('should filter elements by one clause or another and remove them', () => {
 })
 
 test('should filter elements by one clause or another and increment them', () => {
-  const store = createStore({ state });
+  const store = createStore(state);
   const payload = 1;
   store.arr
     .$filter.$eq(1).$or.$eq(2)
@@ -179,7 +179,7 @@ test('should filter elements by one clause or another and increment them', () =>
 })
 
 test('should filter elements by one clause and another and remove them', () => {
-  const store = createStore({ state });
+  const store = createStore(state);
   store.arr
     .$filter.$gt(0).$and.$lt(3)
     .$delete();
@@ -188,7 +188,7 @@ test('should filter elements by one clause and another and remove them', () => {
 })
 
 test('should filter elements by one clause and another and increment them', () => {
-  const store = createStore({ state });
+  const store = createStore(state);
   const payload = 1;
   store.arr
     .$filter.$gt(0).$and.$gt(1)

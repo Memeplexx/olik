@@ -14,14 +14,12 @@ test('should throw an error if a user uses a dollar prop in their state', () => 
 
 test('should allow dates', () => {
   const state = { date: new Date() };
-  const store = createStore({ state })
+  const store = createStore(state)
   expect(typeof store.$state.date).toEqual('object')
 })
 
 test('should support inner stores', () => {
-  const rootStore = createStore({
-    state: { string: '' }
-  })
+  const rootStore = createStore({ string: '' })
   const accessor = createInnerStore({
     array: [{ id: 1, text: 'one' }]
   }).usingAccessor(s => s.array.$find.id.$eq(1))

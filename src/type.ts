@@ -9,10 +9,6 @@ export type Brand<T, TBrand extends string> = T & { [brand]: TBrand };
 
 export type ThingOrArrayOfThings<T> = T | T[];
 
-export interface RecursiveRecord {
-  [key: string]: ThingOrArrayOfThings<RecursiveRecord | Primitive>;
-}
-
 export type Primitive = string | number | boolean;
 
 export type PossiblyBrandedPrimitive = Primitive & { [brand]?: string };
@@ -557,13 +553,6 @@ export interface Contains<Response> {
   $contains: (string: string) => Response
 }
 
-export interface DestroyStore {
-  /**
-   * To be called to remove this store and all its subscriptions.
-   */
-  $destroyStore: () => void,
-}
-
 export type Searchable<T, S, F extends FindOrFilter, Depth extends number, NewDepth extends number = DecrementRecursion[Depth]> = Rec<
   {
     [K in keyof S]: (S[K] extends object
@@ -617,19 +606,6 @@ export interface RxjsObservable<C> {
 export type AnyAsync<C> = RxjsObservable<C> | Promise<C>;
 
 export type AnyAsyncFn<C> = () => AnyAsync<C>;
-
-export interface OptionsForMakingAStore<S> {
-  /**
-   * The initial state of your store. Can be any serializable object
-   */
-  state: S,
-  /**
-   * Supplying a key here will ensure that the store returned is nested under that key in the application store.
-   * This is useful if you want to manage component state independently of the rest of the application state.
-   * If there is no application store, then this will be ignored.
-   */
-  key?: string;
-}
 
 export interface ReduxDevtoolsOptions {
   /**
@@ -690,9 +666,9 @@ export interface EnableNestedStoreArgs {
   instanceId: string | number;
 }
 
-export type Store<S> = (S extends never ? unknown : (S extends Array<unknown> ? UpdatableArray<S, 'isFilter', 'notQueried', MaxRecursionDepth>
+export type Store<S> = S extends never ? unknown : (S extends Array<unknown> ? UpdatableArray<S, 'isFilter', 'notQueried', MaxRecursionDepth>
   : S extends object ? UpdatableObject<S, 'isFind', 'notArray', 'yes', MaxRecursionDepth>
-  : UpdatablePrimitive<S, 'isFind', 'notArray', MaxRecursionDepth>) & DestroyStore);
+  : UpdatablePrimitive<S, 'isFind', 'notArray', MaxRecursionDepth>);
 
 // do NOT remove. Needed by framework-libraries
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -702,10 +678,6 @@ export interface ChangeListener {
   actions: StateAction[];
   listener: (arg: unknown) => unknown;
   unsubscribe: () => void;
-}
-
-export interface NestStoreRef {
-  detach(): void,
 }
 
 export type TraceElement = { functionName: string, fileName: string, lineNumber: number, columnNumber: number }

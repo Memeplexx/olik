@@ -13,7 +13,7 @@ test('should support derivations', () => {
     array: ['1', '2'],
     counter: 3,
   };
-  const store = createStore({ state });
+  const store = createStore(state);
   const mem = derive(
     store.array,
     store.counter,
@@ -29,7 +29,7 @@ test('should cache correctly', () => {
     array: new Array<string>(),
     counter: 3,
   };
-  const store = createStore({ state });
+  const store = createStore(state);
   let recalculating = 0;
   let eventReceived = 0;
   const mem = derive(
@@ -66,7 +66,7 @@ test('should emit events only when required', () => {
     counter: 3,
     string: '',
   };
-  const store = createStore({ state });
+  const store = createStore(state);
   let recalculating = 0;
   let eventReceived = 0;
   const mem = derive(
@@ -90,7 +90,7 @@ test('should correctly unsubscribe', () => {
     one: 'x',
     two: 0,
   };
-  const store = createStore({ state });
+  const store = createStore(state);
   const mem = derive(
     store.one,
     store.two,
@@ -113,7 +113,7 @@ test('should derive on specific array element', () => {
     array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
     object: { hello: 'world' },
   };
-  const store = createStore({ state });
+  const store = createStore(state);
   let recalculating = 0;
   const mem = derive(
     store.array
@@ -135,7 +135,7 @@ test('should derive on specific array element', () => {
 
 test('should be able to derive from using a derivation as an argument', () => {
   const state = { num: 0, str: 'x' };
-  const store = createStore({ state });
+  const store = createStore(state);
   let originalMemoCalcCount = 0;
   const mem = derive(
     store.num,
@@ -158,7 +158,7 @@ test('should derive with a find', () => {
   const state = {
     array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
   };
-  const store = createStore({ state });
+  const store = createStore(state);
   let memoCalcCount = 0;
   const mem = derive(
     store.array.$find.id.$eq(2),
@@ -179,7 +179,7 @@ test('should derive with a filter', () => {
   const state = {
     array: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }],
   };
-  const store = createStore({ state });
+  const store = createStore(state);
   let memoCalcCount = 0;
   const mem = derive(
     store.array.$filter.id.$lte(2),
@@ -202,10 +202,8 @@ test('should derive with a filter', () => {
 
 test('should invalidate a derivation', () => {
   const store = createStore({
-    state: {
-      num: 0,
-      str: '',
-    }
+    num: 0,
+    str: '',
   });
   let memoCalcCount = 0;
   const mem = derive(
@@ -226,10 +224,8 @@ test('should invalidate a derivation', () => {
 
 test('should share derivations via cache', () => {
   const store = createStore({
-    state: {
-      str: 'a',
-      num: 1,
-    }
+    str: 'a',
+    num: 1,
   });
   let memoCalcCount = 0;
   const derivationFunctionShared = (num: number, str: string) => {
@@ -262,10 +258,8 @@ test('should share derivations via cache', () => {
 
 test('', () => {
   const store = createStore({
-    state: {
-      str: 'a',
-      num: 1,
-    }
+    str: 'a',
+    num: 1,
   });
   let memoCalcCount = 0;
 

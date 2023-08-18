@@ -15,16 +15,14 @@ type Statee = {
 }
 
 const store0 = createStore<Statee>({
-  state: {
-    number: 0,
-    string: '',
-    array: new Array<number>(),
-    arrayStr: new Array<string>(),
-    arrayBool: new Array<boolean>(),
-    arrayTuple: new Array<'hello' | 'world'>(),
-    objArray: new Array<Test>(),
-    object: { one: '', two: '', three: 0, a: { b: { c: { d: '' } } } }
-  }
+  number: 0,
+  string: '',
+  array: new Array<number>(),
+  arrayStr: new Array<string>(),
+  arrayBool: new Array<boolean>(),
+  arrayTuple: new Array<'hello' | 'world'>(),
+  objArray: new Array<Test>(),
+  object: { one: '', two: '', three: 0, a: { b: { c: { d: '' } } } }
 });
 
 store0.objArray
@@ -135,10 +133,8 @@ store0.objArray
 
 export const demo = () => {
   const store = createStore({
-    state: {
-      user: { name: '', age: 0 },
-      todos: new Array<{ id: number, title: string, status: 'done' | 'todo' }>(),
-    }
+    user: { name: '', age: 0 },
+    todos: new Array<{ id: number, title: string, status: 'done' | 'todo' }>(),
   });
 
   store.user.age
@@ -175,11 +171,9 @@ export const demo = () => {
 
 export const demo2 = () => {
   const store = createStore({
-    state: {
-      arr: [
-        { id: 1, obj: { id: 1, str: '', num: 0 } }
-      ]
-    }
+    arr: [
+      { id: 1, obj: { id: 1, str: '', num: 0 } }
+    ]
   });
   store.arr.$filter.id.$eq(3).obj.$set({ id: 1, num: 1, str: '' });
   store.arr.$find.id.$eq(3).obj.$set({ id: 1, num: 1, str: '' });
@@ -202,7 +196,7 @@ type User = { name: string, age: number };
 type State = { user: User; todos: Todo[] }
 
 const store = createStore<State>({
-  state: { user: { name: '', age: 0 }, todos: [] }
+  user: { name: '', age: 0 }, todos: []
 })
 
 
@@ -218,13 +212,11 @@ store.todos.$filter.status.$eq('done').$set([]);
 
 
 const storee = createStore({
-  state: {
-    todos: [''],
-    things: [{ id: 1, name: '' }],
-    val: '',
-    bool: false,
-    arr: [false],
-  },
+  todos: [''],
+  things: [{ id: 1, name: '' }],
+  val: '',
+  bool: false,
+  arr: [false],
 });
 storee.val.$set('sss');
 storee.todos.$set(['ss']);

@@ -1,4 +1,4 @@
-import { Augmentations, ChangeListener, EnableAsyncActionsArgs, OlikAction, RecursiveRecord, Store } from './type';
+import { Augmentations, ChangeListener, EnableAsyncActionsArgs, OlikAction, Store } from './type';
 import { StoreInternal, WindowAugmentedWithOlikDevtools } from './type-internal';
 
 
@@ -9,27 +9,24 @@ export const errorMessages = {
   INVALID_STATE_INPUT: (illegal: { toString(): string }) => `State must be serializable to JSON. Value of '${illegal.toString()}' is not permitted`,
   ASYNC_UPDATES_NOT_ENABLED: 'Cannot perform an async update until you enable it. Please import and invoke `importOlikAsyncModule()` before creating your store',
   DOLLAR_USED_IN_STATE: `Your state cannot contain any properties which begin with a '$' symbol because this syntax is reserved for library functions`,
-  KEY_ALREADY_IN_USE: (illegal: string) => `The key '${illegal}' is already in use in the application store. Please choose a different key for your inner store`,
 } as const;
 
 export const libState: {
   store: undefined | StoreInternal,
-  detached: string[],
   innerStores: Map<string, Store<unknown>>,
   isInsideTransaction: boolean,
   onInternalDispatch: (action: OlikAction) => void,
   asyncUpdate: undefined | ((args: EnableAsyncActionsArgs) => Promise<unknown>),
   olikDevtools: undefined | { dispatch: (args: { insideTransaction?: boolean }) => unknown, init: () => void, trace: boolean },
-  state: undefined | RecursiveRecord,
+  state: undefined | Record<string, unknown>,
   changeListeners: ChangeListener[],
   currentActions: OlikAction[],
-  initialState: undefined | RecursiveRecord,
+  initialState: undefined | Record<string, unknown>,
   disableDevtoolsDispatch?: boolean,
   derivations: Map<Array<unknown>, unknown>,
   stacktraceError: null | Error,
 } = {
   store: undefined,
-  detached: [],
   innerStores: new Map<string, Store<unknown>>(),
   isInsideTransaction: false,
   onInternalDispatch: () => null,
