@@ -1,11 +1,21 @@
 import { andOr, augmentations, comparators, errorMessages, findFilter, libState, updateFunctions } from './constant';
 import { readState } from './read';
-import { OptionsForMakingAStore, RecursiveRecord, StateAction, Store, StoreAugment } from './type';
+import { OptionsForMakingAStore, Readable, RecursiveRecord, StateAction, Store, StoreAugment } from './type';
 import { is } from './type-check';
 import { StoreInternal } from './type-internal';
 import { deepFreeze } from './utility';
 import { processPotentiallyAsyncUpdate } from './write';
 import { setNewStateAndNotifyListeners } from './write-complete';
+
+
+export const createInnerStore = <S>(state: S) => ({
+  usingAccessor: <C extends Readable<unknown>>(accessor: (store: Store<S>) => C) => {
+    const store = createStore({ state });
+    return new Proxy({}, {
+      get: (_, prop: string) => accessor(store)[prop as keyof C]
+    }) as C & (C extends never ? unknown : StoreAugment<C>);
+  }
+})
 
 export function createStore<S>(
   args: OptionsForMakingAStore<S>
