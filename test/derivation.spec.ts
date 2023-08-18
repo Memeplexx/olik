@@ -287,5 +287,4 @@ test('', () => {
   store.num.$add(1);
 
   expect(memoCalcCount).toEqual(1);
-  console.log('...', derivationChangeCount1)
 })

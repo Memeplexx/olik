@@ -15,7 +15,7 @@ export function createStore<S>(
   validateState(args.state);
   removeStaleCacheReferences(state);
   if (!libState.initialState) {
-    const state = args.key ? {} : JSON.parse(JSON.stringify(args.state));
+    const state = args.key ? {} : deepFreeze(args.state)!;
     libState.initialState = state;
     libState.state = state;
   }
