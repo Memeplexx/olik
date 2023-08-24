@@ -9,13 +9,10 @@ export function derive<X extends Readable<unknown>[]>(...args: X) {
       const getValue = () => {
         const params = (args as Array<Readable<unknown> & { $actions?: StateAction[], $cacheKey?: { state: unknown; path: string; }[] }>)
           .map(arg => {
-            const state = arg.$state; // force read
-            let path: string;
-            if (arg.$actions) {
-              path = arg.$actions.map(action => `${action.name}${action.arg !== undefined ? `(${action.arg})` : ''}`).join('.');
-            } else {
-              path = arg.$cacheKey!.map(k => k.path).join('|');
-            }
+            const state = arg.$state; // force read so that cacheKey is set
+            const path = arg.$actions
+              ? arg.$actions.map(action => `${action.name}${action.arg !== undefined ? `(${action.arg})` : ''}`).join('.')
+              : arg.$cacheKey!.map(k => k.path).join('|');
             return { state, path }
           })
         const kvp = [...libState.derivations.entries()]
@@ -33,7 +30,9 @@ export function derive<X extends Readable<unknown>[]>(...args: X) {
             })
           })
         if (kvp) {
-          cacheKey = params; // needs to be set in case derive() is called more than once
+          if (cacheKey === undefined) {
+            cacheKey = params; // needs to be set in case derive() is called more than once
+          }
           return kvp[1] as R;
         }
         const result = calculation(...params.map(p => p.state) as DerivationCalculationInputs<X>);
@@ -54,6 +53,7 @@ export function derive<X extends Readable<unknown>[]>(...args: X) {
             unsubscribe: () => {
               unsubscribes.forEach(u => u.unsubscribe());
               changeListeners.delete(listener);
+              libState.derivations.delete(cacheKey);
             }
           }
         }
