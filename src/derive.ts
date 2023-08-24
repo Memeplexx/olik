@@ -33,11 +33,12 @@ export function derive<X extends Readable<unknown>[]>(...args: X) {
             })
           })
         if (kvp) {
+          cacheKey = params; // needs to be set in case derive() is called more than once
           return kvp[1] as R;
         }
         const result = calculation(...params.map(p => p.state) as DerivationCalculationInputs<X>);
         libState.derivations.set(params, result);
-        cacheKey = params; // needs to be set in case derive() is called more than once
+        cacheKey = params;
         return result;
       }
       const changeListeners = new Set<(value: R) => unknown>();
