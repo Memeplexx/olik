@@ -23,11 +23,11 @@ export const libState: {
   currentActions: OlikAction[],
   initialState: undefined | Record<string, unknown>,
   disableDevtoolsDispatch?: boolean,
-  derivations: Map<Array<unknown>, unknown>,
+  derivations: Map<Array<{ state: unknown, path: string }>, unknown>,
   stacktraceError: null | Error,
 } = {
   store: undefined,
-  innerStores: new Map<string, Store<unknown>>(),
+  innerStores: new Map(),
   isInsideTransaction: false,
   onInternalDispatch: () => null,
   asyncUpdate: undefined,
@@ -36,7 +36,7 @@ export const libState: {
   changeListeners: [],
   currentActions: [],
   initialState: undefined,
-  derivations: new Map<Array<unknown>, unknown>(),
+  derivations: new Map(),
   stacktraceError: null,
 }
 

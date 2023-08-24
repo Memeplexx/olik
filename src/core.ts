@@ -62,6 +62,8 @@ export function createStore<S extends Record<string, unknown>>(
         } else if ('$mergeMatching' === prop) {
           stateActions.push({ name: prop });
           return recurseProxy(stateActions);
+        } else if ('$actions' === prop) {
+          return stateActions;
         } else if ('$state' === prop) {
           const tryFetchResult = (stateActions: StateAction[]): unknown => {
             try {

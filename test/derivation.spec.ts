@@ -1,5 +1,5 @@
 import { testState } from '../src';
-import { createStore } from '../src/core';
+import { createInnerStore, createStore } from '../src/core';
 import { derive } from '../src/derive';
 import { resetLibraryState } from '../src/utility';
 import { test, expect, beforeEach } from 'vitest';
@@ -133,7 +133,7 @@ test('should derive on specific array element', () => {
   expect(recalculating).toEqual(1);
 })
 
-test('should be able to derive from using a derivation as an argument', () => {
+test('should be able to derive from using a derivation as an argument', () => { ///////// DOUBLE CHECK
   const state = { num: 0, str: 'x' };
   const store = createStore(state);
   let originalMemoCalcCount = 0;
@@ -256,13 +256,12 @@ test('should share derivations via cache', () => {
   expect(derivationChangeCount2).toEqual(1);
 })
 
-test('', () => {
+test('should cache results when derive() is called repeatedly', () => {
   const store = createStore({
     str: 'a',
     num: 1,
   });
   let memoCalcCount = 0;
-
   let derivationChangeCount1 = 0;
   const d1 = () => {
     derive(
@@ -273,12 +272,78 @@ test('', () => {
       return str + num;
     }).$onChange(() => derivationChangeCount1++);
   }
-
   d1();
   d1();
   d1();
-
   store.num.$add(1);
-
   expect(memoCalcCount).toEqual(1);
+})
+
+test('should create cache keys correctly', () => {
+  const store = createStore({
+    str: 'a',
+    obj: { num: 1 }
+  })
+  const childStore = createInnerStore({ inner: { val: 0 } }).usingAccessor(s => s.inner);
+  const parentDerivation = derive(
+    store.str,
+    store.obj.num,
+  ).$with((str, num) => {
+    return str + num;
+  })
+  const childDerivation = derive(
+    parentDerivation,
+    childStore.val,
+  ).$with((derivation, val) => {
+    return derivation + val
+  })
+  expect(childDerivation.$state).toEqual('a10');
+  expect((childDerivation as unknown as { $cacheKey: string }).$cacheKey)
+    .toEqual([ { state: 'a1', path: 'str|obj.num' }, { state: 0, path: 'inner.val' } ])
+})
+
+test('should create cache keys correctly with a find()', () => {
+  const store = createStore({
+    str: 'a',
+    obj: { things: [{ id: 1, name: 'one' }] }
+  })
+  const childStore = createInnerStore({ inner: { val: 0 } }).usingAccessor(s => s.inner);
+  const parentDerivation = derive(
+    store.str,
+    store.obj.things.$find.id.$eq(1).name,
+  ).$with((str, num) => {
+    return str + num;
+  })
+  const childDerivation = derive(
+    parentDerivation,
+    childStore.val,
+  ).$with((derivation, val) => {
+    return derivation + val
+  })
+  expect(childDerivation.$state).toEqual('aone0');
+  expect((childDerivation as unknown as { $cacheKey: string }).$cacheKey)
+    .toEqual([ { state: 'aone', path: 'str|obj.things.$find.id.$eq(1).name' }, { state: 0, path: 'inner.val' } ])
+})
+
+test('should create cache keys correctly with a filter()', () => {
+  const store = createStore({
+    str: 'a',
+    obj: { things: [{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 } ] }
+  })
+  const childStore = createInnerStore({ inner: { val: 0 } }).usingAccessor(s => s.inner);
+  const parentDerivation = derive(
+    store.str,
+    store.obj.things.$filter.id.$lt(3).id,
+  ).$with((str, things) => {
+    return str + things.join('-');
+  })
+  const childDerivation = derive(
+    parentDerivation,
+    childStore.val,
+  ).$with((derivation, val) => {
+    return derivation + val
+  })
+  expect(childDerivation.$state).toEqual('a1-20');
+  expect((childDerivation as unknown as { $cacheKey: string }).$cacheKey)
+    .toEqual([ { state: 'a1-2', path: 'str|obj.things.$filter.id.$lt(3).id' }, { state: 0, path: 'inner.val' } ])
 })

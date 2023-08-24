@@ -1,34 +1,49 @@
 import { augmentations, libState } from './constant';
-import { Derivation, DerivationCalculationInputs, Readable, Unsubscribe } from './type';
+import { Derivation, DerivationCalculationInputs, Readable, StateAction, Unsubscribe } from './type';
 
 
 export function derive<X extends Readable<unknown>[]>(...args: X) {
-  let cacheKey: unknown[];
+  let cacheKey: { state: unknown; path: string; }[];
   return {
     $with: <R>(calculation: (...inputs: DerivationCalculationInputs<X>) => R) => {
       const getValue = () => {
-        const params = args.map(arg => arg.$state) as DerivationCalculationInputs<X>;
+        const params = (args as Array<Readable<unknown> & { $actions?: StateAction[], $cacheKey?: { state: unknown; path: string; }[] }>)
+          .map(arg => {
+            const state = arg.$state; // force read
+            let path: string;
+            if (arg.$actions) {
+              path = arg.$actions.map(action => `${action.name}${action.arg !== undefined ? `(${action.arg})` : ''}`).join('.');
+            } else {
+              path = arg.$cacheKey!.map(k => k.path).join('|');
+            }
+            return { state, path }
+          })
         const kvp = [...libState.derivations.entries()]
           .filter(([previousParams]) => previousParams.length === params.length)
           .find(([previousParams]) => {
-          return params.every((param, i) => {
-            const previousParam = previousParams[i];
-            // Start with a simple equality check.
-            // Else, if an array has been filtered (creating a new array to be created each time) compare stringified versions of the state
-            return (param === previousParam) || (Array.isArray(param) && JSON.stringify(param) === JSON.stringify(previousParam));
+            return params.every((param, i) => {
+              const previousParam = previousParams[i];
+              // Compare paths
+              return (param.path === previousParam.path) && (
+                // Start with a simple equality check.
+                param.state === previousParam.state
+                // Else, if an array has been filtered (creating a new array each time) compare stringified versions of the state
+                || (Array.isArray(param.state) && JSON.stringify(param.state) === JSON.stringify(previousParam.state))
+              );
+            })
           })
-        })
         if (kvp) {
           return kvp[1] as R;
         }
-        const result = calculation(...params);
+        const result = calculation(...params.map(p => p.state) as DerivationCalculationInputs<X>);
         libState.derivations.set(params, result);
-        cacheKey = params;
+        cacheKey = params; // needs to be set in case derive() is called more than once
         return result;
       }
       const changeListeners = new Set<(value: R) => unknown>();
       const result = (new class {
         get $state() { return getValue(); }
+        get $cacheKey() { return cacheKey; }
         $invalidate = () => libState.derivations.delete(cacheKey);
         $onChange = (listener: (value: R) => unknown) => {
           changeListeners.add(listener);
