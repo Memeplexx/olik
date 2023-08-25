@@ -15,12 +15,11 @@ afterAll(() => {
 })
 
 test('should support transactions', () => {
-  const state = { num: 0, str: '', bool: false };
-  const store = createStore(state);
-  transact(
-    () => store.num.$set(1),
-    () => store.str.$set('x'),
-  );
+  const store = createStore({ num: 0, str: '', bool: false });
+  transact(() => {
+    store.num.$set(1);
+    store.str.$set('x');
+  });
   expect(store.$state).toEqual({ num: 1, str: 'x', bool: false });
   expect(libState.currentActions).toEqual([
     { type: 'num.$set()', payload: 1 },
@@ -29,8 +28,7 @@ test('should support transactions', () => {
 })
 
 test('should support transactions with only 1 action', () => {
-  const state = { num: 0 };
-  const store = createStore(state);
+  const store = createStore({ num: 0 });
   const payload = 1;
   transact(() => store.num.$set(payload));
   expect(store.num.$state).toEqual(payload);
@@ -38,13 +36,12 @@ test('should support transactions with only 1 action', () => {
 })
 
 test('should not support transactions if one of the actions has an async payload', () => {
-  const state = { num: 0, str: '', bool: false };
-  const store = createStore(state);
+  const store = createStore({ num: 0, str: '', bool: false });
   importOlikAsyncModule();
-  expect(() => transact(
-    () => store.num.$set(() => new Promise(resolve => resolve(1))),
-    () => store.str.$set('x'),
-  )).toThrow(errorMessages.ASYNC_PAYLOAD_INSIDE_TRANSACTION);
+  expect(() => transact(() => {
+    store.num.$set(() => new Promise(resolve => resolve(1)));
+    store.str.$set('x');
+  })).toThrow(errorMessages.ASYNC_PAYLOAD_INSIDE_TRANSACTION);
 })
 
 

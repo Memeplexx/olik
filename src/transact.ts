@@ -1,11 +1,9 @@
 import { libState, testState } from './constant';
 
-export const transact = (...operations: (() => void)[]) => {
-  if (!operations.length) { return; }
-  if (operations.length === 1) { return operations[0](); }
+export const transact = (operations: () => void) => {
   libState.isInsideTransaction = true;
   libState.currentActions = [];
-  operations.forEach(op => op());
+  operations();
   if (libState.olikDevtools && !libState.disableDevtoolsDispatch) {
     libState.olikDevtools.dispatch({ insideTransaction: true });
   }
