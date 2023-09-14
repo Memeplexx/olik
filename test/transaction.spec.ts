@@ -43,5 +43,3 @@ test('should not support transactions if one of the actions has an async payload
     store.str.$set('x');
   })).toThrow(errorMessages.ASYNC_PAYLOAD_INSIDE_TRANSACTION);
 })
-
-

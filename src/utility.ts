@@ -24,9 +24,9 @@ export const resetLibraryState = () => {
   libState.isInsideTransaction = false;
   libState.innerStores.clear();
   libState.state = undefined;
-  libState.changeListeners = [],
-  libState.currentActions = [],
-  libState.initialState = undefined,
+  libState.changeListeners = [];
+  libState.currentActions = [];
+  libState.initialState = undefined;
   libState.disableDevtoolsDispatch = false;
   libState.derivations = new Map();
 };
@@ -77,4 +77,54 @@ export const deserialize = <R>(arg?: string | null): R => {
     // WE'VE RUN OUT OF OPTIONS, JUST RETURN THE STRING
     return <R>arg
   }
+}
+
+
+// credit: https://github.com/debitoor/safe-json-stringify/blob/master/index.js
+export const serialize = (arg: unknown) => {
+  const hasProp = Object.prototype.hasOwnProperty;
+  const throwsMessage = (err: unknown) => {
+    return '[Throws: ' + (err ? (err as { message: unknown }).message : '?') + ']';
+  }
+  const safeGetValueFromPropertyOnObject = (obj: Record<string, unknown>, property: string) => {
+    if (hasProp.call(obj, property)) {
+      try {
+        return obj[property];
+      } catch (err) {
+        return throwsMessage(err);
+      }
+    }
+    return obj[property];
+  }
+  const ensureProperties = (obj: unknown) => {
+    const seen = new Array<unknown>(); // store references to objects we have seen before
+    const visit = (obj: unknown): unknown => {
+      if (obj === null || typeof obj !== 'object') { return obj; }
+      if (seen.indexOf(obj) !== -1) { return '[Circular]'; }
+      seen.push(obj);
+      if ('toJSON' in obj && typeof obj.toJSON === 'function') {
+        try {
+          const fResult = visit(obj.toJSON());
+          seen.pop();
+          return fResult;
+        } catch (err) {
+          return throwsMessage(err);
+        }
+      }
+      if (Array.isArray(obj)) {
+        const aResult = obj.map(visit);
+        seen.pop();
+        return aResult;
+      }
+      const result: Record<string, unknown> = Object.keys(obj).reduce((result, prop) => {
+        // prevent faulty defined getter properties
+        result[prop] = visit(safeGetValueFromPropertyOnObject(obj as Record<string, unknown>, prop));
+        return result;
+      }, {} as Record<string, unknown>);
+      seen.pop();
+      return result;
+    };
+    return visit(obj);
+  }
+  return JSON.stringify(ensureProperties(arg));
 }
