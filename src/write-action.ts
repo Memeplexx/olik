@@ -1,6 +1,5 @@
 import { comparators, libState, updateFunctions } from './constant';
 import { StateAction } from './type';
-import { serialize } from './utility';
 
 export const setCurrentActionReturningNewState = (
   { newState, payload, stateActions }:
@@ -22,6 +21,6 @@ const fixCurrentAction = (action: { name: string, arg?: unknown }) => {
     if (updateFunctions.includes(match)) {
       return `${match}()`;
     }
-    return `${match}(${action.arg === undefined ? '' : serialize(action.arg)})`;
+    return `${match}(${action.arg === undefined ? '' : JSON.stringify(action.arg)})`;
   });
 }

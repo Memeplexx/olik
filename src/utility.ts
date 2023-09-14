@@ -80,51 +80,22 @@ export const deserialize = <R>(arg?: string | null): R => {
 }
 
 
-// credit: https://github.com/debitoor/safe-json-stringify/blob/master/index.js
-export const serialize = (arg: unknown) => {
-  const hasProp = Object.prototype.hasOwnProperty;
-  const throwsMessage = (err: unknown) => {
-    return '[Throws: ' + (err ? (err as { message: unknown }).message : '?') + ']';
+export function serialize(val: unknown, depth: number, onGetObjID?: (val: object) => string): string {
+  depth = isNaN(+depth) ? 1 : depth;
+  const recursMap = new WeakMap();
+  function _build(val: unknown, depth: number, o?: unknown, a?: boolean, r?: boolean) {
+    return !val || typeof val != 'object' ? val
+      : (r = recursMap.has(val),
+        recursMap.set(val, true),
+        a = Array.isArray(val),
+        r ? (o = onGetObjID && onGetObjID(val) || null) : JSON.stringify(val, function (k, v) {
+          if (a || depth > 0) {
+            if (!k) { return (a = Array.isArray(v), val = v); }
+            !o && (o = a ? [] : {});
+            (o as Record<string, unknown>)[k] = _build(v, a ? depth : depth - 1);
+          }
+        }),
+        o === void 0 ? (a ? [] : {}) : o);
   }
-  const safeGetValueFromPropertyOnObject = (obj: Record<string, unknown>, property: string) => {
-    if (hasProp.call(obj, property)) {
-      try {
-        return obj[property];
-      } catch (err) {
-        return throwsMessage(err);
-      }
-    }
-    return obj[property];
-  }
-  const ensureProperties = (obj: unknown) => {
-    const seen = new Array<unknown>(); // store references to objects we have seen before
-    const visit = (obj: unknown): unknown => {
-      if (obj === null || typeof obj !== 'object') { return obj; }
-      if (seen.indexOf(obj) !== -1) { return '[Circular]'; }
-      seen.push(obj);
-      if ('toJSON' in obj && typeof obj.toJSON === 'function') {
-        try {
-          const fResult = visit(obj.toJSON());
-          seen.pop();
-          return fResult;
-        } catch (err) {
-          return throwsMessage(err);
-        }
-      }
-      if (Array.isArray(obj)) {
-        const aResult = obj.map(visit);
-        seen.pop();
-        return aResult;
-      }
-      const result: Record<string, unknown> = Object.keys(obj).reduce((result, prop) => {
-        // prevent faulty defined getter properties
-        result[prop] = visit(safeGetValueFromPropertyOnObject(obj as Record<string, unknown>, prop));
-        return result;
-      }, {} as Record<string, unknown>);
-      seen.pop();
-      return result;
-    };
-    return visit(obj);
-  }
-  return JSON.stringify(ensureProperties(arg));
+  return JSON.stringify(_build(val, depth));
 }

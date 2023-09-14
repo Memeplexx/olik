@@ -26,7 +26,7 @@ export function derive<X extends Readable<unknown>[]>(...args: X) {
                 // Start with a simple equality check.
                 param.state === previousParam.state
                 // Else, if an array has been filtered (creating a new array each time) compare stringified versions of the state
-                || (Array.isArray(param.state) && serialize(param.state) === serialize(previousParam.state))
+                || (Array.isArray(param.state) && serialize(param.state, 5) === serialize(previousParam.state, 5))
               );
             })
           })

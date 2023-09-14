@@ -1,6 +1,6 @@
 import { fromError } from 'stacktrace-js';
 import { libState } from './constant';
-import { deserialize, serialize } from './utility';
+import { deserialize } from './utility';
 
 
 export function connectOlikDevtoolsToStore(options: { trace: boolean }) {
@@ -33,7 +33,7 @@ export function connectOlikDevtoolsToStore(options: { trace: boolean }) {
   const olikStateDiv = document.createElement('div');
   olikStateDiv.id = 'olik-state';
   olikStateDiv.style.display = 'none';
-  olikStateDiv.innerHTML = serialize(libState.store!.$state);
+  olikStateDiv.innerHTML = JSON.stringify(libState.store!.$state);
   document.body.appendChild(olikStateDiv);
 
   const olikActionDiv = document.createElement('div');
