@@ -78,24 +78,3 @@ export const deserialize = <R>(arg?: string | null): R => {
     return <R>arg
   }
 }
-
-
-export function serialize(val: unknown, depth: number, onGetObjID?: (val: object) => string): string {
-  depth = isNaN(+depth) ? 1 : depth;
-  const recursMap = new WeakMap();
-  function _build(val: unknown, depth: number, o?: unknown, a?: boolean, r?: boolean) {
-    return !val || typeof val != 'object' ? val
-      : (r = recursMap.has(val),
-        recursMap.set(val, true),
-        a = Array.isArray(val),
-        r ? (o = onGetObjID && onGetObjID(val) || null) : JSON.stringify(val, function (k, v) {
-          if (a || depth > 0) {
-            if (!k) { return (a = Array.isArray(v), val = v); }
-            !o && (o = a ? [] : {});
-            (o as Record<string, unknown>)[k] = _build(v, a ? depth : depth - 1);
-          }
-        }),
-        o === void 0 ? (a ? [] : {}) : o);
-  }
-  return JSON.stringify(_build(val, depth));
-}

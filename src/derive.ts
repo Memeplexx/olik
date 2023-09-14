@@ -1,6 +1,5 @@
 import { augmentations, libState } from './constant';
 import { Derivation, DerivationCalculationInputs, Readable, StateAction, Unsubscribe } from './type';
-import { serialize } from './utility';
 
 
 export function derive<X extends Readable<unknown>[]>(...args: X) {
@@ -26,7 +25,7 @@ export function derive<X extends Readable<unknown>[]>(...args: X) {
                 // Start with a simple equality check.
                 param.state === previousParam.state
                 // Else, if an array has been filtered (creating a new array each time) compare stringified versions of the state
-                || (Array.isArray(param.state) && serialize(param.state, 5) === serialize(previousParam.state, 5))
+                || (Array.isArray(param.state) && param.state.every((p, i) => p === (previousParam.state as Array<unknown>)[i]))
               );
             })
           })
