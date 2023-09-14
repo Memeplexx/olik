@@ -1,4 +1,4 @@
-import { DeleteNode, OlikDevtoolsExtension, OnChange, SetNewNode } from './type';
+import { Actual, DeleteNode, OlikDevtoolsExtension, OnChange, SetNewNode, StateAction } from './type';
 
 
 export type WindowAugmentedWithOlikDevtools = {
@@ -26,3 +26,10 @@ export type OlikDevtoolsExtensionInternal = {
   _mockInvokeSubscription: (message: { type: string, payload: unknown, state?: unknown, source: unknown }) => unknown,
   _subscribers: Array<(message: { type: string, payload: unknown, state?: unknown, source: unknown }) => unknown>,
 } & OlikDevtoolsExtension;
+
+export type CopyNewStateArgs = {
+  currentState: unknown,
+  stateToUpdate: Actual,
+  stateActions: ReadonlyArray<StateAction>,
+  cursor: { index: number }
+}

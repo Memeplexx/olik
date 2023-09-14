@@ -1,4 +1,4 @@
-import * as StackTrace from 'stacktrace-js';
+import { fromError } from 'stacktrace-js';
 import { libState } from './constant';
 import { deserialize } from './utility';
 
@@ -14,7 +14,7 @@ export function connectOlikDevtoolsToStore(options: { trace: boolean }) {
         source: 'olik-devtools-extension',
       };
       if (options.trace) {
-        StackTrace.fromError(libState.stacktraceError!)
+        fromError(libState.stacktraceError!)
           .then(r => window.postMessage({
             ...payload,
             trace: r.map(rr => ({ functionName: rr.functionName, fileName: rr.fileName, lineNumber: rr.lineNumber, columnNumber: rr.columnNumber })),

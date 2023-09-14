@@ -2,6 +2,7 @@ import { anyLibProp, errorMessages, findFilter, updateFunctions } from './consta
 import { constructQuery } from './query';
 import { Actual, StateAction } from './type';
 import { either, is } from './type-check';
+import { CopyNewStateArgs } from './type-internal';
 import { setCurrentActionReturningNewState } from './write-action';
 
 export const removeInvalidateCache = ['$delete', '$invalidateCache'];
@@ -12,13 +13,7 @@ export const copyNewState = (
     stateToUpdate,
     stateActions,
     cursor
-  }:
-    {
-      currentState: unknown,
-      stateToUpdate: Actual,
-      stateActions: ReadonlyArray<StateAction>,
-      cursor: { index: number }
-    }
+  }: CopyNewStateArgs
 ): unknown => {
   if (Array.isArray(currentState) && !anyLibProp.includes(stateActions[cursor.index].name)) {
     return currentState.map((_, i) => currentState[i]
@@ -77,15 +72,15 @@ export const copyNewState = (
       return setCurrentActionReturningNewState({ stateActions, payload, newState: otherState })
     } else {
 
-    return {
-      ...either(currentState).else({}) as Record<string, unknown>,
-      [action.name]: copyNewState({
-        currentState: (either(currentState).else({}) as Record<string, unknown>)[action.name],
-        stateToUpdate: either((either(stateToUpdate).else({}) as Record<string, unknown>)[action.name]).else({}),
-        stateActions,
-        cursor
-      })
-    };
+      return {
+        ...either(currentState).else({}) as Record<string, unknown>,
+        [action.name]: copyNewState({
+          currentState: (either(currentState).else({}) as Record<string, unknown>)[action.name],
+          stateToUpdate: either((either(stateToUpdate).else({}) as Record<string, unknown>)[action.name]).else({}),
+          stateActions,
+          cursor
+        })
+      };
 
     }
   } else if (action.name === '$set') {
