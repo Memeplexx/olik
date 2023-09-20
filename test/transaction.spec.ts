@@ -3,7 +3,7 @@ import { createStore } from '../src/core';
 import { transact } from '../src/transact';
 import { importOlikAsyncModule } from '../src/write-async';
 import { test, expect, beforeEach, afterAll } from 'vitest';
-import { derive, resetLibraryState } from '../src';
+import { resetLibraryState } from '../src';
 
 beforeEach(() => {
   resetLibraryState();
@@ -42,22 +42,4 @@ test('should not support transactions if one of the actions has an async payload
     store.num.$set(() => new Promise(resolve => resolve(1)));
     store.str.$set('x');
   })).toThrow(errorMessages.ASYNC_PAYLOAD_INSIDE_TRANSACTION);
-})
-
-test('', () => {
-  const store = createStore({ num: 0, str: '' });
-  let changeCount = 0;
-  derive(store.num, store.str)
-    .$with((num, str) => {
-      console.log('___')
-      return str + num;
-    })
-    .$onChange(() => {
-      changeCount++;
-    });
-  transact(() => {
-    store.num.$add(1);
-    store.str.$set('x');
-  })
-  console.log('....', changeCount);
 })

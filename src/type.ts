@@ -592,9 +592,12 @@ export interface Future<C> extends Promise<C> {
 }
 
 export interface Augmentations {
-  selection: { [name: string]: <C>(selection: Readable<C>) => (args: Actual[]) => unknown },
-  future: { [name: string]: <C>(future: Future<C>) => (args: Actual[]) => unknown };
-  derivation: { [name: string]: <R>(derivation: Derivation<R>) => (args: Actual[]) => unknown }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  selection: { [name: string]: <C>(selection: Readable<C>) => (...args: any[]) => unknown },
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  future: { [name: string]: <C>(future: Future<C>) => (...args: any[]) => unknown };
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  derivation: { [name: string]: <R>(derivation: Derivation<R>) => (...args: any[]) => unknown }
   async: <C>(fnReturningFutureAugmentation: () => Promise<C>) => Promise<C>;
   core: { [prop: string]: <C>(selection: Readable<C>) => unknown },
 }
