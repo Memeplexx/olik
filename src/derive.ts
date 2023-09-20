@@ -20,12 +20,13 @@ export function derive<X extends Readable<unknown>[]>(...args: X) {
           .find(([previousParams]) => {
             return params.every((param, i) => {
               const previousParam = previousParams[i];
+              const previousArray = previousParam.state as Array<unknown>;
               // Compare paths
               return (param.path === previousParam.path) && (
                 // Start with a simple equality check.
                 param.state === previousParam.state
                 // Else, if an array has been filtered (creating a new array each time) compare stringified versions of the state
-                || (Array.isArray(param.state) && param.state.every((p, i) => p === (previousParam.state as Array<unknown>)[i]))
+                || (Array.isArray(param.state) && param.state.length === previousArray.length && param.state.every((p, i) => p === previousArray[i]))
               );
             })
           })
