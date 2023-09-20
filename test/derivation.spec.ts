@@ -17,8 +17,8 @@ test('should support derivations', () => {
   const mem = derive(
     store.array,
     store.counter,
-  ).$with((arr, somenum) => {
-    return arr.concat(somenum.toString())
+  ).$with((arr, counter) => {
+    return arr.concat(counter.toString())
   });
   const result = mem.$state;
   expect(result).toEqual(['1', '2', '3']);
