@@ -48,11 +48,11 @@ export function derive<X extends Readable<unknown>[]>(...args: X) {
         $invalidate = () => libState.derivations.delete(cacheKey);
         $onChange = (listener: (value: R) => unknown) => {
           changeListeners.add(listener);
-          const unsubscribes: Unsubscribe[] = args
+          const subscriptions: Unsubscribe[] = args
             .map(ops => ops.$onChange(() => listener(getValue())));
           return {
             unsubscribe: () => {
-              unsubscribes.forEach(u => u.unsubscribe());
+              subscriptions.forEach(u => u.unsubscribe());
               changeListeners.delete(listener);
               libState.derivations.delete(cacheKey);
             }
