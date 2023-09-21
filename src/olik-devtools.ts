@@ -1,34 +1,35 @@
-import { fromError } from 'stacktrace-js';
 import { libState } from './constant';
 import { deserialize } from './utility';
 
 
 export function connectOlikDevtoolsToStore(options: { trace: boolean }) {
-  libState.olikDevtools = {
-    init: () => { },
-    trace: options.trace,
-    dispatch: () => {
-      const payload = {
-        action: libState.currentAction,
-        state: libState.state,
-        source: 'olik-devtools-extension',
-      };
-      if (options.trace) {
-        fromError(libState.stacktraceError!)
-          .then(r => window.postMessage({
-            ...payload,
-            trace: r.map(rr => ({ functionName: rr.functionName, fileName: rr.fileName, lineNumber: rr.lineNumber, columnNumber: rr.columnNumber })),
-          }, location.origin))
-          .catch(console.error);
-      } else {
-        window.postMessage({
-          ...payload
-        }, location.origin);
-      }
-    },
-  };
+  import('stacktrace-js').then(({ fromError }) => {
+    libState.olikDevtools = {
+      init: () => { },
+      trace: options.trace,
+      dispatch: () => {
+        const payload = {
+          action: libState.currentAction,
+          state: libState.state,
+          source: 'olik-devtools-extension',
+        };
+        if (options.trace) {
+          fromError(libState.stacktraceError!)
+            .then(r => window.postMessage({
+              ...payload,
+              trace: r.map(rr => ({ functionName: rr.functionName, fileName: rr.fileName, lineNumber: rr.lineNumber, columnNumber: rr.columnNumber })),
+            }, location.origin))
+            .catch(console.error);
+        } else {
+          window.postMessage({
+            ...payload
+          }, location.origin);
+        }
+      },
+    };
+  });
 
-  if (document.getElementById('olik-state')) { return; }
+  if (typeof(document) === 'undefined' || document.getElementById('olik-state')) { return; }
 
   const olikStateDiv = document.createElement('div');
   olikStateDiv.id = 'olik-state';
