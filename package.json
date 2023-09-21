@@ -62,10 +62,10 @@
     "vite-plugin-dts": "^1.7.3",
     "vitest": "^0.28.5"
   },
-  "description": "This is a simple utility package",
-  "author": "<YOUR_NAME>",
+  "description": "A State Management library with a focus on Type-Safety, and inline state updates",
+  "author": "Stephen Paul",
   "license": "MIT",
-  "homepage": "<YOUR_SITE_URL>",
+  "homepage": "https://github.com/Memeplexx/olik",
   "repository": {
     "type": "git",
     "url": "https://github.com/<YOUR_USER_NAME>/my-ts-lib.git"
@@ -74,12 +74,10 @@
     "url": "https://github.com/<YOUR_USER_NAME>/my-ts-lib/issues"
   },
   "keywords": [
-    "some",
-    "keywords",
-    "to",
-    "describe",
-    "the",
-    "package"
+    "State Management",
+    "Fluent API",
+    "Boilerplate free",
+    "Type Safe"
   ],
   "dependencies": {
     "stacktrace-js": "^2.0.2"
