@@ -14,7 +14,6 @@ export const errorMessages = {
 export const libState: {
   store: undefined | StoreInternal,
   innerStores: Map<string, Store<unknown>>,
-  isInsideTransaction: boolean,
   onInternalDispatch: (action: OlikAction) => void,
   asyncUpdate: undefined | ((args: EnableAsyncActionsArgs) => Promise<unknown>),
   olikDevtools: undefined | { dispatch: (args: { insideTransaction?: boolean }) => unknown, init: () => void, trace: boolean },
@@ -28,7 +27,6 @@ export const libState: {
 } = {
   store: undefined,
   innerStores: new Map(),
-  isInsideTransaction: false,
   onInternalDispatch: () => null,
   asyncUpdate: undefined,
   olikDevtools: undefined,

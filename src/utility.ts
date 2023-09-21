@@ -21,7 +21,6 @@ export const getInnerStores = () => libState.innerStores;
 export const resetLibraryState = () => {
   testState.logLevel = 'none';
   libState.store = undefined;
-  libState.isInsideTransaction = false;
   libState.innerStores.clear();
   libState.state = undefined;
   libState.changeListeners = [];

@@ -16,7 +16,7 @@ export const setNewStateAndNotifyListeners = (
       listener(selectedNewState);
     }
   })
-  if (libState.olikDevtools && !libState.disableDevtoolsDispatch && !libState.isInsideTransaction) {
+  if (libState.olikDevtools && !libState.disableDevtoolsDispatch) {
     libState.olikDevtools.dispatch({});
   }
 }
