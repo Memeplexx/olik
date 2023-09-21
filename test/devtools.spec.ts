@@ -4,7 +4,8 @@
 // import { currentAction, windowAugmentedWithReduxDevtoolsImpl } from './_utility';
 import { test, expect, beforeEach } from 'vitest';
 
-import { connectOlikDevtoolsToStore, createStore, resetLibraryState } from "../src";
+import { createStore, resetLibraryState } from "../src";
+import { connectOlikDevtoolsToStore } from '../src/devtools';
 
 
 beforeEach(() => {

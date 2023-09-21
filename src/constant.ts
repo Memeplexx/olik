@@ -1,4 +1,4 @@
-import { Augmentations, ChangeListener, EnableAsyncActionsArgs, OlikAction, Store } from './type';
+import { Augmentations, ChangeListener, EnableAsyncActionsArgs, OlikAction } from './type';
 import { StoreInternal, WindowAugmentedWithOlikDevtools } from './type-internal';
 
 
@@ -12,7 +12,6 @@ export const errorMessages = {
 
 export const libState: {
   store: undefined | StoreInternal,
-  innerStores: Map<string, Store<unknown>>,
   onInternalDispatch: (action: OlikAction) => void,
   asyncUpdate: undefined | ((args: EnableAsyncActionsArgs) => Promise<unknown>),
   olikDevtools: undefined | { dispatch: (args: { insideTransaction?: boolean }) => unknown, init: () => void, trace: boolean },
@@ -25,7 +24,6 @@ export const libState: {
   stacktraceError: null | Error,
 } = {
   store: undefined,
-  innerStores: new Map(),
   onInternalDispatch: () => null,
   asyncUpdate: undefined,
   olikDevtools: undefined,

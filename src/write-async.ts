@@ -1,6 +1,7 @@
 import { augmentations, libState } from './constant';
 import { readState } from './read';
-import { Actual, AnyAsync, EnableAsyncActionsArgs, FutureState, StateAction, UpdateOptions } from './type';
+import { Actual, EnableAsyncActionsArgs, FutureState, StateAction } from './type';
+import { toIsoStringInCurrentTz } from './utility';
 import { setNewStateAndNotifyListeners } from './write-complete';
 
 export const importOlikAsyncModule = () => {
@@ -88,19 +89,4 @@ export const importOlikAsyncModule = () => {
   }
 }
 
-export const toIsoStringInCurrentTz = (date: Date) => {
-  const tzo = -date.getTimezoneOffset();
-  const dif = tzo >= 0 ? '+' : '-';
-  const pad = (num: number) => {
-    const norm = Math.floor(Math.abs(num));
-    return (norm < 10 ? '0' : '') + norm;
-  };
-  return date.getFullYear() + '-' + pad(date.getMonth() + 1) + '-' + pad(date.getDate()) + 'T' + pad(date.getHours())
-    + ':' + pad(date.getMinutes()) + ':' + pad(date.getSeconds()) + dif + pad(tzo / 60) + ':' + pad(tzo % 60);
-}
 
-export const defineQuery = <T>(
-  arg: { query: () => AnyAsync<T>, cache?: number, eager?: T }
-): [() => AnyAsync<T>, UpdateOptions<() => AnyAsync<T>>] => {
-  return [arg.query, { cache: arg.cache, eager: arg.eager } satisfies UpdateOptions<() => AnyAsync<T>>];
-};

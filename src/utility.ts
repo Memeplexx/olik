@@ -16,12 +16,9 @@ export const deepFreeze = <T>(o: T): T => {
 
 export const getStore = <S>() => libState.store as Store<S>;
 
-export const getInnerStores = () => libState.innerStores;
-
 export const resetLibraryState = () => {
   testState.logLevel = 'none';
   libState.store = undefined;
-  libState.innerStores.clear();
   libState.state = undefined;
   libState.changeListeners = [];
   libState.currentAction = undefined;
@@ -80,4 +77,15 @@ export const deserialize = <R>(arg?: string | null): R => {
 
 export const enqueueMicroTask = (fn: () => void) => {
   Promise.resolve().then(fn)
+}
+
+export const toIsoStringInCurrentTz = (date: Date) => {
+  const tzo = -date.getTimezoneOffset();
+  const dif = tzo >= 0 ? '+' : '-';
+  const pad = (num: number) => {
+    const norm = Math.floor(Math.abs(num));
+    return (norm < 10 ? '0' : '') + norm;
+  };
+  return date.getFullYear() + '-' + pad(date.getMonth() + 1) + '-' + pad(date.getDate()) + 'T' + pad(date.getHours())
+    + ':' + pad(date.getMinutes()) + ':' + pad(date.getSeconds()) + dif + pad(tzo / 60) + ':' + pad(tzo % 60);
 }
