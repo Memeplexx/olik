@@ -53,7 +53,7 @@ export type UpdatableObject<S, F extends FindOrFilter, Q extends QueryStatus, I 
   & ({
     [K in keyof S]: S[K] extends Array<unknown>
     ? UpdatableArray<S[K], 'isFilter', 'notQueried', NewDepth>
-    : S[K] extends PossiblyBrandedPrimitive 
+    : S[K] extends PossiblyBrandedPrimitive
     ? UpdatablePrimitive<S[K], F, Q, NewDepth>
     : UpdatableObject<S[K], F, Q, 'no', NewDepth>
   })
@@ -427,6 +427,15 @@ export interface OnChange<S> {
 export interface Readable<S> extends Read<S>, OnChange<S> {
 }
 
+export type Derivable<S> = Read<S> & (
+  {
+    $onChange(changeListener: (state: S) => void): Unsubscribe;
+  } |
+  {
+    $onChangeSync(changeListener: (state: S) => void): Unsubscribe;
+  }
+)
+
 export interface Cache {
   /**
    * Avoid unnecessary promise invocations by supplying the number of milliseconds that should elapse before the promise is invoked again.
@@ -569,7 +578,7 @@ export interface StateAction {
 
 type DerivationCalculationInput<E> = E extends Readable<infer W> ? W : never;
 
-export type DerivationCalculationInputs<T extends Array<Readable<unknown>>> = {
+export type DerivationCalculationInputs<T extends Array<Derivable<unknown>>> = {
   [K in keyof T]: DerivationCalculationInput<T[K]>;
 }
 

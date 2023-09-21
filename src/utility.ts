@@ -77,3 +77,7 @@ export const deserialize = <R>(arg?: string | null): R => {
     return <R>arg
   }
 }
+
+export const enqueueMicroTask = (fn: () => void) => {
+  Promise.resolve().then(fn)
+}

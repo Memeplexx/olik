@@ -369,16 +369,16 @@ test('should work with async', async () => {
   store.str.$set('x');
   store.str.$set('y');
   store.str.$set('z');
-  await new Promise(resolve => setTimeout(resolve));
+  await Promise.resolve();
   expect(calcCount).toEqual(1);
   expect(changeCount).toEqual(1);
   expect(derivation.$state).toEqual('z1');
   store.num.$add(1);
   store.str.$set('p');
   store.num.$add(1);
-  await new Promise(resolve => setTimeout(resolve));
+  await Promise.resolve();
   expect(calcCount).toEqual(2);
   expect(changeCount).toEqual(2);
   expect(derivation.$state).toEqual('p3');
-  await new Promise(resolve => setTimeout(resolve));
 })
+
