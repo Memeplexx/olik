@@ -1,26 +1,55 @@
 {
   "name": "olik",
-  "version": "1.0.29",
+  "version": "1.0.30",
   "type": "module",
-  "main": "./dist/olik.umd.cjs",
-  "module": "./dist/olik.js",
-  "types": "./dist/index.d.ts",
+  "typesVersions": {
+    "*": {
+      "*": [
+        "dist/index.d.ts"
+      ],
+      "devtools": [
+        "dist/devtools.d.ts"
+      ],
+      "derive": [
+        "dist/derive.d.ts"
+      ],
+      "async": [
+        "dist/async.d.ts"
+      ],
+      "async-query": [
+        "dist/async-query.d.ts"
+      ]
+    }
+  },
   "exports": {
     ".": {
       "import": "./dist/olik.js",
-      "require": "./dist/olik.umd.cjs"
+      "require": "./dist/olik.cjs"
+    },
+    "./devtools": {
+      "import": "./dist/olik2.js",
+      "require": "./dist/olik2.cjs"
+    },
+    "./derive": {
+      "import": "./dist/olik3.js",
+      "require": "./dist/olik3.cjs"
+    },
+    "./async": {
+      "import": "./dist/olik4.js",
+      "require": "./dist/olik4.cjs"
+    },
+    "./async-query": {
+      "import": "./dist/olik5.js",
+      "require": "./dist/olik5.cjs"
     }
   },
   "files": [
-    "dist"
+    "./dist/olik.js",
+    "./dist/olik2.js",
+    "./dist/olik3.js",
+    "./dist/olik4.js",
+    "./dist/olik5.js"
   ],
-  "scripts": {
-    "dev": "vite",
-    "build": "tsc && vite build",
-    "preview": "vite preview",
-    "test": "vitest",
-    "build:analyze": "npx vite-bundle-visualizer"
-  },
   "devDependencies": {
     "@types/jest": "^29.4.0",
     "@types/node": "^18.14.0",
@@ -58,5 +87,12 @@
   ],
   "dependencies": {
     "stacktrace-js": "^2.0.2"
+  },
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc && vite build",
+    "preview": "vite preview",
+    "test": "vitest",
+    "build:analyze": "npx vite-bundle-visualizer"
   }
 }
