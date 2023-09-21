@@ -1,6 +1,6 @@
 {
   "name": "olik",
-  "version": "1.0.31",
+  "version": "1.0.32",
   "type": "module",
   "typesVersions": {
     "*": {
@@ -44,11 +44,7 @@
     }
   },
   "files": [
-    "./dist/olik.js",
-    "./dist/olik2.js",
-    "./dist/olik3.js",
-    "./dist/olik4.js",
-    "./dist/olik5.js"
+    "dist"
   ],
   "devDependencies": {
     "@types/jest": "^29.4.0",
