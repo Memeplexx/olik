@@ -7,11 +7,7 @@ export const setCurrentActionReturningNewState = (
 ): unknown => {
   const type = stateActions.map(sa => fixCurrentAction(sa)).join('.');
   const action = { type, ...(payload !== undefined ? { payload } : {}) };
-  if (libState.isInsideTransaction) {
-    libState.currentActions.push(action);
-  } else {
-    libState.currentActions = [action];
-  }
+  libState.currentAction = action;
   return newState;
 }
 

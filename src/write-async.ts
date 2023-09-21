@@ -1,4 +1,4 @@
-import { augmentations, errorMessages, libState } from './constant';
+import { augmentations, libState } from './constant';
 import { readState } from './read';
 import { Actual, AnyAsync, EnableAsyncActionsArgs, FutureState, StateAction, UpdateOptions } from './type';
 import { setNewStateAndNotifyListeners } from './write-complete';
@@ -7,7 +7,6 @@ export const importOlikAsyncModule = () => {
   libState.asyncUpdate = (
     { stateActions, prop, cache, eager, arg }: EnableAsyncActionsArgs
   ) => {
-    if (libState.isInsideTransaction) { throw new Error(errorMessages.ASYNC_PAYLOAD_INSIDE_TRANSACTION); }
     const readCurrentState = () =>
       readState({ state: libState.state, stateActions: [...stateActions, { name: '$state' }], cursor: { index: 0 } });
     let state: FutureState<unknown> = { storeValue: readCurrentState(), error: null, isLoading: false, wasRejected: false, wasResolved: false };

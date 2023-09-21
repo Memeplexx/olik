@@ -25,7 +25,7 @@ test('should find an element an replace it', () => {
   store.arr
     .$find.id.$eq(2)
     .$set(payload);
-  expect(libState.currentActions[0]).toEqual({
+  expect(libState.currentAction).toEqual({
     type: 'arr.$find.id.$eq(2).$set()',
     payload,
   });
@@ -44,7 +44,7 @@ test('should filter elements and patch them', () => {
   store.arr
     .$filter.id.$in([1, 2])
     .$patch(payload);
-  expect(libState.currentActions[0]).toEqual({
+  expect(libState.currentAction).toEqual({
     type: 'arr.$filter.id.$in([1,2]).$patch()',
     payload,
   });
@@ -58,7 +58,7 @@ test('should find an element and replace one of its properties', () => {
   store.arr
     .$find.id.$eq(2).val
     .$set(payload);
-  expect(libState.currentActions[0]).toEqual({
+  expect(libState.currentAction).toEqual({
     type: 'arr.$find.id.$eq(2).val.$set()',
     payload,
   });
@@ -82,7 +82,7 @@ test('should find an element, find an element in the property array, and replace
     .$find.id.$eq(2)
     .arr.$find.id.$eq(1).num
     .$set(payload);
-  expect(libState.currentActions[0]).toEqual({
+  expect(libState.currentAction).toEqual({
     type: 'arr.$find.id.$eq(2).arr.$find.id.$eq(1).num.$set()',
     payload,
   });
@@ -109,7 +109,7 @@ test('should find an element, filter elements in the property array, and all of 
     .$find.id.$eq(2)
     .arr.$filter.id.$in([1, 2]).num
     .$add(payload);
-  expect(libState.currentActions[0]).toEqual({
+  expect(libState.currentAction).toEqual({
     type: 'arr.$find.id.$eq(2).arr.$filter.id.$in([1,2]).num.$add()',
     payload,
   });
@@ -134,7 +134,7 @@ test('should find an element, filter elements in the property array, and all of 
     .$find.id.$eq(2)
     .arr.num
     .$add(payload);
-  expect(libState.currentActions[0]).toEqual({
+  expect(libState.currentAction).toEqual({
     type: 'arr.$find.id.$eq(2).arr.num.$add()',
     payload,
   });

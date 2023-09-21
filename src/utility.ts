@@ -24,7 +24,7 @@ export const resetLibraryState = () => {
   libState.innerStores.clear();
   libState.state = undefined;
   libState.changeListeners = [];
-  libState.currentActions = [];
+  libState.currentAction = undefined;
   libState.initialState = undefined;
   libState.disableDevtoolsDispatch = false;
   libState.derivations = new Map();

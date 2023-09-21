@@ -9,7 +9,7 @@ export function connectOlikDevtoolsToStore(options: { trace: boolean }) {
     trace: options.trace,
     dispatch: () => {
       const payload = {
-        actions: libState.currentActions,
+        action: libState.currentAction,
         state: libState.state,
         source: 'olik-devtools-extension',
       };
