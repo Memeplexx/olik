@@ -1,6 +1,6 @@
 {
   "name": "olik",
-  "version": "1.0.32",
+  "version": "1.0.33",
   "type": "module",
   "typesVersions": {
     "*": {
@@ -14,7 +14,7 @@
         "dist/derive.d.ts"
       ],
       "async": [
-        "dist/async.d.ts"
+        "dist/write-async.d.ts"
       ],
       "async-query": [
         "dist/async-query.d.ts"
