@@ -1,7 +1,8 @@
+import { defineQuery } from '../src/async-query';
 import { errorMessages, libState } from '../src/constant';
 import { createStore } from '../src/core';
 import { resetLibraryState } from '../src/utility';
-import { defineQuery, importOlikAsyncModule } from '../src/write-async';
+import { importOlikAsyncModule } from '../src/write-async';
 import { test, expect, beforeEach } from 'vitest';
 
 const resolve = <T>(data: T, timeout = 10) => () => new Promise<T>(resolve => setTimeout(() => resolve(data), timeout));
