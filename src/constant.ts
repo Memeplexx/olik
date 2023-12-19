@@ -10,6 +10,8 @@ export const errorMessages = {
   DOLLAR_USED_IN_STATE: `Your state cannot contain any properties which begin with a '$' symbol because this syntax is reserved for library functions`,
 } as const;
 
+export type DerivationKey = { key: string, state: unknown, from?: DerivationKey[] }
+
 export const libState: {
   store: undefined | StoreInternal,
   onInternalDispatch: (action: OlikAction) => void,
@@ -20,7 +22,7 @@ export const libState: {
   currentAction: undefined | OlikAction,
   initialState: undefined | Record<string, unknown>,
   disableDevtoolsDispatch?: boolean,
-  derivations: Map<Array<{ state: unknown, path: string }>, unknown>,
+  derivations: Map<DerivationKey, unknown>,
   stacktraceError: null | Error,
 } = {
   store: undefined,

@@ -117,7 +117,7 @@ test('should be able to augment a derivation', () => {
   })
   const state = { one: 'abc', two: false };
   const store = createStore(state);
-  const result = (derive(
+  const result = (derive('derivation').$from(
     store.one,
     store.two,
   ).$with((one, two) => one + two) as unknown as { myThing: () => unknown })

@@ -1,4 +1,4 @@
-import { testState } from '../src';
+import { DerivationKey, testState } from '../src';
 import { createInnerStore, createStore } from '../src/core';
 import { derive } from '../src/derive';
 import { resetLibraryState } from '../src/utility';
@@ -14,7 +14,7 @@ test('should support derivations', () => {
     counter: 3,
   };
   const store = createStore(state);
-  const mem = derive(
+  const mem = derive('one').$from(
     store.array,
     store.counter,
   ).$withSync((arr, counter) => {
@@ -32,7 +32,7 @@ test('should cache correctly', () => {
   const store = createStore(state);
   let recalculating = 0;
   let eventReceived = 0;
-  const mem = derive(
+  const mem = derive('one').$from(
     store.array,
     store.counter,
   ).$withSync((_, counter) => {
@@ -69,7 +69,7 @@ test('should emit events only when required', () => {
   const store = createStore(state);
   let recalculating = 0;
   let eventReceived = 0;
-  const mem = derive(
+  const mem = derive('one').$from(
     store.array,
     store.counter,
   ).$withSync(() => {
@@ -91,7 +91,7 @@ test('should correctly unsubscribe', () => {
     two: 0,
   };
   const store = createStore(state);
-  const mem = derive(
+  const mem = derive('one').$from(
     store.one,
     store.two,
   ).$withSync((one, two) => {
@@ -115,9 +115,8 @@ test('should derive on specific array element', () => {
   };
   const store = createStore(state);
   let recalculating = 0;
-  const mem = derive(
-    store.array
-      .$find.id.$eq(2)
+  const mem = derive('one').$from(
+    store.array.$find.id.$eq(2)
   ).$withSync(() => {
     recalculating++;
     return '';
@@ -137,14 +136,14 @@ test('should be able to derive from using a derivation as an argument', () => { 
   const state = { num: 0, str: 'x' };
   const store = createStore(state);
   let originalMemoCalcCount = 0;
-  const mem = derive(
+  const mem = derive('one').$from(
     store.num,
     store.str,
   ).$withSync((num, str) => {
     originalMemoCalcCount++;
     return str + num;
   });
-  const mem2 = derive(
+  const mem2 = derive('two').$from(
     store.str,
     mem,
   ).$with((s1, s2) => {
@@ -160,7 +159,7 @@ test('should derive with a find', () => {
   };
   const store = createStore(state);
   let memoCalcCount = 0;
-  const mem = derive(
+  const mem = derive('one').$from(
     store.array.$find.id.$eq(2),
   ).$withSync(thing => {
     memoCalcCount++;
@@ -181,7 +180,7 @@ test('should derive with a filter', () => {
   };
   const store = createStore(state);
   let memoCalcCount = 0;
-  const mem = derive(
+  const mem = derive('one').$from(
     store.array.$filter.id.$lte(2),
   ).$withSync(thing => {
     memoCalcCount++;
@@ -206,7 +205,7 @@ test('should invalidate a derivation', () => {
     str: '',
   });
   let memoCalcCount = 0;
-  const mem = derive(
+  const mem = derive('one').$from(
     store.num,
   ).$withSync(thing => {
     memoCalcCount++;
@@ -234,7 +233,7 @@ test('should share derivations via cache', () => {
   }
 
   let derivationChangeCount1 = 0;
-  derive(
+  derive('one').$from(
     store.num,
     store.str,
   ).$withSync(
@@ -242,7 +241,7 @@ test('should share derivations via cache', () => {
   ).$onChange(() => derivationChangeCount1++);
 
   let derivationChangeCount2 = 0;
-  derive(
+  derive('one').$from(
     store.num,
     store.str,
   ).$withSync(
@@ -264,7 +263,7 @@ test('should cache results when derive() is called repeatedly', () => {
   let memoCalcCount = 0;
   let derivationChangeCount1 = 0;
   const d1 = () => {
-    derive(
+    derive('one').$from(
       store.num,
       store.str,
     ).$withSync((num: number, str: string) => {
@@ -285,21 +284,44 @@ test('should create cache keys correctly', () => {
     obj: { num: 1 }
   })
   const childStore = createInnerStore({ inner: { val: 0 } }).usingAccessor(s => s.inner);
-  const parentDerivation = derive(
+  const parentDerivation = derive('one').$from(
     store.str,
     store.obj.num,
   ).$withSync((str, num) => {
     return str + num;
   })
-  const childDerivation = derive(
+  const childDerivation = derive('two').$from(
     parentDerivation,
     childStore.val,
   ).$withSync((derivation, val) => {
     return derivation + val
   })
   expect(childDerivation.$state).toEqual('a10');
-  expect((childDerivation as unknown as { $cacheKey: string }).$cacheKey)
-    .toEqual([ { state: 'a1', path: 'str|obj.num' }, { state: 0, path: 'inner.val' } ])
+  expect((childDerivation as unknown as { $cacheKey: DerivationKey }).$cacheKey)
+    .toEqual({
+      key: 'two',
+      state: 'a10',
+      from: [
+        {
+          key: 'one',
+          state: 'a1',
+          from: [
+            {
+              key: 'str',
+              state: 'a',
+            },
+            {
+              key: 'obj.num',
+              state: 1,
+            }
+          ]
+        },
+        {
+          key: 'inner.val',
+          state: 0,
+        }
+      ]
+    })
 })
 
 test('should create cache keys correctly with a find()', () => {
@@ -308,13 +330,13 @@ test('should create cache keys correctly with a find()', () => {
     obj: { things: [{ id: 1, name: 'one' }] }
   })
   const childStore = createInnerStore({ inner: { val: 0 } }).usingAccessor(s => s.inner);
-  const parentDerivation = derive(
+  const parentDerivation = derive('one').$from(
     store.str,
     store.obj.things.$find.id.$eq(1).name,
   ).$withSync((str, num) => {
     return str + num;
   })
-  const childDerivation = derive(
+  const childDerivation = derive('two').$from(
     parentDerivation,
     childStore.val,
   ).$withSync((derivation, val) => {
@@ -322,22 +344,45 @@ test('should create cache keys correctly with a find()', () => {
   })
   expect(childDerivation.$state).toEqual('aone0');
   expect((childDerivation as unknown as { $cacheKey: string }).$cacheKey)
-    .toEqual([ { state: 'aone', path: 'str|obj.things.$find.id.$eq(1).name' }, { state: 0, path: 'inner.val' } ])
+    .toEqual({
+      key: 'two',
+      state: 'aone0',
+      from: [
+        {
+          key: 'one',
+          state: 'aone',
+          from: [
+            {
+              key: 'str',
+              state: 'a',
+            },
+            {
+              key: 'obj.things.$find.id.$eq(1).name',
+              state: 'one',
+            }
+          ]
+        },
+        {
+          key: 'inner.val',
+          state: 0,
+        }
+      ]
+    })
 })
 
 test('should create cache keys correctly with a filter()', () => {
   const store = createStore({
     str: 'a',
-    obj: { things: [{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 } ] }
+    obj: { things: [{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }] }
   })
   const childStore = createInnerStore({ inner: { val: 0 } }).usingAccessor(s => s.inner);
-  const parentDerivation = derive(
+  const parentDerivation = derive('one').$from(
     store.str,
     store.obj.things.$filter.id.$lt(3).id,
   ).$withSync((str, things) => {
     return str + things.join('-');
   })
-  const childDerivation = derive(
+  const childDerivation = derive('two').$from(
     parentDerivation,
     childStore.val,
   ).$withSync((derivation, val) => {
@@ -345,7 +390,30 @@ test('should create cache keys correctly with a filter()', () => {
   })
   expect(childDerivation.$state).toEqual('a1-20');
   expect((childDerivation as unknown as { $cacheKey: string }).$cacheKey)
-    .toEqual([ { state: 'a1-2', path: 'str|obj.things.$filter.id.$lt(3).id' }, { state: 0, path: 'inner.val' } ])
+    .toEqual({
+      key: 'two',
+      state: 'a1-20',
+      from: [
+        {
+          key: 'one',
+          state: 'a1-2',
+          from: [
+            {
+              key: 'str',
+              state: 'a',
+            },
+            {
+              key: 'obj.things.$filter.id.$lt(3).id',
+              state: [1, 2],
+            }
+          ]
+        },
+        {
+          key: 'inner.val',
+          state: 0,
+        }
+      ]
+    })
 })
 
 test('should work with async', async () => {
@@ -355,7 +423,7 @@ test('should work with async', async () => {
   });
   let calcCount = 0;
   let changeCount = 0;
-  const derivation = derive(
+  const derivation = derive('one').$from(
     store.num,
     store.str,
   ).$with((num, str) => {
@@ -382,3 +450,29 @@ test('should work with async', async () => {
   expect(derivation.$state).toEqual('p3');
 })
 
+test('', () => {
+  const store = createStore({
+    str: 'x',
+    num: 0,
+    bool: false,
+  });
+  const one = derive('one').$from(
+    store.num,
+    store.str,
+  ).$withSync((num, str) => {
+    return str + num;
+  });
+  const two = derive('one').$from(
+    one,
+    store.bool
+  ).$withSync((one, bool) => {
+    return one + bool + 'y';
+  });
+  const three = derive('one').$from(
+    two
+  ).$withSync((two) => {
+    return two + '.';
+  });
+
+  console.log(three.$state);
+})
