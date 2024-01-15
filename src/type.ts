@@ -78,7 +78,7 @@ export type UpdatableArray<S extends Array<unknown>, F extends FindOrFilter, Q e
     & Find<S, NewDepth>
     & Filter<S, NewDepth>
     & Readable<F extends 'isFilter' ? S : S[0]>
-    & (S[0] extends Array<unknown> ? unknown : S[0] extends object ? MergeMatching<S[0]> : unknown)
+    & (S[0] extends Array<unknown> ? unknown : S[0] extends object ? MergeMatching<S[0]> : MergeMatchingPrimitive<S[0]>)
     & (
       S[0] extends object
       ? (
@@ -111,6 +111,13 @@ export interface MergeMatching<S> {
    * Replace element(s) if they already exist or insert them if they don't
    */
   $mergeMatching: { [K in keyof S]: S[K] extends object ? RepsertableObject<S, S> : RepsertablePrimitive<S> },
+}
+
+export interface MergeMatchingPrimitive<S> {
+  /**
+   * Replace element(s) if they already exist or insert them if they don't
+   */
+  $merge: (toMerge: S | S[]) => void,
 }
 
 export interface Or<S extends Array<unknown>, F extends FindOrFilter, NewDepth extends number> {

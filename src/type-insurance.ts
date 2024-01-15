@@ -130,6 +130,13 @@ store0.objArray
   .objArr.$find.num.$eq(3)
   .$patch({ num: 4 });
 
+store0
+  .arrayStr.$merge('hello');
+
+store0
+  .arrayBool.$merge(true);
+
+
 
 export const demo = () => {
   const store = createStore({
