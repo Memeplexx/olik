@@ -119,9 +119,8 @@ export const copyNewState = (
       return setCurrentActionReturningNewState({ stateActions, payload, newState: !currentState });
     }
   } else if (action.name === '$merge') {
-    const payloadArray = Array.isArray(payload) ? payload : [payload];
     const currentStateArray = currentState as unknown[];
-    return setCurrentActionReturningNewState({ stateActions, payload, newState: [...currentStateArray, ...payloadArray.filter(e => !currentStateArray.includes(e))] });
+    return setCurrentActionReturningNewState({ stateActions, payload, newState: [...currentStateArray, ...(Array.isArray(payload) ? payload : [payload]).filter(e => !currentStateArray.includes(e))] });
   }
   throw new Error();
 }
