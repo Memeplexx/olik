@@ -503,56 +503,56 @@ export interface Eq<S, Response> {
   /**
    * Whether the selection is equal to the supplied value
    */
-  $eq: (equalTo: S) => Response
+  $eq: (equalTo: S | Readable<S>) => Response
 }
 
 export interface Ne<S, Response> {
   /**
    * Whether the selection is not equal to the supplied value
    */
-  $ne: (notEqualTo: S) => Response
+  $ne: (notEqualTo: S | Readable<S>) => Response
 }
 
 export interface In<S, Response> {
   /**
    * Whether the selection is within the supplied array
    */
-  $in: (within: S[]) => Response
+  $in: (within: S[] | Readable<S[]>) => Response
 }
 
 export interface Ni<S, Response> {
   /**
    * Whether the selection is not within the supplied array
    */
-  $ni: (notWithin: S[]) => Response
+  $ni: (notWithin: S[] | Readable<S[]>) => Response
 }
 
 export interface Gt<S, Response> {
   /**
    * Whether the selection is greater than the supplied value
    */
-  $gt: (greaterThan: S) => Response
+  $gt: (greaterThan: S | Readable<S>) => Response
 }
 
 export interface Gte<S, Response> {
   /**
    * Whether the selection is greater than or equal to the supplied value
    */
-  $gte: (greaterThanOrEqualTo: S) => Response
+  $gte: (greaterThanOrEqualTo: S | Readable<S>) => Response
 }
 
 export interface Lt<S, Response> {
   /**
    * Whether the selection is less than the supplied value
    */
-  $lt: (lessThan: S) => Response
+  $lt: (lessThan: S | Readable<S>) => Response
 }
 
 export interface Lte<S, Response> {
   /**
    * Whether the selection is less than or equal to the supplied value
    */
-  $lte: (lessThanOrEqualTo: S) => Response
+  $lte: (lessThanOrEqualTo: S | Readable<S>) => Response
 }
 
 export interface Match<Response> {
@@ -566,7 +566,7 @@ export interface Contains<Response> {
   /**
    * Whether the selection contains the supplied regular expression
    */
-  $contains: (string: string) => Response
+  $contains: (string: string | Store<string>) => Response
 }
 
 export type Searchable<T, S, F extends FindOrFilter, Depth extends number, NewDepth extends number = DecrementRecursion[Depth]> = Rec<

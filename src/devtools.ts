@@ -3,31 +3,28 @@ import { deserialize } from './utility';
 
 
 export function connectOlikDevtoolsToStore(options: { trace: boolean }) {
-  import('stacktrace-js').then(({ fromError }) => {
-    libState.olikDevtools = {
-      init: () => { },
-      trace: options.trace,
-      dispatch: () => {
-        const payload = {
-          action: libState.currentAction,
-          state: libState.state,
-          source: 'olik-devtools-extension',
-        };
-        if (options.trace) {
-          fromError(libState.stacktraceError!)
-            .then(r => window.postMessage({
-              ...payload,
-              trace: r.map(rr => ({ functionName: rr.functionName, fileName: rr.fileName, lineNumber: rr.lineNumber, columnNumber: rr.columnNumber })),
-            }, location.origin))
-            .catch(console.error);
-        } else {
-          window.postMessage({
-            ...payload
-          }, location.origin);
-        }
-      },
-    };
-  });
+  libState.olikDevtools = {
+    init: () => { },
+    trace: options.trace,
+    dispatch: () => {
+      const payload = {
+        action: libState.currentAction,
+        state: libState.state,
+        source: 'olik-devtools-extension',
+      };
+      if (typeof(window) === 'undefined') { return; }
+      if (options.trace) {
+        window.postMessage({
+          ...payload,
+          trace: libState.stacktraceError!.stack,
+        }, location.origin)
+      } else {
+        window.postMessage({
+          ...payload
+        }, location.origin);
+      }
+    },
+  };
 
   if (typeof(document) === 'undefined' || document.getElementById('olik-state')) { return; }
 

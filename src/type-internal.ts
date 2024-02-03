@@ -15,6 +15,9 @@ export type StoreInternal
   }
   & {
     $state: Record<string, unknown> & { cache?: Record<string, string> };
+  }
+  & {
+    $stateActions: StateAction[],
   };
 
 export interface QuerySpec {

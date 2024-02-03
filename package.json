@@ -1,6 +1,6 @@
 {
   "name": "olik",
-  "version": "1.0.41",
+  "version": "1.0.42",
   "type": "module",
   "typesVersions": {
     "*": {
@@ -79,9 +79,6 @@
     "Boilerplate free",
     "Type Safe"
   ],
-  "dependencies": {
-    "stacktrace-js": "^2.0.2"
-  },
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
