@@ -730,7 +730,7 @@ export type LibState =  {
   store: undefined | StoreInternal,
   onInternalDispatch: (action: OlikAction) => void,
   asyncUpdate: undefined | ((args: EnableAsyncActionsArgs) => Promise<unknown>),
-  olikDevtools: undefined | { dispatch: () => unknown, init: () => void, trace: boolean },
+  olikDevtools: undefined | { dispatch: () => unknown, trace: boolean },
   state: undefined | Record<string, unknown>,
   changeListeners: ChangeListener[],
   currentAction: undefined | OlikAction,

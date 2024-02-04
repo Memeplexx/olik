@@ -4,7 +4,6 @@ import { deserialize } from './utility';
 
 export function connectOlikDevtoolsToStore(options: { trace: boolean }) {
   libState.olikDevtools = {
-    init: () => { },
     trace: options.trace,
     dispatch: () => {
       const payload = {
