@@ -16,7 +16,7 @@ export const libState: {
   store: undefined | StoreInternal,
   onInternalDispatch: (action: OlikAction) => void,
   asyncUpdate: undefined | ((args: EnableAsyncActionsArgs) => Promise<unknown>),
-  olikDevtools: undefined | { dispatch: (args: { insideTransaction?: boolean }) => unknown, init: () => void, trace: boolean },
+  olikDevtools: undefined | { dispatch: () => unknown, init: () => void, trace: boolean },
   state: undefined | Record<string, unknown>,
   changeListeners: ChangeListener[],
   currentAction: undefined | OlikAction,
@@ -67,6 +67,7 @@ export const comparisons = {
   $lte: <T>(val: T, arg: T) => val <= arg,
   $match: (val: string, arg: RegExp) => arg.test(val),
   $contains: (val: string, arg: string) => val.includes(arg),
+  $containsIgnoreCase: (val: string, arg: string) => val.toLowerCase().includes(arg.toLowerCase()),
 } as { [comparator: string]: (val: unknown, arg: unknown) => boolean };
 
 export const booleanNumberString = ['boolean', 'number', 'string'];

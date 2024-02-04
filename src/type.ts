@@ -567,6 +567,10 @@ export interface Contains<Response> {
    * Whether the selection contains the supplied regular expression
    */
   $contains: (string: string | Store<string>) => Response
+  /**
+   * Whether the selection contains the supplied regular expression ignoring case
+   */
+  $containsIgnoreCase: (string: string | Store<string>) => Response
 }
 
 export type Searchable<T, S, F extends FindOrFilter, Depth extends number, NewDepth extends number = DecrementRecursion[Depth]> = Rec<
@@ -701,7 +705,7 @@ export interface ChangeListener {
 
 export type TraceElement = { functionName: string, fileName: string, lineNumber: number, columnNumber: number }
 
-export type OlikAction = { type: string, payload?: unknown };
+export type OlikAction = { type: string, payload?: unknown, typeOrig?: string };
 
 export type DevtoolsInstance = {
   init: (state: unknown) => unknown,
