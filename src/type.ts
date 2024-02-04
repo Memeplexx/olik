@@ -1,4 +1,3 @@
-import { DerivationKey } from "./constant";
 import { StoreInternal } from "./type-internal";
 
 export type FindOrFilter = 'isFind' | 'isFilter';
@@ -740,3 +739,5 @@ export type LibState =  {
   derivations: Map<DerivationKey, unknown>,
   stacktraceError: null | Error,
 }
+
+export type DerivationKey = { key: string, state: unknown, from?: DerivationKey[] }

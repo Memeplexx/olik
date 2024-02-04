@@ -10,7 +10,7 @@ export const errorMessages = {
   DOLLAR_USED_IN_STATE: `Your state cannot contain any properties which begin with a '$' symbol because this syntax is reserved for library functions`,
 } as const;
 
-export type DerivationKey = { key: string, state: unknown, from?: DerivationKey[] }
+
 
 export const libState: LibState = {
   store: undefined,
