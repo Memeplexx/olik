@@ -1,5 +1,5 @@
-import { Augmentations, ChangeListener, EnableAsyncActionsArgs, OlikAction } from './type';
-import { StoreInternal, WindowAugmentedWithOlikDevtools } from './type-internal';
+import { Augmentations, LibState } from './type';
+import { TestState } from './type-internal';
 
 
 
@@ -12,19 +12,7 @@ export const errorMessages = {
 
 export type DerivationKey = { key: string, state: unknown, from?: DerivationKey[] }
 
-export const libState: {
-  store: undefined | StoreInternal,
-  onInternalDispatch: (action: OlikAction) => void,
-  asyncUpdate: undefined | ((args: EnableAsyncActionsArgs) => Promise<unknown>),
-  olikDevtools: undefined | { dispatch: () => unknown, init: () => void, trace: boolean },
-  state: undefined | Record<string, unknown>,
-  changeListeners: ChangeListener[],
-  currentAction: undefined | OlikAction,
-  initialState: undefined | Record<string, unknown>,
-  disableDevtoolsDispatch?: boolean,
-  derivations: Map<DerivationKey, unknown>,
-  stacktraceError: null | Error,
-} = {
+export const libState: LibState = {
   store: undefined,
   onInternalDispatch: () => null,
   asyncUpdate: undefined,
@@ -37,12 +25,7 @@ export const libState: {
   stacktraceError: null,
 }
 
-export const testState: {
-  currentActionsForOlikDevtools: OlikAction[],
-  fakeWindowObjectForOlikDevtools: null | WindowAugmentedWithOlikDevtools,
-  logLevel: 'debug' | 'none',
-  isTest: boolean,
-} = {
+export const testState: TestState = {
   currentActionsForOlikDevtools: [],
   fakeWindowObjectForOlikDevtools: null,
   logLevel: 'none',

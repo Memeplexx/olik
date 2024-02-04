@@ -1,3 +1,6 @@
+import { DerivationKey } from "./constant";
+import { StoreInternal } from "./type-internal";
+
 export type FindOrFilter = 'isFind' | 'isFilter';
 
 export type QueryStatus = 'notQueried' | 'queried' | 'notArray';
@@ -722,4 +725,18 @@ export type OlikDevtoolsExtension = {
 
 export type OlikDevtoolsOptions = {
   trace?: boolean
+}
+
+export type LibState =  {
+  store: undefined | StoreInternal,
+  onInternalDispatch: (action: OlikAction) => void,
+  asyncUpdate: undefined | ((args: EnableAsyncActionsArgs) => Promise<unknown>),
+  olikDevtools: undefined | { dispatch: () => unknown, init: () => void, trace: boolean },
+  state: undefined | Record<string, unknown>,
+  changeListeners: ChangeListener[],
+  currentAction: undefined | OlikAction,
+  initialState: undefined | Record<string, unknown>,
+  disableDevtoolsDispatch?: boolean,
+  derivations: Map<DerivationKey, unknown>,
+  stacktraceError: null | Error,
 }

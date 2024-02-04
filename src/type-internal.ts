@@ -1,4 +1,4 @@
-import { Actual, DeleteNode, OlikDevtoolsExtension, OnChange, SetNewNode, StateAction } from './type';
+import { Actual, DeleteNode, OlikAction, OlikDevtoolsExtension, OnChange, SetNewNode, StateAction } from './type';
 
 
 export type WindowAugmentedWithOlikDevtools = {
@@ -35,4 +35,11 @@ export type CopyNewStateArgs = {
   stateToUpdate: Actual,
   stateActions: ReadonlyArray<StateAction>,
   cursor: { index: number }
+}
+
+export type TestState = {
+  currentActionsForOlikDevtools: OlikAction[],
+  fakeWindowObjectForOlikDevtools: null | WindowAugmentedWithOlikDevtools,
+  logLevel: 'debug' | 'none',
+  isTest: boolean,
 }
