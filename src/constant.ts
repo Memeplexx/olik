@@ -51,6 +51,8 @@ export const comparisons = {
   $match: (val: string, arg: RegExp) => arg.test(val),
   $contains: (val: string, arg: string) => val.includes(arg),
   $containsIgnoreCase: (val: string, arg: string) => val.toLowerCase().includes(arg.toLowerCase()),
+  $isContainedIn: (val: string, arg: string) => arg.includes(val),
+  $isContainedInIgnoreCase: (val: string, arg: string) => arg.toLowerCase().includes(val.toLowerCase()),
 } as { [comparator: string]: (val: unknown, arg: unknown) => boolean };
 
 export const booleanNumberString = ['boolean', 'number', 'string'];

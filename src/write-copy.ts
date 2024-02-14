@@ -1,8 +1,9 @@
 import { anyLibProp, errorMessages, findFilter, updateFunctions } from './constant';
 import { constructQuery } from './query';
-import { Actual, StateAction } from './type';
+import { Actual, Readable, StateAction } from './type';
 import { either, is } from './type-check';
-import { CopyNewStateArgs } from './type-internal';
+import { CopyNewStateArgs, StoreInternal } from './type-internal';
+import { fixCurrentAction, getStateOrStoreState } from './utility';
 import { setCurrentActionReturningNewState } from './write-action';
 
 export const removeInvalidateCache = ['$delete', '$invalidateCache'];
@@ -84,12 +85,14 @@ export const copyNewState = (
 
     }
   } else if (action.name === '$set') {
-    return setCurrentActionReturningNewState({ stateActions, payload, newState: payload });
+    const { found, payloadOriginal, payloadSanitized } = getPayloadOrigAndSanitized(payload);
+    return setCurrentActionReturningNewState({ stateActions, newState: payloadSanitized, payload: payloadSanitized, payloadOrig: found ? payloadOriginal : undefined });
   } else if (action.name === '$patch') {
     if (Array.isArray(currentState)) {
       return setCurrentActionReturningNewState({ stateActions, payload, newState: currentState.map(e => ({ ...e, ...payload as Record<string, unknown> })) });
     } else {
-      return setCurrentActionReturningNewState({ stateActions, payload, newState: { ...currentState as Record<string, unknown>, ...payload as Record<string, unknown> } });
+      const { found, payloadOriginal, payloadSanitized } = getPayloadOrigAndSanitized(payload as Record<string, unknown>);
+      return setCurrentActionReturningNewState({ stateActions, payload: payloadSanitized, newState: { ...currentState as Record<string, unknown>, ...payloadSanitized }, payloadOrig: found ? payloadOriginal : undefined });
     }
   } else if (action.name === '$add') {
     if (Array.isArray(currentState)) {
@@ -104,7 +107,8 @@ export const copyNewState = (
       return setCurrentActionReturningNewState({ stateActions, payload, newState: (currentState as number) - (payload as number) });
     }
   } else if (action.name === '$setNew') {
-    return setCurrentActionReturningNewState({ stateActions, payload, newState: currentState === undefined ? payload : { ...currentState as Record<string, unknown>, ...payload as Record<string, unknown> } });
+    const { found, payloadOriginal, payloadSanitized } = getPayloadOrigAndSanitized(payload as Record<string, unknown>);
+    return setCurrentActionReturningNewState({ stateActions, payload: payloadSanitized, newState: currentState === undefined ? payload : { ...currentState as Record<string, unknown>, ...payloadSanitized }, payloadOrig: found ? payloadOriginal : undefined });
   } else if (action.name === '$patchDeep') {
     return setCurrentActionReturningNewState({ stateActions, payload, newState: deepMerge(currentState as Record<string, unknown>, payload as Record<string, unknown>) });
   } else if (action.name === '$clear') {
@@ -145,4 +149,27 @@ export const deepMerge = (old: Record<string, unknown>, payload: Record<string, 
     return output;
   }
   return mergeDeep(old, payload);
+}
+
+const getPayloadOrigAndSanitized = <T>(payload: T): { found: boolean, payloadSanitized: T, payloadOriginal: T } => {
+  if (typeof(payload) === 'object' && payload !== null && !Array.isArray(payload) && (payload as unknown as Readable<unknown>)?.$state === undefined) {
+    const payloadRecord = payload as Record<string, Readable<unknown>>;
+    return {
+      found: Object.keys(payloadRecord).some(key => payloadRecord[key]?.$state !== undefined),
+      payloadSanitized: Object.keys(payloadRecord).reduce((prev, key) => Object.assign(prev, { [key]: getStateOrStoreState(payloadRecord[key]) }), {} as Record<string, unknown>) as T,
+      payloadOriginal: Object.keys(payloadRecord).reduce((prev, key) => Object.assign(prev, { [key]: stringifyPotentialPayloadStore(payloadRecord[key]) }), {} as Record<string, unknown>) as T,
+    }
+  } else {
+    const payloadStore = payload as Readable<unknown>;
+    return {
+      found: payloadStore?.$state !== undefined,
+      payloadSanitized: getStateOrStoreState(payloadStore) as T,
+      payloadOriginal: stringifyPotentialPayloadStore(payloadStore) as T
+    }
+  }
+}
+
+const stringifyPotentialPayloadStore = (arg: unknown) => {
+  const readable = arg as StoreInternal;
+  return readable?.$state === undefined ? arg : `${readable.$stateActions.map(sa => fixCurrentAction(sa, true)).join('.')} = ${JSON.stringify(readable.$state)}`;
 }

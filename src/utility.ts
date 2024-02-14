@@ -1,6 +1,7 @@
-import { libState, testState } from './constant';
-import { Store } from './type';
+import { comparators, libState, testState, updateFunctions } from './constant';
+import { Readable, Store } from './type';
 import { is } from './type-check';
+import { StoreInternal } from './type-internal';
 
 
 export const deepFreeze = <T>(o: T): T => {
@@ -88,4 +89,29 @@ export const toIsoStringInCurrentTz = (date: Date) => {
   };
   return date.getFullYear() + '-' + pad(date.getMonth() + 1) + '-' + pad(date.getDate()) + 'T' + pad(date.getHours())
     + ':' + pad(date.getMinutes()) + ':' + pad(date.getSeconds()) + dif + pad(tzo / 60) + ':' + pad(tzo % 60);
+}
+
+export const getStateOrStoreState = <T, A extends T | Readable<T>>(arg: A) => {
+  const state = (arg as Readable<T>)?.$state;
+  return (state === undefined ? arg : state) as A extends { $state: infer H } ? H : A;
+}
+
+const regexp = new RegExp([...comparators, ...updateFunctions].map(c => `^\\${c}$`).join('|'), 'g');
+export const fixCurrentAction = (action: { name: string, arg?: unknown }, nested: boolean): string => {
+  return action.name.replace(regexp, match => {
+    if (updateFunctions.includes(match)) {
+      return `${match}()`;
+    }
+    if (action.arg === undefined) {
+      return `${match}()`;
+    }
+    const stateActions = (action.arg as StoreInternal).$stateActions;
+    if (!nested && stateActions !== undefined) {
+      return `${match}(${JSON.stringify((action.arg as StoreInternal).$state)})`;
+    }
+    if (stateActions === undefined) {
+      return `${match}(${JSON.stringify(action.arg)})`;
+    }
+    return `${match}( ${stateActions.map(sa => fixCurrentAction(sa, nested)).join('.')} = ${JSON.stringify((action.arg as StoreInternal).$state)} )`;
+  });
 }

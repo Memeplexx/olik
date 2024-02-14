@@ -227,6 +227,7 @@ const storee = createStore({
 });
 storee.val.$set('sss');
 storee.todos.$set(['ss']);
+storee.things.$set([{ id: 2, name: '' }]);
 storee.todos.$filter.$eq('').$set('ss');
 storee.things.$filter.id.$eq(3).$set([{ id: 2, name: '' }]);
 storee.things.$filter.id.$eq(3).name.$set('');

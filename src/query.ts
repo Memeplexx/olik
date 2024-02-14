@@ -1,13 +1,9 @@
 import { andOr, anyLibProp, comparators, comparisons, reader, updateFunctions } from './constant';
-import { Readable, StateAction } from './type';
+import { StateAction } from './type';
 import { QuerySpec } from './type-internal';
+import { getStateOrStoreState } from './utility';
 
 const action = [...updateFunctions, ...reader];
-
-const getArg = <T, A extends T | Readable<T>>(arg: A) => {
-  const state = (arg as Readable<T>).$state;
-  return (state === undefined ? arg : state) as A extends { $state: infer H } ? H : A;
-}
 
 export const constructQuery = (
   { cursor, stateActions }: { stateActions: ReadonlyArray<StateAction>, cursor: { index: number } }
@@ -21,7 +17,7 @@ export const constructQuery = (
           return prev.concat(curr);
         }, new Array<StateAction>());
       const comparator = stateActions[cursor.index++];
-      return (e: unknown) => comparisons[comparator.name](queryPaths.reduce((prev, curr) => prev = (prev as Record<string, unknown>)[curr.name], e), getArg(comparator.arg));
+      return (e: unknown) => comparisons[comparator.name](queryPaths.reduce((prev, curr) => prev = (prev as Record<string, unknown>)[curr.name], e), getStateOrStoreState(comparator.arg));
     }
     queries.push({
       query: constructQuery(),

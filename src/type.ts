@@ -4,7 +4,7 @@ export type FindOrFilter = 'isFind' | 'isFilter';
 
 export type QueryStatus = 'notQueried' | 'queried' | 'notArray';
 
-export type ImmediateParentIsAFilter = 'yes' | 'no';
+export type ImmediateParentIsAnArray = 'yes' | 'no';
 
 declare const brand: unique symbol;
 export type Brand<T, TBrand extends string> = T & { [brand]: TBrand };
@@ -44,7 +44,7 @@ export type Rec<X, Depth extends number> = {
   recur: X
 }[Depth extends -1 ? 'done' : 'recur']
 
-export type UpdatableObject<S, F extends FindOrFilter, Q extends QueryStatus, I extends ImmediateParentIsAFilter, Depth extends number, NewDepth extends number = DecrementRecursion[Depth]> = Rec<
+export type UpdatableObject<S, F extends FindOrFilter, Q extends QueryStatus, I extends ImmediateParentIsAnArray, Depth extends number, NewDepth extends number = DecrementRecursion[Depth]> = Rec<
   & InvalidateCache
   & DeleteNode<Depth>
   & (Q extends 'notArray' ? SetNewNode : unknown)
@@ -54,14 +54,14 @@ export type UpdatableObject<S, F extends FindOrFilter, Q extends QueryStatus, I 
   & Readable<F extends 'isFilter' ? S[] : S>
   & ({
     [K in keyof S]: S[K] extends Array<unknown>
-    ? UpdatableArray<S[K], 'isFilter', 'notQueried', NewDepth>
+    ? UpdatableArray<S[K], 'isFilter', 'notQueried', 'no', NewDepth>
     : S[K] extends PossiblyBrandedPrimitive
-    ? UpdatablePrimitive<S[K], F, Q, NewDepth>
+    ? UpdatablePrimitive<S[K], F, Q, 'no', NewDepth>
     : UpdatableObject<S[K], F, Q, 'no', NewDepth>
   })
   , Depth>
 
-export type UpdatableArray<S extends Array<unknown>, F extends FindOrFilter, Q extends QueryStatus, Depth extends number, NewDepth extends number = DecrementRecursion[Depth]> = Rec<
+export type UpdatableArray<S extends Array<unknown>, F extends FindOrFilter, Q extends QueryStatus, I extends ImmediateParentIsAnArray, Depth extends number, NewDepth extends number = DecrementRecursion[Depth]> = Rec<
   & Q extends 'queried'
   ? (
     & InvalidateCache
@@ -69,28 +69,28 @@ export type UpdatableArray<S extends Array<unknown>, F extends FindOrFilter, Q e
     & And<S, F, NewDepth>
     & (F extends 'isFind' ? SetArrayElement<S[0]> : unknown)
     & (F extends 'isFind' ? DeleteArrayElement<Depth> : DeleteArray<Depth>)
-    & (S[0] extends Array<unknown> ? unknown : S[0] extends object ? UpdatableObject<S[0], F, Q, 'yes', NewDepth> : UpdatablePrimitive<S[0], F, Q, NewDepth>)
+    & (S[0] extends Array<unknown> ? unknown : S[0] extends object ? UpdatableObject<S[0], F, Q, F extends 'isFind' ? 'no' : 'yes', NewDepth> : UpdatablePrimitive<S[0], F, Q, I, NewDepth>)
   ) : (
     & DeleteNode<Depth>
     & InvalidateCache
     & Clear
     & Push<S[0] | S>
-    & SetArray<S, 'no'>
-    & (S[0] extends boolean ? ToggleArray : unknown)/////
+    & SetArray<S, I>
+    & (S[0] extends boolean ? ToggleArray : unknown)
     & Find<S, NewDepth>
     & Filter<S, NewDepth>
     & Readable<F extends 'isFilter' ? S : S[0]>
-    & (S[0] extends Array<unknown> ? unknown : S[0] extends object ? MergeMatching<S[0]> : MergePrimitive<S[0]>)
+    & (S[0] extends Array<unknown> ? unknown : S[0] extends PossiblyBrandedPrimitive ? MergePrimitive<S[0]> : MergeMatching<S[0]>)
     & (
       S[0] extends object
       ? (
         & PatchArray<S[0]>
         & { [K in keyof S[0]]:
           (S[0][K] extends Array<unknown>
-            ? UpdatableArray<S[0][K], 'isFilter', 'notQueried', NewDepth>
+            ? UpdatableArray<S[0][K], 'isFilter', 'notQueried', 'no', NewDepth>
             : S[0][K] extends PossiblyBrandedPrimitive
-            ? UpdatablePrimitive<S[0][K], F, Q, NewDepth>
-            : UpdatableObject<S[0][K], F, Q, 'yes', NewDepth>)
+            ? UpdatablePrimitive<S[0][K], F, Q, 'no', NewDepth>
+            : UpdatableObject<S[0][K], F, Q, 'no', NewDepth>)
         }
       )
       : AddArray
@@ -99,10 +99,10 @@ export type UpdatableArray<S extends Array<unknown>, F extends FindOrFilter, Q e
 
 export type UpdateOptions<H> = Cache & Eager<H>;
 
-export type UpdatablePrimitive<S, F extends FindOrFilter, Q extends QueryStatus, Depth extends number> =
+export type UpdatablePrimitive<S, F extends FindOrFilter, Q extends QueryStatus, I extends ImmediateParentIsAnArray, Depth extends number> =
   & InvalidateCache
   & DeleteNode<Depth>
-  & (Q extends 'notArray' ? Set<S> : F extends 'isFind' ? SetArrayElement<S> : SetArray<S, 'no'>)
+  & (Q extends 'notArray' ? Set<S> : F extends 'isFind' ? SetArrayElement<S> : SetArray<S, I>)
   & (S extends number ? (F extends 'isFind' ? Add : AddArray) : unknown)
   & (S extends number ? (F extends 'isFind' ? Subtract : SubtractArray) : unknown)
   & (S extends boolean ? (F extends 'isFind' ? Toggle : ToggleArray) : unknown)
@@ -119,7 +119,7 @@ export interface MergePrimitive<S> {
   /**
    * Replace element(s) if they already exist or insert them if they don't
    */
-  $merge: (toMerge: S | S[]) => void,
+  $merge: (toMerge: SetPayload<S | S[]>) => void,
 }
 
 export interface Or<S extends Array<unknown>, F extends FindOrFilter, NewDepth extends number> {
@@ -226,6 +226,8 @@ export interface Push<S> {
   $push(element: S): void;
 }
 
+type PatchPayload<S> = Partial<{ [k in keyof S]: S[k] | Readable<S[k]> }>;
+
 export interface PatchObject<S> {
   /**
    * Update the selected object node, using the partial returned by the supplied async function.
@@ -234,7 +236,7 @@ export interface PatchObject<S> {
   /**
    * Update the selected object node, using the supplied partial.
    */
-  $patch(patch: Partial<S>): void;
+  $patch(patch: PatchPayload<S>): void;
 }
 
 export interface PatchArrayElement<S> {
@@ -317,6 +319,8 @@ export interface SubtractArray {
   $subtract(toSubtract: number): void;
 }
 
+type SetPayload<S> = S | Readable<S> | Partial<{ [k in keyof S]: S[k] | Readable<S[k]> }>;
+
 export interface Set<S> {
   /**
    * Update the selected node, by replacing it with the value returned by the supplied async function.
@@ -325,7 +329,7 @@ export interface Set<S> {
   /**
    * Update the selected node, by replacing it with the supplied value.
    */
-  $set(replacement: S): void;
+  $set(replacement: SetPayload<S>): void;
 }
 
 export interface SetArrayElement<S> {
@@ -336,10 +340,10 @@ export interface SetArrayElement<S> {
   /**
    * Update the selected array element, by replacing it with the supplied value.
    */
-  $set(replacement: S): void;
+  $set(replacement: SetPayload<S>): void;
 }
 
-export interface SetArray<S, I extends ImmediateParentIsAFilter> {
+export interface SetArray<S, I> {
   /**
    * Update the selected array elements, by replacing it with the elements returned by the supplied async function.
    */
@@ -347,7 +351,7 @@ export interface SetArray<S, I extends ImmediateParentIsAFilter> {
   /**
    * Update the selected array elements, by replacing each element with the supplied value.
    */
-  $set(replacement: I extends 'yes' ? S[] : S): void;
+  $set(replacement: SetPayload<I extends 'yes' ? S[] : S>): void;
 }
 
 export interface PatchDeep<S> {
@@ -391,7 +395,7 @@ export interface WithOne<T> {
   /**
    * Update the selected array element, by replacing or inserting with the supplied value.
    */
-  $withOne(element: T): void;
+  $withOne(element: SetPayload<T>): void;
 }
 
 export interface WithMany<T> {
@@ -402,7 +406,7 @@ export interface WithMany<T> {
   /**
    * Repsert with an array of elements.
    */
-  $withMany(array: T[]): void,
+  $withMany(array: SetPayload<T[]>): void,
 }
 
 export interface InvalidateDerivation {
@@ -475,10 +479,10 @@ export interface Eager<H> {
 
 export type UpdatableAny<T, F extends FindOrFilter, Q extends QueryStatus, Depth extends number, NewDepth extends number = DecrementRecursion[Depth]> = Rec<
   T extends Array<unknown>
-  ? UpdatableArray<T, F, Q, NewDepth>
+  ? UpdatableArray<T, F, Q, 'no', NewDepth>
   : T extends object
-  ? UpdatableObject<T, F, Q, 'yes', NewDepth>
-  : UpdatablePrimitive<T, F, Q, NewDepth>
+  ? UpdatableObject<T, F, Q, 'no', NewDepth>
+  : UpdatablePrimitive<T, F, Q, 'no', NewDepth>
   ,
   Depth>
 
@@ -490,6 +494,7 @@ export type Comparators<T, S, F extends FindOrFilter, Depth extends number, NewD
   & (S extends string ?
     & Match<Response>
     & Contains<Response>
+    & IsContainedIn<Response>
     : unknown
   ) & (S extends string | number ?
     & Gt<S, Response>
@@ -566,13 +571,24 @@ export interface Match<Response> {
 
 export interface Contains<Response> {
   /**
-   * Whether the selection contains the supplied regular expression
+   * Whether the selection contains the supplied string
    */
   $contains: (string: string | Store<string>) => Response
   /**
-   * Whether the selection contains the supplied regular expression ignoring case
+   * Whether the selection contains the supplied string ignoring case
    */
   $containsIgnoreCase: (string: string | Store<string>) => Response
+}
+
+export interface IsContainedIn<Response> {
+  /**
+   * Whether the supplied string is contains in the selection
+   */
+  $isContainedIn: (string: string | Store<string>) => Response
+  /**
+   * Whether the supplied string is contains in the selection ignoring case
+   */
+  $isContainedInIgnoreCase: (string: string | Store<string>) => Response
 }
 
 export type Searchable<T, S, F extends FindOrFilter, Depth extends number, NewDepth extends number = DecrementRecursion[Depth]> = Rec<
@@ -691,9 +707,9 @@ export interface EnableNestedStoreArgs {
   instanceId: string | number;
 }
 
-export type Store<S> = S extends never ? unknown : (S extends Array<unknown> ? UpdatableArray<S, 'isFilter', 'notQueried', MaxRecursionDepth>
-  : S extends object ? UpdatableObject<S, 'isFind', 'notArray', 'yes', MaxRecursionDepth>
-  : UpdatablePrimitive<S, 'isFind', 'notArray', MaxRecursionDepth>);
+export type Store<S> = S extends never ? unknown : (S extends Array<unknown> ? UpdatableArray<S, 'isFilter', 'notQueried', 'yes', MaxRecursionDepth>
+  : S extends object ? UpdatableObject<S, 'isFind', 'notArray', 'no', MaxRecursionDepth>
+  : UpdatablePrimitive<S, 'isFind', 'notArray', 'no', MaxRecursionDepth>);
 
 // do NOT remove. Needed by framework-libraries
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -707,7 +723,7 @@ export interface ChangeListener {
 
 export type TraceElement = { functionName: string, fileName: string, lineNumber: number, columnNumber: number }
 
-export type OlikAction = { type: string, payload?: unknown, typeOrig?: string };
+export type OlikAction = { type: string, typeOrig?: string, payload?: unknown, payloadOrig?: unknown };
 
 export type DevtoolsInstance = {
   init: (state: unknown) => unknown,

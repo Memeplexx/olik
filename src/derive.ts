@@ -1,5 +1,5 @@
-import { DerivationKey, augmentations, libState } from './constant';
-import { Derivable, Derivation, DerivationCalculationInputs, Readable, StateAction, Unsubscribe } from './type';
+import { augmentations, libState } from './constant';
+import { Derivable, Derivation, DerivationCalculationInputs, DerivationKey, Readable, StateAction, Unsubscribe } from './type';
 import { enqueueMicroTask } from './utility';
 
 
