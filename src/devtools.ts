@@ -61,7 +61,12 @@ export function connectOlikDevtoolsToStore(options: { trace: boolean }) {
 
   new MutationObserver(() => {
     libState.disableDevtoolsDispatch = true;
-    libState.store!.$set(JSON.parse(olikStateDiv.innerHTML));
+    libState.store!.$set(JSON.parse(olikStateDiv.innerHTML, (key, value) => {
+      if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{1,3})?Z?$/.test(value)) {
+        return new Date(value);
+      }
+      return value;
+    }));
     libState.disableDevtoolsDispatch = false;
   }).observe(olikStateDiv, { attributes: true, childList: true, subtree: true });
 }
