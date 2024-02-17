@@ -17,6 +17,10 @@ export type PossiblyBrandedPrimitive = Primitive & { [brand]?: string };
 
 export type Actual = Primitive | Record<string, unknown> | Array<unknown>;
 
+export type SerializableState = {
+  [P: string]: SerializableState | Array<SerializableState | Primitive | null> | Primitive | null;
+}
+
 export type PatchDeepPayloadObject<T> = Partial<{
   [P in keyof T]: PatchDeepPayload<T[P]>;
 }> /*& { [x: string]: unknown }*/
@@ -742,7 +746,7 @@ export type OlikDevtoolsOptions = {
   trace?: boolean
 }
 
-export type LibState =  {
+export type LibState = {
   store: undefined | StoreInternal,
   onInternalDispatch: (action: OlikAction) => void,
   asyncUpdate: undefined | ((args: EnableAsyncActionsArgs) => Promise<unknown>),

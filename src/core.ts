@@ -1,6 +1,6 @@
 import { andOr, augmentations, comparators, errorMessages, findFilter, libState, updateFunctions } from './constant';
 import { readState } from './read';
-import { Readable, StateAction, Store, StoreAugment } from './type';
+import { Readable, StateAction, Store, StoreAugment, SerializableState } from './type';
 import { is } from './type-check';
 import { StoreInternal } from './type-internal';
 import { deepFreeze } from './utility';
@@ -8,7 +8,7 @@ import { processPotentiallyAsyncUpdate } from './write';
 import { setNewStateAndNotifyListeners } from './write-complete';
 
 
-export const createInnerStore = <S extends Record<string, unknown>>(state: S) => ({
+export const createInnerStore = <S extends SerializableState>(state: S) => ({
   usingAccessor: <C extends Readable<unknown>>(accessor: (store: Store<S>) => C): C & (C extends never ? unknown : StoreAugment<C>) => {
     if (!libState.store) {
       libState.store = createStore(state) as unknown as StoreInternal;
@@ -22,7 +22,7 @@ export const createInnerStore = <S extends Record<string, unknown>>(state: S) =>
   }
 })
 
-export function createStore<S extends Record<string, unknown>>(
+export function createStore<S extends SerializableState>(
   initialState: S
 ): Store<S> & (S extends never ? unknown : StoreAugment<S>) {
   validateState(initialState);
