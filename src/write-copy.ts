@@ -133,7 +133,8 @@ export const copyNewState = (
   } else if (action.name === '$merge') {
     const { found, payloadOriginal, payloadSanitized } = getPayloadOrigAndSanitized(payload);
     const currentStateArray = currentState as unknown[];
-    return setCurrentActionReturningNewState({ stateActions, payload: payloadSanitized, newState: [...currentStateArray, ...(Array.isArray(payload) ? payload : [payload]).filter(e => !currentStateArray.includes(e))], payloadOrig: found ? payloadOriginal : undefined });
+    const newState = [...currentStateArray, ...(Array.isArray(payloadSanitized) ? payloadSanitized : [payloadSanitized]).filter(e => !currentStateArray.includes(e))];
+    return setCurrentActionReturningNewState({ stateActions, payload: payloadSanitized, newState, payloadOrig: found ? payloadOriginal : undefined });
   }
   throw new Error();
 }
