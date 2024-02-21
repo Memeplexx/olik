@@ -1,7 +1,7 @@
-import { createStore } from '../src/core';
-import { test, expect, beforeEach } from 'vitest';
-import { resetLibraryState } from '../src/utility';
+import { beforeEach, expect, test } from 'vitest';
 import { libState } from '../src';
+import { createStore } from '../src/core';
+import { resetLibraryState } from '../src/utility';
 
 
 const state = { arr: [{ id: 1, val: 1 }, { id: 2, val: 2 }, { id: 3, val: 3 }] };

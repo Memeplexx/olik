@@ -1,7 +1,7 @@
+import { beforeEach, expect, test } from 'vitest';
 import { libState } from '../src';
 import { createStore } from '../src/core';
 import { resetLibraryState } from '../src/utility';
-import { test, expect, beforeEach } from 'vitest';
 
 
 beforeEach(() => {
@@ -64,4 +64,23 @@ test('', () => {
 test('', () => {
   const store = createStore({ hello: 'world' as string | null });
   store.hello.$set(null);
+})
+
+test('', () => {
+  const store = createStore({ arr: [{ id: 1, text: 'one' }, { id: 2, text: 'two' }, { id: 3, text: 'three' }] });
+  store.arr.$set(store.arr.$filter.id.$eq(1));
+})
+
+test('', () => {
+  const store = createStore({ arr: [1, 2, 3] });
+  store.arr.$merge(store.arr.$filter.$eq(2));
+})
+
+test('', () => {
+  const store = createStore({
+    arr: [{ id: 1, text: 'one' }, { id: 2, text: 'two' }, { id: 3, text: 'three' }],
+    arr2: [{ id: 1, text: 'one2' }]
+  });
+  store.arr.$mergeMatching.id.$withMany(store.arr2.$filter.id.$eq(1));
+  expect(store.arr.$state).toEqual([{ id: 1, text: 'one2' }, { id: 2, text: 'two' }, { id: 3, text: 'three' }]);
 })

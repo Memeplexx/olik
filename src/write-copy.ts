@@ -29,13 +29,21 @@ export const copyNewState = (
         return prev.concat(curr);
       }, new Array<StateAction>());
     const repsert = stateActions[cursor.index++];
-    const repsertArgs = [...(Array.isArray(repsert.arg) ? repsert.arg : [repsert.arg!])];
-    const result = currentState.map(e => {
-      const elementValue = queryPaths.reduce((prev, curr) => (prev as Record<string, Actual>)[curr.name], e);
-      const foundIndex = repsertArgs.findIndex(ua => queryPaths.reduce((prev, curr) => prev = (prev as Record<string, Actual>)[curr.name], ua) === elementValue);
-      return foundIndex !== -1 ? repsertArgs.splice(foundIndex, 1)[0]! : e;
+    const repsertArgWhichIsPotentiallyAStore = repsert.arg as StoreInternal;
+    const repsertArgState = repsertArgWhichIsPotentiallyAStore.$stateActions ? repsertArgWhichIsPotentiallyAStore.$state : repsert.arg;
+    const repsertArgs = [...(Array.isArray(repsertArgState) ? repsertArgState : [repsertArgState])];
+    const query = (e: Actual) => queryPaths.reduce((prev, curr) => (prev as Record<string, Actual>)[curr.name], e);
+    const currentArrayModified = currentState.map(existingElement => {
+      const elementValue = query(existingElement);
+      return repsertArgs.find(ua => query(ua) === elementValue) ?? existingElement;
     });
-    return setCurrentActionReturningNewState({ stateActions, payload: repsert.arg, newState: [...result, ...repsertArgs] });
+    const newArrayElements = repsertArgs.filter(repsertArg => {
+      const elementValue = query(repsertArg);
+      return !currentArrayModified.some(ua => query(ua) === elementValue);
+    });
+    const newState = [...currentArrayModified, ...newArrayElements];
+    const { found, payloadOriginal, payloadSanitized } = getPayloadOrigAndSanitized(repsert.arg);
+    return setCurrentActionReturningNewState({ stateActions, payload: payloadSanitized, newState, payloadOrig: found ? payloadOriginal : undefined });
   }
   const action = stateActions[cursor.index++];
   const payload = action.arg;
@@ -123,8 +131,9 @@ export const copyNewState = (
       return setCurrentActionReturningNewState({ stateActions, payload, newState: !currentState });
     }
   } else if (action.name === '$merge') {
+    const { found, payloadOriginal, payloadSanitized } = getPayloadOrigAndSanitized(payload);
     const currentStateArray = currentState as unknown[];
-    return setCurrentActionReturningNewState({ stateActions, payload, newState: [...currentStateArray, ...(Array.isArray(payload) ? payload : [payload]).filter(e => !currentStateArray.includes(e))] });
+    return setCurrentActionReturningNewState({ stateActions, payload: payloadSanitized, newState: [...currentStateArray, ...(Array.isArray(payload) ? payload : [payload]).filter(e => !currentStateArray.includes(e))], payloadOrig: found ? payloadOriginal : undefined });
   }
   throw new Error();
 }
@@ -152,13 +161,15 @@ export const deepMerge = (old: Record<string, unknown>, payload: Record<string, 
 }
 
 const getPayloadOrigAndSanitized = <T>(payload: T): { found: boolean, payloadSanitized: T, payloadOriginal: T } => {
-  if (typeof(payload) === 'object' && payload !== null && !Array.isArray(payload) && (payload as unknown as Readable<unknown>)?.$state === undefined) {
+  // is this a standard non-array non-store object?
+  if (typeof (payload) === 'object' && payload !== null && !Array.isArray(payload) && (payload as unknown as StoreInternal)?.$stateActions === undefined) {
     const payloadRecord = payload as Record<string, Readable<unknown>>;
     return {
       found: Object.keys(payloadRecord).some(key => payloadRecord[key]?.$state !== undefined),
       payloadSanitized: Object.keys(payloadRecord).reduce((prev, key) => Object.assign(prev, { [key]: getStateOrStoreState(payloadRecord[key]) }), {} as Record<string, unknown>) as T,
       payloadOriginal: Object.keys(payloadRecord).reduce((prev, key) => Object.assign(prev, { [key]: stringifyPotentialPayloadStore(payloadRecord[key]) }), {} as Record<string, unknown>) as T,
     }
+  // else is this a potential store?
   } else {
     const payloadStore = payload as Readable<unknown>;
     return {

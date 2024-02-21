@@ -11,11 +11,11 @@ export const derive = (key: string) => ({
         const params: DerivationKey = {
           key,
           state: null,
-          from: (args as Array<Readable<unknown> & { $actions?: StateAction[], $cacheKey?: DerivationKey }>)
+          from: (args as Array<Readable<unknown> & { $stateActions?: StateAction[], $cacheKey?: DerivationKey }>)
             .map(arg => {
               const state = arg.$state; // force read so that cacheKey is set
-              if (arg.$actions) {
-                return { state, key: arg.$actions.map(action => `${action.name}${action.arg !== undefined ? `(${action.arg})` : ''}`).join('.') };
+              if (arg.$stateActions) {
+                return { state, key: arg.$stateActions.map(action => `${action.name}${action.arg !== undefined ? `(${action.arg})` : ''}`).join('.') };
               } else {
                 return { ...arg.$cacheKey!, state };
               }
