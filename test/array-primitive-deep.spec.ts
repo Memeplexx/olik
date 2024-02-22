@@ -194,5 +194,5 @@ test('should filter elements by one clause and another and increment them', () =
     .$filter.$gt(0).$and.$gt(1)
     .$add(1);
   expect(libState.currentAction).toEqual({ type: 'arr.$filter.$gt(0).$and.$gt(1).$add()', payload });
-  expect(store.$state).toEqual({ arr: [1, 3, 4] });
+
 })

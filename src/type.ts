@@ -491,24 +491,70 @@ export type UpdatableAny<T, F extends FindOrFilter, Q extends QueryStatus, Depth
   Depth>
 
 export type Comparators<T, S, F extends FindOrFilter, Depth extends number, NewDepth extends number = DecrementRecursion[Depth], Response = UpdatableAny<T, F, 'queried', NewDepth>> = Rec<
-  & Eq<S, Response>
-  & Ne<S, Response>
-  & In<S, Response>
-  & Ni<S, Response>
-  & (S extends string ?
-    & Match<Response>
-    & Contains<Response>
-    & IsContainedIn<Response>
+  (
+    & Eq<S, Response>
+    & Ne<S, Response>
+    & In<S, Response>
+    & Ni<S, Response>
+  ) & (
+    S extends boolean ?
+    (
+      & IsTrue<Response>
+      & IsFalse<Response>
+    )
     : unknown
-  ) & (S extends string | number ?
-    & Gt<S, Response>
-    & Gte<S, Response>
-    & Lt<S, Response>
-    & Lte<S, Response>
+  ) & (
+    S extends string ?
+    (
+      & Match<Response>
+      & Contains<Response>
+      & IsContainedIn<Response>
+      & IsTruthy<Response>
+      & IsFalsy<Response>
+    )
+    : unknown
+  ) & (
+    S extends string | number ?
+    (
+      & Gt<S, Response>
+      & Gte<S, Response>
+      & Lt<S, Response>
+      & Lte<S, Response>
+      & IsTruthy<Response>
+      & IsFalsy<Response>
+    )
     : unknown
   )
   ,
   Depth>
+
+export interface IsTrue<Response> {
+  /**
+   * Whether the selection is true
+   */
+  $isTrue: () => Response
+}
+
+export interface IsFalse<Response> {
+  /**
+   * Whether the selection is false
+   */
+  $isFalse: () => Response
+}
+
+export interface IsTruthy<Response> {
+  /**
+   * Whether the selection is truthy
+   */
+  $isTruthy: () => Response
+}
+
+export interface IsFalsy<Response> {
+  /**
+   * Whether the selection is falsey
+   */
+  $isFalsy: () => Response
+}
 
 export interface Eq<S, Response> {
   /**

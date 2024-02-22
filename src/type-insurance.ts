@@ -224,6 +224,7 @@ const storee = createStore({
   val: '',
   bool: false,
   arr: [false],
+  more: [{id: 1, status: false}]
 });
 storee.val.$set('sss');
 storee.todos.$set(['ss']);
@@ -234,7 +235,7 @@ storee.things.$filter.id.$eq(3).name.$set('');
 // storee.arr.
 
 
-
+storee.more.$filter.id.$isFalsy().$delete();
 
 
 

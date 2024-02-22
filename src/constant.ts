@@ -53,6 +53,10 @@ export const comparisons = {
   $containsIgnoreCase: (val: string, arg: string) => val.toLowerCase().includes(arg.toLowerCase()),
   $isContainedIn: (val: string, arg: string) => arg.includes(val),
   $isContainedInIgnoreCase: (val: string, arg: string) => arg.toLowerCase().includes(val.toLowerCase()),
+  $isTrue: (val: boolean) => val === true,
+  $isFalse: (val: boolean) => val === false,
+  $isTruthy: <T>(val: T) => !!val,
+  $isFalsy: <T>(val: T) => !val,
 } as { [comparator: string]: (val: unknown, arg: unknown) => boolean };
 
 export const booleanNumberString = ['boolean', 'number', 'string'];
