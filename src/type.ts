@@ -99,7 +99,7 @@ export type UpdatableArray<S extends Array<unknown>, F extends FindOrFilter, Q e
       )
     ))
   & InvalidateCache
-  & ( Q extends 'queried' ? unknown : (S extends Array<object> ? unknown : Distinct<S>))
+  & (S extends Array<PossiblyBrandedPrimitive> ? DeDuplicateArray<S> : unknown)
   , Depth>
 
 export type UpdateOptions<H> = Cache & Eager<H>;
@@ -113,11 +113,11 @@ export type UpdatablePrimitive<S, F extends FindOrFilter, Q extends QueryStatus,
   & (S extends boolean ? (F extends 'isFind' ? Toggle : ToggleArray) : unknown)
   & Readable<F extends 'isFilter' ? S[] : S>
 
-export interface Distinct<S> {
+export interface DeDuplicateArray<S> {
   /**
-   * Get the distinct elements of the selected array
+   * Remove duplicates from array
    */
-  $distinct: Readable<S>,
+  $deDuplicate: () => S,
 }
 
 export interface MergeMatching<S> {

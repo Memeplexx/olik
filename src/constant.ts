@@ -60,10 +60,10 @@ export const comparisons = {
 } as { [comparator: string]: (val: unknown, arg: unknown) => boolean };
 
 export const booleanNumberString = ['boolean', 'number', 'string'];
-export const updateFunctions = ['$set', '$patch', '$patchDeep', '$delete', '$setNew', '$add', '$subtract', '$clear', '$push', '$withOne', '$withMany', '$toggle', '$merge'];
+export const updateFunctions = ['$set', '$patch', '$patchDeep', '$delete', '$setNew', '$add', '$subtract', '$clear', '$push', '$withOne', '$withMany', '$toggle', '$merge', '$deDuplicate'];
 export const comparators = Object.keys(comparisons);
 export const andOr = ['$and', '$or'];
 export const findFilter = ['$find', '$filter'];
 export const reader = ['$onChange', '$state'];
 export const mergeMatching = ['$mergeMatching'];
-export const anyLibProp = [...updateFunctions, ...findFilter, ...andOr, ...comparators, ...reader, ...mergeMatching, '$distinct'];
+export const anyLibProp = [...updateFunctions, ...findFilter, ...andOr, ...comparators, ...reader, ...mergeMatching];

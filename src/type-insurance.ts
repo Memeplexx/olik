@@ -234,12 +234,6 @@ storee.things.$filter.id.$eq(3).$set([{ id: 2, name: '' }]);
 storee.things.$filter.id.$eq(3).name.$set('');
 // storee.arr.
 
-
-storee.todos.$distinct.$state;
-
-
-
-
 // const storey = createStore({
 //   state: {
 //     showOptionsFor: null,
