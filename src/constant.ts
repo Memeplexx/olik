@@ -66,4 +66,4 @@ export const andOr = ['$and', '$or'];
 export const findFilter = ['$find', '$filter'];
 export const reader = ['$onChange', '$state'];
 export const mergeMatching = ['$mergeMatching'];
-export const anyLibProp = [...updateFunctions, ...findFilter, ...andOr, ...comparators, ...reader, ...mergeMatching];
+export const anyLibProp = [...updateFunctions, ...findFilter, ...andOr, ...comparators, ...reader, ...mergeMatching, '$distinct'];

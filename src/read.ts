@@ -16,10 +16,12 @@ export const readState = (
       if ('$find' === action.name) {
         return readState({ state: state.find(query)!, stateActions, cursor });
       } else if ('$filter' === action.name) {
-        return state.filter(query).map(e => readState({ state: e, stateActions, cursor: { ...cursor } }));
+        return readState({ state: state.filter(query)!, stateActions, cursor: { ...cursor } });
       } else {
         throw new Error();
       }
+    } else if (Array.isArray(state) && '$distinct' === action.name) {
+      return Array.from(new Set(state));
     } else {
       return readState({ state: Array.isArray(state) || is.primitive(state) ? undefined : (either(state).else({}) as Record<string, unknown>)[action.name], stateActions, cursor });
     }

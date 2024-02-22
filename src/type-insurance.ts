@@ -235,7 +235,8 @@ storee.things.$filter.id.$eq(3).name.$set('');
 // storee.arr.
 
 
-storee.more.$filter.id.$isFalsy().$delete();
+storee.todos.$distinct.$state;
+
 
 
 

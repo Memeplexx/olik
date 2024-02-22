@@ -10,14 +10,13 @@ export const constructQuery = (
 ) => {
   const concatenateQueries = (queries: QuerySpec[]): QuerySpec[] => {
     const constructQuery = () => {
-      const queryPaths = stateActions
-        .slice(cursor.index, cursor.index + stateActions.slice(cursor.index).findIndex(sa => comparators.includes(sa.name)))
-        .reduce((prev, curr) => {
-          cursor.index++;
-          return prev.concat(curr);
-        }, new Array<StateAction>());
+      const subStateActions = stateActions.slice(cursor.index, cursor.index + stateActions.slice(cursor.index).findIndex(sa => comparators.includes(sa.name)));
+      cursor.index += subStateActions.length;
       const comparator = stateActions[cursor.index++];
-      return (e: unknown) => comparisons[comparator.name](queryPaths.reduce((prev, curr) => prev = (prev as Record<string, unknown>)[curr.name], e), getStateOrStoreState(comparator.arg));
+      return (e: unknown) => {
+        const subProperty = subStateActions.reduce((prev, curr) => prev = (prev as Record<string, unknown>)[curr.name], e);
+        return comparisons[comparator.name](subProperty, getStateOrStoreState(comparator.arg));
+      }
     }
     queries.push({
       query: constructQuery(),

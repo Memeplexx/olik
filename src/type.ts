@@ -66,40 +66,41 @@ export type UpdatableObject<S, F extends FindOrFilter, Q extends QueryStatus, I 
   , Depth>
 
 export type UpdatableArray<S extends Array<unknown>, F extends FindOrFilter, Q extends QueryStatus, I extends ImmediateParentIsAnArray, Depth extends number, NewDepth extends number = DecrementRecursion[Depth]> = Rec<
-  & Q extends 'queried'
-  ? (
-    & InvalidateCache
-    & Or<S, F, NewDepth>
-    & And<S, F, NewDepth>
-    & (F extends 'isFind' ? SetArrayElement<S[0]> : unknown)
-    & (F extends 'isFind' ? DeleteArrayElement<Depth> : DeleteArray<Depth>)
-    & (S[0] extends Array<unknown> ? unknown : S[0] extends object ? UpdatableObject<S[0], F, Q, F extends 'isFind' ? 'no' : 'yes', NewDepth> : UpdatablePrimitive<S[0], F, Q, I, NewDepth>)
-  ) : (
-    & DeleteNode<Depth>
-    & InvalidateCache
-    & Clear
-    & Push<S[0] | S>
-    & SetArray<S, I>
-    & (S[0] extends boolean ? ToggleArray : unknown)
-    & Find<S, NewDepth>
-    & Filter<S, NewDepth>
-    & Readable<F extends 'isFilter' ? S : S[0]>
-    & (S[0] extends Array<unknown> ? unknown : S[0] extends PossiblyBrandedPrimitive ? MergePrimitive<S[0]> : MergeMatching<S[0]>)
-    & (
-      S[0] extends object
-      ? (
-        & PatchArray<S[0]>
-        & { [K in keyof S[0]]:
-          (S[0][K] extends Array<unknown>
-            ? UpdatableArray<S[0][K], 'isFilter', 'notQueried', 'no', NewDepth>
-            : S[0][K] extends PossiblyBrandedPrimitive
-            ? UpdatablePrimitive<S[0][K], F, Q, 'no', NewDepth>
-            : UpdatableObject<S[0][K], F, Q, 'no', NewDepth>)
-        }
+  (& Q extends 'queried'
+    ? (
+      & Or<S, F, NewDepth>
+      & And<S, F, NewDepth>
+      & (F extends 'isFind' ? SetArrayElement<S[0]> : unknown)
+      & (F extends 'isFind' ? DeleteArrayElement<Depth> : DeleteArray<Depth>)
+      & (S[0] extends Array<unknown> ? unknown : S[0] extends object ? UpdatableObject<S[0], F, Q, F extends 'isFind' ? 'no' : 'yes', NewDepth> : UpdatablePrimitive<S[0], F, Q, I, NewDepth>)
+    ) : (
+      & DeleteNode<Depth>
+      & Clear
+      & Push<S[0] | S>
+      & SetArray<S, I>
+      & (S[0] extends boolean ? ToggleArray : unknown)
+      & Find<S, NewDepth>
+      & Filter<S, NewDepth>
+      & Readable<F extends 'isFilter' ? S : S[0]>
+      & (S[0] extends Array<unknown> ? unknown : S[0] extends PossiblyBrandedPrimitive ? MergePrimitive<S[0]> : MergeMatching<S[0]>)
+      & (
+        S[0] extends object
+        ? (
+          & PatchArray<S[0]>
+          & { [K in keyof S[0]]:
+            (S[0][K] extends Array<unknown>
+              ? UpdatableArray<S[0][K], 'isFilter', 'notQueried', 'no', NewDepth>
+              : S[0][K] extends PossiblyBrandedPrimitive
+              ? UpdatablePrimitive<S[0][K], F, Q, 'no', NewDepth>
+              : UpdatableObject<S[0][K], F, Q, 'no', NewDepth>)
+          }
+        )
+        : AddArray
       )
-      : AddArray
-    )
-  ), Depth>
+    ))
+  & InvalidateCache
+  & ( Q extends 'queried' ? unknown : (S extends Array<object> ? unknown : Distinct<S>))
+  , Depth>
 
 export type UpdateOptions<H> = Cache & Eager<H>;
 
@@ -111,6 +112,13 @@ export type UpdatablePrimitive<S, F extends FindOrFilter, Q extends QueryStatus,
   & (S extends number ? (F extends 'isFind' ? Subtract : SubtractArray) : unknown)
   & (S extends boolean ? (F extends 'isFind' ? Toggle : ToggleArray) : unknown)
   & Readable<F extends 'isFilter' ? S[] : S>
+
+export interface Distinct<S> {
+  /**
+   * Get the distinct elements of the selected array
+   */
+  $distinct: Readable<S>,
+}
 
 export interface MergeMatching<S> {
   /**
@@ -646,6 +654,7 @@ export type Searchable<T, S, F extends FindOrFilter, Depth extends number, NewDe
     [K in keyof S]: (S[K] extends object
       ? (Searchable<T, S[K], F, NewDepth> & Comparators<T, S[K], F, NewDepth>)
       : Comparators<T, S[K], F, NewDepth>)
+
   }
   ,
   Depth>

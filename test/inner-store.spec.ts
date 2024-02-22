@@ -1,4 +1,4 @@
-import { libState, testState } from '../src/constant';
+import { libState } from '../src/constant';
 import { createInnerStore, createStore } from '../src/core';
 import { Store } from '../src/type';
 import { resetLibraryState } from '../src/utility';
@@ -49,7 +49,6 @@ test('inner store should be able to receive onChange events', () => {
 test('should be able to detach an inner store', () => {
   createStore(state);
   const inner = createInnerStore({ [key]: innerState }).usingAccessor(s => s[key]);
-  testState.logLevel = 'debug';
   inner.$delete();
 })
 

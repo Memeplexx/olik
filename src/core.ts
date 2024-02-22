@@ -98,6 +98,9 @@ export function createStore<S extends Record<string, unknown>>(
           return augmentations.core[prop](recurseProxy(stateActions));
         } else if ('$stateActions' === prop) {
           return stateActions;
+        } else if ('$distinct' === prop) {
+          stateActions.push({ name: prop });
+          return recurseProxy(stateActions);
         } else {
           stateActions.push({ name: prop });
           return recurseProxy(stateActions);
