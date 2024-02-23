@@ -83,6 +83,7 @@ export type UpdatableArray<S extends Array<unknown>, F extends FindOrFilter, Q e
       & Filter<S, NewDepth>
       & Readable<F extends 'isFilter' ? S : S[0]>
       & (S[0] extends Array<unknown> ? unknown : S[0] extends PossiblyBrandedPrimitive ? MergePrimitive<S[0]> : MergeMatching<S[0]>)
+      & (S extends Array<PossiblyBrandedPrimitive> ? SetUnique<S> : undefined)
       & (
         S[0] extends object
         ? (
@@ -364,6 +365,13 @@ export interface SetArray<S, I> {
    * Update the selected array elements, by replacing each element with the supplied value.
    */
   $set(replacement: SetPayload<I extends 'yes' ? S[] : S>): void;
+}
+
+export interface SetUnique<S extends Array<PossiblyBrandedPrimitive>> {
+  /**
+   * Set array elements and only unique ones will be kept.
+   */
+  $setUnique(replacement: SetPayload<S>): void;
 }
 
 export interface PatchDeep<S> {

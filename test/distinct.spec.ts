@@ -25,3 +25,13 @@ test('shoud de duplicate strings', () => {
   expect(store.array.$state).toEqual(['1', '2', '3', '4']);
   expect(libState.currentAction).toEqual({ type: 'array.$deDuplicate()' });
 })
+
+test('shoud de duplicate strings', () => {
+  const store = createStore({
+    array: [1, 2, 3],
+  });
+  const payload = [3, 4, 1, 3, 7, 4, 3, 1];
+  store.array.$setUnique(payload);
+  expect(store.array.$state).toEqual([3, 4, 1, 7]);
+  expect(libState.currentAction).toEqual({ type: 'array.$setUnique()', payload: Array.from(new Set(payload)) });
+})
