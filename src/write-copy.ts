@@ -96,9 +96,9 @@ export const copyNewState = (
     const { found, payloadOriginal, payloadSanitized } = getPayloadOrigAndSanitized(payload);
     return setCurrentActionReturningNewState({ stateActions, newState: payloadSanitized, payload: payloadSanitized, payloadOrig: found ? payloadOriginal : undefined });
   } else if (action.name === '$setUnique') {
-    const payloadWithoutDuplicates = Array.from(new Set(payload as Array<Actual>));
-    const { found, payloadOriginal, payloadSanitized } = getPayloadOrigAndSanitized(payloadWithoutDuplicates);
-    return setCurrentActionReturningNewState({ stateActions, newState: payloadSanitized, payload: payloadSanitized, payloadOrig: found ? payloadOriginal : undefined });
+    const { found, payloadOriginal, payloadSanitized } = getPayloadOrigAndSanitized(payload);
+    const payloadWithoutDuplicates = Array.from(new Set(payloadSanitized as Array<Actual>));
+    return setCurrentActionReturningNewState({ stateActions, newState: payloadWithoutDuplicates, payload: payloadWithoutDuplicates, payloadOrig: found ? payloadOriginal : undefined });
   } else if (action.name === '$patch') {
     if (Array.isArray(currentState)) {
       return setCurrentActionReturningNewState({ stateActions, payload, newState: currentState.map(e => ({ ...e, ...payload as Record<string, unknown> })) });
