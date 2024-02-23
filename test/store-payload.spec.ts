@@ -81,6 +81,6 @@ test('', () => {
     arr: [{ id: 1, text: 'one' }, { id: 2, text: 'two' }, { id: 3, text: 'three' }],
     arr2: [{ id: 1, text: 'one2' }]
   });
-  store.arr.$mergeMatching.id.$withMany(store.arr2.$filter.id.$eq(1));
+  store.arr.$mergeMatching.id.$with(store.arr2.$filter.id.$eq(1));
   expect(store.arr.$state).toEqual([{ id: 1, text: 'one2' }, { id: 2, text: 'two' }, { id: 3, text: 'three' }]);
 })

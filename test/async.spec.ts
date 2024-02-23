@@ -195,8 +195,8 @@ test('should repsert one array element where a match could be found', async () =
   const payload = { id: 1, num: 5 };
   await store.arr
     .$mergeMatching.id
-    .$withOne(resolve(payload));
-  expect(libState.currentAction).toEqual({ type: 'arr.$mergeMatching.id.$withOne()', payload });
+    .$with(resolve(payload));
+  expect(libState.currentAction).toEqual({ type: 'arr.$mergeMatching.id.$with()', payload });
   expect(store.arr.$state).toEqual([payload, state.arr[1], state.arr[2]]);
 })
 
@@ -206,8 +206,8 @@ test('should repsert one array element where a match could not be found', async 
   const payload = { id: 4, num: 5 };
   await store.arr
     .$mergeMatching.id
-    .$withOne(resolve(payload));
-  expect(libState.currentAction).toEqual({ type: 'arr.$mergeMatching.id.$withOne()', payload });
+    .$with(resolve(payload));
+  expect(libState.currentAction).toEqual({ type: 'arr.$mergeMatching.id.$with()', payload });
   expect(store.arr.$state).toEqual([...state.arr, payload]);
 })
 
@@ -217,8 +217,8 @@ test('should repsert array elements where one matches and another does not', asy
   const payload = [{ id: 1, num: 5 }, { id: 5, num: 5 }];
   await store.arr
     .$mergeMatching.id
-    .$withMany(resolve(payload));
-  expect(libState.currentAction).toEqual({ type: 'arr.$mergeMatching.id.$withMany()', payload });
+    .$with(resolve(payload));
+  expect(libState.currentAction).toEqual({ type: 'arr.$mergeMatching.id.$with()', payload });
   expect(store.arr.$state).toEqual([payload[0], state.arr[1], state.arr[2], payload[1]]);
 })
 

@@ -120,11 +120,11 @@ store0.array
 
 store0.objArray
   .$mergeMatching.obj.num
-  .$withOne({ num: 3, arr: [], objArr: [], obj: { num: 0 } });
+  .$with({ num: 3, arr: [], objArr: [], obj: { num: 0 } });
 
 store0.objArray
   .$mergeMatching.obj.num
-  .$withMany([{ num: 3, arr: [], objArr: [], obj: { num: 0 } }]);
+  .$with([{ num: 3, arr: [], objArr: [], obj: { num: 0 } }]);
 
 store0.objArray
   .objArr.$find.num.$eq(3)

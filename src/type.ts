@@ -30,9 +30,9 @@ export type PatchDeepPayload<T> =
   T extends object ? PatchDeepPayloadObject<T> :
   T;
 
-export type RepsertableObject<T, S> = WithOne<T> & WithMany<T> & { [K in keyof S]: S[K] extends object ? RepsertableObject<T, S[K]> : RepsertablePrimitive<T> }
+export type RepsertableObject<T, S> = With<T> & { [K in keyof S]: S[K] extends object ? RepsertableObject<T, S[K]> : RepsertablePrimitive<T> }
 
-export interface RepsertablePrimitive<T> extends WithOne<T>, WithMany<T> {
+export interface RepsertablePrimitive<T> extends With<T> {
 }
 
 type UpdateResult<X> = X extends (() => AnyAsync<infer R>) ? Future<R> : never;
@@ -407,26 +407,15 @@ export interface PatchDeepArray<S> {
   $patchDeep(patch: PatchDeepPayload<S>): void;
 }
 
-export interface WithOne<T> {
+export interface With<T> {
   /**
-   * Update the selected array element, by replacing or inserting with the elements returned by the supplied async function.
+   * The element or array of elements to merge
    */
-  $withOne(element: AnyAsyncFn<T>, options?: UpdateOptions<T>): UpdateResult<T>;
+  $with(array: AnyAsyncFn<T | T[]>): UpdateResult<typeof array>,
   /**
-   * Update the selected array element, by replacing or inserting with the supplied value.
+   * The element or array of elements to merge
    */
-  $withOne(element: SetPayload<T>): void;
-}
-
-export interface WithMany<T> {
-  /**
-   * Repsert with an array of elements.
-   */
-  $withMany(array: AnyAsyncFn<T[]>): UpdateResult<typeof array>,
-  /**
-   * Repsert with an array of elements.
-   */
-  $withMany(array: SetPayload<T[]>): void,
+  $with(array: SetPayload<T | T[]>): void,
 }
 
 export interface InvalidateDerivation {
