@@ -83,7 +83,7 @@ export type UpdatableArray<S extends Array<unknown>, F extends FindOrFilter, Q e
       & Filter<S, NewDepth>
       & Readable<F extends 'isFilter' ? S : S[0]>
       & (S[0] extends Array<unknown> ? unknown : S[0] extends PossiblyBrandedPrimitive ? MergePrimitive<S[0]> : MergeMatching<S[0]>)
-      & (S extends Array<PossiblyBrandedPrimitive> ? SetUnique<S> : undefined)
+      & (S extends Array<PossiblyBrandedPrimitive> ? SetUnique<S> : unknown)
       & (
         S[0] extends object
         ? (
