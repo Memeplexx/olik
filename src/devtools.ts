@@ -8,7 +8,7 @@ export function connectOlikDevtoolsToStore(options: { trace: boolean }) {
     dispatch: () => {
       const payload = {
         action: libState.currentAction,
-        state: libState.state,
+        // state: libState.state,
         source: 'olik-devtools-extension',
       };
       if (typeof(window) === 'undefined') { return; }

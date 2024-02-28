@@ -779,7 +779,7 @@ export interface ChangeListener {
 
 export type TraceElement = { functionName: string, fileName: string, lineNumber: number, columnNumber: number }
 
-export type OlikAction = { type: string, typeOrig?: string, payload?: unknown, payloadOrig?: unknown };
+export type OlikAction = { type: string, typeOrig?: string, payload?: unknown, payloadOrig?: unknown, stateActions: StateAction[] };
 
 export type DevtoolsInstance = {
   init: (state: unknown) => unknown,

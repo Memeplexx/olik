@@ -45,37 +45,28 @@ test('should merge a branded number list', () => {
 })
 
 test('', () => {
-  // const stack = `
-  //   Error
-  //     at useInputs (webpack-internal:///./components/tags-config/inputs.ts:18:27)
-  //     at TagsConfig (webpack-internal:///./components/tags-config/index.tsx:26:70)
-  //     at renderWithHooks (webpack-internal:///./node_modules/.pnpm/react-dom@18.2.0_react@18.2.0/node_modules/react-dom/cjs/react-dom.development.js:16305:18)
-  //     at updateForwardRef (webpack-internal:///./node_modules/.pnpm/react-dom@18.2.0_react@18.2.0/node_modules/react-dom/cjs/react-dom.development.js:19221:20)
-  //     at beginWork (webpack-internal:///./node_modules/.pnpm/react-dom@18.2.0_react@18.2.0/node_modules/react-dom/cjs/react-dom.development.js:21631:16)
-  //     at beginWork$1 (webpack-internal:///./node_modules/.pnpm/react-dom@18.2.0_react@18.2.0/node_modules/react-dom/cjs/react-dom.development.js:27421:14)
-  //     at performUnitOfWork (webpack-internal:///./node_modules/.pnpm/react-dom@18.2.0_react@18.2.0/node_modules/react-dom/cjs/react-dom.development.js:26552:12)
-  //     at workLoopSync (webpack-internal:///./node_modules/.pnpm/react-dom@18.2.0_react@18.2.0/node_modules/react-dom/cjs/react-dom.development.js:26461:5)
-  //     at renderRootSync (webpack-internal:///./node_modules/.pnpm/react-dom@18.2.0_react@18.2.0/node_modules/react-dom/cjs/react-dom.development.js:26429:7)
-  //     at performSyncWorkOnRoot (webpack-internal:///./node_modules/.pnpm/react-dom@18.2.0_react@18.2.0/node_modules/react-dom/cjs/react-dom.development.js:26080:20)
-  //     at flushSyncCallbacks (webpack-internal:///./node_modules/.pnpm/react-dom@18.2.0_react@18.2.0/node_modules/react-dom/cjs/react-dom.development.js:12042:22)
-  //     at eval (webpack-internal:///./node_modules/.pnpm/react-dom@18.2.0_react@18.2.0/node_modules/react-dom/cjs/react-dom.development.js:25646:13)
-  //   `;
-  // console.log('...', new URL('http://localhost:5173/src/demo/index.tsx?t=1707468304526:29:26').pathname)
   const stack = `
   Error
-    at Object.get (webpack-internal:///./node_modules/.pnpm/olik@1.0.49/node_modules/olik/dist/olik.js:74:83)
-    at _codemirror_view__WEBPACK_IMPORTED_MODULE_3__.ViewPlugin.fromClass.decorations.updateSelection (webpack-internal:///./components/active-editor/shared.ts:200:45)
-    at enter (webpack-internal:///./components/active-editor/shared.ts:189:30)
-    at Tree.iterate (webpack-internal:///./node_modules/.pnpm/@lezer+common@1.0.4/node_modules/@lezer/common/dist/index.js:471:81)
-    at _codemirror_view__WEBPACK_IMPORTED_MODULE_3__.ViewPlugin.fromClass.decorations.getDecorations (webpack-internal:///./components/active-editor/shared.ts:149:94)
-    at _codemirror_view__WEBPACK_IMPORTED_MODULE_3__.ViewPlugin.fromClass.decorations.update (webpack-internal:///./components/active-editor/shared.ts:144:37)
-    at PluginInstance.update (webpack-internal:///./node_modules/.pnpm/@codemirror+view@6.17.1/node_modules/@codemirror/view/dist/index.js:2052:32)
-    at EditorView.updatePlugins (webpack-internal:///./node_modules/.pnpm/@codemirror+view@6.17.1/node_modules/@codemirror/view/dist/index.js:7095:29)
-    at EditorView.update (webpack-internal:///./node_modules/.pnpm/@codemirror+view@6.17.1/node_modules/@codemirror/view/dist/index.js:7001:22)
-    at EditorView.dispatchTransactions (webpack-internal:///./node_modules/.pnpm/@codemirror+view@6.17.1/node_modules/@codemirror/view/dist/index.js:6905:28)
-    at EditorView.dispatch (webpack-internal:///./node_modules/.pnpm/@codemirror+view@6.17.1/node_modules/@codemirror/view/dist/index.js:6927:14)
-    at MouseSelection.select (webpack-internal:///./node_modules/.pnpm/@codemirror+view@6.17.1/node_modules/@codemirror/view/dist/index.js:4090:23)
-    at MouseSelection.move (webpack-internal:///./node_modules/.pnpm/@codemirror+view@6.17.1/node_modules/@codemirror/view/dist/index.js:4012:14)
+    at Object.get (webpack-internal:///(app-pages-browser)/./node_modules/.pnpm/olik@1.0.63/node_modules/olik/dist/olik.js:91:95)
+    at eval (webpack-internal:///(app-pages-browser)/./node_modules/.pnpm/olik-react@1.0.12_olik@1.0.63_vite@5.1.3/node_modules/olik-react/dist/olik-react.js:63:74)
+    at mountMemo (webpack-internal:///(app-pages-browser)/./node_modules/.pnpm/next@14.1.0_@babel+core@7.23.9_react-dom@18.2.0_react@18.2.0/node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:10975:17)
+    at Object.useMemo (webpack-internal:///(app-pages-browser)/./node_modules/.pnpm/next@14.1.0_@babel+core@7.23.9_react-dom@18.2.0_react@18.2.0/node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:11589:32)
+    at useMemo (webpack-internal:///(app-pages-browser)/./node_modules/.pnpm/next@14.1.0_@babel+core@7.23.9_react-dom@18.2.0_react@18.2.0/node_modules/next/dist/compiled/react/cjs/react.development.js:1472:31)
+    at eval (webpack-internal:///(app-pages-browser)/./node_modules/.pnpm/olik-react@1.0.12_olik@1.0.63_vite@5.1.3/node_modules/olik-react/dist/olik-react.js:62:62)
+    at useInputs (webpack-internal:///(app-pages-browser)/./components/tags-config/inputs.ts:19:138)
+    at TagsConfig (webpack-internal:///(app-pages-browser)/./components/tags-config/index.tsx:25:70)
+    at renderWithHooks (webpack-internal:///(app-pages-browser)/./node_modules/.pnpm/next@14.1.0_@babel+core@7.23.9_react-dom@18.2.0_react@18.2.0/node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:9745:28)
+    at updateForwardRef (webpack-internal:///(app-pages-browser)/./node_modules/.pnpm/next@14.1.0_@babel+core@7.23.9_react-dom@18.2.0_react@18.2.0/node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:13758:32)
+    at beginWork$1 (webpack-internal:///(app-pages-browser)/./node_modules/.pnpm/next@14.1.0_@babel+core@7.23.9_react-dom@18.2.0_react@18.2.0/node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:15982:32)
+    at beginWork (webpack-internal:///(app-pages-browser)/./node_modules/.pnpm/next@14.1.0_@babel+core@7.23.9_react-dom@18.2.0_react@18.2.0/node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:22789:28)
+    at performUnitOfWork (webpack-internal:///(app-pages-browser)/./node_modules/.pnpm/next@14.1.0_@babel+core@7.23.9_react-dom@18.2.0_react@18.2.0/node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:21852:24)
+    at workLoopSync (webpack-internal:///(app-pages-browser)/./node_modules/.pnpm/next@14.1.0_@babel+core@7.23.9_react-dom@18.2.0_react@18.2.0/node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:21617:17)
+    at renderRootSync (webpack-internal:///(app-pages-browser)/./node_modules/.pnpm/next@14.1.0_@babel+core@7.23.9_react-dom@18.2.0_react@18.2.0/node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:21584:21)
+    at performSyncWorkOnRoot (webpack-internal:///(app-pages-browser)/./node_modules/.pnpm/next@14.1.0_@babel+core@7.23.9_react-dom@18.2.0_react@18.2.0/node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:21124:30)
+    at flushSyncWorkAcrossRoots_impl (webpack-internal:///(app-pages-browser)/./node_modules/.pnpm/next@14.1.0_@babel+core@7.23.9_react-dom@18.2.0_react@18.2.0/node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:9119:33)
+    at flushSyncWorkOnAllRoots (webpack-internal:///(app-pages-browser)/./node_modules/.pnpm/next@14.1.0_@babel+core@7.23.9_react-dom@18.2.0_react@18.2.0/node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:9085:13)
+    at processRootScheduleInMicrotask (webpack-internal:///(app-pages-browser)/./node_modules/.pnpm/next@14.1.0_@babel+core@7.23.9_react-dom@18.2.0_react@18.2.0/node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:9207:13)
+    at eval (webpack-internal:///(app-pages-browser)/./node_modules/.pnpm/next@14.1.0_@babel+core@7.23.9_react-dom@18.2.0_react@18.2.0/node_modules/next/dist/compiled/react-dom/cjs/react-dom.development.js:9353:21)
   `;
   const frames = stack
     .trim()
@@ -89,7 +80,7 @@ test('', () => {
       let url: string;
       const fun = fn.substring(fn.indexOf('.') + 1);
       try {
-        url = new URL(filePath.substring(1, filePath.length - 2)).pathname;
+        url = new URL(filePath.replace('(app-pages-browser)/', '').substring(1, filePath.length - 2)).pathname;
       } catch (e) {
         return { fn: fun, filePath: '' };
       }
