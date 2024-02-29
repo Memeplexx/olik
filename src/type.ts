@@ -779,7 +779,7 @@ export interface ChangeListener {
 
 export type TraceElement = { functionName: string, fileName: string, lineNumber: number, columnNumber: number }
 
-export type OlikAction = { type: string, typeOrig?: string, payload?: unknown, payloadOrig?: unknown, stateActions: StateAction[] };
+export type OlikAction = { type: string, typeOrig?: string, payload?: unknown, payloadOrig?: unknown };
 
 export type DevtoolsInstance = {
   init: (state: unknown) => unknown,
@@ -802,7 +802,7 @@ export type LibState = {
   store: undefined | StoreInternal,
   onInternalDispatch: (action: OlikAction) => void,
   asyncUpdate: undefined | ((args: EnableAsyncActionsArgs) => Promise<unknown>),
-  olikDevtools: undefined | { dispatch: () => unknown, trace: boolean },
+  olikDevtools: undefined | { dispatch: (stateActions: StateAction[]) => unknown, trace: boolean },
   state: undefined | Record<string, unknown>,
   changeListeners: ChangeListener[],
   currentAction: undefined | OlikAction,

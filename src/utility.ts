@@ -115,3 +115,30 @@ export const fixCurrentAction = (action: { name: string, arg?: unknown }, nested
     return `${match}( ${stateActions.map(sa => fixCurrentAction(sa, nested)).join('.')} = ${JSON.stringify((action.arg as StoreInternal).$state)} )`;
   });
 }
+
+// Note: consumed by devtools
+export const getPayloadOrigAndSanitized = <T>(payload: T): { found: boolean, payloadSanitized: T, payloadOriginal: T } => {
+  // is this a standard non-array non-store object?
+  if (typeof (payload) === 'object' && payload !== null && !Array.isArray(payload) && (payload as unknown as StoreInternal)?.$stateActions === undefined) {
+    const payloadRecord = payload as Record<string, Readable<unknown>>;
+    return {
+      found: Object.keys(payloadRecord).some(key => payloadRecord[key]?.$state !== undefined),
+      payloadSanitized: Object.keys(payloadRecord).reduce((prev, key) => Object.assign(prev, { [key]: getStateOrStoreState(payloadRecord[key]) }), {} as Record<string, unknown>) as T,
+      payloadOriginal: Object.keys(payloadRecord).reduce((prev, key) => Object.assign(prev, { [key]: stringifyPotentialPayloadStore(payloadRecord[key]) }), {} as Record<string, unknown>) as T,
+    }
+  // else is this a potential store?
+  } else {
+    const payloadStore = payload as Readable<unknown>;
+    return {
+      found: payloadStore?.$state !== undefined,
+      payloadSanitized: getStateOrStoreState(payloadStore) as T,
+      payloadOriginal: stringifyPotentialPayloadStore(payloadStore) as T
+    }
+  }
+}
+
+// Note: consumed by devtools
+export const stringifyPotentialPayloadStore = (arg: unknown) => {
+  const readable = arg as StoreInternal;
+  return readable?.$state === undefined ? arg : `${readable.$stateActions.map(sa => fixCurrentAction(sa, true)).join('.')} = ${JSON.stringify(readable.$state)}`;
+}

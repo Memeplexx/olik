@@ -1,15 +1,16 @@
 import { libState } from './constant';
-import { deserialize } from './utility';
+import { getPayloadOrigAndSanitized } from './utility';
 
 
 export function connectOlikDevtoolsToStore(options: { trace: boolean }) {
   libState.olikDevtools = {
     trace: options.trace,
-    dispatch: () => {
+    dispatch: stateActions => {
       const payload = {
         action: libState.currentAction,
         // state: libState.state,
         source: 'olik-devtools-extension',
+        stateActions: stateActions.map(sa => ({...sa, arg: getPayloadOrigAndSanitized(sa.arg).payloadSanitized })),
       };
       if (typeof(window) === 'undefined') { return; }
       if (options.trace) {
@@ -32,32 +33,6 @@ export function connectOlikDevtoolsToStore(options: { trace: boolean }) {
   olikStateDiv.style.display = 'none';
   olikStateDiv.innerHTML = JSON.stringify(libState.store!.$state);
   document.body.appendChild(olikStateDiv);
-
-  const olikActionDiv = document.createElement('div');
-  olikActionDiv.id = 'olik-action';
-  olikActionDiv.style.display = 'none';
-  document.body.appendChild(olikActionDiv);
-
-  new MutationObserver(() => {
-    const actionType = olikActionDiv.innerHTML;
-    let subStore = libState.store!;
-    const segments = actionType.split('.');
-    if (segments[0] === 'store') {
-      segments.shift();
-    }
-    segments.forEach(key => {
-      const arg = key.match(/\(([^)]*)\)/)?.[1];
-      const containsParenthesis = arg !== null && arg !== undefined;
-      if (containsParenthesis) {
-        const functionName = key.split('(')[0];
-        const typedArg = deserialize(arg);
-        const functionToCall = subStore[functionName];
-        subStore = functionToCall(typedArg);
-      } else {
-        subStore = subStore[key];
-      }
-    })
-  }).observe(olikActionDiv, { attributes: true, childList: true, subtree: true });
 
   new MutationObserver(() => {
     libState.disableDevtoolsDispatch = true;
