@@ -44,7 +44,6 @@ export function connectOlikDevtoolsToStore(options: { trace: boolean }) {
   const olikInitDiv = document.body.appendChild(Object.assign(document.createElement('div'), {
     id: 'olik-init',
     style: 'display: none',
-    innerHTML: JSON.stringify(libState.store!.$state),
   }));
   new MutationObserver(async () => {
     for (const pendingAction in pendingActions) {
