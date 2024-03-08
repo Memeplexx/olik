@@ -1,7 +1,7 @@
 import { beforeEach, expect, test } from 'vitest';
-import { libState } from '../src';
+import { StateAction, libState, readState, updateFunctions } from '../src';
 import { createStore } from '../src/core';
-import { resetLibraryState } from '../src/utility';
+import { deserialize, resetLibraryState } from '../src/utility';
 
 
 beforeEach(() => {
@@ -14,7 +14,7 @@ test('should be able include store object with patch', () => {
     two: 2,
     three: store.arr.$find.id.$eq(store.arr.$find.text.$eq('element').id).text
   });
-  expect(store.$state).toEqual({ one: { two: 2, three: 'element' }, arr: [ { id: 1, text: 'element' } ]});
+  expect(store.$state).toEqual({ one: { two: 2, three: 'element' }, arr: [{ id: 1, text: 'element' }] });
   expect(libState.currentAction?.payloadOrig).toEqual({
     two: 2,
     three: 'arr.$find.id.$eq( arr.$find.text.$eq("element").id = 1 ).text = "element"'
@@ -83,4 +83,163 @@ test('', () => {
   });
   store.arr.$mergeMatching.id.$with(store.arr2.$filter.id.$eq(1));
   expect(store.arr.$state).toEqual([{ id: 1, text: 'one2' }, { id: 2, text: 'two' }, { id: 3, text: 'three' }]);
+})
+
+// test('', () => {
+//   const state = {
+//     modal: null as 'confirmDeleteGroup' | 'confirmDeleteTag' | 'synonymOptions' | 'groupOptions' | null,
+//     bool: false,
+//     flatObj: {
+//       one: 'hello',
+//       two: 'world',
+//       three: 'another',
+//     },
+//     num: 0,
+//     obj: {
+//       one: {
+//         two: 'hello',
+//         three: false,
+//         four: 4
+//       },
+//       two: {
+//         five: 'thing',
+//         three: [
+//           [1, 2, 3]
+//         ]
+//       }
+//     },
+//     arr: [
+//       { id: 1, text: 'one' },
+//       { id: 2, text: 'two' },
+//       { id: 3, text: 'three' },
+//     ],
+//     arrNum: [1, 2, 3],
+//     arrNested: [
+//       [1, 2, 3],
+//       [4, 5, 6],
+//       [7, 8, 9]
+//     ]
+//   };
+
+//   const recurse = <S extends Record<string, unknown> | unknown>(s: S): string => {
+//     if (s === null) {
+//       return `<span class="null">null</span>`;
+//     } else if (typeof (s) === 'string') {
+//       return `<span class="string">"${s}"</span>`;
+//     } else if (typeof (s) === 'number') {
+//       return `<span class="number">${s}</span>`;
+//     } else if (typeof (s) === 'boolean') {
+//       return `<span class="boolean">${s}</span>`;
+//     } else if (s instanceof Date) {
+//       return `<span class="date">${s}</span>`;
+//     } else if (typeof (s) === 'object') {
+//       if (Array.isArray(s)) {
+//         return s.map((ss, index) => {
+//           const possibleComma = index === s.length - 1 ? '' : `<span class="comma">,</span>`;
+//           return Array.isArray(ss) ? `
+//           <span class="open-array">[</span><br/>
+//           <span class="value">${recurse(ss)}</span>
+//           <span class="close-array">]</span>
+//           ${possibleComma}
+//           ` : (typeof (ss) === 'object' && ss !== null) ? `
+//           <span class="open-object">{</span><br/>
+//           <span class="value">${recurse(ss)}</span>
+//           <span class="close-object">}</span>
+//           ${possibleComma}
+//           ` : `
+//           <span class="row">
+//             ${recurse(ss)}
+//             ${possibleComma}
+//           </span>
+//           `;
+//         }).join(`<br/>`);
+//       } else {
+//         const objectKeys = Object.keys(s) as Array<keyof S>;
+//         return objectKeys.map((key, index) => {
+//           const possibleComma = index === objectKeys.length - 1 ? '' : `<span class="comma">,</span>`;
+//           return Array.isArray(s[key]) ? `
+//           <span class="array">
+//             <span class="key">${String(key)}</span>
+//             <span class="colon">:</span>
+//             <span class="open-array">[</span><br/>
+//             <span class="value">${recurse(s[key])}</span>
+//             <span class="close-array">]</span>
+//             ${possibleComma}
+//           </span>
+//           ` : (typeof (s[key]) === 'object' && s[key] !== null) ? `
+//           <span class="object">
+//             <span class="key">${String(key)}</span>
+//             <span class="colon">:</span>
+//             <span class="open-object">{</span><br/>
+//             <span class="value">${recurse(s[key])}</span>
+//             <span class="close-object">}</span>
+//             ${possibleComma}
+//           </span>
+//           ` : `
+//           <span class="row">
+//             <span class="key">${String(key)}</span>
+//             <span class="colon">:</span>
+//             ${recurse(s[key])}
+//             ${possibleComma}
+//           </span>
+//         `;
+//         }).join(`<br/>`);
+//       }
+//     }
+//     throw new Error();
+//   };
+//   const html = `
+//     <span class="object">
+//       <span class="open-object">{</span><br/>
+//       <span class="value">${recurse(state)}</span>
+//       <span class="close-object">}</span>
+//     </span>
+//   `.replace(/\s+/g, ' ');
+//   console.log(html);
+// })
+
+test('', () => {
+  const doReadState = (type: string, state: unknown) => {
+    if (type === undefined) { return state; }
+    const segments = type.split('.');
+    // if (type.endsWith(')')) {
+    //   segments.pop();
+    // }
+    const stateActions: StateAction[] = segments
+      .map(seg => {
+        const arg = seg.match(/\(([^)]*)\)/)?.[1];
+        const containsParenthesis = arg !== null && arg !== undefined;
+        if (containsParenthesis && !updateFunctions.includes(seg)) {
+          const functionName = seg.split('(')[0];
+          const typedArg = deserialize(arg);
+          return { name: functionName, arg: typedArg };
+        } else {
+          return { name: seg, arg: null };
+        }
+      });
+    stateActions.push({ name: '$state' });
+    return readState({ state, stateActions, cursor: { index: 0 } });
+  }
+  const appStore = createStore({
+    modal: null as 'confirmDeleteGroup' | 'confirmDeleteTag' | 'synonymOptions' | 'groupOptions' | null,
+    bool: false,
+    flatObj: {
+      one: 'hello',
+      two: 'world',
+      three: 'another',
+    },
+    num: 0,
+    obj: {
+      one: {
+        two: 'hello'
+      }
+    },
+    arr: [
+      { id: 1, text: 'one' },
+      { id: 2, text: 'two' },
+      { id: 3, text: 'three' },
+    ],
+    arrNum: [1, 2, 3],
+  })
+  doReadState('arr.$find.id.$eq(3)', appStore.$state);
 })

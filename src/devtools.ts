@@ -1,39 +1,65 @@
 import { libState } from './constant';
-import { getPayloadOrigAndSanitized } from './utility';
+import { OlikAction } from './type';
+import { deserialize, getPayloadOrigAndSanitized } from './utility';
 
 
 export function connectOlikDevtoolsToStore(options: { trace: boolean }) {
+
+  if (libState.olikDevtools) { return; }
+
+  let initialized = false;
+  const pendingActions = new Array<{
+    action: OlikAction | undefined;
+    source: string;
+    stateActions: {
+      arg: unknown;
+      name: string;
+    }[];
+    trace?: string;
+  }>();
+
   libState.olikDevtools = {
     trace: options.trace,
     dispatch: stateActions => {
-      const payload = {
+      if (typeof (window) === 'undefined') {
+        return;
+      }
+      const toSend = {
         action: libState.currentAction,
-        // state: libState.state,
         source: 'olik-devtools-extension',
-        stateActions: stateActions.map(sa => ({...sa, arg: getPayloadOrigAndSanitized(sa.arg).payloadSanitized })),
+        stateActions: stateActions.map(sa => ({ ...sa, arg: getPayloadOrigAndSanitized(sa.arg).payloadSanitized })),
+        trace: libState.stacktraceError?.stack,
       };
-      if (typeof(window) === 'undefined') { return; }
-      if (options.trace) {
-        window.postMessage({
-          ...payload,
-          trace: libState.stacktraceError!.stack,
-        }, location.origin)
+      if (!initialized) {
+        pendingActions.push(toSend);
       } else {
-        window.postMessage({
-          ...payload
-        }, location.origin);
+        window.postMessage(toSend, location.origin)
       }
     },
   };
 
-  if (typeof(document) === 'undefined' || document.getElementById('olik-state')) { return; }
+  if (typeof (document) === 'undefined' || document.getElementById('olik-init')) { return; }
 
-  const olikStateDiv = document.createElement('div');
-  olikStateDiv.id = 'olik-state';
-  olikStateDiv.style.display = 'none';
-  olikStateDiv.innerHTML = JSON.stringify(libState.store!.$state);
-  document.body.appendChild(olikStateDiv);
+  // Listen to devtools initialization
+  const olikInitDiv = document.body.appendChild(Object.assign(document.createElement('div'), {
+    id: 'olik-init',
+    style: 'display: none',
+    innerHTML: JSON.stringify(libState.store!.$state),
+  }));
+  new MutationObserver(async () => {
+    for (const pendingAction in pendingActions) {
+      await new Promise(resolve => setTimeout(() => resolve(window.postMessage(pendingAction, location.origin))));
+    }
+    pendingActions.length = 0;
+    initialized = true;
+  }).observe(olikInitDiv, { attributes: true, childList: true, subtree: true });
 
+  // Listen to state changes from devtools
+  const olikStateDiv = document.body.appendChild(Object.assign(document.createElement('div'), {
+    id: 'olik-state',
+    style: 'display: none',
+    innerHTML: JSON.stringify(libState.store!.$state),
+  }));
   new MutationObserver(() => {
     libState.disableDevtoolsDispatch = true;
     libState.store!.$set(JSON.parse(olikStateDiv.innerHTML, (key, value) => {
@@ -44,4 +70,30 @@ export function connectOlikDevtoolsToStore(options: { trace: boolean }) {
     }));
     libState.disableDevtoolsDispatch = false;
   }).observe(olikStateDiv, { attributes: true, childList: true, subtree: true });
+
+  // Listen to action dispatches from devtools
+  const olikActionDiv = document.body.appendChild(Object.assign(document.createElement('div'), {
+    id: 'olik-action',
+    style: 'display: none',
+  }));
+  new MutationObserver(() => {
+    const actionType = olikActionDiv.innerHTML;
+    let subStore = libState.store!;
+    const segments = actionType.split('.');
+    if (segments[0] === 'store') {
+      segments.shift();
+    }
+    segments.forEach(key => {
+      const arg = key.match(/\(([^)]*)\)/)?.[1];
+      const containsParenthesis = arg !== null && arg !== undefined;
+      if (containsParenthesis) {
+        const functionName = key.split('(')[0];
+        const typedArg = deserialize(arg);
+        const functionToCall = subStore[functionName];
+        subStore = functionToCall(typedArg);
+      } else {
+        subStore = subStore[key];
+      }
+    })
+  }).observe(olikActionDiv, { attributes: true, childList: true, subtree: true });
 }
