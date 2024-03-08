@@ -37,7 +37,7 @@ export function createStore<S extends Record<string, unknown>>(
       get: (_, prop: string) => {
         stateActions = topLevel ? new Array<StateAction>() : stateActions;
         if (updateFunctions.includes(prop)) {
-          if (libState.olikDevtools?.trace) {
+          if (libState.olikDevtools) {
             libState.stacktraceError = new Error();
           }
           if (prop === '$delete') {

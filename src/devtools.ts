@@ -2,31 +2,40 @@ import { libState } from './constant';
 import { OlikAction } from './type';
 import { deserialize, getPayloadOrigAndSanitized } from './utility';
 
+const source = 'olik-devtools-extension';
 
-export function connectOlikDevtoolsToStore(options: { trace: boolean }) {
+export function connectOlikDevtoolsToStore() {
 
   if (libState.olikDevtools) { return; }
+
+  window.postMessage({
+    action: { type: "$load()" },
+    source,
+    stateActions: [],
+  }, location.origin);
 
   let initialized = false;
   const pendingActions = new Array<{
     action: OlikAction | undefined;
     source: string;
-    stateActions: {
-      arg: unknown;
-      name: string;
-    }[];
+    stateActions: { arg: unknown; name: string; }[];
     trace?: string;
   }>();
+  pendingActions.push({
+    action: { type: '$setNew()', payload: libState.state },
+    source,
+    stateActions: [{ name: '$setNew', arg: libState.state}],
+    trace: new Error().stack,
+  });
 
   libState.olikDevtools = {
-    trace: options.trace,
     dispatch: stateActions => {
       if (typeof (window) === 'undefined') {
         return;
       }
       const toSend = {
         action: libState.currentAction,
-        source: 'olik-devtools-extension',
+        source,
         stateActions: stateActions.map(sa => ({ ...sa, arg: getPayloadOrigAndSanitized(sa.arg).payloadSanitized })),
         trace: libState.stacktraceError?.stack,
       };
@@ -46,8 +55,8 @@ export function connectOlikDevtoolsToStore(options: { trace: boolean }) {
     style: 'display: none',
   }));
   new MutationObserver(async () => {
-    for (const pendingAction in pendingActions) {
-      await new Promise(resolve => setTimeout(() => resolve(window.postMessage(pendingAction, location.origin))));
+    for (let i = 0; i < pendingActions.length; i++) {
+      await new Promise(resolve => setTimeout(() => resolve(window.postMessage(pendingActions[i], location.origin))));
     }
     pendingActions.length = 0;
     initialized = true;
