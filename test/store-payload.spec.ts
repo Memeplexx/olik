@@ -243,3 +243,10 @@ test('', () => {
   })
   doReadState('arr.$find.id.$eq(3)', appStore.$state);
 })
+
+test('should be able to re-create state', () => {
+  createStore({ hello: 'world' });
+  libState.initialState = undefined;
+  const store2 = createStore({ hello: 'another' });
+  console.log(store2.$state);
+})
