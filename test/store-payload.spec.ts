@@ -250,3 +250,9 @@ test('should be able to re-create state', () => {
   const store2 = createStore({ hello: 'another' });
   console.log(store2.$state);
 })
+
+test('accept dates', () => {
+  const store = createStore({ dat: new Date() });
+  store.dat.$set(new Date());
+  console.log(store.$state);
+})

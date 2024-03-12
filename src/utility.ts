@@ -119,7 +119,7 @@ export const fixCurrentAction = (action: { name: string, arg?: unknown }, nested
 // Note: consumed by devtools
 export const getPayloadOrigAndSanitized = <T>(payload: T): { found: boolean, payloadSanitized: T, payloadOriginal: T } => {
   // is this a standard non-array non-store object?
-  if (typeof (payload) === 'object' && payload !== null && !Array.isArray(payload) && (payload as unknown as StoreInternal)?.$stateActions === undefined) {
+  if (typeof (payload) === 'object' && payload !== null && !Array.isArray(payload) && !(payload instanceof Date) && (payload as unknown as StoreInternal)?.$stateActions === undefined) {
     const payloadRecord = payload as Record<string, Readable<unknown>>;
     return {
       found: Object.keys(payloadRecord).some(key => payloadRecord[key]?.$state !== undefined),
