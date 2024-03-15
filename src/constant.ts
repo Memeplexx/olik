@@ -4,13 +4,12 @@ import { TestState } from './type-internal';
 
 
 export const errorMessages = {
+  AT_RETURNS_NO_MATCHES: (index: number) => `No array element at index ${index}`,
   FIND_RETURNS_NO_MATCHES: 'Could not find array element',
   INVALID_STATE_INPUT: (illegal: { toString(): string }) => `State must be serializable to JSON. Value of '${illegal.toString()}' is not permitted`,
   ASYNC_UPDATES_NOT_ENABLED: 'Cannot perform an async update until you enable it. Please import and invoke `importOlikAsyncModule()` before creating your store',
   DOLLAR_USED_IN_STATE: `Your state cannot contain any properties which begin with a '$' symbol because this syntax is reserved for library functions`,
 } as const;
-
-
 
 export const libState: LibState = {
   store: undefined,
@@ -59,11 +58,6 @@ export const comparisons = {
   $isFalsy: <T>(val: T) => !val,
 } as { [comparator: string]: (val: unknown, arg: unknown) => boolean };
 
-export const booleanNumberString = ['boolean', 'number', 'string'];
 export const updateFunctions = ['$set', '$setUnique', '$patch', '$patchDeep', '$delete', '$setNew', '$add', '$subtract', '$clear', '$push', '$with', '$toggle', '$merge', '$deDuplicate'];
 export const comparators = Object.keys(comparisons);
-export const andOr = ['$and', '$or'];
-export const findFilter = ['$find', '$filter'];
-export const reader = ['$onChange', '$state'];
-export const mergeMatching = ['$mergeMatching'];
-export const anyLibProp = [...updateFunctions, ...findFilter, ...andOr, ...comparators, ...reader, ...mergeMatching];
+export const anyLibProp = [...updateFunctions, ...comparators, '$and', '$or', '$onChange', '$state', '$mergeMatching', '$at', '$find', '$filter'];

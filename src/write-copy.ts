@@ -1,4 +1,4 @@
-import { anyLibProp, errorMessages, findFilter, updateFunctions } from './constant';
+import { anyLibProp, errorMessages, updateFunctions } from './constant';
 import { constructQuery } from './query';
 import { Actual, StateAction } from './type';
 import { either, is } from './type-check';
@@ -48,28 +48,28 @@ export const copyNewState = (
   const action = stateActions[cursor.index++];
   const payload = action.arg;
   if (cursor.index < stateActions.length) {
-    if (findFilter.includes(action.name) && Array.isArray(currentState)) {
+    if (['$find', '$filter', '$at'].includes(action.name) && Array.isArray(currentState)) {
       const query = constructQuery({ stateActions, cursor });
       let findIndex = -1;
-      if ('$find' === action.name) {
+      if (['$find', '$at'].includes(action.name)) {
         findIndex = currentState.findIndex(query);
         if (findIndex === -1) { throw new Error(errorMessages.FIND_RETURNS_NO_MATCHES); }
       }
       if (stateActions[cursor.index].name === '$delete') {
-        return setCurrentActionReturningNewState({ stateActions, payload, newState: '$find' === action.name ? currentState.filter((_, i) => findIndex !== i) : currentState.filter(e => !query(e)) });
+        return setCurrentActionReturningNewState({ stateActions, payload, newState: ['$find', '$at'].includes(action.name) ? currentState.filter((_, i) => findIndex !== i) : currentState.filter((e, i) => !query(e, i)) });
       } else {
-        if ('$find' === action.name) {
+        if (['$find', '$at'].includes(action.name)) {
           return currentState.map((e, i) => i === findIndex
             ? copyNewState({ currentState: e, stateToUpdate: (stateToUpdate as Array<Actual>)[i], stateActions, cursor })
             : e);
         } else if ('$filter' === action.name) {
           if (stateActions[cursor.index]?.name === '$set') {
             return [
-              ...currentState.filter(e => !query(e)),
+              ...currentState.filter((e, i) => !query(e, i)),
               ...copyNewState({ currentState, stateToUpdate, stateActions, cursor }) as Array<Record<string, unknown>>,
             ];
           } else {
-            return currentState.map((e, i) => query(e)
+            return currentState.map((e, i) => query(e, i)
               ? copyNewState({ currentState: e, stateToUpdate: (stateToUpdate as Array<Actual>)[i], stateActions, cursor: { ...cursor } })
               : e);
           }
@@ -80,7 +80,6 @@ export const copyNewState = (
       const { [stateActions[cursor.index - 1].name]: other, ...otherState } = currentState as Record<string, unknown>;
       return setCurrentActionReturningNewState({ stateActions, payload, newState: otherState })
     } else {
-
       return {
         ...either(currentState).else({}) as Record<string, unknown>,
         [action.name]: copyNewState({
@@ -90,7 +89,6 @@ export const copyNewState = (
           cursor
         })
       };
-
     }
   } else if (action.name === '$set') {
     const { found, payloadOriginal, payloadSanitized } = getPayloadOrigAndSanitized(payload);

@@ -81,6 +81,7 @@ export type UpdatableArray<S extends Array<unknown>, F extends FindOrFilter, Q e
       & (S[0] extends boolean ? ToggleArray : unknown)
       & Find<S, NewDepth>
       & Filter<S, NewDepth>
+      & At<S, NewDepth>
       & Readable<F extends 'isFilter' ? S : S[0]>
       & (S[0] extends Array<unknown> ? unknown : S[0] extends PossiblyBrandedPrimitive ? MergePrimitive<S[0]> : MergeMatching<S[0]>)
       & (S extends Array<PossiblyBrandedPrimitive> ? SetUnique<S> : unknown)
@@ -161,6 +162,13 @@ export interface Filter<S extends Array<unknown>, NewDepth extends number> {
    * Filter the selected array
    */
   $filter: Comparators<S, S[0], 'isFilter', NewDepth> & (S[0] extends object ? Searchable<S, S[0], 'isFilter', NewDepth> : unknown)
+}
+
+export interface At<S extends Array<unknown>, NewDepth extends number> {
+  /**
+   * Get array index
+   */
+  $at: (index: number) => S[0] extends object ? UpdatableObject<S[0], 'isFind', 'notArray', 'no', NewDepth> : UpdatablePrimitive<S[0], 'isFind', 'notArray', 'no', NewDepth>
 }
 
 export interface Unsubscribe {
@@ -651,7 +659,6 @@ export type Searchable<T, S, F extends FindOrFilter, Depth extends number, NewDe
     [K in keyof S]: (S[K] extends object
       ? (Searchable<T, S[K], F, NewDepth> & Comparators<T, S[K], F, NewDepth>)
       : Comparators<T, S[K], F, NewDepth>)
-
   }
   ,
   Depth>

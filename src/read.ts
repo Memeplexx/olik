@@ -1,4 +1,4 @@
-import { anyLibProp, findFilter } from './constant';
+import { anyLibProp } from './constant';
 import { constructQuery } from './query';
 import { StateAction } from './type';
 import { either, is } from './type-check';
@@ -11,9 +11,11 @@ export const readState = (
   }
   const action = stateActions[cursor.index++];
   if (cursor.index < stateActions.length) {
-    if (Array.isArray(state) && findFilter.includes(action.name)) {
+    if (Array.isArray(state) && ['$find', '$filter', '$at'].includes(action.name)) {
       const query = constructQuery({ stateActions, cursor });
-      if ('$find' === action.name) {
+      if ('$at' === action.name) {
+        return readState({ state: state[action.arg as number], stateActions, cursor });
+      } else if ('$find' === action.name) {
         return readState({ state: state.find(query)!, stateActions, cursor });
       } else if ('$filter' === action.name) {
         return readState({ state: state.filter(query)!, stateActions, cursor: { ...cursor } });

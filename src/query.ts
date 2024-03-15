@@ -1,13 +1,16 @@
-import { andOr, anyLibProp, comparators, comparisons, reader, updateFunctions } from './constant';
+import { anyLibProp, comparators, comparisons, updateFunctions } from './constant';
 import { StateAction } from './type';
 import { QuerySpec } from './type-internal';
 import { getStateOrStoreState } from './utility';
 
-const action = [...updateFunctions, ...reader];
+const action = [...updateFunctions, '$onChange', '$state'];
 
 export const constructQuery = (
   { cursor, stateActions }: { stateActions: ReadonlyArray<StateAction>, cursor: { index: number } }
 ) => {
+  if ('$at' === stateActions[cursor.index - 1].name) {
+     return (e: unknown, index: number) => index === stateActions[cursor.index - 1].arg;
+  }
   const concatenateQueries = (queries: QuerySpec[]): QuerySpec[] => {
     const constructQuery = () => {
       const subStateActions = stateActions.slice(cursor.index, cursor.index + stateActions.slice(cursor.index).findIndex(sa => comparators.includes(sa.name)));
@@ -22,7 +25,7 @@ export const constructQuery = (
       query: constructQuery(),
       concat: (action.includes(stateActions[cursor.index].name) || !anyLibProp.includes(stateActions[cursor.index].name)) ? '$last' : stateActions[cursor.index].name as '$and' | '$or'
     });
-    if (andOr.includes(stateActions[cursor.index].name)) {
+    if (['$and', '$or'].includes(stateActions[cursor.index].name)) {
       cursor.index++;
       return concatenateQueries(queries);
     }

@@ -1,4 +1,4 @@
-import { andOr, augmentations, comparators, errorMessages, findFilter, libState, updateFunctions } from './constant';
+import { augmentations, comparators, errorMessages, libState, updateFunctions } from './constant';
 import { readState } from './read';
 import { Readable, StateAction, Store, StoreAugment } from './type';
 import { is } from './type-check';
@@ -81,7 +81,7 @@ export function createStore<S extends Record<string, unknown>>(
             libState.changeListeners.push(element);
             return { unsubscribe }
           }
-        } else if (andOr.includes(prop)) {
+        } else if (['$and', '$or'].includes(prop)) {
           stateActions.push({ name: prop });
           return recurseProxy(stateActions);
         } else if (comparators.includes(prop)) {
@@ -89,9 +89,14 @@ export function createStore<S extends Record<string, unknown>>(
             stateActions.push({ name: prop, arg });
             return recurseProxy(stateActions);
           }
-        } else if (findFilter.includes(prop)) {
+        } else if (['$find', '$filter'].includes(prop)) {
           stateActions.push({ name: prop });
           return recurseProxy(stateActions);
+        } else if ('$at' === prop) {
+          return (index: number) => {
+            stateActions.push({ name: prop, arg: index });
+            return recurseProxy(stateActions);
+          }
         } else if (augmentations.selection[prop]) {
           return augmentations.selection[prop](recurseProxy(stateActions));
         } else if (augmentations.core[prop]) {

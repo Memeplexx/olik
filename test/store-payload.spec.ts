@@ -256,3 +256,23 @@ test('accept dates', () => {
   store.dat.$set(new Date());
   console.log(store.$state);
 })
+
+test('array indices on primitive', () => {
+  const store = createStore({ arr: [1, 2, 3] });
+  store.arr.$at(1).$set(4);
+  expect(store.$state).toEqual({ arr: [1, 4, 3] });
+})
+
+test('array indices of object', () => {
+  const store = createStore({ arr: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }] });
+  store.arr.$at(1).value.$set('four');
+  expect(store.$state).toEqual({ arr: [{ id: 1, value: 'one' }, { id: 2, value: 'four' }, { id: 3, value: 'three' }] });
+  expect(store.arr.$at(1).$state).toEqual({ id: 2, value: 'four' });
+  expect(store.arr.$at(1).value.$state).toEqual('four');
+})
+
+test('array indices filter and then at', () => {
+  const store = createStore({ arr: [{ id: 1, arr2: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }] }, { id: 2, arr2: [{ id: 3, value: 'three' }, { id: 4, value: 'four' }] }] });
+  store.arr.$filter.id.$lte(2).arr2.$at(1).value.$set('xxx');
+  expect(store.$state).toEqual({ arr: [{ id: 1, arr2: [{ id: 1, value: 'one' }, { id: 2, value: 'xxx' }] }, { id: 2, arr2: [{ id: 3, value: 'three' }, { id: 4, value: 'xxx' }] }] });
+});
