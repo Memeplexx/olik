@@ -58,6 +58,12 @@ export const deserialize = <R>(arg?: string | null): R => {
     return <R>false
   }
 
+  // IS THE STRING A DATE?
+  const dateRegex = /^(?:(?:(?:0?[1-9]|1\d|2[0-8])\/(0?[1-9]|1[0-2]))|(?:(?:29|30)\/(0?[13-9]|1[0-2]))|(?:(?:31\/(0?[13578]|1[02]))|(?:29|30)\/(0?[1-9]|1[0-2])))\/(?:19|20)?\d{2}|29\/0?2\/(?:19|20)(?:[02468][048]|[13579][26])$/;
+  if (dateRegex.test(arg)) {
+    return <R>new Date(arg)
+  }
+
   // IS THE STRING JSON?
   try {
     const potentiallyParsableJson = arg
