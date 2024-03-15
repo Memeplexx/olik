@@ -102,7 +102,7 @@ export const getStateOrStoreState = <T, A extends T | Readable<T>>(arg: A) => {
   return (state === undefined ? arg : state) as A extends { $state: infer H } ? H : A;
 }
 
-const regexp = new RegExp([...comparators, ...updateFunctions].map(c => `^\\${c}$`).join('|'), 'g');
+const regexp = new RegExp([...comparators, ...updateFunctions, '$at'].map(c => `^\\${c}$`).join('|'), 'g');
 export const fixCurrentAction = (action: { name: string, arg?: unknown }, nested: boolean): string => {
   return action.name.replace(regexp, match => {
     if (updateFunctions.includes(match)) {
