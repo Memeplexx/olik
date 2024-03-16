@@ -826,5 +826,5 @@ export type DevtoolsAction = {
   source: string;
   stateActions: { arg: unknown; name: string; }[];
   trace?: string;
-  typeObject?: Record<string, unknown>;
+  payloadTypeObject?: Record<string, unknown>;
 }
