@@ -820,3 +820,11 @@ export type LibState = {
 }
 
 export type DerivationKey = { key: string, state: unknown, from?: DerivationKey[] }
+
+export type DevtoolsAction = {
+  action: OlikAction | undefined;
+  source: string;
+  stateActions: { arg: unknown; name: string; }[];
+  trace?: string;
+  typeObject?: Record<string, unknown>;
+}

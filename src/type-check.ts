@@ -2,6 +2,7 @@ import { Actual, Primitive } from "./type";
 
 
 export const is = {
+  date: (arg: unknown): arg is Date => arg instanceof Date,
   actual: (arg: unknown): arg is Actual => arg !== null && arg !== undefined,
   number: (arg: unknown): arg is number => typeof (arg) === 'number',
   string: (arg: unknown): arg is string => typeof (arg) === 'string',
