@@ -76,7 +76,8 @@ export type UpdatableArray<S extends Array<unknown>, F extends FindOrFilter, Q e
     ) : (
       & DeleteNode<Depth>
       & Clear
-      & Push<S[0] | S>
+      & Push<S[0]>
+      & PushMany<S>
       & SetArray<S, I>
       & (S[0] extends boolean ? ToggleArray : unknown)
       & Find<S, NewDepth>
@@ -245,6 +246,17 @@ export interface Push<S> {
    * Update the selected array, pushing the supplied array element.
    */
   $push(element: S): void;
+}
+
+export interface PushMany<S> {
+  /**
+   * Update the selected array, pushing multiple array elements returned by the supplied async function.
+   */
+  $pushMany(element: AnyAsyncFn<S>, options?: UpdateOptions<typeof element>): UpdateResult<typeof element>;
+  /**
+   * Update the selected array, pushing the supplied array elements.
+   */
+  $pushMany(element: S): void;
 }
 
 type PatchPayload<S> = Partial<{ [k in keyof S]: S[k] | Readable<S[k]> }>;

@@ -124,8 +124,9 @@ export const copyNewState = (
   } else if (action.name === '$clear') {
     return setCurrentActionReturningNewState({ stateActions, payload, newState: [] });
   } else if (action.name === '$push') {
-    const newState = Array.isArray(payload) ? [...currentState as Array<Actual>, ...payload] : [...currentState as Array<Actual>, payload];
-    return setCurrentActionReturningNewState({ stateActions, payload, newState });
+    return setCurrentActionReturningNewState({ stateActions, payload, newState: [...currentState as Array<Actual>, payload] });
+  } else if (action.name === '$pushMany') {
+    return setCurrentActionReturningNewState({ stateActions, payload, newState: [...currentState as Array<Actual>, ...payload as Array<Actual>] });
   } else if (action.name === '$deDuplicate') {
     return setCurrentActionReturningNewState({ stateActions, payload, newState: Array.from(new Set(currentState as Array<Actual>)) });
   } else if (action.name === '$toggle') {

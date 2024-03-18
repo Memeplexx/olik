@@ -58,8 +58,8 @@ test('should be able to insert many elements', () => {
   const store = createStore(state);
   const payload = [{ id: 4, val: 4 }, { id: 5, val: 5 }];
   store.arr
-    .$push(payload);
-  expect(libState.currentAction).toEqual({ type: 'arr.$push()', payload });
+    .$pushMany(payload);
+  expect(libState.currentAction).toEqual({ type: 'arr.$pushMany()', payload });
   expect(store.arr.$state).toEqual([...state.arr, ...payload]);
 })
 

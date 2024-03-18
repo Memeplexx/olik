@@ -48,8 +48,8 @@ test('should be able to insert many primitives', () => {
   const store = createStore(state);
   const payload = [4, 5, 6];
   store.arr
-    .$push(payload);
-  expect(libState.currentAction).toEqual({ type: 'arr.$push()', payload });
+    .$pushMany(payload);
+  expect(libState.currentAction).toEqual({ type: 'arr.$pushMany()', payload });
   expect(store.$state).toEqual({ arr: [1, 2, 3, 4, 5, 6] });
 })
 
@@ -194,5 +194,4 @@ test('should filter elements by one clause and another and increment them', () =
     .$filter.$gt(0).$and.$gt(1)
     .$add(1);
   expect(libState.currentAction).toEqual({ type: 'arr.$filter.$gt(0).$and.$gt(1).$add()', payload });
-
 })
