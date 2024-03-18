@@ -1,7 +1,6 @@
 import { libState } from './constant';
 import { DevtoolsAction } from './type';
-import { is } from './type-check';
-import { deserialize, getPayloadOrigAndSanitized } from './utility';
+import { deserialize, getPayloadOrigAndSanitized, isoDateRegexp } from './utility';
 
 let initialized = false;
 const pendingActions = new Array<Omit<DevtoolsAction, 'source'>>();
@@ -19,7 +18,6 @@ export function connectOlikDevtoolsToStore() {
     action: { type: '$setNew()', payload: libState.state },
     stateActions: [{ name: '$setNew', arg: libState.state }],
     trace: new Error().stack,
-    payloadTypeObject: getSimplifiedTypeObject(libState.state),
   });
 
   setupDevtools();
@@ -43,7 +41,6 @@ const setupDevtools = () => {
         action: libState.currentAction,
         stateActions: stateActions.map(sa => ({ ...sa, arg: getPayloadOrigAndSanitized(sa.arg).payloadSanitized })),
         trace: libState.stacktraceError?.stack,
-        payloadTypeObject: getSimplifiedTypeObject(libState.currentAction!.payload),
       } as DevtoolsAction;
       if (!initialized) {
         pendingActions.push(toSend);
@@ -53,43 +50,6 @@ const setupDevtools = () => {
     },
   };
 };
-
-export const getSimplifiedTypeObject = (obj: unknown) => {
-  const assignedPaths = new Map<string, unknown>();
-  const date = new Date(0);
-  const recurse = (val: unknown, paths: string[]) => {
-    if (is.record(val) && !is.date(val)) {
-      Object.keys(val).forEach(key => {
-        recurse(val[key], [...paths, key]);
-      });
-    } else if (is.array(val)) {
-      val.forEach(item => {
-        recurse(item, [...paths, '0']);
-      });
-    } else {
-      const path = paths.join('.');
-      if (([null, undefined] as Array<unknown>).includes(assignedPaths.get(path))) {
-        const valSimplified = is.number(val) ? 0 : is.string(val) ? '' : is.boolean(val) ? false : is.date(val) ? date : val;
-        assignedPaths.set(path, valSimplified);
-      }
-    }
-  };
-  recurse(obj, []);
-  const result = {};
-  assignedPaths.forEach((val, key) => {
-    const segments = key.split('.');
-    let subObj = result as Record<string, unknown>;
-    segments.forEach((segment, index) => {
-      if (index === segments.length - 1) {
-        subObj[segment] = val;
-      } else {
-        subObj[segment] = subObj[segment] || {};
-        subObj = subObj[segment] as Record<string, unknown>;
-      }
-    });
-  });
-  return result;
-}
 
 const reactToDevtoolsInitialization = () => {
   const olikInitDiv = document.body.appendChild(Object.assign(document.createElement('div'), {
@@ -114,7 +74,7 @@ const listenToStateChangesFromDevtools = () => {
   new MutationObserver(() => {
     libState.disableDevtoolsDispatch = true;
     libState.store!.$set(JSON.parse(olikStateDiv.innerHTML, (key, value) => {
-      if (typeof value === 'string' && /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(\.\d{1,3})?Z?$/.test(value)) {
+      if (typeof value === 'string' && isoDateRegexp.test(value)) {
         return new Date(value);
       }
       return value;
@@ -131,7 +91,7 @@ const listenToActionDispatchesFromDevtools = () => {
   new MutationObserver(() => {
     const actionType = olikActionDiv.innerHTML;
     let subStore = libState.store!;
-    const segments = actionType.split('.');
+    const segments = JSON.parse(actionType) as string[];
     if (segments[0] === 'store') {
       segments.shift();
     }
