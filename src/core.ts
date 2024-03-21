@@ -37,14 +37,21 @@ export function createStore<S extends Record<string, unknown>>(
       get: (_, prop: string) => {
         stateActions = topLevel ? new Array<StateAction>() : stateActions;
         if (updateFunctions.includes(prop)) {
-          if (libState.olikDevtools) {
-            libState.stacktraceError = new Error();
+          return (arg: unknown, { cache, eager }: { cache?: number, eager?: unknown } = {}) => {
+            if (libState.olikDevtools) {
+              libState.stacktraceError = new Error();
+            }
+            if (prop === '$delete') {
+              const stateActionsStr = stateActions.map(sa => sa.name).join('.');
+              libState.changeListeners.filter(l => l.actions.map(a => a.name).join('.').startsWith(stateActionsStr))
+                .forEach(l => l.unsubscribe());
+            } else if (prop === '$setKey') {
+              const stateActionsStr = stateActions.map(sa => sa.name).join('.');
+              libState.changeListeners.filter(l => l.actions.map(a => a.name).join('.').startsWith(stateActionsStr))
+                .forEach(l => l.actions[l.actions.length - 2].name = arg as string);
+            }
+            return processPotentiallyAsyncUpdate({ stateActions, prop, arg, cache, eager });
           }
-          if (prop === '$delete') {
-            const stateActionsStr = stateActions.map(sa => sa.name).join('.');
-            libState.changeListeners.filter(l => l.actions.map(a => a.name).join('.').startsWith(stateActionsStr)).forEach(l => l.unsubscribe());
-          }
-          return processPotentiallyAsyncUpdate({ stateActions, prop });
         } else if ('$invalidateCache' === prop) {
           return () => {
             try {

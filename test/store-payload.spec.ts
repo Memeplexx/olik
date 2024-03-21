@@ -277,3 +277,12 @@ test('array indices filter and then at', () => {
   expect(store.$state).toEqual({ arr: [{ id: 1, arr2: [{ id: 1, value: 'one' }, { id: 2, value: 'xxx' }] }, { id: 2, arr2: [{ id: 3, value: 'three' }, { id: 4, value: 'xxx' }] }] });
   console.log(libState.currentAction)
 });
+
+test('set object key', () => {
+  const store = createStore({ hello: 'world', another: 'what' });
+  let changed = '';
+  store.hello.$onChange(v => changed = v);
+  store.hello.$setKey('sss');
+  expect(store.$state).toEqual({ sss: 'world', another: 'what' });
+  expect(changed).toEqual('world');
+})

@@ -58,6 +58,6 @@ export const comparisons = {
   $isFalsy: <T>(val: T) => !val,
 } as { [comparator: string]: (val: unknown, arg: unknown) => boolean };
 
-export const updateFunctions = ['$set', '$setUnique', '$patch', '$patchDeep', '$delete', '$setNew', '$add', '$subtract', '$clear', '$push', '$pushMany', '$with', '$toggle', '$merge', '$deDuplicate'];
+export const updateFunctions = ['$set', '$setUnique', '$patch', '$patchDeep', '$delete', '$setNew', '$add', '$subtract', '$clear', '$push', '$pushMany', '$with', '$toggle', '$merge', '$deDuplicate', '$setKey'];
 export const comparators = Object.keys(comparisons);
 export const anyLibProp = [...updateFunctions, ...comparators, '$and', '$or', '$onChange', '$state', '$mergeMatching', '$at', '$find', '$filter'];

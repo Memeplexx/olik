@@ -57,11 +57,11 @@ export type UpdatableObject<S, F extends FindOrFilter, Q extends QueryStatus, I 
   & (Q extends 'notArray' ? PatchDeep<S> : F extends 'isFind' ? PatchDeepArrayElement<S> : PatchDeepArray<S>)
   & Readable<F extends 'isFilter' ? S[] : S>
   & ({
-    [K in keyof S]: S[K] extends Array<unknown>
+    [K in keyof S]: (S[K] extends Array<unknown>
     ? UpdatableArray<S[K], 'isFilter', 'notQueried', 'no', NewDepth>
     : S[K] extends PossiblyBrandedPrimitive
     ? UpdatablePrimitive<S[K], F, Q, 'no', NewDepth>
-    : UpdatableObject<S[K], F, Q, 'no', NewDepth>
+    : UpdatableObject<S[K], F, Q, 'no', NewDepth>) & SetObjectKey
   })
   , Depth>
 
@@ -257,6 +257,13 @@ export interface PushMany<S> {
    * Update the selected array, pushing the supplied array elements.
    */
   $pushMany(element: S): void;
+}
+
+export interface SetObjectKey {
+  /**
+   * Update the selected object, by adding the supplied key-value pair.
+   */
+  $setKey(key: string): void;
 }
 
 type PatchPayload<S> = Partial<{ [k in keyof S]: S[k] | Readable<S[k]> }>;

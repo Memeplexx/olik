@@ -6,7 +6,6 @@ import { CopyNewStateArgs, StoreInternal } from './type-internal';
 import { getPayloadOrigAndSanitized } from './utility';
 import { setCurrentActionReturningNewState } from './write-action';
 
-export const removeInvalidateCache = ['$delete', '$invalidateCache'];
 
 export const copyNewState = (
   {
@@ -75,10 +74,14 @@ export const copyNewState = (
           }
         }
       }
-    } else if (removeInvalidateCache.includes(stateActions[cursor.index].name)) {
+    } else if (['$delete', '$invalidateCache'].includes(stateActions[cursor.index].name)) {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { [stateActions[cursor.index - 1].name]: other, ...otherState } = currentState as Record<string, unknown>;
       return setCurrentActionReturningNewState({ stateActions, payload, newState: otherState })
+    } else if ('$setKey' === stateActions[cursor.index].name) {
+      const { found, payloadOriginal, payloadSanitized } = getPayloadOrigAndSanitized(stateActions[stateActions.length - 1].arg);
+      const { [stateActions[stateActions.length - 2].name]: v, ...remainingState } = currentState as Record<string, unknown>;
+      return setCurrentActionReturningNewState({ stateActions, payload: payloadSanitized, newState: { ...remainingState, [payloadSanitized as string]: v }, payloadOrig: found ? payloadOriginal : undefined });
     } else {
       return {
         ...either(currentState).else({}) as Record<string, unknown>,
@@ -116,6 +119,10 @@ export const copyNewState = (
     } else {
       return setCurrentActionReturningNewState({ stateActions, payload, newState: (currentState as number) - (payload as number) });
     }
+  // } else if (action.name === '$setKey') {
+  //   const { found, payloadOriginal, payloadSanitized } = getPayloadOrigAndSanitized(payload as string);
+  //   const { [stateActions[stateActions.length - 1].name]: v, ...remainingState } = currentState as Record<string, unknown>;
+  //   return setCurrentActionReturningNewState({ stateActions, payload: payloadSanitized, newState: { ...remainingState, [payloadSanitized as string]: v }, payloadOrig: found ? payloadOriginal : undefined });
   } else if (action.name === '$setNew') {
     const { found, payloadOriginal, payloadSanitized } = getPayloadOrigAndSanitized(payload as Record<string, unknown>);
     return setCurrentActionReturningNewState({ stateActions, payload: payloadSanitized, newState: currentState === undefined ? payload : { ...currentState as Record<string, unknown>, ...payloadSanitized }, payloadOrig: found ? payloadOriginal : undefined });
