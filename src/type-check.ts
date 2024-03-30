@@ -9,7 +9,7 @@ export const is = {
   boolean: (arg: unknown): arg is boolean => typeof (arg) === 'boolean',
   primitive: (arg: unknown): arg is Primitive => ['number', 'string', 'boolean'].includes(typeof arg),
   function: <Input, Output>(arg: unknown): arg is ((a: Input) => Output) => typeof arg === 'function',
-  record: <Value>(arg: unknown): arg is { [key: string]: Value } => typeof arg === 'object' && arg !== null && !Array.isArray(arg),
+  record: <Value>(arg: unknown): arg is { [key: string]: Value } => typeof arg === 'object' && arg !== null && !Array.isArray(arg) && !(arg instanceof Date),
   array: (arg: unknown): arg is Array<unknown> => Array.isArray(arg),
 }
 

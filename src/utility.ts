@@ -19,6 +19,7 @@ export const getStore = <S>() => libState.store as Store<S>;
 
 export const resetLibraryState = () => {
   testState.logLevel = 'none';
+  testState.fakeDevtoolsMessage = null;
   libState.store = undefined;
   libState.state = undefined;
   libState.changeListeners = [];
@@ -26,6 +27,7 @@ export const resetLibraryState = () => {
   libState.initialState = undefined;
   libState.disableDevtoolsDispatch = false;
   libState.derivations = new Map();
+  libState.olikDevtools = undefined;
 };
 
 export const isoDateRegexp = new RegExp(/^\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d+([+-][0-2]\d:[0-5]\d|Z)$/);

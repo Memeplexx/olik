@@ -60,7 +60,7 @@ export function createStore<S extends Record<string, unknown>>(
                   { name: 'cache' },
                   { name: stateActions.map(sa => sa.name).join('.') },
                   { name: '$delete' },
-                ]
+                ],
               });
             } catch (e) {
               /* This can happen if a cache has already expired */
@@ -128,7 +128,7 @@ export const validateState = (state: unknown) => {
     throw new Error(errorMessages.INVALID_STATE_INPUT(illegal));
   };
   if (is.actual(state) && !is.primitive(state)) {
-    if (!is.array(state) && !is.record(state)) {
+    if (!is.array(state) && !is.record(state) && !is.date(state)) {
       throwError(state);
     }
     Object.entries(state).forEach(([key, val]) => {

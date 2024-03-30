@@ -1,9 +1,6 @@
-import { Actual, DeleteNode, OlikAction, OlikDevtoolsExtension, OnChange, SetNewNode, StateAction } from './type';
+import { Actual, DeleteNode, DevtoolsAction, OnChange, SetNewNode, StateAction } from './type';
 
 
-export type WindowAugmentedWithOlikDevtools = {
-  __OLIK_DEVTOOLS_EXTENSION__: OlikDevtoolsExtension;
-}
 
 export type StoreInternal 
   = Record<string, unknown>
@@ -25,21 +22,17 @@ export interface QuerySpec {
   concat: '$and' | '$or' | '$last'
 }
 
-export type OlikDevtoolsExtensionInternal = {
-  _mockInvokeSubscription: (message: { type: string, payload: unknown, state?: unknown, source: unknown }) => unknown,
-  _subscribers: Array<(message: { type: string, payload: unknown, state?: unknown, source: unknown }) => unknown>,
-} & OlikDevtoolsExtension;
-
 export type CopyNewStateArgs = {
   currentState: unknown,
   stateToUpdate: Actual,
   stateActions: ReadonlyArray<StateAction>,
   cursor: { index: number }
+  changedIndices: string[],
+  changedIndex?: number,
 }
 
 export type TestState = {
-  currentActionsForOlikDevtools: OlikAction[],
-  fakeWindowObjectForOlikDevtools: null | WindowAugmentedWithOlikDevtools,
   logLevel: 'debug' | 'none',
   isTest: boolean,
+  fakeDevtoolsMessage: null | Omit<DevtoolsAction, 'source'>,
 }

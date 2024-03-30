@@ -814,21 +814,14 @@ export type DevtoolsInstance = {
   send: (action: OlikAction, state: unknown, stateReader: (s: unknown) => unknown, mutator: string) => unknown
 }
 
-export type OlikDevtoolsExtension = {
-  connect: (options?: unknown) => DevtoolsInstance;
-  disconnect: () => unknown;
-  send: (action: { type: string, payload?: unknown }, state: unknown, stateReader: (s: unknown) => unknown, mutator: string) => unknown;
-}
-
 export type OlikDevtoolsOptions = {
   trace?: boolean
 }
 
 export type LibState = {
   store: undefined | StoreInternal,
-  onInternalDispatch: (action: OlikAction) => void,
   asyncUpdate: undefined | ((args: EnableAsyncActionsArgs) => Promise<unknown>),
-  olikDevtools: undefined | { dispatch: (stateActions: StateAction[]) => unknown },
+  olikDevtools: undefined | { dispatch: (arg: { stateActions: StateAction[], changedIndices: string[] }) => unknown },
   state: undefined | Record<string, unknown>,
   changeListeners: ChangeListener[],
   currentAction: undefined | OlikAction,
@@ -845,4 +838,5 @@ export type DevtoolsAction = {
   source: string;
   stateActions: { arg: unknown; name: string; }[];
   trace?: string;
+  changedIndices: string[],
 }

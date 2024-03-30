@@ -13,7 +13,6 @@ export const errorMessages = {
 
 export const libState: LibState = {
   store: undefined,
-  onInternalDispatch: () => null,
   asyncUpdate: undefined,
   olikDevtools: undefined,
   state: undefined,
@@ -25,10 +24,9 @@ export const libState: LibState = {
 }
 
 export const testState: TestState = {
-  currentActionsForOlikDevtools: [],
-  fakeWindowObjectForOlikDevtools: null,
   logLevel: 'none',
   isTest: false,
+  fakeDevtoolsMessage: null,
 }
 
 export const augmentations: Augmentations = {

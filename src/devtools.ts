@@ -1,4 +1,4 @@
-import { libState } from './constant';
+import { libState, testState } from './constant';
 import { DevtoolsAction } from './type';
 import { deserialize, getPayloadOrigAndSanitized, isoDateRegexp } from './utility';
 
@@ -12,12 +12,14 @@ export function connectOlikDevtoolsToStore() {
   sendMessageToDevtools({
     action: { type: "$load()" },
     stateActions: [],
+    changedIndices: [],
   })
 
   pendingActions.push({
     action: { type: '$setNew()', payload: libState.state },
     stateActions: [{ name: '$setNew', arg: libState.state }],
     trace: new Error().stack,
+    changedIndices: [],
   });
 
   setupDevtools();
@@ -33,16 +35,14 @@ export function connectOlikDevtoolsToStore() {
 
 const setupDevtools = () => {
   libState.olikDevtools = {
-    dispatch: stateActions => {
-      if (typeof (window) === 'undefined') {
-        return;
-      }
+    dispatch: ({ stateActions, changedIndices }) => {
       const toSend = {
         action: libState.currentAction,
         stateActions: stateActions.map(sa => ({ ...sa, arg: getPayloadOrigAndSanitized(sa.arg).payloadSanitized })),
         trace: libState.stacktraceError?.stack,
+        changedIndices,
       } as DevtoolsAction;
-      if (!initialized) {
+      if (typeof (window) !== 'undefined' && !initialized) {
         pendingActions.push(toSend);
       } else {
         sendMessageToDevtools(toSend)
@@ -111,6 +111,9 @@ const listenToActionDispatchesFromDevtools = () => {
 }
 
 const sendMessageToDevtools = (action: Omit<DevtoolsAction, 'source'>) => {
+  if (typeof (window) === 'undefined') {
+    return testState.fakeDevtoolsMessage = action;
+  }
   window.postMessage({
     ...action,
     source: 'olik-devtools-extension',
