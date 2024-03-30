@@ -80,8 +80,12 @@ export const copyNewState = (
       return setCurrentActionReturningNewState({ stateActions, payload, newState: otherState })
     } else if ('$setKey' === stateActions[cursor.index].name) {
       const { found, payloadOriginal, payloadSanitized } = getPayloadOrigAndSanitized(stateActions[stateActions.length - 1].arg);
-      const { [stateActions[stateActions.length - 2].name]: v, ...remainingState } = currentState as Record<string, unknown>;
-      return setCurrentActionReturningNewState({ stateActions, payload: payloadSanitized, newState: { ...remainingState, [payloadSanitized as string]: v }, payloadOrig: found ? payloadOriginal : undefined });
+      const newState = {} as Record<string, unknown>;
+      Object.keys(currentState as Record<string, unknown>).forEach(k => {
+        const newKey = k === stateActions[stateActions.length - 2].name ? payloadSanitized as string : k;
+        newState[newKey] = (currentState as Record<string, unknown>)[k];
+      })
+      return setCurrentActionReturningNewState({ stateActions, payload: payloadSanitized, newState, payloadOrig: found ? payloadOriginal : undefined });
     } else {
       return {
         ...either(currentState).else({}) as Record<string, unknown>,
@@ -119,10 +123,6 @@ export const copyNewState = (
     } else {
       return setCurrentActionReturningNewState({ stateActions, payload, newState: (currentState as number) - (payload as number) });
     }
-  // } else if (action.name === '$setKey') {
-  //   const { found, payloadOriginal, payloadSanitized } = getPayloadOrigAndSanitized(payload as string);
-  //   const { [stateActions[stateActions.length - 1].name]: v, ...remainingState } = currentState as Record<string, unknown>;
-  //   return setCurrentActionReturningNewState({ stateActions, payload: payloadSanitized, newState: { ...remainingState, [payloadSanitized as string]: v }, payloadOrig: found ? payloadOriginal : undefined });
   } else if (action.name === '$setNew') {
     const { found, payloadOriginal, payloadSanitized } = getPayloadOrigAndSanitized(payload as Record<string, unknown>);
     return setCurrentActionReturningNewState({ stateActions, payload: payloadSanitized, newState: currentState === undefined ? payload : { ...currentState as Record<string, unknown>, ...payloadSanitized }, payloadOrig: found ? payloadOriginal : undefined });
