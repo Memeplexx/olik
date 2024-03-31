@@ -178,7 +178,7 @@ export const copyNewState = (
     return setCurrentActionReturningNewState({ stateActions, payload, newState: [...currentState, ...payload] });
   }
   if (action.name === '$deDuplicate' && mustBe.array(currentState)) {
-    return setCurrentActionReturningNewState({ stateActions, payload, newState: Array.from(new Set(currentState)) });
+    return setCurrentActionReturningNewState({ stateActions, payload, newState: [...new Set(currentState)] });
   }
   if (action.name === '$toggle') {
     if (is.array(currentState)) {
