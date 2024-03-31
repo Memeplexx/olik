@@ -42,38 +42,8 @@ export const copyNewState = (
       });
     });
   }
-  cursor.index++;
-  if ('$mergeMatching' === type && is.array(currentState)) {
-    const queryPaths = stateActions
-      .slice(cursor.index, cursor.index + stateActions.slice(cursor.index).findIndex(sa => is.anyUpdateFunction(sa.name)))
-      .reduce((prev, curr) => {
-        cursor.index++;
-        return prev.concat(curr);
-      }, new Array<StateAction>());
-    const merge = stateActions[cursor.index++];
-    const mergeArgState = is.storeInternal(merge.arg) ? merge.arg.$state : merge.arg;
-    const mergeArgs = [...(is.array(mergeArgState) ? mergeArgState : [mergeArgState])];
-    assertIsArray(mergeArgs);
-    const query = (e: Actual) => queryPaths.reduce((prev, curr) => (prev as Record<string, Actual>)[curr.name], e);
-    const indicesOld = new Array<number>();
-    const currentArrayModified = currentState.map((existingElement, i) => {
-      const elementValue = query(existingElement);
-      const found = mergeArgs.find(ua => query(ua) === elementValue);
-      if (found !== undefined) { indicesOld.push(i); }
-      return found ?? existingElement;
-    });
-    const indicesNew = new Array<number>();
-    const newArrayElements = mergeArgs.filter(mergeArg => {
-      const elementValue = query(mergeArg);
-      const notFound = !currentArrayModified.some(ua => query(ua) === elementValue);
-      if (notFound) { indicesNew.push(currentState.length + indicesNew.length) }
-      return notFound;
-    });
-    const newState = [...currentArrayModified, ...newArrayElements];
-    const { found, payloadOriginal, payloadSanitized } = getPayloadOrigAndSanitized(merge.arg);
-    return setCurrentActionReturningNewState({ stateActions, payload: payloadSanitized, newState, payloadOrig: found ? payloadOriginal : undefined });
-  }
-  if (cursor.index < stateActions.length) {
+  if (cursor.index < stateActions.length - 1) {
+    cursor.index++;
     if (type === '$at') {
       assertIsNumber(payload); assertIsArray(currentState); assertIsArray(stateToUpdate);
       if (currentState[payload] === undefined) { throw new Error(errorMessages.AT_INDEX_OUT_OF_BOUNDS(payload)); }
@@ -148,6 +118,37 @@ export const copyNewState = (
         })
       };
     }
+  }
+  if (type === '$mergeMatching') {
+    assertIsArray(currentState);
+    const queryPaths = stateActions
+      .slice(cursor.index, cursor.index + stateActions.slice(cursor.index).findIndex(sa => is.anyUpdateFunction(sa.name)))
+      .reduce((prev, curr) => {
+        cursor.index++;
+        return prev.concat(curr);
+      }, new Array<StateAction>());
+    const merge = stateActions[cursor.index++];
+    const mergeArgState = is.storeInternal(merge.arg) ? merge.arg.$state : merge.arg;
+    const mergeArgs = [...(is.array(mergeArgState) ? mergeArgState : [mergeArgState])];
+    assertIsArray(mergeArgs);
+    const query = (e: Actual) => queryPaths.reduce((prev, curr) => (prev as Record<string, Actual>)[curr.name], e);
+    const indicesOld = new Array<number>();
+    const currentArrayModified = currentState.map((existingElement, i) => {
+      const elementValue = query(existingElement);
+      const found = mergeArgs.find(ua => query(ua) === elementValue);
+      if (found !== undefined) { indicesOld.push(i); }
+      return found ?? existingElement;
+    });
+    const indicesNew = new Array<number>();
+    const newArrayElements = mergeArgs.filter(mergeArg => {
+      const elementValue = query(mergeArg);
+      const notFound = !currentArrayModified.some(ua => query(ua) === elementValue);
+      if (notFound) { indicesNew.push(currentState.length + indicesNew.length) }
+      return notFound;
+    });
+    const newState = [...currentArrayModified, ...newArrayElements];
+    const { found, payloadOriginal, payloadSanitized } = getPayloadOrigAndSanitized(merge.arg);
+    return setCurrentActionReturningNewState({ stateActions, payload: payloadSanitized, newState, payloadOrig: found ? payloadOriginal : undefined });
   }
   assertIsUpdateFunction(type);
   if (type === '$set') {
@@ -225,7 +226,6 @@ export const copyNewState = (
     const newState = [...currentState, ...(is.array(payloadSanitized) ? payloadSanitized : [payloadSanitized]).filter(e => !currentState.includes(e))];
     return setCurrentActionReturningNewState({ stateActions, payload: payloadSanitized, newState, payloadOrig: found ? payloadOriginal : undefined });
   }
-  // if (type === '')
   throw new Error();
 }
 
