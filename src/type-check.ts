@@ -11,12 +11,19 @@ export const is = {
   function: <Input, Output>(arg: unknown): arg is ((a: Input) => Output) => typeof arg === 'function',
   record: <Value>(arg: unknown): arg is { [key: string]: Value } => typeof arg === 'object' && arg !== null && !Array.isArray(arg) && !(arg instanceof Date),
   array: <T = Actual>(arg: unknown): arg is Array<T> => Array.isArray(arg),
+  null: (arg: unknown): arg is null => arg === null,
+  undefined: (arg: unknown): arg is undefined => arg === undefined,
 }
 
-export const either = (arg: unknown) => {
-  return {
-    else: (val: Actual) => {
-      return arg !== undefined ? arg as Actual : val;
+export const mustBe = (Object.keys(is) as Array<keyof typeof is> ).reduce((acc, key) => {
+  (acc as Record<string, unknown>)[key] = (arg: unknown) => {
+    if (!(is[key] as (arg: unknown) => arg is unknown)(arg)) {
+      throw new Error(`Expected ${key} but got ${typeof arg}`);
     }
-  }
-}
+    return arg;
+  };
+  return acc;
+}, {} as typeof is);
+
+export const newRecord = <V = unknown>() => ({} as Record<string, V>);
+

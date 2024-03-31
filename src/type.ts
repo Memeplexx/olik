@@ -821,7 +821,7 @@ export type OlikDevtoolsOptions = {
 export type LibState = {
   store: undefined | StoreInternal,
   asyncUpdate: undefined | ((args: EnableAsyncActionsArgs) => Promise<unknown>),
-  olikDevtools: undefined | { dispatch: (arg: { stateActions: StateAction[], changedIndices: string[] }) => unknown },
+  olikDevtools: undefined | { dispatch: (arg: { stateActions: StateAction[] }) => unknown },
   state: undefined | Record<string, unknown>,
   changeListeners: ChangeListener[],
   currentAction: undefined | OlikAction,
@@ -838,5 +838,4 @@ export type DevtoolsAction = {
   source: string;
   stateActions: { arg: unknown; name: string; }[];
   trace?: string;
-  changedIndices: string[],
 }

@@ -1,20 +1,20 @@
 import { anyLibProp } from './constant';
 import { constructQuery } from './query';
 import { StateAction } from './type';
-import { either, is } from './type-check';
+import { is, mustBe } from './type-check';
 
 export const readState = (
   { state, stateActions, cursor }: { state: unknown, stateActions: StateAction[], cursor: { index: number } }
 ): unknown => {
-  if (Array.isArray(state) && !anyLibProp.includes(stateActions[cursor.index].name)) {
+  if (is.array(state) && !anyLibProp.includes(stateActions[cursor.index].name)) {
     return state.map((_, i) => readState({ state: state[i], stateActions, cursor: { ...cursor } }));
   }
   const action = stateActions[cursor.index++];
   if (cursor.index < stateActions.length) {
-    if (Array.isArray(state) && ['$find', '$filter', '$at'].includes(action.name)) {
+    if (is.array(state) && ['$find', '$filter', '$at'].includes(action.name)) {
       const query = constructQuery({ stateActions, cursor });
-      if ('$at' === action.name) {
-        return readState({ state: state[action.arg as number], stateActions, cursor });
+      if ('$at' === action.name && mustBe.number(action.arg)) {
+        return readState({ state: state[action.arg], stateActions, cursor });
       } else if ('$find' === action.name) {
         return readState({ state: state.find(query)!, stateActions, cursor });
       } else if ('$filter' === action.name) {
@@ -22,10 +22,10 @@ export const readState = (
       } else {
         throw new Error();
       }
-    } else if (Array.isArray(state) && '$distinct' === action.name) {
-      return Array.from(new Set(state));
+    } else if (is.array(state) && '$distinct' === action.name) {
+      return [...new Set(state)];
     } else {
-      return readState({ state: Array.isArray(state) || is.primitive(state) ? undefined : (either(state).else({}) as Record<string, unknown>)[action.name], stateActions, cursor });
+      return readState({ state: is.record(state) ? state[action.name] : undefined, stateActions, cursor });
     }
   } else if (action.name === '$state' || action.name === '$onChange') {
     return state;

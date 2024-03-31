@@ -1,7 +1,7 @@
 import { anyLibProp, errorMessages, updateFunctions } from './constant';
 import { constructQuery } from './query';
 import { Actual, StateAction } from './type';
-import { either, is } from './type-check';
+import { is, mustBe, newRecord } from './type-check';
 import { CopyNewStateArgs, StoreInternal } from './type-internal';
 import { getPayloadOrigAndSanitized } from './utility';
 import { setCurrentActionReturningNewState } from './write-action';
@@ -13,14 +13,25 @@ export const copyNewState = (
     stateToUpdate,
     stateActions,
     cursor,
-    changedIndices,
-    changedIndex,
   }: CopyNewStateArgs
 ): unknown => {
-  if (is.array<Record<string, unknown>>(currentState) && !anyLibProp.includes(stateActions[cursor.index].name)) {
+  if (is.array<Record<string, unknown>>(currentState) && !anyLibProp.includes(stateActions[cursor.index].name) && mustBe.array(stateToUpdate)) {
     return currentState.map((_, i) => currentState[i]
-      ? { ...currentState[i], ...copyNewState({ currentState: either(currentState[i]).else({}), stateToUpdate: either((stateToUpdate as Array<Actual>)[i]).else({}), stateActions, cursor: { ...cursor }, changedIndices }) as Record<string, Actual> }
-      : copyNewState({ currentState: currentState[i], stateToUpdate: (stateToUpdate as Array<Actual>)[i], stateActions, cursor: { ...cursor }, changedIndices }) as Actual);
+      ? {
+        ...currentState[i],
+        ...copyNewState({
+          currentState: currentState[i] ?? newRecord(),
+          stateToUpdate: stateToUpdate[i] ?? newRecord(),
+          stateActions,
+          cursor: { ...cursor }
+        }) as Record<string, Actual>
+      }
+      : copyNewState({
+        currentState: currentState[i],
+        stateToUpdate: stateToUpdate[i],
+        stateActions,
+        cursor: { ...cursor }
+      }));
   } else if (is.array(currentState) && (stateActions[cursor.index].name === '$mergeMatching')) {
     cursor.index++;
     const queryPaths = stateActions
@@ -48,17 +59,15 @@ export const copyNewState = (
       if (notFound) { indicesNew.push(currentState.length + indicesNew.length) }
       return notFound;
     });
-    const newQueryIndices = [...indicesOld, ...indicesNew].flatMap(i => changedIndices.flatMap(q => `${q}.${i}`));
-    changedIndices.length = 0;
-    changedIndices.push(...newQueryIndices);
     const newState = [...currentArrayModified, ...newArrayElements];
     const { found, payloadOriginal, payloadSanitized } = getPayloadOrigAndSanitized(repsert.arg);
     return setCurrentActionReturningNewState({ stateActions, payload: payloadSanitized, newState, payloadOrig: found ? payloadOriginal : undefined });
   }
   const action = stateActions[cursor.index++];
+  const actionNext = stateActions[cursor.index];
   const payload = action.arg;
   if (cursor.index < stateActions.length) {
-    if (['$find', '$filter', '$at'].includes(action.name) && is.array(currentState)) {
+    if (['$find', '$filter', '$at'].includes(action.name) && mustBe.array(currentState)) {
       const query = constructQuery({ stateActions, cursor });
       let findIndex = -1;
       if (['$find', '$at'].includes(action.name)) {
@@ -66,121 +75,120 @@ export const copyNewState = (
         if (findIndex === -1) { throw new Error(errorMessages.FIND_RETURNS_NO_MATCHES); }
       }
       if (stateActions[cursor.index].name === '$delete') {
-        const indices = currentState.map((e, i) => query(e, i) ? i : null).filter(e => e !== null) as number[];
-        const newQueryIndices = indices.flatMap(i => changedIndices.flatMap(q => `${q}.${i}`));
-        changedIndices.length = 0;
-        changedIndices.push(...newQueryIndices);
         return setCurrentActionReturningNewState({
           stateActions, payload, newState: ['$find', '$at'].includes(action.name)
             ? currentState.filter((_, i) => findIndex !== i)
-            : currentState.filter((_, i) => !indices.includes(i)),
+            : currentState.filter((_, i) => !query(currentState[i], i)),
         });
-      } else {
-        if (['$find', '$at'].includes(action.name)) {
-          changedIndices.forEach((_, i) => changedIndices[i] = `${changedIndices[i]}.${findIndex}`);
-          return currentState.map((e, i) => i === findIndex
-            ? copyNewState({ currentState: e, stateToUpdate: (stateToUpdate as Array<Actual>)[i], stateActions, cursor, changedIndices, changedIndex: i })
+      }
+      if (['$find', '$at'].includes(action.name) && mustBe.array<Actual>(stateToUpdate)) {
+        return currentState.map((e, i) => i === findIndex
+          ? copyNewState({ currentState: e, stateToUpdate: stateToUpdate[i], stateActions, cursor })
+          : e);
+      }
+      if ('$filter' === action.name) {
+        if (stateActions[cursor.index]?.name === '$set') {
+          return [
+            ...currentState.filter((e, i) => !query(e, i)),
+            ...copyNewState({ currentState, stateToUpdate, stateActions, cursor }) as Array<Record<string, unknown>>, ///////
+          ];
+        }
+        if (mustBe.array<Actual>(stateToUpdate)) {
+          return currentState.map((e, i) => query(e, i)
+            ? copyNewState({ currentState: e, stateToUpdate: stateToUpdate[i], stateActions, cursor: { ...cursor } })
             : e);
-        } else if ('$filter' === action.name) {
-          const indices = currentState.map((e, i) => query(e, i) ? i : null).filter(e => e !== null) as number[];
-          const newQueryIndices = indices.flatMap(i => changedIndices.flatMap(q => `${q}.${i}`));
-          changedIndices.length = 0;
-          changedIndices.push(...newQueryIndices);
-          if (stateActions[cursor.index]?.name === '$set') {
-            return [
-              ...currentState.filter((_, i) => !indices.includes(i)),
-              ...copyNewState({ currentState, stateToUpdate, stateActions, cursor, changedIndices }) as Array<Record<string, unknown>>,
-            ];
-          } else {
-            return currentState.map((e, i) => indices.includes(i)
-              ? copyNewState({ currentState: e, stateToUpdate: (stateToUpdate as Array<Actual>)[i], stateActions, cursor: { ...cursor }, changedIndices, changedIndex: i })
-              : e);
-          }
         }
       }
-    } else if (['$delete', '$invalidateCache'].includes(stateActions[cursor.index].name)) {
+    }
+    if (['$delete', '$invalidateCache'].includes(actionNext.name) && mustBe.record(currentState)) {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { [stateActions[cursor.index - 1].name]: other, ...otherState } = currentState as Record<string, unknown>;
+      const { [action.name]: other, ...otherState } = currentState;
       return setCurrentActionReturningNewState({ stateActions, payload, newState: otherState })
-    } else if ('$setKey' === stateActions[cursor.index].name) {
-      const { found, payloadOriginal, payloadSanitized } = getPayloadOrigAndSanitized(stateActions[stateActions.length - 1].arg);
-      const newState = {} as Record<string, unknown>;
-      Object.keys(currentState as Record<string, unknown>).forEach(k => {
-        const newKey = k === stateActions[stateActions.length - 2].name ? payloadSanitized as string : k;
-        newState[newKey] = (currentState as Record<string, unknown>)[k];
+    }
+    if ('$setKey' === actionNext.name && mustBe.record(currentState) && mustBe.string(actionNext.arg)) {
+      const { found, payloadOriginal, payloadSanitized } = getPayloadOrigAndSanitized(actionNext.arg);
+      const newState = newRecord();
+      Object.keys(currentState).forEach(k => {
+        const newKey = k === action.name ? payloadSanitized : k;
+        newState[newKey] = currentState[k];
       })
       return setCurrentActionReturningNewState({ stateActions, payload: payloadSanitized, newState, payloadOrig: found ? payloadOriginal : undefined });
-    } else {
-      const currentStateRecord = (currentState ?? {}) as Record<string, unknown>;
-      if (!changedIndices.length) {
-        changedIndices.push(action.name);
-      } else {
-        changedIndices.forEach((x, i) => changedIndices[i] = (changedIndex === undefined || x.endsWith(`.${changedIndex}`)) ? `${x}.${action.name}` : x);
-      }
+    }
+    if (is.record<Record<string, unknown>>(currentState) || is.undefined(currentState)) {
+      const currentStateRecord = currentState ?? newRecord();
       return {
         ...currentStateRecord,
         [action.name]: copyNewState({
           currentState: currentStateRecord[action.name],
-          stateToUpdate: (currentStateRecord[action.name] ?? {}) as Record<string, unknown>,
+          stateToUpdate: (currentStateRecord[action.name] ?? newRecord()),
           stateActions,
           cursor,
-          changedIndices,
         })
       };
     }
-  } else if (action.name === '$set') {
+  }
+  if (action.name === '$set') {
     const { found, payloadOriginal, payloadSanitized } = getPayloadOrigAndSanitized(payload);
     return setCurrentActionReturningNewState({ stateActions, newState: payloadSanitized, payload: payloadSanitized, payloadOrig: found ? payloadOriginal : undefined });
-  } else if (action.name === '$setUnique') {
+  }
+  if (action.name === '$setUnique' && mustBe.array<Actual>(payload)) {
     const { found, payloadOriginal, payloadSanitized } = getPayloadOrigAndSanitized(payload);
-    const payloadWithoutDuplicates = Array.from(new Set(payloadSanitized as Array<Actual>));
+    const payloadWithoutDuplicates = Array.from(new Set(payloadSanitized));
     return setCurrentActionReturningNewState({ stateActions, newState: payloadWithoutDuplicates, payload: payloadWithoutDuplicates, payloadOrig: found ? payloadOriginal : undefined });
-  } else if (action.name === '$patch') {
+  }
+  if (action.name === '$patch' && mustBe.record(payload)) {
     if (is.array<Record<string, unknown>>(currentState)) {
-      return setCurrentActionReturningNewState({ stateActions, payload, newState: currentState.map(e => ({ ...e, ...payload as Record<string, unknown> })) });
-    } else {
-      const { found, payloadOriginal, payloadSanitized } = getPayloadOrigAndSanitized(payload as Record<string, unknown>);
-      return setCurrentActionReturningNewState({ stateActions, payload: payloadSanitized, newState: { ...currentState as Record<string, unknown>, ...payloadSanitized }, payloadOrig: found ? payloadOriginal : undefined });
+      return setCurrentActionReturningNewState({ stateActions, payload, newState: currentState.map(e => ({ ...e, ...payload })) });
     }
-  } else if (action.name === '$add') {
-    if (is.array(currentState)) {
-      return setCurrentActionReturningNewState({ stateActions, payload, newState: currentState.map(e => (e as number) + (payload as number)) });
-    } else {
-      return setCurrentActionReturningNewState({ stateActions, payload, newState: (currentState as number) + (payload as number) });
+    if (is.record(currentState)) {
+      const { found, payloadOriginal, payloadSanitized } = getPayloadOrigAndSanitized(payload);
+      return setCurrentActionReturningNewState({ stateActions, payload: payloadSanitized, newState: { ...currentState, ...payloadSanitized }, payloadOrig: found ? payloadOriginal : undefined });
     }
-  } else if (action.name === '$subtract') {
-    if (is.array(currentState)) {
-      return setCurrentActionReturningNewState({ stateActions, payload, newState: currentState.map(e => (e as number) + (payload as number)) });
-    } else {
-      return setCurrentActionReturningNewState({ stateActions, payload, newState: (currentState as number) - (payload as number) });
+  }
+  if (action.name === '$add' && mustBe.number(payload)) {
+    if (is.array<number>(currentState)) {
+      return setCurrentActionReturningNewState({ stateActions, payload, newState: currentState.map(e => e + payload) });
     }
-  } else if (action.name === '$setNew') {
-    const { found, payloadOriginal, payloadSanitized } = getPayloadOrigAndSanitized(payload as Record<string, unknown>);
-    return setCurrentActionReturningNewState({ stateActions, payload: payloadSanitized, newState: currentState === undefined ? payload : { ...currentState as Record<string, unknown>, ...payloadSanitized }, payloadOrig: found ? payloadOriginal : undefined });
-  } else if (action.name === '$patchDeep') {
-    return setCurrentActionReturningNewState({ stateActions, payload, newState: deepMerge(currentState as Record<string, unknown>, payload as Record<string, unknown>) });
-  } else if (action.name === '$clear') {
+    if (is.number(currentState)) {
+      return setCurrentActionReturningNewState({ stateActions, payload, newState: currentState + payload });
+    }
+  }
+  if (action.name === '$subtract' && mustBe.number(payload)) {
+    if (is.array<number>(currentState)) {
+      return setCurrentActionReturningNewState({ stateActions, payload, newState: currentState.map(e => e + payload) });
+    }
+    if (is.number(currentState)) {
+      return setCurrentActionReturningNewState({ stateActions, payload, newState: currentState - payload });
+    }
+  }
+  if (action.name === '$setNew' && mustBe.record(payload) && mustBe.record(currentState)) {
+    const { found, payloadOriginal, payloadSanitized } = getPayloadOrigAndSanitized(payload);
+    return setCurrentActionReturningNewState({ stateActions, payload: payloadSanitized, newState: currentState === undefined ? payload : { ...currentState, ...payloadSanitized }, payloadOrig: found ? payloadOriginal : undefined });
+  }
+  if (action.name === '$patchDeep' && mustBe.record(payload) && mustBe.record(currentState)) {
+    return setCurrentActionReturningNewState({ stateActions, payload, newState: deepMerge(currentState, payload) });
+  }
+  if (action.name === '$clear') {
     return setCurrentActionReturningNewState({ stateActions, payload, newState: [] });
-  } else if (action.name === '$push') {
-    changedIndices.forEach((_, i) => changedIndices[i] = `${changedIndices[i]}.${(currentState as Array<Actual>).length}`);
-    return setCurrentActionReturningNewState({ stateActions, payload, newState: [...currentState as Array<Actual>, payload] });
-  } else if (action.name === '$pushMany') {
-    const copied = changedIndices.slice();
-    changedIndices.length = 0;
-    (payload as Array<Actual>).forEach((e, i) => changedIndices.push(...copied.map(q => `${q}.${(currentState as Array<Actual>).length + i}`)));
-    return setCurrentActionReturningNewState({ stateActions, payload, newState: [...currentState as Array<Actual>, ...payload as Array<Actual>] });
-  } else if (action.name === '$deDuplicate') {
-    return setCurrentActionReturningNewState({ stateActions, payload, newState: Array.from(new Set(currentState as Array<Actual>)) });
-  } else if (action.name === '$toggle') {
+  }
+  if (action.name === '$push' && mustBe.array(currentState)) {
+    return setCurrentActionReturningNewState({ stateActions, payload, newState: [...currentState, payload] });
+  }
+  if (action.name === '$pushMany' && mustBe.array(currentState) && mustBe.array(payload)) {
+    return setCurrentActionReturningNewState({ stateActions, payload, newState: [...currentState, ...payload] });
+  }
+  if (action.name === '$deDuplicate' && mustBe.array(currentState)) {
+    return setCurrentActionReturningNewState({ stateActions, payload, newState: Array.from(new Set(currentState)) });
+  }
+  if (action.name === '$toggle') {
     if (is.array(currentState)) {
       return setCurrentActionReturningNewState({ stateActions, payload, newState: currentState.map(e => !e) });
-    } else {
-      return setCurrentActionReturningNewState({ stateActions, payload, newState: !currentState });
     }
-  } else if (action.name === '$merge') {
+    return setCurrentActionReturningNewState({ stateActions, payload, newState: !currentState });
+  }
+  if (action.name === '$merge' && mustBe.array<unknown>(currentState)) {
     const { found, payloadOriginal, payloadSanitized } = getPayloadOrigAndSanitized(payload);
-    const currentStateArray = currentState as unknown[];
-    const newState = [...currentStateArray, ...(is.array(payloadSanitized) ? payloadSanitized : [payloadSanitized]).filter(e => !currentStateArray.includes(e))];
+    const newState = [...currentState, ...(is.array(payloadSanitized) ? payloadSanitized : [payloadSanitized]).filter(e => !currentState.includes(e))];
     return setCurrentActionReturningNewState({ stateActions, payload: payloadSanitized, newState, payloadOrig: found ? payloadOriginal : undefined });
   }
   throw new Error();

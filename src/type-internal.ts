@@ -27,8 +27,6 @@ export type CopyNewStateArgs = {
   stateToUpdate: Actual,
   stateActions: ReadonlyArray<StateAction>,
   cursor: { index: number }
-  changedIndices: string[],
-  changedIndex?: number,
 }
 
 export type TestState = {

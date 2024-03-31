@@ -7,8 +7,7 @@ export const setNewStateAndNotifyListeners = (
   { stateActions }: { stateActions: StateAction[] }
 ) => {
   const oldState = libState.state;
-  const changedIndices = new Array<string>();
-  libState.state = copyNewState({ currentState: oldState, stateToUpdate: { ...oldState as Record<string, unknown> }, stateActions, cursor: { index: 0 }, changedIndices }) as Record<string, unknown>;
+  libState.state = copyNewState({ currentState: oldState, stateToUpdate: { ...oldState as Record<string, unknown> }, stateActions, cursor: { index: 0 } }) as Record<string, unknown>;
   libState.changeListeners.forEach(({ actions, listener }) => {
     const selectedOldState = readState({ state: oldState, stateActions: actions, cursor: { index: 0 } });
     const selectedNewState = readState({ state: libState.state, stateActions: actions, cursor: { index: 0 } });
@@ -17,6 +16,6 @@ export const setNewStateAndNotifyListeners = (
     }
   })
   if (libState.olikDevtools && !libState.disableDevtoolsDispatch) {
-    libState.olikDevtools.dispatch({ stateActions, changedIndices });
+    libState.olikDevtools.dispatch({ stateActions });
   }
 }
