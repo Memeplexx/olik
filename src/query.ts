@@ -1,10 +1,9 @@
-import { comparisons, updateFunctions } from './constant';
+import { comparisons } from './constant';
 import { StateAction } from './type';
 import { assertIsComparatorProp, is } from './type-check';
 import { QuerySpec } from './type-internal';
 import { getStateOrStoreState } from './utility';
 
-const action = [...updateFunctions, '$onChange', '$state'];
 
 export const constructQuery = (
   { cursor, stateActions }: { stateActions: ReadonlyArray<StateAction>, cursor: { index: number } }
@@ -22,7 +21,10 @@ export const constructQuery = (
     }
     queries.push({
       query: constructQuery(),
-      concat: (action.includes(stateActions[cursor.index].name) || !is.anyLibProp(stateActions[cursor.index].name)) ? '$last' : stateActions[cursor.index].name as '$and' | '$or'
+      concat: (() => {
+        const type = stateActions[cursor.index].name;
+        return is.anyUpdateFunction(type) || is.anyReadFunction(type) || !is.anyLibProp(type) ? '$last' : type as '$and' | '$or';
+      })(),
     });
     if (['$and', '$or'].includes(stateActions[cursor.index].name)) {
       cursor.index++;

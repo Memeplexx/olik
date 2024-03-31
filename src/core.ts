@@ -67,6 +67,12 @@ export function createStore<S extends Record<string, unknown>>(
           stateActions.push({ name: prop });
           return recurseProxy(stateActions);
         }
+        if (is.anyComparatorProp(prop)) {
+          return (arg?: unknown) => {
+            stateActions.push({ name: prop, arg });
+            return recurseProxy(stateActions);
+          }
+        }
         if (prop === '$invalidateCache') {
           return () => {
             try {
@@ -110,12 +116,6 @@ export function createStore<S extends Record<string, unknown>>(
         if (prop === '$and' || prop === '$or') {
           stateActions.push({ name: prop });
           return recurseProxy(stateActions);
-        }
-        if (is.anyComparatorProp(prop)) {
-          return (arg?: unknown) => {
-            stateActions.push({ name: prop, arg });
-            return recurseProxy(stateActions);
-          }
         }
         if (prop === '$find' || prop === '$filter') {
           stateActions.push({ name: prop });

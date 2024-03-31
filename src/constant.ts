@@ -39,9 +39,10 @@ export const augmentations: Augmentations = {
 };
 
 export const updateFunctions = ['$set', '$setUnique', '$patch', '$patchDeep', '$delete', '$setNew', '$add', '$subtract', '$clear', '$push', '$pushMany', '$with', '$toggle', '$merge', '$deDuplicate', '$setKey'] as const;
-export const otherFunctions = ['$and', '$or', '$onChange', '$state', '$mergeMatching', '$at', '$find', '$filter', '$invalidateCache', '$stateActions', '$distinct'] as const;
+export const readFunctions = ['$onChange', '$state']
+export const otherFunctions = ['$and', '$or', '$mergeMatching', '$at', '$find', '$filter', '$invalidateCache', '$stateActions', '$distinct'] as const;
 export const comparators = ['$eq', '$in', '$ni', '$gt', '$lt', '$gte', '$lte', '$match', '$contains', '$containsIgnoreCase', '$isContainedIn', '$isContainedInIgnoreCase', '$isTrue', '$isFalse', '$isTruthy', '$isFalsy'] as const;
-export const anyLibProp = [...updateFunctions, ...comparators, ...otherFunctions] as const;
+export const anyLibProp = [...updateFunctions, ...readFunctions, ...comparators, ...otherFunctions] as const;
 
 export const comparisons = {
   $eq: (val: unknown, arg: unknown) => val === arg,

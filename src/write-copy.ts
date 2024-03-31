@@ -1,7 +1,7 @@
 import { errorMessages } from './constant';
 import { constructQuery } from './query';
 import { Actual, StateAction } from './type';
-import { assertIsArray, assertIsNumber, assertIsRecord, assertIsString, assertIsUpdateFunction, is, newRecord } from './type-check';
+import { assertIsArray, assertIsBoolean, assertIsNumber, assertIsRecord, assertIsString, assertIsUpdateFunction, is, newRecord } from './type-check';
 import { CopyNewStateArgs } from './type-internal';
 import { getPayloadOrigAndSanitized } from './utility';
 import { setCurrentActionReturningNewState } from './write-action';
@@ -165,34 +165,33 @@ export const copyNewState = (
     if (is.array<Record<string, unknown>>(currentState)) {
       return setCurrentActionReturningNewState({ stateActions, payload, newState: currentState.map(e => ({ ...e, ...payload })) });
     }
-    if (is.record(currentState)) {
-      const { found, payloadOriginal, payloadSanitized } = getPayloadOrigAndSanitized(payload);
-      return setCurrentActionReturningNewState({ stateActions, payload: payloadSanitized, newState: { ...currentState, ...payloadSanitized }, payloadOrig: found ? payloadOriginal : undefined });
-    }
+    assertIsRecord(currentState);
+    const { found, payloadOriginal, payloadSanitized } = getPayloadOrigAndSanitized(payload);
+    return setCurrentActionReturningNewState({ stateActions, payload: payloadSanitized, newState: { ...currentState, ...payloadSanitized }, payloadOrig: found ? payloadOriginal : undefined });
   }
   if (type === '$add') {
     assertIsNumber(payload);
     if (is.array<number>(currentState)) {
       return setCurrentActionReturningNewState({ stateActions, payload, newState: currentState.map(e => e + payload) });
     }
-    if (is.number(currentState)) {
-      return setCurrentActionReturningNewState({ stateActions, payload, newState: currentState + payload });
-    }
+    assertIsNumber(currentState);
+    return setCurrentActionReturningNewState({ stateActions, payload, newState: currentState + payload });
   }
   if (type === '$subtract') {
     assertIsNumber(payload);
     if (is.array<number>(currentState)) {
       return setCurrentActionReturningNewState({ stateActions, payload, newState: currentState.map(e => e + payload) });
     }
-    if (is.number(currentState)) {
-      return setCurrentActionReturningNewState({ stateActions, payload, newState: currentState - payload });
-    }
+    assertIsNumber(currentState);
+    return setCurrentActionReturningNewState({ stateActions, payload, newState: currentState - payload });
   }
   if (type === '$setNew') {
     assertIsRecord(payload); assertIsRecord(currentState);
     const { found, payloadOriginal, payloadSanitized } = getPayloadOrigAndSanitized(payload);
-    return setCurrentActionReturningNewState({ stateActions, payload: payloadSanitized, 
-      newState: currentState === undefined? payload : { ...currentState, ...payloadSanitized }, payloadOrig: found ? payloadOriginal : undefined });
+    return setCurrentActionReturningNewState({
+      stateActions, payload: payloadSanitized,
+      newState: currentState === undefined ? payload : { ...currentState, ...payloadSanitized }, payloadOrig: found ? payloadOriginal : undefined
+    });
   }
   if (type === '$patchDeep') {
     assertIsRecord(payload); assertIsRecord(currentState);
@@ -217,9 +216,8 @@ export const copyNewState = (
     if (is.array(currentState)) {
       return setCurrentActionReturningNewState({ stateActions, payload, newState: currentState.map(e => !e) });
     }
-    if (is.boolean(currentState)) {
-      return setCurrentActionReturningNewState({ stateActions, payload, newState: !currentState });
-    }
+    assertIsBoolean(currentState);
+    return setCurrentActionReturningNewState({ stateActions, payload, newState: !currentState });
   }
   if (type === '$merge') {
     assertIsArray<unknown>(currentState);
@@ -227,6 +225,7 @@ export const copyNewState = (
     const newState = [...currentState, ...(is.array(payloadSanitized) ? payloadSanitized : [payloadSanitized]).filter(e => !currentState.includes(e))];
     return setCurrentActionReturningNewState({ stateActions, payload: payloadSanitized, newState, payloadOrig: found ? payloadOriginal : undefined });
   }
+  // if (type === '')
   throw new Error();
 }
 
