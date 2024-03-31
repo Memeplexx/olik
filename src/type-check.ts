@@ -26,4 +26,3 @@ export const mustBe = (Object.keys(is) as Array<keyof typeof is> ).reduce((acc, 
 }, {} as typeof is);
 
 export const newRecord = <V = unknown>() => ({} as Record<string, V>);
-

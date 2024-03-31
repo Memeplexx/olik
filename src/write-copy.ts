@@ -184,7 +184,9 @@ export const copyNewState = (
     if (is.array(currentState)) {
       return setCurrentActionReturningNewState({ stateActions, payload, newState: currentState.map(e => !e) });
     }
-    return setCurrentActionReturningNewState({ stateActions, payload, newState: !currentState });
+    if (is.boolean(currentState)) {
+      return setCurrentActionReturningNewState({ stateActions, payload, newState: !currentState });
+    }
   }
   if (action.name === '$merge' && mustBe.array<unknown>(currentState)) {
     const { found, payloadOriginal, payloadSanitized } = getPayloadOrigAndSanitized(payload);
