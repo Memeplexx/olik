@@ -40,26 +40,26 @@ export const copyNewState = (
         cursor.index++;
         return prev.concat(curr);
       }, new Array<StateAction>());
-    const repsert = stateActions[cursor.index++];
-    const repsertArgState = is.storeInternal(repsert.arg) ? repsert.arg.$state : repsert.arg as Actual;
-    const repsertArgs = [...(is.array(repsertArgState) ? repsertArgState : [repsertArgState])];
+    const merge = stateActions[cursor.index++];
+    const mergeArgState = is.storeInternal(merge.arg) ? merge.arg.$state : merge.arg as Actual;
+    const mergeArgs = [...(is.array(mergeArgState) ? mergeArgState : [mergeArgState])];
     const query = (e: Actual) => queryPaths.reduce((prev, curr) => (prev as Record<string, Actual>)[curr.name], e);
     const indicesOld = new Array<number>();
     const currentArrayModified = currentState.map((existingElement, i) => {
       const elementValue = query(existingElement);
-      const found = repsertArgs.find(ua => query(ua) === elementValue);
+      const found = mergeArgs.find(ua => query(ua) === elementValue);
       if (found !== undefined) { indicesOld.push(i); }
       return found ?? existingElement;
     });
     const indicesNew = new Array<number>();
-    const newArrayElements = repsertArgs.filter(repsertArg => {
-      const elementValue = query(repsertArg);
+    const newArrayElements = mergeArgs.filter(mergeArg => {
+      const elementValue = query(mergeArg);
       const notFound = !currentArrayModified.some(ua => query(ua) === elementValue);
       if (notFound) { indicesNew.push(currentState.length + indicesNew.length) }
       return notFound;
     });
     const newState = [...currentArrayModified, ...newArrayElements];
-    const { found, payloadOriginal, payloadSanitized } = getPayloadOrigAndSanitized(repsert.arg);
+    const { found, payloadOriginal, payloadSanitized } = getPayloadOrigAndSanitized(merge.arg);
     return setCurrentActionReturningNewState({ stateActions, payload: payloadSanitized, newState, payloadOrig: found ? payloadOriginal : undefined });
   }
   const action = stateActions[cursor.index++];
