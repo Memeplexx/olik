@@ -15,7 +15,7 @@ export type Primitive = string | number | boolean;
 
 export type PossiblyBrandedPrimitive = Primitive & { [brand]?: string };
 
-export type Actual = Primitive | Record<string, unknown> | Array<unknown>;
+export type Actual = Primitive | { [k: string]: Actual } | Actual[];
 
 export type SerializableState = {
   [P: string]: SerializableState | Array<SerializableState | Primitive | null> | Primitive | null;
@@ -29,6 +29,8 @@ export type PatchDeepPayload<T> =
   T extends (infer R)[] ? Array<PatchDeepPayload<R>> :
   T extends object ? PatchDeepPayloadObject<T> :
   T;
+
+export type ValueOf<T> = T[keyof T];
 
 export type RepsertableObject<T, S> = With<T> & { [K in keyof S]: S[K] extends object ? RepsertableObject<T, S[K]> : RepsertablePrimitive<T> }
 

@@ -1,4 +1,4 @@
-import { Augmentations, LibState } from './type';
+import { Augmentations, LibState, ValueOf } from './type';
 import { TestState } from './type-internal';
 
 
@@ -38,25 +38,27 @@ export const augmentations: Augmentations = {
   async: promise => promise(),
 };
 
-export const comparisons = {
-  $eq: <T>(val: T, arg: T) => val === arg,
-  $in: <T>(val: T, arg: Array<T>) => arg.includes(val),
-  $ni: <T>(val: T, arg: Array<T>) => !arg.includes(val),
-  $gt: <T>(val: T, arg: T) => val > arg,
-  $lt: <T>(val: T, arg: T) => val < arg,
-  $gte: <T>(val: T, arg: T) => val >= arg,
-  $lte: <T>(val: T, arg: T) => val <= arg,
-  $match: (val: string, arg: RegExp) => arg.test(val),
-  $contains: (val: string, arg: string) => val.includes(arg),
-  $containsIgnoreCase: (val: string, arg: string) => val.toLowerCase().includes(arg.toLowerCase()),
-  $isContainedIn: (val: string, arg: string) => arg.includes(val),
-  $isContainedInIgnoreCase: (val: string, arg: string) => arg.toLowerCase().includes(val.toLowerCase()),
-  $isTrue: (val: boolean) => val === true,
-  $isFalse: (val: boolean) => val === false,
-  $isTruthy: <T>(val: T) => !!val,
-  $isFalsy: <T>(val: T) => !val,
-} as { [comparator: string]: (val: unknown, arg: unknown) => boolean };
+export const updateFunctions = ['$set', '$setUnique', '$patch', '$patchDeep', '$delete', '$setNew', '$add', '$subtract', '$clear', '$push', '$pushMany', '$with', '$toggle', '$merge', '$deDuplicate', '$setKey'] as const;
+export const otherFunctions = ['$and', '$or', '$onChange', '$state', '$mergeMatching', '$at', '$find', '$filter'] as const;
+export const comparators = ['$eq', '$in', '$ni', '$gt', '$lt', '$gte', '$lte', '$match', '$contains', '$containsIgnoreCase', '$isContainedIn', '$isContainedInIgnoreCase', '$isTrue', '$isFalse', '$isTruthy', '$isFalsy'] as const;
+export const anyLibProp = [...updateFunctions, ...comparators, ...otherFunctions] as const;
 
-export const updateFunctions = ['$set', '$setUnique', '$patch', '$patchDeep', '$delete', '$setNew', '$add', '$subtract', '$clear', '$push', '$pushMany', '$with', '$toggle', '$merge', '$deDuplicate', '$setKey'];
-export const comparators = Object.keys(comparisons);
-export const anyLibProp = [...updateFunctions, ...comparators, '$and', '$or', '$onChange', '$state', '$mergeMatching', '$at', '$find', '$filter'];
+export const comparisons = {
+  $eq: (val: unknown, arg: unknown) => val === arg,
+  $in: (val: unknown, arg: unknown) => (arg as Array<unknown>).includes(val),
+  $ni: (val: unknown, arg: unknown) => !(arg as Array<unknown>).includes(val),
+  $gt: (val: unknown, arg: unknown) => (val as number) > (arg as number),
+  $lt: (val: unknown, arg: unknown) => (val as number) < (arg as number),
+  $gte: (val: unknown, arg: unknown) => (val as number) >= (arg as number),
+  $lte: (val: unknown, arg: unknown) => (val as number) <= (arg as number),
+  $match: (val: unknown, arg: unknown) => (arg as RegExp).test(val as string),
+  $contains: (val: unknown, arg: unknown) => (val as Array<unknown>).includes(arg),
+  $containsIgnoreCase: (val: unknown, arg: unknown) => (val as string).toLowerCase().includes((arg as string).toLowerCase()),
+  $isContainedIn: (val: unknown, arg: unknown) => (arg as Array<unknown>).includes(val),
+  $isContainedInIgnoreCase: (val: unknown, arg: unknown) => (arg as string).toLowerCase().includes((val as string).toLowerCase()),
+  $isTrue: (val: unknown) => val === true,
+  $isFalse: (val: unknown) => val === false,
+  $isTruthy: (val: unknown) => !!val,
+  $isFalsy: (val: unknown) => !val,
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+} as const satisfies { [comparator in ValueOf<typeof comparators> & string]: (val: any, arg?: any) => boolean };

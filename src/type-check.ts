@@ -1,4 +1,5 @@
-import { Actual, Primitive } from "./type";
+import { anyLibProp, comparators, updateFunctions } from "./constant";
+import { Actual, Primitive, ValueOf } from "./type";
 import { StoreInternal } from "./type-internal";
 
 
@@ -10,21 +11,39 @@ export const is = {
   boolean: (arg: unknown): arg is boolean => typeof (arg) === 'boolean',
   primitive: (arg: unknown): arg is Primitive => ['number', 'string', 'boolean'].includes(typeof arg),
   function: <Input, Output>(arg: unknown): arg is ((a: Input) => Output) => typeof arg === 'function',
-  record: <Value>(arg: unknown): arg is { [key: string]: Value } => typeof arg === 'object' && arg !== null && !Array.isArray(arg) && !(arg instanceof Date),
+  record: <T = Actual>(arg: unknown): arg is { [key: string]: T } => typeof arg === 'object' && arg !== null && !Array.isArray(arg) && !(arg instanceof Date),
   array: <T = Actual>(arg: unknown): arg is Array<T> => Array.isArray(arg),
   null: (arg: unknown): arg is null => arg === null,
   undefined: (arg: unknown): arg is undefined => arg === undefined,
   storeInternal: (arg: unknown): arg is StoreInternal => is.record(arg) && !!arg['$stateActions'],
+  anyComparatorProp: (arg: unknown): arg is ValueOf<typeof comparators> => (comparators as unknown as string[]).includes(arg as string),
+  anyUpdateFunction: (arg: unknown): arg is ValueOf<typeof updateFunctions> & string => (updateFunctions as unknown as string[]).includes(arg as string),
+  anyLibProp: (arg: unknown): arg is ValueOf<typeof anyLibProp> & string => (anyLibProp as unknown as string[]).includes(arg as string),
 }
 
-export const mustBe = (Object.keys(is) as Array<keyof typeof is> ).reduce((acc, key) => {
-  (acc as Record<string, unknown>)[key] = (arg: unknown) => {
-    if (!(is[key] as (arg: unknown) => arg is unknown)(arg)) {
-      throw new Error(`Expected ${key} but got ${typeof arg}`);
-    }
-    return arg;
-  };
-  return acc;
-}, {} as typeof is);
-
 export const newRecord = <V = unknown>() => ({} as Record<string, V>);
+
+export function assertIsString(value: unknown): asserts value is string {
+  if (is.string(value)) return;
+  throw new Error();
+}
+
+export function assertIsNumber(value: unknown): asserts value is number {
+  if (is.number(value)) return;
+  throw new Error();
+}
+
+export function assertIsArray<T = Actual>(value: unknown): asserts value is Array<T> {
+  if (is.array<T>(value)) return;
+  throw new Error();
+}
+
+export function assertIsRecord<T = Actual>(value: unknown): asserts value is { [key: string]: T } {
+  if (is.record<T>(value)) return;
+  throw new Error();
+}
+
+export function assertIsComparatorProp(value: unknown): asserts value is ValueOf<typeof comparators> {
+  if (is.anyComparatorProp(value)) return;
+  throw new Error();
+}

@@ -1,5 +1,5 @@
 import { beforeEach, expect, test } from 'vitest';
-import { StateAction, libState, readState, updateFunctions } from '../src';
+import { StateAction, is, libState, readState } from '../src';
 import { createStore } from '../src/core';
 import { deserialize, resetLibraryState } from '../src/utility';
 
@@ -209,7 +209,7 @@ test('', () => {
       .map(seg => {
         const arg = seg.match(/\(([^)]*)\)/)?.[1];
         const containsParenthesis = arg !== null && arg !== undefined;
-        if (containsParenthesis && !updateFunctions.includes(seg)) {
+        if (containsParenthesis && !is.anyUpdateFunction(seg)) {
           const functionName = seg.split('(')[0];
           const typedArg = deserialize(arg);
           return { name: functionName, arg: typedArg };

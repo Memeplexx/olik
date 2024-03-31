@@ -1,7 +1,7 @@
-import { augmentations, comparators, errorMessages, libState, updateFunctions } from './constant';
+import { augmentations, errorMessages, libState } from './constant';
 import { readState } from './read';
 import { Readable, StateAction, Store, StoreAugment } from './type';
-import { is } from './type-check';
+import { assertIsRecord, is } from './type-check';
 import { StoreInternal } from './type-internal';
 import { deepFreeze } from './utility';
 import { processPotentiallyAsyncUpdate } from './write';
@@ -36,7 +36,7 @@ export function createStore<S extends Record<string, unknown>>(
     return new Proxy(<StoreInternal>{}, {
       get: (_, prop: string) => {
         stateActions = topLevel ? new Array<StateAction>() : stateActions;
-        if (updateFunctions.includes(prop)) {
+        if (is.anyUpdateFunction(prop)) {
           return (arg: unknown, { cache, eager }: { cache?: number, eager?: unknown } = {}) => {
             if (libState.olikDevtools) {
               libState.stacktraceError = new Error();
@@ -91,7 +91,7 @@ export function createStore<S extends Record<string, unknown>>(
         } else if (['$and', '$or'].includes(prop)) {
           stateActions.push({ name: prop });
           return recurseProxy(stateActions);
-        } else if (comparators.includes(prop)) {
+        } else if (is.anyComparatorProp(prop)) {
           return (arg?: unknown) => {
             stateActions.push({ name: prop, arg });
             return recurseProxy(stateActions);
@@ -142,10 +142,10 @@ export const validateState = (state: unknown) => {
 
 export const removeStaleCacheReferences = (state: Record<string, unknown>) => {
   if (!state.cache) { return; }
-  const cache = state.cache as Record<string, string>;
-  for (const key in cache) {
-    if (new Date(cache[key]).getTime() <= Date.now()) {
-      delete cache[key];
+  assertIsRecord<string>(state.cache);
+  for (const key in state.cache) {
+    if (new Date(state.cache[key]).getTime() <= Date.now()) {
+      delete state.cache[key];
     }
   }
 }
