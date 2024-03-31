@@ -8,9 +8,6 @@ const action = [...updateFunctions, '$onChange', '$state'];
 export const constructQuery = (
   { cursor, stateActions }: { stateActions: ReadonlyArray<StateAction>, cursor: { index: number } }
 ) => {
-  if ('$at' === stateActions[cursor.index - 1].name) {
-     return (e: unknown, index: number) => index === stateActions[cursor.index - 1].arg;
-  }
   const concatenateQueries = (queries: QuerySpec[]): QuerySpec[] => {
     const constructQuery = () => {
       const subStateActions = stateActions.slice(cursor.index, cursor.index + stateActions.slice(cursor.index).findIndex(sa => comparators.includes(sa.name)));

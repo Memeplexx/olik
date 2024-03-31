@@ -15,23 +15,26 @@ export const copyNewState = (
     cursor,
   }: CopyNewStateArgs
 ): unknown => {
-  if (is.array<Record<string, unknown>>(currentState) && !anyLibProp.includes(stateActions[cursor.index].name) && mustBe.array(stateToUpdate)) {
-    return currentState.map((_, i) => currentState[i]
-      ? {
-        ...currentState[i],
-        ...copyNewState({
-          currentState: currentState[i] ?? newRecord(),
-          stateToUpdate: stateToUpdate[i] ?? newRecord(),
-          stateActions,
-          cursor: { ...cursor }
-        }) as Record<string, Actual>
+  if (!anyLibProp.includes(stateActions[cursor.index].name) && is.array<Record<string, unknown>>(currentState) && mustBe.array(stateToUpdate)) {
+    return currentState.map((_, i) => {
+      if (currentState[i]) {
+        return {
+          ...currentState[i],
+          ...copyNewState({
+            currentState: currentState[i] ?? newRecord(),
+            stateToUpdate: stateToUpdate[i] ?? newRecord(),
+            stateActions,
+            cursor: { ...cursor }
+          }) as Record<string, Actual>
+        };
       }
-      : copyNewState({
+      return copyNewState({
         currentState: currentState[i],
         stateToUpdate: stateToUpdate[i],
         stateActions,
         cursor: { ...cursor }
-      }));
+      });
+    });
   }
   if (('$mergeMatching' === stateActions[cursor.index].name) && is.array(currentState)) {
     cursor.index++;
@@ -63,17 +66,18 @@ export const copyNewState = (
     const { found, payloadOriginal, payloadSanitized } = getPayloadOrigAndSanitized(merge.arg);
     return setCurrentActionReturningNewState({ stateActions, payload: payloadSanitized, newState, payloadOrig: found ? payloadOriginal : undefined });
   }
-  const action = stateActions[cursor.index++];
+  const action = stateActions[cursor.index];
+  cursor.index++;
   const payload = action.arg;
   const type = action.name;
   if (cursor.index < stateActions.length) {
-    if ('$at' === type && mustBe.number(action.arg) && mustBe.array(currentState) && mustBe.array(stateToUpdate)) {
-      if (currentState[action.arg] === undefined) { throw new Error(errorMessages.AT_INDEX_OUT_OF_BOUNDS(action.arg)); }
-      return currentState.map((e, i) => i === action.arg
+    if (type === '$at' && mustBe.number(payload) && mustBe.array(currentState) && mustBe.array(stateToUpdate)) {
+      if (currentState[payload] === undefined) { throw new Error(errorMessages.AT_INDEX_OUT_OF_BOUNDS(payload)); }
+      return currentState.map((e, i) => i === payload
         ? copyNewState({ currentState: e, stateToUpdate: stateToUpdate[i], stateActions, cursor })
         : e);
     }
-    if ('$find' === type && mustBe.array(currentState) && mustBe.array(stateToUpdate)) {
+    if (type === '$find' && mustBe.array(currentState) && mustBe.array(stateToUpdate)) {
       const query = constructQuery({ stateActions, cursor });
       const findIndex = currentState.findIndex(query);
       if (findIndex === -1) { throw new Error(errorMessages.FIND_RETURNS_NO_MATCHES); }
@@ -84,21 +88,23 @@ export const copyNewState = (
         ? copyNewState({ currentState: e, stateToUpdate: stateToUpdate[i], stateActions, cursor })
         : e);
     }
-    if ('$filter' === type && mustBe.array(currentState)) {
+    if (type === '$filter' && mustBe.array(currentState)) {
       const query = constructQuery({ stateActions, cursor });
       if ('$delete' === stateActions[cursor.index].name) {
         return setCurrentActionReturningNewState({
-          stateActions, payload, newState: currentState.filter((_, i) => !query(currentState[i], i)),
+          stateActions,
+          payload,
+          newState: currentState.filter((_, i) => !query(currentState[i])),
         });
       }
       if ('$set' === stateActions[cursor.index].name) {
         return [
-          ...currentState.filter((e, i) => !query(e, i)),
-          ...copyNewState({ currentState, stateToUpdate, stateActions, cursor }) as Array<Record<string, unknown>>, ///////
+          ...currentState.filter(e => !query(e)),
+          ...copyNewState({ currentState, stateToUpdate, stateActions, cursor }) as Array<Record<string, unknown>>,
         ];
       }
       if (mustBe.array<Actual>(stateToUpdate)) {
-        return currentState.map((e, i) => query(e, i)
+        return currentState.map((e, i) => query(e)
           ? copyNewState({ currentState: e, stateToUpdate: stateToUpdate[i], stateActions, cursor: { ...cursor } })
           : e);
       }
@@ -106,14 +112,14 @@ export const copyNewState = (
     const actionNext = stateActions[cursor.index];
     if (['$delete', '$invalidateCache'].includes(actionNext.name) && mustBe.record(currentState)) {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
-      const { [action.name]: other, ...otherState } = currentState;
+      const { [type]: other, ...otherState } = currentState;
       return setCurrentActionReturningNewState({ stateActions, payload, newState: otherState })
     }
     if ('$setKey' === actionNext.name && mustBe.record(currentState) && mustBe.string(actionNext.arg)) {
       const { found, payloadOriginal, payloadSanitized } = getPayloadOrigAndSanitized(actionNext.arg);
       const newState = newRecord();
       Object.keys(currentState).forEach(k => {
-        const newKey = k === action.name ? payloadSanitized : k;
+        const newKey = k === type ? payloadSanitized : k;
         newState[newKey] = currentState[k];
       })
       return setCurrentActionReturningNewState({ stateActions, payload: payloadSanitized, newState, payloadOrig: found ? payloadOriginal : undefined });
@@ -122,9 +128,9 @@ export const copyNewState = (
       const currentStateRecord = currentState ?? newRecord();
       return {
         ...currentStateRecord,
-        [action.name]: copyNewState({
-          currentState: currentStateRecord[action.name],
-          stateToUpdate: (currentStateRecord[action.name] ?? newRecord()),
+        [type]: copyNewState({
+          currentState: currentStateRecord[type],
+          stateToUpdate: (currentStateRecord[type] ?? newRecord()),
           stateActions,
           cursor,
         })

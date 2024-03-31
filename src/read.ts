@@ -10,26 +10,26 @@ export const readState = (
     return state.map((_, i) => readState({ state: state[i], stateActions, cursor: { ...cursor } }));
   }
   const action = stateActions[cursor.index++];
+  const type = action.name;
   if (cursor.index < stateActions.length) {
-    if (is.array(state) && ['$find', '$filter', '$at'].includes(action.name)) {
-      const query = constructQuery({ stateActions, cursor });
-      if ('$at' === action.name && mustBe.number(action.arg)) {
-        return readState({ state: state[action.arg], stateActions, cursor });
-      } else if ('$find' === action.name) {
-        return readState({ state: state.find(query)!, stateActions, cursor });
-      } else if ('$filter' === action.name) {
-        return readState({ state: state.filter(query)!, stateActions, cursor: { ...cursor } });
-      } else {
-        throw new Error();
-      }
-    } else if (is.array(state) && '$distinct' === action.name) {
-      return [...new Set(state)];
-    } else {
-      return readState({ state: is.record(state) ? state[action.name] : undefined, stateActions, cursor });
+    if (type === '$at' && mustBe.array(state) && mustBe.number(action.arg)) {
+      return readState({ state: state[action.arg], stateActions, cursor });
     }
-  } else if (action.name === '$state' || action.name === '$onChange') {
-    return state;
-  } else {
-    throw new Error();
+    if (type === '$find' && mustBe.array(state)) {
+      const query = constructQuery({ stateActions, cursor });
+      return readState({ state: state.find(query)!, stateActions, cursor });
+    }
+    if (type === '$filter' && mustBe.array(state)) {
+      const query = constructQuery({ stateActions, cursor });
+      return readState({ state: state.filter(query)!, stateActions, cursor: { ...cursor } });
+    }
+    if (type === '$distinct' && is.array(state)) {
+      return [...new Set(state)];
+    }
+    return readState({ state: is.record(state) ? state[type] : undefined, stateActions, cursor });
   }
+  if (type === '$state' || type === '$onChange') {
+    return state;
+  }
+  throw new Error();
 }
