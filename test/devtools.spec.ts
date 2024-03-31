@@ -64,7 +64,7 @@ test('filter then set property', () => {
   expect(testState.fakeDevtoolsMessage!.changedIndices).toEqual(['objArray.4.text', 'objArray.5.text']);
 })
 
-test('update deep object', () => {
+test('update deep object value', () => {
   const store = createStore({
     obj: { one: { two: 'three' } }
   });
@@ -110,4 +110,74 @@ test('merge new', () => {
   });
   store.objArray.$mergeMatching.id.$with([{ id: 7, text: 'xxx' }, { id: 8, text: 'xxx' }]);
   expect(testState.fakeDevtoolsMessage!.changedIndices).toEqual(['objArray.6', 'objArray.7']);
+})
+
+test('push object', () => {
+  const store = createStore({
+    obj: {
+      arr: [{ id: 1, text: 'one' }, { id: 2, text: 'two' }],
+    }
+  });
+  store.obj.arr.$push({ id: 3, text: 'new' });
+  expect(testState.fakeDevtoolsMessage!.changedIndices).toEqual([ 'obj.arr.2' ]);
+})
+
+test('push objects', () => {
+  const store = createStore({
+    obj: {
+      arr: [{ id: 1, text: 'one' }, { id: 2, text: 'two' }],
+    }
+  });
+  store.obj.arr.$pushMany([{ id: 3, text: 'new' }, { id: 4, text: 'new' }]);
+  expect(testState.fakeDevtoolsMessage!.changedIndices).toEqual([ 'obj.arr.2', 'obj.arr.3' ]);
+})
+
+test('push number', () => {
+  const store = createStore({
+    obj: {
+      arr: [1, 2],
+    }
+  });
+  store.obj.arr.$push(3);
+  expect(testState.fakeDevtoolsMessage!.changedIndices ).toEqual([ 'obj.arr.2' ]);
+})
+
+test('push numbers', () => {
+  const store = createStore({
+    obj: {
+      arr: [1, 2],
+    }
+  });
+  store.obj.arr.$pushMany([3, 4]);
+  expect(testState.fakeDevtoolsMessage!.changedIndices ).toEqual([ 'obj.arr.2', 'obj.arr.3' ]);
+})
+
+test('clear array', () => {
+  const store = createStore({
+    obj: {
+      arr: [1, 2],
+    }
+  });
+  store.obj.arr.$clear();
+  expect(testState.fakeDevtoolsMessage!.changedIndices ).toEqual([ 'obj.arr' ]);
+})
+
+test('add number', () => {
+  const store = createStore({
+    obj: {
+      num: 1,
+    }
+  });
+  store.obj.num.$add(1);
+  expect(testState.fakeDevtoolsMessage!.changedIndices ).toEqual([ 'obj.num' ]);
+})
+
+test('set number', () => {
+  const store = createStore({
+    obj: {
+      num: 1,
+    }
+  });
+  store.obj.num.$set(1);
+  expect(testState.fakeDevtoolsMessage!.changedIndices ).toEqual([ 'obj.num' ]);
 })
