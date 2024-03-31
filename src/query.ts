@@ -11,18 +11,18 @@ export const constructQuery = (
 ) => {
   const concatenateQueries = (queries: QuerySpec[]): QuerySpec[] => {
     const constructQuery = () => {
-      const subStateActions = stateActions.slice(cursor.index, cursor.index + stateActions.slice(cursor.index).findIndex(sa => is.anyComparatorProp(sa.name)  ));
+      const subStateActions = stateActions.slice(cursor.index, cursor.index + stateActions.slice(cursor.index).findIndex(sa => is.anyComparatorProp(sa.name)));
       cursor.index += subStateActions.length;
       const comparator = stateActions[cursor.index++];
       return (e: unknown) => {
-        const subProperty = subStateActions.reduce((prev, curr) => prev = (prev as Record<string, unknown>)[curr.name], e);
+        const subProperty = subStateActions.reduce((prev, curr) => is.record(prev) ? prev[curr.name] : undefined, e);
         assertIsComparatorProp(comparator.name);
         return comparisons[comparator.name](subProperty, getStateOrStoreState(comparator.arg));
       }
     }
     queries.push({
       query: constructQuery(),
-      concat: (action.includes(stateActions[cursor.index].name) || !is.anyLibProp(stateActions[cursor.index].name)    ) ? '$last' : stateActions[cursor.index].name as '$and' | '$or'
+      concat: (action.includes(stateActions[cursor.index].name) || !is.anyLibProp(stateActions[cursor.index].name)) ? '$last' : stateActions[cursor.index].name as '$and' | '$or'
     });
     if (['$and', '$or'].includes(stateActions[cursor.index].name)) {
       cursor.index++;

@@ -1,7 +1,6 @@
 import { comparators, libState, testState, updateFunctions } from './constant';
 import { Readable, Store } from './type';
-import { is } from './type-check';
-import { StoreInternal } from './type-internal';
+import { is, newRecord } from './type-check';
 
 
 export const deepFreeze = <T>(o: T): T => {
@@ -101,53 +100,51 @@ export const toIsoStringInCurrentTz = (date: Date) => {
 }
 
 export const getStateOrStoreState = <T, A extends T | Readable<T>>(arg: A) => {
-  const state = (arg as Readable<T>)?.$state;
-  return (state === undefined ? arg : state) as A extends { $state: infer H } ? H : A;
+  return is.storeInternal(arg) ? arg.$state : arg;
 }
 
 const regexp = new RegExp([...comparators, ...updateFunctions, '$at'].map(c => `^\\${c}$`).join('|'), 'g');
 export const fixCurrentAction = (action: { name: string, arg?: unknown }, nested: boolean): string => {
   return action.name.replace(regexp, match => {
-    if (updateFunctions.includes(match)) {
+    if (is.anyUpdateFunction(match)) {
       return `${match}()`;
     }
-    if (action.arg === undefined) {
+    if (is.undefined(action.arg)) {
       return `${match}()`;
     }
-    const stateActions = (action.arg as StoreInternal).$stateActions;
-    if (!nested && stateActions !== undefined) {
-      return `${match}(${JSON.stringify((action.arg as StoreInternal).$state)})`;
+    if (is.storeInternal(action.arg)) {
+      if (!nested) {
+        return `${match}(${JSON.stringify(action.arg.$state)})`;
+      }
+      return `${match}( ${action.arg.$stateActions.map(sa => fixCurrentAction(sa, nested)).join('.')} = ${JSON.stringify(action.arg.$state)} )`;
     }
-    if (stateActions === undefined) {
-      return `${match}(${JSON.stringify(action.arg)})`;
-    }
-    return `${match}( ${stateActions.map(sa => fixCurrentAction(sa, nested)).join('.')} = ${JSON.stringify((action.arg as StoreInternal).$state)} )`;
+    return `${match}(${JSON.stringify(action.arg)})`;
   });
 }
 
 // Note: consumed by devtools
 export const getPayloadOrigAndSanitized = <T>(payload: T): { found: boolean, payloadSanitized: T, payloadOriginal: T } => {
   // is this a standard non-array non-store object?
-  if (typeof (payload) === 'object' && payload !== null && !Array.isArray(payload) && !(payload instanceof Date) && (payload as unknown as StoreInternal)?.$stateActions === undefined) {
-    const payloadRecord = payload as Record<string, Readable<unknown>>;
+  if (is.record(payload) && !is.storeInternal(payload)) {
     return {
-      found: Object.keys(payloadRecord).some(key => payloadRecord[key]?.$state !== undefined),
-      payloadSanitized: Object.keys(payloadRecord).reduce((prev, key) => Object.assign(prev, { [key]: getStateOrStoreState(payloadRecord[key]) }), {} as Record<string, unknown>) as T,
-      payloadOriginal: Object.keys(payloadRecord).reduce((prev, key) => Object.assign(prev, { [key]: stringifyPotentialPayloadStore(payloadRecord[key]) }), {} as Record<string, unknown>) as T,
+      found: Object.keys(payload).some(key => is.storeInternal(payload[key])),
+      payloadSanitized: Object.keys(payload).reduce((prev, key) => Object.assign(prev, { [key]: getStateOrStoreState(payload[key]) }), newRecord()) as T,
+      payloadOriginal: Object.keys(payload).reduce((prev, key) => Object.assign(prev, { [key]: stringifyPotentialPayloadStore(payload[key]) }), newRecord()) as T,
     }
   // else is this a potential store?
   } else {
-    const payloadStore = payload as Readable<unknown>;
     return {
-      found: payloadStore?.$state !== undefined,
-      payloadSanitized: getStateOrStoreState(payloadStore) as T,
-      payloadOriginal: stringifyPotentialPayloadStore(payloadStore) as T
+      found: is.storeInternal(payload),
+      payloadSanitized: getStateOrStoreState(payload) as T,
+      payloadOriginal: stringifyPotentialPayloadStore(payload) as T
     }
   }
 }
 
 // Note: consumed by devtools
 export const stringifyPotentialPayloadStore = (arg: unknown) => {
-  const readable = arg as StoreInternal;
-  return readable?.$state === undefined ? arg : `${readable.$stateActions.map(sa => fixCurrentAction(sa, true)).join('.')} = ${JSON.stringify(readable.$state)}`;
+  if (is.storeInternal(arg)) {
+    return `${arg.$stateActions.map(sa => fixCurrentAction(sa, true)).join('.')} = ${JSON.stringify(arg.$state)}`;
+  }
+  return arg;
 }

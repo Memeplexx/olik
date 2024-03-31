@@ -1,7 +1,7 @@
 import { augmentations, errorMessages, libState } from './constant';
 import { readState } from './read';
 import { Readable, StateAction, Store, StoreAugment } from './type';
-import { assertIsRecord, is } from './type-check';
+import { assertIsRecord, assertIsStoreInternal, assertIsString, is } from './type-check';
 import { StoreInternal } from './type-internal';
 import { deepFreeze } from './utility';
 import { processPotentiallyAsyncUpdate } from './write';
@@ -11,7 +11,9 @@ import { setNewStateAndNotifyListeners } from './write-complete';
 export const createInnerStore = <S extends Record<string, unknown>>(state: S) => ({
   usingAccessor: <C extends Readable<unknown>>(accessor: (store: Store<S>) => C): C & (C extends never ? unknown : StoreAugment<C>) => {
     if (!libState.store) {
-      libState.store = createStore(state) as unknown as StoreInternal;
+      const created = createStore(state);
+      assertIsStoreInternal(created);
+      libState.store = created;
     } else {
       libState.store.$patchDeep(state);
     }
@@ -45,14 +47,27 @@ export function createStore<S extends Record<string, unknown>>(
               const stateActionsStr = stateActions.map(sa => sa.name).join('.');
               libState.changeListeners.filter(l => l.actions.map(a => a.name).join('.').startsWith(stateActionsStr))
                 .forEach(l => l.unsubscribe());
-            } else if (prop === '$setKey') {
+            }
+            if (prop === '$setKey') {
+              assertIsString(arg);
               const stateActionsStr = stateActions.map(sa => sa.name).join('.');
               libState.changeListeners.filter(l => l.actions.map(a => a.name).join('.').startsWith(stateActionsStr))
-                .forEach(l => l.actions[l.actions.length - 2].name = arg as string);
+                .forEach(l => l.actions[l.actions.length - 2].name = arg);
             }
             return processPotentiallyAsyncUpdate({ stateActions, prop, arg, cache, eager });
           }
-        } else if ('$invalidateCache' === prop) {
+        }
+        if (augmentations.selection[prop]) {
+          return augmentations.selection[prop](recurseProxy(stateActions));
+        }
+        if (augmentations.core[prop]) {
+          return augmentations.core[prop](recurseProxy(stateActions));
+        }
+        if (!is.anyLibProp(prop)) {
+          stateActions.push({ name: prop });
+          return recurseProxy(stateActions);
+        }
+        if (prop === '$invalidateCache') {
           return () => {
             try {
               setNewStateAndNotifyListeners({
@@ -66,10 +81,12 @@ export function createStore<S extends Record<string, unknown>>(
               /* This can happen if a cache has already expired */
             }
           }
-        } else if ('$mergeMatching' === prop) {
+        }
+        if (prop === '$mergeMatching') {
           stateActions.push({ name: prop });
           return recurseProxy(stateActions);
-        } else if ('$state' === prop) {
+        }
+        if (prop === '$state') {
           const tryFetchResult = (stateActions: StateAction[]): unknown => {
             try {
               return deepFreeze(readState({ state: libState.state, stateActions: [...stateActions, { name: prop }], cursor: { index: 0 } }));
@@ -80,7 +97,8 @@ export function createStore<S extends Record<string, unknown>>(
           }
           const result = tryFetchResult(stateActions.slice());
           return result === undefined ? null : result;
-        } else if ('$onChange' === prop) {
+        }
+        if (prop === '$onChange') {
           return (listener: (arg: unknown) => unknown) => {
             const stateActionsCopy: StateAction[] = [...stateActions, { name: prop }];
             const unsubscribe = () => libState.changeListeners.splice(libState.changeListeners.findIndex(e => e === element), 1);
@@ -88,32 +106,31 @@ export function createStore<S extends Record<string, unknown>>(
             libState.changeListeners.push(element);
             return { unsubscribe }
           }
-        } else if (['$and', '$or'].includes(prop)) {
+        }
+        if (prop === '$and' || prop === '$or') {
           stateActions.push({ name: prop });
           return recurseProxy(stateActions);
-        } else if (is.anyComparatorProp(prop)) {
+        }
+        if (is.anyComparatorProp(prop)) {
           return (arg?: unknown) => {
             stateActions.push({ name: prop, arg });
             return recurseProxy(stateActions);
           }
-        } else if (['$find', '$filter'].includes(prop)) {
+        }
+        if (prop === '$find' || prop === '$filter') {
           stateActions.push({ name: prop });
           return recurseProxy(stateActions);
-        } else if ('$at' === prop) {
+        }
+        if (prop === '$at') {
           return (index: number) => {
             stateActions.push({ name: prop, arg: index });
             return recurseProxy(stateActions);
           }
-        } else if (augmentations.selection[prop]) {
-          return augmentations.selection[prop](recurseProxy(stateActions));
-        } else if (augmentations.core[prop]) {
-          return augmentations.core[prop](recurseProxy(stateActions));
-        } else if ('$stateActions' === prop) {
+        }
+        if (prop === '$stateActions') {
           return stateActions;
-        } else if ('$distinct' === prop) {
-          stateActions.push({ name: prop });
-          return recurseProxy(stateActions);
-        } else {
+        }
+        if (prop === '$distinct') {
           stateActions.push({ name: prop });
           return recurseProxy(stateActions);
         }

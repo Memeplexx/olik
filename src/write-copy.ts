@@ -1,7 +1,7 @@
 import { errorMessages } from './constant';
 import { constructQuery } from './query';
 import { Actual, StateAction } from './type';
-import { assertIsArray, assertIsNumber, assertIsRecord, assertIsString, is, newRecord } from './type-check';
+import { assertIsArray, assertIsNumber, assertIsRecord, assertIsString, assertIsUpdateFunction, is, newRecord } from './type-check';
 import { CopyNewStateArgs } from './type-internal';
 import { getPayloadOrigAndSanitized } from './utility';
 import { setCurrentActionReturningNewState } from './write-action';
@@ -22,14 +22,16 @@ export const copyNewState = (
     assertIsArray(stateToUpdate);
     return currentState.map((_, i) => {
       if (currentState[i]) {
+        const newState = copyNewState({
+          currentState: currentState[i] ?? newRecord(),
+          stateToUpdate: stateToUpdate[i] ?? newRecord(),
+          stateActions,
+          cursor: { ...cursor }
+        });
+        assertIsRecord(newState);
         return {
           ...currentState[i],
-          ...copyNewState({
-            currentState: currentState[i] ?? newRecord(),
-            stateToUpdate: stateToUpdate[i] ?? newRecord(),
-            stateActions,
-            cursor: { ...cursor }
-          }) as Record<string, Actual>
+          ...newState
         };
       }
       return copyNewState({
@@ -94,18 +96,23 @@ export const copyNewState = (
     if (type === '$filter') {
       assertIsArray(currentState);
       const query = constructQuery({ stateActions, cursor });
-      if ('$delete' === stateActions[cursor.index].name) {
-        return setCurrentActionReturningNewState({
-          stateActions,
-          payload,
-          newState: currentState.filter((_, i) => !query(currentState[i])),
-        });
-      }
-      if ('$set' === stateActions[cursor.index].name) {
-        return [
-          ...currentState.filter(e => !query(e)),
-          ...copyNewState({ currentState, stateToUpdate, stateActions, cursor }) as Array<Record<string, unknown>>,
-        ];
+      const typeInner = stateActions[cursor.index].name;
+      if (is.anyUpdateFunction(typeInner)) {
+        if ('$delete' === typeInner) {
+          return setCurrentActionReturningNewState({
+            stateActions,
+            payload,
+            newState: currentState.filter((_, i) => !query(currentState[i])),
+          });
+        }
+        if ('$set' === typeInner) {
+          const newState = copyNewState({ currentState, stateToUpdate, stateActions, cursor });
+          assertIsArray(newState);
+          return [
+            ...currentState.filter(e => !query(e)),
+            ...newState,
+          ];
+        }
       }
       assertIsArray(stateToUpdate);
       return currentState.map((e, i) => query(e)
@@ -142,6 +149,7 @@ export const copyNewState = (
       };
     }
   }
+  assertIsUpdateFunction(type);
   if (type === '$set') {
     const { found, payloadOriginal, payloadSanitized } = getPayloadOrigAndSanitized(payload);
     return setCurrentActionReturningNewState({ stateActions, newState: payloadSanitized, payload: payloadSanitized, payloadOrig: found ? payloadOriginal : undefined });
@@ -183,7 +191,8 @@ export const copyNewState = (
   if (type === '$setNew') {
     assertIsRecord(payload); assertIsRecord(currentState);
     const { found, payloadOriginal, payloadSanitized } = getPayloadOrigAndSanitized(payload);
-    return setCurrentActionReturningNewState({ stateActions, payload: payloadSanitized, newState: currentState === undefined ? payload : { ...currentState, ...payloadSanitized }, payloadOrig: found ? payloadOriginal : undefined });
+    return setCurrentActionReturningNewState({ stateActions, payload: payloadSanitized, 
+      newState: currentState === undefined? payload : { ...currentState, ...payloadSanitized }, payloadOrig: found ? payloadOriginal : undefined });
   }
   if (type === '$patchDeep') {
     assertIsRecord(payload); assertIsRecord(currentState);

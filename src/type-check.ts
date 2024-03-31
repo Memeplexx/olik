@@ -13,12 +13,13 @@ export const is = {
   function: <Input, Output>(arg: unknown): arg is ((a: Input) => Output) => typeof arg === 'function',
   record: <T = Actual>(arg: unknown): arg is { [key: string]: T } => typeof arg === 'object' && arg !== null && !Array.isArray(arg) && !(arg instanceof Date),
   array: <T = Actual>(arg: unknown): arg is Array<T> => Array.isArray(arg),
+  arrayOrRecord: <T = Actual>(arg: unknown): arg is Array<T> | { [key: string]: T } => is.array(arg) || is.record(arg),
   null: (arg: unknown): arg is null => arg === null,
   undefined: (arg: unknown): arg is undefined => arg === undefined,
   storeInternal: (arg: unknown): arg is StoreInternal => is.record(arg) && !!arg['$stateActions'],
   anyComparatorProp: (arg: unknown): arg is ValueOf<typeof comparators> => (comparators as unknown as string[]).includes(arg as string),
-  anyUpdateFunction: (arg: unknown): arg is ValueOf<typeof updateFunctions> & string => (updateFunctions as unknown as string[]).includes(arg as string),
-  anyLibProp: (arg: unknown): arg is ValueOf<typeof anyLibProp> & string => (anyLibProp as unknown as string[]).includes(arg as string),
+  anyUpdateFunction: (arg: unknown): arg is ValueOf<typeof updateFunctions> => (updateFunctions as unknown as string[]).includes(arg as string),
+  anyLibProp: (arg: unknown): arg is ValueOf<typeof anyLibProp> => (anyLibProp as unknown as string[]).includes(arg as string),
 }
 
 export const newRecord = <V = unknown>() => ({} as Record<string, V>);
@@ -43,7 +44,23 @@ export function assertIsRecord<T = Actual>(value: unknown): asserts value is { [
   throw new Error();
 }
 
+export function assertIsArrayOrRecord<T = Actual>(value: unknown): asserts value is Array<T> | { [key: string]: T } {
+  if (is.arrayOrRecord<T>(value)) return;
+  throw new Error();
+}
+
 export function assertIsComparatorProp(value: unknown): asserts value is ValueOf<typeof comparators> {
   if (is.anyComparatorProp(value)) return;
   throw new Error();
 }
+
+export function assertIsUpdateFunction(value: unknown): asserts value is ValueOf<typeof updateFunctions> {
+  if (is.anyUpdateFunction(value)) return;
+  throw new Error();
+}
+
+export function assertIsStoreInternal(value: unknown): asserts value is StoreInternal {
+  if (is.storeInternal(value)) return;
+  throw new Error();
+}
+
