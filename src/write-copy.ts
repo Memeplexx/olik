@@ -2,7 +2,7 @@ import { anyLibProp, errorMessages, updateFunctions } from './constant';
 import { constructQuery } from './query';
 import { Actual, StateAction } from './type';
 import { is, mustBe, newRecord } from './type-check';
-import { CopyNewStateArgs, StoreInternal } from './type-internal';
+import { CopyNewStateArgs } from './type-internal';
 import { getPayloadOrigAndSanitized } from './utility';
 import { setCurrentActionReturningNewState } from './write-action';
 
@@ -41,8 +41,7 @@ export const copyNewState = (
         return prev.concat(curr);
       }, new Array<StateAction>());
     const repsert = stateActions[cursor.index++];
-    const repsertArgWhichIsPotentiallyAStore = repsert.arg as StoreInternal;
-    const repsertArgState = repsertArgWhichIsPotentiallyAStore.$stateActions ? repsertArgWhichIsPotentiallyAStore.$state : repsert.arg as Actual;
+    const repsertArgState = is.storeInternal(repsert.arg) ? repsert.arg.$state : repsert.arg as Actual;
     const repsertArgs = [...(is.array(repsertArgState) ? repsertArgState : [repsertArgState])];
     const query = (e: Actual) => queryPaths.reduce((prev, curr) => (prev as Record<string, Actual>)[curr.name], e);
     const indicesOld = new Array<number>();
@@ -199,14 +198,14 @@ export const copyNewState = (
 export const deepMerge = (old: Record<string, unknown>, payload: Record<string, unknown>) => {
   const mergeDeep = (target: Record<string, unknown>, source: Record<string, unknown>) => {
     const output = Object.assign({}, target);
-    if (is.record(target) && is.record(source)) {
+    if (is.record<Record<string, unknown>>(target) && is.record(source)) {
       Object.keys(source).forEach(key => {
         const val = source[key];
         if (is.record(val) && !is.array(val)) {
           if (!(key in target)) {
             Object.assign(output, { [key]: val });
           } else {
-            output[key] = mergeDeep((target[key] as Record<string, unknown>), (val as Record<string, unknown>));
+            output[key] = mergeDeep(target[key], val);
           }
         } else {
           Object.assign(output, { [key]: val });

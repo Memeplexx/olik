@@ -1,4 +1,5 @@
 import { Actual, Primitive } from "./type";
+import { StoreInternal } from "./type-internal";
 
 
 export const is = {
@@ -13,6 +14,7 @@ export const is = {
   array: <T = Actual>(arg: unknown): arg is Array<T> => Array.isArray(arg),
   null: (arg: unknown): arg is null => arg === null,
   undefined: (arg: unknown): arg is undefined => arg === undefined,
+  storeInternal: (arg: unknown): arg is StoreInternal => is.record(arg) && !!arg['$stateActions'],
 }
 
 export const mustBe = (Object.keys(is) as Array<keyof typeof is> ).reduce((acc, key) => {
