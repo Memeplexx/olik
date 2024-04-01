@@ -29,6 +29,10 @@ export type CopyNewStateArgs = {
   cursor: { index: number }
 }
 
+export type CopyNewStateArgsAndPayload = CopyNewStateArgs & {
+  payload: unknown
+}
+
 export type TestState = {
   logLevel: 'debug' | 'none',
   isTest: boolean,
