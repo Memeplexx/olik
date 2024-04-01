@@ -1,7 +1,7 @@
 import { errorMessages } from './constant';
 import { constructQuery } from './query';
 import { Actual, StateAction } from './type';
-import { assertIsAnyLibProp, assertIsArray, assertIsBoolean, assertIsNumber, assertIsRecord, assertIsRecordOrUndefined, assertIsString, is, newRecord } from './type-check';
+import { assertIsArray, assertIsBoolean, assertIsNumber, assertIsRecord, assertIsRecordOrUndefined, assertIsString, assertIsUpdateFunction, is, newRecord } from './type-check';
 import { CopyNewStateArgs } from './type-internal';
 import { getPayloadOrigAndSanitized } from './utility';
 import { setCurrentActionReturningNewState } from './write-action';
@@ -16,7 +16,8 @@ export const copyNewState = (
     if (!is.anyLibProp(type) && is.array(currentState)) {
       return updateArrayObjectProperties(arg);
     }
-    const typeNext = stateActions[++cursor.index].name;
+    cursor.index++;
+    const typeNext = stateActions[cursor.index].name;
     if (typeNext === '$delete') {
       return deleteObjectValue(arg);
     }
@@ -26,23 +27,23 @@ export const copyNewState = (
     if (typeNext === '$setKey') {
       return setObjectKey(arg);
     }
-    if (is.record<Record<string, Actual>>(currentState) || is.undefined(currentState)) {
+    if (type === '$at') {
+      return atArray(arg);
+    }
+    if (type === '$find') {
+      return findArray(arg);
+    }
+    if (type === '$filter') {
+      return filterArray(arg);
+    }
+    if (type === '$mergeMatching') {
+      return mergeMatching(arg);
+    }
+    if (is.record(currentState) || is.undefined(currentState)) {
       return copyObjectProperty(arg);
     }
   }
-  assertIsAnyLibProp(type);
-  if (type === '$at') {
-    return atArray(arg);
-  }
-  if (type === '$find') {
-    return findArray(arg);
-  }
-  if (type === '$filter') {
-    return filterArray(arg);
-  }
-  if (type === '$mergeMatching') {
-    return mergeMatching(arg);
-  }
+  assertIsUpdateFunction(type);
   if (type === '$set') {
     const { found, payloadOriginal, payloadSanitized } = getPayloadOrigAndSanitized(payload);
     return setCurrentActionReturningNewState({ stateActions, newState: payloadSanitized, payload: payloadSanitized, payloadOrig: found ? payloadOriginal : undefined });
@@ -87,8 +88,9 @@ export const copyNewState = (
     });
   }
   if (type === '$patchDeep') {
-    assertIsRecord(payload); assertIsRecord(currentState);
-    return setCurrentActionReturningNewState({ stateActions, payload, newState: deepMerge(currentState, payload) });
+    // assertIsRecord(payload); assertIsRecord(currentState);
+    // return setCurrentActionReturningNewState({ stateActions, payload, newState: deepMerge(currentState, payload) });
+    return patchDeep(arg);
   }
   if (type === '$clear') {
     return setCurrentActionReturningNewState({ stateActions, payload, newState: [] });
@@ -119,6 +121,13 @@ export const copyNewState = (
     return setCurrentActionReturningNewState({ stateActions, payload: payloadSanitized, newState, payloadOrig: found ? payloadOriginal : undefined });
   }
   throw new Error();
+}
+
+const patchDeep = (arg: CopyNewStateArgs) => {
+  const { currentState, stateActions, cursor } = arg;
+  const payload = stateActions[cursor.index].arg;
+  assertIsRecord(payload); assertIsRecord(currentState);
+  return setCurrentActionReturningNewState({ stateActions, payload, newState: deepMerge(currentState, payload) });
 }
 
 export const deepMerge = (old: Record<string, unknown>, payload: Record<string, unknown>) => {
