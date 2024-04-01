@@ -30,7 +30,8 @@ export type CopyNewStateArgs = {
 }
 
 export type CopyNewStateArgsAndPayload = CopyNewStateArgs & {
-  payload: unknown
+  payload: unknown,
+  type: string,
 }
 
 export type TestState = {

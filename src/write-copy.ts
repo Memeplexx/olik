@@ -12,7 +12,7 @@ export const copyNewState = (
 ): unknown => {
   const { currentState, stateActions, cursor } = arg;
   const { arg: payload, name: type } = stateActions[cursor.index];
-  const args = { ...arg, payload };
+  const args = { ...arg, payload, type };
   if (cursor.index < stateActions.length - 1) {
     if (!is.anyLibProp(type) && is.array(currentState)) {
       return updateArrayObjectProperties(arg);
@@ -30,14 +30,13 @@ export const copyNewState = (
     }
     switch (stateActions[cursor.index].name) {
       case '$delete':
-        return deleteObjectValue(arg);
       case '$invalidateCache':
-        return deleteObjectValue(arg);
+        return deleteObjectValue(args);
       case '$setKey':
-        return setObjectKey(arg);
+        return setObjectKey(args);
     }
     if (is.record(currentState) || is.undefined(currentState)) {
-      return copyObjectProperty(arg);
+      return copyObjectProperty(args);
     }
   }
   assertIsUpdateFunction(type);
@@ -157,26 +156,24 @@ const clear = ({ stateActions, payload }: CopyNewStateArgsAndPayload) => {
 
 const patchDeep = ({ currentState, stateActions, payload }: CopyNewStateArgsAndPayload) => {
   assertIsRecord(payload); assertIsRecord(currentState);
-  const deepMerge = (old: Record<string, unknown>, payload: Record<string, unknown>) => {
-    const mergeDeep = (target: Record<string, unknown>, source: Record<string, unknown>) => {
-      const output = { ...target };
-      if (!is.record<Record<string, unknown>>(target) || !is.record(source)) return output;
-      Object.entries(source).forEach(([key, val]) => {
-        if (is.record(val) && !is.array(val)) {
-          if (!(key in target)) {
-            Object.assign(output, { [key]: val });
-          } else {
-            output[key] = mergeDeep(target[key], val);
-          }
-        } else {
+  const recurse = (target: Record<string, unknown>, source: Record<string, unknown>) => {
+    const output = { ...target };
+    if (!is.record<Record<string, unknown>>(target) || !is.record(source)) return output;
+    Object.entries(source).forEach(([key, val]) => {
+      if (is.record(val) && !is.array(val)) {
+        if (!(key in target)) {
           Object.assign(output, { [key]: val });
+        } else {
+          output[key] = recurse(target[key], val);
         }
-      });
-      return output;
-    }
-    return mergeDeep(old, payload);
-  };
-  return setCurrentActionReturningNewState({ stateActions, payload, newState: deepMerge(currentState, payload) });
+      } else {
+        Object.assign(output, { [key]: val });
+      }
+    });
+    return output;
+  }
+  const newState = recurse(currentState, payload);
+  return setCurrentActionReturningNewState({ stateActions, payload, newState });
 }
 
 const updateArrayObjectProperties = ({ stateToUpdate, currentState, cursor, stateActions }: CopyNewStateArgs) => {
@@ -237,8 +234,7 @@ const mergeMatching = ({ currentState, cursor, stateActions }: CopyNewStateArgsA
   return setCurrentActionReturningNewState({ stateActions, payload: payloadSanitized, newState, payloadOrig: found ? payloadOriginal : undefined });
 }
 
-const setObjectKey = ({ currentState, stateActions, cursor }: CopyNewStateArgs) => {
-  const oldKey = stateActions[cursor.index - 1].name;
+const setObjectKey = ({ currentState, stateActions, cursor, type: oldKey }: CopyNewStateArgsAndPayload) => {
   const newKey = stateActions[cursor.index].arg;
   assertIsRecord(currentState); assertIsString(newKey);
   const { found, payloadOriginal, payloadSanitized } = getPayloadOrigAndSanitized(newKey);
@@ -299,17 +295,15 @@ const filterArray = ({ stateToUpdate, currentState, cursor, stateActions, payloa
     : e);
 }
 
-const deleteObjectValue = ({ currentState, stateActions, cursor }: CopyNewStateArgs) => {
-  const { name: oldObjectKey, arg: payload } = stateActions[cursor.index - 1];
+const deleteObjectValue = ({ currentState, stateActions, payload, type: oldObjectKey }: CopyNewStateArgsAndPayload) => {
   assertIsRecord(currentState);
   const { [oldObjectKey]: other, ...newState } = currentState;
   return setCurrentActionReturningNewState({ stateActions, payload, newState })
 }
 
-const copyObjectProperty = ({ currentState, stateActions, cursor }: CopyNewStateArgs) => {
+const copyObjectProperty = ({ currentState, stateActions, cursor, type }: CopyNewStateArgsAndPayload) => {
   assertIsRecordOrUndefined(currentState);
   const currentStateRecord = currentState ?? newRecord();
-  const type = stateActions[cursor.index - 1].name;
   return {
     ...currentStateRecord,
     [type]: copyNewState({
