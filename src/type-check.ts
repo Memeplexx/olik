@@ -45,6 +45,11 @@ export function assertIsRecord<T = Actual>(value: unknown): asserts value is { [
   throw new Error();
 }
 
+export function assertIsRecordOrUndefined<T = Actual>(value: unknown): asserts value is { [key: string]: T } | undefined {
+  if (is.record<T>(value) || is.undefined(value)) return;
+  throw new Error();
+}
+
 export function assertIsArrayOrRecord<T = Actual>(value: unknown): asserts value is Array<T> | { [key: string]: T } {
   if (is.arrayOrRecord<T>(value)) return;
   throw new Error();
