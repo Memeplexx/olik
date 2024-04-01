@@ -8,13 +8,9 @@ import { setCurrentActionReturningNewState } from './write-action';
 
 
 export const copyNewState = (
-  {
-    currentState,
-    stateToUpdate,
-    stateActions,
-    cursor,
-  }: CopyNewStateArgs
+  arg: CopyNewStateArgs
 ): unknown => {
+  const { currentState, stateToUpdate, stateActions, cursor } = arg;
   const action = stateActions[cursor.index];
   const payload = action.arg;
   const type = action.name;
@@ -250,3 +246,4 @@ export const deepMerge = (old: Record<string, unknown>, payload: Record<string, 
   }
   return mergeDeep(old, payload);
 }
+

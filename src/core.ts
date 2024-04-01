@@ -1,7 +1,7 @@
 import { augmentations, errorMessages, libState } from './constant';
 import { readState } from './read';
 import { Readable, StateAction, Store, StoreAugment } from './type';
-import { assertIsRecord, assertIsStoreInternal, assertIsString, is } from './type-check';
+import { assertIsAnyLibProp, assertIsRecord, assertIsStoreInternal, assertIsString, is } from './type-check';
 import { StoreInternal } from './type-internal';
 import { deepFreeze } from './utility';
 import { processPotentiallyAsyncUpdate } from './write';
@@ -73,6 +73,7 @@ export function createStore<S extends Record<string, unknown>>(
             return recurseProxy(stateActions);
           }
         }
+        assertIsAnyLibProp(prop);
         if (prop === '$invalidateCache') {
           return () => {
             try {
