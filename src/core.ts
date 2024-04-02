@@ -45,19 +45,19 @@ export function createStore<S extends Record<string, unknown>>(
       if (!is.libArg(prop) || is.anyConcatenationProp(prop)) {
         return basicProp(args);
       }
-      if (is.libArg(prop, '$at') || is.anyComparatorProp(prop)) {
+      if ('$at' === prop || is.anyComparatorProp(prop)) {
         return comparator(args);
       }
-      if (is.libArg(prop, '$invalidateCache')) {
+      if ('$invalidateCache' === prop) {
         return invalidateCache(args);
       }
-      if (is.libArg(prop, '$state')) {
+      if ('$state' === prop) {
         return state(args);
       }
-      if (is.libArg(prop, '$onChange')) {
+      if ('$onChange' === prop) {
         return onChange(args);
       }
-      if (is.libArg(prop, '$stateActions')) {
+      if ('$stateActions' === prop) {
         return stateActions;
       }
     }
@@ -149,13 +149,13 @@ const processUpdateFunction = (args: StoreArgs) => (arg: unknown, { cache, eager
   if (libState.devtools) {
     libState.stacktraceError = new Error();
   }
-  if (is.libArg(args.prop, '$delete')) {
+  if ('$delete' === args.prop) {
     const stateActionsStr = args.stateActions.map(sa => sa.name).join('.');
     libState.changeListeners
       .filter(l => l.actions.map(a => a.name).join('.').startsWith(stateActionsStr))
       .forEach(l => l.unsubscribe());
   }
-  if (is.libArg(args.prop, '$setKey')) {
+  if ('$setKey' === args.prop) {
     assertIsString(arg);
     const stateActionsStr = args.stateActions.map(sa => sa.name).join('.');
     libState.changeListeners

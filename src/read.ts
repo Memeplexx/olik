@@ -1,6 +1,6 @@
 import { constructQuery } from './query';
 import { StateAction } from './type';
-import { assertIsNumber, is } from './type-check';
+import { assertIsArray, assertIsNumber, is } from './type-check';
 
 export const readState = (
   { state, stateActions, cursor }: { state: unknown, stateActions: StateAction[], cursor: { index: number } }
@@ -13,9 +13,10 @@ export const readState = (
   if (cursor.index === stateActions.length) {
     return state;
   }
-  if (!is.array(state)) {
-    return readState({ state: is.record(state) ? state[type] : undefined, stateActions, cursor });
+  if (is.record(state)) {
+    return readState({ state: state[type], stateActions, cursor });
   }
+  assertIsArray(state);
   if (type === '$at') {
     assertIsNumber(arg);
     return readState({ state: state[arg], stateActions, cursor });
