@@ -42,22 +42,22 @@ export function createStore<S extends Record<string, unknown>>(
       if (augmentations.core[prop]) {
         return augmentations.core[prop](recurseProxy(stateActions));
       }
-      if (!is.anyLibArg(prop) || is.anyConcatenationProp(prop)) {
+      if (!is.libArg(prop) || is.anyConcatenationProp(prop)) {
         return basicProp(args);
       }
-      if (is.anyLibArg(prop, '$at') || is.anyComparatorProp(prop)) {
+      if (is.libArg(prop, '$at') || is.anyComparatorProp(prop)) {
         return comparator(args);
       }
-      if (is.anyLibArg(prop, '$invalidateCache')) {
+      if (is.libArg(prop, '$invalidateCache')) {
         return invalidateCache(args);
       }
-      if (is.anyLibArg(prop, '$state')) {
+      if (is.libArg(prop, '$state')) {
         return state(args);
       }
-      if (is.anyLibArg(prop, '$onChange')) {
+      if (is.libArg(prop, '$onChange')) {
         return onChange(args);
       }
-      if (is.anyLibArg(prop, '$stateActions')) {
+      if (is.libArg(prop, '$stateActions')) {
         return stateActions;
       }
     }
@@ -149,13 +149,13 @@ const processUpdateFunction = (args: StoreArgs) => (arg: unknown, { cache, eager
   if (libState.devtools) {
     libState.stacktraceError = new Error();
   }
-  if (is.anyLibArg(args.prop, '$delete')) {
+  if (is.libArg(args.prop, '$delete')) {
     const stateActionsStr = args.stateActions.map(sa => sa.name).join('.');
     libState.changeListeners
       .filter(l => l.actions.map(a => a.name).join('.').startsWith(stateActionsStr))
       .forEach(l => l.unsubscribe());
   }
-  if (is.anyLibArg(args.prop, '$setKey')) {
+  if (is.libArg(args.prop, '$setKey')) {
     assertIsString(arg);
     const stateActionsStr = args.stateActions.map(sa => sa.name).join('.');
     libState.changeListeners

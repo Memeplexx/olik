@@ -24,10 +24,10 @@ export const constructQuery = (
       query: constructQuery(),
       concat: (() => {
         const type = stateActions[cursor.index].name;
-        return (is.anyUpdateFunction(type) || is.anyReadFunction(type) || !is.anyLibArg(type)) ? '$last' : type as '$and' | '$or';
+        return (is.anyUpdateFunction(type) || is.anyReadFunction(type) || !is.libArg(type)) ? '$last' : type as '$and' | '$or';
       })(),
     });
-    if (is.anyLibArg(stateActions[cursor.index].name, '$and', '$or')) {
+    if (is.libArg(stateActions[cursor.index].name, '$and', '$or')) {
       cursor.index++;
       return concatenateQueries(queries);
     }

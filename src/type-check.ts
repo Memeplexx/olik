@@ -21,7 +21,7 @@ export const is = {
   anyConcatenationProp: (arg: unknown): arg is ValueOf<typeof concatenations> => (concatenations as unknown as string[]).includes(arg as string),
   anyUpdateFunction: (arg: unknown): arg is ValueOf<typeof updateFunctions> => (updateFunctions as unknown as string[]).includes(arg as string),
   anyReadFunction: (arg: unknown): arg is ValueOf<typeof readFunctions> => (readFunctions as unknown as string[]).includes(arg as string),
-  anyLibArg: <T extends ValueOf<typeof anyLibProp>[]>(toCheck: unknown, ...mustBeWithin: T): toCheck is T => ((!mustBeWithin.length ? anyLibProp : mustBeWithin) as unknown as string[])
+  libArg: <T extends ValueOf<typeof anyLibProp>[]>(toCheck: unknown, ...mustBeWithin: T): toCheck is T => ((!mustBeWithin.length ? anyLibProp : mustBeWithin) as unknown as string[])
     .includes(toCheck as unknown as string),
 }
 
@@ -78,6 +78,6 @@ export function assertIsBoolean(value: unknown): asserts value is boolean {
 }
 
 export function assertIsLibArg(value: unknown, ...mustBeWithin: ValueOf<typeof anyLibProp>[]) {
-  if (is.anyLibArg(value, ...mustBeWithin)) return;
+  if (is.libArg(value, ...mustBeWithin)) return;
   throw new Error();
 }

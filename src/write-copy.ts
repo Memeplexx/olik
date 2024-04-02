@@ -14,7 +14,7 @@ export const copyNewState = (
   const { arg: payload, name: type } = stateActions[cursor.index];
   const args = { ...arg, payload, type };
   if (cursor.index < stateActions.length - 1) {
-    if (!is.anyLibArg(type) && is.array(currentState)) {
+    if (!is.libArg(type) && is.array(currentState)) {
       return updateArrayObjectProperties(arg);
     }
     cursor.index++;
