@@ -5,7 +5,7 @@ import { assertIsArray, assertIsNumber, is } from './type-check';
 export const readState = (
   { state, stateActions, cursor }: { state: unknown, stateActions: StateAction[], cursor: { index: number } }
 ): unknown => {
-  if (is.array(state) && !is.anyLibProp(stateActions[cursor.index].name)) {
+  if (is.array(state) && !is.anyLibArg(stateActions[cursor.index].name)) {
     return state.map((_, i) => readState({ state: state[i], stateActions, cursor: { ...cursor } }));
   }
   const action = stateActions[cursor.index++];

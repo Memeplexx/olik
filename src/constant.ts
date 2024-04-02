@@ -38,52 +38,6 @@ export const augmentations: Augmentations = {
   async: promise => promise(),
 };
 
-export const libFns = [
-  '$set',
-  '$setUnique',
-  '$patch',
-  '$patchDeep',
-  '$delete',
-  '$setNew',
-  '$add',
-  '$subtract',
-  '$clear',
-  '$push',
-  '$pushMany',
-  '$with',
-  '$toggle',
-  '$merge',
-  '$deDuplicate',
-  '$setKey',
-  '$onChange',
-  '$state',
-  '$and',
-  '$or',
-  '$mergeMatching',
-  '$at',
-  '$find',
-  '$filter',
-  '$invalidateCache',
-  '$stateActions',
-  '$distinct',
-  '$eq',
-  '$in',
-  '$ni',
-  '$gt',
-  '$lt',
-  '$gte',
-  '$lte',
-  '$match',
-  '$contains',
-  '$containsIgnoreCase',
-  '$isContainedIn',
-  '$isContainedInIgnoreCase',
-  '$isTrue',
-  '$isFalse',
-  '$isTruthy',
-  '$isFalsy',
-] as const;
-
 export const updateFunctions = ['$set', '$setUnique', '$patch', '$patchDeep', '$delete', '$setNew', '$add', '$subtract', '$clear', '$push', '$pushMany', '$with', '$toggle', '$merge', '$deDuplicate', '$setKey'] as const;
 export const readFunctions = ['$onChange', '$state'] as const;
 export const otherFunctions = ['$and', '$or', '$mergeMatching', '$at', '$find', '$filter', '$invalidateCache', '$stateActions', '$distinct'] as const;
@@ -109,3 +63,4 @@ export const comparisons = {
   $isFalsy: (val: unknown) => !val,
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 } as const satisfies { [comparator in ValueOf<typeof comparators> & string]: (val: any, arg?: any) => boolean };
+

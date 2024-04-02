@@ -1,6 +1,6 @@
 import { comparisons } from './constant';
 import { StateAction } from './type';
-import { assertIsComparatorProp, is } from './type-check';
+import { is } from './type-check';
 import { QuerySpec } from './type-internal';
 import { getStateOrStoreState } from './utility';
 
@@ -15,18 +15,19 @@ export const constructQuery = (
       const comparator = stateActions[cursor.index++];
       return (e: unknown) => {
         const subProperty = subStateActions.reduce((prev, curr) => is.record(prev) ? prev[curr.name] : undefined, e);
-        assertIsComparatorProp(comparator.name);
-        return comparisons[comparator.name](subProperty, getStateOrStoreState(comparator.arg));
+        const comparatorName = comparator.name as keyof typeof comparisons;
+        if (!comparisons[comparatorName]) { throw new Error(); }
+        return comparisons[comparatorName](subProperty, getStateOrStoreState(comparator.arg));
       }
     }
     queries.push({
       query: constructQuery(),
       concat: (() => {
         const type = stateActions[cursor.index].name;
-        return is.anyUpdateFunction(type) || is.anyReadFunction(type) || !is.anyLibProp(type) ? '$last' : type as '$and' | '$or';
+        return (is.anyUpdateFunction(type) || is.anyReadFunction(type) || !is.anyLibArg(type)) ? '$last' : type as '$and' | '$or';
       })(),
     });
-    if (['$and', '$or'].includes(stateActions[cursor.index].name)) {
+    if (is.anyLibArg(stateActions[cursor.index].name, '$and', '$or')) {
       cursor.index++;
       return concatenateQueries(queries);
     }

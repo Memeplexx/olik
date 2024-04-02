@@ -28,46 +28,40 @@ export function createStore<S extends Record<string, unknown>>(
 ): Store<S> & (S extends never ? unknown : StoreAugment<S>) {
   validateState(initialState);
   removeStaleCacheReferences(initialState);
-  if (!libState.initialState) {
-    const state = deepFreeze(initialState)!;
-    libState.initialState = state;
-    libState.state = state;
-  }
-  const recurseProxy = (stateActions: StateAction[], topLevel = false): StoreInternal => {
-    return new Proxy(<StoreInternal>{}, {
-      get: (_, prop: string) => {
-        stateActions = topLevel ? [] : stateActions;
-        const args = { stateActions, prop, recurseProxy };
-        if (is.anyUpdateFunction(prop)) {
-          return processUpdateFunction(args);
-        }
-        if (augmentations.selection[prop]) {
-          return augmentations.selection[prop](recurseProxy(stateActions));
-        }
-        if (augmentations.core[prop]) {
-          return augmentations.core[prop](recurseProxy(stateActions));
-        }
-        if (!is.libArg(prop) || is.libArg(prop, '$and', '$or', '$find', '$filter', '$distinct', '$mergeMatching')) {
-          return basicProp(args);
-        }
-        if (is.libArg(prop, '$at', '$eq', '$in', '$ni', '$gt', '$lt', '$gte', '$lte', '$match', '$contains', '$containsIgnoreCase', '$isContainedIn', '$isContainedInIgnoreCase', '$isTrue', '$isFalse', '$isTruthy', '$isFalsy')) {
-          return comparator(args);
-        }
-        if (is.libArg(prop, '$invalidateCache')) {
-          return invalidateCache(args);
-        }
-        if (is.libArg(prop, '$state')) {
-          return state(args);
-        }
-        if (is.libArg(prop, '$onChange')) {
-          return onChange(args);
-        }
-        if (is.libArg(prop, '$stateActions')) {
-          return stateActions;
-        }
+  initializeLibState(initialState);
+  const recurseProxy = (stateActions: StateAction[], topLevel = false): StoreInternal => new Proxy(<StoreInternal>{}, {
+    get: (_, prop: string) => {
+      stateActions = topLevel ? [] : stateActions;
+      const args = { stateActions, prop, recurseProxy };
+      if (is.anyUpdateFunction(prop)) {
+        return processUpdateFunction(args);
       }
-    });
-  };
+      if (augmentations.selection[prop]) {
+        return augmentations.selection[prop](recurseProxy(stateActions));
+      }
+      if (augmentations.core[prop]) {
+        return augmentations.core[prop](recurseProxy(stateActions));
+      }
+      if (!is.anyLibArg(prop) || is.anyLibArg(prop, '$and', '$or', '$find', '$filter', '$distinct', '$mergeMatching')) {
+        return basicProp(args);
+      }
+      if (is.anyLibArg(prop, '$at') || is.anyComparatorProp(prop)) {
+        return comparator(args);
+      }
+      if (is.anyLibArg(prop, '$invalidateCache')) {
+        return invalidateCache(args);
+      }
+      if (is.anyLibArg(prop, '$state')) {
+        return state(args);
+      }
+      if (is.anyLibArg(prop, '$onChange')) {
+        return onChange(args);
+      }
+      if (is.anyLibArg(prop, '$stateActions')) {
+        return stateActions;
+      }
+    }
+  });
   return (libState.store = recurseProxy([], true)) as Store<S>;
 }
 
@@ -88,9 +82,7 @@ const validateState = (state: unknown) => {
   }
 }
 
-const onChange = (
-  args: StoreArgs
-) => (listener: (arg: unknown) => unknown) => {
+const onChange = (args: StoreArgs) => (listener: (arg: unknown) => unknown) => {
   const stateActionsCopy: StateAction[] = [...args.stateActions, { name: args.prop }];
   const unsubscribe = () => libState.changeListeners.splice(libState.changeListeners.findIndex(e => e === element), 1);
   const element = { actions: stateActionsCopy, listener, unsubscribe };
@@ -98,9 +90,7 @@ const onChange = (
   return { unsubscribe }
 }
 
-const state = (
-  args: StoreArgs
-) => {
+const state = (args: StoreArgs) => {
   const tryFetchResult = (stateActions: StateAction[]): unknown => {
     try {
       return deepFreeze(readState({ state: libState.state, stateActions: [...stateActions, { name: args.prop }], cursor: { index: 0 } }));
@@ -113,6 +103,14 @@ const state = (
   return result === undefined ? null : result;
 }
 
+const initializeLibState = (initialState: Record<string, unknown>) => {
+  if (!libState.initialState) {
+    const state = deepFreeze(initialState)!;
+    libState.initialState = state;
+    libState.state = state;
+  }
+}
+
 const removeStaleCacheReferences = (state: Record<string, unknown>) => {
   if (!state.cache) { return; }
   assertIsRecord<string>(state.cache);
@@ -123,23 +121,17 @@ const removeStaleCacheReferences = (state: Record<string, unknown>) => {
   }
 }
 
-const basicProp = (
-  args: StoreArgs
-) => {
+const basicProp = (args: StoreArgs) => {
   args.stateActions.push({ name: args.prop });
   return args.recurseProxy(args.stateActions);
 }
 
-const comparator = (
-  args: StoreArgs
-) => (arg?: unknown) => {
+const comparator = (args: StoreArgs) => (arg?: unknown) => {
   args.stateActions.push({ name: args.prop, arg });
   return args.recurseProxy(args.stateActions);
 }
 
-const invalidateCache = (
-  args: StoreArgs
-) => () => {
+const invalidateCache = (args: StoreArgs) => () => {
   try {
     setNewStateAndNotifyListeners({
       stateActions: [
@@ -153,19 +145,17 @@ const invalidateCache = (
   }
 };
 
-const processUpdateFunction = (
-  args: StoreArgs
-) => (arg: unknown, { cache, eager }: { cache?: number, eager?: unknown } = {}) => {
+const processUpdateFunction = (args: StoreArgs) => (arg: unknown, { cache, eager }: { cache?: number, eager?: unknown } = {}) => {
   if (libState.olikDevtools) {
     libState.stacktraceError = new Error();
   }
-  if (args.prop === '$delete') {
+  if (is.anyLibArg(args.prop, '$delete')) {
     const stateActionsStr = args.stateActions.map(sa => sa.name).join('.');
     libState.changeListeners
       .filter(l => l.actions.map(a => a.name).join('.').startsWith(stateActionsStr))
       .forEach(l => l.unsubscribe());
   }
-  if (args.prop === '$setKey') {
+  if (is.anyLibArg(args.prop, '$setKey')) {
     assertIsString(arg);
     const stateActionsStr = args.stateActions.map(sa => sa.name).join('.');
     libState.changeListeners

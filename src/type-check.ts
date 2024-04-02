@@ -1,4 +1,4 @@
-import { anyLibProp, comparators, libFns, readFunctions, updateFunctions } from "./constant";
+import { anyLibProp, comparators, readFunctions, updateFunctions } from "./constant";
 import { Actual, Primitive, ValueOf } from "./type";
 import { StoreInternal } from "./type-internal";
 
@@ -20,9 +20,7 @@ export const is = {
   anyComparatorProp: (arg: unknown): arg is ValueOf<typeof comparators> => (comparators as unknown as string[]).includes(arg as string),
   anyUpdateFunction: (arg: unknown): arg is ValueOf<typeof updateFunctions> => (updateFunctions as unknown as string[]).includes(arg as string),
   anyReadFunction: (arg: unknown): arg is ValueOf<typeof readFunctions> => (readFunctions as unknown as string[]).includes(arg as string),
-  anyLibProp: (arg: unknown): arg is ValueOf<typeof anyLibProp> => (anyLibProp as unknown as string[]).includes(arg as string),
-
-  libArg: <T extends ValueOf<typeof libFns>[]>(toCheck: unknown, ...mustBeWithin: T): toCheck is T => ((!mustBeWithin.length ? libFns : mustBeWithin) as unknown as string[])
+  anyLibArg: <T extends ValueOf<typeof anyLibProp>[]>(toCheck: unknown, ...mustBeWithin: T): toCheck is T => ((!mustBeWithin.length ? anyLibProp : mustBeWithin) as unknown as string[])
     .includes(toCheck as unknown as string),
 }
 
@@ -68,11 +66,6 @@ export function assertIsUpdateFunction(value: unknown): asserts value is ValueOf
   throw new Error();
 }
 
-export function assertIsAnyLibProp(value: unknown): asserts value is ValueOf<typeof anyLibProp> {
-  if (is.anyLibProp(value)) return;
-  throw new Error();
-}
-
 export function assertIsStoreInternal(value: unknown): asserts value is StoreInternal {
   if (is.storeInternal(value)) return;
   throw new Error();
@@ -83,7 +76,7 @@ export function assertIsBoolean(value: unknown): asserts value is boolean {
   throw new Error();
 }
 
-// export function assertIsLibFn(values: unknown[]): asserts values is ValueOf<typeof anyLibProp>[] {
-//   values.forEach(value => assertIsAnyLibProp(value));
-// }
-
+export function assertIsLibArg(value: unknown, ...mustBeWithin: ValueOf<typeof anyLibProp>[]) {
+  if (is.anyLibArg(value, ...mustBeWithin)) return;
+  throw new Error();
+}
