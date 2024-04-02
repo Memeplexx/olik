@@ -20,7 +20,7 @@ export const setNewStateAndNotifyListeners = (
       listener(selectedNewState);
     }
   })
-  if (libState.olikDevtools && !libState.disableDevtoolsDispatch) {
-    libState.olikDevtools.dispatch({ stateActions });
+  if (libState.devtools && !libState.disableDevtoolsDispatch) {
+    libState.devtools.dispatch({ stateActions });
   }
 }

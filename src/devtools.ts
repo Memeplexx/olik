@@ -7,7 +7,7 @@ const pendingActions = new Array<Omit<DevtoolsAction, 'source'>>();
 
 export function connectOlikDevtoolsToStore() {
 
-  if (libState.olikDevtools) { return; }
+  if (libState.devtools) { return; }
 
   sendMessageToDevtools({
     action: { type: "$load()" },
@@ -32,7 +32,7 @@ export function connectOlikDevtoolsToStore() {
 }
 
 const setupDevtools = () => {
-  libState.olikDevtools = {
+  libState.devtools = {
     dispatch: ({ stateActions }) => {
       const toSend = {
         action: libState.currentAction,

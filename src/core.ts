@@ -29,7 +29,7 @@ export function createStore<S extends Record<string, unknown>>(
   validateState(initialState);
   removeStaleCacheReferences(initialState);
   initializeLibState(initialState);
-  const recurseProxy = (stateActions: StateAction[], topLevel = false): StoreInternal => new Proxy(<StoreInternal>{}, {
+  const recurseProxy = (stateActions: StateAction[], topLevel = false): StoreInternal => new Proxy({} as StoreInternal, {
     get: (_, prop: string) => {
       stateActions = topLevel ? [] : stateActions;
       const args = { stateActions, prop, recurseProxy };
@@ -146,7 +146,7 @@ const invalidateCache = (args: StoreArgs) => () => {
 };
 
 const processUpdateFunction = (args: StoreArgs) => (arg: unknown, { cache, eager }: { cache?: number, eager?: unknown } = {}) => {
-  if (libState.olikDevtools) {
+  if (libState.devtools) {
     libState.stacktraceError = new Error();
   }
   if (is.anyLibArg(args.prop, '$delete')) {

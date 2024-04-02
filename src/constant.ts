@@ -15,7 +15,7 @@ export const errorMessages = {
 export const libState: LibState = {
   store: undefined,
   asyncUpdate: undefined,
-  olikDevtools: undefined,
+  devtools: undefined,
   state: undefined,
   changeListeners: [],
   currentAction: undefined,
