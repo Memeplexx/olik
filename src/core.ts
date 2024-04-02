@@ -42,7 +42,7 @@ export function createStore<S extends Record<string, unknown>>(
       if (augmentations.core[prop]) {
         return augmentations.core[prop](recurseProxy(stateActions));
       }
-      if (!is.anyLibArg(prop) || is.anyLibArg(prop, '$and', '$or', '$find', '$filter', '$distinct', '$mergeMatching')) {
+      if (!is.anyLibArg(prop) || is.anyConcatenationProp(prop)) {
         return basicProp(args);
       }
       if (is.anyLibArg(prop, '$at') || is.anyComparatorProp(prop)) {

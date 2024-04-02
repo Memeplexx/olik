@@ -286,8 +286,3 @@ test('set object key', () => {
   expect(store.$state).toEqual({ sss: 'world', another: 'what' });
   expect(changed).toEqual('world');
 })
-
-// test('', () => {
-//   const r = is.anyLibArg(['$add'], ['$add']);
-//   console.log(r);
-// })

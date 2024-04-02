@@ -1,4 +1,4 @@
-import { anyLibProp, comparators, readFunctions, updateFunctions } from "./constant";
+import { anyLibProp, comparators, concatenations, readFunctions, updateFunctions } from "./constant";
 import { Actual, Primitive, ValueOf } from "./type";
 import { StoreInternal } from "./type-internal";
 
@@ -18,6 +18,7 @@ export const is = {
   undefined: (arg: unknown): arg is undefined => arg === undefined,
   storeInternal: (arg: unknown): arg is StoreInternal => is.record(arg) && !!arg['$stateActions'],
   anyComparatorProp: (arg: unknown): arg is ValueOf<typeof comparators> => (comparators as unknown as string[]).includes(arg as string),
+  anyConcatenationProp: (arg: unknown): arg is ValueOf<typeof concatenations> => (concatenations as unknown as string[]).includes(arg as string),
   anyUpdateFunction: (arg: unknown): arg is ValueOf<typeof updateFunctions> => (updateFunctions as unknown as string[]).includes(arg as string),
   anyReadFunction: (arg: unknown): arg is ValueOf<typeof readFunctions> => (readFunctions as unknown as string[]).includes(arg as string),
   anyLibArg: <T extends ValueOf<typeof anyLibProp>[]>(toCheck: unknown, ...mustBeWithin: T): toCheck is T => ((!mustBeWithin.length ? anyLibProp : mustBeWithin) as unknown as string[])
