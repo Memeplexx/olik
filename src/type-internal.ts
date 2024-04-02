@@ -39,3 +39,9 @@ export type TestState = {
   isTest: boolean,
   fakeDevtoolsMessage: null | Omit<DevtoolsAction, 'source'>,
 }
+
+export type StoreArgs<P = string> = {
+  stateActions: StateAction[],
+  prop: P,
+  recurseProxy: (stateActions: StateAction[]) => StoreInternal,
+}

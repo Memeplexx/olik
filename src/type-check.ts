@@ -1,4 +1,4 @@
-import { anyLibProp, comparators, readFunctions, updateFunctions } from "./constant";
+import { anyLibProp, comparators, libFns, readFunctions, updateFunctions } from "./constant";
 import { Actual, Primitive, ValueOf } from "./type";
 import { StoreInternal } from "./type-internal";
 
@@ -21,6 +21,9 @@ export const is = {
   anyUpdateFunction: (arg: unknown): arg is ValueOf<typeof updateFunctions> => (updateFunctions as unknown as string[]).includes(arg as string),
   anyReadFunction: (arg: unknown): arg is ValueOf<typeof readFunctions> => (readFunctions as unknown as string[]).includes(arg as string),
   anyLibProp: (arg: unknown): arg is ValueOf<typeof anyLibProp> => (anyLibProp as unknown as string[]).includes(arg as string),
+
+  libArg: <T extends ValueOf<typeof libFns>[]>(toCheck: unknown, ...mustBeWithin: T): toCheck is T => ((!mustBeWithin.length ? libFns : mustBeWithin) as unknown as string[])
+    .includes(toCheck as unknown as string),
 }
 
 export const newRecord = <V = unknown>() => ({} as Record<string, V>);
@@ -79,3 +82,8 @@ export function assertIsBoolean(value: unknown): asserts value is boolean {
   if (is.boolean(value)) return;
   throw new Error();
 }
+
+// export function assertIsLibFn(values: unknown[]): asserts values is ValueOf<typeof anyLibProp>[] {
+//   values.forEach(value => assertIsAnyLibProp(value));
+// }
+

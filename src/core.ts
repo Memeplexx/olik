@@ -1,10 +1,9 @@
 import { augmentations, errorMessages, libState } from './constant';
 import { readState } from './read';
 import { Readable, StateAction, Store, StoreAugment } from './type';
-import { assertIsAnyLibProp, assertIsRecord, assertIsStoreInternal, assertIsString, is } from './type-check';
-import { StoreInternal } from './type-internal';
+import { assertIsRecord, assertIsStoreInternal, assertIsString, is } from './type-check';
+import { StoreArgs, StoreInternal } from './type-internal';
 import { deepFreeze } from './utility';
-import { processPotentiallyAsyncUpdate } from './write';
 import { setNewStateAndNotifyListeners } from './write-complete';
 
 
@@ -37,25 +36,10 @@ export function createStore<S extends Record<string, unknown>>(
   const recurseProxy = (stateActions: StateAction[], topLevel = false): StoreInternal => {
     return new Proxy(<StoreInternal>{}, {
       get: (_, prop: string) => {
-        stateActions = topLevel ? new Array<StateAction>() : stateActions;
+        stateActions = topLevel ? [] : stateActions;
+        const args = { stateActions, prop, recurseProxy };
         if (is.anyUpdateFunction(prop)) {
-          return (arg: unknown, { cache, eager }: { cache?: number, eager?: unknown } = {}) => {
-            if (libState.olikDevtools) {
-              libState.stacktraceError = new Error();
-            }
-            if (prop === '$delete') {
-              const stateActionsStr = stateActions.map(sa => sa.name).join('.');
-              libState.changeListeners.filter(l => l.actions.map(a => a.name).join('.').startsWith(stateActionsStr))
-                .forEach(l => l.unsubscribe());
-            }
-            if (prop === '$setKey') {
-              assertIsString(arg);
-              const stateActionsStr = stateActions.map(sa => sa.name).join('.');
-              libState.changeListeners.filter(l => l.actions.map(a => a.name).join('.').startsWith(stateActionsStr))
-                .forEach(l => l.actions[l.actions.length - 2].name = arg);
-            }
-            return processPotentiallyAsyncUpdate({ stateActions, prop, arg, cache, eager });
-          }
+          return processUpdateFunction(args);
         }
         if (augmentations.selection[prop]) {
           return augmentations.selection[prop](recurseProxy(stateActions));
@@ -63,77 +47,23 @@ export function createStore<S extends Record<string, unknown>>(
         if (augmentations.core[prop]) {
           return augmentations.core[prop](recurseProxy(stateActions));
         }
-        if (!is.anyLibProp(prop)) {
-          stateActions.push({ name: prop });
-          return recurseProxy(stateActions);
+        if (!is.libArg(prop) || is.libArg(prop, '$and', '$or', '$find', '$filter', '$distinct', '$mergeMatching')) {
+          return basicProp(args);
         }
-        if (is.anyComparatorProp(prop)) {
-          return (arg?: unknown) => {
-            stateActions.push({ name: prop, arg });
-            return recurseProxy(stateActions);
-          }
+        if (is.libArg(prop, '$at', '$eq', '$in', '$ni', '$gt', '$lt', '$gte', '$lte', '$match', '$contains', '$containsIgnoreCase', '$isContainedIn', '$isContainedInIgnoreCase', '$isTrue', '$isFalse', '$isTruthy', '$isFalsy')) {
+          return comparator(args);
         }
-        assertIsAnyLibProp(prop);
-        if (prop === '$invalidateCache') {
-          return () => {
-            try {
-              setNewStateAndNotifyListeners({
-                stateActions: [
-                  { name: 'cache' },
-                  { name: stateActions.map(sa => sa.name).join('.') },
-                  { name: '$delete' },
-                ],
-              });
-            } catch (e) {
-              /* This can happen if a cache has already expired */
-            }
-          }
+        if (is.libArg(prop, '$invalidateCache')) {
+          return invalidateCache(args);
         }
-        if (prop === '$mergeMatching') {
-          stateActions.push({ name: prop });
-          return recurseProxy(stateActions);
+        if (is.libArg(prop, '$state')) {
+          return state(args);
         }
-        if (prop === '$state') {
-          const tryFetchResult = (stateActions: StateAction[]): unknown => {
-            try {
-              return deepFreeze(readState({ state: libState.state, stateActions: [...stateActions, { name: prop }], cursor: { index: 0 } }));
-            } catch (e) {
-              stateActions.pop();
-              return tryFetchResult(stateActions);
-            }
-          }
-          const result = tryFetchResult(stateActions.slice());
-          return result === undefined ? null : result;
+        if (is.libArg(prop, '$onChange')) {
+          return onChange(args);
         }
-        if (prop === '$onChange') {
-          return (listener: (arg: unknown) => unknown) => {
-            const stateActionsCopy: StateAction[] = [...stateActions, { name: prop }];
-            const unsubscribe = () => libState.changeListeners.splice(libState.changeListeners.findIndex(e => e === element), 1);
-            const element = { actions: stateActionsCopy, listener, unsubscribe };
-            libState.changeListeners.push(element);
-            return { unsubscribe }
-          }
-        }
-        if (prop === '$and' || prop === '$or') {
-          stateActions.push({ name: prop });
-          return recurseProxy(stateActions);
-        }
-        if (prop === '$find' || prop === '$filter') {
-          stateActions.push({ name: prop });
-          return recurseProxy(stateActions);
-        }
-        if (prop === '$at') {
-          return (index: number) => {
-            stateActions.push({ name: prop, arg: index });
-            return recurseProxy(stateActions);
-          }
-        }
-        if (prop === '$stateActions') {
+        if (is.libArg(prop, '$stateActions')) {
           return stateActions;
-        }
-        if (prop === '$distinct') {
-          stateActions.push({ name: prop });
-          return recurseProxy(stateActions);
         }
       }
     });
@@ -141,7 +71,7 @@ export function createStore<S extends Record<string, unknown>>(
   return (libState.store = recurseProxy([], true)) as Store<S>;
 }
 
-export const validateState = (state: unknown) => {
+const validateState = (state: unknown) => {
   const throwError = (illegal: { toString(): string }) => {
     throw new Error(errorMessages.INVALID_STATE_INPUT(illegal));
   };
@@ -158,12 +88,95 @@ export const validateState = (state: unknown) => {
   }
 }
 
-export const removeStaleCacheReferences = (state: Record<string, unknown>) => {
+const onChange = (
+  args: StoreArgs
+) => (listener: (arg: unknown) => unknown) => {
+  const stateActionsCopy: StateAction[] = [...args.stateActions, { name: args.prop }];
+  const unsubscribe = () => libState.changeListeners.splice(libState.changeListeners.findIndex(e => e === element), 1);
+  const element = { actions: stateActionsCopy, listener, unsubscribe };
+  libState.changeListeners.push(element);
+  return { unsubscribe }
+}
+
+const state = (
+  args: StoreArgs
+) => {
+  const tryFetchResult = (stateActions: StateAction[]): unknown => {
+    try {
+      return deepFreeze(readState({ state: libState.state, stateActions: [...stateActions, { name: args.prop }], cursor: { index: 0 } }));
+    } catch (e) {
+      stateActions.pop();
+      return tryFetchResult(stateActions);
+    }
+  }
+  const result = tryFetchResult(args.stateActions.slice());
+  return result === undefined ? null : result;
+}
+
+const removeStaleCacheReferences = (state: Record<string, unknown>) => {
   if (!state.cache) { return; }
   assertIsRecord<string>(state.cache);
   for (const key in state.cache) {
     if (new Date(state.cache[key]).getTime() <= Date.now()) {
       delete state.cache[key];
     }
+  }
+}
+
+const basicProp = (
+  args: StoreArgs
+) => {
+  args.stateActions.push({ name: args.prop });
+  return args.recurseProxy(args.stateActions);
+}
+
+const comparator = (
+  args: StoreArgs
+) => (arg?: unknown) => {
+  args.stateActions.push({ name: args.prop, arg });
+  return args.recurseProxy(args.stateActions);
+}
+
+const invalidateCache = (
+  args: StoreArgs
+) => () => {
+  try {
+    setNewStateAndNotifyListeners({
+      stateActions: [
+        { name: 'cache' },
+        { name: args.stateActions.map(sa => sa.name).join('.') },
+        { name: '$delete' },
+      ],
+    });
+  } catch (e) {
+    /* This can happen if a cache has already expired */
+  }
+};
+
+const processUpdateFunction = (
+  args: StoreArgs
+) => (arg: unknown, { cache, eager }: { cache?: number, eager?: unknown } = {}) => {
+  if (libState.olikDevtools) {
+    libState.stacktraceError = new Error();
+  }
+  if (args.prop === '$delete') {
+    const stateActionsStr = args.stateActions.map(sa => sa.name).join('.');
+    libState.changeListeners
+      .filter(l => l.actions.map(a => a.name).join('.').startsWith(stateActionsStr))
+      .forEach(l => l.unsubscribe());
+  }
+  if (args.prop === '$setKey') {
+    assertIsString(arg);
+    const stateActionsStr = args.stateActions.map(sa => sa.name).join('.');
+    libState.changeListeners
+      .filter(l => l.actions.map(a => a.name).join('.').startsWith(stateActionsStr))
+      .forEach(l => l.actions[l.actions.length - 2].name = arg);
+  }
+  deepFreeze(arg);
+  if (typeof (arg) === 'function') {
+    if (!libState.asyncUpdate) { throw new Error(errorMessages.ASYNC_UPDATES_NOT_ENABLED) }
+    return libState.asyncUpdate({ arg, cache, eager, ...args })
+  } else {
+    setNewStateAndNotifyListeners({ stateActions: [...args.stateActions, { name: args.prop, arg }] });
   }
 }
