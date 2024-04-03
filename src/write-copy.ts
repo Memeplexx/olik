@@ -12,6 +12,7 @@ export const copyNewState = (
 ): unknown => {
   const { currentState, stateActions, cursor } = arg;
   const { arg: payload, name: type } = stateActions[cursor.index];
+  // const p = extractPayload(payload);
   const args = { ...arg, payload, type };
   if (cursor.index < stateActions.length - 1) {
     if (!is.libArg(type) && is.array(currentState))

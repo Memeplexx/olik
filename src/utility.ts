@@ -1,6 +1,7 @@
 import { comparators, libState, testState, updateFunctions } from './constant';
 import { Readable, Store } from './type';
 import { is, newRecord } from './type-check';
+import { StoreInternal } from './type-internal';
 
 
 export const deepFreeze = <T>(o: T): T => {
@@ -131,7 +132,7 @@ export const getPayloadOrigAndSanitized = <T>(payload: T): { found: boolean, pay
       payloadSanitized: Object.keys(payload).reduce((prev, key) => Object.assign(prev, { [key]: getStateOrStoreState(payload[key]) }), newRecord()) as T,
       payloadOriginal: Object.keys(payload).reduce((prev, key) => Object.assign(prev, { [key]: stringifyPotentialPayloadStore(payload[key]) }), newRecord()) as T,
     }
-  // else is this a potential store?
+    // else is this a potential store?
   } else {
     return {
       found: is.storeInternal(payload),
@@ -139,6 +140,27 @@ export const getPayloadOrigAndSanitized = <T>(payload: T): { found: boolean, pay
       payloadOriginal: stringifyPotentialPayloadStore(payload) as T
     }
   }
+}
+
+
+type PayloadType<T> = { [key in keyof T]: T[key] extends StoreInternal ? T[key]['$state'] : PayloadType<T[key]> }
+export const extractPayload = <T>(payloadIncoming: T): PayloadType<T> => {
+  let storeFound = false;
+  const recurse = (payload: T) => {
+    if (is.primitive(payload) || is.date(payload) || is.null(payload) || is.undefined(payload))
+      return payload as PayloadType<T>;
+    if (is.array(payload))
+      return payload.map(p => extractPayload(p as T)) as PayloadType<T>;
+    if (is.record(payload))
+      return (Object.keys(payload) as Array<keyof typeof payload>).reduce((prev, key) => Object.assign(prev, { [key]: extractPayload(payload[key]) }), newRecord()) as PayloadType<T>;
+    if (is.storeInternal(payload)) {
+      storeFound = true;
+      return (is.storeInternal(payload) ? payload.$state : payload) as PayloadType<T>;
+    }
+    throw new Error();
+  }
+  const result = recurse(payloadIncoming);
+  return storeFound ? result : payloadIncoming as PayloadType<T>;
 }
 
 // Note: consumed by devtools
