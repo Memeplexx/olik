@@ -33,33 +33,24 @@ export function createStore<S extends Record<string, unknown>>(
     get: (_, prop: string) => {
       stateActions = topLevel ? [] : stateActions;
       const args = { stateActions, prop, recurseProxy };
-      if (is.anyUpdateFunction(prop)) {
+      if (is.anyUpdateFunction(prop))
         return processUpdateFunction(args);
-      }
-      if (augmentations.selection[prop]) {
+      if (augmentations.selection[prop])
         return augmentations.selection[prop](recurseProxy(stateActions));
-      }
-      if (augmentations.core[prop]) {
+      if (augmentations.core[prop])
         return augmentations.core[prop](recurseProxy(stateActions));
-      }
-      if (!is.libArg(prop) || is.anyConcatenationProp(prop)) {
+      if (!is.libArg(prop) || is.anyConcatenationProp(prop))
         return basicProp(args);
-      }
-      if ('$at' === prop || is.anyComparatorProp(prop)) {
+      if ('$at' === prop || is.anyComparatorProp(prop))
         return comparator(args);
-      }
-      if ('$invalidateCache' === prop) {
+      if ('$invalidateCache' === prop)
         return invalidateCache(args);
-      }
-      if ('$state' === prop) {
+      if ('$state' === prop)
         return state(args);
-      }
-      if ('$onChange' === prop) {
+      if ('$onChange' === prop)
         return onChange(args);
-      }
-      if ('$stateActions' === prop) {
+      if ('$stateActions' === prop)
         return stateActions;
-      }
     }
   });
   return (libState.store = recurseProxy([], true)) as Store<S>;

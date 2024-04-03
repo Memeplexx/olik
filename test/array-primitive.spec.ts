@@ -17,8 +17,9 @@ test('should merge a number', () => {
 })
 
 test('should merge a branded number', () => { ///////
-  const store = createStore({ nums: [1, 4, 5] as Array<Brand<number, 'number'>> });
-  store.nums.$merge(2);
+  type BrandedNumber = Brand<number, 'number'>;
+  const store = createStore({ nums: [1, 4, 5] as Array<BrandedNumber> });
+  store.nums.$merge(2 as BrandedNumber);
   expect(libState.currentAction).toEqual({ type: 'nums.$merge()', payload: 2 });
   expect(store.$state).toEqual({ nums: [1, 4, 5, 2] });
 })
