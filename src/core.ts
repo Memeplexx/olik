@@ -66,20 +66,16 @@ export function createStore<S extends Record<string, unknown>>(
 }
 
 const validateState = (state: unknown) => {
-  const throwError = (illegal: { toString(): string }) => {
-    throw new Error(errorMessages.INVALID_STATE_INPUT(illegal));
-  };
-  if (is.actual(state) && !is.primitive(state)) {
-    if (!is.array(state) && !is.record(state) && !is.date(state)) {
-      throwError(state);
-    }
-    Object.entries(state).forEach(([key, val]) => {
-      if (key.startsWith('$')) {
-        throw new Error(errorMessages.DOLLAR_USED_IN_STATE);
-      }
-      validateState(val);
-    });
+  if (!is.actual(state) || is.primitive(state)) return;
+  if (!is.array(state) && !is.record(state) && !is.date(state)) {
+    throw new Error(errorMessages.INVALID_STATE_INPUT(state));
   }
+  Object.entries(state).forEach(([key, val]) => {
+    if (key.startsWith('$')) {
+      throw new Error(errorMessages.DOLLAR_USED_IN_STATE);
+    }
+    validateState(val);
+  });
 }
 
 const onChange = (args: StoreArgs) => (listener: (arg: unknown) => unknown) => {
@@ -104,21 +100,16 @@ const state = (args: StoreArgs) => {
 }
 
 const initializeLibState = (initialState: Record<string, unknown>) => {
-  if (!libState.initialState) {
-    const state = deepFreeze(initialState)!;
-    libState.initialState = state;
-    libState.state = state;
-  }
+  if (libState.initialState) return;
+  const state = deepFreeze(initialState)!;
+  libState.initialState = state;
+  libState.state = state;
 }
 
 const removeStaleCacheReferences = (state: Record<string, unknown>) => {
   if (!state.cache) { return; }
   assertIsRecord<string>(state.cache);
-  for (const key in state.cache) {
-    if (new Date(state.cache[key]).getTime() <= Date.now()) {
-      delete state.cache[key];
-    }
-  }
+  state.cache = Object.fromEntries(Object.entries(state.cache).filter(([, value]) => new Date(value).getTime() > Date.now()));
 }
 
 const basicProp = (args: StoreArgs) => {

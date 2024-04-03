@@ -1,7 +1,7 @@
 import { errorMessages } from './constant';
 import { constructQuery } from './query';
-import { Actual, StateAction } from './type';
-import { assertIsArray, assertIsBoolean, assertIsNumber, assertIsRecord, assertIsRecordOrUndefined, assertIsString, assertIsUpdateFunction, is, newRecord } from './type-check';
+import { Actual } from './type';
+import { assertIsArray, assertIsBoolean, assertIsNumber, assertIsRecord, assertIsRecordOrUndefined, assertIsString, is, newRecord } from './type-check';
 import { CopyNewStateArgs, CopyNewStateArgsAndPayload } from './type-internal';
 import { getPayloadOrigAndSanitized } from './utility';
 import { setCurrentActionReturningNewState } from './write-action';
@@ -14,60 +14,51 @@ export const copyNewState = (
   const { arg: payload, name: type } = stateActions[cursor.index];
   const args = { ...arg, payload, type };
   if (cursor.index < stateActions.length - 1) {
-    if (!is.libArg(type) && is.array(currentState)) {
+    if (!is.libArg(type) && is.array(currentState))
       return updateArrayObjectProperties(arg);
-    }
     cursor.index++;
-    switch (type) {
-      case '$at':
-        return atArray(args);
-      case '$find':
-        return findArray(args);
-      case '$filter':
-        return filterArray(args);
-      case '$mergeMatching':
-        return mergeMatching(args);
-    }
-    switch (stateActions[cursor.index].name) {
-      case '$delete':
-      case '$invalidateCache':
-        return deleteObjectValue(args);
-      case '$setKey':
-        return setObjectKey(args);
-    }
-    if (is.record(currentState) || is.undefined(currentState)) {
+    if ('$at' === type)
+      return atArray(args);
+    if ('$find' === type)
+      return findArray(args);
+    if ('$filter' === type)
+      return filterArray(args);
+    if ('$mergeMatching' === type)
+      return mergeMatching(args);
+    const typeNext = stateActions[cursor.index].name;
+    if ('$delete' === typeNext || '$invalidateCache' === typeNext)
+      return deleteObjectValue(args);
+    if ('$setKey' === typeNext)
+      return setObjectKey(args);
+    if (is.record(currentState) || is.undefined(currentState))
       return copyObjectProperty(args);
-    }
   }
-  assertIsUpdateFunction(type);
-  switch (type) {
-    case '$set':
-      return set(args);
-    case '$setUnique':
-      return setUnique(args);
-    case '$patch':
-      return patch(args);
-    case '$add':
-      return addNumber(args);
-    case '$subtract':
-      return subtractNumber(args);
-    case '$setNew':
-      return setNew(args);
-    case '$patchDeep':
-      return patchDeep(args);
-    case '$clear':
-      return clear(args);
-    case '$push':
-      return push(args);
-    case '$pushMany':
-      return pushMany(args);
-    case '$deDuplicate':
-      return deDuplicate(args);
-    case '$toggle':
-      return toggle(args);
-    case '$merge':
-      return merge(args);
-  }
+  if ('$set' === type)
+    return set(args);
+  if ('$setUnique' === type)
+    return setUnique(args);
+  if ('$patch' === type)
+    return patch(args);
+  if ('$add' === type)
+    return addNumber(args);
+  if ('$subtract' === type)
+    return subtractNumber(args);
+  if ('$setNew' === type)
+    return setNew(args);
+  if ('$patchDeep' === type)
+    return patchDeep(args);
+  if ('$clear' === type)
+    return clear(args);
+  if ('$push' === type)
+    return push(args);
+  if ('$pushMany' === type)
+    return pushMany(args);
+  if ('$deDuplicate' === type)
+    return deDuplicate(args);
+  if ('$toggle' === type)
+    return toggle(args);
+  if ('$merge' === type)
+    return merge(args);
   throw new Error();
 }
 
@@ -204,12 +195,9 @@ const updateArrayObjectProperties = ({ stateToUpdate, currentState, cursor, stat
 
 const mergeMatching = ({ currentState, cursor, stateActions }: CopyNewStateArgsAndPayload) => {
   assertIsArray(currentState);
-  const queryPaths = stateActions
-    .slice(cursor.index, cursor.index + stateActions.slice(cursor.index).findIndex(sa => is.anyUpdateFunction(sa.name)))
-    .reduce((prev, curr) => {
-      cursor.index++;
-      return prev.concat(curr);
-    }, new Array<StateAction>());
+  const nextUpdateIndex = stateActions.slice(cursor.index).findIndex(sa => is.anyUpdateFunction(sa.name));
+  const queryPaths = stateActions.slice(cursor.index, cursor.index + nextUpdateIndex);
+  cursor.index += queryPaths.length;
   const merge = stateActions[cursor.index++];
   const mergeArgState = is.storeInternal(merge.arg) ? merge.arg.$state : merge.arg;
   const mergeArgs = [...(is.array(mergeArgState) ? mergeArgState : [mergeArgState])];
@@ -271,23 +259,20 @@ const filterArray = ({ stateToUpdate, currentState, cursor, stateActions, payloa
   assertIsArray(currentState);
   const query = constructQuery({ stateActions, cursor });
   const type = stateActions[cursor.index].name;
-  if (is.anyUpdateFunction(type)) {
-    switch (type) {
-      case '$delete':
-        return setCurrentActionReturningNewState({
-          stateActions,
-          payload,
-          newState: currentState.filter((_, i) => !query(currentState[i])),
-        });
-      case '$set': {
-        const newState = copyNewState({ currentState, stateToUpdate, stateActions, cursor });
-        assertIsArray(newState);
-        return [
-          ...currentState.filter(e => !query(e)),
-          ...newState,
-        ];
-      }
-    }
+  if ('$delete' === type) {
+    return setCurrentActionReturningNewState({
+      stateActions,
+      payload,
+      newState: currentState.filter((_, i) => !query(currentState[i])),
+    });
+  }
+  if ('$set' === type) {
+    const newState = copyNewState({ currentState, stateToUpdate, stateActions, cursor });
+    assertIsArray(newState);
+    return [
+      ...currentState.filter(e => !query(e)),
+      ...newState,
+    ];
   }
   assertIsArray(stateToUpdate);
   return currentState.map((e, i) => query(e)

@@ -361,7 +361,7 @@ export interface SubtractArray {
   $subtract(toSubtract: number): void;
 }
 
-type SetPayload<S> = S | Readable<S> | Partial<{ [k in keyof S]: S[k] | Readable<S[k]> }>;
+type SetPayload<S> = S | Readable<S> | { [k in keyof S]: S[k] | Readable<S[k]> };
 
 export interface Set<S> {
   /**
