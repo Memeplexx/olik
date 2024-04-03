@@ -81,7 +81,7 @@ const merge = ({ currentState, stateActions, payload }: CopyNewStateArgsAndPaylo
   assertIsArray<unknown>(currentState);
   const { found, payloadOriginal, payloadSanitized } = getPayloadOrigAndSanitized(payload);
   const newState = [...currentState, ...(is.array(payloadSanitized) ? payloadSanitized : [payloadSanitized]).filter(e => !currentState.includes(e))];
-  return setCurrentActionReturningNewState({ stateActions, payload: payloadSanitized, newState, payloadOrig: found ? payloadOriginal : undefined });
+  return setCurrentActionReturningNewState({ stateActions, payload: payloadSanitized, newState, payloadOriginal, found });
 }
 
 const toggle = ({ currentState, stateActions, payload }: CopyNewStateArgsAndPayload) => {
@@ -97,20 +97,21 @@ const setNew = ({ currentState, stateActions, payload }: CopyNewStateArgsAndPayl
   const { found, payloadOriginal, payloadSanitized } = getPayloadOrigAndSanitized(payload);
   return setCurrentActionReturningNewState({
     stateActions, payload: payloadSanitized,
-    newState: currentState === undefined ? payload : { ...currentState, ...payloadSanitized }, payloadOrig: found ? payloadOriginal : undefined
+    newState: currentState === undefined ? payload : { ...currentState, ...payloadSanitized }, found,
+    payloadOriginal
   });
 }
 
 const set = ({ stateActions, payload }: CopyNewStateArgsAndPayload) => {
   const { found, payloadOriginal, payloadSanitized } = getPayloadOrigAndSanitized(payload);
-  return setCurrentActionReturningNewState({ stateActions, newState: payloadSanitized, payload: payloadSanitized, payloadOrig: found ? payloadOriginal : undefined });
+  return setCurrentActionReturningNewState({ stateActions, newState: payloadSanitized, payload: payloadSanitized, found, payloadOriginal });
 }
 
 const setUnique = ({ stateActions, payload }: CopyNewStateArgsAndPayload) => {
   assertIsArray(payload);
   const { found, payloadOriginal, payloadSanitized } = getPayloadOrigAndSanitized(payload);
   const payloadWithoutDuplicates = Array.from(new Set(payloadSanitized));
-  return setCurrentActionReturningNewState({ stateActions, newState: payloadWithoutDuplicates, payload: payloadWithoutDuplicates, payloadOrig: found ? payloadOriginal : undefined });
+  return setCurrentActionReturningNewState({ stateActions, newState: payloadWithoutDuplicates, payload: payloadWithoutDuplicates, found, payloadOriginal });
 }
 
 const patch = ({ currentState, stateActions, payload }: CopyNewStateArgsAndPayload) => {
@@ -120,7 +121,7 @@ const patch = ({ currentState, stateActions, payload }: CopyNewStateArgsAndPaylo
   }
   assertIsRecord(currentState);
   const { found, payloadOriginal, payloadSanitized } = getPayloadOrigAndSanitized(payload);
-  return setCurrentActionReturningNewState({ stateActions, payload: payloadSanitized, newState: { ...currentState, ...payloadSanitized }, payloadOrig: found ? payloadOriginal : undefined });
+  return setCurrentActionReturningNewState({ stateActions, payload: payloadSanitized, newState: { ...currentState, ...payloadSanitized }, found, payloadOriginal });
 }
 
 const addNumber = ({ currentState, stateActions, payload }: CopyNewStateArgsAndPayload) => {
@@ -219,7 +220,7 @@ const mergeMatching = ({ currentState, cursor, stateActions }: CopyNewStateArgsA
   });
   const newState = [...currentArrayModified, ...newArrayElements];
   const { found, payloadOriginal, payloadSanitized } = getPayloadOrigAndSanitized(merge.arg);
-  return setCurrentActionReturningNewState({ stateActions, payload: payloadSanitized, newState, payloadOrig: found ? payloadOriginal : undefined });
+  return setCurrentActionReturningNewState({ stateActions, payload: payloadSanitized, newState, payloadOriginal, found });
 }
 
 const setObjectKey = ({ currentState, stateActions, cursor, type: oldKey }: CopyNewStateArgsAndPayload) => {
@@ -231,7 +232,7 @@ const setObjectKey = ({ currentState, stateActions, cursor, type: oldKey }: Copy
     const newKey = key === oldKey ? payloadSanitized : key;
     newState[newKey] = value;
   })
-  return setCurrentActionReturningNewState({ stateActions, payload: payloadSanitized, newState, payloadOrig: found ? payloadOriginal : undefined });
+  return setCurrentActionReturningNewState({ stateActions, payload: payloadSanitized, newState, payloadOriginal, found });
 }
 
 const atArray = ({ stateToUpdate, currentState, cursor, stateActions, payload }: CopyNewStateArgsAndPayload) => {
