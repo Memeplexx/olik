@@ -123,50 +123,39 @@ export const fixCurrentAction = (action: { name: string, arg?: unknown }, nested
   });
 }
 
-// Note: consumed by devtools
-export const getPayloadOrigAndSanitized = <T>(payload: T): { found: boolean, payloadSanitized: T, payloadOriginal: T } => {
-  // is this a standard non-array non-store object?
-  if (is.record(payload) && !is.storeInternal(payload)) {
-    return {
-      found: Object.keys(payload).some(key => is.storeInternal(payload[key])),
-      payloadSanitized: Object.keys(payload).reduce((prev, key) => Object.assign(prev, { [key]: getStateOrStoreState(payload[key]) }), newRecord()) as T,
-      payloadOriginal: Object.keys(payload).reduce((prev, key) => Object.assign(prev, { [key]: stringifyPotentialPayloadStore(payload[key]) }), newRecord()) as T,
-    }
-    // else is this a potential store?
-  } else {
-    return {
-      found: is.storeInternal(payload),
-      payloadSanitized: getStateOrStoreState(payload) as T,
-      payloadOriginal: stringifyPotentialPayloadStore(payload) as T
-    }
-  }
-}
-
-
 type PayloadType<T> = { [key in keyof T]: T[key] extends StoreInternal ? T[key]['$state'] : PayloadType<T[key]> }
-export const extractPayload = <T>(payloadIncoming: T): PayloadType<T> => {
+export const extractPayload = <T>(payloadIncoming: T) => {
   let storeFound = false;
-  const recurse = (payload: T) => {
+  const sanitizePayload = (payload: T): PayloadType<T> => {
+    if (is.storeInternal(payload)) {
+      storeFound = true;
+      return payload.$state as PayloadType<T>;
+    }
     if (is.primitive(payload) || is.date(payload) || is.null(payload) || is.undefined(payload))
       return payload as PayloadType<T>;
     if (is.array(payload))
-      return payload.map(p => extractPayload(p as T)) as PayloadType<T>;
+      return payload.map(p => sanitizePayload(p as T)) as PayloadType<T>;
     if (is.record(payload))
-      return (Object.keys(payload) as Array<keyof typeof payload>).reduce((prev, key) => Object.assign(prev, { [key]: extractPayload(payload[key]) }), newRecord()) as PayloadType<T>;
-    if (is.storeInternal(payload)) {
-      storeFound = true;
-      return (is.storeInternal(payload) ? payload.$state : payload) as PayloadType<T>;
-    }
+      return (Object.keys(payload) as Array<keyof typeof payload>).reduce((prev, key) => Object.assign(prev, { [key]: sanitizePayload(payload[key] as T) }), newRecord()) as PayloadType<T>;
     throw new Error();
   }
-  const result = recurse(payloadIncoming);
-  return storeFound ? result : payloadIncoming as PayloadType<T>;
-}
+  const result = sanitizePayload(payloadIncoming);
 
-// Note: consumed by devtools
-export const stringifyPotentialPayloadStore = (arg: unknown) => {
-  if (is.storeInternal(arg)) {
-    return `${arg.$stateActions.map(sa => fixCurrentAction(sa, true)).join('.')} = ${JSON.stringify(arg.$state)}`;
+  const stringifyPayloadWithStore = (payload: T): T | string => {
+    if (is.storeInternal(payload))
+      return `${payload.$stateActions.map(sa => fixCurrentAction(sa, true)).join('.')} = ${JSON.stringify(payload.$state)}`;
+    if (is.primitive(payload) || is.date(payload) || is.null(payload) || is.undefined(payload))
+      return payload;
+    if (is.array(payload))
+      return payload.map(p => stringifyPayloadWithStore(p as T)) as T;
+    if (is.record(payload))
+      return (Object.keys(payload) as Array<keyof typeof payload>).reduce((prev, key) => Object.assign(prev, { [key]: stringifyPayloadWithStore(payload[key] as T) }), newRecord()) as T;
+    throw new Error();
   }
-  return arg;
+
+  return {
+    payloadIncoming,
+    payloadSanitized: storeFound ? result : payloadIncoming,
+    payloadStringified: storeFound ? stringifyPayloadWithStore(payloadIncoming) : payloadIncoming,
+  }
 }

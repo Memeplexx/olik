@@ -199,8 +199,8 @@ export type SetNewNode = {
    * Also note that you cannot insert primitives or arrays into the selected object.
    * The former has been enforced by the type system while the latter could not be.
    */
-  $setNew(insertion: object, options?: UpdateOptions<typeof insertion>): UpdateResult<typeof insertion>;
-  $setNew(insertion: object): void;
+  $setNew(insertion: Record<string, unknown>, options?: UpdateOptions<typeof insertion>): UpdateResult<typeof insertion>;
+  $setNew(insertion: Record<string, unknown>): void;
 }
 
 export type DeleteNode<Depth extends number> = [Depth] extends [MaxRecursionDepth] ? unknown : {

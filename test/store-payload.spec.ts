@@ -1,5 +1,5 @@
 import { beforeEach, expect, test } from 'vitest';
-import { StateAction, is, libState, readState } from '../src';
+import { StateAction, is, libState, readState, testState } from '../src';
 import { createStore } from '../src/core';
 import { deserialize, resetLibraryState } from '../src/utility';
 
@@ -31,18 +31,20 @@ test('should be able include store object with set', () => {
 
 test('should be able include store object with setNew', () => {
   const store = createStore({ one: { two: 1, three: '' }, arr: [{ id: 1, text: 'element' }] });
-  store.one.$setNew(store.arr.$find.id.$eq(store.arr.$find.text.$eq('element').id).id);
-  expect(libState.currentAction?.payloadOrig).toEqual(
-    'arr.$find.id.$eq( arr.$find.text.$eq("element").id = 1 ).id = 1'
-  );
+  store.one.$setNew({ x: store.arr.$find.id.$eq(store.arr.$find.text.$eq('element').id).id });
+  expect(libState.currentAction?.payloadOrig).toEqual({
+    x: 'arr.$find.id.$eq( arr.$find.text.$eq("element").id = 1 ).id = 1'
+});
 })
 
 test('should be able include nested store object with set', () => {
   const store = createStore({ one: { two: 1, three: '' }, arr: [{ id: 1, text: 'element' }] });
+  testState.logLevel = 'debug';
   store.one.$set({
     two: store.arr.$find.id.$eq(store.arr.$find.text.$eq('element').id).id,
     three: store.arr.$find.id.$eq(store.arr.$find.text.$eq('element').id).text
   });
+
   expect(libState.currentAction?.payloadOrig).toEqual({
     two: 'arr.$find.id.$eq( arr.$find.text.$eq("element").id = 1 ).id = 1',
     three: 'arr.$find.id.$eq( arr.$find.text.$eq("element").id = 1 ).text = "element"'
@@ -248,13 +250,12 @@ test('should be able to re-create state', () => {
   createStore({ hello: 'world' });
   libState.initialState = undefined;
   const store2 = createStore({ hello: 'another' });
-  console.log(store2.$state);
+  expect(store2.$state).toEqual({ hello: 'another' });
 })
 
 test('accept dates', () => {
   const store = createStore({ dat: new Date() });
   store.dat.$set(new Date());
-  console.log(store.$state);
 })
 
 test('array indices on primitive', () => {
@@ -275,7 +276,10 @@ test('array indices filter and then at', () => {
   const store = createStore({ arr: [{ id: 1, arr2: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }] }, { id: 2, arr2: [{ id: 3, value: 'three' }, { id: 4, value: 'four' }] }] });
   store.arr.$filter.id.$lte(2).arr2.$at(1).value.$set('xxx');
   expect(store.$state).toEqual({ arr: [{ id: 1, arr2: [{ id: 1, value: 'one' }, { id: 2, value: 'xxx' }] }, { id: 2, arr2: [{ id: 3, value: 'three' }, { id: 4, value: 'xxx' }] }] });
-  console.log(libState.currentAction)
+  expect(libState.currentAction).toEqual({
+    type: 'arr.$filter.id.$lte(2).arr2.$at(1).value.$set()',
+    payload: 'xxx'
+  })
 });
 
 test('set object key', () => {
