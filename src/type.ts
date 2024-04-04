@@ -60,10 +60,10 @@ export type UpdatableObject<S, F extends FindOrFilter, Q extends QueryStatus, I 
   & Readable<F extends 'isFilter' ? S[] : S>
   & ({
     [K in keyof S]: (S[K] extends Array<unknown>
-    ? UpdatableArray<S[K], 'isFilter', 'notQueried', 'no', NewDepth>
-    : S[K] extends PossiblyBrandedPrimitive
-    ? UpdatablePrimitive<S[K], F, Q, 'no', NewDepth>
-    : UpdatableObject<S[K], F, Q, 'no', NewDepth>) & SetObjectKey
+      ? UpdatableArray<S[K], 'isFilter', 'notQueried', 'no', NewDepth>
+      : S[K] extends PossiblyBrandedPrimitive
+      ? UpdatablePrimitive<S[K], F, Q, 'no', NewDepth>
+      : UpdatableObject<S[K], F, Q, 'no', NewDepth>) & SetObjectKey
   })
   , Depth>
 
@@ -118,6 +118,12 @@ export type UpdatablePrimitive<S, F extends FindOrFilter, Q extends QueryStatus,
   & (S extends boolean ? (F extends 'isFind' ? Toggle : ToggleArray) : unknown)
   & Readable<F extends 'isFilter' ? S[] : S>
 
+export type PayloadWithPotentialStore<T> = Readable<T> | (
+  T extends (infer R)[] ? Array<PayloadWithPotentialStore<R>> :
+  T extends Record<string, infer V> ? Record<string, PayloadWithPotentialStore<V>> :
+  T
+);
+
 export interface DeDuplicateArray<S> {
   /**
    * Remove duplicates from array
@@ -136,7 +142,7 @@ export interface MergePrimitive<S> {
   /**
    * Replace element(s) if they already exist or insert them if they don't
    */
-  $merge: (toMerge: SetPayload<S | S[]>) => void,
+  $merge: (toMerge: PayloadWithPotentialStore<S | S[]>) => void,
 }
 
 export interface Or<S extends Array<unknown>, F extends FindOrFilter, NewDepth extends number> {
@@ -268,17 +274,15 @@ export interface SetObjectKey {
   $setKey(key: string): void;
 }
 
-type PatchPayload<S> = Partial<{ [k in keyof S]: S[k] | Readable<S[k]> }>;
-
 export interface PatchObject<S> {
   /**
    * Update the selected object node, using the partial returned by the supplied async function.
    */
-  $patch(patch: AnyAsyncFn<Partial<S>>, options?: UpdateOptions<typeof patch>): UpdateResult<typeof patch>;
+  $patch(patch: AnyAsyncFn<PayloadWithPotentialStore<Partial<S>>>, options?: UpdateOptions<typeof patch>): UpdateResult<typeof patch>;
   /**
    * Update the selected object node, using the supplied partial.
    */
-  $patch(patch: PatchPayload<S>): void;
+  $patch(patch: PayloadWithPotentialStore<Partial<S>>): void;
 }
 
 export interface PatchArrayElement<S> {
@@ -361,46 +365,44 @@ export interface SubtractArray {
   $subtract(toSubtract: number): void;
 }
 
-type SetPayload<S> = S | Readable<S> | { [k in keyof S]: S[k] | Readable<S[k]> };
-
 export interface Set<S> {
   /**
    * Update the selected node, by replacing it with the value returned by the supplied async function.
    */
-  $set(replacement: AnyAsyncFn<S>, options?: UpdateOptions<typeof replacement>): UpdateResult<typeof replacement>;
+  $set(replacement: AnyAsyncFn<PayloadWithPotentialStore<S>>, options?: UpdateOptions<typeof replacement>): UpdateResult<typeof replacement>;
   /**
    * Update the selected node, by replacing it with the supplied value.
    */
-  $set(replacement: SetPayload<S>): void;
+  $set(replacement: PayloadWithPotentialStore<S>): void;
 }
 
 export interface SetArrayElement<S> {
   /**
    * Update the selected array element, by replacing it with the value returned by the supplied async function.
    */
-  $set(replacement: AnyAsyncFn<S>): UpdateResult<typeof replacement>;
+  $set(replacement: AnyAsyncFn<PayloadWithPotentialStore<S>>): UpdateResult<typeof replacement>;
   /**
    * Update the selected array element, by replacing it with the supplied value.
    */
-  $set(replacement: SetPayload<S>): void;
+  $set(replacement: PayloadWithPotentialStore<S>): void;
 }
 
 export interface SetArray<S, I> {
   /**
    * Update the selected array elements, by replacing it with the elements returned by the supplied async function.
    */
-  $set(replacement: AnyAsyncFn<I extends 'yes' ? S[] : S>, options?: UpdateOptions<typeof replacement>): UpdateResult<typeof replacement>;
+  $set(replacement: AnyAsyncFn<PayloadWithPotentialStore<I extends 'yes' ? S[] : S>>, options?: UpdateOptions<typeof replacement>): UpdateResult<typeof replacement>;
   /**
    * Update the selected array elements, by replacing each element with the supplied value.
    */
-  $set(replacement: SetPayload<I extends 'yes' ? S[] : S>): void;
+  $set(replacement: PayloadWithPotentialStore<I extends 'yes' ? S[] : S>): void;
 }
 
 export interface SetUnique<S extends Array<PossiblyBrandedPrimitive>> {
   /**
    * Set array elements and only unique ones will be kept.
    */
-  $setUnique(replacement: SetPayload<S>): void;
+  $setUnique(replacement: PayloadWithPotentialStore<S>): void;
 }
 
 export interface PatchDeep<S> {
@@ -440,11 +442,11 @@ export interface With<T> {
   /**
    * The element or array of elements to merge
    */
-  $with(array: AnyAsyncFn<T | T[]>): UpdateResult<typeof array>,
+  $with(array: AnyAsyncFn<PayloadWithPotentialStore<T | T[]>>): UpdateResult<typeof array>,
   /**
    * The element or array of elements to merge
    */
-  $with(array: SetPayload<T | T[]>): void,
+  $with(array: PayloadWithPotentialStore<T | T[]>): void,
 }
 
 export interface InvalidateDerivation {
@@ -807,7 +809,7 @@ export interface ChangeListener {
 
 export type TraceElement = { functionName: string, fileName: string, lineNumber: number, columnNumber: number }
 
-export type OlikAction = { type: string, typeOrig?: string, payload?: unknown, payloadOrig?: unknown };
+export type OlikAction = { type: string, typeOrig?: string, payload?: unknown, payloadPaths?: Record<string, string> };
 
 export type DevtoolsInstance = {
   init: (state: unknown) => unknown,
@@ -836,8 +838,13 @@ export type LibState = {
 export type DerivationKey = { key: string, state: unknown, from?: DerivationKey[] }
 
 export type DevtoolsAction = {
-  action: OlikAction | undefined;
+  action: ActionForDevtools | undefined;
   source: string;
   stateActions: { arg: unknown; name: string; }[];
   trace?: string;
+}
+
+export type ActionForDevtools = {
+  type: string;
+  payloadPaths?: Record<string, string>;
 }

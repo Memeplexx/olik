@@ -130,45 +130,29 @@ export const fixCurrentAction = (action: { name: string, arg?: unknown }, nested
 
 type PayloadType<T> = { [key in keyof T]: T[key] extends StoreInternal ? T[key]['$state'] : PayloadType<T[key]> }
 export const extractPayload = <T>(payloadIncoming: T) => {
-
   if (is.undefined(payloadIncoming)) {
-    return { } as { payloadIncoming: T, payloadSanitized: T, payloadStringified: T };
+    return { payload: payloadIncoming } as { payload: T };
   }
   if (is.primitive(payloadIncoming) || is.date(payloadIncoming) || is.null(payloadIncoming)) {
-    return { payloadSanitized: payloadIncoming };
+    return { payload: payloadIncoming };
   }
-
-  let storeFound = false;
-  const sanitizePayload = (payload: T): PayloadType<T> => {
+  const payloadPaths = newRecord<string>();
+  const sanitizePayload = (payload: T, path: string): PayloadType<T> => {
     if (is.primitive(payload) || is.date(payload) || is.null(payload) || is.undefined(payload))
       return payload as PayloadType<T>;
     if (is.storeInternal(payload)) {
-      storeFound = true;
+      payloadPaths[path] = `${payload.$stateActions.map(sa => fixCurrentAction(sa, true)).join('.')} = ${JSON.stringify(payload.$state)}`;
       return payload.$state as PayloadType<T>;
     }
     if (is.array(payload))
-      return payload.map(p => sanitizePayload(p as T)) as PayloadType<T>;
+      return payload.map((p, i) => sanitizePayload(p as T, !path ? i.toString() : `${path}.${i}`)) as PayloadType<T>;
     if (is.record(payload))
-      return objectKeys(payload).reduce((prev, key) => Object.assign(prev, { [key]: sanitizePayload(payload[key] as T) }), newRecord()) as PayloadType<T>;
+      return objectKeys(payload).reduce((prev, key) => Object.assign(prev, { [key]: sanitizePayload(payload[key] as T, !path ? key.toString() : `${path}.${key.toString()}`) }), newRecord()) as PayloadType<T>;
     throw new Error();
   }
-  const result = sanitizePayload(payloadIncoming);
-
-  const stringifyPayloadWithStore = (payload: T): T | string => {
-    if (is.primitive(payload) || is.date(payload) || is.null(payload) || is.undefined(payload))
-      return payload;
-    if (is.storeInternal(payload))
-      return `${payload.$stateActions.map(sa => fixCurrentAction(sa, true)).join('.')} = ${JSON.stringify(payload.$state)}`;
-    if (is.array(payload))
-      return payload.map(p => stringifyPayloadWithStore(p as T)) as T;
-    if (is.record(payload))
-      return objectKeys(payload).reduce((prev, key) => Object.assign(prev, { [key]: stringifyPayloadWithStore(payload[key] as T) }), newRecord()) as T;
-    throw new Error();
-  }
-
+  const payload = sanitizePayload(payloadIncoming, '');
   return {
-    payloadIncoming,
-    payloadSanitized: storeFound ? result : payloadIncoming,
-    payloadStringified: storeFound ? stringifyPayloadWithStore(payloadIncoming) : payloadIncoming,
+    payload,
+    payloadPaths: Object.keys(payloadPaths).length ? payloadPaths : undefined,
   }
 }

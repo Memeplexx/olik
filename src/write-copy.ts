@@ -69,18 +69,18 @@ const deDuplicate = (args: CopyNewStateArgsAndPayload) => {
 
 const push = (args: CopyNewStateArgsAndPayload) => {
   assertIsArray(args.currentState);
-  return setActionAndReturnState({ ...args, newState: [...args.currentState, args.payloadSanitized] });
+  return setActionAndReturnState({ ...args, newState: [...args.currentState, args.payload] });
 }
 
 const pushMany = (args: CopyNewStateArgsAndPayload) => {
-  assertIsArray(args.currentState); assertIsArray(args.payloadSanitized);
-  return setActionAndReturnState({ ...args, newState: [...args.currentState, ...args.payloadSanitized] });
+  assertIsArray(args.currentState); assertIsArray(args.payload);
+  return setActionAndReturnState({ ...args, newState: [...args.currentState, ...args.payload] });
 }
 
 const merge = (args: CopyNewStateArgsAndPayload) => {
   const currentState = args.currentState;
   assertIsArray<unknown>(currentState);
-  return setActionAndReturnState({ ...args, newState: [...currentState, ...(is.array(args.payloadSanitized) ? args.payloadSanitized : [args.payloadSanitized]).filter(e => !currentState.includes(e))] });
+  return setActionAndReturnState({ ...args, newState: [...currentState, ...(is.array(args.payload) ? args.payload : [args.payload]).filter(e => !currentState.includes(e))] });
 }
 
 const toggle = (args: CopyNewStateArgsAndPayload) => {
@@ -92,21 +92,21 @@ const toggle = (args: CopyNewStateArgsAndPayload) => {
 }
 
 const setNew = (arg: CopyNewStateArgsAndPayload) => {
-  assertIsRecord(arg.payloadSanitized);
-  return setActionAndReturnState({ ...arg, newState: arg.currentState === undefined ? arg.payloadSanitized : { ...arg.currentState, ...arg.payloadSanitized } });
+  assertIsRecord(arg.payload);
+  return setActionAndReturnState({ ...arg, newState: arg.currentState === undefined ? arg.payload : { ...arg.currentState, ...arg.payload } });
 }
 
 const set = (args: CopyNewStateArgsAndPayload) => {
-  return setActionAndReturnState({ ...args, newState: args.payloadSanitized });
+  return setActionAndReturnState({ ...args, newState: args.payload });
 }
 
 const setUnique = (args: CopyNewStateArgsAndPayload) => {
-  assertIsArray(args.payloadSanitized);
-  return setActionAndReturnState({ newState: [...new Set(args.payloadSanitized)], ...args });
+  assertIsArray(args.payload);
+  return setActionAndReturnState({ newState: [...new Set(args.payload)], ...args });
 }
 
 const patch = (args: CopyNewStateArgsAndPayload) => {
-  const payload = args.payloadSanitized;
+  const payload = args.payload;
   assertIsRecord(payload);
   if (is.array<Record<string, unknown>>(args.currentState)) {
     return setActionAndReturnState({ newState: args.currentState.map(e => ({ ...e, ...payload })), ...args });
@@ -116,23 +116,23 @@ const patch = (args: CopyNewStateArgsAndPayload) => {
 }
 
 const addNumber = (args: CopyNewStateArgsAndPayload) => {
-  const payloadSanitized = args.payloadSanitized;
-  assertIsNumber(payloadSanitized);
+  const payload = args.payload;
+  assertIsNumber(payload);
   if (is.array<number>(args.currentState)) {
-    return setActionAndReturnState({ ...args, newState: args.currentState.map(e => e + payloadSanitized) });
+    return setActionAndReturnState({ ...args, newState: args.currentState.map(e => e + payload) });
   }
   assertIsNumber(args.currentState);
-  return setActionAndReturnState({ ...args, newState: args.currentState + payloadSanitized });
+  return setActionAndReturnState({ ...args, newState: args.currentState + payload });
 }
 
 const subtractNumber = (args: CopyNewStateArgsAndPayload) => {
-  const payloadSanitized = args.payloadSanitized;
-  assertIsNumber(payloadSanitized);
+  const payload = args.payload;
+  assertIsNumber(payload);
   if (is.array<number>(args.currentState)) {
-    return setActionAndReturnState({ ...args, newState: args.currentState.map(e => e + payloadSanitized) });
+    return setActionAndReturnState({ ...args, newState: args.currentState.map(e => e + payload) });
   }
   assertIsNumber(args.currentState);
-  return setActionAndReturnState({ ...args, newState: args.currentState - payloadSanitized });
+  return setActionAndReturnState({ ...args, newState: args.currentState - payload });
 }
 
 const clear = (args: CopyNewStateArgsAndPayload) => {
@@ -140,7 +140,7 @@ const clear = (args: CopyNewStateArgsAndPayload) => {
 }
 
 const patchDeep = (args: CopyNewStateArgsAndPayload) => {
-  assertIsRecord(args.payloadSanitized); assertIsRecord(args.currentState);
+  assertIsRecord(args.payload); assertIsRecord(args.currentState);
   const recurse = (target: Record<string, unknown>, source: Record<string, unknown>) => {
     const output = { ...target };
     if (!is.record<Record<string, unknown>>(target) || !is.record(source)) return output;
@@ -157,7 +157,7 @@ const patchDeep = (args: CopyNewStateArgsAndPayload) => {
     });
     return output;
   }
-  const newState = recurse(args.currentState, args.payloadSanitized);
+  const newState = recurse(args.currentState, args.payload);
   return setActionAndReturnState({ ...args, newState });
 }
 
@@ -223,17 +223,17 @@ const setObjectKey = (args: CopyNewStateArgsAndPayload) => {
   const payload = extractPayload(newKey);
   const newState = newRecord();
   Object.entries(currentState).forEach(([key, value]) => {
-    const newKey = key === oldKey ? payload.payloadSanitized as string : key;
+    const newKey = key === oldKey ? payload.payload as string : key;
     newState[newKey] = value;
   })
   return setActionAndReturnState({ newState, ...args });
 }
 
 const atArray = (args: CopyNewStateArgsAndPayload) => {
-  const { stateToUpdate, currentState, cursor, stateActions, payloadSanitized } = args;
-  assertIsNumber(payloadSanitized); assertIsArray(currentState); assertIsArray(stateToUpdate);
-  if (currentState[payloadSanitized] === undefined) { throw new Error(errorMessages.AT_INDEX_OUT_OF_BOUNDS(payloadSanitized)); }
-  return currentState.map((e, i) => i === payloadSanitized
+  const { stateToUpdate, currentState, cursor, stateActions, payload } = args;
+  assertIsNumber(payload); assertIsArray(currentState); assertIsArray(stateToUpdate);
+  if (currentState[payload] === undefined) { throw new Error(errorMessages.AT_INDEX_OUT_OF_BOUNDS(payload)); }
+  return currentState.map((e, i) => i === payload
     ? copyNewState({ currentState: e, stateToUpdate: stateToUpdate[i], stateActions, cursor })
     : e);
 }

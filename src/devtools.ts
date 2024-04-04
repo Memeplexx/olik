@@ -15,7 +15,7 @@ export function connectOlikDevtoolsToStore() {
   })
 
   pendingActions.push({
-    action: { type: '$setNew()', payload: libState.state },
+    action: { type: '$setNew()' },
     stateActions: [{ name: '$setNew', arg: libState.state }],
     trace: new Error().stack,
   });
@@ -36,7 +36,7 @@ const setupDevtools = () => {
     dispatch: ({ stateActions }) => {
       const toSend = {
         action: libState.currentAction,
-        stateActions: stateActions.map(sa => ({ ...sa, arg: extractPayload(sa.arg).payloadSanitized })),
+        stateActions: stateActions.map(sa => ({ ...sa, arg: extractPayload(sa.arg).payload })),
         trace: libState.stacktraceError?.stack,
       } as DevtoolsAction;
       if (typeof (window) !== 'undefined' && !initialized) {
