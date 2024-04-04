@@ -8,7 +8,7 @@ import { StoreInternal } from './type-internal';
 export const deepFreeze = <T>(o: T): T => {
   Object.freeze(o);
   if (o == null || o === undefined) { return o; }
-  (<Array<keyof typeof o>>Object.keys(o)).forEach(prop => {
+  objectKeys(o).forEach(prop => {
     if (is.record(o) || Array.isArray(o)) {
       deepFreeze(o[prop]);
     }
@@ -88,6 +88,8 @@ export const deserialize = <R>(arg?: string | null): R => {
   }
 }
 
+export const objectKeys = <T extends object>(o: T): Array<keyof T> => Object.keys(o) as Array<keyof T>;
+
 export const enqueueMicroTask = (fn: () => void) => {
   Promise.resolve().then(fn)
 }
@@ -147,7 +149,7 @@ export const extractPayload = <T>(payloadIncoming: T) => {
     if (is.array(payload))
       return payload.map(p => sanitizePayload(p as T)) as PayloadType<T>;
     if (is.record(payload))
-      return (Object.keys(payload) as Array<keyof typeof payload>).reduce((prev, key) => Object.assign(prev, { [key]: sanitizePayload(payload[key] as T) }), newRecord()) as PayloadType<T>;
+      return objectKeys(payload).reduce((prev, key) => Object.assign(prev, { [key]: sanitizePayload(payload[key] as T) }), newRecord()) as PayloadType<T>;
     throw new Error();
   }
   const result = sanitizePayload(payloadIncoming);
@@ -160,7 +162,7 @@ export const extractPayload = <T>(payloadIncoming: T) => {
     if (is.array(payload))
       return payload.map(p => stringifyPayloadWithStore(p as T)) as T;
     if (is.record(payload))
-      return (Object.keys(payload) as Array<keyof typeof payload>).reduce((prev, key) => Object.assign(prev, { [key]: stringifyPayloadWithStore(payload[key] as T) }), newRecord()) as T;
+      return objectKeys(payload).reduce((prev, key) => Object.assign(prev, { [key]: stringifyPayloadWithStore(payload[key] as T) }), newRecord()) as T;
     throw new Error();
   }
 
