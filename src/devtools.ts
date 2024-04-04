@@ -36,10 +36,7 @@ const setupDevtools = () => {
     dispatch: ({ stateActions }) => {
       const toSend = {
         action: libState.currentAction,
-        stateActions: stateActions.map((sa) => {
-          const { payloadSanitized, payloadStringified } = extractPayload(sa.arg);
-          return ({ ...sa, arg: { payloadSanitized, payloadStringified } });
-        }),
+        stateActions: stateActions.map(sa => ({ ...sa, arg: extractPayload(sa.arg).payloadSanitized })),
         trace: libState.stacktraceError?.stack,
       } as DevtoolsAction;
       if (typeof (window) !== 'undefined' && !initialized) {

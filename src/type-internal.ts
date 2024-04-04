@@ -30,9 +30,9 @@ export type CopyNewStateArgs = {
 }
 
 export type CopyNewStateArgsAndPayload = CopyNewStateArgs & {
-  payloadStringified: unknown,
+  payloadStringified?: unknown,
   payloadSanitized: unknown,
-  payloadIncoming: unknown,
+  payloadIncoming?: unknown,
   type: string,
 }
 

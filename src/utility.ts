@@ -133,7 +133,7 @@ export const extractPayload = <T>(payloadIncoming: T) => {
     return { } as { payloadIncoming: T, payloadSanitized: T, payloadStringified: T };
   }
   if (is.primitive(payloadIncoming) || is.date(payloadIncoming) || is.null(payloadIncoming)) {
-    return { payloadIncoming, payloadSanitized: payloadIncoming, payloadStringified: payloadIncoming };
+    return { payloadSanitized: payloadIncoming };
   }
 
   let storeFound = false;
