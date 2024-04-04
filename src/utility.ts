@@ -1,4 +1,5 @@
 import { comparators, libState, testState, updateFunctions } from './constant';
+import { perf } from './performance';
 import { Readable, Store } from './type';
 import { is, newRecord } from './type-check';
 import { StoreInternal } from './type-internal';
@@ -20,6 +21,7 @@ export const getStore = <S>() => libState.store as Store<S>;
 export const resetLibraryState = () => {
   testState.logLevel = 'none';
   testState.fakeDevtoolsMessage = null;
+  testState.isPerf = false;
   libState.store = undefined;
   libState.state = undefined;
   libState.changeListeners = [];
@@ -28,6 +30,7 @@ export const resetLibraryState = () => {
   libState.disableDevtoolsDispatch = false;
   libState.derivations = new Map();
   libState.devtools = undefined;
+  perf.clear();
 };
 
 export const isoDateRegexp = new RegExp(/^\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d+([+-][0-2]\d:[0-5]\d|Z)$/);
@@ -125,14 +128,22 @@ export const fixCurrentAction = (action: { name: string, arg?: unknown }, nested
 
 type PayloadType<T> = { [key in keyof T]: T[key] extends StoreInternal ? T[key]['$state'] : PayloadType<T[key]> }
 export const extractPayload = <T>(payloadIncoming: T) => {
+
+  if (is.undefined(payloadIncoming)) {
+    return { } as { payloadIncoming: T, payloadSanitized: T, payloadStringified: T };
+  }
+  if (is.primitive(payloadIncoming) || is.date(payloadIncoming) || is.null(payloadIncoming)) {
+    return { payloadIncoming, payloadSanitized: payloadIncoming, payloadStringified: payloadIncoming };
+  }
+
   let storeFound = false;
   const sanitizePayload = (payload: T): PayloadType<T> => {
+    if (is.primitive(payload) || is.date(payload) || is.null(payload) || is.undefined(payload))
+      return payload as PayloadType<T>;
     if (is.storeInternal(payload)) {
       storeFound = true;
       return payload.$state as PayloadType<T>;
     }
-    if (is.primitive(payload) || is.date(payload) || is.null(payload) || is.undefined(payload))
-      return payload as PayloadType<T>;
     if (is.array(payload))
       return payload.map(p => sanitizePayload(p as T)) as PayloadType<T>;
     if (is.record(payload))
@@ -142,10 +153,10 @@ export const extractPayload = <T>(payloadIncoming: T) => {
   const result = sanitizePayload(payloadIncoming);
 
   const stringifyPayloadWithStore = (payload: T): T | string => {
-    if (is.storeInternal(payload))
-      return `${payload.$stateActions.map(sa => fixCurrentAction(sa, true)).join('.')} = ${JSON.stringify(payload.$state)}`;
     if (is.primitive(payload) || is.date(payload) || is.null(payload) || is.undefined(payload))
       return payload;
+    if (is.storeInternal(payload))
+      return `${payload.$stateActions.map(sa => fixCurrentAction(sa, true)).join('.')} = ${JSON.stringify(payload.$state)}`;
     if (is.array(payload))
       return payload.map(p => stringifyPayloadWithStore(p as T)) as T;
     if (is.record(payload))

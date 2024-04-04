@@ -80,8 +80,7 @@ const pushMany = (args: CopyNewStateArgsAndPayload) => {
 const merge = (args: CopyNewStateArgsAndPayload) => {
   const currentState = args.currentState;
   assertIsArray<unknown>(currentState);
-  const newState = [...currentState, ...(is.array(args.payloadSanitized) ? args.payloadSanitized : [args.payloadSanitized]).filter(e => !currentState.includes(e))];
-  return setCurrentActionReturningNewState({ newState, ...args });
+  return setCurrentActionReturningNewState({ ...args, newState: [...currentState, ...(is.array(args.payloadSanitized) ? args.payloadSanitized : [args.payloadSanitized]).filter(e => !currentState.includes(e))] });
 }
 
 const toggle = (args: CopyNewStateArgsAndPayload) => {

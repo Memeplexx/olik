@@ -1,8 +1,8 @@
-import { createStore } from '../src/core';
 import { produce } from 'immer';
 import { fromJS, Map } from 'immutable';
+import { beforeEach, test } from 'vitest';
+import { createStore } from '../src/core';
 import { resetLibraryState } from '../src/utility';
-import { test, beforeEach } from 'vitest';
 
 beforeEach(() => {
   resetLibraryState();

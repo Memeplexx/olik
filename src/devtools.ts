@@ -1,6 +1,6 @@
 import { libState, testState } from './constant';
 import { DevtoolsAction } from './type';
-import { deserialize, getPayloadOrigAndSanitized, isoDateRegexp } from './utility';
+import { deserialize, extractPayload, isoDateRegexp } from './utility';
 
 let initialized = false;
 const pendingActions = new Array<Omit<DevtoolsAction, 'source'>>();
@@ -36,7 +36,10 @@ const setupDevtools = () => {
     dispatch: ({ stateActions }) => {
       const toSend = {
         action: libState.currentAction,
-        stateActions: stateActions.map(sa => ({ ...sa, arg: getPayloadOrigAndSanitized(sa.arg).payloadSanitized })),
+        stateActions: stateActions.map((sa) => {
+          const { payloadSanitized, payloadStringified } = extractPayload(sa.arg);
+          return ({ ...sa, arg: { payloadSanitized, payloadStringified } });
+        }),
         trace: libState.stacktraceError?.stack,
       } as DevtoolsAction;
       if (typeof (window) !== 'undefined' && !initialized) {

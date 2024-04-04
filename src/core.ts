@@ -33,10 +33,8 @@ export function createStore<S extends Record<string, unknown>>(
     get: (_, prop: string) => {
       stateActions = topLevel ? [] : stateActions;
       const args = { stateActions, prop, recurseProxy };
-      if (augmentations.selection[prop])
-        return augmentations.selection[prop](recurseProxy(stateActions));
-      if (augmentations.core[prop])
-        return augmentations.core[prop](recurseProxy(stateActions));
+      if ('$stateActions' === prop)
+        return stateActions;
       if ('$at' === prop || is.anyComparatorProp(prop))
         return comparator(args);
       if ('$invalidateCache' === prop)
@@ -45,8 +43,10 @@ export function createStore<S extends Record<string, unknown>>(
         return state(args);
       if ('$onChange' === prop)
         return onChange(args);
-      if ('$stateActions' === prop)
-        return stateActions;
+      if (augmentations.selection[prop])
+        return augmentations.selection[prop](recurseProxy(stateActions));
+      if (augmentations.core[prop])
+        return augmentations.core[prop](recurseProxy(stateActions));
       if (is.anyUpdateFunction(prop))
         return processUpdateFunction(args);
       if (!is.libArg(prop) || is.anyConcatenationProp(prop))
