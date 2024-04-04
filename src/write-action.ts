@@ -2,7 +2,7 @@ import { libState } from './constant';
 import { OlikAction, StateAction } from './type';
 import { fixCurrentAction } from './utility';
 
-export const setCurrentActionReturningNewState = (
+export const setActionAndReturnState = (
   { newState, payloadIncoming, payloadSanitized, payloadStringified, stateActions }:
     { stateActions: ReadonlyArray<StateAction>, payloadIncoming?: unknown, payloadSanitized: unknown, payloadStringified?: unknown, newState: unknown }
 ): unknown => {
