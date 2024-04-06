@@ -1,7 +1,7 @@
+import { beforeEach, expect, test } from 'vitest';
 import { libState } from '../src';
 import { createStore } from '../src/core';
 import { resetLibraryState } from '../src/utility';
-import { test, expect, beforeEach } from 'vitest';
 
 beforeEach(() => {
   resetLibraryState();

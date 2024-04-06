@@ -689,6 +689,7 @@ export type Searchable<T, S, F extends FindOrFilter, Depth extends number, NewDe
 export interface StateAction {
   name: string;
   arg?: unknown;
+  searchIndices?: number[];
 }
 
 type DerivationCalculationInput<E> = E extends Readable<infer W> ? W : never;
@@ -838,13 +839,9 @@ export type LibState = {
 export type DerivationKey = { key: string, state: unknown, from?: DerivationKey[] }
 
 export type DevtoolsAction = {
-  action: ActionForDevtools | undefined;
-  source: string;
-  stateActions: { arg: unknown; name: string; }[];
-  trace?: string;
-}
-
-export type ActionForDevtools = {
-  type: string;
+  actionType: string;
   payloadPaths?: Record<string, string>;
+  source: string;
+  stateActions: StateAction[];
+  trace?: string;
 }

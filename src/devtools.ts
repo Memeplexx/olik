@@ -10,12 +10,12 @@ export function connectOlikDevtoolsToStore() {
   if (libState.devtools) { return; }
 
   sendMessageToDevtools({
-    action: { type: "$load()" },
+    actionType: "$load()",
     stateActions: [],
   })
 
   pendingActions.push({
-    action: { type: '$setNew()' },
+    actionType: '$setNew()',
     stateActions: [{ name: '$setNew', arg: libState.state }],
     trace: new Error().stack,
   });
@@ -35,7 +35,8 @@ const setupDevtools = () => {
   libState.devtools = {
     dispatch: ({ stateActions }) => {
       const toSend = {
-        action: libState.currentAction,
+        actionType: libState.currentAction?.type,
+        payloadPaths: libState.currentAction?.payloadPaths,
         stateActions: stateActions.map(sa => ({ ...sa, arg: extractPayload(sa.arg).payload })),
         trace: libState.stacktraceError?.stack,
       } as DevtoolsAction;

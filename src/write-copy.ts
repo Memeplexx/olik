@@ -244,6 +244,8 @@ const findArray = (args: CopyNewStateArgsAndPayload) => {
   const query = constructQuery({ stateActions, cursor });
   const findIndex = currentState.findIndex(query);
   if (findIndex === -1) { throw new Error(errorMessages.FIND_RETURNS_NO_MATCHES); }
+  const stateAction = stateActions.slice(0, cursor.index).reverse().find(sa => sa.name === '$find')!;
+  stateAction.searchIndices = [findIndex];
   if ('$delete' === stateActions[cursor.index].name) {
     return setActionAndReturnState({ ...args, newState: currentState.filter((_, i) => findIndex !== i) });
   }
@@ -257,24 +259,38 @@ const filterArray = (args: CopyNewStateArgsAndPayload) => {
   assertIsArray(currentState);
   const query = constructQuery({ stateActions, cursor });
   const type = stateActions[cursor.index].name;
+  const stateAction = stateActions.slice(0, cursor.index).reverse().find(sa => sa.name === '$filter')!;
+  stateAction.searchIndices =  [];
   if ('$delete' === type) {
     return setActionAndReturnState({
       ...args,
-      newState: currentState.filter((_, i) => !query(currentState[i])),
+      newState: currentState.filter((_, i) => {
+        const result = query(currentState[i]);
+        if (result) stateAction.searchIndices!.push(i);
+        return !result;
+      }),
     });
   }
   if ('$set' === type) {
     const newState = copyNewState({ currentState, stateToUpdate, stateActions, cursor });
     assertIsArray(newState);
     return [
-      ...currentState.filter(e => !query(e)),
+      ...currentState.filter((e, i) => {
+        const result = query(e);
+        if (result) stateAction.searchIndices!.push(i);
+        return !result;
+      }),
       ...newState,
     ];
   }
   assertIsArray(stateToUpdate);
-  return currentState.map((e, i) => query(e)
-    ? copyNewState({ currentState: e, stateToUpdate: stateToUpdate[i], stateActions, cursor: { ...cursor } })
-    : e);
+  return currentState.map((e, i) => {
+    const result = query(e);
+    if (result) stateAction.searchIndices!.push(i);
+    return result
+      ? copyNewState({ currentState: e, stateToUpdate: stateToUpdate[i], stateActions, cursor: { ...cursor } })
+      : e
+  });
 }
 
 const deleteObjectValue = (args: CopyNewStateArgsAndPayload) => {

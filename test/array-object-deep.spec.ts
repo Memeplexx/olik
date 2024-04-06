@@ -1,7 +1,7 @@
 import { createStore } from '../src/core';
 import { test, expect, beforeEach } from 'vitest';
 import { resetLibraryState } from '../src/utility';
-import { libState } from '../src';
+import { libState, testState } from '../src';
 
 
 const state = { arr: [{ id: 1, val: 1 }, { id: 2, val: 2 }, { id: 3, val: 3 }] };
@@ -104,6 +104,7 @@ test('should find an element by one clause or another and replace it', () => {
 
 test('should find an element by one clause or another and remove it', () => {
   const store = createStore(state);
+  testState.logLevel = 'debug';
   store.arr
     .$find.id.$eq(1).$or.id.$eq(2)
     .$delete();

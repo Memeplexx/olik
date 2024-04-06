@@ -10,6 +10,6 @@ beforeEach(() => {
 })
 
 test('should load', async () => {
-  expect(testState.fakeDevtoolsMessage).toEqual({ action: { type: '$load()' }, stateActions: [] });
+  expect(testState.fakeDevtoolsMessage).toEqual({ actionType: '$load()', stateActions: [] });
   createStore({});
 })
