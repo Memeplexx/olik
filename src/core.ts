@@ -87,7 +87,7 @@ const state = (args: StoreArgs) => {
     }
   }
   const result = tryFetchResult(args.stateActions.slice());
-  return result === undefined ? null : result;
+  return is.undefined(result) ? null : result;
 }
 
 const initializeLibState = (initialState: Record<string, unknown>) => {

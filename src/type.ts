@@ -23,7 +23,7 @@ export type SerializableState = {
 
 export type PatchDeepPayloadObject<T> = Partial<{
   [P in keyof T]: PatchDeepPayload<T[P]>;
-}> /*& { [x: string]: unknown }*/
+}>;
 
 export type PatchDeepPayload<T> =
   T extends (infer R)[] ? Array<PatchDeepPayload<R>> :
@@ -118,10 +118,11 @@ export type UpdatablePrimitive<S, F extends FindOrFilter, Q extends QueryStatus,
   & (S extends boolean ? (F extends 'isFind' ? Toggle : ToggleArray) : unknown)
   & Readable<F extends 'isFilter' ? S[] : S>
 
-export type PayloadWithPotentialStore<T> = Readable<T> | (
+export type PayloadWithPotentialStore<T> = T | Readable<T> | (
+  T extends PossiblyBrandedPrimitive ? never : 
   T extends (infer R)[] ? Array<PayloadWithPotentialStore<R>> :
-  T extends Record<string, infer V> ? Record<string, PayloadWithPotentialStore<V>> :
-  T
+  T extends Record<string, unknown> ? { [P in keyof T]: PayloadWithPotentialStore<T[P]> }
+  : never
 );
 
 export interface DeDuplicateArray<S> {
@@ -289,22 +290,22 @@ export interface PatchArrayElement<S> {
   /**
    * Update the selected array element, using the partial returned by the supplied async function.
    */
-  $patch(patch: AnyAsyncFn<Partial<S>>, options?: UpdateOptions<typeof patch>): UpdateResult<typeof patch>;
+  $patch(patch: AnyAsyncFn<PayloadWithPotentialStore<Partial<S>>>, options?: UpdateOptions<typeof patch>): UpdateResult<typeof patch>;
   /**
    * Update the selected array element, using the supplied partial.
    */
-  $patch(patch: Partial<S>): void;
+  $patch(patch: PayloadWithPotentialStore<Partial<S>>): void;
 }
 
 export interface PatchArray<S> {
   /**
    * Update all the selected array elements, using the partial returned by the supplied async function.
    */
-  $patch(patch: AnyAsyncFn<Partial<S>>, options?: UpdateOptions<typeof patch>): UpdateResult<typeof patch>;
+  $patch(patch: AnyAsyncFn<PayloadWithPotentialStore<Partial<S>>>, options?: UpdateOptions<typeof patch>): UpdateResult<typeof patch>;
   /**
    * Update all the selected array elements, using the supplied partial.
    */
-  $patch(patch: Partial<S>): void;
+  $patch(patch: PayloadWithPotentialStore<Partial<S>>): void;
 }
 
 export interface Add {

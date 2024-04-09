@@ -92,8 +92,9 @@ const toggle = (args: CopyNewStateArgsAndPayload) => {
 }
 
 const setNew = (arg: CopyNewStateArgsAndPayload) => {
+  assertIsRecord(arg.currentState);
   assertIsRecord(arg.payload);
-  return setActionAndReturnState({ ...arg, newState: arg.currentState === undefined ? arg.payload : { ...arg.currentState, ...arg.payload } });
+  return setActionAndReturnState({ ...arg, newState: is.undefined(arg.currentState) ? arg.payload : { ...arg.currentState, ...arg.payload } });
 }
 
 const set = (args: CopyNewStateArgsAndPayload) => {
@@ -232,7 +233,7 @@ const setObjectKey = (args: CopyNewStateArgsAndPayload) => {
 const atArray = (args: CopyNewStateArgsAndPayload) => {
   const { stateToUpdate, currentState, cursor, stateActions, payload } = args;
   assertIsNumber(payload); assertIsArray(currentState); assertIsArray(stateToUpdate);
-  if (currentState[payload] === undefined) { throw new Error(errorMessages.AT_INDEX_OUT_OF_BOUNDS(payload)); }
+  if (is.undefined(currentState[payload])) { throw new Error(errorMessages.AT_INDEX_OUT_OF_BOUNDS(payload)); }
   if ('$delete' === stateActions[cursor.index].name) {
     return setActionAndReturnState({ ...args, newState: currentState.filter((_, i) => payload !== i) });
   }

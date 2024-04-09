@@ -256,3 +256,8 @@ storee.things.$filter.id.$eq(3).name.$set('');
 // }
 
 // myFn({thing: '', num: 3})
+
+store.todos.$find.id.$eq(3).$set({ id: 3, title: 'hello', status: 'done' });
+store.todos.$find.id.$eq(3).$patch({ status: 'done' });
+store.todos.$find.id.$eq(3).status.$set(store.todos.$at(3).status);
+

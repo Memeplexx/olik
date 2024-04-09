@@ -38,7 +38,7 @@ export const isoDateRegexp = new RegExp(/^\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[
 export const deserialize = <R>(arg?: string | null): R => {
 
   // IS THE STRING NULL OR UNDEFINED?
-  if (arg === null || arg === undefined) {
+  if (is.null(arg) || is.undefined(arg)) {
     return <R>arg
   }
 
