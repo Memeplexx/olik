@@ -233,6 +233,9 @@ const atArray = (args: CopyNewStateArgsAndPayload) => {
   const { stateToUpdate, currentState, cursor, stateActions, payload } = args;
   assertIsNumber(payload); assertIsArray(currentState); assertIsArray(stateToUpdate);
   if (currentState[payload] === undefined) { throw new Error(errorMessages.AT_INDEX_OUT_OF_BOUNDS(payload)); }
+  if ('$delete' === stateActions[cursor.index].name) {
+    return setActionAndReturnState({ ...args, newState: currentState.filter((_, i) => payload !== i) });
+  }
   return currentState.map((e, i) => i === payload
     ? copyNewState({ currentState: e, stateToUpdate: stateToUpdate[i], stateActions, cursor })
     : e);

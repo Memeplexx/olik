@@ -87,6 +87,14 @@ test('', () => {
 
 test('', () => {
   const store = createStore({
+    arr: [{ id: 1, text: 'one' }, { id: 2, text: 'two' }, { id: 3, text: 'three' }],
+  });
+  store.arr.$at(1).$delete();
+  expect(store.arr.$state).toEqual([{ id: 1, text: 'one' }, { id: 3, text: 'three' }]);
+})
+
+test('', () => {
+  const store = createStore({
     modal: null as 'confirmDeleteGroup' | 'confirmDeleteTag' | 'synonymOptions' | 'groupOptions' | null,
     bool: false,
     thing: {},
