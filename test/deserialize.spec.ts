@@ -22,7 +22,7 @@ test(`should handle 'undefined'`, () => {
 })
 
 test('should handle empty strings', () => {
-  expect(deserialize('')).toEqual('');
+  expect(deserialize('')).toEqual(undefined);
 })
 
 test('should handle normal strings', () => {

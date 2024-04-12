@@ -49,7 +49,7 @@ export const deserialize = <R>(arg?: string | null): R => {
 
   // IS THE STRING EMPTY?
   if (arg === '') {
-    return <R>arg
+    return <R>undefined
   }
 
   // IS THE STRING A NUMBER?
