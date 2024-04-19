@@ -109,9 +109,8 @@ const listenToActionDispatchesFromDevtools = () => {
 }
 
 const sendMessageToDevtools = (action: Omit<DevtoolsAction, 'source'>) => {
-  if (typeof (window) === 'undefined') {
+  if (typeof (window) === 'undefined')
     return testState.fakeDevtoolsMessage = action;
-  }
   window.postMessage({
     ...action,
     source: 'olik-devtools-extension',

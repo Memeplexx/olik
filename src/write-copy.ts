@@ -84,9 +84,8 @@ const merge = (args: CopyNewStateArgsAndPayload) => {
 }
 
 const toggle = (args: CopyNewStateArgsAndPayload) => {
-  if (is.array(args.currentState)) {
+  if (is.array(args.currentState))
     return setActionAndReturnState({ ...args, newState: args.currentState.map(e => !e) });
-  }
   assertIsBoolean(args.currentState);
   return setActionAndReturnState({ ...args, newState: !args.currentState });
 }
@@ -109,9 +108,8 @@ const setUnique = (args: CopyNewStateArgsAndPayload) => {
 const patch = (args: CopyNewStateArgsAndPayload) => {
   const payload = args.payload;
   assertIsRecord(payload);
-  if (is.array<Record<string, unknown>>(args.currentState)) {
+  if (is.array<Record<string, unknown>>(args.currentState))
     return setActionAndReturnState({ newState: args.currentState.map(e => ({ ...e, ...payload })), ...args });
-  }
   assertIsRecord(args.currentState);
   return setActionAndReturnState({ newState: { ...args.currentState, ...payload }, ...args });
 }
@@ -119,9 +117,8 @@ const patch = (args: CopyNewStateArgsAndPayload) => {
 const addNumber = (args: CopyNewStateArgsAndPayload) => {
   const payload = args.payload;
   assertIsNumber(payload);
-  if (is.array<number>(args.currentState)) {
+  if (is.array<number>(args.currentState))
     return setActionAndReturnState({ ...args, newState: args.currentState.map(e => e + payload) });
-  }
   assertIsNumber(args.currentState);
   return setActionAndReturnState({ ...args, newState: args.currentState + payload });
 }
@@ -129,9 +126,8 @@ const addNumber = (args: CopyNewStateArgsAndPayload) => {
 const subtractNumber = (args: CopyNewStateArgsAndPayload) => {
   const payload = args.payload;
   assertIsNumber(payload);
-  if (is.array<number>(args.currentState)) {
+  if (is.array<number>(args.currentState))
     return setActionAndReturnState({ ...args, newState: args.currentState.map(e => e + payload) });
-  }
   assertIsNumber(args.currentState);
   return setActionAndReturnState({ ...args, newState: args.currentState - payload });
 }
@@ -144,7 +140,8 @@ const patchDeep = (args: CopyNewStateArgsAndPayload) => {
   assertIsRecord(args.payload); assertIsRecord(args.currentState);
   const recurse = (target: Record<string, unknown>, source: Record<string, unknown>) => {
     const output = { ...target };
-    if (!is.record<Record<string, unknown>>(target) || !is.record(source)) return output;
+    if (!is.record<Record<string, unknown>>(target) || !is.record(source)) 
+      return output;
     Object.entries(source).forEach(([key, val]) => {
       if (is.record(val) && !is.array(val)) {
         if (!(key in target)) {
@@ -210,7 +207,8 @@ const mergeMatching = (args: CopyNewStateArgsAndPayload) => {
   const newArrayElements = mergeArgs.filter(mergeArg => {
     const elementValue = query(mergeArg);
     const notFound = !currentArrayModified.some(ua => query(ua) === elementValue);
-    if (notFound) { indicesNew.push(currentState.length + indicesNew.length) }
+    if (notFound) 
+      indicesNew.push(currentState.length + indicesNew.length);
     return notFound;
   });
   const newState = [...currentArrayModified, ...newArrayElements];
@@ -233,10 +231,10 @@ const setObjectKey = (args: CopyNewStateArgsAndPayload) => {
 const atArray = (args: CopyNewStateArgsAndPayload) => {
   const { stateToUpdate, currentState, cursor, stateActions, payload } = args;
   assertIsNumber(payload); assertIsArray(currentState); assertIsArray(stateToUpdate);
-  if (is.undefined(currentState[payload])) { throw new Error(errorMessages.AT_INDEX_OUT_OF_BOUNDS(payload)); }
-  if ('$delete' === stateActions[cursor.index].name) {
+  if (is.undefined(currentState[payload])) 
+    throw new Error(errorMessages.AT_INDEX_OUT_OF_BOUNDS(payload));
+  if ('$delete' === stateActions[cursor.index].name)
     return setActionAndReturnState({ ...args, newState: currentState.filter((_, i) => payload !== i) });
-  }
   return currentState.map((e, i) => i === payload
     ? copyNewState({ currentState: e, stateToUpdate: stateToUpdate[i], stateActions, cursor })
     : e);
@@ -247,12 +245,12 @@ const findArray = (args: CopyNewStateArgsAndPayload) => {
   assertIsArray(currentState); assertIsArray(stateToUpdate);
   const query = constructQuery({ stateActions, cursor });
   const findIndex = currentState.findIndex(query);
-  if (findIndex === -1) { throw new Error(errorMessages.FIND_RETURNS_NO_MATCHES); }
+  if (findIndex === -1) 
+    throw new Error(errorMessages.FIND_RETURNS_NO_MATCHES);
   const stateAction = stateActions.slice(0, cursor.index).reverse().find(sa => sa.name === '$find')!;
   stateAction.searchIndices = [findIndex];
-  if ('$delete' === stateActions[cursor.index].name) {
+  if ('$delete' === stateActions[cursor.index].name)
     return setActionAndReturnState({ ...args, newState: currentState.filter((_, i) => findIndex !== i) });
-  }
   return currentState.map((e, i) => i === findIndex
     ? copyNewState({ currentState: e, stateToUpdate: stateToUpdate[i], stateActions, cursor })
     : e);
@@ -265,7 +263,7 @@ const filterArray = (args: CopyNewStateArgsAndPayload) => {
   const type = stateActions[cursor.index].name;
   const stateAction = stateActions.slice(0, cursor.index).reverse().find(sa => sa.name === '$filter')!;
   stateAction.searchIndices =  [];
-  if ('$delete' === type) {
+  if ('$delete' === type)
     return setActionAndReturnState({
       ...args,
       newState: currentState.filter((_, i) => {
@@ -274,7 +272,6 @@ const filterArray = (args: CopyNewStateArgsAndPayload) => {
         return !result;
       }),
     });
-  }
   if ('$set' === type) {
     const newState = copyNewState({ currentState, stateToUpdate, stateActions, cursor });
     assertIsArray(newState);

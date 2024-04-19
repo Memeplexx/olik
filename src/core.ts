@@ -57,14 +57,13 @@ export function createStore<S extends Record<string, unknown>>(
 }
 
 const validateState = (state: unknown) => {
-  if (!is.actual(state) || is.primitive(state)) return;
-  if (!is.array(state) && !is.record(state) && !is.date(state)) {
+  if (!is.actual(state) || is.primitive(state)) 
+    return;
+  if (!is.array(state) && !is.record(state) && !is.date(state))
     throw new Error(errorMessages.INVALID_STATE_INPUT(state));
-  }
   Object.entries(state).forEach(([key, val]) => {
-    if (key.startsWith('$')) {
+    if (key.startsWith('$'))
       throw new Error(errorMessages.DOLLAR_USED_IN_STATE);
-    }
     validateState(val);
   });
 }
@@ -91,14 +90,16 @@ const state = (args: StoreArgs) => {
 }
 
 const initializeLibState = (initialState: Record<string, unknown>) => {
-  if (libState.initialState) return;
+  if (libState.initialState) 
+    return;
   const state = deepFreeze(initialState)!;
   libState.initialState = state;
   libState.state = state;
 }
 
 const removeStaleCacheReferences = (state: Record<string, unknown>) => {
-  if (!state.cache) { return; }
+  if (!state.cache) 
+    return;
   assertIsRecord<string>(state.cache);
   state.cache = Object.fromEntries(Object.entries(state.cache).filter(([, value]) => new Date(value).getTime() > Date.now()));
 }
@@ -128,9 +129,8 @@ const invalidateCache = (args: StoreArgs) => () => {
 };
 
 const processUpdateFunction = (args: StoreArgs) => (arg: unknown, { cache, eager }: { cache?: number, eager?: unknown } = {}) => {
-  if (libState.devtools) {
+  if (libState.devtools)
     libState.stacktraceError = new Error();
-  }
   if ('$delete' === args.prop) {
     const stateActionsStr = args.stateActions.map(sa => sa.name).join('.');
     libState.changeListeners

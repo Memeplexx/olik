@@ -7,11 +7,11 @@ import { StoreInternal } from './type-internal';
 
 export const deepFreeze = <T>(o: T): T => {
   Object.freeze(o);
-  if (o == null || o === undefined) { return o; }
+  if (o == null || o === undefined)
+    return o;
   objectKeys(o).forEach(prop => {
-    if (is.record(o) || Array.isArray(o)) {
+    if (is.record(o) || Array.isArray(o))
       deepFreeze(o[prop]);
-    }
   })
   return o;
 }
@@ -38,37 +38,30 @@ export const isoDateRegexp = new RegExp(/^\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[
 export const deserialize = <R>(arg?: string | null): R => {
 
   // IS THE STRING NULL OR UNDEFINED?
-  if (is.null(arg) || is.undefined(arg)) {
+  if (is.null(arg) || is.undefined(arg))
     return <R>arg
-  }
 
   // IS THE STRING 'undefined'?
-  if (arg === 'undefined') {
+  if (arg === 'undefined')
     return <R>undefined
-  }
 
   // IS THE STRING EMPTY?
-  if (arg === '') {
+  if (arg === '')
     return <R>undefined
-  }
 
   // IS THE STRING A NUMBER?
-  if (!isNaN(Number(arg))) {
+  if (!isNaN(Number(arg)))
     return <R>parseFloat(arg)
-  }
 
   // IS THE STRING A BOOLEAN?
-  if (arg === 'true') {
+  if (arg === 'true')
     return <R>true
-  }
-  if (arg === 'false') {
+  if (arg === 'false')
     return <R>false
-  }
 
   // IS THE STRING A DATE?
-  if (isoDateRegexp.test(arg)) {
+  if (isoDateRegexp.test(arg))
     return <R>new Date(arg)
-  }
 
   // IS THE STRING JSON?
   try {
@@ -112,16 +105,13 @@ export const getStateOrStoreState = <T, A extends T | Readable<T>>(arg: A) => {
 const regexp = new RegExp([...comparators, ...updateFunctions, '$at'].map(c => `^\\${c}$`).join('|'), 'g');
 export const fixCurrentAction = (action: { name: string, arg?: unknown }, nested: boolean): string => {
   return action.name.replace(regexp, match => {
-    if (is.anyUpdateFunction(match)) {
+    if (is.anyUpdateFunction(match))
       return `${match}()`;
-    }
-    if (is.undefined(action.arg)) {
+    if (is.undefined(action.arg))
       return `${match}()`;
-    }
     if (is.storeInternal(action.arg)) {
-      if (!nested) {
+      if (!nested)
         return `${match}(${JSON.stringify(action.arg.$state)})`;
-      }
       return `${match}( ${action.arg.$stateActions.map(sa => fixCurrentAction(sa, nested)).join('.')} = ${JSON.stringify(action.arg.$state)} )`;
     }
     return `${match}(${JSON.stringify(action.arg)})`;
@@ -130,12 +120,10 @@ export const fixCurrentAction = (action: { name: string, arg?: unknown }, nested
 
 type PayloadType<T> = { [key in keyof T]: T[key] extends StoreInternal ? T[key]['$state'] : PayloadType<T[key]> }
 export const extractPayload = <T>(payloadIncoming: T) => {
-  if (is.undefined(payloadIncoming)) {
+  if (is.undefined(payloadIncoming))
     return { payload: payloadIncoming } as { payload: T };
-  }
-  if (is.primitive(payloadIncoming) || is.date(payloadIncoming) || is.null(payloadIncoming)) {
+  if (is.primitive(payloadIncoming) || is.date(payloadIncoming) || is.null(payloadIncoming))
     return { payload: payloadIncoming };
-  }
   const payloadPaths = newRecord<string>();
   const sanitizePayload = (payload: T, path: string): PayloadType<T> => {
     if (is.primitive(payload) || is.date(payload) || is.null(payload) || is.undefined(payload))

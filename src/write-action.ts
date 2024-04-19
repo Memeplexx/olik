@@ -9,12 +9,10 @@ export const setActionAndReturnState = (
   const type = stateActions.map(sa => fixCurrentAction(sa, true)).join('.');
   const typeOrig = stateActions.map(sa => fixCurrentAction(sa, false)).join('.');
   const action: OlikAction = { type, payload };
-  if (type !== typeOrig) {
+  if (type !== typeOrig)
     action.typeOrig = typeOrig;
-  }
-  if (payloadPaths) {
+  if (payloadPaths)
     action.payloadPaths = payloadPaths;
-  }
   libState.currentAction = action;
   return newState;
 }
