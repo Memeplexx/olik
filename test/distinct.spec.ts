@@ -3,9 +3,11 @@ import { beforeEach, expect, test } from 'vitest';
 import { createStore } from '../src/core';
 import { resetLibraryState } from '../src/utility';
 import { libState } from '../src';
+import { connectOlikDevtoolsToStore } from '../src/devtools';
 
 beforeEach(() => {
   resetLibraryState();
+  connectOlikDevtoolsToStore();
 })
 
 test('shoud de duplicate numbers', () => {

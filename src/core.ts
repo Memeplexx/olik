@@ -9,13 +9,11 @@ import { setNewStateAndNotifyListeners } from './write-complete';
 
 export const createInnerStore = <S extends Record<string, unknown>>(state: S) => ({
   usingAccessor: <C extends Readable<unknown>>(accessor: (store: Store<S>) => C): C & (C extends never ? unknown : StoreAugment<C>) => {
-    if (!libState.store) {
-      const created = createStore(state);
-      assertIsStoreInternal(created);
-      libState.store = created;
-    } else {
+    if (libState.store)
       libState.store.$patchDeep(state);
-    }
+    const created = createStore(state);
+    assertIsStoreInternal(created);
+    libState.store = created;
     const store = libState.store as Store<S>;
     return new Proxy({}, {
       get: (_, prop: string) => accessor(store)[prop as keyof C]

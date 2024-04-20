@@ -1,10 +1,12 @@
 import { libState } from '../src';
 import { createStore } from '../src/core';
+import { connectOlikDevtoolsToStore } from '../src/devtools';
 import { resetLibraryState } from '../src/utility';
 import { test, expect, beforeEach } from 'vitest';
 
 beforeEach(() => {
   resetLibraryState();
+  connectOlikDevtoolsToStore();
 })
 
 test('support nested query with $eq', () => {

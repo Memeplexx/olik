@@ -1,11 +1,13 @@
 import { DerivationKey, testState } from '../src';
 import { createInnerStore, createStore } from '../src/core';
 import { derive } from '../src/derive';
+import { connectOlikDevtoolsToStore } from '../src/devtools';
 import { resetLibraryState } from '../src/utility';
 import { test, expect, beforeEach } from 'vitest';
 
 beforeEach(() => {
   resetLibraryState();
+  connectOlikDevtoolsToStore();
 })
 
 test('should support derivations', () => {

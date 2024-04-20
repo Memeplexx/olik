@@ -1,5 +1,6 @@
 import { libState } from '../src';
 import { createStore } from '../src/core';
+import { connectOlikDevtoolsToStore } from '../src/devtools';
 import { resetLibraryState } from '../src/utility';
 import { test, expect, beforeEach } from 'vitest';
 
@@ -7,6 +8,7 @@ const state = { num: 0, str: '', bool: false };
 
 beforeEach(() => {
   resetLibraryState();
+  connectOlikDevtoolsToStore();
 })
 
 test('should replace an object property', () => {

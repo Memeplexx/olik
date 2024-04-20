@@ -2,9 +2,11 @@ import { beforeEach, expect, test } from 'vitest';
 import { libState } from '../src';
 import { createStore } from '../src/core';
 import { resetLibraryState } from '../src/utility';
+import { connectOlikDevtoolsToStore } from '../src/devtools';
 
 beforeEach(() => {
   resetLibraryState();
+  connectOlikDevtoolsToStore();
 })
 
 test('should find an element and patch it', () => {

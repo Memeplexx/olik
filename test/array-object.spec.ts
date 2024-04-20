@@ -2,12 +2,14 @@ import { beforeEach, expect, test } from 'vitest';
 import { libState } from '../src';
 import { createStore } from '../src/core';
 import { resetLibraryState } from '../src/utility';
+import { connectOlikDevtoolsToStore } from '../src/devtools';
 
 
 const state = { arr: [{ id: 1, val: 1 }, { id: 2, val: 2 }, { id: 3, val: 3 }] };
 
 beforeEach(() => {
   resetLibraryState();
+  connectOlikDevtoolsToStore();
 })
 
 test('should replace all elements', () => {

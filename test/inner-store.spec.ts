@@ -1,5 +1,6 @@
 import { libState } from '../src/constant';
 import { createInnerStore, createStore } from '../src/core';
+import { connectOlikDevtoolsToStore } from '../src/devtools';
 import { Store } from '../src/type';
 import { resetLibraryState } from '../src/utility';
 import { test, expect, beforeEach } from 'vitest';
@@ -15,6 +16,7 @@ const state = {
 
 beforeEach(() => {
   resetLibraryState();
+  connectOlikDevtoolsToStore();
 })
 
 test('should be able to perform a basic update', () => {

@@ -1,10 +1,12 @@
 import { createStore } from '../src/core';
+import { connectOlikDevtoolsToStore } from '../src/devtools';
 import { resetLibraryState } from '../src/utility';
 import { test, expect, beforeEach } from 'vitest';
 
 
 beforeEach(() => {
   resetLibraryState();
+  connectOlikDevtoolsToStore();
 })
 
 test('should read deep array element properties', () => {

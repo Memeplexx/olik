@@ -31,7 +31,6 @@ export type CopyNewStateArgs = {
 
 export type CopyNewStateArgsAndPayload = CopyNewStateArgs & {
   payload: unknown,
-  payloadPaths?: Record<string, string>,
   type: string,
 }
 

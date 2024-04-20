@@ -2,10 +2,12 @@ import { beforeEach, expect, test } from 'vitest';
 import { errorMessages } from '../src/constant';
 import { createInnerStore, createStore } from '../src/core';
 import { resetLibraryState } from '../src/utility';
+import { connectOlikDevtoolsToStore } from '../src/devtools';
 
 
 beforeEach(() => {
   resetLibraryState();
+  connectOlikDevtoolsToStore();
 })
 
 test('should throw an error if a user uses a dollar prop in their state', () => {

@@ -1,5 +1,6 @@
 import { libState, testState } from './constant';
 import { DevtoolsAction } from './type';
+import { is } from './type-check';
 import { deserialize, extractPayload, isoDateRegexp } from './utility';
 
 let initialized = false;
@@ -7,7 +8,8 @@ const pendingActions = new Array<Omit<DevtoolsAction, 'source'>>();
 
 export function connectOlikDevtoolsToStore() {
 
-  if (libState.devtools) { return; }
+  if (libState.devtools)
+    return;
 
   sendMessageToDevtools({
     actionType: "$load()",
@@ -22,7 +24,8 @@ export function connectOlikDevtoolsToStore() {
 
   setupDevtools();
 
-  if (typeof (document) === 'undefined' || document.getElementById('olik-init')) { return; }
+  if (typeof (document) === 'undefined' || document.getElementById('olik-init')) 
+    return;
 
   reactToDevtoolsInitialization();
 
@@ -37,8 +40,8 @@ const setupDevtools = () => {
       const toSend = {
         actionType: libState.currentAction?.type,
         payloadPaths: libState.currentAction?.payloadPaths,
-        stateActions: stateActions.map(sa => ({ ...sa, arg: extractPayload(sa.arg).payload })),
-        trace: libState.stacktraceError?.stack,
+        stateActions: stateActions.map(sa => ({ ...sa, arg: extractPayload(sa.arg) })),
+        trace: typeof (window) === 'undefined' ? '' : libState.stacktraceError?.stack,
       } as DevtoolsAction;
       if (typeof (window) !== 'undefined' && !initialized) {
         pendingActions.push(toSend);
@@ -72,9 +75,8 @@ const listenToStateChangesFromDevtools = () => {
   new MutationObserver(() => {
     libState.disableDevtoolsDispatch = true;
     libState.store!.$set(JSON.parse(olikStateDiv.innerHTML, (key, value) => {
-      if (typeof value === 'string' && isoDateRegexp.test(value)) {
+      if (is.string(value) && isoDateRegexp.test(value))
         return new Date(value);
-      }
       return value;
     }));
     libState.disableDevtoolsDispatch = false;

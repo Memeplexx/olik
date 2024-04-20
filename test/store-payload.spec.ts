@@ -2,10 +2,12 @@ import { beforeEach, expect, test } from 'vitest';
 import { StateAction, is, libState, readState, testState } from '../src';
 import { createStore } from '../src/core';
 import { deserialize, resetLibraryState } from '../src/utility';
+import { connectOlikDevtoolsToStore } from '../src/devtools';
 
 
 beforeEach(() => {
   resetLibraryState();
+  connectOlikDevtoolsToStore();
 })
 
 test('should be able include store object with patch', () => {

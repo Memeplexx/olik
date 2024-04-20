@@ -831,6 +831,7 @@ export type LibState = {
   state: undefined | Record<string, unknown>,
   changeListeners: ChangeListener[],
   currentAction: undefined | OlikAction,
+  payloadPaths?: Record<string, string>,
   initialState: undefined | Record<string, unknown>,
   disableDevtoolsDispatch?: boolean,
   derivations: Map<DerivationKey, unknown>,

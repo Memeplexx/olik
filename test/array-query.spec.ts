@@ -1,5 +1,6 @@
 import { libState } from '../src';
 import { createStore } from '../src/core';
+import { connectOlikDevtoolsToStore } from '../src/devtools';
 import { resetLibraryState } from '../src/utility';
 import { test, expect, beforeEach } from 'vitest';
 
@@ -7,6 +8,7 @@ const state = { arr: [{ id: 1, num: 1 }, { id: 2, num: 2 }, { id: 3, num: 3 }] }
 
 beforeEach(() => {
   resetLibraryState();
+  connectOlikDevtoolsToStore();
 })
 
 test('should find an element with one clause and another and replace it', () => {

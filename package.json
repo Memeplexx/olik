@@ -1,9 +1,10 @@
 {
   "name": "olik",
-  "version": "1.0.99",
+  "version": "1.0.100",
   "type": "module",
   "main": "./dist/olik.cjs",
   "module": "./dist/olik.js",
+  "sideEffects": false,
   "typesVersions": {
     "*": {
       "*": [
@@ -86,6 +87,6 @@
     "build": "tsc && vite build",
     "preview": "vite preview",
     "test": "vitest",
-    "build:analyze": "npx vite-bundle-visualizer"
+    "build:analyze": "npx vite-bundle-visualizer --output ./stats.html"
   }
 }

@@ -1,6 +1,7 @@
 import { defineQuery } from '../src/async-query';
 import { errorMessages, libState } from '../src/constant';
 import { createStore } from '../src/core';
+import { connectOlikDevtoolsToStore } from '../src/devtools';
 import { resetLibraryState } from '../src/utility';
 import { importOlikAsyncModule } from '../src/write-async';
 import { test, expect, beforeEach } from 'vitest';
@@ -10,6 +11,7 @@ const reject = <T>(rejection: unknown, timeout = 10) => () => new Promise<T>((_,
 
 beforeEach(() => {
   resetLibraryState();
+  connectOlikDevtoolsToStore();
   importOlikAsyncModule();
 })
 

@@ -6,9 +6,11 @@ import { derive } from '../src/derive';
 import { importOlikAsyncModule } from '../src/write-async';
 import { resetLibraryState } from '../src/utility';
 import { test, expect, beforeEach } from 'vitest';
+import { connectOlikDevtoolsToStore } from '../src/devtools';
 
 beforeEach(() => {
   resetLibraryState();
+  connectOlikDevtoolsToStore();
 })
 
 test('should be able to augment a selection', () => {

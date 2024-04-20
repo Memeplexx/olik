@@ -30,6 +30,7 @@ export const resetLibraryState = () => {
   libState.disableDevtoolsDispatch = false;
   libState.derivations = new Map();
   libState.devtools = undefined;
+  libState.payloadPaths = undefined;
   perf.clear();
 };
 
@@ -121,9 +122,9 @@ export const fixCurrentAction = (action: { name: string, arg?: unknown }, nested
 type PayloadType<T> = { [key in keyof T]: T[key] extends StoreInternal ? T[key]['$state'] : PayloadType<T[key]> }
 export const extractPayload = <T>(payloadIncoming: T) => {
   if (is.undefined(payloadIncoming))
-    return { payload: payloadIncoming } as { payload: T };
+    return payloadIncoming;
   if (is.primitive(payloadIncoming) || is.date(payloadIncoming) || is.null(payloadIncoming))
-    return { payload: payloadIncoming };
+    return payloadIncoming;
   const payloadPaths = newRecord<string>();
   const sanitizePayload = (payload: T, path: string): PayloadType<T> => {
     if (is.primitive(payload) || is.date(payload) || is.null(payload) || is.undefined(payload))
@@ -139,8 +140,8 @@ export const extractPayload = <T>(payloadIncoming: T) => {
     throw new Error();
   }
   const payload = sanitizePayload(payloadIncoming, '');
-  return {
-    payload,
-    payloadPaths: Object.keys(payloadPaths).length ? payloadPaths : undefined,
+  if (Object.keys(payloadPaths).length) {
+    libState.payloadPaths = payloadPaths;
   }
+  return payload;
 }
