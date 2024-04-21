@@ -16,7 +16,8 @@ test('should replace an object property', () => {
   const payload = 1;
   store.num
     .$set(payload);
-  expect(libState.currentAction).toEqual({ type: 'num.$set()', payload });
+  expect(libState.currentActionType).toEqual('num.$set()');
+  expect(libState.currentActionPayload).toEqual(payload);
   expect(store.num.$state).toEqual(1);
 })
 
@@ -24,7 +25,7 @@ test('should toggle an object property', () => {
   const store = createStore(state);
   store.bool
     .$toggle();
-  expect(libState.currentAction).toEqual({ type: 'bool.$toggle()' });
+  expect(libState.currentActionType).toEqual('bool.$toggle()');
   expect(store.bool.$state).toEqual(true);
 })
 
@@ -32,7 +33,8 @@ test('should patch an object', () => {
   const store = createStore(state);
   const payload = { bool: true, str: 'x' };
   store.$patch({ bool: true, str: 'x' });
-  expect(libState.currentAction).toEqual({ type: '$patch()', payload });
+  expect(libState.currentActionType).toEqual('$patch()');
+  expect(libState.currentActionPayload).toEqual(payload);
   expect(store.$state).toEqual({ ...state, ...payload });
 })
 
@@ -48,7 +50,8 @@ test('should increment an object property', () => {
   const payload = 1;
   store.num
     .$add(payload);
-  expect(libState.currentAction).toEqual({ type: 'num.$add()', payload });
+  expect(libState.currentActionType).toEqual('num.$add()');
+  expect(libState.currentActionPayload).toEqual(payload);
   expect(store.num.$state).toEqual(1);
 })
 

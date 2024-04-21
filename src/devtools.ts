@@ -38,8 +38,8 @@ const setupDevtools = () => {
   libState.devtools = {
     dispatch: ({ stateActions }) => {
       const toSend = {
-        actionType: libState.currentAction?.type,
-        payloadPaths: libState.currentAction?.payloadPaths,
+        actionType: libState.currentActionType,
+        payloadPaths: libState.currentActionPayloadPaths,
         stateActions: stateActions.map(sa => ({ ...sa, arg: extractPayload(sa.arg) })),
         trace: typeof (window) === 'undefined' ? '' : libState.stacktraceError?.stack,
       } as DevtoolsAction;

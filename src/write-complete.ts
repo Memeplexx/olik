@@ -14,11 +14,9 @@ export const setNewStateAndNotifyListeners = (
   if (libState.devtools && !libState.disableDevtoolsDispatch) {
     const type = stateActions.map(sa => fixCurrentAction(sa, true)).join('.');
     const typeOrig = stateActions.map(sa => fixCurrentAction(sa, false)).join('.');
-    libState.currentAction = {
-      type,
-      payload: stateActions.at(-1)!.arg,
-      typeOrig: type !== typeOrig ? typeOrig : undefined,
-    };
+    libState.currentActionType = type;
+    libState.currentActionTypeOrig = type !== typeOrig ? typeOrig : undefined;
+    libState.currentActionPayload = stateActions.at(-1)!.arg;
   }
   const copy = copyNewState({ currentState: oldState, stateToUpdate, stateActions, cursor: { index: 0 } });
   assertIsRecord(copy);
@@ -30,8 +28,6 @@ export const setNewStateAndNotifyListeners = (
       listener(selectedNewState);
   })
   if (libState.devtools && !libState.disableDevtoolsDispatch) {
-    if (libState.payloadPaths)
-      libState.currentAction!.payloadPaths = libState.payloadPaths;
     libState.devtools.dispatch({ stateActions });
   }
 }

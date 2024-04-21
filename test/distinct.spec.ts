@@ -16,7 +16,7 @@ test('shoud de duplicate numbers', () => {
   });
   store.array.$deDuplicate();
   expect(store.array.$state).toEqual([1, 2, 3, 4]);
-  expect(libState.currentAction).toEqual({ type: 'array.$deDuplicate()' });
+  expect(libState.currentActionType).toEqual('array.$deDuplicate()');
 })
 
 test('shoud de duplicate strings', () => {
@@ -25,7 +25,7 @@ test('shoud de duplicate strings', () => {
   });
   store.array.$deDuplicate();
   expect(store.array.$state).toEqual(['1', '2', '3', '4']);
-  expect(libState.currentAction).toEqual({ type: 'array.$deDuplicate()' });
+  expect(libState.currentActionType).toEqual('array.$deDuplicate()');
 })
 
 test('shoud de duplicate strings', () => {
@@ -35,5 +35,6 @@ test('shoud de duplicate strings', () => {
   const payload = [3, 4, 1, 3, 7, 4, 3, 1];
   store.array.$setUnique(payload);
   expect(store.array.$state).toEqual([3, 4, 1, 7]);
-  expect(libState.currentAction).toEqual({ type: 'array.$setUnique()', payload });
+  expect(libState.currentActionType).toEqual('array.$setUnique()');
+  expect(libState.currentActionPayload).toEqual(payload);
 })

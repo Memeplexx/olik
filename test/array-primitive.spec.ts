@@ -14,7 +14,8 @@ beforeEach(() => {
 test('should merge a number', () => {
   const store = createStore({ nums: [1, 4, 5] });
   store.nums.$merge(2);
-  expect(libState.currentAction).toEqual({ type: 'nums.$merge()', payload: 2 });
+  expect(libState.currentActionType).toEqual('nums.$merge()');
+  expect(libState.currentActionPayload).toEqual(2);
   expect(store.$state).toEqual({ nums: [1, 4, 5, 2] });
 })
 
@@ -22,28 +23,32 @@ test('should merge a branded number', () => { ///////
   type BrandedNumber = Brand<number, 'number'>;
   const store = createStore({ nums: [1, 4, 5] as Array<BrandedNumber> });
   store.nums.$merge(2 as BrandedNumber);
-  expect(libState.currentAction).toEqual({ type: 'nums.$merge()', payload: 2 });
+  expect(libState.currentActionType).toEqual('nums.$merge()');
+  expect(libState.currentActionPayload).toEqual(2);
   expect(store.$state).toEqual({ nums: [1, 4, 5, 2] });
 })
 
 test('should merge a number with duplicate', () => {
   const store = createStore({ nums: [1, 4, 5] });
   store.nums.$merge(4);
-  expect(libState.currentAction).toEqual({ type: 'nums.$merge()', payload: 4 });
+  expect(libState.currentActionType).toEqual('nums.$merge()');
+  expect(libState.currentActionPayload).toEqual(4);
   expect(store.$state).toEqual({ nums: [1, 4, 5] });
 })
 
 test('should merge a number list', () => {
   const store = createStore({ nums: [1, 4, 5] });
   store.nums.$merge([2, 5, 7, 2]);
-  expect(libState.currentAction).toEqual({ type: 'nums.$merge()', payload: [2, 5, 7, 2] });
+  expect(libState.currentActionType).toEqual('nums.$merge()');
+  expect(libState.currentActionPayload).toEqual([2, 5, 7, 2]);
   expect(store.$state).toEqual({ nums: [1, 4, 5, 2, 7, 2] });
 })
 
 test('should merge a branded number list', () => {
   const store = createStore({ nums: [1, 4, 5] as Array<Brand<number, 'number'>> });
   store.nums.$merge([2, 5, 7, 2] as Array<Brand<number, 'number'>>);
-  expect(libState.currentAction).toEqual({ type: 'nums.$merge()', payload: [2, 5, 7, 2] });
+  expect(libState.currentActionType).toEqual('nums.$merge()');
+  expect(libState.currentActionPayload).toEqual([2, 5, 7, 2]);
   expect(store.$state).toEqual({ nums: [1, 4, 5, 2, 7, 2] });
 })
 

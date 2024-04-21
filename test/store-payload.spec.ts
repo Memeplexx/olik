@@ -17,7 +17,7 @@ test('should be able include store object with patch', () => {
     three: store.arr.$find.id.$eq(store.arr.$find.text.$eq('element').id).text
   });
   expect(store.$state).toEqual({ one: { two: 2, three: 'element' }, arr: [{ id: 1, text: 'element' }] });
-  expect(libState.currentAction?.payloadPaths).toEqual({
+  expect(libState.currentActionPayloadPaths).toEqual({
     'three': 'arr.$find.id.$eq( arr.$find.text.$eq("element").id = 1 ).text = "element"'
   })
 })
@@ -25,7 +25,7 @@ test('should be able include store object with patch', () => {
 test('should be able include store object with set', () => {
   const store = createStore({ one: { two: 1, three: '' }, arr: [{ id: 1, text: 'element' }] });
   store.one.two.$set(store.arr.$find.id.$eq(store.arr.$find.text.$eq('element').id).id);
-  expect(libState.currentAction?.payloadPaths).toEqual({
+  expect(libState.currentActionPayloadPaths).toEqual({
     '': 'arr.$find.id.$eq( arr.$find.text.$eq("element").id = 1 ).id = 1'
   });
 })
@@ -33,7 +33,7 @@ test('should be able include store object with set', () => {
 test('should be able include store object with setNew', () => {
   const store = createStore({ one: { two: 1, three: '' }, arr: [{ id: 1, text: 'element' }] });
   store.one.$setNew({ x: store.arr.$find.id.$eq(store.arr.$find.text.$eq('element').id).id });
-  expect(libState.currentAction?.payloadPaths).toEqual({
+  expect(libState.currentActionPayloadPaths).toEqual({
     'x': 'arr.$find.id.$eq( arr.$find.text.$eq("element").id = 1 ).id = 1'
   });
 })
@@ -45,7 +45,7 @@ test('should be able include nested store object with set', () => {
     two: store.arr.$find.id.$eq(store.arr.$find.text.$eq('element').id).id,
     three: store.arr.$find.id.$eq(store.arr.$find.text.$eq('element').id).text
   });
-  expect(libState.currentAction?.payloadPaths).toEqual({
+  expect(libState.currentActionPayloadPaths).toEqual({
     'two': 'arr.$find.id.$eq( arr.$find.text.$eq("element").id = 1 ).id = 1',
     'three': 'arr.$find.id.$eq( arr.$find.text.$eq("element").id = 1 ).text = "element"'
   });
@@ -54,13 +54,13 @@ test('should be able include nested store object with set', () => {
 test('', () => {
   const store = createStore({ arr: [{ id: 1, text: 'element' }], arr2: [{ id: 2, text: 'element2' }] });
   store.arr.$set(store.arr2.$filter.id.$eq(2));
-  expect(libState.currentAction?.payloadPaths).toEqual({ '': 'arr2.$filter.id.$eq(2) = [{"id":2,"text":"element2"}]' });
+  expect(libState.currentActionPayloadPaths).toEqual({ '': 'arr2.$filter.id.$eq(2) = [{"id":2,"text":"element2"}]' });
 })
 
 test('', () => {
   const store = createStore({ arr: [{ id: 1, text: 'element' }], arr2: [{ id: 2, text: 'element2' }] });
   store.arr.$filter.id.$eq(1).text.$set(store.arr2.$find.id.$eq(2).text);
-  expect(libState.currentAction?.payloadPaths).toEqual({ '': 'arr2.$find.id.$eq(2).text = "element2"' });
+  expect(libState.currentActionPayloadPaths).toEqual({ '': 'arr2.$find.id.$eq(2).text = "element2"' });
 })
 
 test('', () => {
@@ -331,10 +331,8 @@ test('array indices filter and then at', () => {
   const store = createStore({ arr: [{ id: 1, arr2: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }] }, { id: 2, arr2: [{ id: 3, value: 'three' }, { id: 4, value: 'four' }] }] });
   store.arr.$filter.id.$lte(2).arr2.$at(1).value.$set('xxx');
   expect(store.$state).toEqual({ arr: [{ id: 1, arr2: [{ id: 1, value: 'one' }, { id: 2, value: 'xxx' }] }, { id: 2, arr2: [{ id: 3, value: 'three' }, { id: 4, value: 'xxx' }] }] });
-  expect(libState.currentAction).toEqual({
-    type: 'arr.$filter.id.$lte(2).arr2.$at(1).value.$set()',
-    payload: 'xxx'
-  })
+  expect(libState.currentActionType).toEqual('arr.$filter.id.$lte(2).arr2.$at(1).value.$set()');
+  expect(libState.currentActionPayload).toEqual('xxx');
 });
 
 test('set object key', () => {

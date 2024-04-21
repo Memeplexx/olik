@@ -25,12 +25,14 @@ export const resetLibraryState = () => {
   libState.store = undefined;
   libState.state = undefined;
   libState.changeListeners = [];
-  libState.currentAction = undefined;
+  libState.currentActionType = undefined;
+  libState.currentActionTypeOrig = undefined;
+  libState.currentActionPayload = undefined;
+  libState.currentActionPayloadPaths = undefined;
   libState.initialState = undefined;
   libState.disableDevtoolsDispatch = false;
   libState.derivations = new Map();
   libState.devtools = undefined;
-  libState.payloadPaths = undefined;
   perf.clear();
 };
 
@@ -121,6 +123,7 @@ export const fixCurrentAction = (action: { name: string, arg?: unknown }, nested
 
 type PayloadType<T> = { [key in keyof T]: T[key] extends StoreInternal ? T[key]['$state'] : PayloadType<T[key]> }
 export const extractPayload = <T>(payloadIncoming: T) => {
+  libState.currentActionPayloadPaths = undefined;
   if (is.undefined(payloadIncoming))
     return payloadIncoming;
   if (is.primitive(payloadIncoming) || is.date(payloadIncoming) || is.null(payloadIncoming))
@@ -140,8 +143,7 @@ export const extractPayload = <T>(payloadIncoming: T) => {
     throw new Error();
   }
   const payload = sanitizePayload(payloadIncoming, '');
-  if (Object.keys(payloadPaths).length) {
-    libState.payloadPaths = payloadPaths;
-  }
+  if (Object.keys(payloadPaths).length)
+    libState.currentActionPayloadPaths = payloadPaths;  
   return payload;
 }

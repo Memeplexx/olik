@@ -16,7 +16,8 @@ test('should replace all elements', () => {
   const payload = [4, 5, 6];
   store.arr
     .$set(payload);
-  expect(libState.currentAction).toEqual({ type: 'arr.$set()', payload });
+  expect(libState.currentActionType).toEqual('arr.$set()');
+  expect(libState.currentActionPayload).toEqual(payload);
   expect(store.$state).toEqual({ arr: [4, 5, 6] });
 })
 
@@ -24,7 +25,7 @@ test('should remove all elements', () => {
   const store = createStore(state);
   store.arr
     .$clear();
-  expect(libState.currentAction).toEqual({ type: 'arr.$clear()' });
+  expect(libState.currentActionType).toEqual('arr.$clear()');
   expect(store.$state).toEqual({ arr: [] });
 })
 
@@ -33,7 +34,8 @@ test('should increment all elements', () => {
   const payload = 1;
   store.arr
     .$add(payload);
-  expect(libState.currentAction).toEqual({ type: 'arr.$add()', payload });
+  expect(libState.currentActionType).toEqual('arr.$add()');
+  expect(libState.currentActionPayload).toEqual(payload);
   expect(store.$state).toEqual({ arr: [2, 3, 4] });
 })
 
@@ -42,7 +44,8 @@ test('should be able to insert one primitive', () => {
   const payload = 4;
   store.arr
     .$push(payload);
-  expect(libState.currentAction).toEqual({ type: 'arr.$push()', payload });
+  expect(libState.currentActionType).toEqual('arr.$push()');
+  expect(libState.currentActionPayload).toEqual(payload);
   expect(store.$state).toEqual({ arr: [1, 2, 3, 4] });
 })
 
@@ -51,7 +54,8 @@ test('should be able to insert many primitives', () => {
   const payload = [4, 5, 6];
   store.arr
     .$pushMany(payload);
-  expect(libState.currentAction).toEqual({ type: 'arr.$pushMany()', payload });
+  expect(libState.currentActionType).toEqual('arr.$pushMany()');
+  expect(libState.currentActionPayload).toEqual(payload);
   expect(store.$state).toEqual({ arr: [1, 2, 3, 4, 5, 6] });
 })
 
@@ -61,7 +65,8 @@ test('should find an element and replace it', () => {
   store.arr
     .$find.$eq(2)
     .$set(payload);
-  expect(libState.currentAction).toEqual({ type: 'arr.$find.$eq(2).$set()', payload });
+  expect(libState.currentActionType).toEqual('arr.$find.$eq(2).$set()');
+  expect(libState.currentActionPayload).toEqual(payload);
   expect(store.$state).toEqual({ arr: [1, 9, 3] });
 })
 
@@ -70,7 +75,7 @@ test('should find an element and remove it', () => {
   store.arr
     .$find.$eq(2)
     .$delete();
-  expect(libState.currentAction).toEqual({ type: 'arr.$find.$eq(2).$delete()' });
+  expect(libState.currentActionType).toEqual('arr.$find.$eq(2).$delete()');
   expect(store.$state).toEqual({ arr: [1, 3] });
 })
 
@@ -80,7 +85,8 @@ test('should find an element and increment it', () => {
   store.arr
     .$find.$eq(2)
     .$add(payload);
-  expect(libState.currentAction).toEqual({ type: 'arr.$find.$eq(2).$add()', payload });
+  expect(libState.currentActionType).toEqual('arr.$find.$eq(2).$add()');
+  expect(libState.currentActionPayload).toEqual(payload);
   expect(store.$state).toEqual({ arr: [1, 4, 3] });
 })
 
@@ -90,7 +96,8 @@ test('should find an element by one clause or another and replace it', () => {
   store.arr
     .$find.$eq(1).$or.$eq(2)
     .$set(payload);
-  expect(libState.currentAction).toEqual({ type: 'arr.$find.$eq(1).$or.$eq(2).$set()', payload });
+  expect(libState.currentActionType).toEqual('arr.$find.$eq(1).$or.$eq(2).$set()');
+  expect(libState.currentActionPayload).toEqual(payload);
   expect(store.$state).toEqual({ arr: [9, 2, 3] });
 })
 
@@ -99,7 +106,7 @@ test('should find an element by one clause or another and remove it', () => {
   store.arr
     .$find.$eq(1).$or.$eq(2)
     .$delete();
-  expect(libState.currentAction).toEqual({ type: 'arr.$find.$eq(1).$or.$eq(2).$delete()' });
+  expect(libState.currentActionType).toEqual('arr.$find.$eq(1).$or.$eq(2).$delete()');
   expect(store.$state).toEqual({ arr: [2, 3] });
 })
 
@@ -109,7 +116,8 @@ test('should find an element by one clause or another and increment it', () => {
   store.arr
     .$find.$eq(1).$or.$eq(2)
     .$add(1);
-  expect(libState.currentAction).toEqual({ type: 'arr.$find.$eq(1).$or.$eq(2).$add()', payload });
+  expect(libState.currentActionType).toEqual('arr.$find.$eq(1).$or.$eq(2).$add()');
+  expect(libState.currentActionPayload).toEqual(payload);
   expect(store.$state).toEqual({ arr: [2, 2, 3] });
 })
 
@@ -119,7 +127,8 @@ test('should find an element by one clause and another and replace it', () => {
   store.arr
     .$find.$gt(1).$and.$lt(3)
     .$set(payload);
-  expect(libState.currentAction).toEqual({ type: 'arr.$find.$gt(1).$and.$lt(3).$set()', payload });
+  expect(libState.currentActionType).toEqual('arr.$find.$gt(1).$and.$lt(3).$set()');
+  expect(libState.currentActionPayload).toEqual(payload);
   expect(store.$state).toEqual({ arr: [1, 9, 3] });
 })
 
@@ -128,7 +137,7 @@ test('should find an element by one clause and another and remove it', () => {
   store.arr
     .$find.$gt(1).$and.$lt(3)
     .$delete();
-  expect(libState.currentAction).toEqual({ type: 'arr.$find.$gt(1).$and.$lt(3).$delete()' });
+  expect(libState.currentActionType).toEqual('arr.$find.$gt(1).$and.$lt(3).$delete()');
   expect(store.$state).toEqual({ arr: [1, 3] });
 })
 
@@ -138,7 +147,8 @@ test('should find an element by one clause and another and increment it', () => 
   store.arr
     .$find.$eq(1).$and.$lt(2)
     .$add(payload);
-  expect(libState.currentAction).toEqual({ type: 'arr.$find.$eq(1).$and.$lt(2).$add()', payload });
+  expect(libState.currentActionType).toEqual('arr.$find.$eq(1).$and.$lt(2).$add()');
+  expect(libState.currentActionPayload).toEqual(payload);
   expect(store.$state).toEqual({ arr: [2, 2, 3] });
 })
 
@@ -147,7 +157,7 @@ test('should filter elements and remove them', () => {
   store.arr
     .$filter.$gt(1)
     .$delete();
-  expect(libState.currentAction).toEqual({ type: 'arr.$filter.$gt(1).$delete()' });
+  expect(libState.currentActionType).toEqual('arr.$filter.$gt(1).$delete()');
   expect(store.$state).toEqual({ arr: [1] });
 })
 
@@ -157,7 +167,8 @@ test('should filter elements and increment them', () => {
   store.arr
     .$filter.$gt(1)
     .$add(1);
-  expect(libState.currentAction).toEqual({ type: 'arr.$filter.$gt(1).$add()', payload });
+  expect(libState.currentActionType).toEqual('arr.$filter.$gt(1).$add()');
+  expect(libState.currentActionPayload).toEqual(payload);
   expect(store.$state).toEqual({ arr: [1, 3, 4] });
 })
 
@@ -166,7 +177,7 @@ test('should filter elements by one clause or another and remove them', () => {
   store.arr
     .$filter.$eq(1).$or.$eq(2)
     .$delete();
-  expect(libState.currentAction).toEqual({ type: 'arr.$filter.$eq(1).$or.$eq(2).$delete()' });
+  expect(libState.currentActionType).toEqual('arr.$filter.$eq(1).$or.$eq(2).$delete()');
   expect(store.$state).toEqual({ arr: [3] });
 })
 
@@ -176,7 +187,8 @@ test('should filter elements by one clause or another and increment them', () =>
   store.arr
     .$filter.$eq(1).$or.$eq(2)
     .$add(1);
-  expect(libState.currentAction).toEqual({ type: 'arr.$filter.$eq(1).$or.$eq(2).$add()', payload });
+  expect(libState.currentActionType).toEqual('arr.$filter.$eq(1).$or.$eq(2).$add()');
+  expect(libState.currentActionPayload).toEqual(payload);
   expect(store.$state).toEqual({ arr: [2, 3, 3] });
 })
 
@@ -185,7 +197,7 @@ test('should filter elements by one clause and another and remove them', () => {
   store.arr
     .$filter.$gt(0).$and.$lt(3)
     .$delete();
-  expect(libState.currentAction).toEqual({ type: 'arr.$filter.$gt(0).$and.$lt(3).$delete()' });
+  expect(libState.currentActionType).toEqual('arr.$filter.$gt(0).$and.$lt(3).$delete()');
   expect(store.$state).toEqual({ arr: [3] });
 })
 
@@ -195,5 +207,6 @@ test('should filter elements by one clause and another and increment them', () =
   store.arr
     .$filter.$gt(0).$and.$gt(1)
     .$add(1);
-  expect(libState.currentAction).toEqual({ type: 'arr.$filter.$gt(0).$and.$gt(1).$add()', payload });
+  expect(libState.currentActionType).toEqual('arr.$filter.$gt(0).$and.$gt(1).$add()');
+  expect(libState.currentActionPayload).toEqual(payload);
 })
