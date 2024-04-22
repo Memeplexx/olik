@@ -1,5 +1,5 @@
 import { defineQuery } from '../src/async-query';
-import { errorMessages, libState } from '../src/constant';
+import { errorMessages, testState } from '../src/constant';
 import { createStore } from '../src/core';
 import { connectOlikDevtoolsToStore } from '../src/devtools';
 import { resetLibraryState } from '../src/utility';
@@ -23,8 +23,8 @@ test('should perform a basic async update', async () => {
     .$set(resolve(payload));
   expect(store.num.$state).toEqual(payload);
   expect(asyncResult).toEqual(payload);
-  expect(libState.currentActionType).toEqual('num.$set()');
-  expect(libState.currentActionPayload).toEqual(payload);
+  expect(testState.currentActionType).toEqual('num.$set()');
+  expect(testState.currentActionPayload).toEqual(payload);
 })
 
 test('should catch a rejection', async () => {
@@ -82,7 +82,7 @@ test('should support caching', () => {
   return store.num
     .$set(resolve(replacement), { cache: 1000 })
     .then(() => {
-      expect(libState.currentActionType).toEqual('cache.num.$set()');
+      expect(testState.currentActionType).toEqual('cache.num.$set()');
       expect(store.num.$state).toEqual(replacement);
       return store.num.$set(resolve(replacement2));
     })
@@ -199,8 +199,8 @@ test('should repsert one array element where a match could be found', async () =
   await store.arr
     .$mergeMatching.id
     .$with(resolve(payload));
-  expect(libState.currentActionType).toEqual('arr.$mergeMatching.id.$with()');
-  expect(libState.currentActionPayload).toEqual(payload);
+  expect(testState.currentActionType).toEqual('arr.$mergeMatching.id.$with()');
+  expect(testState.currentActionPayload).toEqual(payload);
   expect(store.arr.$state).toEqual([payload, state.arr[1], state.arr[2]]);
 })
 
@@ -211,8 +211,8 @@ test('should repsert one array element where a match could not be found', async 
   await store.arr
     .$mergeMatching.id
     .$with(resolve(payload));
-  expect(libState.currentActionType).toEqual('arr.$mergeMatching.id.$with()');
-  expect(libState.currentActionPayload).toEqual(payload);
+  expect(testState.currentActionType).toEqual('arr.$mergeMatching.id.$with()');
+  expect(testState.currentActionPayload).toEqual(payload);
   expect(store.arr.$state).toEqual([...state.arr, payload]);
 })
 
@@ -223,8 +223,8 @@ test('should repsert array elements where one matches and another does not', asy
   await store.arr
     .$mergeMatching.id
     .$with(resolve(payload));
-  expect(libState.currentActionType).toEqual('arr.$mergeMatching.id.$with()');
-  expect(libState.currentActionPayload).toEqual(payload);
+  expect(testState.currentActionType).toEqual('arr.$mergeMatching.id.$with()');
+  expect(testState.currentActionPayload).toEqual(payload);
   expect(store.arr.$state).toEqual([payload[0], state.arr[1], state.arr[2], payload[1]]);
 })
 

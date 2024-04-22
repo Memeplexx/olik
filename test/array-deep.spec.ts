@@ -1,8 +1,8 @@
 import { beforeEach, expect, test } from 'vitest';
-import { libState } from '../src';
+import { testState } from '../src';
 import { createStore } from '../src/core';
-import { resetLibraryState } from '../src/utility';
 import { connectOlikDevtoolsToStore } from '../src/devtools';
+import { resetLibraryState } from '../src/utility';
 
 beforeEach(() => {
   resetLibraryState();
@@ -27,8 +27,8 @@ test('should find an element an replace it', () => {
   store.arr
     .$find.id.$eq(2)
     .$set(payload);
-  expect(libState.currentActionType).toEqual('arr.$find.id.$eq(2).$set()');
-  expect(libState.currentActionPayload).toEqual(payload);
+  expect(testState.currentActionType).toEqual('arr.$find.id.$eq(2).$set()');
+  expect(testState.currentActionPayload).toEqual(payload);
   const stateAfter = store.$state;
   expect(stateBefore).not.toEqual(stateAfter);
   expect(stateBefore.obj).toEqual(stateAfter.obj);
@@ -44,8 +44,8 @@ test('should filter elements and patch them', () => {
   store.arr
     .$filter.id.$in([1, 2])
     .$patch(payload);
-  expect(libState.currentActionType).toEqual('arr.$filter.id.$in([1,2]).$patch()');
-  expect(libState.currentActionPayload).toEqual(payload);
+  expect(testState.currentActionType).toEqual('arr.$filter.id.$in([1,2]).$patch()');
+  expect(testState.currentActionPayload).toEqual(payload);
   expect(store.$state).toEqual({ arr: [{ id: 1, val: 1 }, { id: 2, val: 1 }, { id: 3, val: 0 }] });
 })
 
@@ -56,8 +56,8 @@ test('should find an element and replace one of its properties', () => {
   store.arr
     .$find.id.$eq(2).val
     .$set(payload);
-  expect(libState.currentActionType).toEqual('arr.$find.id.$eq(2).val.$set()');
-  expect(libState.currentActionPayload).toEqual(payload);
+  expect(testState.currentActionType).toEqual('arr.$find.id.$eq(2).val.$set()');
+  expect(testState.currentActionPayload).toEqual(payload);
   expect(store.$state).toEqual({
     ...state,
     arr: [
@@ -78,8 +78,8 @@ test('should find an element, find an element in the property array, and replace
     .$find.id.$eq(2)
     .arr.$find.id.$eq(1).num
     .$set(payload);
-  expect(libState.currentActionType).toEqual('arr.$find.id.$eq(2).arr.$find.id.$eq(1).num.$set()');
-  expect(libState.currentActionPayload).toEqual(payload);
+  expect(testState.currentActionType).toEqual('arr.$find.id.$eq(2).arr.$find.id.$eq(1).num.$set()');
+  expect(testState.currentActionPayload).toEqual(payload);
   expect(store.$state).toEqual({
     ...state,
     arr: [
@@ -103,8 +103,8 @@ test('should find an element, filter elements in the property array, and all of 
     .$find.id.$eq(2)
     .arr.$filter.id.$in([1, 2]).num
     .$add(payload);
-  expect(libState.currentActionType).toEqual('arr.$find.id.$eq(2).arr.$filter.id.$in([1,2]).num.$add()');
-  expect(libState.currentActionPayload).toEqual(payload);
+  expect(testState.currentActionType).toEqual('arr.$find.id.$eq(2).arr.$filter.id.$in([1,2]).num.$add()');
+  expect(testState.currentActionPayload).toEqual(payload);
   expect(store.$state).toEqual({
     ...state,
     arr: [
@@ -126,8 +126,8 @@ test('should find an element, filter elements in the property array, and all of 
     .$find.id.$eq(2)
     .arr.num
     .$add(payload);
-  expect(libState.currentActionType).toEqual('arr.$find.id.$eq(2).arr.num.$add()');
-  expect(libState.currentActionPayload).toEqual(payload);
+  expect(testState.currentActionType).toEqual('arr.$find.id.$eq(2).arr.num.$add()');
+  expect(testState.currentActionPayload).toEqual(payload);
   expect(store.$state).toEqual({
     ...state,
     arr: [

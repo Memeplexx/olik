@@ -1,4 +1,4 @@
-import { libState } from './constant';
+import { libState, testState } from './constant';
 import { readState } from './read';
 import { StateAction } from './type';
 import { assertIsRecord } from './type-check';
@@ -14,9 +14,9 @@ export const setNewStateAndNotifyListeners = (
   if (libState.devtools && !libState.disableDevtoolsDispatch) {
     const type = stateActions.map(sa => fixCurrentAction(sa, true)).join('.');
     const typeOrig = stateActions.map(sa => fixCurrentAction(sa, false)).join('.');
-    libState.currentActionType = type;
-    libState.currentActionTypeOrig = type !== typeOrig ? typeOrig : undefined;
-    libState.currentActionPayload = stateActions.at(-1)!.arg;
+    testState.currentActionType = type;
+    testState.currentActionTypeOrig = type !== typeOrig ? typeOrig : undefined;
+    testState.currentActionPayload = stateActions.at(-1)!.arg;
   }
   const copy = copyNewState({ currentState: oldState, stateToUpdate, stateActions, cursor: { index: 0 } });
   assertIsRecord(copy);

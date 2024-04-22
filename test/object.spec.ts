@@ -1,8 +1,8 @@
-import { libState } from '../src';
+import { beforeEach, expect, test } from 'vitest';
+import { testState } from '../src';
 import { createStore } from '../src/core';
 import { connectOlikDevtoolsToStore } from '../src/devtools';
 import { resetLibraryState } from '../src/utility';
-import { test, expect, beforeEach } from 'vitest';
 
 const state = { num: 0, str: '', bool: false };
 
@@ -16,8 +16,8 @@ test('should replace an object property', () => {
   const payload = 1;
   store.num
     .$set(payload);
-  expect(libState.currentActionType).toEqual('num.$set()');
-  expect(libState.currentActionPayload).toEqual(payload);
+  expect(testState.currentActionType).toEqual('num.$set()');
+  expect(testState.currentActionPayload).toEqual(payload);
   expect(store.num.$state).toEqual(1);
 })
 
@@ -25,7 +25,7 @@ test('should toggle an object property', () => {
   const store = createStore(state);
   store.bool
     .$toggle();
-  expect(libState.currentActionType).toEqual('bool.$toggle()');
+  expect(testState.currentActionType).toEqual('bool.$toggle()');
   expect(store.bool.$state).toEqual(true);
 })
 
@@ -33,8 +33,8 @@ test('should patch an object', () => {
   const store = createStore(state);
   const payload = { bool: true, str: 'x' };
   store.$patch({ bool: true, str: 'x' });
-  expect(libState.currentActionType).toEqual('$patch()');
-  expect(libState.currentActionPayload).toEqual(payload);
+  expect(testState.currentActionType).toEqual('$patch()');
+  expect(testState.currentActionPayload).toEqual(payload);
   expect(store.$state).toEqual({ ...state, ...payload });
 })
 
@@ -50,8 +50,8 @@ test('should increment an object property', () => {
   const payload = 1;
   store.num
     .$add(payload);
-  expect(libState.currentActionType).toEqual('num.$add()');
-  expect(libState.currentActionPayload).toEqual(payload);
+  expect(testState.currentActionType).toEqual('num.$add()');
+  expect(testState.currentActionPayload).toEqual(payload);
   expect(store.num.$state).toEqual(1);
 })
 

@@ -39,6 +39,10 @@ export type TestState = {
   isTest: boolean,
   isPerf: boolean,
   fakeDevtoolsMessage: null | Omit<DevtoolsAction, 'source'>,
+  currentActionType: undefined | string,
+  currentActionTypeOrig: undefined | string,
+  currentActionPayload: undefined | unknown,
+  currentActionPayloadPaths?: Record<string, string>,
 }
 
 export type StoreArgs<P = string> = {

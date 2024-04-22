@@ -18,10 +18,6 @@ export const libState: LibState = {
   devtools: undefined,
   state: undefined,
   changeListeners: [],
-  currentActionType: undefined,
-  currentActionPayload: undefined,
-  currentActionTypeOrig: undefined,
-  currentActionPayloadPaths: undefined,
   initialState: undefined,
   derivations: new Map(),
   stacktraceError: null,
@@ -32,6 +28,10 @@ export const testState: TestState = {
   isTest: false,
   isPerf: false,
   fakeDevtoolsMessage: null,
+  currentActionType: undefined,
+  currentActionPayload: undefined,
+  currentActionTypeOrig: undefined,
+  currentActionPayloadPaths: undefined,
 }
 
 export const augmentations: Augmentations = {

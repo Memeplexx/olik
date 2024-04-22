@@ -22,13 +22,13 @@ export const resetLibraryState = () => {
   testState.logLevel = 'none';
   testState.fakeDevtoolsMessage = null;
   testState.isPerf = false;
+  testState.currentActionType = undefined;
+  testState.currentActionTypeOrig = undefined;
+  testState.currentActionPayload = undefined;
+  testState.currentActionPayloadPaths = undefined;
   libState.store = undefined;
   libState.state = undefined;
   libState.changeListeners = [];
-  libState.currentActionType = undefined;
-  libState.currentActionTypeOrig = undefined;
-  libState.currentActionPayload = undefined;
-  libState.currentActionPayloadPaths = undefined;
   libState.initialState = undefined;
   libState.disableDevtoolsDispatch = false;
   libState.derivations = new Map();
@@ -123,7 +123,7 @@ export const fixCurrentAction = (action: { name: string, arg?: unknown }, nested
 
 type PayloadType<T> = { [key in keyof T]: T[key] extends StoreInternal ? T[key]['$state'] : PayloadType<T[key]> }
 export const extractPayload = <T>(payloadIncoming: T) => {
-  libState.currentActionPayloadPaths = undefined;
+  testState.currentActionPayloadPaths = undefined;
   if (is.undefined(payloadIncoming))
     return payloadIncoming;
   if (is.primitive(payloadIncoming) || is.date(payloadIncoming) || is.null(payloadIncoming))
@@ -144,6 +144,6 @@ export const extractPayload = <T>(payloadIncoming: T) => {
   }
   const payload = sanitizePayload(payloadIncoming, '');
   if (Object.keys(payloadPaths).length)
-    libState.currentActionPayloadPaths = payloadPaths;  
+    testState.currentActionPayloadPaths = payloadPaths;  
   return payload;
 }
