@@ -248,34 +248,21 @@ const filterArray = ({ stateToUpdate, currentState, cursor, stateActions }: Copy
   const query = constructQuery({ stateActions, cursor });
   const type = stateActions[cursor.index].name;
   const stateAction = stateActions.slice(0, cursor.index).reverse().find(sa => sa.name === '$filter')!;
-  stateAction.searchIndices = [];
+  stateAction.searchIndices = currentState.map((e, i) => query(e) ? i : -1).filter(i => i !== -1);
   if ('$delete' === type)
-    return currentState.filter((_, i) => {
-      const result = query(currentState[i]);
-      if (result)
-        stateAction.searchIndices!.push(i);
-      return !result;
-    });
+    return currentState.filter((_, i) => !stateAction.searchIndices!.includes(i));
   if ('$set' === type) {
     const newState = copyNewState({ currentState, stateToUpdate, stateActions, cursor });
     assertIsArray(newState);
     return [
-      ...currentState.filter((e, i) => {
-        const result = query(e);
-        if (result) stateAction.searchIndices!.push(i);
-        return !result;
-      }),
+      ...currentState.filter((_, i) => !stateAction.searchIndices!.includes(i)),
       ...newState,
     ];
   }
   assertIsArray(stateToUpdate);
-  return currentState.map((e, i) => {
-    const result = query(e);
-    if (result) stateAction.searchIndices!.push(i);
-    return result
-      ? copyNewState({ currentState: e, stateToUpdate: stateToUpdate[i], stateActions, cursor: { ...cursor } })
-      : e
-  });
+  return currentState.map((e, i) => stateAction.searchIndices!.includes(i) 
+    ? copyNewState({ currentState: e, stateToUpdate: stateToUpdate[i], stateActions, cursor: { ...cursor } }) 
+    : e);
 }
 
 const deleteObjectValue = ({ currentState, type: oldObjectKey }: CopyNewStateArgsAndPayload) => {
