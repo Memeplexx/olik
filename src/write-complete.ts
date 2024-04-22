@@ -28,6 +28,6 @@ export const setNewStateAndNotifyListeners = (
       listener(selectedNewState);
   })
   if (libState.devtools && !libState.disableDevtoolsDispatch) {
-    libState.devtools.dispatch({ stateActions });
+    libState.devtools.dispatch({ stateActions, actionType: testState.currentActionType, payloadPaths: testState.currentActionPayloadPaths });
   }
 }

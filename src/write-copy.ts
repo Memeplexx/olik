@@ -207,12 +207,8 @@ const setObjectKey = ({ currentState, stateActions, cursor, type: oldKey }: Copy
   const newKey = stateActions[cursor.index].arg;
   assertIsRecord(currentState); assertIsString(newKey);
   const payload = extractPayload(newKey);
-  const newState = newRecord();
-  Object.entries(currentState).forEach(([key, value]) => {
-    const newKey = key === oldKey ? payload as string : key;
-    newState[newKey] = value;
-  })
-  return newState;
+  return Object.entries(currentState)
+    .reduce((acc, [key, value]) => Object.assign(acc, { [key === oldKey ? payload : key]: value }), newRecord());
 }
 
 const atArray = ({ stateToUpdate, currentState, cursor, stateActions, payload }: CopyNewStateArgsAndPayload) => {

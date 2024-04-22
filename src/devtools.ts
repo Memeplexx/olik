@@ -36,10 +36,10 @@ export function connectOlikDevtoolsToStore() {
 
 const setupDevtools = () => {
   libState.devtools = {
-    dispatch: ({ stateActions }) => {
+    dispatch: ({ stateActions, actionType, payloadPaths }) => {
       const toSend = {
-        actionType: libState.currentActionType,
-        payloadPaths: libState.currentActionPayloadPaths,
+        actionType,
+        payloadPaths,
         stateActions: stateActions.map(sa => ({ ...sa, arg: extractPayload(sa.arg) })),
         trace: typeof (window) === 'undefined' ? '' : libState.stacktraceError?.stack,
       } as DevtoolsAction;
