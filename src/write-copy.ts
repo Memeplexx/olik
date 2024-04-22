@@ -136,7 +136,7 @@ const patchDeep = ({ payload, currentState }: CopyNewStateArgsAndPayload) => {
   assertIsRecord(payload); assertIsRecord(currentState);
   const recurse = (target: Record<string, unknown>, source: Record<string, unknown>) => {
     const output = { ...target };
-    if (!is.record<Record<string, unknown>>(target) || !is.record(source)) 
+    if (!is.record<Record<string, unknown>>(target) || !is.record(source))
       return output;
     Object.entries(source).forEach(([key, val]) => {
       if (!is.record(val))
@@ -190,7 +190,7 @@ const mergeMatching = ({ currentState, cursor, stateActions }: CopyNewStateArgsA
   const currentArrayModified = currentState.map((existingElement, i) => {
     const elementValue = query(existingElement);
     const found = mergeArgs.find(ua => query(ua) === elementValue);
-    if (!is.undefined(found)) 
+    if (!is.undefined(found))
       indicesOld.push(i);
     return found ?? existingElement;
   });
@@ -198,7 +198,7 @@ const mergeMatching = ({ currentState, cursor, stateActions }: CopyNewStateArgsA
   const newArrayElements = mergeArgs.filter(mergeArg => {
     const elementValue = query(mergeArg);
     const notFound = !currentArrayModified.some(ua => query(ua) === elementValue);
-    if (notFound) 
+    if (notFound)
       indicesNew.push(currentState.length + indicesNew.length);
     return notFound;
   });
@@ -219,7 +219,7 @@ const setObjectKey = ({ currentState, stateActions, cursor, type: oldKey }: Copy
 
 const atArray = ({ stateToUpdate, currentState, cursor, stateActions, payload }: CopyNewStateArgsAndPayload) => {
   assertIsNumber(payload); assertIsArray(currentState); assertIsArray(stateToUpdate);
-  if (is.undefined(currentState[payload])) 
+  if (is.undefined(currentState[payload]))
     throw new Error(errorMessages.AT_INDEX_OUT_OF_BOUNDS(payload));
   if ('$delete' === stateActions[cursor.index].name)
     return currentState.filter((_, i) => payload !== i);
@@ -232,7 +232,7 @@ const findArray = ({ stateToUpdate, currentState, cursor, stateActions }: CopyNe
   assertIsArray(currentState); assertIsArray(stateToUpdate);
   const query = constructQuery({ stateActions, cursor });
   const findIndex = currentState.findIndex(query);
-  if (findIndex === -1) 
+  if (findIndex === -1)
     throw new Error(errorMessages.FIND_RETURNS_NO_MATCHES);
   const stateAction = stateActions.slice(0, cursor.index).reverse().find(sa => sa.name === '$find')!;
   stateAction.searchIndices = [findIndex];
@@ -248,11 +248,11 @@ const filterArray = ({ stateToUpdate, currentState, cursor, stateActions }: Copy
   const query = constructQuery({ stateActions, cursor });
   const type = stateActions[cursor.index].name;
   const stateAction = stateActions.slice(0, cursor.index).reverse().find(sa => sa.name === '$filter')!;
-  stateAction.searchIndices =  [];
+  stateAction.searchIndices = [];
   if ('$delete' === type)
     return currentState.filter((_, i) => {
       const result = query(currentState[i]);
-      if (result) 
+      if (result)
         stateAction.searchIndices!.push(i);
       return !result;
     });
