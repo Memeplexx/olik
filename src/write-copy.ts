@@ -90,8 +90,7 @@ const toggle = ({ currentState }: CopyNewStateArgsAndPayload) => {
 }
 
 const setNew = ({ currentState, payload }: CopyNewStateArgsAndPayload) => {
-  assertIsRecord(currentState);
-  assertIsRecord(payload);
+  assertIsRecord(currentState); assertIsRecord(payload);
   return is.undefined(currentState) ? payload : { ...currentState, ...payload };
 }
 
@@ -151,8 +150,7 @@ const patchDeep = ({ payload, currentState }: CopyNewStateArgsAndPayload) => {
 }
 
 const updateArrayObjectProperties = ({ stateToUpdate, currentState, cursor, stateActions }: CopyNewStateArgs) => {
-  assertIsArray(stateToUpdate);
-  assertIsArray<Record<string, unknown>>(currentState);
+  assertIsArray(stateToUpdate); assertIsArray<Record<string, unknown>>(currentState);
   return currentState.map((_, i) => {
     if (currentState[i]) {
       const newState = copyNewState({
