@@ -1,7 +1,7 @@
 import { augmentations, errorMessages, libState } from './constant';
 import { readState } from './read';
 import { Readable, StateAction, Store, StoreAugment } from './type';
-import { assertIsRecord, assertIsStoreInternal, assertIsString, is } from './type-check';
+import { as, is } from './type-check';
 import { StoreArgs, StoreInternal } from './type-internal';
 import { deepFreeze } from './utility';
 import { setNewStateAndNotifyListeners } from './write-complete';
@@ -12,8 +12,7 @@ export const createInnerStore = <S extends Record<string, unknown>>(state: S) =>
     if (libState.store)
       libState.store.$patchDeep(state);
     const created = createStore(state);
-    assertIsStoreInternal(created);
-    libState.store = created;
+    libState.store = as.storeInternal(created);
     const store = libState.store as Store<S>;
     return new Proxy({}, {
       get: (_, prop: string) => accessor(store)[prop as keyof C]
@@ -98,8 +97,7 @@ const initializeLibState = (initialState: Record<string, unknown>) => {
 const removeStaleCacheReferences = (state: Record<string, unknown>) => {
   if (!state.cache) 
     return;
-  assertIsRecord<string>(state.cache);
-  state.cache = Object.fromEntries(Object.entries(state.cache).filter(([, value]) => new Date(value).getTime() > Date.now()));
+  state.cache = Object.fromEntries(Object.entries(as.record<string>(state.cache)).filter(([, value]) => new Date(value).getTime() > Date.now()));
 }
 
 const basicProp = (args: StoreArgs) => {
@@ -136,11 +134,10 @@ const processUpdateFunction = (args: StoreArgs) => (arg: unknown, { cache, eager
       .forEach(l => l.unsubscribe());
   }
   if ('$setKey' === args.prop) {
-    assertIsString(arg);
     const stateActionsStr = args.stateActions.map(sa => sa.name).join('.');
     libState.changeListeners
       .filter(l => l.actions.map(a => a.name).join('.').startsWith(stateActionsStr))
-      .forEach(l => l.actions[l.actions.length - 2].name = arg);
+      .forEach(l => l.actions[l.actions.length - 2].name = as.string(arg));
   }
   deepFreeze(arg);
   if (is.function(arg)) {

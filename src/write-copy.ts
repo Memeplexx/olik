@@ -1,7 +1,7 @@
 import { errorMessages } from './constant';
 import { constructQuery } from './query';
 import { Actual } from './type';
-import { assertIsArray, assertIsNumber, assertIsRecord, assertIsRecordOrUndefined, assertIsString, is, newRecord } from './type-check';
+import { as, assertIsArray, assertIsNumber, assertIsRecord, is, newRecord } from './type-check';
 import { CopyNewStateArgs, CopyNewStateArgsAndPayload } from './type-internal';
 import { extractPayload } from './utility';
 
@@ -64,18 +64,15 @@ export const copyNewState = (
 }
 
 const deDuplicate = ({ currentState }: CopyNewStateArgsAndPayload) => {
-  assertIsArray(currentState);
-  return [...new Set(currentState)];
+  return [...new Set(as.array(currentState))];
 }
 
 const push = ({ currentState, payload }: CopyNewStateArgsAndPayload) => {
-  assertIsArray(currentState);
-  return [...currentState, payload];
+  return [...as.array(currentState), payload];
 }
 
 const pushMany = ({ currentState, payload }: CopyNewStateArgsAndPayload) => {
-  assertIsArray(currentState); assertIsArray(payload);
-  return [...currentState, ...payload];
+  return [...as.array(currentState), ...as.array(payload)];
 }
 
 const merge = ({ currentState, payload }: CopyNewStateArgsAndPayload) => {
@@ -90,8 +87,7 @@ const toggle = ({ currentState }: CopyNewStateArgsAndPayload) => {
 }
 
 const setNew = ({ currentState, payload }: CopyNewStateArgsAndPayload) => {
-  assertIsRecord(currentState); assertIsRecord(payload);
-  return is.undefined(currentState) ? payload : { ...currentState, ...payload };
+  return is.undefined(currentState) ? payload : { ...as.record(currentState), ...as.record(payload) };
 }
 
 const set = (args: CopyNewStateArgsAndPayload) => {
@@ -99,32 +95,28 @@ const set = (args: CopyNewStateArgsAndPayload) => {
 }
 
 const setUnique = ({ payload }: CopyNewStateArgsAndPayload) => {
-  assertIsArray(payload);
-  return [...new Set(payload)];
+  return [...new Set(as.array(payload))];
 }
 
 const patch = ({ payload, currentState }: CopyNewStateArgsAndPayload) => {
   assertIsRecord(payload);
   if (is.array<Record<string, unknown>>(currentState))
     return currentState.map(e => ({ ...e, ...payload }));
-  assertIsRecord(currentState);
-  return { ...currentState, ...payload };
+  return { ...as.record(currentState), ...payload };
 }
 
 const add = ({ payload, currentState }: CopyNewStateArgsAndPayload) => {
   assertIsNumber(payload);
   if (is.array<number>(currentState))
     return currentState.map(e => e + payload);
-  assertIsNumber(currentState);
-  return currentState + payload;
+  return as.number(currentState) + payload;
 }
 
 const subtract = ({ payload, currentState }: CopyNewStateArgsAndPayload) => {
   assertIsNumber(payload);
   if (is.array<number>(currentState))
     return currentState.map(e => e + payload);
-  assertIsNumber(currentState);
-  return currentState - payload;
+  return as.number(currentState) - payload;
 }
 
 const clear = () => {
@@ -132,7 +124,6 @@ const clear = () => {
 }
 
 const patchDeep = ({ payload, currentState }: CopyNewStateArgsAndPayload) => {
-  assertIsRecord(payload); assertIsRecord(currentState);
   const recurse = (target: Record<string, unknown>, source: Record<string, unknown>) => {
     const output = { ...target };
     if (!is.record<Record<string, unknown>>(target) || !is.record(source))
@@ -146,28 +137,23 @@ const patchDeep = ({ payload, currentState }: CopyNewStateArgsAndPayload) => {
     });
     return output;
   }
-  return recurse(currentState, payload);
+  return recurse(as.record(currentState), as.record(payload));
 }
 
 const updateArrayObjectProperties = ({ stateToUpdate, currentState, cursor, stateActions }: CopyNewStateArgs) => {
-  assertIsArray(stateToUpdate); assertIsArray<Record<string, unknown>>(currentState);
-  return currentState.map((_, i) => {
-    if (currentState[i]) {
-      const newState = copyNewState({
-        currentState: currentState[i] ?? newRecord(),
-        stateToUpdate: stateToUpdate[i] ?? newRecord(),
+  return as.array<Record<string, unknown>>(currentState).map((e, i) => {
+    if (!is.undefined(e)) return {
+      ...e,
+      ...as.record(copyNewState({
+        currentState: e ?? newRecord(),
+        stateToUpdate: as.array(stateToUpdate)[i] ?? newRecord(),
         stateActions,
         cursor: { ...cursor }
-      });
-      assertIsRecord(newState);
-      return {
-        ...currentState[i],
-        ...newState
-      };
-    }
+      }))
+    };
     return copyNewState({
-      currentState: currentState[i],
-      stateToUpdate: stateToUpdate[i],
+      currentState: e,
+      stateToUpdate: as.array(stateToUpdate)[i],
       stateActions,
       cursor: { ...cursor }
     });
@@ -175,29 +161,27 @@ const updateArrayObjectProperties = ({ stateToUpdate, currentState, cursor, stat
 }
 
 const mergeMatching = ({ currentState, cursor, stateActions }: CopyNewStateArgsAndPayload) => {
-  assertIsArray(currentState);
   const nextUpdateIndex = stateActions.slice(cursor.index).findIndex(sa => is.anyUpdateFunction(sa.name));
   const queryPaths = stateActions.slice(cursor.index, cursor.index + nextUpdateIndex);
   cursor.index += queryPaths.length;
   const merge = stateActions[cursor.index++];
   const mergeArgState = is.storeInternal(merge.arg) ? merge.arg.$state : merge.arg;
   const mergeArgs = [...(is.array(mergeArgState) ? mergeArgState : [mergeArgState])];
-  assertIsArray(mergeArgs);
   const query = (e: Actual) => queryPaths.reduce((prev, curr) => (prev as Record<string, Actual>)[curr.name], e);
   const indicesOld = new Array<number>();
-  const currentArrayModified = currentState.map((existingElement, i) => {
+  const currentArrayModified = as.array(currentState).map((existingElement, i) => {
     const elementValue = query(existingElement);
-    const found = mergeArgs.find(ua => query(ua) === elementValue);
+    const found = as.array(mergeArgs).find(ua => query(ua) === elementValue);
     if (!is.undefined(found))
       indicesOld.push(i);
     return found ?? existingElement;
   });
   const indicesNew = new Array<number>();
-  const newArrayElements = mergeArgs.filter(mergeArg => {
+  const newArrayElements = as.array(mergeArgs).filter(mergeArg => {
     const elementValue = query(mergeArg);
     const notFound = !currentArrayModified.some(ua => query(ua) === elementValue);
     if (notFound)
-      indicesNew.push(currentState.length + indicesNew.length);
+      indicesNew.push(as.array(currentState).length + indicesNew.length);
     return notFound;
   });
   return [...currentArrayModified, ...newArrayElements];
@@ -205,25 +189,24 @@ const mergeMatching = ({ currentState, cursor, stateActions }: CopyNewStateArgsA
 
 const setObjectKey = ({ currentState, stateActions, cursor, type: oldKey }: CopyNewStateArgsAndPayload) => {
   const newKey = stateActions[cursor.index].arg;
-  assertIsRecord(currentState); assertIsString(newKey);
-  const payload = extractPayload(newKey);
-  return Object.entries(currentState)
+  const payload = extractPayload(as.string(newKey));
+  return Object.entries(as.record(currentState))
     .reduce((acc, [key, value]) => Object.assign(acc, { [key === oldKey ? payload : key]: value }), newRecord());
 }
 
 const atArray = ({ stateToUpdate, currentState, cursor, stateActions, payload }: CopyNewStateArgsAndPayload) => {
-  assertIsNumber(payload); assertIsArray(currentState); assertIsArray(stateToUpdate);
+  assertIsNumber(payload); assertIsArray(currentState);
   if (is.undefined(currentState[payload]))
     throw new Error(errorMessages.AT_INDEX_OUT_OF_BOUNDS(payload));
   if ('$delete' === stateActions[cursor.index].name)
     return currentState.filter((_, i) => payload !== i);
   return currentState.map((e, i) => i === payload
-    ? copyNewState({ currentState: e, stateToUpdate: stateToUpdate[i], stateActions, cursor })
+    ? copyNewState({ currentState: e, stateToUpdate: as.array(stateToUpdate)[i], stateActions, cursor })
     : e);
 }
 
 const findArray = ({ stateToUpdate, currentState, cursor, stateActions }: CopyNewStateArgsAndPayload) => {
-  assertIsArray(currentState); assertIsArray(stateToUpdate);
+  assertIsArray(currentState);
   const query = constructQuery({ stateActions, cursor });
   const findIndex = currentState.findIndex(query);
   if (findIndex === -1)
@@ -233,7 +216,7 @@ const findArray = ({ stateToUpdate, currentState, cursor, stateActions }: CopyNe
   if ('$delete' === stateActions[cursor.index].name)
     return currentState.filter((_, i) => findIndex !== i);
   return currentState.map((e, i) => i === findIndex
-    ? copyNewState({ currentState: e, stateToUpdate: stateToUpdate[i], stateActions, cursor })
+    ? copyNewState({ currentState: e, stateToUpdate: as.array(stateToUpdate)[i], stateActions, cursor })
     : e);
 }
 
@@ -246,28 +229,23 @@ const filterArray = ({ stateToUpdate, currentState, cursor, stateActions }: Copy
   if ('$delete' === type)
     return currentState.filter((_, i) => !stateAction.searchIndices!.includes(i));
   if ('$set' === type) {
-    const newState = copyNewState({ currentState, stateToUpdate, stateActions, cursor });
-    assertIsArray(newState);
     return [
       ...currentState.filter((_, i) => !stateAction.searchIndices!.includes(i)),
-      ...newState,
+      ...as.array(copyNewState({ currentState, stateToUpdate, stateActions, cursor })),
     ];
   }
-  assertIsArray(stateToUpdate);
-  return currentState.map((e, i) => stateAction.searchIndices!.includes(i) 
-    ? copyNewState({ currentState: e, stateToUpdate: stateToUpdate[i], stateActions, cursor: { ...cursor } }) 
+  return currentState.map((e, i) => stateAction.searchIndices!.includes(i)
+    ? copyNewState({ currentState: e, stateToUpdate: as.array(stateToUpdate)[i], stateActions, cursor: { ...cursor } })
     : e);
 }
 
 const deleteObjectValue = ({ currentState, type: oldObjectKey }: CopyNewStateArgsAndPayload) => {
-  assertIsRecord(currentState);
-  const { [oldObjectKey]: other, ...newState } = currentState;
+  const { [oldObjectKey]: other, ...newState } = as.record(currentState);
   return newState;
 }
 
 const copyObjectProperty = ({ currentState, stateActions, cursor, type }: CopyNewStateArgsAndPayload) => {
-  assertIsRecordOrUndefined(currentState);
-  const currentStateRecord = currentState ?? newRecord();
+  const currentStateRecord = as.record(currentState ?? newRecord());
   return {
     ...currentStateRecord,
     [type]: copyNewState({

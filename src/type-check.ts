@@ -25,59 +25,39 @@ export const is = {
     .includes(toCheck as unknown as string),
 }
 
-export const newRecord = <V = unknown>() => ({} as Record<string, V>);
-
-export function assertIsString(value: unknown): asserts value is string {
-  if (is.string(value)) return;
-  throw new Error();
+export const as = {
+  string: (arg: unknown): string => {
+    if (!is.string(arg)) throw new Error();
+    return arg as string;
+  },
+  number: (arg: unknown): number => {
+    if (!is.number(arg)) throw new Error();
+    return arg as number;
+  },
+  record: <T = Actual>(arg: unknown): { [key: string]: T } => {
+    if (!is.record<T>(arg)) throw new Error();
+    return arg as { [key: string]: T };
+  },
+  array: <T = Actual>(arg: unknown): Array<T> => {
+    if (!is.array<T>(arg)) throw new Error();
+    return arg as Array<T>;
+  },
+  storeInternal: (arg: unknown): StoreInternal => {
+    if (!is.storeInternal(arg)) throw new Error();
+    return arg as StoreInternal;
+  },
 }
 
+export const newRecord = <V = unknown>() => ({} as Record<string, V>);
+
 export function assertIsNumber(value: unknown): asserts value is number {
-  if (is.number(value)) return;
-  throw new Error();
+  as.number(value);
 }
 
 export function assertIsArray<T = Actual>(value: unknown): asserts value is Array<T> {
-  if (is.array<T>(value)) return;
-  throw new Error();
+  as.array<T>(value);
 }
 
 export function assertIsRecord<T = Actual>(value: unknown): asserts value is { [key: string]: T } {
-  if (is.record<T>(value)) return;
-  throw new Error();
-}
-
-export function assertIsRecordOrUndefined<T = Actual>(value: unknown): asserts value is { [key: string]: T } | undefined {
-  if (is.record<T>(value) || is.undefined(value)) return;
-  throw new Error();
-}
-
-export function assertIsArrayOrRecord<T = Actual>(value: unknown): asserts value is Array<T> | { [key: string]: T } {
-  if (is.arrayOrRecord<T>(value)) return;
-  throw new Error();
-}
-
-export function assertIsComparatorProp(value: unknown): asserts value is ValueOf<typeof comparators> {
-  if (is.anyComparatorProp(value)) return;
-  throw new Error();
-}
-
-export function assertIsUpdateFunction(value: unknown): asserts value is ValueOf<typeof updateFunctions> {
-  if (is.anyUpdateFunction(value)) return;
-  throw new Error();
-}
-
-export function assertIsStoreInternal(value: unknown): asserts value is StoreInternal {
-  if (is.storeInternal(value)) return;
-  throw new Error();
-}
-
-export function assertIsBoolean(value: unknown): asserts value is boolean {
-  if (is.boolean(value)) return;
-  throw new Error();
-}
-
-export function assertIsLibArg(value: unknown, ...mustBeWithin: ValueOf<typeof anyLibProp>[]) {
-  if (is.libArg(value, ...mustBeWithin)) return;
-  throw new Error();
+  as.record<T>(value);
 }
