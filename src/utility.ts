@@ -19,10 +19,7 @@ export const deepFreeze = <T>(o: T): T => {
   Object.freeze(o);
   if (o == null || o === undefined)
     return o;
-  objectKeys(o).forEach(prop => {
-    if (is.record(o) || Array.isArray(o))
-      deepFreeze(o[prop]);
-  })
+  objectKeys(o).filter(prop => (is.record(o[prop]) || Array.isArray(o[prop]))).forEach(prop => deepFreeze(o[prop]))
   return o;
 }
 
@@ -142,6 +139,6 @@ export const extractPayload = <T>(payloadIncoming: T) => {
   }
   const payload = sanitizePayload(payloadIncoming, '');
   if (Object.keys(payloadPaths).length)
-    testState.currentActionPayloadPaths = payloadPaths;  
+    testState.currentActionPayloadPaths = payloadPaths;
   return payload;
 }

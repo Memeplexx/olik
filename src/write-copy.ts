@@ -178,8 +178,7 @@ const mergeMatching = ({ currentState, cursor, stateActions }: CopyNewStateArgsA
 }
 
 const setObjectKey = ({ currentState, stateActions, cursor, type: oldKey }: CopyNewStateArgsAndPayload) => {
-  const newKey = stateActions[cursor.index].arg;
-  const payload = extractPayload(as.string(newKey));
+  const payload = extractPayload(as.string(stateActions[cursor.index].arg));
   return Object.entries(as.record(currentState))
     .reduce((acc, [key, value]) => Object.assign(acc, { [key === oldKey ? payload : key]: value }), newRecord());
 }
