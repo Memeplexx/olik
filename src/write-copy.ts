@@ -167,21 +167,13 @@ const mergeMatching = ({ currentState, cursor, stateActions }: CopyNewStateArgsA
   const mergeArgState = is.storeInternal(merge.arg) ? merge.arg.$state : merge.arg;
   const mergeArgs = [...(is.array(mergeArgState) ? mergeArgState : [mergeArgState])];
   const query = (e: Actual) => queryPaths.reduce((prev, curr) => (prev as Record<string, Actual>)[curr.name], e);
-  const indicesOld = new Array<number>();
-  const currentArrayModified = currentState.map((existingElement, i) => {
+  const currentArrayModified = currentState.map(existingElement => {
     const elementValue = query(existingElement);
-    const found = as.array(mergeArgs).find(ua => query(ua) === elementValue);
-    if (!is.undefined(found))
-      indicesOld.push(i);
-    return found ?? existingElement;
+    return as.array(mergeArgs).find(ua => query(ua) === elementValue) ?? existingElement;
   });
-  const indicesNew = new Array<number>();
   const newArrayElements = as.array(mergeArgs).filter(mergeArg => {
     const elementValue = query(mergeArg);
-    const notFound = !currentArrayModified.some(ua => query(ua) === elementValue);
-    if (notFound)
-      indicesNew.push(currentState.length + indicesNew.length);
-    return notFound;
+    return !currentArrayModified.some(ua => query(ua) === elementValue);
   });
   return [...currentArrayModified, ...newArrayElements];
 }
