@@ -1,4 +1,4 @@
-import { Actual, DeleteNode, DevtoolsAction, OnChange, SetNewNode, StateAction } from './type';
+import { DeleteNode, DevtoolsAction, OnChange, SetNewNode, StateAction } from './type';
 
 
 
@@ -24,7 +24,6 @@ export interface QuerySpec {
 
 export type CopyNewStateArgs = {
   currentState: unknown,
-  stateToUpdate: Actual,
   stateActions: ReadonlyArray<StateAction>,
   cursor: { index: number }
 }

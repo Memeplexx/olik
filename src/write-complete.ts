@@ -9,7 +9,6 @@ export const setNewStateAndNotifyListeners = (
   { stateActions }: { stateActions: StateAction[] }
 ) => {
   const oldState = libState.state!;
-  const stateToUpdate = { ...oldState };
   if (libState.devtools && !libState.disableDevtoolsDispatch) {
     const type = stateActions.map(sa => fixCurrentAction(sa, true)).join('.');
     const typeOrig = stateActions.map(sa => fixCurrentAction(sa, false)).join('.');
@@ -17,8 +16,7 @@ export const setNewStateAndNotifyListeners = (
     testState.currentActionTypeOrig = type !== typeOrig ? typeOrig : undefined;
     testState.currentActionPayload = stateActions.at(-1)!.arg;
   }
-  const copy = copyNewState({ currentState: oldState, stateToUpdate: as.record(stateToUpdate), stateActions, cursor: { index: 0 } });
-  libState.state = as.record(copy);
+  libState.state = as.record(copyNewState({ currentState: oldState, stateActions, cursor: { index: 0 } }));
   libState.changeListeners.forEach(({ actions, listener }) => {
     const selectedOldState = readState({ state: oldState, stateActions: actions, cursor: { index: 0 } });
     const selectedNewState = readState({ state: libState.state, stateActions: actions, cursor: { index: 0 } });
