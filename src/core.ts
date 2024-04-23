@@ -139,7 +139,6 @@ const processUpdateFunction = (args: StoreArgs) => (arg: unknown, { cache, eager
       .filter(l => l.actions.map(a => a.name).join('.').startsWith(stateActionsStr))
       .forEach(l => l.actions[l.actions.length - 2].name = as.string(arg));
   }
-  deepFreeze(arg);
   if (is.function(arg)) {
     if (!libState.asyncUpdate) 
       throw new Error(errorMessages.ASYNC_UPDATES_NOT_ENABLED);

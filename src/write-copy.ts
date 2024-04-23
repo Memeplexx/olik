@@ -159,7 +159,6 @@ const updateArrayObjectProperties = ({ currentState, cursor, stateActions }: Cop
 }
 
 const mergeMatching = ({ currentState, cursor, stateActions }: CopyNewStateArgsAndPayload) => {
-  assertIsArray(currentState);
   const nextUpdateIndex = stateActions.slice(cursor.index).findIndex(sa => is.anyUpdateFunction(sa.name));
   const queryPaths = stateActions.slice(cursor.index, cursor.index + nextUpdateIndex);
   cursor.index += queryPaths.length;
@@ -167,15 +166,15 @@ const mergeMatching = ({ currentState, cursor, stateActions }: CopyNewStateArgsA
   const mergeArgState = is.storeInternal(merge.arg) ? merge.arg.$state : merge.arg;
   const mergeArgs = as.array([...(is.array(mergeArgState) ? mergeArgState : [mergeArgState])]);
   const query = (e: Actual) => queryPaths.reduce((prev, curr) => (prev as Record<string, Actual>)[curr.name], e);
-  const currentArrayElements = currentState.map(element => {
-    const elementValue = query(element);
-    return mergeArgs.find(ua => query(ua) === elementValue) ?? element;
-  });
-  const newArrayElements = mergeArgs.filter(element => {
-    const elementValue = query(element);
-    return !currentArrayElements.some(ua => query(ua) === elementValue);
-  });
-  return [...currentArrayElements, ...newArrayElements];
+  return [
+    ...as.array(currentState).map(existingElement => {
+      const existingElementProp = query(existingElement);
+      const elementReplacement = mergeArgs.find(ma => query(ma) === existingElementProp);
+      if (elementReplacement) mergeArgs.splice(mergeArgs.indexOf(elementReplacement), 1);
+      return elementReplacement ?? existingElement;
+    }),
+    ...mergeArgs
+  ];
 }
 
 const setObjectKey = ({ currentState, stateActions, cursor, type: oldKey }: CopyNewStateArgsAndPayload) => {
@@ -217,14 +216,12 @@ const filterArray = ({ currentState, cursor, stateActions }: CopyNewStateArgsAnd
   const type = stateActions[cursor.index].name;
   const stateAction = stateActions.slice(0, cursor.index).reverse().find(sa => sa.name === '$filter')!;
   stateAction.searchIndices = currentState.map((e, i) => query(e) ? i : -1).filter(i => i !== -1);
-  if ('$delete' === type)
-    return currentState.filter((_, i) => !stateAction.searchIndices!.includes(i));
-  if ('$set' === type) {
-    return [
-      ...currentState.filter((_, i) => !stateAction.searchIndices!.includes(i)),
-      ...as.array(copyNewState({ currentState, stateActions, cursor })),
-    ];
-  }
+  if ('$delete' === type) return currentState
+    .filter((_, i) => !stateAction.searchIndices!.includes(i));
+  if ('$set' === type) return [
+    ...currentState.filter((_, i) => !stateAction.searchIndices!.includes(i)),
+    ...as.array(copyNewState({ currentState, stateActions, cursor })),
+  ];
   return currentState.map((e, i) => stateAction.searchIndices!.includes(i)
     ? copyNewState({ currentState: e, stateActions, cursor: { ...cursor } })
     : e);
