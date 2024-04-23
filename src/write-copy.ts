@@ -167,12 +167,12 @@ const mergeMatching = ({ currentState, cursor, stateActions }: CopyNewStateArgsA
   const mergeArgState = is.storeInternal(merge.arg) ? merge.arg.$state : merge.arg;
   const mergeArgs = [...(is.array(mergeArgState) ? mergeArgState : [mergeArgState])];
   const query = (e: Actual) => queryPaths.reduce((prev, curr) => (prev as Record<string, Actual>)[curr.name], e);
-  const currentArrayModified = currentState.map(existingElement => {
-    const elementValue = query(existingElement);
-    return as.array(mergeArgs).find(ua => query(ua) === elementValue) ?? existingElement;
+  const currentArrayModified = currentState.map(element => {
+    const elementValue = query(element);
+    return as.array(mergeArgs).find(ua => query(ua) === elementValue) ?? element;
   });
-  const newArrayElements = as.array(mergeArgs).filter(mergeArg => {
-    const elementValue = query(mergeArg);
+  const newArrayElements = as.array(mergeArgs).filter(element => {
+    const elementValue = query(element);
     return !currentArrayModified.some(ua => query(ua) === elementValue);
   });
   return [...currentArrayModified, ...newArrayElements];
