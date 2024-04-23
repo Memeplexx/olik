@@ -18,8 +18,8 @@ export const setNewStateAndNotifyListeners = (
   }
   libState.state = as.record(copyNewState({ currentState: oldState, stateActions, cursor: { index: 0 } }));
   libState.changeListeners.forEach(({ actions, listener }) => {
-    const selectedOldState = readState({ state: oldState, stateActions: actions, cursor: { index: 0 } });
-    const selectedNewState = readState({ state: libState.state, stateActions: actions, cursor: { index: 0 } });
+    const selectedOldState = readState({ state: oldState, stateActions: actions });
+    const selectedNewState = readState({ state: libState.state, stateActions: actions });
     if (selectedOldState !== selectedNewState)
       listener(selectedNewState);
   })

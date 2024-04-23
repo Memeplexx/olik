@@ -76,7 +76,7 @@ const onChange = (args: StoreArgs) => (listener: (arg: unknown) => unknown) => {
 const state = (args: StoreArgs) => {
   const tryFetchResult = (stateActions: StateAction[]): unknown => {
     try {
-      return deepFreeze(readState({ state: libState.state, stateActions: [...stateActions, { name: args.prop }], cursor: { index: 0 } }));
+      return deepFreeze(readState({ state: libState.state, stateActions: [...stateActions, { name: args.prop }] }));
     } catch (e) {
       stateActions.pop();
       return tryFetchResult(stateActions);

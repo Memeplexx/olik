@@ -9,7 +9,7 @@ export const importOlikAsyncModule = () => {
     { stateActions, prop, cache, eager, arg }: EnableAsyncActionsArgs
   ) => {
     const readCurrentState = () =>
-      readState({ state: libState.state, stateActions: [...stateActions, { name: '$state' }], cursor: { index: 0 } });
+      readState({ state: libState.state, stateActions: [...stateActions, { name: '$state' }] });
     let state: FutureState<unknown> = { storeValue: readCurrentState(), error: null, isLoading: false, wasRejected: false, wasResolved: false };
     if (libState.state && 'cache' in libState.state && (libState.state.cache as Record<string, unknown>)[stateActions.map(sa => sa.name).join('.')]) {
       const result = new Proxy(new Promise(resolve => resolve(readCurrentState())), {

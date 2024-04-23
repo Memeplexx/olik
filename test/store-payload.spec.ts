@@ -275,7 +275,7 @@ test('', () => {
         }
       });
     stateActions.push({ name: '$state' });
-    return readState({ state, stateActions, cursor: { index: 0 } });
+    return readState({ state, stateActions });
   }
   const appStore = createStore({
     modal: null as 'confirmDeleteGroup' | 'confirmDeleteTag' | 'synonymOptions' | 'groupOptions' | null,
