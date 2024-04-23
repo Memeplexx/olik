@@ -165,17 +165,17 @@ const mergeMatching = ({ currentState, cursor, stateActions }: CopyNewStateArgsA
   cursor.index += queryPaths.length;
   const merge = stateActions[cursor.index++];
   const mergeArgState = is.storeInternal(merge.arg) ? merge.arg.$state : merge.arg;
-  const mergeArgs = [...(is.array(mergeArgState) ? mergeArgState : [mergeArgState])];
+  const mergeArgs = as.array([...(is.array(mergeArgState) ? mergeArgState : [mergeArgState])]);
   const query = (e: Actual) => queryPaths.reduce((prev, curr) => (prev as Record<string, Actual>)[curr.name], e);
-  const currentArrayModified = currentState.map(element => {
+  const currentArrayElements = currentState.map(element => {
     const elementValue = query(element);
-    return as.array(mergeArgs).find(ua => query(ua) === elementValue) ?? element;
+    return mergeArgs.find(ua => query(ua) === elementValue) ?? element;
   });
-  const newArrayElements = as.array(mergeArgs).filter(element => {
+  const newArrayElements = mergeArgs.filter(element => {
     const elementValue = query(element);
-    return !currentArrayModified.some(ua => query(ua) === elementValue);
+    return !currentArrayElements.some(ua => query(ua) === elementValue);
   });
-  return [...currentArrayModified, ...newArrayElements];
+  return [...currentArrayElements, ...newArrayElements];
 }
 
 const setObjectKey = ({ currentState, stateActions, cursor, type: oldKey }: CopyNewStateArgsAndPayload) => {
