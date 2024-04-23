@@ -1,9 +1,9 @@
 import { errorMessages } from './constant';
 import { constructQuery } from './query';
 import { Actual } from './type';
-import { as, assertIsArray, assertIsNumber, assertIsRecord, is, newRecord } from './type-check';
+import { as, assertIsArray, assertIsNumber, assertIsRecord, is } from './type-check';
 import { CopyNewStateArgs, CopyNewStateArgsAndPayload } from './type-internal';
-import { extractPayload } from './utility';
+import { extractPayload, newRecord } from './utility';
 
 
 export const copyNewState = (
@@ -141,17 +141,17 @@ const patchDeep = ({ payload, currentState }: CopyNewStateArgsAndPayload) => {
 }
 
 const updateArrayObjectProperties = ({ currentState, cursor, stateActions }: CopyNewStateArgs) => {
-  return as.array<Record<string, unknown>>(currentState).map(e => {
-    if (!is.undefined(e)) return {
-      ...e,
+  return as.array<Record<string, unknown>>(currentState).map(element => {
+    if (!is.undefined(element)) return {
+      ...element,
       ...as.record(copyNewState({
-        currentState: e ?? newRecord(),
+        currentState: element ?? newRecord(),
         stateActions,
         cursor: { ...cursor }
       }))
     };
     return copyNewState({
-      currentState: e,
+      currentState: element,
       stateActions,
       cursor: { ...cursor }
     });

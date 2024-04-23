@@ -1,9 +1,19 @@
 import { comparators, libState, testState, updateFunctions } from './constant';
 import { perf } from './performance';
-import { Readable, Store } from './type';
-import { is, newRecord } from './type-check';
+import { Store } from './type';
+import { is } from './type-check';
 import { StoreInternal } from './type-internal';
 
+
+export const getStore = <S>() => libState.store as Store<S>;
+
+export const doThrow = () => { throw new Error(); }
+
+export const newRecord = <V = unknown>() => ({} as Record<string, V>);
+
+export const objectKeys = <T extends object>(o: T): Array<keyof T> => Object.keys(o) as Array<keyof T>;
+
+export const enqueueMicroTask = (fn: () => void) => Promise.resolve().then(fn);
 
 export const deepFreeze = <T>(o: T): T => {
   Object.freeze(o);
@@ -15,8 +25,6 @@ export const deepFreeze = <T>(o: T): T => {
   })
   return o;
 }
-
-export const getStore = <S>() => libState.store as Store<S>;
 
 export const resetLibraryState = () => {
   testState.logLevel = 'none';
@@ -84,12 +92,6 @@ export const deserialize = <R>(arg?: string | null): R => {
   }
 }
 
-export const objectKeys = <T extends object>(o: T): Array<keyof T> => Object.keys(o) as Array<keyof T>;
-
-export const enqueueMicroTask = (fn: () => void) => {
-  Promise.resolve().then(fn)
-}
-
 export const toIsoStringInCurrentTz = (date: Date) => {
   const tzo = -date.getTimezoneOffset();
   const dif = tzo >= 0 ? '+' : '-';
@@ -99,10 +101,6 @@ export const toIsoStringInCurrentTz = (date: Date) => {
   };
   return date.getFullYear() + '-' + pad(date.getMonth() + 1) + '-' + pad(date.getDate()) + 'T' + pad(date.getHours())
     + ':' + pad(date.getMinutes()) + ':' + pad(date.getSeconds()) + dif + pad(tzo / 60) + ':' + pad(tzo % 60);
-}
-
-export const getStateOrStoreState = <T, A extends T | Readable<T>>(arg: A) => {
-  return is.storeInternal(arg) ? arg.$state : arg;
 }
 
 const regexp = new RegExp([...comparators, ...updateFunctions, '$at'].map(c => `^\\${c}$`).join('|'), 'g');

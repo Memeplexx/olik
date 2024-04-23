@@ -2,7 +2,6 @@ import { comparisons } from './constant';
 import { StateAction } from './type';
 import { is } from './type-check';
 import { QuerySpec } from './type-internal';
-import { getStateOrStoreState } from './utility';
 
 
 export const constructQuery = (
@@ -19,7 +18,7 @@ export const constructQuery = (
         const subProperty = subStateActions.reduce((prev, curr) => is.record(prev) ? prev[curr.name] : undefined, e);
         const comparatorName = comparator.name as keyof typeof comparisons;
         if (!comparisons[comparatorName]) { throw new Error(); }
-        return comparisons[comparatorName](subProperty, getStateOrStoreState(comparator.arg));
+        return comparisons[comparatorName](subProperty, is.storeInternal(comparator.arg) ? comparator.arg.$state : comparator.arg);
       }
     }
     const constructConcat = () => {

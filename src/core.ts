@@ -66,30 +66,29 @@ const validateState = (state: unknown) => {
 }
 
 const onChange = (args: StoreArgs) => (listener: (arg: unknown) => unknown) => {
-  const stateActionsCopy: StateAction[] = [...args.stateActions, { name: args.prop }];
-  const unsubscribe = () => libState.changeListeners.splice(libState.changeListeners.findIndex(e => e === element), 1);
-  const element = { actions: stateActionsCopy, listener, unsubscribe };
-  libState.changeListeners.push(element);
+  const unsubscribe = () => libState.changeListeners.splice(libState.changeListeners.findIndex(e => e === changeListener), 1);
+  const changeListener = { actions: [...args.stateActions, { name: args.prop }], listener, unsubscribe };
+  libState.changeListeners.push(changeListener);
   return { unsubscribe }
 }
 
 const state = (args: StoreArgs) => {
   const tryFetchResult = (stateActions: StateAction[]): unknown => {
     try {
-      return deepFreeze(readState({ state: libState.state, stateActions: [...stateActions, { name: args.prop }] }));
+      return readState({ state: libState.state, stateActions });
     } catch (e) {
       stateActions.pop();
       return tryFetchResult(stateActions);
     }
   }
-  const result = tryFetchResult(args.stateActions.slice());
-  return is.undefined(result) ? null : result;
+  const result = tryFetchResult([...args.stateActions, { name: args.prop }]);
+  return is.undefined(result) ? null : deepFreeze(result);
 }
 
 const initializeLibState = (initialState: Record<string, unknown>) => {
   if (libState.initialState) 
     return;
-  const state = deepFreeze(initialState)!;
+  const state = deepFreeze(initialState);
   libState.initialState = state;
   libState.state = state;
 }

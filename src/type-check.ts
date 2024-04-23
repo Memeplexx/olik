@@ -1,6 +1,7 @@
 import { anyLibProp, comparators, concatenations, readFunctions, updateFunctions } from "./constant";
 import { Actual, Primitive, ValueOf } from "./type";
 import { StoreInternal } from "./type-internal";
+import { doThrow } from "./utility";
 
 
 export const is = {
@@ -9,11 +10,10 @@ export const is = {
   number: (arg: unknown): arg is number => typeof (arg) === 'number',
   string: (arg: unknown): arg is string => typeof (arg) === 'string',
   boolean: (arg: unknown): arg is boolean => typeof (arg) === 'boolean',
-  primitive: (arg: unknown): arg is Primitive => ['number', 'string', 'boolean'].includes(typeof arg),
+  primitive: (arg: unknown): arg is Primitive => is.number(arg) || is.string(arg) || is.boolean(arg),
   function: <Input, Output>(arg: unknown): arg is ((a: Input) => Output) => typeof arg === 'function',
-  record: <T = Actual>(arg: unknown): arg is { [key: string]: T } => typeof arg === 'object' && arg !== null && !Array.isArray(arg) && !(arg instanceof Date),
+  record: <T = Actual>(arg: unknown): arg is { [key: string]: T } => typeof arg === 'object' && !is.null(arg) && !is.array(arg) && !is.date(arg),
   array: <T = Actual>(arg: unknown): arg is Array<T> => Array.isArray(arg),
-  arrayOrRecord: <T = Actual>(arg: unknown): arg is Array<T> | { [key: string]: T } => is.array(arg) || is.record(arg),
   null: (arg: unknown): arg is null => arg === null,
   undefined: (arg: unknown): arg is undefined => arg === undefined,
   storeInternal: (arg: unknown): arg is StoreInternal => is.record(arg) && !!arg['$stateActions'],
@@ -26,29 +26,12 @@ export const is = {
 }
 
 export const as = {
-  string: (arg: unknown): string => {
-    if (!is.string(arg)) throw new Error();
-    return arg as string;
-  },
-  number: (arg: unknown): number => {
-    if (!is.number(arg)) throw new Error();
-    return arg as number;
-  },
-  record: <T = Actual>(arg: unknown): { [key: string]: T } => {
-    if (!is.record<T>(arg)) throw new Error();
-    return arg as { [key: string]: T };
-  },
-  array: <T = Actual>(arg: unknown): Array<T> => {
-    if (!is.array<T>(arg)) throw new Error();
-    return arg as Array<T>;
-  },
-  storeInternal: (arg: unknown): StoreInternal => {
-    if (!is.storeInternal(arg)) throw new Error();
-    return arg as StoreInternal;
-  },
+  string: (arg: unknown): string => is.string(arg) ? arg : doThrow(),
+  number: (arg: unknown): number => is.number(arg) ? arg : doThrow(),
+  record: <T = Actual>(arg: unknown): { [key: string]: T } => is.record<T>(arg) ? arg : doThrow(),
+  array: <T = Actual>(arg: unknown): Array<T> => is.array<T>(arg) ? arg : doThrow(),
+  storeInternal: (arg: unknown): StoreInternal => is.storeInternal(arg) ? arg : doThrow(),
 }
-
-export const newRecord = <V = unknown>() => ({} as Record<string, V>);
 
 export function assertIsNumber(value: unknown): asserts value is number {
   as.number(value);
