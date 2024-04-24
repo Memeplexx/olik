@@ -27,10 +27,8 @@ export const copyNewState = (
       return deleteObjectValue(args);
     if ('$setKey' === typeNext)
       return setObjectKey(args);
-    if (!is.libArg(type) && is.array(currentState)) {
-      cursor.index--;
+    if (!is.libArg(type) && is.array(currentState))
       return updateArrayObjectProperties(arg);
-    }
     if (is.record(currentState) || is.undefined(currentState))
       return copyObjectProperty(args);
   }
@@ -141,6 +139,7 @@ const patchDeep = ({ payload, currentState }: CopyNewStateArgsAndPayload) => {
 }
 
 const updateArrayObjectProperties = ({ currentState, cursor, stateActions }: CopyNewStateArgs) => {
+  cursor.index--;
   return as.array<Record<string, unknown>>(currentState).map(element => {
     if (!is.undefined(element)) return {
       ...element,

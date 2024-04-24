@@ -17,7 +17,7 @@ export const constructQuery = (
       return (e: unknown) => {
         const subProperty = subStateActions.reduce((prev, curr) => is.record(prev) ? prev[curr.name] : undefined, e);
         const comparatorName = comparator.name as keyof typeof comparisons;
-        if (!comparisons[comparatorName]) { throw new Error(); }
+        if (!comparisons[comparatorName]) throw new Error();
         return comparisons[comparatorName](subProperty, is.storeInternal(comparator.arg) ? comparator.arg.$state : comparator.arg);
       }
     }

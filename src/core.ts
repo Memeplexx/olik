@@ -88,9 +88,7 @@ const state = (args: StoreArgs) => {
 const initializeLibState = (initialState: Record<string, unknown>) => {
   if (libState.initialState) 
     return;
-  const state = deepFreeze(initialState);
-  libState.initialState = state;
-  libState.state = state;
+  libState.state = libState.initialState = initialState;
 }
 
 const removeStaleCacheReferences = (state: Record<string, unknown>) => {
