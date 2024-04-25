@@ -785,8 +785,10 @@ export interface ReduxDevtoolsOptionsRetroactive extends ReduxDevtoolsOptions {
 export interface EnableAsyncActionsArgs {
   stateActions: StateAction[],
   prop: string,
-  cache?: number,
-  eager?: unknown,
+  options: {
+    cache?: number,
+    eager?: unknown,
+  },
   arg: unknown,
 }
 
@@ -826,7 +828,7 @@ export type OlikDevtoolsOptions = {
 
 export type LibState = {
   store: undefined | StoreInternal,
-  asyncUpdate: undefined | ((args: EnableAsyncActionsArgs) => Promise<unknown>),
+  asyncUpdate: undefined | ((stateActions: StateAction[], prop: string, options: { cache?: number, eager?: unknown }, arg: unknown) => unknown),
   devtools: undefined | { dispatch: (arg: { stateActions: StateAction[], actionType?: string, payloadPaths?: Record<string, string> }) => unknown },
   state: undefined | Record<string, unknown>,
   changeListeners: ChangeListener[],

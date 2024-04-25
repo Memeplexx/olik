@@ -1,15 +1,16 @@
 import { augmentations, libState } from './constant';
 import { readState } from './read';
-import { Actual, EnableAsyncActionsArgs, FutureState, StateAction } from './type';
+import { Actual, FutureState, StateAction } from './type';
 import { toIsoStringInCurrentTz } from './utility';
 import { setNewStateAndNotifyListeners } from './write-complete';
 
 export const importOlikAsyncModule = () => {
   libState.asyncUpdate = (
-    { stateActions, prop, cache, eager, arg }: EnableAsyncActionsArgs
+    stateActions: StateAction[], prop: string, options: { cache?: number, eager?: unknown }, arg: unknown
   ) => {
-    const readCurrentState = () =>
-      readState({ state: libState.state, stateActions: [...stateActions, { name: '$state' }] });
+    const readCurrentState = () => {
+      return readState(libState.state, [...stateActions, { name: '$state' }]);
+    }
     let state: FutureState<unknown> = { storeValue: readCurrentState(), error: null, isLoading: false, wasRejected: false, wasResolved: false };
     if (libState.state && 'cache' in libState.state && (libState.state.cache as Record<string, unknown>)[stateActions.map(sa => sa.name).join('.')]) {
       const result = new Proxy(new Promise(resolve => resolve(readCurrentState())), {
@@ -31,36 +32,37 @@ export const importOlikAsyncModule = () => {
     }
     const promiseResult = () => {
       let snapshot: unknown = undefined;
-      if (eager) {
+      if (options.eager) {
         snapshot = readCurrentState();
-        setNewStateAndNotifyListeners({ stateActions: [...stateActions, { name: prop, arg: eager }] });
+        setNewStateAndNotifyListeners([...stateActions, { name: prop, arg: options.eager }]);
       }
       state = { ...state, isLoading: true, storeValue: readCurrentState() };
       const argCast = arg as () => Promise<unknown>;
       const promise = (augmentations.async ? augmentations.async(argCast) : argCast());
       return promise
         .then(promiseResult => {
-          setNewStateAndNotifyListeners({ stateActions: [...stateActions, { name: prop, arg: promiseResult }] });
+          setNewStateAndNotifyListeners([...stateActions, { name: prop, arg: promiseResult }]);
           state = { ...state, wasResolved: true, wasRejected: false, isLoading: false, storeValue: readCurrentState() };
-          if (cache) {
+          if (options.cache) {
             const statePath = stateActions.map(sa => sa.name).join('.');
             const actions = [
               { name: 'cache' },
               { name: statePath },
-            ] satisfies StateAction[];
-            setNewStateAndNotifyListeners({ stateActions: [...actions, { name: '$set', arg: toIsoStringInCurrentTz(new Date()) }] });
+            ] as StateAction[];
+            setNewStateAndNotifyListeners([...actions, { name: '$set', arg: toIsoStringInCurrentTz(new Date()) }]);
             setTimeout(() => {
               try {
-                setNewStateAndNotifyListeners({ stateActions: [...actions, { name: '$delete' }] })
+                actions.push({ name: '$delete' });
+                setNewStateAndNotifyListeners(actions)
               } catch (e) {
                 // Ignoring. This may happen due to the user manually invalidating a cache. If that has happened, we don't want an error to be thrown.
               }
-            }, cache);
+            }, options.cache);
           }
           return readCurrentState();
         }).catch(error => {
           if (snapshot !== undefined) {
-            setNewStateAndNotifyListeners({ stateActions: [...stateActions, { name: prop, arg: snapshot }] });
+            setNewStateAndNotifyListeners([...stateActions, { name: prop, arg: snapshot }]);
           }
           state = { ...state, wasRejected: true, wasResolved: false, isLoading: false, error };
           throw error;

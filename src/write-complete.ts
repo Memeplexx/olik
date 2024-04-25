@@ -5,8 +5,9 @@ import { as } from './type-check';
 import { fixCurrentAction } from './utility';
 import { copyNewState } from './write-copy';
 
+
 export const setNewStateAndNotifyListeners = (
-  { stateActions }: { stateActions: StateAction[] }
+  stateActions: StateAction[]
 ) => {
   const oldState = libState.state!;
   if (libState.devtools && !libState.disableDevtoolsDispatch) {
@@ -16,10 +17,10 @@ export const setNewStateAndNotifyListeners = (
     testState.currentActionTypeOrig = type !== typeOrig ? typeOrig : undefined;
     testState.currentActionPayload = stateActions.at(-1)!.arg;
   }
-  libState.state = as.record(copyNewState({ currentState: oldState, stateActions, cursor: { index: 0 } }));
+  libState.state = as.record(copyNewState(oldState, stateActions, { index: 0 } ));
   libState.changeListeners.forEach(({ actions, listener }) => {
-    const selectedOldState = readState({ state: oldState, stateActions: actions });
-    const selectedNewState = readState({ state: libState.state, stateActions: actions });
+    const selectedOldState = readState(oldState, actions );
+    const selectedNewState = readState(libState.state, actions );
     if (selectedOldState !== selectedNewState)
       listener(selectedNewState);
   })
