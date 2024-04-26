@@ -1,6 +1,6 @@
 import { comparators, libState, testState, updateFunctions } from './constant';
 import { perf } from './performance';
-import { Store } from './type';
+import { DeepReadonlyArray, Store } from './type';
 import { is } from './type-check';
 import { StoreInternal } from './type-internal';
 
@@ -11,17 +11,11 @@ export const doThrow = () => { throw new Error(); }
 
 export const newRecord = <V = unknown>() => ({} as Record<string, V>);
 
+export const newArray = <T>() => new Array<T>() as DeepReadonlyArray<T>;
+
 export const objectKeys = <T extends object>(o: T): Array<keyof T> => Object.keys(o) as Array<keyof T>;
 
 export const enqueueMicroTask = (fn: () => void) => Promise.resolve().then(fn);
-
-export const deepFreeze = <T>(o: T): T => {
-  Object.freeze(o);
-  if (o == null || o === undefined)
-    return o;
-  objectKeys(o).filter(prop => (is.record(o[prop]) || Array.isArray(o[prop]))).forEach(prop => deepFreeze(o[prop]))
-  return o;
-}
 
 export const resetLibraryState = () => {
   testState.logLevel = 'none';

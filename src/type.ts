@@ -18,7 +18,7 @@ export type PossiblyBrandedPrimitive = Primitive & { [brand]?: string };
 export type Actual = Primitive | { [k: string]: Actual } | Actual[];
 
 export type SerializableState = {
-  [P: string]: SerializableState | Array<SerializableState | Primitive | null> | Primitive | null;
+  [P: string]: SerializableState | ReadonlyArray<SerializableState | Primitive | null> | Primitive | null;
 }
 
 export type PatchDeepPayloadObject<T> = Partial<{
@@ -26,9 +26,18 @@ export type PatchDeepPayloadObject<T> = Partial<{
 }>;
 
 export type PatchDeepPayload<T> =
-  T extends (infer R)[] ? Array<PatchDeepPayload<R>> :
+  T extends (infer R)[] ? ReadonlyArray<PatchDeepPayload<R>> :
   T extends object ? PatchDeepPayloadObject<T> :
   T;
+
+
+
+export type DeepReadonly<T> = T extends Primitive | Date ? T : T extends Array<infer R> ? DeepReadonlyArray<R> : DeepReadonlyObject<T>;
+export type DeepReadonlyObject<T> = { readonly [P in keyof T]: DeepReadonly<T[P]>; }
+export type DeepReadonlyArray<T> = ReadonlyArray<DeepReadonly<T>>;
+
+
+
 
 export type ValueOf<T> = T[keyof T];
 
@@ -59,7 +68,7 @@ export type UpdatableObject<S, F extends FindOrFilter, Q extends QueryStatus, I 
   & (Q extends 'notArray' ? PatchDeep<S> : F extends 'isFind' ? PatchDeepArrayElement<S> : PatchDeepArray<S>)
   & Readable<F extends 'isFilter' ? S[] : S>
   & ({
-    [K in keyof S]: (S[K] extends Array<unknown>
+    [K in keyof S]: (S[K] extends ReadonlyArray<unknown>
       ? UpdatableArray<S[K], 'isFilter', 'notQueried', 'no', NewDepth>
       : S[K] extends PossiblyBrandedPrimitive
       ? UpdatablePrimitive<S[K], F, Q, 'no', NewDepth>
@@ -67,14 +76,14 @@ export type UpdatableObject<S, F extends FindOrFilter, Q extends QueryStatus, I 
   })
   , Depth>
 
-export type UpdatableArray<S extends Array<unknown>, F extends FindOrFilter, Q extends QueryStatus, I extends ImmediateParentIsAnArray, Depth extends number, NewDepth extends number = DecrementRecursion[Depth]> = Rec<
+export type UpdatableArray<S extends ReadonlyArray<unknown>, F extends FindOrFilter, Q extends QueryStatus, I extends ImmediateParentIsAnArray, Depth extends number, NewDepth extends number = DecrementRecursion[Depth]> = Rec<
   (& Q extends 'queried'
     ? (
       & Or<S, F, NewDepth>
       & And<S, F, NewDepth>
       & (F extends 'isFind' ? SetArrayElement<S[0]> : unknown)
       & (F extends 'isFind' ? DeleteArrayElement<Depth> : DeleteArray<Depth>)
-      & (S[0] extends Array<unknown> ? unknown : S[0] extends object ? UpdatableObject<S[0], F, Q, F extends 'isFind' ? 'no' : 'yes', NewDepth> : UpdatablePrimitive<S[0], F, Q, I, NewDepth>)
+      & (S[0] extends ReadonlyArray<unknown> ? unknown : S[0] extends object ? UpdatableObject<S[0], F, Q, F extends 'isFind' ? 'no' : 'yes', NewDepth> : UpdatablePrimitive<S[0], F, Q, I, NewDepth>)
     ) : (
       & DeleteNode<Depth>
       & Clear
@@ -86,14 +95,14 @@ export type UpdatableArray<S extends Array<unknown>, F extends FindOrFilter, Q e
       & Filter<S, NewDepth>
       & At<S, NewDepth>
       & Readable<F extends 'isFilter' ? S : S[0]>
-      & (S[0] extends Array<unknown> ? unknown : S[0] extends PossiblyBrandedPrimitive ? MergePrimitive<S[0]> : MergeMatching<S[0]>)
-      & (S extends Array<PossiblyBrandedPrimitive> ? SetUnique<S> : unknown)
+      & (S[0] extends ReadonlyArray<unknown> ? unknown : S[0] extends PossiblyBrandedPrimitive ? MergePrimitive<S[0]> : MergeMatching<S[0]>)
+      & (S extends ReadonlyArray<PossiblyBrandedPrimitive> ? SetUnique<S> : unknown)
       & (
         S[0] extends object
         ? (
           & PatchArray<S[0]>
           & { [K in keyof S[0]]:
-            (S[0][K] extends Array<unknown>
+            (S[0][K] extends ReadonlyArray<unknown>
               ? UpdatableArray<S[0][K], 'isFilter', 'notQueried', 'no', NewDepth>
               : S[0][K] extends PossiblyBrandedPrimitive
               ? UpdatablePrimitive<S[0][K], F, Q, 'no', NewDepth>
@@ -104,7 +113,7 @@ export type UpdatableArray<S extends Array<unknown>, F extends FindOrFilter, Q e
       )
     ))
   & InvalidateCache
-  & (S extends Array<PossiblyBrandedPrimitive> ? DeDuplicateArray<S> : unknown)
+  & (S extends ReadonlyArray<PossiblyBrandedPrimitive> ? DeDuplicateArray<S> : unknown)
   , Depth>
 
 export type UpdateOptions<H> = Cache & Eager<H>;
@@ -120,8 +129,8 @@ export type UpdatablePrimitive<S, F extends FindOrFilter, Q extends QueryStatus,
 
 export type PayloadWithPotentialStore<T> = T | Readable<T> | (
   T extends PossiblyBrandedPrimitive ? never : 
-  T extends (infer R)[] ? Array<PayloadWithPotentialStore<R>> :
-  T extends Record<string, unknown> ? { [P in keyof T]: PayloadWithPotentialStore<T[P]> }
+  T extends ReadonlyArray<infer R> ? ReadonlyArray<PayloadWithPotentialStore<R>> :
+  T extends Record<string, unknown> ? DeepReadonlyObject<({ [P in keyof T]: PayloadWithPotentialStore<T[P]> })>
   : never
 );
 
@@ -146,35 +155,35 @@ export interface MergePrimitive<S> {
   $merge: (toMerge: PayloadWithPotentialStore<S | S[]>) => void,
 }
 
-export interface Or<S extends Array<unknown>, F extends FindOrFilter, NewDepth extends number> {
+export interface Or<S extends ReadonlyArray<unknown>, F extends FindOrFilter, NewDepth extends number> {
   /**
    * Add an additional clause to widen your search
    */
   $or: Comparators<S, S[0], F, NewDepth> & (S[0] extends object ? Searchable<S, S[0], F, NewDepth> : unknown)
 }
 
-export interface And<S extends Array<unknown>, F extends FindOrFilter, NewDepth extends number> {
+export interface And<S extends ReadonlyArray<unknown>, F extends FindOrFilter, NewDepth extends number> {
   /**
    * Add an additional clause to narrow your search
    */
   $and: Comparators<S, S[0], F, NewDepth> & (S[0] extends object ? Searchable<S, S[0], F, NewDepth> : unknown)
 }
 
-export interface Find<S extends Array<unknown>, NewDepth extends number> {
+export interface Find<S extends ReadonlyArray<unknown>, NewDepth extends number> {
   /**
    * Find from the selected array
    */
   $find: Comparators<S, S[0], 'isFind', NewDepth> & (S[0] extends object ? Searchable<S, S[0], 'isFind', NewDepth> : unknown)
 }
 
-export interface Filter<S extends Array<unknown>, NewDepth extends number> {
+export interface Filter<S extends ReadonlyArray<unknown>, NewDepth extends number> {
   /**
    * Filter the selected array
    */
   $filter: Comparators<S, S[0], 'isFilter', NewDepth> & (S[0] extends object ? Searchable<S, S[0], 'isFilter', NewDepth> : unknown)
 }
 
-export interface At<S extends Array<unknown>, NewDepth extends number> {
+export interface At<S extends ReadonlyArray<unknown>, NewDepth extends number> {
   /**
    * Get array index
    */
@@ -279,11 +288,11 @@ export interface PatchObject<S> {
   /**
    * Update the selected object node, using the partial returned by the supplied async function.
    */
-  $patch(patch: AnyAsyncFn<PayloadWithPotentialStore<Partial<S>>>, options?: UpdateOptions<typeof patch>): UpdateResult<typeof patch>;
+  $patch(patch: AnyAsyncFn<Partial<PayloadWithPotentialStore<S>>>, options?: UpdateOptions<typeof patch>): UpdateResult<typeof patch>;
   /**
    * Update the selected object node, using the supplied partial.
    */
-  $patch(patch: PayloadWithPotentialStore<Partial<S>>): void;
+  $patch(patch: Partial<PayloadWithPotentialStore<S>>): void;
 }
 
 export interface PatchArrayElement<S> {
@@ -399,7 +408,7 @@ export interface SetArray<S, I> {
   $set(replacement: PayloadWithPotentialStore<I extends 'yes' ? S[] : S>): void;
 }
 
-export interface SetUnique<S extends Array<PossiblyBrandedPrimitive>> {
+export interface SetUnique<S extends ReadonlyArray<PossiblyBrandedPrimitive>> {
   /**
    * Set array elements and only unique ones will be kept.
    */
@@ -461,7 +470,7 @@ export interface Read<S> {
   /**
    * The current state of the selected node.
    */
-  $state: S;
+  $state: DeepReadonly<S>;
 }
 
 export interface OnChange<S> {
@@ -475,7 +484,7 @@ export interface OnChange<S> {
    * 
    * subscription.unsubscribe();
    */
-  $onChange(changeListener: (state: S) => void): Unsubscribe;
+  $onChange(changeListener: (state: DeepReadonly<S>) => void): Unsubscribe;
 }
 
 export interface Readable<S> extends Read<S>, OnChange<S> {
@@ -483,10 +492,10 @@ export interface Readable<S> extends Read<S>, OnChange<S> {
 
 export type Derivable<S> = Read<S> & (
   {
-    $onChange(changeListener: (state: S) => void): Unsubscribe;
+    $onChange(changeListener: (state: DeepReadonly<S>) => void): Unsubscribe;
   } |
   {
-    $onChangeSync(changeListener: (state: S) => void): Unsubscribe;
+    $onChangeSync(changeListener: (state: DeepReadonly<S>) => void): Unsubscribe;
   }
 )
 
@@ -519,7 +528,7 @@ export interface Eager<H> {
 }
 
 export type UpdatableAny<T, F extends FindOrFilter, Q extends QueryStatus, Depth extends number, NewDepth extends number = DecrementRecursion[Depth]> = Rec<
-  T extends Array<unknown>
+  T extends ReadonlyArray<unknown>
   ? UpdatableArray<T, F, Q, 'no', NewDepth>
   : T extends object
   ? UpdatableObject<T, F, Q, 'no', NewDepth>
@@ -695,7 +704,7 @@ export interface StateAction {
 
 type DerivationCalculationInput<E> = E extends Readable<infer W> ? W : never;
 
-export type DerivationCalculationInputs<T extends Array<Derivable<unknown>>> = {
+export type DerivationCalculationInputs<T extends ReadonlyArray<Derivable<unknown>>> = {
   [K in keyof T]: DerivationCalculationInput<T[K]>;
 }
 
@@ -847,3 +856,9 @@ export type DevtoolsAction = {
   stateActions: StateAction[];
   trace?: string;
 }
+
+export type ValidJsonElement = ValidJsonObject | Date | string | number | boolean | null;
+export type ValidJson = ValidJsonElement | Array<ValidJsonElement> | Array<Array<ValidJsonElement>>;
+export type ValidJsonObject<T extends Record<string, unknown> = { [k: string]: unknown }> = { [K in keyof T]: T[K] }
+export type StoreDef<S extends ValidJsonObject> = Store<S> & (S extends never ? unknown : StoreAugment<S>);
+export type UnWrap<S extends ValidJsonObject> = { [K in keyof S]: S[K] extends ValidJsonObject ? UnWrap<S[K]> : S[K] extends Array<ValidJsonObject> ? UnWrap<S[K][0]>[] : S[K] extends boolean ? boolean : S[K] };

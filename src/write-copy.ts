@@ -18,35 +18,35 @@ export const copyNewState = (
     if ('$at' === type)
       return atArray(currentState, cursor, payload, stateActions);
     if ('$find' === type)
-      return findArray(currentState, cursor, payload, stateActions);
+      return findArray(currentState, cursor, stateActions);
     if ('$filter' === type)
-      return filterArray(currentState, cursor, payload, stateActions);
+      return filterArray(currentState, cursor, stateActions);
     if ('$mergeMatching' === type)
-      return mergeMatching(currentState, cursor, payload, stateActions);
+      return mergeMatching(currentState, cursor, stateActions);
     const typeNext = stateActions[cursor.index].name;
     if ('$delete' === typeNext || '$invalidateCache' === typeNext)
       return deleteObjectValue(currentState, stateAction.name);
     if ('$setKey' === typeNext)
       return setObjectKey(currentState, cursor, stateActions, stateAction.name);
-    if (!is.libArg(type) && is.array(currentState))
-      return updateArrayObjectProperties(currentState, cursor, payload, stateActions);
+    if (is.array(currentState) && !is.libArg(type))
+      return updateArrayObjectProperties(currentState, cursor, stateActions);
     if (is.record(currentState) || is.undefined(currentState))
       return copyObjectProperty(currentState, type, stateActions, cursor);
   }
   if ('$set' === type)
     return set(payload);
   if ('$setUnique' === type)
-    return setUnique(currentState, cursor, payload);
+    return setUnique(payload);
   if ('$patch' === type)
-    return patch(currentState, cursor, payload);
+    return patch(currentState, payload);
   if ('$add' === type)
     return add(currentState, cursor, payload);
   if ('$subtract' === type)
-    return subtract(currentState, cursor, payload);
+    return subtract(currentState, payload);
   if ('$setNew' === type)
-    return setNew(currentState, cursor, payload);
+    return setNew(currentState, payload);
   if ('$patchDeep' === type)
-    return patchDeep(currentState, cursor, payload);
+    return patchDeep(currentState, payload);
   if ('$clear' === type)
     return clear();
   if ('$push' === type)
@@ -85,7 +85,7 @@ const toggle = (currentState: unknown) => {
   return !currentState;
 }
 
-const setNew = (currentState: unknown, cursor: { index: number }, payload: unknown) => {
+const setNew = (currentState: unknown, payload: unknown) => {
   return is.undefined(currentState) ? payload : { ...as.record(currentState), ...as.record(payload) };
 }
 
@@ -93,11 +93,11 @@ const set = (payload: unknown) => {
   return payload;
 }
 
-const setUnique = (currentState: unknown, cursor: { index: number }, payload: unknown) => {
+const setUnique = (payload: unknown) => {
   return [...new Set(as.array(payload))];
 }
 
-const patch = (currentState: unknown, cursor: { index: number }, payload: unknown) => {
+const patch = (currentState: unknown, payload: unknown) => {
   assertIsRecord(payload);
   if (is.array<Record<string, unknown>>(currentState))
     return currentState.map(e => ({ ...e, ...payload }));
@@ -111,7 +111,7 @@ const add = (currentState: unknown, cursor: { index: number }, payload: unknown)
   return as.number(currentState) + payload;
 }
 
-const subtract = (currentState: unknown, cursor: { index: number }, payload: unknown) => {
+const subtract = (currentState: unknown, payload: unknown) => {
   assertIsNumber(payload);
   if (is.array<number>(currentState))
     return currentState.map(e => e + payload);
@@ -122,7 +122,7 @@ const clear = () => {
   return [];
 }
 
-const patchDeep = (currentState: unknown, cursor: { index: number }, payload: unknown) => {
+const patchDeep = (currentState: unknown, payload: unknown) => {
   const recurse = (target: Record<string, unknown>, source: Record<string, unknown>) => {
     const output = { ...target };
     if (!is.record<Record<string, unknown>>(target) || !is.record(source))
@@ -139,7 +139,7 @@ const patchDeep = (currentState: unknown, cursor: { index: number }, payload: un
   return recurse(as.record(currentState), as.record(payload));
 }
 
-const updateArrayObjectProperties = (currentState: unknown, cursor: { index: number }, payload: unknown, stateActions: readonly StateAction[]) => {
+const updateArrayObjectProperties = (currentState: unknown, cursor: { index: number }, stateActions: readonly StateAction[]) => {
   cursor.index--;
   return as.array<Record<string, unknown>>(currentState).map(element => {
     if (!is.undefined(element)) return {
@@ -158,7 +158,7 @@ const updateArrayObjectProperties = (currentState: unknown, cursor: { index: num
   });
 }
 
-const mergeMatching = (currentState: unknown, cursor: { index: number }, payload: unknown, stateActions: readonly StateAction[]) => {
+const mergeMatching = (currentState: unknown, cursor: { index: number }, stateActions: readonly StateAction[]) => {
   const nextUpdateIndex = stateActions.slice(cursor.index).findIndex(sa => is.anyUpdateFunction(sa.name));
   const queryPaths = stateActions.slice(cursor.index, cursor.index + nextUpdateIndex);
   cursor.index += queryPaths.length;
@@ -194,7 +194,7 @@ const atArray = (currentState: unknown, cursor: { index: number }, payload: unkn
     : e);
 }
 
-const findArray = (currentState: unknown, cursor: { index: number }, payload: unknown, stateActions: readonly StateAction[]) => {
+const findArray = (currentState: unknown, cursor: { index: number }, stateActions: readonly StateAction[]) => {
   assertIsArray(currentState);
   const query = constructQuery(stateActions, cursor);
   const findIndex = currentState.findIndex(query);
@@ -209,7 +209,7 @@ const findArray = (currentState: unknown, cursor: { index: number }, payload: un
     : e);
 }
 
-const filterArray = (currentState: unknown, cursor: { index: number }, payload: unknown, stateActions: readonly StateAction[]) => {
+const filterArray = (currentState: unknown, cursor: { index: number }, stateActions: readonly StateAction[]) => {
   assertIsArray(currentState);
   const query = constructQuery(stateActions, cursor);
   const type = stateActions[cursor.index].name;

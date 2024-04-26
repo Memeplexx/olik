@@ -10,7 +10,7 @@ export const readState = (
   const type = stateAction.name;
   const arg = stateAction.arg;
   if (is.array(state) && !is.libArg(type))
-    return state.map((_, i) => readState(state[i], stateActions, { ...cursor }));
+    return state.map((_, i) => readState(state[i], stateActions, { ...cursor! }));
   cursor.index++;
   if (cursor.index === stateActions.length)
     return state;

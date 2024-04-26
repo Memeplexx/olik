@@ -17,10 +17,10 @@ export const setNewStateAndNotifyListeners = (
     testState.currentActionTypeOrig = type !== typeOrig ? typeOrig : undefined;
     testState.currentActionPayload = stateActions.at(-1)!.arg;
   }
-  libState.state = as.record(copyNewState(oldState, stateActions, { index: 0 } ));
+  libState.state = as.record(copyNewState(oldState, stateActions, { index: 0 }));
   libState.changeListeners.forEach(({ actions, listener }) => {
-    const selectedOldState = readState(oldState, actions );
-    const selectedNewState = readState(libState.state, actions );
+    const selectedOldState = readState(oldState, actions);
+    const selectedNewState = readState(libState.state, actions);
     if (selectedOldState !== selectedNewState)
       listener(selectedNewState);
   })

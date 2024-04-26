@@ -31,6 +31,7 @@ export const as = {
   record: <T = Actual>(arg: unknown): { [key: string]: T } => is.record<T>(arg) ? arg : doThrow(),
   array: <T = Actual>(arg: unknown): Array<T> => is.array<T>(arg) ? arg : doThrow(),
   storeInternal: (arg: unknown): StoreInternal => is.storeInternal(arg) ? arg : doThrow(),
+  anyUpdateFunction: (arg: unknown): ValueOf<typeof updateFunctions> => is.anyUpdateFunction(arg) ? arg : doThrow(),
 }
 
 export function assertIsNumber(value: unknown): asserts value is number {
@@ -43,4 +44,8 @@ export function assertIsArray<T = Actual>(value: unknown): asserts value is Arra
 
 export function assertIsRecord<T = Actual>(value: unknown): asserts value is { [key: string]: T } {
   as.record<T>(value);
+}
+
+export function assertIsUpdateFunction(value: unknown): asserts value is ValueOf<typeof updateFunctions> {
+  as.anyUpdateFunction(value);
 }

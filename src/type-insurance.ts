@@ -222,10 +222,13 @@ const storee = createStore({
   todos: [''],
   things: [{ id: 1, name: '' }],
   val: '',
+  num: 0,
   bool: false,
   arr: [false],
   more: [{id: 1, status: false}]
 });
+storee.bool.$set(true);
+storee.num.$set(3);
 storee.val.$set('sss');
 storee.todos.$set(['ss']);
 storee.things.$set([{ id: 2, name: '' }]);
@@ -260,4 +263,65 @@ storee.things.$filter.id.$eq(3).name.$set('');
 store.todos.$find.id.$eq(3).$set({ id: 3, title: 'hello', status: 'done' });
 store.todos.$find.id.$eq(3).$patch({ status: 'done' });
 store.todos.$find.id.$eq(3).status.$set(store.todos.$at(3).status);
+
+
+const user = store.user.$state;
+store.user.$set(user);
+const todos = store.todos.$state;
+store.todos.$set(todos);
+
+interface Thingy {
+  noteId: number;
+  txt: string;
+}
+const str = createStore({
+  modal: null as 'confirmDeleteGroup' | 'confirmDeleteTag' | 'synonymOptions' | 'groupOptions' | null,
+  bool: false,
+  thing: {},
+  flatObj: {
+    one: 'hello hello hello hello hello hello hello hello',
+    two: 'world',
+    three: 'another',
+  },
+  num: 0,
+  obj: {
+    one: {
+      two: 'hello',
+      three: false,
+      four: 4
+    },
+    two: {
+      five: 'thing',
+      three: [
+        [1, 2, 3]
+      ]
+    }
+  },
+  arr: [
+    { id: 1, text: 'one' },
+    { id: 2, text: 'two' },
+    { id: 3, text: 'three' },
+  ],
+  arrNum: [1, 2, 3],
+  arrNested: [
+    [1, 2, 3],
+    [4, 5, 6],
+    [7, 8, 9]
+  ],
+  dat: new Date(),
+  thingy: 'ddd',
+  iii: new Array<Thingy>(),
+})
+str.$patch({
+  arrNested: [
+    [
+      str.obj.one.four,
+    ]
+  ]
+})
+
+const xxx = str.obj.one;
+str.obj.one.$patch(xxx);
+str.arr.$state;
+
 

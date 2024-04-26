@@ -170,3 +170,16 @@ test('should filter a list and replace one of its element(s)', () => {
   store.todos.$filter.status.$eq('pending').$set(payload);
   expect(store.$state.todos).toEqual([{ id: 3, status: 'todo' }, ...payload])
 })
+
+test('', () => {
+  const store = createStore({
+    one: 0
+  });
+  store.one.$onChange(() => { });
+  store.one.$add(1);
+  store.one.$onChange(() => { });
+  store.one.$add(1);
+  store.one.$add(1);
+  store.one.$onChange(() => { });
+  store.one.$add(1);
+})

@@ -33,8 +33,14 @@ test('Olik Perf (shallow)', () => {
   const state = { num: 0, str: '' };
   const store = createStore(state);
   const before = performance.now();
+  store.num.$onChange(() => { });
+  store.num.$onChange(() => { });
+  store.num.$onChange(() => { });
+  store.num.$onChange(() => { });
+  store.num.$onChange(() => { });
   for (let i = 0; i < 1000; i++) {
     store.num.$set(i);
+    store.$state;
   }
   console.log(`Olik Perf (shallow): ${performance.now() - before}`);
 })
@@ -77,6 +83,7 @@ test('Olik Perf (deep)', () => {
     store.arr
       .$find.val.$eq('').id
       .$set(i);
+    store.$state;
   }
   console.log(`Olik Perf (deep): ${performance.now() - before}`);
 })
@@ -89,27 +96,3 @@ test('Native Perf (deep)', () => {
   }
   console.log(`Native Perf (deep): ${performance.now() - before}`);
 })
-
-test('one', () => {
-  const before = performance.now();
-  for (let i = 0; i < 1000; i++) {
-    fn({ one: 'one', two: 'two' });
-  }
-  console.log(`one: ${performance.now() - before}`);
-})
-
-test('two', () => {
-  const before = performance.now();
-  for (let i = 0; i < 1000; i++) {
-    fn2('one', 'two');
-  }
-  console.log(`two: ${performance.now() - before}`);
-})
-
-const fn = ({ one, two }: { one: string, two: string }) => {
-
-}
-
-const fn2 = (one: string, two: string ) => {
-
-}
