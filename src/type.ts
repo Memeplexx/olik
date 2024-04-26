@@ -30,14 +30,9 @@ export type PatchDeepPayload<T> =
   T extends object ? PatchDeepPayloadObject<T> :
   T;
 
-
-
 export type DeepReadonly<T> = T extends Primitive | Date ? T : T extends Array<infer R> ? DeepReadonlyArray<R> : DeepReadonlyObject<T>;
 export type DeepReadonlyObject<T> = { readonly [P in keyof T]: DeepReadonly<T[P]>; }
 export type DeepReadonlyArray<T> = ReadonlyArray<DeepReadonly<T>>;
-
-
-
 
 export type ValueOf<T> = T[keyof T];
 
@@ -59,14 +54,15 @@ export type Rec<X, Depth extends number> = {
   recur: X
 }[Depth extends -1 ? 'done' : 'recur']
 
+
 export type UpdatableObject<S, F extends FindOrFilter, Q extends QueryStatus, I extends ImmediateParentIsAnArray, Depth extends number, NewDepth extends number = DecrementRecursion[Depth]> = Rec<
   & InvalidateCache
   & DeleteNode<Depth>
-  & (Q extends 'notArray' ? SetNewNode : unknown)
-  & (Q extends 'notArray' ? PatchObject<S> : F extends 'isFind' ? PatchArrayElement<S> : PatchArray<S>)
-  & (Q extends 'notArray' ? Set<S> : F extends 'isFind' ? SetArrayElement<S> : SetArray<S, I>)
-  & (Q extends 'notArray' ? PatchDeep<S> : F extends 'isFind' ? PatchDeepArrayElement<S> : PatchDeepArray<S>)
   & Readable<F extends 'isFilter' ? S[] : S>
+  & (Q extends 'notArray'
+    ? (SetNewNode & PatchObject<S> & Set<S> & PatchDeep<S>)
+    : F extends 'isFind' ? PatchArrayElement<S> & SetArrayElement<S> & PatchDeepArrayElement<S>
+    : PatchArray<S> & SetArray<S, I> & PatchDeepArray<S>)
   & ({
     [K in keyof S]: (S[K] extends ReadonlyArray<unknown>
       ? UpdatableArray<S[K], 'isFilter', 'notQueried', 'no', NewDepth>
@@ -81,8 +77,7 @@ export type UpdatableArray<S extends ReadonlyArray<unknown>, F extends FindOrFil
     ? (
       & Or<S, F, NewDepth>
       & And<S, F, NewDepth>
-      & (F extends 'isFind' ? SetArrayElement<S[0]> : unknown)
-      & (F extends 'isFind' ? DeleteArrayElement<Depth> : DeleteArray<Depth>)
+      & (F extends 'isFind' ? SetArrayElement<S[0]> & DeleteArrayElement<Depth> : DeleteArray<Depth>)
       & (S[0] extends ReadonlyArray<unknown> ? unknown : S[0] extends object ? UpdatableObject<S[0], F, Q, F extends 'isFind' ? 'no' : 'yes', NewDepth> : UpdatablePrimitive<S[0], F, Q, I, NewDepth>)
     ) : (
       & DeleteNode<Depth>
@@ -122,13 +117,12 @@ export type UpdatablePrimitive<S, F extends FindOrFilter, Q extends QueryStatus,
   & InvalidateCache
   & DeleteNode<Depth>
   & (Q extends 'notArray' ? Set<S> : F extends 'isFind' ? SetArrayElement<S> : SetArray<S, I>)
-  & (S extends number ? (F extends 'isFind' ? Add : AddArray) : unknown)
-  & (S extends number ? (F extends 'isFind' ? Subtract : SubtractArray) : unknown)
+  & (S extends number ? (F extends 'isFind' ? Add & Subtract : AddArray & SubtractArray) : unknown)
   & (S extends boolean ? (F extends 'isFind' ? Toggle : ToggleArray) : unknown)
   & Readable<F extends 'isFilter' ? S[] : S>
 
 export type PayloadWithPotentialStore<T> = T | Readable<T> | (
-  T extends PossiblyBrandedPrimitive ? never : 
+  T extends PossiblyBrandedPrimitive ? never :
   T extends ReadonlyArray<infer R> ? ReadonlyArray<PayloadWithPotentialStore<R>> :
   T extends Record<string, unknown> ? DeepReadonlyObject<({ [P in keyof T]: PayloadWithPotentialStore<T[P]> })>
   : never
@@ -219,7 +213,7 @@ export type SetNewNode = {
   $setNew(insertion: Record<string, unknown>): void;
 }
 
-export type DeleteNode<Depth extends number> = [Depth] extends [MaxRecursionDepth] ? unknown : {
+export type Delete = {
   /**
    * Remove the selected node from its parent object.  
    * 
@@ -229,23 +223,13 @@ export type DeleteNode<Depth extends number> = [Depth] extends [MaxRecursionDept
    */
   $delete(): void,
   $delete(fn: AnyAsyncFn<unknown>, options?: UpdateOptions<unknown>): Future<unknown>;
-}
+};
 
-export type DeleteArrayElement<Depth extends number> = [Depth] extends [MaxRecursionDepth] ? unknown : {
-  /**
-   * Remove the selected element from the array.  
-   */
-  $delete(): void,
-  $delete(fn: AnyAsyncFn<unknown>, options?: UpdateOptions<unknown>): Future<unknown>;
-}
+export type DeleteNode<Depth extends number> = [Depth] extends [MaxRecursionDepth] ? unknown : Delete;
 
-export type DeleteArray<Depth extends number> = [Depth] extends [MaxRecursionDepth] ? unknown : {
-  /**
-   * Remove the selected elements from the array.  
-   */
-  $delete(): void,
-  $delete(fn: AnyAsyncFn<unknown>, options?: UpdateOptions<unknown>): Future<unknown>;
-}
+export type DeleteArrayElement<Depth extends number> = [Depth] extends [MaxRecursionDepth] ? unknown : Delete;
+
+export type DeleteArray<Depth extends number> = [Depth] extends [MaxRecursionDepth] ? unknown : Delete;
 
 export interface Clear {
   /**
@@ -861,4 +845,3 @@ export type ValidJsonElement = ValidJsonObject | Date | string | number | boolea
 export type ValidJson = ValidJsonElement | Array<ValidJsonElement> | Array<Array<ValidJsonElement>>;
 export type ValidJsonObject<T extends Record<string, unknown> = { [k: string]: unknown }> = { [K in keyof T]: T[K] }
 export type StoreDef<S extends ValidJsonObject> = Store<S> & (S extends never ? unknown : StoreAugment<S>);
-export type UnWrap<S extends ValidJsonObject> = { [K in keyof S]: S[K] extends ValidJsonObject ? UnWrap<S[K]> : S[K] extends Array<ValidJsonObject> ? UnWrap<S[K][0]>[] : S[K] extends boolean ? boolean : S[K] };

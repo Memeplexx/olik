@@ -33,11 +33,6 @@ test('Olik Perf (shallow)', () => {
   const state = { num: 0, str: '' };
   const store = createStore(state);
   const before = performance.now();
-  store.num.$onChange(() => { });
-  store.num.$onChange(() => { });
-  store.num.$onChange(() => { });
-  store.num.$onChange(() => { });
-  store.num.$onChange(() => { });
   for (let i = 0; i < 1000; i++) {
     store.num.$set(i);
     store.$state;

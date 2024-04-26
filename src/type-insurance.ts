@@ -139,9 +139,11 @@ store0
 
 
 export const demo = () => {
+  type User = { name: string, age: number };
+  type Todo = { id: number, title: string, status: 'done' | 'todo' };
   const store = createStore({
-    user: { name: '', age: 0 },
-    todos: new Array<{ id: number, title: string, status: 'done' | 'todo' }>(),
+    user: { name: '', age: 0 } as User,
+    todos: new Array<Todo>(),
   });
 
   store.user.age

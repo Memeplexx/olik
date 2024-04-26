@@ -19,8 +19,6 @@ export const createInnerStore = <S extends ValidJsonObject>(state: S) => ({
   }
 })
 
-
-
 export function createStore<S extends ValidJsonObject>(
   initialState: S
 ): StoreDef<S> {
