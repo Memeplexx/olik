@@ -26,7 +26,6 @@ export const libState: LibState = {
 export const testState: TestState = {
   logLevel: 'none',
   isTest: false,
-  isPerf: false,
   fakeDevtoolsMessage: null,
   currentActionType: undefined,
   currentActionPayload: undefined,
