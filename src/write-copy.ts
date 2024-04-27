@@ -173,7 +173,7 @@ const mergeMatching = (currentState: ValidJsonArray, cursor: Cursor, stateAction
 const setObjectKey = (currentState: ValidJsonObject, cursor: Cursor, stateActions: StateAction[], type: string) => {
   const payload = extractPayload(as.string(stateActions[cursor.index].arg));
   return Object.entries(currentState)
-    .reduce((acc, [key, value]) => Object.assign(acc, { [key === type ? payload : key]: value }), newRecord());
+    .reduce((acc, [key, value]) => { acc[key === type ? payload : key] = value; return acc; }, newRecord());
 }
 
 const atArray = (currentState: ValidJsonArray, cursor: Cursor, payload: number, stateActions: StateAction[]) => {

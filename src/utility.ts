@@ -127,7 +127,10 @@ export const extractPayload = <T>(payloadIncoming: T) => {
     if (is.array(payload))
       return payload.map((p, i) => sanitizePayload(p as T, !path ? i.toString() : `${path}.${i}`)) as PayloadType<T>;
     if (is.record(payload))
-      return objectKeys(payload).reduce((prev, key) => Object.assign(prev, { [key]: sanitizePayload(payload[key] as T, !path ? key.toString() : `${path}.${key.toString()}`) }), newRecord()) as PayloadType<T>;
+      return Object.keys(payload).reduce((prev, key) => {
+        prev[key] = sanitizePayload(payload[key] as T, !path ? key.toString() : `${path}.${key.toString()}`);
+        return prev;
+      }, newRecord()) as PayloadType<T>;
     throw new Error();
   }
   const payload = sanitizePayload(payloadIncoming, '');
