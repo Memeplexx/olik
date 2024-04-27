@@ -17,6 +17,8 @@ export const objectKeys = <T extends object>(o: T): Array<keyof T> => Object.key
 
 export const enqueueMicroTask = (fn: () => void) => Promise.resolve().then(fn);
 
+export const tupleIncludes = <Element extends string, Array extends readonly [...Element[]]>(element: Element, tuple: Array) => tuple.some(f => element.includes(f));
+
 export const resetLibraryState = () => {
   testState.logLevel = 'none';
   testState.fakeDevtoolsMessage = null;

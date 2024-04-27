@@ -29,7 +29,7 @@ export const copyNewState = (
       return deleteObjectValue(as.record(currentState), stateAction.name);
     if ('$setKey' === typeNext)
       return setObjectKey(as.record(currentState), cursor, stateActions, stateAction.name);
-    if (is.array(currentState) && !is.libArg(type))
+    if (is.array(currentState) && !is.anyLibProp(type))
       return updateArrayObjectProperties(currentState, cursor, stateActions);
     if (is.record(currentState) || is.undefined(currentState))
       return copyObjectProperty(currentState, type, stateActions, cursor);

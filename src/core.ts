@@ -34,7 +34,7 @@ export function createStore<S extends ValidJsonObject>(
         return augmentations.core[prop](recurseProxy(stateActions));
       if ('$state' === prop)
         return state(stateActions, prop);
-      if (!is.libArg(prop) || is.anyConcatenationProp(prop))
+      if (!is.anyLibProp(prop) || is.anyConcatenationProp(prop))
         return basicProp(stateActions, prop, recurseProxy);
       if ('$stateActions' === prop)
         return stateActions;

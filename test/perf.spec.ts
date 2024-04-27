@@ -50,7 +50,8 @@ test('Native Perf (shallow)', () => {
 })
 
 test('Immer Perf (deep)', () => {
-  let state = { arr: [{ id: 1, val: '', obj: { num: 0 } }, { id: 2, val: '', obj: { num: 0 } }, { id: 3, val: '', obj: { num: 0 } }] };
+  const arr = (new Array(100)).fill(0).map((e, i) => ({ id: i, val: '', obj: { num: 0 } }));
+  let state = { arr };
   const before = performance.now();
   for (let i = 0; i < 1000; i++) {
     state = produce(state, draftState => {
@@ -61,7 +62,8 @@ test('Immer Perf (deep)', () => {
 })
 
 test('Immutable Perf (deep)', () => {
-  const state = fromJS({ arr: [{ id: 1, val: '', obj: { num: 0 } }, { id: 2, val: '', obj: { num: 0 } }, { id: 3, val: '', obj: { num: 0 } }] });
+  const arr = (new Array(100)).fill(0).map((e, i) => ({ id: i, val: '', obj: { num: 0 } }));
+  const state = fromJS({ arr });
   const before = performance.now();
   for (let i = 0; i < 1000; i++) {
     state.updateIn(['arr', '0', 'id'], () => i)
@@ -71,7 +73,8 @@ test('Immutable Perf (deep)', () => {
 })
 
 test('Olik Perf (deep)', () => {
-  const state = { arr: [{ id: 1, val: '', obj: { num: 0 } }, { id: 2, val: '', obj: { num: 0 } }, { id: 3, val: '', obj: { num: 0 } } ] };
+  const arr = (new Array(100)).fill(0).map((e, i) => ({ id: i, val: '', obj: { num: 0 } }));
+  const state = { arr };
   const store = createStore(state);
   const before = performance.now();
   for (let i = 0; i < 1000; i++) {
@@ -91,3 +94,56 @@ test('Native Perf (deep)', () => {
   }
   console.log(`Native Perf (deep): ${performance.now() - before}`);
 })
+
+
+
+
+
+// test('array lookup', () => {
+//   const items = (new Array(1000)).fill(0).map((e, i) => {
+//     return i.toString();
+//   });
+//   const before = performance.now();
+//   for (let i = 0; i < 1000; i++) {
+//     is.libArg(items[i]);
+//   }
+//   console.log(`${performance.now() - before}`);
+// })
+
+// test('set lookup', () => {
+//   const items = (new Array(1000)).fill(0).map((e, i) => {
+//     return i.toString();
+//   });
+//   const set = new Set(anyLibProp);
+//   const before = performance.now();
+//   for (let i = 0; i < 1000; i++) {
+//     set.has(items[i]);
+//   }
+//   console.log(`${performance.now() - before}`);
+// })
+
+// test('map lookup', () => {
+//   const items = (new Array(1000)).fill(0).map((e, i) => {
+//     return i.toString();
+//   });
+//   const map = new Map(anyLibProp.map(e => [e, true]));
+//   const before = performance.now();
+//   for (let i = 0; i < 1000; i++) {
+//     map.has(items[i]);
+//   }
+//   console.log(`${performance.now() - before}`);
+// })
+
+// test('object lookup', () => {
+//   const items = (new Array(1000)).fill(0).map((e, i) => {
+//     return i.toString();
+//   });
+//   const obj = anyLibProp.reduce((acc, e) => Object.assign(acc, {[e]: true}), {});
+//   const before = performance.now();
+//   for (let i = 0; i < 1000; i++) {
+//     if (items[i] in obj) {
+//       // do nothing
+//     }
+//   }
+//   console.log(`${performance.now() - before}`);
+// })

@@ -4,6 +4,12 @@ import { StoreInternal } from "./type-internal";
 import { doThrow } from "./utility";
 
 
+const libPropMap = anyLibProp.reduce((acc, e) => Object.assign(acc, {[e]: true}), {});
+const readPropMap = readFunctions.reduce((acc, e) => Object.assign(acc, {[e]: true}), {});
+const updatePropMap = updateFunctions.reduce((acc, e) => Object.assign(acc, {[e]: true}), {});
+const comparatorsPropMap = comparators.reduce((acc, e) => Object.assign(acc, {[e]: true}), {});
+const concatPropMap = concatenations.reduce((acc, e) => Object.assign(acc, {[e]: true}), {});
+
 export const is = {
   date: (arg: unknown): arg is Date => arg instanceof Date,
   number: (arg: unknown): arg is number => typeof (arg) === 'number',
@@ -16,12 +22,11 @@ export const is = {
   null: (arg: unknown): arg is null => arg === null,
   undefined: (arg: unknown): arg is undefined => arg === undefined,
   storeInternal: (arg: unknown): arg is StoreInternal => is.record(arg) && !!arg['$stateActions'],
-  anyComparatorProp: (arg: unknown): arg is ValueOf<typeof comparators> => (comparators as unknown as string[]).includes(arg as string),
-  anyConcatenationProp: (arg: unknown): arg is ValueOf<typeof concatenations> => (concatenations as unknown as string[]).includes(arg as string),
-  anyUpdateFunction: (arg: unknown): arg is ValueOf<typeof updateFunctions> => (updateFunctions as unknown as string[]).includes(arg as string),
-  anyReadFunction: (arg: unknown): arg is ValueOf<typeof readFunctions> => (readFunctions as unknown as string[]).includes(arg as string),
-  libArg: <T extends ValueOf<typeof anyLibProp>[]>(toCheck: unknown, ...mustBeWithin: T): toCheck is T => ((!mustBeWithin.length ? anyLibProp : mustBeWithin) as unknown as string[])
-    .includes(toCheck as unknown as string),
+  anyComparatorProp: (arg: unknown): arg is ValueOf<typeof comparators> => (arg as string in comparatorsPropMap),
+  anyConcatenationProp: (arg: unknown): arg is ValueOf<typeof concatenations> => (arg as string in concatPropMap),
+  anyUpdateFunction: (arg: unknown): arg is ValueOf<typeof updateFunctions> => (arg as string in updatePropMap),
+  anyReadFunction: (arg: unknown): arg is ValueOf<typeof readFunctions> => (arg as string in readPropMap),
+  anyLibProp: <T extends ValueOf<typeof anyLibProp>[]>(toCheck: unknown): toCheck is T => (toCheck as string in libPropMap),
 }
 
 export const as = {

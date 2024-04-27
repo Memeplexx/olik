@@ -2,6 +2,7 @@ import { comparisons } from './constant';
 import { StateAction } from './type';
 import { is } from './type-check';
 import { Cursor, QuerySpec } from './type-internal';
+import { tupleIncludes } from './utility';
 
 
 export const constructQuery = (
@@ -24,13 +25,13 @@ export const constructQuery = (
     }
     const constructConcat = () => {
       const type = stateActions[cursor.index].name;
-      return (is.anyUpdateFunction(type) || is.anyReadFunction(type) || !is.libArg(type)) ? '$last' : type as '$and' | '$or';
+      return (is.anyUpdateFunction(type) || is.anyReadFunction(type) || !is.anyLibProp(type)) ? '$last' : type as '$and' | '$or';
     }
     queries.push({
       query: constructQuery(),
       concat: constructConcat(),
     });
-    if (is.libArg(stateActions[cursor.index].name, '$and', '$or')) {
+    if (tupleIncludes(stateActions[cursor.index].name, ['$and', '$or'])) {
       cursor.index++;
       return recurse(queries);
     }
