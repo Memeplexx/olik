@@ -2,8 +2,9 @@ import { comparisons } from './constant';
 import { StateAction } from './type';
 import { is } from './type-check';
 import { Cursor, QuerySpec } from './type-internal';
-import { tupleIncludes } from './utility';
 
+
+const andOrMap = { $and: true, $or: true };
 
 export const constructQuery = (
   stateActions: ReadonlyArray<StateAction>, 
@@ -31,7 +32,7 @@ export const constructQuery = (
       query: constructQuery(),
       concat: constructConcat(),
     });
-    if (tupleIncludes(stateActions[cursor.index].name, ['$and', '$or'])) {
+    if (stateActions[cursor.index].name in andOrMap) {
       cursor.index++;
       return recurse(queries);
     }

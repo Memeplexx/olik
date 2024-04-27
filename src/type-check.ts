@@ -22,11 +22,11 @@ export const is = {
   null: (arg: unknown): arg is null => arg === null,
   undefined: (arg: unknown): arg is undefined => arg === undefined,
   storeInternal: (arg: unknown): arg is StoreInternal => is.record(arg) && !!arg['$stateActions'],
-  anyComparatorProp: (arg: unknown): arg is ValueOf<typeof comparators> => (arg as string in comparatorsPropMap),
-  anyConcatenationProp: (arg: unknown): arg is ValueOf<typeof concatenations> => (arg as string in concatPropMap),
-  anyUpdateFunction: (arg: unknown): arg is ValueOf<typeof updateFunctions> => (arg as string in updatePropMap),
-  anyReadFunction: (arg: unknown): arg is ValueOf<typeof readFunctions> => (arg as string in readPropMap),
-  anyLibProp: <T extends ValueOf<typeof anyLibProp>[]>(toCheck: unknown): toCheck is T => (toCheck as string in libPropMap),
+  anyComparatorProp: (arg: unknown): arg is ValueOf<typeof comparators> => arg as string in comparatorsPropMap,
+  anyConcatenationProp: (arg: unknown): arg is ValueOf<typeof concatenations> => arg as string in concatPropMap,
+  anyUpdateFunction: (arg: unknown): arg is ValueOf<typeof updateFunctions> => arg as string in updatePropMap,
+  anyReadFunction: (arg: unknown): arg is ValueOf<typeof readFunctions> => arg as string in readPropMap,
+  anyLibProp: <T extends ValueOf<typeof anyLibProp>[]>(toCheck: unknown): toCheck is T => toCheck as string in libPropMap,
 }
 
 export const as = {
