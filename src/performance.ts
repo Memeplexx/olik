@@ -1,8 +1,6 @@
-import { testState } from "./constant";
 
 export const perf = new Map<string, Array<number>>();
 export const perfSet = (key: string) => {
-  if (!testState.isPerf) return;
   if (!perf.has(key)) {
     perf.set(key, []);
   }
@@ -10,7 +8,6 @@ export const perfSet = (key: string) => {
 }
 
 export const perfGet = () => {
-  if (!testState.isPerf) return;
   const result: Record<string, number> = {};
   const keys = Array.from(perf.keys());
   for (let i = 1; i < keys.length; i++) {

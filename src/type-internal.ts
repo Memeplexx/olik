@@ -25,7 +25,6 @@ export interface QuerySpec {
 export type TestState = {
   logLevel: 'debug' | 'none',
   isTest: boolean,
-  isPerf: boolean,
   fakeDevtoolsMessage: null | Omit<DevtoolsAction, 'source'>,
   currentActionType: undefined | string,
   currentActionTypeOrig: undefined | string,

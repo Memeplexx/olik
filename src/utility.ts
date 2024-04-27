@@ -22,7 +22,6 @@ export const tupleIncludes = <Element extends string, Array extends readonly [..
 export const resetLibraryState = () => {
   testState.logLevel = 'none';
   testState.fakeDevtoolsMessage = null;
-  testState.isPerf = false;
   testState.currentActionType = undefined;
   testState.currentActionTypeOrig = undefined;
   testState.currentActionPayload = undefined;
