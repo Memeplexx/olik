@@ -1,6 +1,6 @@
 import { augmentations, libState } from './constant';
 import { readState } from './read';
-import { Actual, FutureState, StateAction } from './type';
+import { FutureState, StateAction, ValidJsonArray } from './type';
 import { toIsoStringInCurrentTz } from './utility';
 import { setNewStateAndNotifyListeners } from './write-complete';
 
@@ -12,7 +12,7 @@ export const importOlikAsyncModule = () => {
       return readState(libState.state, [...stateActions, { name: '$state' }]);
     }
     let state: FutureState<unknown> = { storeValue: readCurrentState(), error: null, isLoading: false, wasRejected: false, wasResolved: false };
-    if (libState.state && 'cache' in libState.state && (libState.state.cache as Record<string, unknown>)[stateActions.map(sa => sa.name).join('.')]) {
+    if (libState.state && ('cache' in libState.state) && (libState.state.cache as Record<string, unknown>)[stateActions.map(sa => sa.name).join('.')]) {
       const result = new Proxy(new Promise(resolve => resolve(readCurrentState())), {
         get: (target, prop: string) => {
           if (prop === 'then' || prop === 'catch' || prop === 'finally') {
@@ -21,7 +21,7 @@ export const importOlikAsyncModule = () => {
           } else if (prop === '$state') {
             return state;
           } else {
-            return (...args: Array<Actual>) => (target as unknown as Record<string, (a: Actual[]) => unknown>)[prop]!(args);
+            return (...args: ValidJsonArray) => (target as unknown as Record<string, (a: ValidJsonArray) => unknown>)[prop]!(args);
           }
         }
       });
@@ -85,7 +85,7 @@ export const importOlikAsyncModule = () => {
         }
       }
     }) as { state: FutureState<unknown> } & Promise<unknown>;
-    const resultCast = result as unknown as Record<string, (arg: Actual[]) => unknown>;
+    const resultCast = result as unknown as Record<string, (arg: ValidJsonArray) => unknown>;
     Object.keys(augmentations.future).forEach(name => resultCast[name] = augmentations.future[name](result));
     return result;
   }

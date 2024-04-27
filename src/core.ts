@@ -22,7 +22,6 @@ export const createInnerStore = <S extends ValidJsonObject>(state: S) => ({
 export function createStore<S extends ValidJsonObject>(
   initialState: S
 ): StoreDef<S> {
-  validateState(initialState);
   removeStaleCacheReferences(initialState);
   initializeLibState(initialState);
   const emptyObj = {} as StoreInternal;
@@ -50,18 +49,6 @@ export function createStore<S extends ValidJsonObject>(
     }
   });
   return (libState.store = recurseProxy()) as unknown as StoreDef<S>;
-}
-
-const validateState = (state: unknown) => {
-  if (!is.actual(state) || is.primitive(state))
-    return;
-  if (!is.array(state) && !is.record(state) && !is.date(state))
-    throw new Error(errorMessages.INVALID_STATE_INPUT(state));
-  Object.entries(state).forEach(([key, val]) => {
-    if (key.startsWith('$'))
-      throw new Error(errorMessages.DOLLAR_USED_IN_STATE);
-    validateState(val);
-  });
 }
 
 const onChange = (stateActions: StateAction[], prop: string) => (listener: (arg: unknown) => unknown) => {

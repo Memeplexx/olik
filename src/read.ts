@@ -1,9 +1,10 @@
 import { constructQuery } from './query';
 import { StateAction } from './type';
 import { as, assertIsArray, is } from './type-check';
+import { Cursor } from './type-internal';
 
 export const readState = (
-  state: unknown, stateActions: StateAction[], cursor?: { index: number }
+  state: unknown, stateActions: StateAction[], cursor?: Cursor
 ): unknown => {
   if (!cursor) cursor = { index: 0 };
   const stateAction = stateActions[cursor.index];

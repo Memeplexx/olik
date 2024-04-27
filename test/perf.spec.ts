@@ -50,7 +50,7 @@ test('Native Perf (shallow)', () => {
 })
 
 test('Immer Perf (deep)', () => {
-  let state = { arr: [{ id: 1, val: '', obj: { num: 0 } }, { id: 2, val: '', obj: { num: 0 } }], obj: { num: 0 } };
+  let state = { arr: [{ id: 1, val: '', obj: { num: 0 } }, { id: 2, val: '', obj: { num: 0 } }, { id: 3, val: '', obj: { num: 0 } }] };
   const before = performance.now();
   for (let i = 0; i < 1000; i++) {
     state = produce(state, draftState => {
@@ -61,7 +61,7 @@ test('Immer Perf (deep)', () => {
 })
 
 test('Immutable Perf (deep)', () => {
-  const state = fromJS({ arr: [{ id: 1, val: '', obj: { num: 0 } }, { id: 2, val: '', obj: { num: 0 } }], obj: { num: 0 } });
+  const state = fromJS({ arr: [{ id: 1, val: '', obj: { num: 0 } }, { id: 2, val: '', obj: { num: 0 } }, { id: 3, val: '', obj: { num: 0 } }] });
   const before = performance.now();
   for (let i = 0; i < 1000; i++) {
     state.updateIn(['arr', '0', 'id'], () => i)
@@ -71,7 +71,7 @@ test('Immutable Perf (deep)', () => {
 })
 
 test('Olik Perf (deep)', () => {
-  const state = { arr: [{ id: 1, val: '', obj: { num: 0 } }, { id: 2, val: '', obj: { num: 0 } }], obj: { num: 0 } };
+  const state = { arr: [{ id: 1, val: '', obj: { num: 0 } }, { id: 2, val: '', obj: { num: 0 } }, { id: 3, val: '', obj: { num: 0 } } ] };
   const store = createStore(state);
   const before = performance.now();
   for (let i = 0; i < 1000; i++) {
@@ -84,7 +84,7 @@ test('Olik Perf (deep)', () => {
 })
 
 test('Native Perf (deep)', () => {
-  let state = { arr: [{ id: 1, val: '', obj: { num: 0 } }, { id: 2, val: '', obj: { num: 0 } }], obj: { num: 0 } };
+  let state = { arr: [{ id: 1, val: '', obj: { num: 0 } }, { id: 2, val: '', obj: { num: 0 } }, { id: 3, val: '', obj: { num: 0 } } ] };
   const before = performance.now();
   for (let i = 0; i < 1000; i++) {
     state = { ...state, arr: state.arr.map(e => e.val === '' ? { ...e, id: i } : e) };

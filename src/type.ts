@@ -15,8 +15,6 @@ export type Primitive = string | number | boolean;
 
 export type PossiblyBrandedPrimitive = Primitive & { [brand]?: string };
 
-export type Actual = Primitive | { [k: string]: Actual } | Actual[];
-
 export type SerializableState = {
   [P: string]: SerializableState | ReadonlyArray<SerializableState | Primitive | null> | Primitive | null;
 }
@@ -33,6 +31,11 @@ export type PatchDeepPayload<T> =
 export type DeepReadonly<T> = T extends Primitive | Date ? T : T extends Array<infer R> ? DeepReadonlyArray<R> : DeepReadonlyObject<T>;
 export type DeepReadonlyObject<T> = { readonly [P in keyof T]: DeepReadonly<T[P]>; }
 export type DeepReadonlyArray<T> = ReadonlyArray<DeepReadonly<T>>;
+
+export type ValidJsonArray = Array<ValidJson>;
+export type ValidJson = ValidJsonObject | ValidJsonArray | Date | string | number | boolean | null;
+export type ValidJsonObject<T extends ValidJson = { [k: string]: unknown }> = { [K in keyof T]: T[K] }
+export type StoreDef<S extends ValidJsonObject> = Store<S> & (S extends never ? unknown : StoreAugment<S>);
 
 export type ValueOf<T> = T[keyof T];
 
@@ -819,9 +822,9 @@ export type LibState = {
   store: undefined | StoreInternal,
   asyncUpdate: undefined | ((stateActions: StateAction[], prop: string, options: { cache?: number, eager?: unknown }, arg: unknown) => unknown),
   devtools: undefined | { dispatch: (arg: { stateActions: StateAction[], actionType?: string, payloadPaths?: Record<string, string> }) => unknown },
-  state: undefined | Record<string, unknown>,
+  state: undefined | ValidJsonObject,
   changeListeners: ChangeListener[],
-  initialState: undefined | Record<string, unknown>,
+  initialState: undefined | ValidJsonObject,
   disableDevtoolsDispatch?: boolean,
   derivations: Map<DerivationKey, unknown>,
   stacktraceError: null | Error,
@@ -836,8 +839,3 @@ export type DevtoolsAction = {
   stateActions: StateAction[];
   trace?: string;
 }
-
-export type ValidJsonElement = ValidJsonObject | Date | string | number | boolean | null;
-export type ValidJson = ValidJsonElement | Array<ValidJsonElement> | Array<Array<ValidJsonElement>>;
-export type ValidJsonObject<T extends Record<string, unknown> = { [k: string]: unknown }> = { [K in keyof T]: T[K] }
-export type StoreDef<S extends ValidJsonObject> = Store<S> & (S extends never ? unknown : StoreAugment<S>);

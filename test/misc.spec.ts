@@ -1,17 +1,12 @@
 import { beforeEach, expect, test } from 'vitest';
-import { errorMessages } from '../src/constant';
 import { createInnerStore, createStore } from '../src/core';
-import { resetLibraryState } from '../src/utility';
 import { connectOlikDevtoolsToStore } from '../src/devtools';
+import { resetLibraryState } from '../src/utility';
 
 
 beforeEach(() => {
   resetLibraryState();
   connectOlikDevtoolsToStore();
-})
-
-test('should throw an error if a user uses a dollar prop in their state', () => {
-  expect(() => createStore({ state: { $hello: 'world' } })).toThrow(errorMessages.DOLLAR_USED_IN_STATE);
 })
 
 test('should allow dates', () => {

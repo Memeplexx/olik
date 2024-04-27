@@ -1,11 +1,12 @@
 import { comparisons } from './constant';
 import { StateAction } from './type';
 import { is } from './type-check';
-import { QuerySpec } from './type-internal';
+import { Cursor, QuerySpec } from './type-internal';
 
 
 export const constructQuery = (
-  stateActions: ReadonlyArray<StateAction>, cursor: { index: number }
+  stateActions: ReadonlyArray<StateAction>, 
+  cursor: Cursor,
 ) => {
   const recurse = (queries: QuerySpec[]): QuerySpec[] => {
     const constructQuery = () => {

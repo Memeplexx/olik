@@ -113,9 +113,7 @@ export const fixCurrentAction = (action: { name: string, arg?: unknown }, nested
 type PayloadType<T> = { [key in keyof T]: T[key] extends StoreInternal ? T[key]['$state'] : PayloadType<T[key]> }
 export const extractPayload = <T>(payloadIncoming: T) => {
   testState.currentActionPayloadPaths = undefined;
-  if (is.undefined(payloadIncoming))
-    return payloadIncoming;
-  if (is.primitive(payloadIncoming) || is.date(payloadIncoming) || is.null(payloadIncoming))
+  if (is.undefined(payloadIncoming) || is.null(payloadIncoming) || is.primitive(payloadIncoming) || is.date(payloadIncoming))
     return payloadIncoming;
   const payloadPaths = newRecord<string>();
   const sanitizePayload = (payload: T, path: string): PayloadType<T> => {
