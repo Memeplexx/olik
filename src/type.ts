@@ -815,10 +815,6 @@ export type DevtoolsInstance = {
   send: (action: OlikAction, state: unknown, stateReader: (s: unknown) => unknown, mutator: string) => unknown
 }
 
-export type OlikDevtoolsOptions = {
-  trace?: boolean
-}
-
 export type LibState = {
   store: undefined | StoreInternal,
   asyncUpdate: undefined | ((stateActions: StateAction[], prop: string, options: { cache?: number, eager?: unknown }, arg: unknown) => unknown),

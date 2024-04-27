@@ -26,7 +26,7 @@ export function createStore<S extends ValidJsonObject>(
   removeStaleCacheReferences(initialState);
   initializeLibState(initialState);
   const emptyObj = {} as StoreInternal;
-  const recurseProxy = (stateActionsIncoming?: StateAction[]): StoreInternal => new Proxy(emptyObj, {
+  const recurseProxy = (stateActionsIncoming?: StateAction[]): StoreInternal => new Proxy<StoreInternal>(emptyObj, {
     get: (_, prop: string) => {
       const stateActions = stateActionsIncoming ?? [];
       if (augmentations.selection[prop])

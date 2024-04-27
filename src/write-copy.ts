@@ -2,12 +2,13 @@ import { errorMessages } from './constant';
 import { constructQuery } from './query';
 import { Actual, StateAction } from './type';
 import { as, assertIsArray, assertIsNumber, assertIsRecord, is } from './type-check';
+import { Cursor } from './type-internal';
 import { extractPayload, newRecord } from './utility';
 
 
 export const copyNewState = (
   currentState: unknown,
-  stateActions: ReadonlyArray<StateAction>,
+  stateActions: StateAction[],
   cursor: { index: number }
 ): unknown => {
   const stateAction = stateActions[cursor.index];
@@ -40,7 +41,7 @@ export const copyNewState = (
   if ('$patch' === type)
     return patch(currentState, payload);
   if ('$add' === type)
-    return add(currentState, cursor, payload);
+    return add(currentState, payload);
   if ('$subtract' === type)
     return subtract(currentState, payload);
   if ('$setNew' === type)
@@ -50,15 +51,15 @@ export const copyNewState = (
   if ('$clear' === type)
     return clear();
   if ('$push' === type)
-    return push(currentState, cursor, payload);
+    return push(currentState, payload);
   if ('$pushMany' === type)
-    return pushMany(currentState, cursor, payload);
+    return pushMany(currentState, payload);
   if ('$deDuplicate' === type)
     return deDuplicate(currentState);
   if ('$toggle' === type)
     return toggle(currentState);
   if ('$merge' === type)
-    return merge(currentState, cursor, payload);
+    return merge(currentState, payload);
   throw new Error();
 }
 
@@ -66,15 +67,15 @@ const deDuplicate = (currentState: unknown) => {
   return [...new Set(as.array(currentState))];
 }
 
-const push = (currentState: unknown, cursor: { index: number }, payload: unknown) => {
+const push = (currentState: unknown, payload: unknown) => {
   return [...as.array(currentState), payload];
 }
 
-const pushMany = (currentState: unknown, cursor: { index: number }, payload: unknown) => {
+const pushMany = (currentState: unknown, payload: unknown) => {
   return [...as.array(currentState), ...as.array(payload)];
 }
 
-const merge = (currentState: unknown, cursor: { index: number }, payload: unknown) => {
+const merge = (currentState: unknown, payload: unknown) => {
   assertIsArray<unknown>(currentState);
   return [...currentState, ...(is.array(payload) ? payload : [payload]).filter(e => !currentState.includes(e))];
 }
@@ -104,7 +105,7 @@ const patch = (currentState: unknown, payload: unknown) => {
   return { ...as.record(currentState), ...payload };
 }
 
-const add = (currentState: unknown, cursor: { index: number }, payload: unknown) => {
+const add = (currentState: unknown, payload: unknown) => {
   assertIsNumber(payload);
   if (is.array<number>(currentState))
     return currentState.map(e => e + payload);
@@ -139,7 +140,7 @@ const patchDeep = (currentState: unknown, payload: unknown) => {
   return recurse(as.record(currentState), as.record(payload));
 }
 
-const updateArrayObjectProperties = (currentState: unknown, cursor: { index: number }, stateActions: readonly StateAction[]) => {
+const updateArrayObjectProperties = (currentState: unknown, cursor: Cursor, stateActions: StateAction[]) => {
   cursor.index--;
   return as.array<Record<string, unknown>>(currentState).map(element => {
     if (!is.undefined(element)) return {
@@ -158,7 +159,7 @@ const updateArrayObjectProperties = (currentState: unknown, cursor: { index: num
   });
 }
 
-const mergeMatching = (currentState: unknown, cursor: { index: number }, stateActions: readonly StateAction[]) => {
+const mergeMatching = (currentState: unknown, cursor: Cursor, stateActions: StateAction[]) => {
   const nextUpdateIndex = stateActions.slice(cursor.index).findIndex(sa => is.anyUpdateFunction(sa.name));
   const queryPaths = stateActions.slice(cursor.index, cursor.index + nextUpdateIndex);
   cursor.index += queryPaths.length;
@@ -177,13 +178,13 @@ const mergeMatching = (currentState: unknown, cursor: { index: number }, stateAc
   ];
 }
 
-const setObjectKey = (currentState: unknown, cursor: { index: number }, stateActions: readonly StateAction[], type: string) => {
+const setObjectKey = (currentState: unknown, cursor: Cursor, stateActions: StateAction[], type: string) => {
   const payload = extractPayload(as.string(stateActions[cursor.index].arg));
   return Object.entries(as.record(currentState))
     .reduce((acc, [key, value]) => Object.assign(acc, { [key === type ? payload : key]: value }), newRecord());
 }
 
-const atArray = (currentState: unknown, cursor: { index: number }, payload: unknown, stateActions: readonly StateAction[]) => {
+const atArray = (currentState: unknown, cursor: Cursor, payload: unknown, stateActions: StateAction[]) => {
   assertIsNumber(payload); assertIsArray(currentState);
   if (is.undefined(currentState[payload]))
     throw new Error(errorMessages.AT_INDEX_OUT_OF_BOUNDS(payload));
@@ -194,7 +195,7 @@ const atArray = (currentState: unknown, cursor: { index: number }, payload: unkn
     : e);
 }
 
-const findArray = (currentState: unknown, cursor: { index: number }, stateActions: readonly StateAction[]) => {
+const findArray = (currentState: unknown, cursor: Cursor, stateActions: StateAction[]) => {
   assertIsArray(currentState);
   const query = constructQuery(stateActions, cursor);
   const findIndex = currentState.findIndex(query);
@@ -209,7 +210,7 @@ const findArray = (currentState: unknown, cursor: { index: number }, stateAction
     : e);
 }
 
-const filterArray = (currentState: unknown, cursor: { index: number }, stateActions: readonly StateAction[]) => {
+const filterArray = (currentState: unknown, cursor: Cursor, stateActions: StateAction[]) => {
   assertIsArray(currentState);
   const query = constructQuery(stateActions, cursor);
   const type = stateActions[cursor.index].name;
@@ -231,7 +232,7 @@ const deleteObjectValue = (currentState: unknown, type: string) => {
   return newState;
 }
 
-const copyObjectProperty = (currentState: unknown, type: string, stateActions: readonly StateAction[], cursor: { index: number }) => {
+const copyObjectProperty = (currentState: unknown, type: string, stateActions: StateAction[], cursor: Cursor) => {
   const currentStateRecord = as.record(currentState ?? newRecord());
   return {
     ...currentStateRecord,
