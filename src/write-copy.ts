@@ -1,4 +1,4 @@
-import { errorMessages } from './constant';
+import { errorMessages, libState } from './constant';
 import { constructQuery } from './query';
 import { StateAction, ValidJson, ValidJsonArray, ValidJsonObject } from './type';
 import { as, is } from './type-check';
@@ -26,7 +26,7 @@ export const copyNewState = (
       return mergeMatching(as.array(currentState), cursor, stateActions);
     const typeNext = stateActions[cursor.index].name;
     if ('$delete' === typeNext || '$invalidateCache' === typeNext)
-      return deleteObjectValue(as.record(currentState), stateAction.name);
+      return deleteObjectValue(as.record(currentState), stateAction.name, stateActions);
     if ('$setKey' === typeNext)
       return setObjectKey(as.record(currentState), cursor, stateActions, stateAction.name);
     if (is.array(currentState) && !is.anyLibProp(type))
@@ -171,6 +171,11 @@ const mergeMatching = (currentState: ValidJsonArray, cursor: Cursor, stateAction
 }
 
 const setObjectKey = (currentState: ValidJsonObject, cursor: Cursor, stateActions: StateAction[], type: string) => {
+  const stateActionsStr = stateActions.slice(0, stateActions.length - 1).map(sa => sa.name).join('.');
+  const arg = as.string(stateActions[cursor.index].arg);
+  libState.changeListeners
+    .filter(l => l.actions.map(a => a.name).join('.').startsWith(stateActionsStr))
+    .forEach(l => l.actions[l.actions.length - 2].name = arg);
   const payload = extractPayload(as.string(stateActions[cursor.index].arg));
   return Object.entries(currentState)
     .reduce((acc, [key, value]) => { acc[key === type ? payload : key] = value; return acc; }, newRecord());
@@ -216,7 +221,11 @@ const filterArray = (currentState: ValidJsonArray, cursor: Cursor, stateActions:
     : e);
 }
 
-const deleteObjectValue = (currentState: ValidJsonObject, type: string) => {
+const deleteObjectValue = (currentState: ValidJsonObject, type: string, stateActions: StateAction[]) => {
+  const stateActionsStr = stateActions.slice(0, stateActions.length - 1).map(sa => sa.name).join('.');
+  libState.changeListeners
+    .filter(l => l.actions.map(a => a.name).join('.').startsWith(stateActionsStr))
+    .forEach(l => l.unsubscribe());
   const { [type]: other, ...newState } = currentState;
   return newState;
 }

@@ -108,18 +108,6 @@ const invalidateCache = (stateActions: StateAction[]) => () => {
 const processUpdateFunction = (stateActions: StateAction[], prop: string) => (arg: unknown, options: { cache?: number, eager?: unknown }) => {
   if (libState.devtools)
     libState.stacktraceError = new Error();
-  if ('$delete' === prop) {
-    const stateActionsStr = stateActions.map(sa => sa.name).join('.');
-    libState.changeListeners
-      .filter(l => l.actions.map(a => a.name).join('.').startsWith(stateActionsStr))
-      .forEach(l => l.unsubscribe());
-  }
-  if ('$setKey' === prop) {
-    const stateActionsStr = stateActions.map(sa => sa.name).join('.');
-    libState.changeListeners
-      .filter(l => l.actions.map(a => a.name).join('.').startsWith(stateActionsStr))
-      .forEach(l => l.actions[l.actions.length - 2].name = as.string(arg));
-  }
   if (is.function(arg)) {
     if (!libState.asyncUpdate)
       throw new Error(errorMessages.ASYNC_UPDATES_NOT_ENABLED);
