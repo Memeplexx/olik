@@ -55,7 +55,7 @@ test('Immer Perf (deep)', () => {
   const before = performance.now();
   for (let i = 0; i < 1000; i++) {
     state = produce(state, draftState => {
-      draftState.arr[draftState.arr.findIndex(e => e.val === '')].id = i;
+      draftState.arr[state.arr.findIndex(e => e.val === '')].id = i;
     })
   }
   console.log(`Immer Perf (deep): ${performance.now() - before}`);
