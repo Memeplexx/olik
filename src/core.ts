@@ -67,7 +67,7 @@ const state = (stateActions: StateAction[], prop: string) => {
       return tryFetchResult(stateActions);
     }
   }
-  const result = tryFetchResult([...stateActions, { name: prop }]);
+  const result = tryFetchResult(!stateActions.length ? [{ name: prop }] : [...stateActions, { name: prop }]);
   return is.undefined(result) ? null : result;
 }
 
