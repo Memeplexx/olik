@@ -4,11 +4,11 @@ import { StoreInternal } from "./type-internal";
 import { doThrow } from "./utility";
 
 
-const libPropMap = anyLibProp.reduce((acc, e) => Object.assign(acc, {[e]: true}), {});
-const readPropMap = readFunctions.reduce((acc, e) => Object.assign(acc, {[e]: true}), {});
-const updatePropMap = updateFunctions.reduce((acc, e) => Object.assign(acc, {[e]: true}), {});
-const comparatorsPropMap = comparators.reduce((acc, e) => Object.assign(acc, {[e]: true}), {});
-const concatPropMap = concatenations.reduce((acc, e) => Object.assign(acc, {[e]: true}), {});
+const libPropMap = anyLibProp.reduce((acc, e) => Object.assign(acc, { [e]: true }), {});
+const readPropMap = readFunctions.reduce((acc, e) => Object.assign(acc, { [e]: true }), {});
+const updatePropMap = updateFunctions.reduce((acc, e) => Object.assign(acc, { [e]: true }), {});
+const comparatorsPropMap = comparators.reduce((acc, e) => Object.assign(acc, { [e]: true }), {});
+const concatPropMap = concatenations.reduce((acc, e) => Object.assign(acc, { [e]: true }), {});
 
 export const is = {
   date: (arg: unknown): arg is Date => arg instanceof Date,
