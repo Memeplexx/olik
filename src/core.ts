@@ -74,7 +74,7 @@ const state = (stateActions: StateAction[], prop: string) => {
 const initializeLibState = (initialState: Record<string, unknown>) => {
   if (libState.initialState)
     return;
-  libState.state = libState.initialState = Object.freeze(initialState);
+  libState.state = libState.initialState = initialState;
 }
 
 const removeStaleCacheReferences = (state: Record<string, unknown>) => {
