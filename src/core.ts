@@ -19,35 +19,36 @@ export const createInnerStore = <S extends ValidJsonObject>(state: S) => ({
   }
 })
 
+const emptyObj = {} as StoreInternal;
+const recurseProxy = (stateActionsIncoming?: StateAction[]): StoreInternal => new Proxy<StoreInternal>(emptyObj, {
+  get: (_, prop: string) => {
+    const stateActions = stateActionsIncoming ?? [];
+    if (augmentations.selection[prop])
+      return augmentations.selection[prop](recurseProxy(stateActions));
+    if (augmentations.core[prop])
+      return augmentations.core[prop](recurseProxy(stateActions));
+    if ('$state' === prop)
+      return state(stateActions, prop);
+    if (!is.anyLibProp(prop) || is.anyConcatenationProp(prop))
+      return basicProp(stateActions, prop);
+    if ('$stateActions' === prop)
+      return stateActions;
+    if ('$at' === prop || is.anyComparatorProp(prop))
+      return comparator(stateActions, prop);
+    if ('$invalidateCache' === prop)
+      return invalidateCache(stateActions);
+    if ('$onChange' === prop)
+      return onChange(stateActions, prop);
+    if (is.anyUpdateFunction(prop))
+      return processUpdateFunction(stateActions, prop);
+  }
+});
+
 export function createStore<S extends ValidJsonObject>(
   initialState: S
 ): StoreDef<S> {
   removeStaleCacheReferences(initialState);
   initializeLibState(initialState);
-  const emptyObj = {} as StoreInternal;
-  const recurseProxy = (stateActionsIncoming?: StateAction[]): StoreInternal => new Proxy<StoreInternal>(emptyObj, {
-    get: (_, prop: string) => {
-      const stateActions = stateActionsIncoming ?? [];
-      if (augmentations.selection[prop])
-        return augmentations.selection[prop](recurseProxy(stateActions));
-      if (augmentations.core[prop])
-        return augmentations.core[prop](recurseProxy(stateActions));
-      if ('$state' === prop)
-        return state(stateActions, prop);
-      if (!is.anyLibProp(prop) || is.anyConcatenationProp(prop))
-        return basicProp(stateActions, prop, recurseProxy);
-      if ('$stateActions' === prop)
-        return stateActions;
-      if ('$at' === prop || is.anyComparatorProp(prop))
-        return comparator(stateActions, prop, recurseProxy);
-      if ('$invalidateCache' === prop)
-        return invalidateCache(stateActions);
-      if ('$onChange' === prop)
-        return onChange(stateActions, prop);
-      if (is.anyUpdateFunction(prop))
-        return processUpdateFunction(stateActions, prop);
-    }
-  });
   return (libState.store = recurseProxy()) as unknown as StoreDef<S>;
 }
 
@@ -59,6 +60,8 @@ const onChange = (stateActions: StateAction[], prop: string) => (listener: (arg:
 }
 
 const state = (stateActions: StateAction[], prop: string) => {
+  if (!stateActions.length)
+    return libState.state;
   const tryFetchResult = (stateActions: StateAction[]): unknown => {
     try {
       return readState(libState.state, stateActions);
@@ -67,7 +70,7 @@ const state = (stateActions: StateAction[], prop: string) => {
       return tryFetchResult(stateActions);
     }
   }
-  const result = tryFetchResult(!stateActions.length ? [{ name: prop }] : [...stateActions, { name: prop }]);
+  const result = tryFetchResult([...stateActions, { name: prop }]);
   return is.undefined(result) ? null : result;
 }
 
@@ -83,12 +86,12 @@ const removeStaleCacheReferences = (state: Record<string, unknown>) => {
   state.cache = Object.fromEntries(Object.entries(as.record<string>(state.cache)).filter(([, value]) => new Date(value).getTime() > Date.now()));
 }
 
-const basicProp = (stateActions: StateAction[], prop: string, recurseProxy: (stateActions: StateAction[]) => StoreInternal) => {
+const basicProp = (stateActions: StateAction[], prop: string) => {
   stateActions.push({ name: prop });
   return recurseProxy(stateActions);
 }
 
-const comparator = (stateActions: StateAction[], prop: string, recurseProxy: (stateActions: StateAction[]) => StoreInternal) => (arg?: unknown) => {
+const comparator = (stateActions: StateAction[], prop: string) => (arg?: unknown) => {
   stateActions.push({ name: prop, arg });
   return recurseProxy(stateActions);
 }
