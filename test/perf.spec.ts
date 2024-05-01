@@ -8,7 +8,7 @@ beforeEach(() => {
   resetLibraryState();
 })
 
-test('Immer Perf (shallow)', () => {
+test('Immer Perf', () => {
   let state = { num: 0, str: '' };
   const before = performance.now();
   for (let i = 0; i < 1000; i++) {
@@ -16,20 +16,20 @@ test('Immer Perf (shallow)', () => {
       draftState.num = i;
     })
   }
-  console.log(`Immer Perf (shallow): ${performance.now() - before}`);
+  console.log(`Immer Perf: ${performance.now() - before}`);
 })
 
-test('Immutable Perf (shallow)', () => {
+test('Immutable Perf', () => {
   const state = Map({ num: 0, str: '' });
   const before = performance.now();
   for (let i = 0; i < 1000; i++) {
     state.set('num', i);
     state.toJS();
   }
-  console.log(`Immutable Perf (shallow): ${performance.now() - before}`);
+  console.log(`Immutable Perf: ${performance.now() - before}`);
 })
 
-test('Olik Perf (shallow)', () => {
+test('Olik Perf', () => {
   const state = { num: 0, str: '' };
   const store = createStore(state);
   const before = performance.now();
@@ -37,16 +37,16 @@ test('Olik Perf (shallow)', () => {
     store.num.$set(i);
     store.$state;
   }
-  console.log(`Olik Perf (shallow): ${performance.now() - before}`);
+  console.log(`Olik Perf: ${performance.now() - before}`);
 })
 
-test('Native Perf (shallow)', () => {
+test('Native Perf', () => {
   let state = { num: 0, str: '' };
   const before = performance.now();
   for (let i = 0; i < 1000; i++) {
     state = { ...state, num: i };
   }
-  console.log(`Native Perf (shallow): ${performance.now() - before}`);
+  console.log(`Native Perf: ${performance.now() - before}`);
 })
 
 test('Immer Perf (deep)', () => {
@@ -87,13 +87,51 @@ test('Olik Perf (deep)', () => {
 })
 
 test('Native Perf (deep)', () => {
-  let state = { arr: [{ id: 1, val: '', obj: { num: 0 } }, { id: 2, val: '', obj: { num: 0 } }, { id: 3, val: '', obj: { num: 0 } } ] };
+  let state = { arr: [{ id: 1, val: '', obj: { num: 0 } }, { id: 2, val: '', obj: { num: 0 } }, { id: 3, val: '', obj: { num: 0 } }] };
   const before = performance.now();
   for (let i = 0; i < 1000; i++) {
     state = { ...state, arr: state.arr.map(e => e.val === '' ? { ...e, id: i } : e) };
   }
   console.log(`Native Perf (deep): ${performance.now() - before}`);
 })
+
+
+
+
+
+
+
+// test('Tail Factorial', () => {
+//   function fibonacci (n: number, accumulator = 1): number {
+//     if (n === 0) {
+//       return accumulator;
+//     }
+//     return fibonacci(n - 1, n * accumulator);
+//   }
+//   const before = performance.now();
+//   const result = fibonacci(100);
+//   console.log(`Native Perf (deep): ${result} | ${performance.now() - before}`);
+// })
+
+
+// test('Trampoline', () => {
+//   function fibo(x: number, a = 0) {
+//     if (x < 2) return a;
+
+//     return () => fibo(x - 1, x + a);
+//   }
+//   function trampoline(f: (...arg: number[]) => unknown, ...args: number[]) {
+//     let x = f(...args);
+//     while (typeof x === 'function') {
+//       x = x();
+//     }
+//     return x;
+//   }
+//   const before = performance.now();
+//   console.log(trampoline(fibo, 1000));
+//   console.log(`Trampoline: ${performance.now() - before}`);
+// })
+
 
 
 

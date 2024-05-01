@@ -1,7 +1,7 @@
-import { comparators, libState, testState, updateFunctions } from './constant';
+import { augmentations, comparators, libState, testState, updateFunctions } from './constant';
 import { perf } from './performance';
-import { DeepReadonlyArray, Store } from './type';
-import { is } from './type-check';
+import { DeepReadonlyArray, Store, ValidJsonObject } from './type';
+import { is, updatePropMap } from './type-check';
 import { StoreInternal } from './type-internal';
 
 
@@ -33,6 +33,11 @@ export const resetLibraryState = () => {
   libState.disableDevtoolsDispatch = false;
   libState.derivations = new Map();
   libState.devtools = undefined;
+  augmentations.selection = {};
+  augmentations.future = {};
+  augmentations.derivation = {};
+  augmentations.core = {};
+  augmentations.async = promise => promise();
   perf.clear();
 };
 
@@ -41,7 +46,7 @@ export const isoDateRegexp = new RegExp(/^\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[
 export const deserialize = <R>(arg?: string | null): R => {
 
   // IS THE STRING NULL OR UNDEFINED?
-  if (is.null(arg) || is.undefined(arg))
+  if (arg === null || typeof arg === 'undefined')
     return <R>arg
 
   // IS THE STRING 'undefined'?
@@ -98,9 +103,9 @@ export const toIsoStringInCurrentTz = (date: Date) => {
 const regexp = new RegExp([...comparators, ...updateFunctions, '$at'].map(c => `^\\${c}$`).join('|'), 'g');
 export const fixCurrentAction = (action: { name: string, arg?: unknown }, nested: boolean): string => {
   return action.name.replace(regexp, match => {
-    if (is.anyUpdateFunction(match))
+    if (updatePropMap[match])
       return `${match}()`;
-    if (is.undefined(action.arg))
+    if (typeof (action.arg) === 'undefined')
       return `${match}()`;
     if (is.storeInternal(action.arg)) {
       if (!nested)
@@ -112,23 +117,25 @@ export const fixCurrentAction = (action: { name: string, arg?: unknown }, nested
 }
 
 type PayloadType<T> = { [key in keyof T]: T[key] extends StoreInternal ? T[key]['$state'] : PayloadType<T[key]> }
+const isArray = Array.isArray;
 export const extractPayload = <T>(payloadIncoming: T) => {
-  testState.currentActionPayloadPaths = undefined;
-  if (is.undefined(payloadIncoming) || is.null(payloadIncoming) || is.primitive(payloadIncoming) || is.date(payloadIncoming))
+  if (typeof (payloadIncoming) === 'undefined' || typeof (payloadIncoming) === 'number' || typeof (payloadIncoming) === 'string'
+    || typeof (payloadIncoming) === 'boolean' || payloadIncoming === null || typeof (payloadIncoming) !== 'object' || payloadIncoming instanceof Date)
     return payloadIncoming;
+  testState.currentActionPayloadPaths = undefined;
   const payloadPaths = newRecord<string>();
   const sanitizePayload = (payload: T, path: string): PayloadType<T> => {
-    if (is.primitive(payload) || is.date(payload) || is.null(payload) || is.undefined(payload))
+    if (typeof (payload) === 'undefined' || typeof (payload) === 'number' || typeof (payload) === 'string' || typeof (payload) === 'boolean' || payload === null || payload instanceof Date)
       return payload as PayloadType<T>;
     if (is.storeInternal(payload)) {
       payloadPaths[path] = `${payload.$stateActions.map(sa => fixCurrentAction(sa, true)).join('.')} = ${JSON.stringify(payload.$state)}`;
       return payload.$state as PayloadType<T>;
     }
-    if (is.array(payload))
+    if (isArray(payload))
       return payload.map((p, i) => sanitizePayload(p as T, !path ? i.toString() : `${path}.${i}`)) as PayloadType<T>;
-    if (is.record(payload))
+    if (typeof (payload) === 'object' && payload !== null)
       return Object.keys(payload).reduce((prev, key) => {
-        prev[key] = sanitizePayload(payload[key] as T, !path ? key.toString() : `${path}.${key.toString()}`);
+        prev[key] = sanitizePayload((payload as ValidJsonObject)[key] as T, !path ? key.toString() : `${path}.${key.toString()}`);
         return prev;
       }, newRecord()) as PayloadType<T>;
     throw new Error();

@@ -1,65 +1,68 @@
 import { errorMessages, libState } from './constant';
 import { constructQuery } from './query';
 import { StateAction, ValidJson, ValidJsonArray, ValidJsonObject } from './type';
-import { as, is } from './type-check';
+import { is, libPropMap } from './type-check';
 import { Cursor } from './type-internal';
 import { extractPayload, newRecord } from './utility';
 
 
+
+
+const isArray = Array.isArray;
 export const copyNewState = (
   currentState: ValidJson,
   stateActions: StateAction[],
   cursor: Cursor,
 ): ValidJson => {
   const stateAction = stateActions[cursor.index];
-  const payload = extractPayload(stateAction.arg);
   const type = stateAction.name;
   if (cursor.index < stateActions.length - 1) {
     cursor.index++;
     if ('$at' === type)
-      return atArray(as.array(currentState), cursor, as.number(payload), stateActions);
+      return atArray(currentState as ValidJsonArray, cursor, stateAction.arg as number, stateActions);
     if ('$find' === type)
-      return findArray(as.array(currentState), cursor, stateActions);
+      return findArray(currentState as ValidJsonArray, cursor, stateActions);
     if ('$filter' === type)
-      return filterArray(as.array(currentState), cursor, stateActions);
+      return filterArray(currentState as ValidJsonArray, cursor, stateActions);
     if ('$mergeMatching' === type)
-      return mergeMatching(as.array(currentState), cursor, stateActions);
+      return mergeMatching(currentState as ValidJsonArray, cursor, stateActions);
     const typeNext = stateActions[cursor.index].name;
     if ('$delete' === typeNext || '$invalidateCache' === typeNext)
-      return deleteObjectValue(as.record(currentState), stateAction.name, stateActions);
+      return deleteObjectValue(currentState as ValidJsonObject, type, stateActions);
     if ('$setKey' === typeNext)
-      return setObjectKey(as.record(currentState), cursor, stateActions, stateAction.name);
-    if (is.array(currentState) && !is.anyLibProp(type))
+      return setObjectKey(currentState as ValidJsonObject, cursor, stateActions, type);
+    if (isArray(currentState) && !libPropMap[type])
       return updateArrayObjectProperties(currentState, cursor, stateActions);
-    if (is.record(currentState) || is.undefined(currentState))
+    if (typeof (currentState) === 'object' || typeof (currentState) === 'undefined')
       return copyObjectProperty(currentState, type, stateActions, cursor);
   }
+  const payload = extractPayload(stateAction.arg);
   if ('$set' === type)
-    return set(as.json(payload));
+    return set(payload as ValidJson);
   if ('$setUnique' === type)
-    return setUnique(as.array(payload));
+    return setUnique(payload as ValidJsonArray);
   if ('$patch' === type)
-    return patch(currentState, as.record(payload));
+    return patch(currentState, payload as ValidJsonObject);
   if ('$add' === type)
-    return add(currentState, as.number(payload));
+    return add(currentState, payload as number);
   if ('$subtract' === type)
-    return subtract(currentState, as.number(payload));
+    return subtract(currentState, payload as number);
   if ('$setNew' === type)
-    return setNew(as.record(currentState), as.record(payload));
+    return setNew(currentState as ValidJsonObject, payload as ValidJsonObject);
   if ('$patchDeep' === type)
-    return patchDeep(as.record(currentState), as.record(payload));
+    return patchDeep(currentState as ValidJsonObject, payload as ValidJsonObject);
   if ('$clear' === type)
     return clear();
   if ('$push' === type)
-    return push(as.array(currentState), as.json(payload));
+    return push(currentState as ValidJsonArray, payload as ValidJson);
   if ('$pushMany' === type)
-    return pushMany(as.array(currentState), as.array(payload));
+    return pushMany(currentState as ValidJsonArray, payload as ValidJsonArray);
   if ('$deDuplicate' === type)
-    return deDuplicate(as.array(currentState));
+    return deDuplicate(currentState as ValidJsonArray);
   if ('$toggle' === type)
     return toggle(currentState);
   if ('$merge' === type)
-    return merge(as.array(currentState), as.json(payload));
+    return merge(currentState as ValidJsonArray, payload as ValidJson);
   throw new Error();
 }
 
@@ -76,11 +79,11 @@ const pushMany = (currentState: ValidJsonArray, payload: ValidJsonArray) => {
 }
 
 const merge = (currentState: ValidJsonArray, payload: ValidJson) => {
-  return [...currentState, ...(is.array(payload) ? payload : [payload]).filter(e => !currentState.includes(e))];
+  return [...currentState, ...(isArray(payload) ? payload : [payload]).filter(e => !currentState.includes(e))];
 }
 
 const toggle = (currentState: ValidJson) => {
-  if (is.array(currentState))
+  if (isArray(currentState))
     return currentState.map(e => !e);
   return !currentState;
 }
@@ -98,21 +101,21 @@ const setUnique = (payload: ValidJsonArray) => {
 }
 
 const patch = (currentState: ValidJson, payload: ValidJsonObject) => {
-  if (is.array(currentState))
-    return currentState.map(e => ({ ...as.record(e), ...payload }));
-  return { ...as.record(currentState), ...payload };
+  if (isArray(currentState))
+    return currentState.map(e => ({ ...e as ValidJsonObject, ...payload }));
+  return { ...currentState as ValidJsonObject, ...payload };
 }
 
 const add = (currentState: ValidJson, payload: number) => {
-  if (is.array(currentState))
-    return currentState.map(e => as.number(e) + payload);
-  return as.number(currentState) + payload;
+  if (isArray(currentState))
+    return currentState.map(e => e as number + payload);
+  return currentState as number + payload;
 }
 
 const subtract = (currentState: ValidJson, payload: number) => {
-  if (is.array(currentState))
-    return currentState.map(e => as.number(e) + payload);
-  return as.number(currentState) - payload;
+  if (isArray(currentState))
+    return currentState.map(e => e as number + payload);
+  return currentState as number - payload;
 }
 
 const clear = () => {
@@ -135,13 +138,13 @@ const patchDeep = (currentState: ValidJsonObject, payload: ValidJsonObject) => {
 const updateArrayObjectProperties = (currentState: ValidJsonArray, cursor: Cursor, stateActions: StateAction[]) => {
   cursor.index--;
   return currentState.map(element => {
-    if (!is.undefined(element)) return {
-      ...as.record(element),
-      ...as.record(copyNewState(
+    if (element !== undefined) return {
+      ...element as ValidJsonObject,
+      ...copyNewState(
         element ?? newRecord(),
         stateActions,
         { ...cursor }
-      ))
+      ) as ValidJsonObject
     };
     return copyNewState(
       element,
@@ -156,13 +159,13 @@ const mergeMatching = (currentState: ValidJsonArray, cursor: Cursor, stateAction
   const queryPaths = stateActions.slice(cursor.index, cursor.index + nextUpdateIndex);
   cursor.index += queryPaths.length;
   const merge = stateActions[cursor.index++];
-  const mergeArgState = as.json(is.storeInternal(merge.arg) ? merge.arg.$state : merge.arg);
-  const mergeArgs = [...(is.array(mergeArgState) ? mergeArgState : [mergeArgState])];
+  const mergeArgState = is.storeInternal(merge.arg) ? merge.arg.$state : merge.arg;
+  const mergeArgs = [...(isArray(mergeArgState) ? mergeArgState : [mergeArgState])];
   const query = (e: ValidJsonObject) => queryPaths.reduce((prev, curr) => prev[curr.name] as ValidJsonObject, e);
   return [
     ...currentState.map(existingElement => {
-      const existingElementProp = query(as.record(existingElement));
-      const elementReplacement = mergeArgs.find(ma => query(as.record(ma)) === existingElementProp);
+      const existingElementProp = query(existingElement as ValidJsonObject);
+      const elementReplacement = mergeArgs.find(ma => query(ma as ValidJsonObject) === existingElementProp);
       if (elementReplacement) mergeArgs.splice(mergeArgs.indexOf(elementReplacement), 1);
       return elementReplacement ?? existingElement;
     }),
@@ -172,17 +175,17 @@ const mergeMatching = (currentState: ValidJsonArray, cursor: Cursor, stateAction
 
 const setObjectKey = (currentState: ValidJsonObject, cursor: Cursor, stateActions: StateAction[], type: string) => {
   const stateActionsStr = stateActions.slice(0, stateActions.length - 1).map(sa => sa.name).join('.');
-  const arg = as.string(stateActions[cursor.index].arg);
+  const arg = stateActions[cursor.index].arg as string;
   libState.changeListeners
     .filter(l => l.actions.map(a => a.name).join('.').startsWith(stateActionsStr))
     .forEach(l => l.actions[l.actions.length - 2].name = arg);
-  const payload = extractPayload(as.string(stateActions[cursor.index].arg));
+  const payload = extractPayload(stateActions[cursor.index].arg as string);
   return Object.entries(currentState)
     .reduce((acc, [key, value]) => { acc[key === type ? payload : key] = value; return acc; }, newRecord());
 }
 
 const atArray = (currentState: ValidJsonArray, cursor: Cursor, payload: number, stateActions: StateAction[]) => {
-  if (is.undefined(currentState[payload]))
+  if (typeof(currentState[payload]) === 'undefined')
     throw new Error(errorMessages.AT_INDEX_OUT_OF_BOUNDS(payload));
   if ('$delete' === stateActions[cursor.index].name)
     return currentState.filter((_, i) => payload !== i);
@@ -210,11 +213,11 @@ const filterArray = (currentState: ValidJsonArray, cursor: Cursor, stateActions:
   const type = stateActions[cursor.index].name;
   const stateAction = stateActions.slice(0, cursor.index).reverse().find(sa => sa.name === '$filter')!;
   stateAction.searchIndices = currentState.map((e, i) => query(e) ? i : -1).filter(i => i !== -1);
-  if ('$delete' === type) return currentState
-    .filter((_, i) => !stateAction.searchIndices!.includes(i));
+  if ('$delete' === type) 
+    return currentState.filter((_, i) => !stateAction.searchIndices!.includes(i));
   if ('$set' === type) return [
     ...currentState.filter((_, i) => !stateAction.searchIndices!.includes(i)),
-    ...as.array(copyNewState(currentState, stateActions, cursor)),
+    ...copyNewState(currentState, stateActions, cursor) as ValidJsonArray,
   ];
   return currentState.map((e, i) => stateAction.searchIndices!.includes(i)
     ? copyNewState(e, stateActions, { ...cursor })
@@ -231,11 +234,11 @@ const deleteObjectValue = (currentState: ValidJsonObject, type: string, stateAct
 }
 
 const copyObjectProperty = (currentState: ValidJson, type: string, stateActions: StateAction[], cursor: Cursor) => {
-  const currentStateRecord = as.record(currentState ?? newRecord());
+  const currentStateRecord = (currentState ?? newRecord()) as ValidJsonObject;
   return {
     ...currentStateRecord,
     [type]: copyNewState(
-      currentStateRecord[type],
+      currentStateRecord[type as keyof typeof currentStateRecord] as ValidJson,
       stateActions,
       cursor,
     )

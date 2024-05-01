@@ -4,6 +4,7 @@ import { DeleteNode, DevtoolsAction, OnChange, SetNewNode, StateAction, ValidJso
 
 export type StoreInternal 
   = ValidJson
+  & { $storeMark: true }
   & SetNewNode
   & DeleteNode<1>
   & OnChange<unknown>
