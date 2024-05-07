@@ -1,7 +1,7 @@
 import { augmentations, comparators, libState, testState, updateFunctions } from './constant';
 import { perf } from './performance';
-import { DeepReadonlyArray, Store, ValidJsonObject } from './type';
-import { is, updatePropMap } from './type-check';
+import { DeepReadonlyArray, StateAction, Store, ValidJsonObject } from './type';
+import { updatePropMap } from './type-check';
 import { StoreInternal } from './type-internal';
 
 
@@ -101,35 +101,38 @@ export const toIsoStringInCurrentTz = (date: Date) => {
 }
 
 const regexp = new RegExp([...comparators, ...updateFunctions, '$at'].map(c => `^\\${c}$`).join('|'), 'g');
-export const fixCurrentAction = (action: { name: string, arg?: unknown }, nested: boolean): string => {
-  return action.name.replace(regexp, match => {
+export const fixCurrentAction = ({ name, arg }: { name: string, arg?: unknown }, nested: boolean): string => {
+  return name.replace(regexp, match => {
     if (updatePropMap[match])
       return `${match}()`;
-    if (typeof (action.arg) === 'undefined')
+    if (typeof (arg) === 'undefined')
       return `${match}()`;
-    if (is.storeInternal(action.arg)) {
+    const { $state, $stateActions } = arg as { $stateActions: StateAction[], $state: unknown };
+    if ($stateActions) {
       if (!nested)
-        return `${match}(${JSON.stringify(action.arg.$state)})`;
-      return `${match}( ${action.arg.$stateActions.map(sa => fixCurrentAction(sa, nested)).join('.')} = ${JSON.stringify(action.arg.$state)} )`;
+        return `${match}(${JSON.stringify($state)})`;
+      return `${match}( ${$stateActions.map(sa => fixCurrentAction(sa, nested)).join('.')} = ${JSON.stringify($state)} )`;
     }
-    return `${match}(${JSON.stringify(action.arg)})`;
+    return `${match}(${JSON.stringify(arg)})`;
   });
 }
 
 type PayloadType<T> = { [key in keyof T]: T[key] extends StoreInternal ? T[key]['$state'] : PayloadType<T[key]> }
 const isArray = Array.isArray;
+const typeCheckArray = ['undefined', 'number', 'string', 'boolean'];
 export const extractPayload = <T>(payloadIncoming: T) => {
-  if (typeof (payloadIncoming) === 'undefined' || typeof (payloadIncoming) === 'number' || typeof (payloadIncoming) === 'string'
-    || typeof (payloadIncoming) === 'boolean' || payloadIncoming === null || typeof (payloadIncoming) !== 'object' || payloadIncoming instanceof Date)
+  const type = typeof (payloadIncoming);
+  if (typeCheckArray.includes(type) || type !== 'object' || payloadIncoming === null || payloadIncoming instanceof Date )
     return payloadIncoming;
   testState.currentActionPayloadPaths = undefined;
   const payloadPaths = newRecord<string>();
   const sanitizePayload = (payload: T, path: string): PayloadType<T> => {
-    if (typeof (payload) === 'undefined' || typeof (payload) === 'number' || typeof (payload) === 'string' || typeof (payload) === 'boolean' || payload === null || payload instanceof Date)
+    if (typeCheckArray.includes(typeof (payload)) || payload === null || payload instanceof Date)
       return payload as PayloadType<T>;
-    if (is.storeInternal(payload)) {
-      payloadPaths[path] = `${payload.$stateActions.map(sa => fixCurrentAction(sa, true)).join('.')} = ${JSON.stringify(payload.$state)}`;
-      return payload.$state as PayloadType<T>;
+    const { $state, $stateActions } = payload as { $stateActions: StateAction[], $state: T };
+    if ($stateActions) {
+      payloadPaths[path] = `${$stateActions.map(sa => fixCurrentAction(sa, true)).join('.')} = ${JSON.stringify($state)}`;
+      return $state as PayloadType<T>;
     }
     if (isArray(payload))
       return payload.map((p, i) => sanitizePayload(p as T, !path ? i.toString() : `${path}.${i}`)) as PayloadType<T>;

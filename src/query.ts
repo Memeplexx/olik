@@ -1,7 +1,7 @@
 import { comparisons } from './constant';
 import { StateAction, ValidJsonObject } from './type';
 import { comparatorsPropMap, libPropMap, readPropMap, updatePropMap } from './type-check';
-import { Cursor, QuerySpec, StoreInternal } from './type-internal';
+import { Cursor, QuerySpec } from './type-internal';
 
 
 const andOrMap = { $and: true, $or: true };
@@ -13,18 +13,23 @@ export const constructQuery = (
 ) => {
   const recurse = (queries: QuerySpec[]): QuerySpec[] => {
     const constructQuery = () => {
-      const nextComparatorIndex = stateActions.slice(cursor.index).findIndex(sa => comparatorsPropMap[sa.name]);
+      let nextComparatorIndex = 0;
+      const cursorIndex = cursor.index;
+      for (let i = cursorIndex; i < stateActions.length; i++) {
+        if (comparatorsPropMap[stateActions[i].name]) {
+          nextComparatorIndex = i - cursorIndex;
+          break;
+        }
+      }
       const subStateActions = stateActions.slice(cursor.index, cursor.index + nextComparatorIndex);
       cursor.index += subStateActions.length;
-      const comparator = stateActions[cursor.index];
+      const { name: comparatorName, arg: comparatorArg } = stateActions[cursor.index] as { name: keyof typeof comparisons, arg: { $stateActions: StateAction[], $state: unknown } };
       cursor.index++
       return (e: unknown) => {
         const subProperty = subStateActions.reduce((prev, curr) => prev ? (prev as ValidJsonObject)[curr.name] : undefined, e);
-        const comparatorName = comparator.name as keyof typeof comparisons;
         const comparison = comparisons[comparatorName];
         if (!comparison) throw new Error();
-        const comparatorArg = comparator.arg;
-        return comparison(subProperty, (comparatorArg as ValidJsonObject)['$stateActions'] ? (comparatorArg as StoreInternal).$state : comparatorArg);
+        return comparison(subProperty, comparatorArg.$state ?? comparatorArg);
       }
     }
     const constructConcat = () => {
@@ -46,11 +51,11 @@ export const constructQuery = (
   const ors = new Array<(arg: unknown) => boolean>();
   const ands = new Array<(arg: unknown) => boolean>();
   let prevQuery = null as (QuerySpec | null);
-  for (const query of queries) {
+  for (const q of queries) {
+    const { concat, query } = q;
     const previousClauseWasAnAnd = prevQuery?.concat === '$and';
-    const concat = query.concat;
     if (concat === '$and' || previousClauseWasAnAnd) {
-      ands.push(query.query);
+      ands.push(query);
     }
     if ((concat === '$or' || concat === '$last') && ands.length) {
       const andsCopy = [...ands];
@@ -58,9 +63,9 @@ export const constructQuery = (
       ands.length = 0;
     }
     if (!(concat === '$and') && !previousClauseWasAnAnd) {
-      ors.push(query.query);
+      ors.push(query);
     }
-    prevQuery = query;
+    prevQuery = q;
   }
   return (e: unknown) => ors.some(fn => fn(e));
 }

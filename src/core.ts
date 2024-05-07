@@ -19,7 +19,7 @@ export const createInnerStore = <S extends ValidJsonObject>(state: S) => ({
   }
 })
 
-const emptyObj = { } as StoreInternal;
+const emptyObj = {} as StoreInternal;
 const recurseProxy = (stateActionsIncoming?: StateAction[]): StoreInternal => new Proxy<StoreInternal>(emptyObj, {
   get: (_, prop: string) => {
     const stateActions = stateActionsIncoming ?? [];
@@ -53,7 +53,7 @@ export function createStore<S extends ValidJsonObject>(
 }
 
 const onChange = (stateActions: StateAction[], prop: string) => (listener: (arg: unknown) => unknown) => {
-  const changeListeners = libState.changeListeners;
+  const { changeListeners } = libState;
   const unsubscribe = () => changeListeners.splice(changeListeners.findIndex(e => e === changeListener), 1);
   const changeListener = { actions: [...stateActions, { name: prop }], listener, unsubscribe };
   changeListeners.push(changeListener);
@@ -61,18 +61,19 @@ const onChange = (stateActions: StateAction[], prop: string) => (listener: (arg:
 }
 
 const state = (stateActions: StateAction[], prop: string) => {
+  const { state } = libState;
   if (!stateActions.length)
-    return libState.state;
+    return state;
   const tryFetchResult = (stateActions: StateAction[]): unknown => {
     try {
-      return readState(libState.state, stateActions);
+      return readState(state, stateActions);
     } catch (e) {
       stateActions.pop();
       return tryFetchResult(stateActions);
     }
   }
   const result = tryFetchResult([...stateActions, { name: prop }]);
-  return typeof(result) === 'undefined' ? null : result;
+  return typeof (result) === 'undefined' ? null : result;
 }
 
 const initializeLibState = (initialState: Record<string, unknown>) => {
@@ -113,7 +114,7 @@ const obj = { name: '', arg: undefined as unknown };
 const processUpdateFunction = (stateActions: StateAction[], prop: string) => (arg: unknown, options: { cache?: number, eager?: unknown }) => {
   if (libState.devtools)
     libState.stacktraceError = new Error();
-  if (typeof(arg) === 'function') {
+  if (typeof (arg) === 'function') {
     if (!libState.asyncUpdate)
       throw new Error(errorMessages.ASYNC_UPDATES_NOT_ENABLED);
     return libState.asyncUpdate(stateActions, prop, options ?? {}, arg);
