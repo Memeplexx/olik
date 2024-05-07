@@ -124,14 +124,14 @@ const clear = () => {
 
 const patchDeep = (currentState: ValidJsonObject, payload: ValidJsonObject) => {
   const recurse = (state: ValidJson, patch: ValidJson): ValidJson => {
-    if (!is.record(state)) 
+    if (!is.record(state))
       return patch;
-    if (!is.record(patch)) 
+    if (!is.record(patch))
       throw new Error(errorMessages.INVALID_PATCH_DEEP_STRUCTURE);
     return Object.entries(patch).reduce((acc, [key, value]) => {
-      if (!is.record(value)) 
+      if (!is.record(value))
         return { ...acc, [key]: value };
-      if (!(key in state)) 
+      if (!(key in state))
         return { ...acc, [key]: value };
       return { ...acc, [key]: recurse(state[key], value) };
     }, state);
@@ -171,7 +171,8 @@ const mergeMatching = (currentState: ValidJsonArray, cursor: Cursor, stateAction
     ...currentState.map(existingElement => {
       const existingElementProp = query(existingElement as ValidJsonObject);
       const elementReplacement = mergeArgs.find(ma => query(ma as ValidJsonObject) === existingElementProp);
-      if (elementReplacement) mergeArgs.splice(mergeArgs.indexOf(elementReplacement), 1);
+      if (elementReplacement) 
+        mergeArgs.splice(mergeArgs.indexOf(elementReplacement), 1);
       return elementReplacement ?? existingElement;
     }),
     ...mergeArgs
@@ -190,7 +191,7 @@ const setObjectKey = (currentState: ValidJsonObject, cursor: Cursor, stateAction
 }
 
 const atArray = (currentState: ValidJsonArray, cursor: Cursor, payload: number, stateActions: StateAction[]) => {
-  if (typeof(currentState[payload]) === 'undefined')
+  if (typeof (currentState[payload]) === 'undefined')
     throw new Error(errorMessages.AT_INDEX_OUT_OF_BOUNDS(payload));
   if ('$delete' === stateActions[cursor.index].name)
     return currentState.filter((_, i) => payload !== i);
@@ -207,10 +208,8 @@ const findArray = (currentState: ValidJsonArray, cursor: Cursor, stateActions: S
   const cursorIndex = cursor.index;
   let stateAction: StateAction;
   for (let i = cursorIndex - 1; i >= 0; i--) {
-    if (stateActions[i].name === '$find') {
-      stateAction = stateActions[i];
-      break;
-    }
+    if (stateActions[i].name !== '$find') continue;
+    stateAction = stateActions[i]; break;
   }
   stateAction!.searchIndices = [findIndex];
   if ('$delete' === stateActions[cursorIndex].name)
@@ -226,18 +225,17 @@ const filterArray = (currentState: ValidJsonArray, cursor: Cursor, stateActions:
   const type = stateActions[cursorIndex].name;
   let stateAction: StateAction;
   for (let i = cursorIndex - 1; i >= 0; i--) {
-    if (stateActions[i].name === '$filter') {
-      stateAction = stateActions[i];
-      break;
-    }
+    if (stateActions[i].name !== '$filter') continue;
+    stateAction = stateActions[i]; break;
   }
   const searchIndices = stateAction!.searchIndices = currentState.map((e, i) => query(e) ? i : -1).filter(i => i !== -1);
-  if ('$delete' === type) 
+  if ('$delete' === type)
     return currentState.filter((_, i) => !searchIndices!.includes(i));
-  if ('$set' === type) return [
-    ...currentState.filter((_, i) => !searchIndices!.includes(i)),
-    ...copyNewState(currentState, stateActions, cursor) as ValidJsonArray,
-  ];
+  if ('$set' === type)
+    return [
+      ...currentState.filter((_, i) => !searchIndices!.includes(i)),
+      ...copyNewState(currentState, stateActions, cursor) as ValidJsonArray,
+    ];
   return currentState.map((e, i) => searchIndices!.includes(i)
     ? copyNewState(e, stateActions, { ...cursor })
     : e);
