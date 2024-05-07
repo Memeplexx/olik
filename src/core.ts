@@ -23,10 +23,12 @@ const emptyObj = {} as StoreInternal;
 const recurseProxy = (stateActionsIncoming?: StateAction[]): StoreInternal => new Proxy<StoreInternal>(emptyObj, {
   get: (_, prop: string) => {
     const stateActions = stateActionsIncoming ?? [];
-    if (augmentations.selection[prop])
-      return augmentations.selection[prop](recurseProxy(stateActions));
-    if (augmentations.core[prop])
-      return augmentations.core[prop](recurseProxy(stateActions));
+    const selectAugmentation = augmentations.selection[prop];
+    if (selectAugmentation)
+      return selectAugmentation(recurseProxy(stateActions));
+    const coreAugmentation =  augmentations.core[prop];
+    if (coreAugmentation)
+      return coreAugmentation(recurseProxy(stateActions));
     if (!libPropMap[prop] || concatPropMap[prop])
       return basicProp(stateActions, prop);
     if (updatePropMap[prop])
