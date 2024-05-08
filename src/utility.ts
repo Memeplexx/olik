@@ -127,7 +127,7 @@ export const extractPayload = <T>(payloadIncoming: T) => {
       return Object.keys(payload).reduce((prev, key) => {
         prev[key] = sanitizePayload((payload as ValidJsonObject)[key] as T, !path ? key.toString() : `${path}.${key.toString()}`);
         return prev;
-      }, {} as Record<string, unknown>) as PayloadType<T>;
+      }, {} as ValidJsonObject) as PayloadType<T>;
     throw new Error();
   }
   const payload = sanitizePayload(payloadIncoming, '');

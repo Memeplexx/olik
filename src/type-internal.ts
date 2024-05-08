@@ -4,7 +4,6 @@ import { DeleteNode, DevtoolsAction, OnChange, SetNewNode, StateAction, ValidJso
 
 export type StoreInternal 
   = ValidJson
-  & { $storeMark: true }
   & SetNewNode
   & DeleteNode<1>
   & OnChange<unknown>
@@ -12,7 +11,7 @@ export type StoreInternal
     [key in keyof ValidJsonObject]: StoreInternal & ((arg: unknown) => StoreInternal)
   }
   & {
-    $state: ValidJsonObject & { cache?: Record<string, string> };
+    $state: ValidJsonObject
   }
   & {
     $stateActions: StateAction[],

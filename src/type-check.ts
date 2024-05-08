@@ -1,10 +1,10 @@
 import { anyLibProp, comparators, concatenations, readFunctions, updateFunctions } from "./constant";
-import { Primitive, ValidJson, ValueOf } from "./type";
+import { Primitive, ValidJson, ValidJsonObject, ValueOf } from "./type";
 import { StoreInternal } from "./type-internal";
 
 
 
-const emptyObject = {} as Record<string, unknown>;
+const emptyObject = {} as ValidJsonObject;
 export const libPropMap = anyLibProp.reduce((acc, e) => { acc[e] = true; return acc; }, { ...emptyObject });
 export const readPropMap = readFunctions.reduce((acc, e) => { acc[e] = true; return acc; }, { ...emptyObject });
 export const updatePropMap = updateFunctions.reduce((acc, e) => { acc[e] = true; return acc; }, { ...emptyObject });

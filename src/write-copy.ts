@@ -119,7 +119,7 @@ const updateArrayObjectProperties = (currentState: ValidJsonArray, cursor: Curso
     if (element !== undefined) return {
       ...element as ValidJsonObject,
       ...copyNewState(
-        element ?? {} as Record<string, unknown>,
+        element ?? {} as ValidJsonObject,
         stateActions,
         { ...cursor }
       ) as ValidJsonObject
@@ -161,7 +161,7 @@ const setObjectKey = (currentState: ValidJsonObject, cursor: Cursor, stateAction
     .forEach(l => l.actions[l.actions.length - 2].name = arg);
   const payload = extractPayload(arg);
   return Object.entries(currentState)
-    .reduce((acc, [key, value]) => { acc[key === type ? payload : key] = value; return acc; }, {} as Record<string, unknown>);
+    .reduce((acc, [key, value]) => { acc[key === type ? payload : key] = value; return acc; }, {} as ValidJsonObject);
 }
 
 const atArray = (currentState: ValidJsonArray, cursor: Cursor, stateActions: StateAction[], payload: number) => {
@@ -225,7 +225,7 @@ const deleteObjectValue = (currentState: ValidJsonObject, type: string, stateAct
 }
 
 const copyObjectProperty = (currentState: ValidJson, cursor: Cursor, stateActions: StateAction[], type: string) => {
-  const currentStateRecord = (currentState ?? {} as Record<string, unknown>) as ValidJsonObject;
+  const currentStateRecord = (currentState ?? {} as ValidJsonObject) as ValidJsonObject;
   return {
     ...currentStateRecord,
     [type]: copyNewState(

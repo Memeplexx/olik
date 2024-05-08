@@ -21,7 +21,7 @@ export const createInnerStore = <S extends ValidJsonObject>(state: S) => ({
 
 const emptyObj = {} as StoreInternal;
 const { selection, core } = augmentations;
-const recurseProxy = (stateActions?: StateAction[]): StoreInternal => new Proxy<StoreInternal>(emptyObj, {
+const recurseProxy = (stateActions?: StateAction[]): StoreInternal => new Proxy(emptyObj, {
   get: (_, prop: string) => {
     if ('$stateActions' === prop)
       return stateActions ?? [];
@@ -76,13 +76,13 @@ const state = (stateActions: StateAction[], prop: string) => {
   return typeof (result) === 'undefined' ? null : result;
 }
 
-const initializeLibState = (initialState: Record<string, unknown>) => {
+const initializeLibState = (initialState: ValidJsonObject) => {
   if (libState.initialState)
     return;
   libState.state = libState.initialState = initialState;
 }
 
-const removeStaleCacheReferences = (state: Record<string, unknown>) => {
+const removeStaleCacheReferences = (state: ValidJsonObject) => {
   if (!state.cache)
     return;
   state.cache = Object.fromEntries(Object.entries(state.cache).filter(([, value]) => new Date(value).getTime() > Date.now()));
