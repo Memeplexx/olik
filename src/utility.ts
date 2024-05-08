@@ -116,17 +116,15 @@ export const fixCurrentAction = ({ name, arg }: { name: string, arg?: unknown },
 
 type PayloadType<T> = { [key in keyof T]: T[key] extends StoreInternal ? T[key]['$state'] : PayloadType<T[key]> }
 const isArray = Array.isArray;
-const typeCheckArray = ['undefined', 'number', 'string', 'boolean'];
 export const extractPayload = <T>(payloadIncoming: T) => {
-  const type = typeof (payloadIncoming);
-  if (typeCheckArray.includes(type) || type !== 'object' || payloadIncoming === null || payloadIncoming instanceof Date )
+  if (typeof (payloadIncoming) !== 'object' || payloadIncoming === null || payloadIncoming instanceof Date)
     return payloadIncoming;
   testState.currentActionPayloadPaths = undefined;
   const payloadPaths = newRecord<string>();
   const sanitizePayload = (payload: T, path: string): PayloadType<T> => {
-    if (typeCheckArray.includes(typeof (payload)) || payload === null || payload instanceof Date)
+    if (typeof (payload) !== 'object' || payload === null || payload instanceof Date)
       return payload as PayloadType<T>;
-    const { $state, $stateActions } = payload as { $stateActions: StateAction[], $state: T };
+    const { $state, $stateActions } = payload as unknown as { $stateActions: StateAction[], $state: T };
     if ($stateActions) {
       payloadPaths[path] = `${$stateActions.map(sa => fixCurrentAction(sa, true)).join('.')} = ${JSON.stringify($state)}`;
       return $state as PayloadType<T>;

@@ -4,12 +4,12 @@ import { StoreInternal } from "./type-internal";
 import { doThrow } from "./utility";
 
 
-export const newRecord = <V = unknown>() => ({} as Record<string, V>);
-export const libPropMap = anyLibProp.reduce((acc, e) => { acc[e] = true; return acc; }, newRecord());
-export const readPropMap = readFunctions.reduce((acc, e) => { acc[e] = true; return acc; }, newRecord());
-export const updatePropMap = updateFunctions.reduce((acc, e) => { acc[e] = true; return acc; }, newRecord());
-export const comparatorsPropMap = comparators.reduce((acc, e) => { acc[e] = true; return acc; }, newRecord());
-export const concatPropMap = concatenations.reduce((acc, e) => { acc[e] = true; return acc; }, newRecord());
+const emptyObject = {} as Record<string, unknown>;
+export const libPropMap = anyLibProp.reduce((acc, e) => { acc[e] = true; return acc; }, { ...emptyObject });
+export const readPropMap = readFunctions.reduce((acc, e) => { acc[e] = true; return acc; }, { ...emptyObject });
+export const updatePropMap = updateFunctions.reduce((acc, e) => { acc[e] = true; return acc; }, { ...emptyObject });
+export const comparatorsPropMap = comparators.reduce((acc, e) => { acc[e] = true; return acc; }, { ...emptyObject });
+export const concatPropMap = concatenations.reduce((acc, e) => { acc[e] = true; return acc; }, { ...emptyObject });
 
 export const is = {
   date: (arg: unknown): arg is Date => arg instanceof Date,
@@ -38,8 +38,4 @@ export const as = {
   json: (arg: unknown): ValidJson => is.record(arg) || is.array(arg) || is.primitive(arg) || is.date(arg) || is.null(arg) ? arg : doThrow(),
   storeInternal: (arg: unknown): StoreInternal => is.storeInternal(arg) ? arg : doThrow(),
   anyUpdateFunction: (arg: unknown): ValueOf<typeof updateFunctions> => is.anyUpdateFunction(arg) ? arg : doThrow(),
-}
-
-export function assertIsArray<T = ValidJson>(value: unknown): asserts value is Array<T> {
-  as.array<T>(value);
 }

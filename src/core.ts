@@ -21,29 +21,28 @@ export const createInnerStore = <S extends ValidJsonObject>(state: S) => ({
 
 const emptyObj = {} as StoreInternal;
 const { selection, core } = augmentations;
-const recurseProxy = (stateActionsIncoming?: StateAction[]): StoreInternal => new Proxy<StoreInternal>(emptyObj, {
+const recurseProxy = (stateActions?: StateAction[]): StoreInternal => new Proxy<StoreInternal>(emptyObj, {
   get: (_, prop: string) => {
-    const stateActions = stateActionsIncoming ?? [];
     const selectAugmentation = selection[prop];
     if (selectAugmentation)
-      return selectAugmentation(recurseProxy(stateActions));
+      return selectAugmentation(recurseProxy(stateActions ?? []));
     const coreAugmentation = core[prop];
     if (coreAugmentation)
-      return coreAugmentation(recurseProxy(stateActions));
+      return coreAugmentation(recurseProxy(stateActions ?? []));
     if (!libPropMap[prop] || concatPropMap[prop])
-      return basicProp(stateActions, prop);
+      return basicProp(stateActions ?? [], prop);
     if (updatePropMap[prop])
-      return processUpdateFunction(stateActions, prop);
+      return processUpdateFunction(stateActions ?? [], prop);
     if ('$stateActions' === prop)
-      return stateActions;
+      return stateActions ?? [];
     if ('$state' === prop)
-      return !stateActions.length ? libState.state : state(stateActions, prop);
+      return !stateActions ? libState.state : state(stateActions, prop);
     if ('$at' === prop || comparatorsPropMap[prop])
-      return comparator(stateActions, prop);
+      return comparator(stateActions ?? [], prop);
     if ('$invalidateCache' === prop)
-      return invalidateCache(stateActions);
+      return invalidateCache(stateActions ?? []);
     if ('$onChange' === prop)
-      return onChange(stateActions, prop);
+      return onChange(stateActions ?? [], prop);
   }
 });
 
@@ -111,7 +110,6 @@ const invalidateCache = (stateActions: StateAction[]) => () => {
   }
 };
 
-const obj = { name: '', arg: undefined as unknown };
 const processUpdateFunction = (stateActions: StateAction[], prop: string) => (arg: unknown, options: { cache?: number, eager?: unknown }) => {
   if (libState.devtools)
     libState.stacktraceError = new Error();
@@ -120,9 +118,7 @@ const processUpdateFunction = (stateActions: StateAction[], prop: string) => (ar
       throw new Error(errorMessages.ASYNC_UPDATES_NOT_ENABLED);
     return libState.asyncUpdate(stateActions, prop, options ?? {}, arg);
   } else {
-    obj.name = prop;
-    obj.arg = arg;
-    stateActions.push(obj);
+    stateActions.push({ name: prop, arg });
     setNewStateAndNotifyListeners(stateActions);
   }
 }

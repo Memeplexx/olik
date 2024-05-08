@@ -1,6 +1,5 @@
 import { libState, testState } from './constant';
 import { DevtoolsAction } from './type';
-import { is } from './type-check';
 import { deserialize, extractPayload, isoDateRegexp } from './utility';
 
 let initialized = false;
@@ -75,7 +74,7 @@ const listenToStateChangesFromDevtools = () => {
   new MutationObserver(() => {
     libState.disableDevtoolsDispatch = true;
     libState.store!.$set(JSON.parse(olikStateDiv.innerHTML, (key, value) => {
-      if (is.string(value) && isoDateRegexp.test(value))
+      if (typeof(value) === 'string' && isoDateRegexp.test(value))
         return new Date(value);
       return value;
     }));

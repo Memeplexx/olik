@@ -1,16 +1,14 @@
 import { errorMessages, libState } from './constant';
 import { constructQuery } from './query';
 import { StateAction, ValidJson, ValidJsonArray, ValidJsonObject } from './type';
-import { is, libPropMap } from './type-check';
+import { libPropMap, updatePropMap } from './type-check';
 import { Cursor } from './type-internal';
 import { extractPayload, newRecord } from './utility';
 
 
 
-
-const isArray = Array.isArray;
 const deleteMap = { $delete: true, $invalidateCache: true };
-const typeMap = { object: true, undefined: true};
+const typeMap = { object: true, undefined: true };
 
 export const copyNewState = (
   currentState: ValidJson,
@@ -29,7 +27,7 @@ export const copyNewState = (
       return deleteObjectValue(currentState as ValidJsonObject, name, stateActions);
     if ('$setKey' === typeNext)
       return setObjectKey(currentState as ValidJsonObject, cursor, stateActions, name);
-    if (isArray(currentState) && !libPropMap[name])
+    if (Array.isArray(currentState) && !libPropMap[name])
       return updateArrayObjectProperties(currentState, cursor, stateActions);
     if (typeMap[typeof (currentState) as keyof typeof typeMap])
       return copyObjectProperty(currentState, cursor, stateActions, name);
@@ -53,11 +51,11 @@ const pushMany = (currentState: ValidJsonArray, payload: ValidJsonArray) => {
 }
 
 const merge = (currentState: ValidJsonArray, payload: ValidJson) => {
-  return [...currentState, ...(isArray(payload) ? payload : [payload]).filter(e => !currentState.includes(e))];
+  return [...currentState, ...(Array.isArray(payload) ? payload : [payload]).filter(e => !currentState.includes(e))];
 }
 
 const toggle = (currentState: ValidJson) => {
-  if (isArray(currentState))
+  if (Array.isArray(currentState))
     return currentState.map(e => !e);
   return !currentState;
 }
@@ -75,19 +73,19 @@ const setUnique = (currentState: unknown, payload: ValidJsonArray) => {
 }
 
 const patch = (currentState: ValidJson, payload: ValidJsonObject) => {
-  if (isArray(currentState))
+  if (Array.isArray(currentState))
     return currentState.map(e => ({ ...e as ValidJsonObject, ...payload }));
   return { ...currentState as ValidJsonObject, ...payload };
 }
 
 const add = (currentState: ValidJson, payload: number) => {
-  if (isArray(currentState))
+  if (Array.isArray(currentState))
     return currentState.map(e => e as number + payload);
   return currentState as number + payload;
 }
 
 const subtract = (currentState: ValidJson, payload: number) => {
-  if (isArray(currentState))
+  if (Array.isArray(currentState))
     return currentState.map(e => e as number + payload);
   return currentState as number - payload;
 }
@@ -97,18 +95,20 @@ const clear = () => {
 }
 
 const patchDeep = (currentState: ValidJsonObject, payload: ValidJsonObject) => {
+  const isRecord = (arg: unknown) => typeof arg === 'object' && arg !== null && !Array.isArray(arg) && !(arg instanceof Date);
   const recurse = (state: ValidJson, patch: ValidJson): ValidJson => {
-    if (!is.record(state))
+    if (!isRecord(state))
       return patch;
-    if (!is.record(patch))
+    if (!isRecord(patch))
       throw new Error(errorMessages.INVALID_PATCH_DEEP_STRUCTURE);
-    return Object.entries(patch).reduce((acc, [key, value]) => {
-      if (!is.record(value))
-        return { ...acc, [key]: value };
-      if (!(key in state))
-        return { ...acc, [key]: value };
-      return { ...acc, [key]: recurse(state[key], value) };
-    }, state);
+    return Object.entries(patch as ValidJsonObject)
+      .reduce((acc, [key, value]) => {
+        if (!isRecord(value))
+          return { ...acc as ValidJsonObject, [key]: value };
+        if (!(key in (state as ValidJsonObject)))
+          return { ...acc as ValidJsonObject, [key]: value };
+        return { ...acc as ValidJsonObject, [key]: recurse((state as ValidJsonObject)[key] as ValidJsonObject, value as ValidJsonObject) };
+      }, state);
   }
   return recurse(currentState, payload);
 }
@@ -134,12 +134,12 @@ const updateArrayObjectProperties = (currentState: ValidJsonArray, cursor: Curso
 
 const mergeMatching = (currentState: ValidJsonArray, cursor: Cursor, stateActions: StateAction[]) => {
   const cursorIndex = cursor.index;
-  const nextUpdateIndex = stateActions.slice(cursorIndex).findIndex(sa => is.anyUpdateFunction(sa.name));
+  const nextUpdateIndex = stateActions.slice(cursorIndex).findIndex(sa => updatePropMap[sa.name]);
   const queryPaths = stateActions.slice(cursorIndex, cursorIndex + nextUpdateIndex);
   cursor.index += queryPaths.length;
   const mergeArg = stateActions[cursor.index++].arg;
   const mergeArgState = (mergeArg as { $state: unknown }).$state ?? mergeArg;
-  const mergeArgs = [...(isArray(mergeArgState) ? mergeArgState : [mergeArgState])];
+  const mergeArgs = [...(Array.isArray(mergeArgState) ? mergeArgState : [mergeArgState])];
   const query = (e: ValidJsonObject) => queryPaths.reduce((prev, curr) => prev[curr.name] as ValidJsonObject, e);
   return [
     ...currentState.map(existingElement => {

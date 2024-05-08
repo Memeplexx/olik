@@ -29,7 +29,7 @@ test('Immutable Perf', () => {
   console.log(`Immutable Perf: ${performance.now() - before}`);
 })
 
-test('Olik Perf', () => {
+test('Olik Perf set', () => {
   const state = { num: 0, str: '' };
   const store = createStore(state);
   const before = performance.now();
@@ -37,7 +37,30 @@ test('Olik Perf', () => {
     store.num.$set(i);
     store.$state;
   }
-  console.log(`Olik Perf: ${performance.now() - before}`);
+  console.log(`Olik Perf set: ${performance.now() - before}`);
+})
+
+test('Olik Perf add', () => {
+  const state = { num: 0, str: '' };
+  const store = createStore(state);
+  const before = performance.now();
+  for (let i = 0; i < 1000; i++) {
+    store.num.$add(i);
+    store.$state;
+  }
+  console.log(`Olik Perf add: ${performance.now() - before}`);
+})
+
+test('Olik Perf setKey', () => {
+  const state = { num: 0, str: '' };
+  const store = createStore(state);
+  const before = performance.now();
+  const arr = (new Array(1000)).fill(0).map((e, i) => i.toString());
+  for (const e of arr) {
+    store.num.$setKey(e);
+    store.$state;
+  }
+  console.log(`Olik Perf setKey: ${performance.now() - before}`);
 })
 
 test('Native Perf', () => {
