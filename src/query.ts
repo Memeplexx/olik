@@ -5,7 +5,9 @@ import { Cursor, QuerySpec } from './type-internal';
 
 
 const andOrMap = { $and: true, $or: true };
-const emptyArray = [] as QuerySpec[];
+const recurseArray = [] as QuerySpec[];
+const ors = [] as Array<(arg: unknown) => boolean>;
+const ands = [] as Array<(arg: unknown) => boolean>;
 
 export const constructQuery = (
   stateActions: ReadonlyArray<StateAction>, 
@@ -46,10 +48,10 @@ export const constructQuery = (
     }
     return queries;
   }
-  emptyArray.length = 0;
-  const queries = recurse(emptyArray);
-  const ors = new Array<(arg: unknown) => boolean>();
-  const ands = new Array<(arg: unknown) => boolean>();
+  recurseArray.length = 0;
+  ors.length = 0;
+  ands.length = 0;
+  const queries = recurse(recurseArray);
   let prevQuery = null as (QuerySpec | null);
   for (const q of queries) {
     const { concat, query } = q;
