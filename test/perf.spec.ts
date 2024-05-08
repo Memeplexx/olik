@@ -104,7 +104,24 @@ test('Native Perf (deep)', () => {
 
 
 
+// test('One', () => {
+//   const val = 'hello';
+//   const before = performance.now();
+//   for (let i = 0; i < 1000; i++) {
+//     if (val === 'hello'){}
+//   }
+//   console.log(`One: ${performance.now() - before}`);
+// })
 
+// test('Two', () => {
+//   const val = 'hello';
+//   const ref = 'hello';
+//   const before = performance.now();
+//   for (let i = 0; i < 1000; i++) {
+//     if (val === ref){}
+//   }
+//   console.log(`Two: ${performance.now() - before}`);
+// })
 
 
 // test('Tail Factorial', () => {

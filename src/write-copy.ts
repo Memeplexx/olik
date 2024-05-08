@@ -9,8 +9,9 @@ import { extractPayload, newRecord } from './utility';
 
 
 const isArray = Array.isArray;
-const deleteArray = ['$delete', '$invalidateCache'];
-const typeArray = ['object', 'undefined'];
+const deleteMap = { $delete: true, $invalidateCache: true };
+const typeMap = { object: true, undefined: true};
+
 export const copyNewState = (
   currentState: ValidJson,
   stateActions: StateAction[],
@@ -20,51 +21,23 @@ export const copyNewState = (
   const { name, arg } = stateActions[cursorIndex];
   if (cursorIndex < stateActions.length - 1) {
     cursor.index++;
-    if ('$at' === name)
-      return atArray(currentState as ValidJsonArray, cursor, arg as number, stateActions);
-    if ('$find' === name)
-      return findArray(currentState as ValidJsonArray, cursor, stateActions);
-    if ('$filter' === name)
-      return filterArray(currentState as ValidJsonArray, cursor, stateActions);
-    if ('$mergeMatching' === name)
-      return mergeMatching(currentState as ValidJsonArray, cursor, stateActions);
+    const arrayFn = mapOne[name as keyof typeof mapOne] as (currentState: ValidJsonArray, cursor: Cursor, stateActions: StateAction[], arg: unknown) => ValidJsonArray;
+    if (arrayFn)
+      return arrayFn(currentState as ValidJsonArray, cursor, stateActions, arg);
     const typeNext = stateActions[cursor.index].name;
-    if (deleteArray.includes(typeNext))
+    if (deleteMap[typeNext as keyof typeof deleteMap])
       return deleteObjectValue(currentState as ValidJsonObject, name, stateActions);
     if ('$setKey' === typeNext)
       return setObjectKey(currentState as ValidJsonObject, cursor, stateActions, name);
     if (isArray(currentState) && !libPropMap[name])
       return updateArrayObjectProperties(currentState, cursor, stateActions);
-    if (typeArray.includes(typeof (currentState)))
+    if (typeMap[typeof (currentState) as keyof typeof typeMap])
       return copyObjectProperty(currentState, cursor, stateActions, name);
   }
   const payload = extractPayload(arg);
-  if ('$set' === name)
-    return set(payload as ValidJson);
-  if ('$setUnique' === name)
-    return setUnique(payload as ValidJsonArray);
-  if ('$patch' === name)
-    return patch(currentState, payload as ValidJsonObject);
-  if ('$add' === name)
-    return add(currentState, payload as number);
-  if ('$subtract' === name)
-    return subtract(currentState, payload as number);
-  if ('$setNew' === name)
-    return setNew(currentState as ValidJsonObject, payload as ValidJsonObject);
-  if ('$patchDeep' === name)
-    return patchDeep(currentState as ValidJsonObject, payload as ValidJsonObject);
-  if ('$clear' === name)
-    return clear();
-  if ('$push' === name)
-    return push(currentState as ValidJsonArray, payload as ValidJson);
-  if ('$pushMany' === name)
-    return pushMany(currentState as ValidJsonArray, payload as ValidJsonArray);
-  if ('$deDuplicate' === name)
-    return deDuplicate(currentState as ValidJsonArray);
-  if ('$toggle' === name)
-    return toggle(currentState);
-  if ('$merge' === name)
-    return merge(currentState as ValidJsonArray, payload as ValidJson);
+  const updateFn = mapTwo[name as keyof typeof mapTwo] as (currentState: ValidJson, payload: unknown) => ValidJson;
+  if (updateFn)
+    return updateFn(currentState, payload);
   throw new Error();
 }
 
@@ -94,11 +67,11 @@ const setNew = (currentState: ValidJsonObject, payload: ValidJsonObject) => {
   return { ...currentState, ...payload };
 }
 
-const set = (payload: ValidJson) => {
+const set = (currentState: unknown, payload: ValidJson) => {
   return payload;
 }
 
-const setUnique = (payload: ValidJsonArray) => {
+const setUnique = (currentState: unknown, payload: ValidJsonArray) => {
   return [...new Set(payload)];
 }
 
@@ -192,7 +165,7 @@ const setObjectKey = (currentState: ValidJsonObject, cursor: Cursor, stateAction
     .reduce((acc, [key, value]) => { acc[key === type ? payload : key] = value; return acc; }, newRecord());
 }
 
-const atArray = (currentState: ValidJsonArray, cursor: Cursor, payload: number, stateActions: StateAction[]) => {
+const atArray = (currentState: ValidJsonArray, cursor: Cursor, stateActions: StateAction[], payload: number) => {
   if (typeof (currentState[payload]) === 'undefined')
     throw new Error(errorMessages.AT_INDEX_OUT_OF_BOUNDS(payload));
   if ('$delete' === stateActions[cursor.index].name)
@@ -263,3 +236,26 @@ const copyObjectProperty = (currentState: ValidJson, cursor: Cursor, stateAction
     )
   };
 }
+
+const mapOne = {
+  $at: atArray,
+  $find: findArray,
+  $filter: filterArray,
+  $mergeMatching: mergeMatching,
+}
+
+const mapTwo = {
+  $set: set,
+  $setUnique: setUnique,
+  $patch: patch,
+  $add: add,
+  $subtract: subtract,
+  $setNew: setNew,
+  $patchDeep: patchDeep,
+  $clear: clear,
+  $push: push,
+  $pushMany: pushMany,
+  $deDuplicate: deDuplicate,
+  $toggle: toggle,
+  $merge: merge,
+};
