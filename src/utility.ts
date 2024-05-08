@@ -1,4 +1,5 @@
-import { augmentations, comparators, libState, testState, updateFunctions } from './constant';
+import { augment } from './augment';
+import { comparators, libState, testState, updateFunctions } from './constant';
 import { perf } from './performance';
 import { DeepReadonlyArray, StateAction, Store, ValidJsonObject } from './type';
 import { updatePropMap } from './type-check';
@@ -33,11 +34,7 @@ export const resetLibraryState = () => {
   libState.disableDevtoolsDispatch = false;
   libState.derivations = new Map();
   libState.devtools = undefined;
-  augmentations.selection = {};
-  augmentations.future = {};
-  augmentations.derivation = {};
-  augmentations.core = {};
-  augmentations.async = promise => promise();
+  augment({ async: promise => promise() });
   perf.clear();
 };
 

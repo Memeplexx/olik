@@ -9,6 +9,8 @@ import { extractPayload, newRecord } from './utility';
 
 
 const isArray = Array.isArray;
+const deleteArray = ['$delete', '$invalidateCache'];
+const typeArray = ['object', 'undefined'];
 export const copyNewState = (
   currentState: ValidJson,
   stateActions: StateAction[],
@@ -27,14 +29,14 @@ export const copyNewState = (
     if ('$mergeMatching' === name)
       return mergeMatching(currentState as ValidJsonArray, cursor, stateActions);
     const typeNext = stateActions[cursor.index].name;
-    if ('$delete' === typeNext || '$invalidateCache' === typeNext)
+    if (deleteArray.includes(typeNext))
       return deleteObjectValue(currentState as ValidJsonObject, name, stateActions);
     if ('$setKey' === typeNext)
       return setObjectKey(currentState as ValidJsonObject, cursor, stateActions, name);
     if (isArray(currentState) && !libPropMap[name])
       return updateArrayObjectProperties(currentState, cursor, stateActions);
-    if (typeof (currentState) === 'object' || typeof (currentState) === 'undefined')
-      return copyObjectProperty(currentState, name, stateActions, cursor);
+    if (typeArray.includes(typeof (currentState)))
+      return copyObjectProperty(currentState, cursor, stateActions, name);
   }
   const payload = extractPayload(arg);
   if ('$set' === name)
@@ -171,7 +173,7 @@ const mergeMatching = (currentState: ValidJsonArray, cursor: Cursor, stateAction
     ...currentState.map(existingElement => {
       const existingElementProp = query(existingElement as ValidJsonObject);
       const elementReplacement = mergeArgs.find(ma => query(ma as ValidJsonObject) === existingElementProp);
-      if (elementReplacement) 
+      if (elementReplacement)
         mergeArgs.splice(mergeArgs.indexOf(elementReplacement), 1);
       return elementReplacement ?? existingElement;
     }),
@@ -250,7 +252,7 @@ const deleteObjectValue = (currentState: ValidJsonObject, type: string, stateAct
   return newState;
 }
 
-const copyObjectProperty = (currentState: ValidJson, type: string, stateActions: StateAction[], cursor: Cursor) => {
+const copyObjectProperty = (currentState: ValidJson, cursor: Cursor, stateActions: StateAction[], type: string) => {
   const currentStateRecord = (currentState ?? newRecord()) as ValidJsonObject;
   return {
     ...currentStateRecord,

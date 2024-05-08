@@ -20,13 +20,14 @@ export const createInnerStore = <S extends ValidJsonObject>(state: S) => ({
 })
 
 const emptyObj = {} as StoreInternal;
+const { selection, core } = augmentations;
 const recurseProxy = (stateActionsIncoming?: StateAction[]): StoreInternal => new Proxy<StoreInternal>(emptyObj, {
   get: (_, prop: string) => {
     const stateActions = stateActionsIncoming ?? [];
-    const selectAugmentation = augmentations.selection[prop];
+    const selectAugmentation = selection[prop];
     if (selectAugmentation)
       return selectAugmentation(recurseProxy(stateActions));
-    const coreAugmentation =  augmentations.core[prop];
+    const coreAugmentation = core[prop];
     if (coreAugmentation)
       return coreAugmentation(recurseProxy(stateActions));
     if (!libPropMap[prop] || concatPropMap[prop])
@@ -36,7 +37,7 @@ const recurseProxy = (stateActionsIncoming?: StateAction[]): StoreInternal => ne
     if ('$stateActions' === prop)
       return stateActions;
     if ('$state' === prop)
-      return state(stateActions, prop);
+      return !stateActions.length ? libState.state : state(stateActions, prop);
     if ('$at' === prop || comparatorsPropMap[prop])
       return comparator(stateActions, prop);
     if ('$invalidateCache' === prop)
@@ -64,8 +65,6 @@ const onChange = (stateActions: StateAction[], prop: string) => (listener: (arg:
 
 const state = (stateActions: StateAction[], prop: string) => {
   const { state } = libState;
-  if (!stateActions.length)
-    return state;
   const tryFetchResult = (stateActions: StateAction[]): unknown => {
     try {
       return readState(state, stateActions);

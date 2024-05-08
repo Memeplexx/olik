@@ -90,7 +90,13 @@ test('Native Perf (deep)', () => {
   let state = { arr: [{ id: 1, val: '', obj: { num: 0 } }, { id: 2, val: '', obj: { num: 0 } }, { id: 3, val: '', obj: { num: 0 } }] };
   const before = performance.now();
   for (let i = 0; i < 1000; i++) {
-    state = { ...state, arr: state.arr.map(e => e.val === '' ? { ...e, id: i } : e) };
+    state = {
+      ...state,
+      arr: [
+        state.arr.find(e => e.val === '')!, 
+        ...state.arr.slice(1)
+      ]
+    };
   }
   console.log(`Native Perf (deep): ${performance.now() - before}`);
 })

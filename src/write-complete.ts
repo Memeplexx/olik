@@ -9,7 +9,7 @@ const cursor = { index: 0 };
 export const setNewStateAndNotifyListeners = (
   stateActions: StateAction[]
 ) => {
-  const { state: oldState, devtools, disableDevtoolsDispatch } = libState;
+  const { state: oldState, devtools, disableDevtoolsDispatch, changeListeners } = libState;
   if (devtools && !disableDevtoolsDispatch) {
     const type = stateActions.map(sa => fixCurrentAction(sa, true)).join('.');
     const typeOrig = stateActions.map(sa => fixCurrentAction(sa, false)).join('.');
@@ -19,7 +19,7 @@ export const setNewStateAndNotifyListeners = (
   }
   cursor.index = 0;
   libState.state = copyNewState(oldState!, stateActions, cursor) as ValidJsonObject;
-  libState.changeListeners.forEach(({ actions, listener }) => {
+  changeListeners.forEach(({ actions, listener }) => {
     const selectedOldState = readState(oldState, actions);
     const selectedNewState = readState(libState.state, actions);
     if (selectedOldState !== selectedNewState)
