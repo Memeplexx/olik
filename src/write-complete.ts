@@ -19,11 +19,14 @@ export const setNewStateAndNotifyListeners = (
   }
   cursor.index = 0;
   libState.state = copyNewState(oldState!, stateActions, cursor) as ValidJsonObject;
-  changeListeners.forEach(({ actions, listener }) => {
-    const selectedOldState = readState(oldState, actions);
+  changeListeners.forEach(el => {
+    const { actions, listener, cachedState } = el;
+    const selectedOldState = cachedState !== undefined ? cachedState : readState(oldState, actions);
     const selectedNewState = readState(libState.state, actions);
-    if (selectedOldState !== selectedNewState)
+    if (selectedOldState !== selectedNewState) {
+      el.cachedState = selectedNewState;
       listener(selectedNewState);
+    }
   })
   if (devtools && !disableDevtoolsDispatch) {
     devtools.dispatch({ stateActions, actionType: testState.currentActionType, payloadPaths: testState.currentActionPayloadPaths });

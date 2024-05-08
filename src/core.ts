@@ -57,7 +57,7 @@ export function createStore<S extends ValidJsonObject>(
 const onChange = (stateActions: StateAction[], prop: string) => (listener: (arg: unknown) => unknown) => {
   const { changeListeners } = libState;
   const unsubscribe = () => changeListeners.splice(changeListeners.findIndex(e => e === changeListener), 1);
-  const changeListener = { actions: [...stateActions, { name: prop }], listener, unsubscribe };
+  const changeListener = { actions: [...stateActions, { name: prop }], listener, unsubscribe, cachedState: undefined };
   changeListeners.push(changeListener);
   return { unsubscribe }
 }

@@ -804,6 +804,7 @@ export interface StoreAugment<S> { }
 export interface ChangeListener {
   actions: StateAction[];
   listener: (arg: unknown) => unknown;
+  cachedState: unknown,
   unsubscribe: () => void;
 }
 
