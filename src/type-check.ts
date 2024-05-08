@@ -1,7 +1,7 @@
 import { anyLibProp, comparators, concatenations, readFunctions, updateFunctions } from "./constant";
 import { Primitive, ValidJson, ValueOf } from "./type";
 import { StoreInternal } from "./type-internal";
-import { doThrow } from "./utility";
+
 
 
 const emptyObject = {} as Record<string, unknown>;
@@ -30,6 +30,7 @@ export const is = {
   anyLibProp: <T extends ValueOf<typeof anyLibProp>[]>(arg: unknown): arg is T => !!libPropMap[arg as string],
 }
 
+export const doThrow = () => { throw new Error(); }
 export const as = {
   string: (arg: unknown): string => is.string(arg) ? arg : doThrow(),
   number: (arg: unknown): number => is.number(arg) ? arg : doThrow(),

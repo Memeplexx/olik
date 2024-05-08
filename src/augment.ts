@@ -1,10 +1,9 @@
 import { augmentations } from './constant';
 import { Augmentations, ValidJsonObject } from './type';
-import { objectKeys } from './utility';
 
 export function augment(arg: Partial<Augmentations>) {
   // Object.assign(augmentations, arg);
-  objectKeys(augmentations).forEach(key => {
+  (Object.keys(augmentations) as Array<keyof typeof augmentations>).forEach(key => {
     const el = arg[key] as ValidJsonObject;
     if (!el) {
       return;

@@ -1,20 +1,12 @@
 import { augment } from './augment';
 import { comparators, libState, testState, updateFunctions } from './constant';
 import { perf } from './performance';
-import { DeepReadonlyArray, StateAction, Store, ValidJsonObject } from './type';
+import { StateAction, Store, ValidJsonObject } from './type';
 import { updatePropMap } from './type-check';
 import { StoreInternal } from './type-internal';
 
 
 export const getStore = <S>() => libState.store as Store<S>;
-
-export const doThrow = () => { throw new Error(); }
-
-export const newRecord = <V = unknown>() => ({} as Record<string, V>);
-
-export const newArray = <T>() => new Array<T>() as DeepReadonlyArray<T>;
-
-export const objectKeys = <T extends object>(o: T): Array<keyof T> => Object.keys(o) as Array<keyof T>;
 
 export const enqueueMicroTask = (fn: () => void) => Promise.resolve().then(fn);
 
@@ -115,12 +107,12 @@ export const fixCurrentAction = ({ name, arg }: { name: string, arg?: unknown },
 }
 
 type PayloadType<T> = { [key in keyof T]: T[key] extends StoreInternal ? T[key]['$state'] : PayloadType<T[key]> }
-const isArray = Array.isArray;
+const payloadPaths = {} as Record<string, string>;
 export const extractPayload = <T>(payloadIncoming: T) => {
   if (typeof (payloadIncoming) !== 'object' || payloadIncoming === null || payloadIncoming instanceof Date)
     return payloadIncoming;
   testState.currentActionPayloadPaths = undefined;
-  const payloadPaths = newRecord<string>();
+  Object.keys(payloadPaths).forEach(k => delete payloadPaths[k]);
   const sanitizePayload = (payload: T, path: string): PayloadType<T> => {
     if (typeof (payload) !== 'object' || payload === null || payload instanceof Date)
       return payload as PayloadType<T>;
@@ -129,13 +121,13 @@ export const extractPayload = <T>(payloadIncoming: T) => {
       payloadPaths[path] = `${$stateActions.map(sa => fixCurrentAction(sa, true)).join('.')} = ${JSON.stringify($state)}`;
       return $state as PayloadType<T>;
     }
-    if (isArray(payload))
+    if (Array.isArray(payload))
       return payload.map((p, i) => sanitizePayload(p as T, !path ? i.toString() : `${path}.${i}`)) as PayloadType<T>;
     if (typeof (payload) === 'object' && payload !== null)
       return Object.keys(payload).reduce((prev, key) => {
         prev[key] = sanitizePayload((payload as ValidJsonObject)[key] as T, !path ? key.toString() : `${path}.${key.toString()}`);
         return prev;
-      }, newRecord()) as PayloadType<T>;
+      }, {} as Record<string, unknown>) as PayloadType<T>;
     throw new Error();
   }
   const payload = sanitizePayload(payloadIncoming, '');

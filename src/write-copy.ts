@@ -86,7 +86,7 @@ const add = (currentState: ValidJson, payload: number) => {
 
 const subtract = (currentState: ValidJson, payload: number) => {
   if (Array.isArray(currentState))
-    return currentState.map(e => e as number + payload);
+    return currentState.map(e => e as number - payload);
   return currentState as number - payload;
 }
 

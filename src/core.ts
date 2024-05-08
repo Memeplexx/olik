@@ -27,6 +27,8 @@ const recurseProxy = (stateActions?: StateAction[]): StoreInternal => new Proxy<
       return stateActions ?? [];
     if ('$state' === prop)
       return !stateActions ? libState.state : state(stateActions, prop);
+    if (updatePropMap[prop])
+      return processUpdateFunction(stateActions ?? [], prop);
     const selectAugmentation = selection[prop];
     if (selectAugmentation)
       return selectAugmentation(recurseProxy(stateActions ?? []));
@@ -35,8 +37,6 @@ const recurseProxy = (stateActions?: StateAction[]): StoreInternal => new Proxy<
       return coreAugmentation(recurseProxy(stateActions ?? []));
     if (!libPropMap[prop] || concatPropMap[prop])
       return basicProp(stateActions ?? [], prop);
-    if (updatePropMap[prop])
-      return processUpdateFunction(stateActions ?? [], prop);
     if ('$at' === prop || comparatorsPropMap[prop])
       return comparator(stateActions ?? [], prop);
     if ('$onChange' === prop)

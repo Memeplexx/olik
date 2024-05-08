@@ -63,6 +63,17 @@ test('Olik Perf setKey', () => {
   console.log(`Olik Perf setKey: ${performance.now() - before}`);
 })
 
+test('Olik Perf merge', () => {
+  const state = { nums: [1, 2, 3] };
+  const store = createStore(state);
+  const before = performance.now();
+  for (let i = 0; i < 1000; i++) {
+    store.nums.$merge(i)
+    store.$state;
+  }
+  console.log(`Olik Perf merge: ${performance.now() - before}`);
+})
+
 test('Native Perf', () => {
   let state = { num: 0, str: '' };
   const before = performance.now();
