@@ -34,10 +34,9 @@ export const copyNewState = (
     if (typeMap[typeof (currentState) as keyof typeof typeMap])
       return copyObjectProperty(currentState, cursor, stateActions, name);
   }
-  const payload = extractPayload(arg);
   const updateFn = mapTwo[name as keyof typeof mapTwo] as (currentState: ValidJson, payload: unknown) => ValidJson;
   if (updateFn)
-    return updateFn(currentState, payload);
+    return updateFn(currentState, extractPayload(arg));
   throw new Error();
 }
 
@@ -156,11 +155,11 @@ const mergeMatching = (currentState: ValidJsonArray, cursor: Cursor, stateAction
 
 const setObjectKey = (currentState: ValidJsonObject, cursor: Cursor, stateActions: StateAction[], type: string) => {
   const stateActionsStr = stateActions.slice(0, stateActions.length - 1).map(sa => sa.name).join('.');
-  const { arg } = stateActions[cursor.index];
+  const arg = stateActions[cursor.index].arg as string;
   libState.changeListeners
     .filter(l => l.actions.map(a => a.name).join('.').startsWith(stateActionsStr))
-    .forEach(l => l.actions[l.actions.length - 2].name = arg as string);
-  const payload = extractPayload(arg as string);
+    .forEach(l => l.actions[l.actions.length - 2].name = arg);
+  const payload = extractPayload(arg);
   return Object.entries(currentState)
     .reduce((acc, [key, value]) => { acc[key === type ? payload : key] = value; return acc; }, newRecord());
 }
