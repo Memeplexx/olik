@@ -805,6 +805,7 @@ export interface ChangeListener {
   actions: StateAction[];
   listener: (arg: unknown) => unknown;
   cachedState: unknown,
+  path: string,
   unsubscribe: () => void;
 }
 

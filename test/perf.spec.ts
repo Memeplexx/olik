@@ -3,6 +3,7 @@ import { fromJS, Map } from 'immutable';
 import { beforeEach, test } from 'vitest';
 import { createStore } from '../src/core';
 import { resetLibraryState } from '../src/utility';
+import { libState } from '../src';
 
 beforeEach(() => {
   resetLibraryState();
@@ -33,10 +34,15 @@ test('Olik Perf set', () => {
   const state = { num: 0, str: '' };
   const store = createStore(state);
   const before = performance.now();
+  // store.num.$onChange(() => {});
+  // store.num.$onChange(() => {});
+  // store.num.$onChange(() => {});
+  // store.num.$onChange(() => {});
   for (let i = 0; i < 1000; i++) {
     store.num.$set(i);
     store.$state;
   }
+  // console.log(libState.changeListeners)
   console.log(`Olik Perf set: ${performance.now() - before}`);
 })
 

@@ -3,6 +3,7 @@ import { readState } from './read';
 import { Readable, StateAction, Store, StoreAugment, StoreDef, ValidJsonObject } from './type';
 import { comparatorsPropMap, concatPropMap, libPropMap, updatePropMap } from './type-check';
 import { StoreInternal } from './type-internal';
+import { fixCurrentAction } from './utility';
 import { setNewStateAndNotifyListeners } from './write-complete';
 
 
@@ -57,7 +58,13 @@ export function createStore<S extends ValidJsonObject>(
 const onChange = (stateActions: StateAction[], prop: string) => (listener: (arg: unknown) => unknown) => {
   const { changeListeners } = libState;
   const unsubscribe = () => changeListeners.splice(changeListeners.findIndex(e => e === changeListener), 1);
-  const changeListener = { actions: [...stateActions, { name: prop }], listener, unsubscribe, cachedState: undefined };
+  const changeListener = {
+    actions: [...stateActions, { name: prop }],
+    listener,
+    unsubscribe,
+    cachedState: undefined,
+    path: stateActions.map(sa => fixCurrentAction(sa, false)).join('.') // double check!
+  };
   changeListeners.push(changeListener);
   return { unsubscribe }
 }
