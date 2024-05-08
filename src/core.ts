@@ -66,7 +66,7 @@ const onChange = (stateActions: StateAction[], prop: string) => (listener: (arg:
       changeListener.listeners.splice(changeListener.listeners.findIndex(l => l === listener), 1);
     }
   }
-  const path = stateActions.map(sa => constructTypeString(sa, false)).join('.') // double check!!!!!!!
+  const path = stateActions.map(sa => constructTypeString(sa, false)).join('.') // double check how path is calculated!!!!!!!
   const changeListener = changeListeners.find(cl => cl.path === path);
   if (changeListener) {
     changeListener.listeners.push(listener);
