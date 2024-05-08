@@ -3,7 +3,6 @@ import { fromJS, Map } from 'immutable';
 import { beforeEach, test } from 'vitest';
 import { createStore } from '../src/core';
 import { resetLibraryState } from '../src/utility';
-import { libState } from '../src';
 
 beforeEach(() => {
   resetLibraryState();
@@ -33,16 +32,15 @@ test('Immutable Perf', () => {
 test('Olik Perf set', () => {
   const state = { num: 0, str: '' };
   const store = createStore(state);
+  // store.num.$onChange(() => {});
+  // store.num.$onChange(() => {});
+  // store.num.$onChange(() => {});
+  // store.num.$onChange(() => {});
   const before = performance.now();
-  // store.num.$onChange(() => {});
-  // store.num.$onChange(() => {});
-  // store.num.$onChange(() => {});
-  // store.num.$onChange(() => {});
   for (let i = 0; i < 1000; i++) {
     store.num.$set(i);
     store.$state;
   }
-  // console.log(libState.changeListeners)
   console.log(`Olik Perf set: ${performance.now() - before}`);
 })
 
@@ -142,6 +140,53 @@ test('Native Perf (deep)', () => {
 })
 
 
+
+
+// test('One', () => {
+//   const before = performance.now();
+//   const thing = 'hello' as string;
+//   for (let i = 0; i < 1000; i++) {
+//     if (thing === 'one') {
+//       return;
+//     }
+//     if (thing === 'two') {
+//       return;
+//     }
+//     if (thing === 'three') {
+//       return;
+//     }
+//     if (thing === 'for') {
+//       return;
+//     }
+//   }
+//   console.log(`One: ${performance.now() - before}`);
+// })
+
+// test('Two', () => {
+//   const before = performance.now();
+//   const thing = 'hello';
+//   const map = {
+//     one: true,
+//     two: true,
+//     three: true,
+//     four: true,
+//   } as Record<string, boolean>;
+//   for (let i = 0; i < 1000; i++) {
+//     if (map[thing]) {
+//       return;
+//     }
+//     if (map[thing]) {
+//       return;
+//     }
+//     if (map[thing]) {
+//       return;
+//     }
+//     if (map[thing]) {
+//       return;
+//     }
+//   }
+//   console.log(`Two: ${performance.now() - before}`);
+// })
 
 
 // test('One', () => {

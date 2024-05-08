@@ -90,7 +90,7 @@ export const toIsoStringInCurrentTz = (date: Date) => {
 }
 
 const regexp = new RegExp([...comparators, ...updateFunctions, '$at'].map(c => `^\\${c}$`).join('|'), 'g');
-export const fixCurrentAction = ({ name, arg }: { name: string, arg?: unknown }, nested: boolean): string => {
+export const constructTypeString = ({ name, arg }: { name: string, arg?: unknown }, nested: boolean): string => {
   return name.replace(regexp, match => {
     if (updatePropMap[match])
       return `${match}()`;
@@ -100,7 +100,7 @@ export const fixCurrentAction = ({ name, arg }: { name: string, arg?: unknown },
     if ($stateActions) {
       if (!nested)
         return `${match}(${JSON.stringify($state)})`;
-      return `${match}( ${$stateActions.map(sa => fixCurrentAction(sa, nested)).join('.')} = ${JSON.stringify($state)} )`;
+      return `${match}( ${$stateActions.map(sa => constructTypeString(sa, nested)).join('.')} = ${JSON.stringify($state)} )`;
     }
     return `${match}(${JSON.stringify(arg)})`;
   });
@@ -118,7 +118,7 @@ export const extractPayload = <T>(payloadIncoming: T) => {
       return payload as PayloadType<T>;
     const { $state, $stateActions } = payload as unknown as { $stateActions: StateAction[], $state: T };
     if ($stateActions) {
-      payloadPaths[path] = `${$stateActions.map(sa => fixCurrentAction(sa, true)).join('.')} = ${JSON.stringify($state)}`;
+      payloadPaths[path] = `${$stateActions.map(sa => constructTypeString(sa, true)).join('.')} = ${JSON.stringify($state)}`;
       return $state as PayloadType<T>;
     }
     if (Array.isArray(payload))

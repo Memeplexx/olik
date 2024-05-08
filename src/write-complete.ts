@@ -1,7 +1,7 @@
 import { libState, testState } from './constant';
 import { readState } from './read';
 import { StateAction, ValidJsonObject } from './type';
-import { fixCurrentAction } from './utility';
+import { constructTypeString } from './utility';
 import { copyNewState } from './write-copy';
 
 
@@ -11,8 +11,8 @@ export const setNewStateAndNotifyListeners = (
 ) => {
   const { state: oldState, devtools, disableDevtoolsDispatch } = libState;
   if (devtools && !disableDevtoolsDispatch) {
-    const type = stateActions.map(sa => fixCurrentAction(sa, true)).join('.');
-    const typeOrig = stateActions.map(sa => fixCurrentAction(sa, false)).join('.');
+    const type = stateActions.map(sa => constructTypeString(sa, true)).join('.');
+    const typeOrig = stateActions.map(sa => constructTypeString(sa, false)).join('.');
     testState.currentActionType = type;
     testState.currentActionTypeOrig = type !== typeOrig ? typeOrig : undefined;
     testState.currentActionPayload = stateActions.at(-1)!.arg;
@@ -29,24 +29,16 @@ const notifyChangeListeners = (
   oldState: ValidJsonObject,
 ) => {
   libState.changeListeners.forEach(el => {
-    const { actions, listener, cachedState } = el;
+    const { actions, cachedState } = el;
     const selectedOldState = cachedState !== undefined ? cachedState : readState(oldState, actions);
     const selectedNewState = readState(libState.state, actions);
     const notify = () => {
       el.cachedState = selectedNewState;
-      listener(selectedNewState);
+      el.listeners.forEach(listener => listener(selectedNewState));
     }
-    if (Array.isArray(selectedOldState) && Array.isArray(selectedNewState)) {
-      if (selectedNewState.length === selectedOldState.length) {
-        for (let i = 0; i < selectedOldState.length; i++) {
-          if (selectedOldState[i] !== selectedNewState[i]) {
-            notify();
-            break;
-          }
-        }
-      } else {
+    if ((Array.isArray(selectedOldState) && Array.isArray(selectedNewState))
+      && (selectedNewState.length !== selectedOldState.length || selectedOldState.some((el, i) => el !== selectedNewState[i]))) {
         notify();
-      }
     } else if (selectedOldState !== selectedNewState) {
       notify();
     }

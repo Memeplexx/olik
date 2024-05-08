@@ -3,7 +3,7 @@ import { readState } from './read';
 import { Readable, StateAction, Store, StoreAugment, StoreDef, ValidJsonObject } from './type';
 import { comparatorsPropMap, concatPropMap, libPropMap, updatePropMap } from './type-check';
 import { StoreInternal } from './type-internal';
-import { fixCurrentAction } from './utility';
+import { constructTypeString } from './utility';
 import { setNewStateAndNotifyListeners } from './write-complete';
 
 
@@ -57,15 +57,29 @@ export function createStore<S extends ValidJsonObject>(
 
 const onChange = (stateActions: StateAction[], prop: string) => (listener: (arg: unknown) => unknown) => {
   const { changeListeners } = libState;
-  const unsubscribe = () => changeListeners.splice(changeListeners.findIndex(e => e === changeListener), 1);
-  const changeListener = {
-    actions: [...stateActions, { name: prop }],
-    listener,
-    unsubscribe,
-    cachedState: undefined,
-    path: stateActions.map(sa => fixCurrentAction(sa, false)).join('.') // double check!
-  };
-  changeListeners.push(changeListener);
+  const unsubscribe = () => {
+    const changeListenerIndex = changeListeners.findIndex(cl => cl.path === path)!;
+    const changeListener = changeListeners[changeListenerIndex];
+    if (changeListener.listeners.length === 1) {
+      changeListeners.splice(changeListenerIndex, 1);
+    } else {
+      changeListener.listeners.splice(changeListener.listeners.findIndex(l => l === listener), 1);
+    }
+  }
+  const path = stateActions.map(sa => constructTypeString(sa, false)).join('.') // double check!!!!!!!
+  const changeListener = changeListeners.find(cl => cl.path === path);
+  if (changeListener) {
+    changeListener.listeners.push(listener);
+  } else {
+    changeListeners.push({
+      actions: [...stateActions, { name: prop }],
+      listeners: [listener],
+      unsubscribe,
+      cachedState: undefined,
+      path,
+    })
+  }
+  
   return { unsubscribe }
 }
 
