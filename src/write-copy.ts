@@ -6,10 +6,6 @@ import { Cursor } from './type-internal';
 import { extractPayload } from './utility';
 
 
-
-const deleteMap = { $delete: true, $invalidateCache: true };
-const typeMap = { object: true, undefined: true };
-
 export const copyNewState = (
   currentState: ValidJson,
   stateActions: StateAction[],
@@ -19,51 +15,40 @@ export const copyNewState = (
   const { name, arg } = stateActions[cursorIndex];
   if (cursorIndex < stateActions.length - 1) {
     cursor.index++;
-    if ('$at' === name)
-      return atArray(currentState as ValidJsonArray, cursor, stateActions, arg as number);
-    if ('$find' === name)
-      return findArray(currentState as ValidJsonArray, cursor, stateActions);
-    if ('$filter' === name)
-      return filterArray(currentState as ValidJsonArray, cursor, stateActions);
-    if ('$mergeMatching' === name)
-      return mergeMatching(currentState as ValidJsonArray, cursor, stateActions);
-    const typeNext = stateActions[cursor.index].name;
-    if (deleteMap[typeNext as keyof typeof deleteMap])
-      return deleteObjectValue(currentState as ValidJsonObject, name, stateActions);
-    if ('$setKey' === typeNext)
-      return setObjectKey(currentState as ValidJsonObject, cursor, stateActions, name);
+    switch (name) {
+      case '$at': return atArray(currentState as ValidJsonArray, cursor, stateActions, arg as number);
+      case '$find': return findArray(currentState as ValidJsonArray, cursor, stateActions);
+      case '$filter': return filterArray(currentState as ValidJsonArray, cursor, stateActions);
+      case '$mergeMatching': return mergeMatching(currentState as ValidJsonArray, cursor, stateActions);
+    }
+    switch (stateActions[cursor.index].name) {
+      case '$delete':
+      case '$invalidateCache': return deleteObjectValue(currentState as ValidJsonObject, name, stateActions);
+      case '$setKey': return setObjectKey(currentState as ValidJsonObject, cursor, stateActions, name);
+    }
     if (Array.isArray(currentState) && !libPropMap[name])
       return updateArrayObjectProperties(currentState, cursor, stateActions);
-    if (typeMap[typeof (currentState) as keyof typeof typeMap])
-      return copyObjectProperty(currentState, cursor, stateActions, name);
+    switch (typeof (currentState)) {
+      case 'object':
+      case 'undefined': return copyObjectProperty(currentState, cursor, stateActions, name);
+    }
   }
   const payload = extractPayload(arg);
-  if ('$set' === name)
-    return set(payload as ValidJson);
-  if ('$setUnique' === name)
-    return setUnique(payload as ValidJsonArray);
-  if ('$patch' === name)
-    return patch(currentState, payload as ValidJsonObject);
-  if ('$add' === name)
-    return add(currentState, payload as number);
-  if ('$subtract' === name)
-    return subtract(currentState, payload as number);
-  if ('$setNew' === name)
-    return setNew(currentState as ValidJsonObject, payload as ValidJsonObject);
-  if ('$patchDeep' === name)
-    return patchDeep(currentState as ValidJsonObject, payload as ValidJsonObject);
-  if ('$clear' === name)
-    return clear();
-  if ('$push' === name)
-    return push(currentState as ValidJsonArray, payload as ValidJson);
-  if ('$pushMany' === name)
-    return pushMany(currentState as ValidJsonArray, payload as ValidJsonArray);
-  if ('$deDuplicate' === name)
-    return deDuplicate(currentState as ValidJsonArray);
-  if ('$toggle' === name)
-    return toggle(currentState);
-  if ('$merge' === name)
-    return merge(currentState as ValidJsonArray, payload as ValidJson);
+  switch (name) {
+    case '$set': return set(payload as ValidJson);
+    case '$setUnique': return setUnique(payload as ValidJsonArray);
+    case '$patch': return patch(currentState, payload as ValidJsonObject);
+    case '$add': return add(currentState, payload as number);
+    case '$subtract': return subtract(currentState, payload as number);
+    case '$setNew': return setNew(currentState as ValidJsonObject, payload as ValidJsonObject);
+    case '$patchDeep': return patchDeep(currentState as ValidJsonObject, payload as ValidJsonObject);
+    case '$clear': return clear();
+    case '$push': return push(currentState as ValidJsonArray, payload as ValidJson);
+    case '$pushMany': return pushMany(currentState as ValidJsonArray, payload as ValidJsonArray);
+    case '$deDuplicate': return deDuplicate(currentState as ValidJsonArray);
+    case '$toggle': return toggle(currentState);
+    case '$merge': return merge(currentState as ValidJsonArray, payload as ValidJson);
+  }
   throw new Error();
 }
 
