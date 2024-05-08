@@ -2,17 +2,16 @@ import { constructQuery } from './query';
 import { StateAction, ValidJsonArray, ValidJsonObject } from './type';
 import { libPropMap } from './type-check';
 
-const isArray = Array.isArray;
 export const readState = (
   state: unknown, stateActions: StateAction[], cursor = { index: 0 }
 ): unknown => {
   const { name, arg } = stateActions[cursor.index];
-  if (isArray(state) && !libPropMap[name])
+  if (Array.isArray(state) && !libPropMap[name])
     return state.map((_, i) => readState(state[i], stateActions, { ...cursor }));
   cursor.index++;
   if (cursor.index === stateActions.length)
     return state;
-  if (typeof(state) === 'object' && state !== null && !isArray(state))
+  if (typeof(state) === 'object' && state !== null && !Array.isArray(state))
     return readState((state as ValidJsonObject)[name], stateActions, cursor);
   if (name === '$at')
     return readState((state as ValidJsonObject)[arg as number], stateActions, cursor);

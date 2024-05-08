@@ -23,6 +23,10 @@ const emptyObj = {} as StoreInternal;
 const { selection, core } = augmentations;
 const recurseProxy = (stateActions?: StateAction[]): StoreInternal => new Proxy<StoreInternal>(emptyObj, {
   get: (_, prop: string) => {
+    if ('$stateActions' === prop)
+      return stateActions ?? [];
+    if ('$state' === prop)
+      return !stateActions ? libState.state : state(stateActions, prop);
     const selectAugmentation = selection[prop];
     if (selectAugmentation)
       return selectAugmentation(recurseProxy(stateActions ?? []));
@@ -33,16 +37,12 @@ const recurseProxy = (stateActions?: StateAction[]): StoreInternal => new Proxy<
       return basicProp(stateActions ?? [], prop);
     if (updatePropMap[prop])
       return processUpdateFunction(stateActions ?? [], prop);
-    if ('$stateActions' === prop)
-      return stateActions ?? [];
-    if ('$state' === prop)
-      return !stateActions ? libState.state : state(stateActions, prop);
     if ('$at' === prop || comparatorsPropMap[prop])
       return comparator(stateActions ?? [], prop);
-    if ('$invalidateCache' === prop)
-      return invalidateCache(stateActions ?? []);
     if ('$onChange' === prop)
       return onChange(stateActions ?? [], prop);
+    if ('$invalidateCache' === prop)
+      return invalidateCache(stateActions ?? []);
   }
 });
 

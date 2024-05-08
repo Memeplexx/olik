@@ -3,7 +3,7 @@ import { constructQuery } from './query';
 import { StateAction, ValidJson, ValidJsonArray, ValidJsonObject } from './type';
 import { libPropMap, updatePropMap } from './type-check';
 import { Cursor } from './type-internal';
-import { extractPayload, newRecord } from './utility';
+import { extractPayload } from './utility';
 
 
 
@@ -119,7 +119,7 @@ const updateArrayObjectProperties = (currentState: ValidJsonArray, cursor: Curso
     if (element !== undefined) return {
       ...element as ValidJsonObject,
       ...copyNewState(
-        element ?? newRecord(),
+        element ?? {} as Record<string, unknown>,
         stateActions,
         { ...cursor }
       ) as ValidJsonObject
@@ -161,7 +161,7 @@ const setObjectKey = (currentState: ValidJsonObject, cursor: Cursor, stateAction
     .forEach(l => l.actions[l.actions.length - 2].name = arg);
   const payload = extractPayload(arg);
   return Object.entries(currentState)
-    .reduce((acc, [key, value]) => { acc[key === type ? payload : key] = value; return acc; }, newRecord());
+    .reduce((acc, [key, value]) => { acc[key === type ? payload : key] = value; return acc; }, {} as Record<string, unknown>);
 }
 
 const atArray = (currentState: ValidJsonArray, cursor: Cursor, stateActions: StateAction[], payload: number) => {
@@ -225,7 +225,7 @@ const deleteObjectValue = (currentState: ValidJsonObject, type: string, stateAct
 }
 
 const copyObjectProperty = (currentState: ValidJson, cursor: Cursor, stateActions: StateAction[], type: string) => {
-  const currentStateRecord = (currentState ?? newRecord()) as ValidJsonObject;
+  const currentStateRecord = (currentState ?? {} as Record<string, unknown>) as ValidJsonObject;
   return {
     ...currentStateRecord,
     [type]: copyNewState(
