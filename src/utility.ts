@@ -108,9 +108,9 @@ export const constructTypeString = ({ name, arg }: { name: string, arg?: unknown
 
 type PayloadType<T> = { [key in keyof T]: T[key] extends StoreInternal ? T[key]['$state'] : PayloadType<T[key]> }
 const payloadPaths = {} as Record<string, string>;
-export const extractPayload = <T>(payloadIncoming: T) => {
+export const extractPayload = <T>(payloadIncoming: unknown): T => {
   if (typeof (payloadIncoming) !== 'object' || payloadIncoming === null || payloadIncoming instanceof Date)
-    return payloadIncoming;
+    return payloadIncoming as T;
   testState.currentActionPayloadPaths = undefined;
   Object.keys(payloadPaths).forEach(k => delete payloadPaths[k]);
   const sanitizePayload = (payload: T, path: string): PayloadType<T> => {
@@ -130,8 +130,8 @@ export const extractPayload = <T>(payloadIncoming: T) => {
       }, {} as ValidJsonObject) as PayloadType<T>;
     throw new Error();
   }
-  const payload = sanitizePayload(payloadIncoming, '');
+  const payload = sanitizePayload(payloadIncoming as T, '');
   if (Object.keys(payloadPaths).length)
     testState.currentActionPayloadPaths = payloadPaths;
-  return payload;
+  return payload as T;
 }

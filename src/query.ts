@@ -56,7 +56,8 @@ export const constructQuery = (
   for (const q of queries) {
     const { concat, query } = q;
     const previousClauseWasAnAnd = prevQuery?.concat === '$and';
-    if (concat === '$and' || previousClauseWasAnAnd) {
+    const concatWasAnAnd = concat === '$and';
+    if (concatWasAnAnd || previousClauseWasAnAnd) {
       ands.push(query);
     }
     if ((concat === '$or' || concat === '$last') && ands.length) {
@@ -64,7 +65,7 @@ export const constructQuery = (
       ors.push(el => andsCopy.every(and => and(el)));
       ands.length = 0;
     }
-    if (!(concat === '$and') && !previousClauseWasAnAnd) {
+    if (!concatWasAnAnd && !previousClauseWasAnAnd) {
       ors.push(query);
     }
     prevQuery = q;

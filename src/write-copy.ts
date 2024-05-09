@@ -16,38 +16,57 @@ export const copyNewState = (
   if (cursorIndex < stateActions.length - 1) {
     cursor.index++;
     switch (name) {
-      case '$at': return atArray(currentState as ValidJsonArray, cursor, stateActions, arg as number);
-      case '$find': return findArray(currentState as ValidJsonArray, cursor, stateActions);
-      case '$filter': return filterArray(currentState as ValidJsonArray, cursor, stateActions);
-      case '$mergeMatching': return mergeMatching(currentState as ValidJsonArray, cursor, stateActions);
+      case '$at':
+        return atArray(currentState as ValidJsonArray, cursor, stateActions, arg as number);
+      case '$find':
+        return findArray(currentState as ValidJsonArray, cursor, stateActions);
+      case '$filter':
+        return filterArray(currentState as ValidJsonArray, cursor, stateActions);
+      case '$mergeMatching':
+        return mergeMatching(currentState as ValidJsonArray, cursor, stateActions);
     }
     switch (stateActions[cursor.index].name) {
       case '$delete':
-      case '$invalidateCache': return deleteObjectValue(currentState as ValidJsonObject, name, stateActions);
-      case '$setKey': return setObjectKey(currentState as ValidJsonObject, cursor, stateActions, name);
+      case '$invalidateCache':
+        return deleteObjectValue(currentState as ValidJsonObject, name, stateActions);
+      case '$setKey':
+        return setObjectKey(currentState as ValidJsonObject, cursor, stateActions, name);
     }
     if (Array.isArray(currentState) && !libPropMap[name])
       return updateArrayObjectProperties(currentState, cursor, stateActions);
     switch (typeof (currentState)) {
       case 'object':
-      case 'undefined': return copyObjectProperty(currentState, cursor, stateActions, name);
+      case 'undefined':
+        return copyObjectProperty(currentState, cursor, stateActions, name);
     }
   }
-  const payload = extractPayload(arg);
   switch (name) {
-    case '$set': return set(payload as ValidJson);
-    case '$setUnique': return setUnique(payload as ValidJsonArray);
-    case '$patch': return patch(currentState, payload as ValidJsonObject);
-    case '$add': return add(currentState, payload as number);
-    case '$subtract': return subtract(currentState, payload as number);
-    case '$setNew': return setNew(currentState as ValidJsonObject, payload as ValidJsonObject);
-    case '$patchDeep': return patchDeep(currentState as ValidJsonObject, payload as ValidJsonObject);
-    case '$clear': return clear();
-    case '$push': return push(currentState as ValidJsonArray, payload as ValidJson);
-    case '$pushMany': return pushMany(currentState as ValidJsonArray, payload as ValidJsonArray);
-    case '$deDuplicate': return deDuplicate(currentState as ValidJsonArray);
-    case '$toggle': return toggle(currentState);
-    case '$merge': return merge(currentState as ValidJsonArray, payload as ValidJson);
+    case '$set':
+      return set(extractPayload(arg));
+    case '$setUnique':
+      return setUnique(extractPayload(arg));
+    case '$patch':
+      return patch(currentState, extractPayload(arg));
+    case '$add':
+      return add(currentState, extractPayload(arg));
+    case '$subtract':
+      return subtract(currentState, extractPayload(arg));
+    case '$setNew':
+      return setNew(currentState as ValidJsonObject, extractPayload(arg));
+    case '$patchDeep':
+      return patchDeep(currentState as ValidJsonObject, extractPayload(arg));
+    case '$clear':
+      return clear();
+    case '$push':
+      return push(currentState as ValidJsonArray, extractPayload(arg));
+    case '$pushMany':
+      return pushMany(currentState as ValidJsonArray, extractPayload(arg));
+    case '$deDuplicate':
+      return deDuplicate(currentState as ValidJsonArray);
+    case '$toggle':
+      return toggle(currentState);
+    case '$merge':
+      return merge(currentState as ValidJsonArray, extractPayload(arg));
   }
   throw new Error();
 }
@@ -109,19 +128,19 @@ const clear = () => {
 }
 
 const patchDeep = (currentState: ValidJsonObject, payload: ValidJsonObject) => {
-  const isRecord = (arg: unknown) => typeof arg === 'object' && arg !== null && !Array.isArray(arg) && !(arg instanceof Date);
+  const isRecord = (arg: unknown): arg is ValidJsonObject => typeof arg === 'object' && arg !== null && !Array.isArray(arg) && !(arg instanceof Date);
   const recurse = (state: ValidJson, patch: ValidJson): ValidJson => {
     if (!isRecord(state))
       return patch;
     if (!isRecord(patch))
       throw new Error(errorMessages.INVALID_PATCH_DEEP_STRUCTURE);
-    return Object.entries(patch as ValidJsonObject)
+    return Object.entries(patch)
       .reduce((acc, [key, value]) => {
         if (!isRecord(value))
-          return { ...acc as ValidJsonObject, [key]: value };
-        if (!(key in (state as ValidJsonObject)))
-          return { ...acc as ValidJsonObject, [key]: value };
-        return { ...acc as ValidJsonObject, [key]: recurse((state as ValidJsonObject)[key] as ValidJsonObject, value as ValidJsonObject) };
+          return { ...acc, [key]: value };
+        if (!(key in (state)))
+          return { ...acc, [key]: value };
+        return { ...acc, [key]: recurse((state as ValidJsonObject)[key] as ValidJsonObject, value as ValidJsonObject) };
       }, state);
   }
   return recurse(currentState, payload);
@@ -173,7 +192,7 @@ const setObjectKey = (currentState: ValidJsonObject, cursor: Cursor, stateAction
   libState.changeListeners
     .filter(l => l.actions.map(a => a.name).join('.').startsWith(stateActionsStr))
     .forEach(l => l.actions[l.actions.length - 2].name = arg);
-  const payload = extractPayload(arg);
+  const payload = extractPayload<string>(arg);
   return Object.entries(currentState)
     .reduce((acc, [key, value]) => { acc[key === type ? payload : key] = value; return acc; }, {} as ValidJsonObject);
 }

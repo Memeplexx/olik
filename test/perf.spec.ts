@@ -38,8 +38,10 @@ test('Olik Perf set', () => {
   // store.num.$onChange(() => {});
   const before = performance.now();
   for (let i = 0; i < 1000; i++) {
+    // const listener = store.num.$onChange(() => {});
     store.num.$set(i);
     store.$state;
+    // listener.unsubscribe();
   }
   console.log(`Olik Perf set: ${performance.now() - before}`);
 })
@@ -49,7 +51,7 @@ test('Olik Perf add', () => {
   const store = createStore(state);
   const before = performance.now();
   for (let i = 0; i < 1000; i++) {
-    store.num.$add(i);
+    store.num.$add(1);
     store.$state;
   }
   console.log(`Olik Perf add: ${performance.now() - before}`);
