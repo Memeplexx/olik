@@ -1,8 +1,8 @@
 import { augment } from './augment';
-import { comparators, libState, testState, updateFunctions } from './constant';
+import { libState, testState } from './constant';
 import { perf } from './performance';
 import { StateAction, Store, ValidJsonObject } from './type';
-import { updatePropMap } from './type-check';
+import { comparatorsPropMap, updatePropMap } from './type-check';
 import { StoreInternal } from './type-internal';
 
 
@@ -89,21 +89,21 @@ export const toIsoStringInCurrentTz = (date: Date) => {
     + ':' + pad(date.getMinutes()) + ':' + pad(date.getSeconds()) + dif + pad(tzo / 60) + ':' + pad(tzo % 60);
 }
 
-const regexp = new RegExp([...comparators, ...updateFunctions, '$at'].map(c => `^\\${c}$`).join('|'), 'g');
-export const constructTypeString = ({ name, arg }: { name: string, arg?: unknown }, nested: boolean): string => {
-  return name.replace(regexp, match => {
-    if (updatePropMap[match])
-      return `${match}()`;
-    if (typeof (arg) === 'undefined')
-      return `${match}()`;
-    const { $state, $stateActions } = arg as { $stateActions: StateAction[], $state: unknown };
-    if ($stateActions) {
-      if (!nested)
-        return `${match}(${JSON.stringify($state)})`;
-      return `${match}( ${$stateActions.map(sa => constructTypeString(sa, nested)).join('.')} = ${JSON.stringify($state)} )`;
-    }
-    return `${match}(${JSON.stringify(arg)})`;
-  });
+export const constructTypeStrings = (stateActions: StateAction[], nested: boolean) => stateActions.map(sa => constructTypeString(sa, nested)).join('.');
+
+const map = {...updatePropMap, ...comparatorsPropMap, '$at': true};
+export const constructTypeString = ({ name, arg }: StateAction, nested: boolean): string => {
+  if (!map[name as keyof typeof map])
+    return name;
+  if (updatePropMap[name] || typeof (arg) === 'undefined')
+    return `${name}()`;
+  const { $state, $stateActions } = arg as { $stateActions: StateAction[], $state: unknown };
+  if ($stateActions) {
+    if (!nested)
+      return `${name}(${JSON.stringify($state)})`;
+    return `${name}( ${$stateActions.map(sa => constructTypeString(sa, nested)).join('.')} = ${JSON.stringify($state)} )`;
+  }
+  return `${name}(${JSON.stringify(arg)})`;
 }
 
 type PayloadType<T> = { [key in keyof T]: T[key] extends StoreInternal ? T[key]['$state'] : PayloadType<T[key]> }

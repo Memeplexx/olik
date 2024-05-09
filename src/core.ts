@@ -3,7 +3,7 @@ import { readState } from './read';
 import { Readable, StateAction, Store, StoreAugment, StoreDef, ValidJsonObject } from './type';
 import { comparatorsPropMap, concatPropMap, libPropMap, updatePropMap } from './type-check';
 import { StoreInternal } from './type-internal';
-import { constructTypeString } from './utility';
+import { constructTypeStrings } from './utility';
 import { setNewStateAndNotifyListeners } from './write-complete';
 
 
@@ -66,7 +66,7 @@ const onChange = (stateActions: StateAction[], prop: string) => (listener: (arg:
       listeners.splice(listeners.findIndex(l => l === listener), 1);
     }
   }
-  const path = stateActions.map(sa => constructTypeString(sa, false)).join('.') // double check how path is calculated!!!!!!!
+  const path = constructTypeStrings(stateActions, false); // double check how path is calculated!!!!!!!
   const listeners = changeListeners.find(cl => cl.path === path)?.listeners;
   if (listeners) {
     listeners.push(listener);

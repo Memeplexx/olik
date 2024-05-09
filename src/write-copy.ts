@@ -198,7 +198,7 @@ const setObjectKey = (currentState: ValidJsonObject, cursor: Cursor, stateAction
 }
 
 const atArray = (currentState: ValidJsonArray, cursor: Cursor, stateActions: StateAction[], payload: number) => {
-  if (typeof (currentState[payload]) === 'undefined')
+  if ('undefined' === typeof (currentState[payload]))
     throw new Error(errorMessages.AT_INDEX_OUT_OF_BOUNDS(payload));
   if ('$delete' === stateActions[cursor.index].name)
     return currentState.filter((_, i) => payload !== i);
@@ -215,7 +215,7 @@ const findArray = (currentState: ValidJsonArray, cursor: Cursor, stateActions: S
   const cursorIndex = cursor.index;
   let stateAction: StateAction;
   for (let i = cursorIndex - 1; i >= 0; i--) {
-    if (stateActions[i].name !== '$find') continue;
+    if ('$find' !== stateActions[i].name) continue;
     stateAction = stateActions[i]; break;
   }
   stateAction!.searchIndices = [findIndex];

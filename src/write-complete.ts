@@ -1,7 +1,7 @@
 import { libState, testState } from './constant';
 import { readState } from './read';
 import { StateAction, ValidJsonObject } from './type';
-import { constructTypeString } from './utility';
+import { constructTypeStrings } from './utility';
 import { copyNewState } from './write-copy';
 
 
@@ -11,8 +11,8 @@ export const setNewStateAndNotifyListeners = (
 ) => {
   const { state: oldState, devtools, disableDevtoolsDispatch } = libState;
   if (devtools && !disableDevtoolsDispatch) {
-    const type = stateActions.map(sa => constructTypeString(sa, true)).join('.');
-    const typeOrig = stateActions.map(sa => constructTypeString(sa, false)).join('.');
+    const type = constructTypeStrings(stateActions, true);
+    const typeOrig = constructTypeStrings(stateActions, false);
     testState.currentActionType = type;
     testState.currentActionTypeOrig = type !== typeOrig ? typeOrig : undefined;
     testState.currentActionPayload = stateActions.at(-1)!.arg;
