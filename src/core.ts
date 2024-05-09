@@ -59,17 +59,17 @@ const onChange = (stateActions: StateAction[], prop: string) => (listener: (arg:
   const { changeListeners } = libState;
   const unsubscribe = () => {
     const changeListenerIndex = changeListeners.findIndex(cl => cl.path === path)!;
-    const changeListener = changeListeners[changeListenerIndex];
-    if (changeListener.listeners.length === 1) {
+    const { listeners } = changeListeners[changeListenerIndex];
+    if (listeners.length === 1) {
       changeListeners.splice(changeListenerIndex, 1);
     } else {
-      changeListener.listeners.splice(changeListener.listeners.findIndex(l => l === listener), 1);
+      listeners.splice(listeners.findIndex(l => l === listener), 1);
     }
   }
   const path = stateActions.map(sa => constructTypeString(sa, false)).join('.') // double check how path is calculated!!!!!!!
-  const changeListener = changeListeners.find(cl => cl.path === path);
-  if (changeListener) {
-    changeListener.listeners.push(listener);
+  const listeners = changeListeners.find(cl => cl.path === path)?.listeners;
+  if (listeners) {
+    listeners.push(listener);
   } else {
     changeListeners.push({
       actions: [...stateActions, { name: prop }],
@@ -79,7 +79,7 @@ const onChange = (stateActions: StateAction[], prop: string) => (listener: (arg:
       path,
     })
   }
-  
+
   return { unsubscribe }
 }
 

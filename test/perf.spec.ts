@@ -32,10 +32,6 @@ test('Immutable Perf', () => {
 test('Olik Perf set', () => {
   const state = { num: 0, str: '' };
   const store = createStore(state);
-  // store.num.$onChange(() => {});
-  // store.num.$onChange(() => {});
-  // store.num.$onChange(() => {});
-  // store.num.$onChange(() => {});
   const before = performance.now();
   for (let i = 0; i < 1000; i++) {
     // const listener = store.num.$onChange(() => {});
