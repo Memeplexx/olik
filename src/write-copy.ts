@@ -220,8 +220,9 @@ const findArray = (currentState: ValidJsonArray, cursor: Cursor, stateActions: S
   const cursorIndex = cursor.index;
   let stateAction: StateAction;
   for (let i = cursorIndex - 1; i >= 0; i--) {
-    if ('$find' !== stateActions[i].name) continue;
-    stateAction = stateActions[i]; break;
+    const act = stateActions[i];
+    if ('$find' !== act.name) continue;
+    stateAction = act; break;
   }
   stateAction!.searchIndices = [findIndex];
   if ('$delete' === stateActions[cursorIndex].name)
@@ -237,8 +238,9 @@ const filterArray = (currentState: ValidJsonArray, cursor: Cursor, stateActions:
   const type = stateActions[cursorIndex].name;
   let stateAction: StateAction;
   for (let i = cursorIndex - 1; i >= 0; i--) {
-    if ('$filter' !== stateActions[i].name) continue;
-    stateAction = stateActions[i]; break;
+    const act = stateActions[i];
+    if ('$filter' !== act.name) continue;
+    stateAction = act; break;
   }
   const searchIndices = stateAction!.searchIndices = currentState.map((e, i) => query(e) ? i : -1).filter(i => i !== -1);
   if ('$delete' === type)
