@@ -293,6 +293,10 @@ const str = createStore({
       four: 4
     },
     two: {
+      // $set: '',
+      // set: new Set(),
+      // map: new Map(),
+
       five: 'thing',
       three: [
         [1, 2, 3]

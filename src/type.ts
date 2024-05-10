@@ -1,3 +1,4 @@
+import { anyLibProp } from "./constant";
 import { StoreInternal } from "./type-internal";
 
 export type FindOrFilter = 'isFind' | 'isFilter';
@@ -35,6 +36,22 @@ export type DeepReadonlyArray<T> = ReadonlyArray<DeepReadonly<T>>;
 export type ValidJsonArray = Array<ValidJson>;
 export type ValidJson = ValidJsonObject | ValidJsonArray | Date | string | number | boolean | null;
 export type ValidJsonObject<T extends ValidJson = { [k: string]: unknown }> = { [K in keyof T]: T[K] }
+
+
+export type ValidJsonArrayForLib<T = ValidJson> = Array<T>;
+export type ValidJsonForLib = ValidJsonObject | ValidJsonArray | Date | string | number | boolean | null;
+export type ValidJsonObjectForLib<T = ValidJson> = {
+  [k in keyof T]:
+  k extends ValueOf<typeof anyLibProp> ? never
+  : T[k] extends Set<unknown> ? never
+  : T[k] extends WeakSet<object> ? never
+  : T[k] extends Map<unknown, unknown> ? never
+  : T[k] extends WeakMap<object, unknown> ? never
+  : T[k] extends Record<string, unknown> ? ValidJsonObjectForLib<T[k]>
+  : T[k]
+};
+
+
 export type StoreDef<S extends ValidJsonObject> = Store<S> & (S extends never ? unknown : StoreAugment<S>);
 
 export type ValueOf<T> = T[keyof T];
@@ -63,7 +80,7 @@ export type UpdatableObject<S, F extends FindOrFilter, Q extends QueryStatus, I 
   & DeleteNode<Depth>
   & Readable<F extends 'isFilter' ? S[] : S>
   & (Q extends 'notArray'
-    ? (SetNewNode & PatchObject<S> & Set<S> & PatchDeep<S>)
+    ? (SetNewNode & PatchObject<S> & Sett<S> & PatchDeep<S>)
     : F extends 'isFind' ? PatchArrayElement<S> & SetArrayElement<S> & PatchDeepArrayElement<S>
     : PatchArray<S> & SetArray<S, I> & PatchDeepArray<S>)
   & ({
@@ -119,7 +136,7 @@ export type UpdateOptions<H> = Cache & Eager<H>;
 export type UpdatablePrimitive<S, F extends FindOrFilter, Q extends QueryStatus, I extends ImmediateParentIsAnArray, Depth extends number> =
   & InvalidateCache
   & DeleteNode<Depth>
-  & (Q extends 'notArray' ? Set<S> : F extends 'isFind' ? SetArrayElement<S> : SetArray<S, I>)
+  & (Q extends 'notArray' ? Sett<S> : F extends 'isFind' ? SetArrayElement<S> : SetArray<S, I>)
   & (S extends number ? (F extends 'isFind' ? Add & Subtract : AddArray & SubtractArray) : unknown)
   & (S extends boolean ? (F extends 'isFind' ? Toggle : ToggleArray) : unknown)
   & Readable<F extends 'isFilter' ? S[] : S>
@@ -362,7 +379,7 @@ export interface SubtractArray {
   $subtract(toSubtract: number): void;
 }
 
-export interface Set<S> {
+export interface Sett<S> {
   /**
    * Update the selected node, by replacing it with the value returned by the supplied async function.
    */

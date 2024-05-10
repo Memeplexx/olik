@@ -1,13 +1,13 @@
 import { augmentations, errorMessages, libState } from './constant';
 import { readState } from './read';
-import { Readable, StateAction, Store, StoreAugment, StoreDef, ValidJsonObject } from './type';
+import { Readable, StateAction, Store, StoreAugment, StoreDef, ValidJsonObject, ValidJsonObjectForLib } from './type';
 import { comparatorsPropMap, updatePropMap } from './type-check';
 import { StoreInternal } from './type-internal';
 import { constructTypeStrings } from './utility';
 import { setNewStateAndNotifyListeners } from './write-complete';
 
 
-export const createInnerStore = <S extends ValidJsonObject>(state: S) => ({
+export const createInnerStore = <S>(state: ValidJsonObjectForLib<S>) => ({
   usingAccessor: <C extends Readable<unknown>>(accessor: (store: Store<S>) => C): C & (C extends never ? unknown : StoreAugment<C>) => {
     if (libState.store)
       libState.store.$patchDeep(state);
@@ -46,7 +46,7 @@ const recurseProxy = (stateActions?: StateAction[]): StoreInternal => new Proxy(
 });
 
 export function createStore<S extends ValidJsonObject>(
-  initialState: S
+  initialState: ValidJsonObjectForLib<S>
 ): StoreDef<S> {
   removeStaleCacheReferences(initialState);
   initializeLibState(initialState);
