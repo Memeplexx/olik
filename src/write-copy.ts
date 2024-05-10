@@ -186,7 +186,12 @@ const mergeMatching = (currentState: ValidJsonArray, cursor: Cursor, stateAction
 }
 
 const setObjectKey = (currentState: ValidJsonObject, cursor: Cursor, stateActions: StateAction[], type: string) => {
-  const stateActionsStr = stateActions.slice(0, stateActions.length - 1).map(sa => sa.name).join('.');
+  let stateActionsStr = '';
+  const length = stateActions.length;
+  for (let i = 0; i < length - 1; i++) {
+    stateActionsStr += stateActions[i].name;
+    if (i !== length - 2) stateActionsStr += '.';
+  }
   const arg = stateActions[cursor.index].arg as string;
   libState.changeListeners
     .filter(l => l.actions.map(a => a.name).join('.').startsWith(stateActionsStr))
