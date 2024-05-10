@@ -52,9 +52,9 @@ export const constructQuery = (
   ors.length = 0;
   ands.length = 0;
   const queries = recurse(recurseArray);
-  let prevConcat = '';
-  for (const { concat, query } of queries) {
-    const previousClauseWasAnAnd = prevConcat === '$and';
+  for (let i = 0; i < queries.length; i++) {
+    const { concat, query } = queries[i];
+    const previousClauseWasAnAnd = queries[i - 1]?.concat === '$and';
     const concatWasAnAnd = concat === '$and';
     if (concatWasAnAnd || previousClauseWasAnAnd) {
       ands.push(query);
@@ -67,7 +67,6 @@ export const constructQuery = (
     if (!concatWasAnAnd && !previousClauseWasAnAnd) {
       ors.push(query);
     }
-    prevConcat = concat;
   }
   return (e: unknown) => ors.some(fn => fn(e));
 }
