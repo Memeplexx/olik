@@ -77,7 +77,6 @@ const onChange = (stateActions: StateAction[], prop: string) => (listener: (arg:
       path,
     })
   }
-
   return { unsubscribe }
 }
 

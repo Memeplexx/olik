@@ -3,6 +3,7 @@ import { fromJS, Map } from 'immutable';
 import { beforeEach, test } from 'vitest';
 import { createStore } from '../src/core';
 import { resetLibraryState } from '../src/utility';
+import { updateFunctions, updatePropMap } from '../src';
 
 beforeEach(() => {
   resetLibraryState();
@@ -139,6 +140,48 @@ test('Native Perf (deep)', () => {
 
 
 
+// test('One', () => {
+//   const val = '' as string;
+//   const before = performance.now();
+//   for (let i = 0; i < 1000; i++) {
+//     if (val === 'hello'){
+//       continue;
+//     }
+//     if (val === 'sddsf'){
+//       continue;
+//     }
+//     if (val === 'hfghgfg'){
+//       continue;
+//     }
+//     if (val === 'dgfdgdf'){
+//       continue;
+//     }
+//   }
+//   console.log(`One: ${performance.now() - before}`);
+// })
+
+// test('Two', () => {
+//   const val = 10 as number;
+//   const before = performance.now();
+//   for (let i = 0; i < 1000; i++) {
+//     if (val < 5){
+//       continue;
+//     }
+//     if (val < 15){
+//       continue;
+//     }
+//     if (val < 25){
+//       continue;
+//     }
+//     if (val < 35){
+//       continue;
+//     }
+//   }
+//   console.log(`Two: ${performance.now() - before}`);
+// })
+
+
+// prop in updatePropMap
 
 // test('One', () => {
 //   const before = performance.now();
