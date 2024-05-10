@@ -12,14 +12,15 @@ export const copyNewState = (
   cursor: Cursor,
 ): ValidJson => {
   const cursorIndex = cursor.index;
-  const { name, arg } = stateActions[cursorIndex];
+  const stateAction = stateActions[cursorIndex];
+  const name = stateAction.name;
   if (cursorIndex < stateActions.length - 1) {
     cursor.index++;
     if (!Array.isArray(currentState)) {
       switch (stateActions[cursor.index].name) {
         case '$delete':
         case '$invalidateCache':
-          return deleteObjectValue(currentState as ValidJsonObject, name, stateActions);
+          return deleteObjectValue(currentState as ValidJsonObject, stateActions, name);
         case '$setKey':
           return setObjectKey(currentState as ValidJsonObject, cursor, stateActions, name);
         default:
@@ -28,7 +29,7 @@ export const copyNewState = (
     }
     switch (name) {
       case '$at':
-        return atArray(currentState, cursor, stateActions, arg as number);
+        return atArray(currentState, cursor, stateActions, stateAction.arg as number);
       case '$find':
         return findArray(currentState, cursor, stateActions);
       case '$filter':
@@ -41,31 +42,31 @@ export const copyNewState = (
   }
   switch (name) {
     case '$set':
-      return set(extractPayload(arg));
+      return set(extractPayload(stateAction.arg));
     case '$setUnique':
-      return setUnique(extractPayload(arg));
+      return setUnique(extractPayload(stateAction.arg));
     case '$patch':
-      return patch(currentState, extractPayload(arg));
+      return patch(currentState, extractPayload(stateAction.arg));
     case '$add':
-      return add(currentState, extractPayload(arg));
+      return add(currentState, extractPayload(stateAction.arg));
     case '$subtract':
-      return subtract(currentState, extractPayload(arg));
+      return subtract(currentState, extractPayload(stateAction.arg));
     case '$toggle':
       return toggle(currentState);
     case '$setNew':
-      return setNew(currentState as ValidJsonObject, extractPayload(arg));
+      return setNew(currentState as ValidJsonObject, extractPayload(stateAction.arg));
     case '$patchDeep':
-      return patchDeep(currentState as ValidJsonObject, extractPayload(arg));
+      return patchDeep(currentState as ValidJsonObject, extractPayload(stateAction.arg));
     case '$clear':
       return clear();
     case '$push':
-      return push(currentState as ValidJsonArray, extractPayload(arg));
+      return push(currentState as ValidJsonArray, extractPayload(stateAction.arg));
     case '$pushMany':
-      return pushMany(currentState as ValidJsonArray, extractPayload(arg));
+      return pushMany(currentState as ValidJsonArray, extractPayload(stateAction.arg));
     case '$deDuplicate':
       return deDuplicate(currentState as ValidJsonArray);
     case '$merge':
-      return merge(currentState as ValidJsonArray, extractPayload(arg));
+      return merge(currentState as ValidJsonArray, extractPayload(stateAction.arg));
   }
   throw new Error();
 }
@@ -252,7 +253,7 @@ const filterArray = (currentState: ValidJsonArray, cursor: Cursor, stateActions:
     : e);
 }
 
-const deleteObjectValue = (currentState: ValidJsonObject, type: string, stateActions: StateAction[]) => {
+const deleteObjectValue = (currentState: ValidJsonObject, stateActions: StateAction[], type: string) => {
   const stateActionsStr = stateActions.slice(0, stateActions.length - 1).map(sa => sa.name).join('.');
   libState.changeListeners
     .filter(l => l.actions.map(a => a.name).join('.').startsWith(stateActionsStr))
