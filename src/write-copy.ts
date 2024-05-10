@@ -1,7 +1,7 @@
 import { errorMessages, libState } from './constant';
 import { constructQuery } from './query';
 import { StateAction, ValidJson, ValidJsonArray, ValidJsonObject } from './type';
-import { libPropMap, updatePropMap } from './type-check';
+import { updatePropMap } from './type-check';
 import { Cursor } from './type-internal';
 import { extractPayload } from './utility';
 
@@ -15,29 +15,28 @@ export const copyNewState = (
   const { name, arg } = stateActions[cursorIndex];
   if (cursorIndex < stateActions.length - 1) {
     cursor.index++;
+    if (!Array.isArray(currentState)) {
+      switch (stateActions[cursor.index].name) {
+        case '$delete':
+        case '$invalidateCache':
+          return deleteObjectValue(currentState as ValidJsonObject, name, stateActions);
+        case '$setKey':
+          return setObjectKey(currentState as ValidJsonObject, cursor, stateActions, name);
+        default:
+          return copyObjectProperty(currentState, cursor, stateActions, name);
+      }
+    }
     switch (name) {
       case '$at':
-        return atArray(currentState as ValidJsonArray, cursor, stateActions, arg as number);
+        return atArray(currentState, cursor, stateActions, arg as number);
       case '$find':
-        return findArray(currentState as ValidJsonArray, cursor, stateActions);
+        return findArray(currentState, cursor, stateActions);
       case '$filter':
-        return filterArray(currentState as ValidJsonArray, cursor, stateActions);
+        return filterArray(currentState, cursor, stateActions);
       case '$mergeMatching':
-        return mergeMatching(currentState as ValidJsonArray, cursor, stateActions);
-    }
-    switch (stateActions[cursor.index].name) {
-      case '$delete':
-      case '$invalidateCache':
-        return deleteObjectValue(currentState as ValidJsonObject, name, stateActions);
-      case '$setKey':
-        return setObjectKey(currentState as ValidJsonObject, cursor, stateActions, name);
-    }
-    if (Array.isArray(currentState) && !(name in libPropMap))
-      return updateArrayObjectProperties(currentState, cursor, stateActions);
-    switch (typeof (currentState)) {
-      case 'object':
-      case 'undefined':
-        return copyObjectProperty(currentState, cursor, stateActions, name);
+        return mergeMatching(currentState, cursor, stateActions);
+      default:
+        return updateArrayObjectProperties(currentState, cursor, stateActions);
     }
   }
   switch (name) {
@@ -51,6 +50,8 @@ export const copyNewState = (
       return add(currentState, extractPayload(arg));
     case '$subtract':
       return subtract(currentState, extractPayload(arg));
+    case '$toggle':
+      return toggle(currentState);
     case '$setNew':
       return setNew(currentState as ValidJsonObject, extractPayload(arg));
     case '$patchDeep':
@@ -63,8 +64,6 @@ export const copyNewState = (
       return pushMany(currentState as ValidJsonArray, extractPayload(arg));
     case '$deDuplicate':
       return deDuplicate(currentState as ValidJsonArray);
-    case '$toggle':
-      return toggle(currentState);
     case '$merge':
       return merge(currentState as ValidJsonArray, extractPayload(arg));
   }
