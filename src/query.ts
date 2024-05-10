@@ -23,12 +23,15 @@ export const constructQuery = (
           break;
         }
       }
-      const subStateActions = stateActions.slice(cursor.index, cursor.index + nextComparatorIndex);
+      const index = cursor.index;
       cursor.index += nextComparatorIndex;
       const { name: comparatorName, arg: comparatorArg } = stateActions[cursor.index] as { name: keyof typeof comparisons, arg: { $stateActions: StateAction[], $state: unknown } };
       cursor.index++
       return (e: unknown) => {
-        const subProperty = subStateActions.reduce((prev, curr) => prev ? (prev as ValidJsonObject)[curr.name] : undefined, e);
+        let subProperty = e;
+        for (let i = index; i < index + nextComparatorIndex; i++) {
+          subProperty = subProperty ? (subProperty as ValidJsonObject)[stateActions[i].name] : undefined;
+        }
         const comparison = comparisons[comparatorName];
         if (!comparison) throw new Error();
         return comparison(subProperty, comparatorArg.$state ?? comparatorArg);
