@@ -129,11 +129,10 @@ test('Native Perf (deep)', () => {
     state = {
       ...state,
       arr: [
-        state.arr.find(e => e.val === '')!, 
+        state.arr.find(e => e.val === '')!,
         ...state.arr.slice(1)
       ]
     };
   }
   console.log(`Native Perf (deep): ${performance.now() - before}`);
 })
-

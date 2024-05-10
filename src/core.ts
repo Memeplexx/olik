@@ -128,6 +128,7 @@ const invalidateCache = (stateActions: StateAction[]) => () => {
   }
 };
 
+const obj = { name: '', arg: undefined as unknown };
 const processUpdateFunction = (stateActions: StateAction[], prop: string) => (arg: unknown, options: { cache?: number, eager?: unknown }) => {
   if (libState.devtools)
     libState.stacktraceError = new Error();
@@ -136,7 +137,9 @@ const processUpdateFunction = (stateActions: StateAction[], prop: string) => (ar
       throw new Error(errorMessages.ASYNC_UPDATES_NOT_ENABLED);
     return libState.asyncUpdate(stateActions, prop, options ?? {}, arg);
   } else {
-    stateActions.push({ name: prop, arg });
+    obj.name = prop;
+    obj.arg = arg;
+    stateActions.push(obj);
     setNewStateAndNotifyListeners(stateActions);
   }
 }

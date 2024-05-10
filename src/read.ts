@@ -5,8 +5,9 @@ import { libPropMap } from './type-check';
 export const readState = (
   state: unknown, stateActions: StateAction[], cursor = { index: 0 }
 ): unknown => {
-  const { name, arg } = stateActions[cursor.index];
-  if (Array.isArray(state) && !libPropMap[name])
+  const stateAction = stateActions[cursor.index];
+  const name = stateAction.name;
+  if (Array.isArray(state) && !(name in libPropMap))
     return state.map((_, i) => readState(state[i], stateActions, { ...cursor }));
   cursor.index++;
   if (cursor.index === stateActions.length)
@@ -14,7 +15,7 @@ export const readState = (
   if (typeof(state) === 'object' && state !== null && !Array.isArray(state))
     return readState((state as ValidJsonObject)[name], stateActions, cursor);
   if (name === '$at')
-    return readState((state as ValidJsonObject)[arg as number], stateActions, cursor);
+    return readState((state as ValidJsonObject)[stateAction.arg as number], stateActions, cursor);
   if (name === '$distinct')
     return [...new Set(state as ValidJsonArray)];
   const query = constructQuery(stateActions, cursor);

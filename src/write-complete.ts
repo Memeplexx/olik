@@ -28,13 +28,13 @@ export const setNewStateAndNotifyListeners = (
 const notifyChangeListeners = (
   oldState: ValidJsonObject,
 ) => {
-  libState.changeListeners.forEach(el => {
-    const { actions, cachedState } = el;
+  libState.changeListeners.forEach(listener => {
+    const { actions, cachedState } = listener;
     const selectedOldState = cachedState !== undefined ? cachedState : readState(oldState, actions);
     const selectedNewState = readState(libState.state, actions);
     const notify = () => {
-      el.cachedState = selectedNewState;
-      el.listeners.forEach(listener => listener(selectedNewState));
+      listener.cachedState = selectedNewState;
+      listener.listeners.forEach(listener => listener(selectedNewState));
     }
     if ((Array.isArray(selectedOldState) && Array.isArray(selectedNewState))
       && (selectedNewState.length !== selectedOldState.length || selectedOldState.some((el, i) => el !== selectedNewState[i]))) {
