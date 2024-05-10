@@ -1,5 +1,5 @@
 import { produce } from 'immer';
-import { fromJS, Map } from 'immutable';
+import { fromJS } from 'immutable';
 import { beforeEach, test } from 'vitest';
 import { createStore } from '../src/core';
 import { resetLibraryState } from '../src/utility';
@@ -20,7 +20,7 @@ test('Immer Perf', () => {
 })
 
 test('Immutable Perf', () => {
-  const state = Map({ num: 0, str: '' });
+  const state = fromJS({ num: 0, str: '' });
   const before = performance.now();
   for (let i = 0; i < 1000; i++) {
     state.set('num', i);
@@ -123,16 +123,10 @@ test('Olik Perf (deep)', () => {
 })
 
 test('Native Perf (deep)', () => {
-  let state = { arr: [{ id: 1, val: '', obj: { num: 0 } }, { id: 2, val: '', obj: { num: 0 } }, { id: 3, val: '', obj: { num: 0 } }] };
+  const arr = (new Array(100)).fill(0).map((e, i) => ({ id: i, val: '', obj: { num: 0 } }));
   const before = performance.now();
   for (let i = 0; i < 1000; i++) {
-    state = {
-      ...state,
-      arr: [
-        state.arr.find(e => e.val === '')!,
-        ...state.arr.slice(1)
-      ]
-    };
+    arr.filter((e, i) => i === 0 ? { ...e, id: i } : e);
   }
   console.log(`Native Perf (deep): ${performance.now() - before}`);
 })
