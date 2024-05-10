@@ -24,7 +24,7 @@ export const constructQuery = (
         }
       }
       const subStateActions = stateActions.slice(cursor.index, cursor.index + nextComparatorIndex);
-      cursor.index += subStateActions.length;
+      cursor.index += nextComparatorIndex;
       const { name: comparatorName, arg: comparatorArg } = stateActions[cursor.index] as { name: keyof typeof comparisons, arg: { $stateActions: StateAction[], $state: unknown } };
       cursor.index++
       return (e: unknown) => {
