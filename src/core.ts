@@ -1,7 +1,7 @@
 import { augmentations, errorMessages, libState } from './constant';
 import { readState } from './read';
 import { Readable, StateAction, Store, StoreAugment, StoreDef, ValidJsonObject } from './type';
-import { comparatorsPropMap, concatPropMap, libPropMap, updatePropMap } from './type-check';
+import { comparatorsPropMap, updatePropMap } from './type-check';
 import { StoreInternal } from './type-internal';
 import { constructTypeStrings } from './utility';
 import { setNewStateAndNotifyListeners } from './write-complete';
@@ -22,28 +22,26 @@ export const createInnerStore = <S extends ValidJsonObject>(state: S) => ({
 
 const emptyObj = {} as StoreInternal;
 const { selection, core } = augmentations;
+const map = {...comparatorsPropMap, $at: true };
 const recurseProxy = (stateActions?: StateAction[]): StoreInternal => new Proxy(emptyObj, {
   get: (_, prop: string) => {
     if ('$stateActions' === prop)
       return stateActions ?? [];
     if ('$state' === prop)
-      return !stateActions ? libState.state : state(stateActions, prop);
-    if (updatePropMap[prop])
+      return !stateActions?.length ? libState.state : state(stateActions, prop);
+    if (prop in updatePropMap)
       return processUpdateFunction(stateActions ?? [], prop);
-    const selectAugmentation = selection[prop];
-    if (selectAugmentation)
-      return selectAugmentation(recurseProxy(stateActions ?? []));
-    const coreAugmentation = core[prop];
-    if (coreAugmentation)
-      return coreAugmentation(recurseProxy(stateActions ?? []));
-    if (!libPropMap[prop] || concatPropMap[prop])
-      return basicProp(stateActions ?? [], prop);
-    if ('$at' === prop || comparatorsPropMap[prop])
+    if (prop in selection)
+      return selection[prop](recurseProxy(stateActions ?? []));
+    if (prop in core)
+      return core[prop](recurseProxy(stateActions ?? []));
+    if (prop in map)
       return comparator(stateActions ?? [], prop);
     if ('$onChange' === prop)
       return onChange(stateActions ?? [], prop);
     if ('$invalidateCache' === prop)
       return invalidateCache(stateActions ?? []);
+    return basicProp(stateActions ?? [], prop);
   }
 });
 

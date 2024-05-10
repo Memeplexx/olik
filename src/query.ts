@@ -18,7 +18,7 @@ export const constructQuery = (
       let nextComparatorIndex = 0;
       const cursorIndex = cursor.index;
       for (let i = cursorIndex; i < stateActions.length; i++) {
-        if (comparatorsPropMap[stateActions[i].name]) {
+        if (stateActions[i].name in comparatorsPropMap) {
           nextComparatorIndex = i - cursorIndex;
           break;
         }
@@ -36,7 +36,7 @@ export const constructQuery = (
     }
     const constructConcat = () => {
       const type = stateActions[cursor.index].name;
-      return (updatePropMap[type] || readPropMap[type] || !libPropMap[type]) ? '$last' : type as '$and' | '$or';
+      return (type in updatePropMap || type in readPropMap || !(type in libPropMap)) ? '$last' : type as '$and' | '$or';
     }
     queries.push({
       query: constructQuery(),

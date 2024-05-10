@@ -93,7 +93,7 @@ export const constructTypeStrings = (stateActions: StateAction[], nested: boolea
 
 const map = {...updatePropMap, ...comparatorsPropMap, '$at': true};
 export const constructTypeString = ({ name, arg }: StateAction, nested: boolean): string => {
-  if (!map[name as keyof typeof map])
+  if (!(name in map))
     return name;
   if (updatePropMap[name] || typeof (arg) === 'undefined')
     return `${name}()`;

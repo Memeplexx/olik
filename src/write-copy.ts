@@ -32,7 +32,7 @@ export const copyNewState = (
       case '$setKey':
         return setObjectKey(currentState as ValidJsonObject, cursor, stateActions, name);
     }
-    if (Array.isArray(currentState) && !libPropMap[name])
+    if (Array.isArray(currentState) && !(name in libPropMap))
       return updateArrayObjectProperties(currentState, cursor, stateActions);
     switch (typeof (currentState)) {
       case 'object':
@@ -167,7 +167,7 @@ const updateArrayObjectProperties = (currentState: ValidJsonArray, cursor: Curso
 
 const mergeMatching = (currentState: ValidJsonArray, cursor: Cursor, stateActions: StateAction[]) => {
   const cursorIndex = cursor.index;
-  const nextUpdateIndex = stateActions.slice(cursorIndex).findIndex(sa => updatePropMap[sa.name]);
+  const nextUpdateIndex = stateActions.findIndex((sa, i) => i > cursorIndex && sa.name in updatePropMap) - cursorIndex;
   const queryPaths = stateActions.slice(cursorIndex, cursorIndex + nextUpdateIndex);
   cursor.index += queryPaths.length;
   const mergeArg = stateActions[cursor.index++].arg;
