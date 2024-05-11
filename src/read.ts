@@ -1,5 +1,5 @@
 import { constructQuery } from './query';
-import { StateAction, ValidJsonArray, ValidJsonObject } from './type';
+import { BasicArray, BasicRecord, StateAction } from './type';
 import { libPropMap } from './type-check';
 
 export const readState = (
@@ -13,14 +13,14 @@ export const readState = (
   if (cursor.index === stateActions.length)
     return state;
   if (typeof(state) === 'object' && state !== null && !Array.isArray(state))
-    return readState((state as ValidJsonObject)[name], stateActions, cursor);
+    return readState((state as BasicRecord)[name], stateActions, cursor);
   if (name === '$at')
-    return readState((state as ValidJsonObject)[stateAction.arg as number], stateActions, cursor);
+    return readState((state as BasicRecord)[stateAction.arg as number], stateActions, cursor);
   if (name === '$distinct')
-    return [...new Set(state as ValidJsonArray)];
+    return [...new Set(state as BasicArray)];
   const query = constructQuery(stateActions, cursor);
   if (name === '$find')
-    return readState((state as ValidJsonArray).find(query), stateActions, cursor);
+    return readState((state as BasicArray).find(query), stateActions, cursor);
   if (name === '$filter')
-    return readState((state as ValidJsonArray).filter(query), stateActions, cursor);
+    return readState((state as BasicArray).filter(query), stateActions, cursor);
 }

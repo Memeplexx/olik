@@ -1,6 +1,6 @@
 import { augmentations, libState } from './constant';
 import { readState } from './read';
-import { FutureState, StateAction, ValidJsonArray } from './type';
+import { BasicArray, FutureState, StateAction } from './type';
 import { toIsoStringInCurrentTz } from './utility';
 import { setNewStateAndNotifyListeners } from './write-complete';
 
@@ -21,7 +21,7 @@ export const importOlikAsyncModule = () => {
           } else if (prop === '$state') {
             return state;
           } else {
-            return (...args: ValidJsonArray) => (target as unknown as Record<string, (a: ValidJsonArray) => unknown>)[prop]!(args);
+            return (...args: BasicArray) => (target as unknown as Record<string, (a: BasicArray) => unknown>)[prop]!(args);
           }
         }
       });
@@ -85,7 +85,7 @@ export const importOlikAsyncModule = () => {
         }
       }
     }) as { state: FutureState<unknown> } & Promise<unknown>;
-    const resultCast = result as unknown as Record<string, (arg: ValidJsonArray) => unknown>;
+    const resultCast = result as unknown as Record<string, (arg: BasicArray) => unknown>;
     Object.keys(augmentations.future).forEach(name => resultCast[name] = augmentations.future[name](result));
     return result;
   }

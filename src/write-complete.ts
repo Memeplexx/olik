@@ -1,6 +1,6 @@
 import { libState, testState } from './constant';
 import { readState } from './read';
-import { StateAction, ValidJsonObject } from './type';
+import { BasicRecord, StateAction } from './type';
 import { constructTypeStrings } from './utility';
 import { copyNewState } from './write-copy';
 
@@ -18,7 +18,7 @@ export const setNewStateAndNotifyListeners = (
     testState.currentActionPayload = stateActions.at(-1)!.arg;
   }
   cursor.index = 0;
-  libState.state = copyNewState(oldState!, stateActions, cursor) as ValidJsonObject;
+  libState.state = copyNewState(oldState!, stateActions, cursor) as BasicRecord;
   notifyChangeListeners(oldState!);
   if (devtools && !disableDevtoolsDispatch) {
     devtools.dispatch({ stateActions, actionType: testState.currentActionType, payloadPaths: testState.currentActionPayloadPaths });
@@ -26,7 +26,7 @@ export const setNewStateAndNotifyListeners = (
 }
 
 const notifyChangeListeners = (
-  oldState: ValidJsonObject,
+  oldState: BasicRecord,
 ) => {
   libState.changeListeners.forEach(listener => {
     const { actions, cachedState } = listener;

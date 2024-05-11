@@ -1,16 +1,16 @@
 import { errorMessages, libState } from './constant';
 import { constructQuery } from './query';
-import { StateAction, ValidJson, ValidJsonArray, ValidJsonObject } from './type';
+import { BasicArray, BasicRecord, StateAction } from './type';
 import { updatePropMap } from './type-check';
 import { Cursor } from './type-internal';
 import { extractPayload } from './utility';
 
 
 export const copyNewState = (
-  currentState: ValidJson,
+  currentState: unknown,
   stateActions: StateAction[],
   cursor: Cursor,
-): ValidJson => {
+): unknown => {
   const cursorIndex = cursor.index;
   const stateAction = stateActions[cursorIndex];
   const name = stateAction.name;
@@ -20,11 +20,11 @@ export const copyNewState = (
       switch (stateActions[cursor.index].name) {
         case '$delete':
         case '$invalidateCache':
-          return deleteObjectValue(currentState as ValidJsonObject, stateActions, name);
+          return deleteObjectValue(currentState as BasicRecord, stateActions, name);
         case '$setKey':
-          return setObjectKey(currentState as ValidJsonObject, cursor, stateActions, name);
+          return setObjectKey(currentState as BasicRecord, cursor, stateActions, name);
         default:
-          return copyObjectProperty(currentState, cursor, stateActions, name);
+          return copyObjectProperty(currentState as BasicRecord, cursor, stateActions, name);
       }
     }
     switch (name) {
@@ -54,70 +54,70 @@ export const copyNewState = (
     case '$toggle':
       return toggle(currentState);
     case '$setNew':
-      return setNew(currentState as ValidJsonObject, extractPayload(stateAction.arg));
+      return setNew(currentState as BasicRecord, extractPayload(stateAction.arg));
     case '$patchDeep':
-      return patchDeep(currentState as ValidJsonObject, extractPayload(stateAction.arg));
+      return patchDeep(currentState as BasicRecord, extractPayload(stateAction.arg));
     case '$clear':
       return clear();
     case '$push':
-      return push(currentState as ValidJsonArray, extractPayload(stateAction.arg));
+      return push(currentState as BasicArray, extractPayload(stateAction.arg));
     case '$pushMany':
-      return pushMany(currentState as ValidJsonArray, extractPayload(stateAction.arg));
+      return pushMany(currentState as BasicArray, extractPayload(stateAction.arg));
     case '$deDuplicate':
-      return deDuplicate(currentState as ValidJsonArray);
+      return deDuplicate(currentState as BasicArray);
     case '$merge':
-      return merge(currentState as ValidJsonArray, extractPayload(stateAction.arg));
+      return merge(currentState as BasicArray, extractPayload(stateAction.arg));
   }
   throw new Error();
 }
 
-const deDuplicate = (currentState: ValidJsonArray) => {
+const deDuplicate = (currentState: BasicArray) => {
   return [...new Set(currentState)];
 }
 
-const push = (currentState: ValidJsonArray, payload: ValidJson) => {
+const push = (currentState: BasicArray, payload: unknown) => {
   return [...currentState, payload];
 }
 
-const pushMany = (currentState: ValidJsonArray, payload: ValidJsonArray) => {
+const pushMany = (currentState: BasicArray, payload: BasicArray) => {
   return [...currentState, ...payload];
 }
 
-const merge = (currentState: ValidJsonArray, payload: ValidJson) => {
+const merge = (currentState: BasicArray, payload: unknown) => {
   return [...currentState, ...(Array.isArray(payload) ? payload : [payload]).filter(e => !currentState.includes(e))];
 }
 
-const toggle = (currentState: ValidJson) => {
+const toggle = (currentState: unknown) => {
   if (Array.isArray(currentState))
     return currentState.map(e => !e);
   return !currentState;
 }
 
-const setNew = (currentState: ValidJsonObject, payload: ValidJsonObject) => {
+const setNew = (currentState: BasicRecord, payload: BasicRecord) => {
   return { ...currentState, ...payload };
 }
 
-const set = (payload: ValidJson) => {
+const set = (payload: unknown) => {
   return payload;
 }
 
-const setUnique = (payload: ValidJsonArray) => {
+const setUnique = (payload: BasicArray) => {
   return [...new Set(payload)];
 }
 
-const patch = (currentState: ValidJson, payload: ValidJsonObject) => {
+const patch = (currentState: unknown, payload: BasicRecord) => {
   if (Array.isArray(currentState))
-    return currentState.map(e => ({ ...e as ValidJsonObject, ...payload }));
-  return { ...currentState as ValidJsonObject, ...payload };
+    return currentState.map(e => ({ ...e as BasicRecord, ...payload }));
+  return { ...currentState as BasicRecord, ...payload };
 }
 
-const add = (currentState: ValidJson, payload: number) => {
+const add = (currentState: unknown, payload: number) => {
   if (Array.isArray(currentState))
     return currentState.map(e => e as number + payload);
   return currentState as number + payload;
 }
 
-const subtract = (currentState: ValidJson, payload: number) => {
+const subtract = (currentState: unknown, payload: number) => {
   if (Array.isArray(currentState))
     return currentState.map(e => e as number - payload);
   return currentState as number - payload;
@@ -127,9 +127,9 @@ const clear = () => {
   return [];
 }
 
-const patchDeep = (currentState: ValidJsonObject, payload: ValidJsonObject) => {
-  const isRecord = (arg: unknown): arg is ValidJsonObject => typeof arg === 'object' && arg !== null && !Array.isArray(arg) && !(arg instanceof Date);
-  const recurse = (state: ValidJson, patch: ValidJson): ValidJson => {
+const patchDeep = (currentState: BasicRecord, payload: BasicRecord) => {
+  const isRecord = (arg: unknown): arg is BasicRecord => typeof arg === 'object' && arg !== null && !Array.isArray(arg) && !(arg instanceof Date);
+  const recurse = (state: unknown, patch: unknown): unknown => {
     if (!isRecord(state))
       return patch;
     if (!isRecord(patch))
@@ -140,22 +140,22 @@ const patchDeep = (currentState: ValidJsonObject, payload: ValidJsonObject) => {
           return { ...acc, [key]: value };
         if (!(key in (state)))
           return { ...acc, [key]: value };
-        return { ...acc, [key]: recurse((state as ValidJsonObject)[key] as ValidJsonObject, value as ValidJsonObject) };
+        return { ...acc, [key]: recurse((state as BasicRecord)[key] as BasicRecord, value as BasicRecord) };
       }, state);
   }
   return recurse(currentState, payload);
 }
 
-const updateArrayObjectProperties = (currentState: ValidJsonArray, cursor: Cursor, stateActions: StateAction[]) => {
+const updateArrayObjectProperties = (currentState: BasicArray, cursor: Cursor, stateActions: StateAction[]) => {
   cursor.index--;
   return currentState.map(element => {
     if (element !== undefined) return {
-      ...element as ValidJsonObject,
+      ...element as BasicRecord,
       ...copyNewState(
-        element ?? {} as ValidJsonObject,
+        element ?? {} as BasicRecord,
         stateActions,
         { ...cursor }
-      ) as ValidJsonObject
+      ) as BasicRecord
     };
     return copyNewState(
       element,
@@ -165,7 +165,7 @@ const updateArrayObjectProperties = (currentState: ValidJsonArray, cursor: Curso
   });
 }
 
-const mergeMatching = (currentState: ValidJsonArray, cursor: Cursor, stateActions: StateAction[]) => {
+const mergeMatching = (currentState: BasicArray, cursor: Cursor, stateActions: StateAction[]) => {
   const cursorIndex = cursor.index;
   const nextUpdateIndex = stateActions.findIndex((sa, i) => i > cursorIndex && sa.name in updatePropMap) - cursorIndex;
   const queryPaths = stateActions.slice(cursorIndex, cursorIndex + nextUpdateIndex);
@@ -173,11 +173,11 @@ const mergeMatching = (currentState: ValidJsonArray, cursor: Cursor, stateAction
   const mergeArg = stateActions[cursor.index++].arg;
   const mergeArgState = (mergeArg as { $state: unknown }).$state ?? mergeArg;
   const mergeArgs = [...(Array.isArray(mergeArgState) ? mergeArgState : [mergeArgState])];
-  const query = (e: ValidJsonObject) => queryPaths.reduce((prev, curr) => prev[curr.name] as ValidJsonObject, e);
+  const query = (e: BasicRecord) => queryPaths.reduce((prev, curr) => prev[curr.name] as BasicRecord, e);
   return [
     ...currentState.map(existingElement => {
-      const existingElementProp = query(existingElement as ValidJsonObject);
-      const elementReplacement = mergeArgs.find(ma => query(ma as ValidJsonObject) === existingElementProp);
+      const existingElementProp = query(existingElement as BasicRecord);
+      const elementReplacement = mergeArgs.find(ma => query(ma as BasicRecord) === existingElementProp);
       if (elementReplacement)
         mergeArgs.splice(mergeArgs.indexOf(elementReplacement), 1);
       return elementReplacement ?? existingElement;
@@ -186,7 +186,7 @@ const mergeMatching = (currentState: ValidJsonArray, cursor: Cursor, stateAction
   ];
 }
 
-const setObjectKey = (currentState: ValidJsonObject, cursor: Cursor, stateActions: StateAction[], type: string) => {
+const setObjectKey = (currentState: BasicRecord, cursor: Cursor, stateActions: StateAction[], type: string) => {
   let stateActionsStr = '';
   const length = stateActions.length;
   for (let i = 0; i < length - 1; i++) {
@@ -199,10 +199,10 @@ const setObjectKey = (currentState: ValidJsonObject, cursor: Cursor, stateAction
     .forEach(l => l.actions[l.actions.length - 2].name = arg);
   const payload = extractPayload<string>(arg);
   return Object.entries(currentState)
-    .reduce((acc, [key, value]) => { acc[key === type ? payload : key] = value; return acc; }, {} as ValidJsonObject);
+    .reduce((acc, [key, value]) => { acc[key === type ? payload : key] = value; return acc; }, {} as BasicRecord);
 }
 
-const atArray = (currentState: ValidJsonArray, cursor: Cursor, stateActions: StateAction[], payload: number) => {
+const atArray = (currentState: BasicArray, cursor: Cursor, stateActions: StateAction[], payload: number) => {
   if ('undefined' === typeof (currentState[payload]))
     throw new Error(errorMessages.AT_INDEX_OUT_OF_BOUNDS(payload));
   if ('$delete' === stateActions[cursor.index].name)
@@ -212,7 +212,7 @@ const atArray = (currentState: ValidJsonArray, cursor: Cursor, stateActions: Sta
     : e);
 }
 
-const findArray = (currentState: ValidJsonArray, cursor: Cursor, stateActions: StateAction[]) => {
+const findArray = (currentState: BasicArray, cursor: Cursor, stateActions: StateAction[]) => {
   const query = constructQuery(stateActions, cursor);
   const findIndex = currentState.findIndex(query);
   if (findIndex === -1)
@@ -232,7 +232,7 @@ const findArray = (currentState: ValidJsonArray, cursor: Cursor, stateActions: S
     : e);
 }
 
-const filterArray = (currentState: ValidJsonArray, cursor: Cursor, stateActions: StateAction[]) => {
+const filterArray = (currentState: BasicArray, cursor: Cursor, stateActions: StateAction[]) => {
   const query = constructQuery(stateActions, cursor);
   const cursorIndex = cursor.index;
   const type = stateActions[cursorIndex].name;
@@ -248,14 +248,14 @@ const filterArray = (currentState: ValidJsonArray, cursor: Cursor, stateActions:
   if ('$set' === type)
     return [
       ...currentState.filter((_, i) => !searchIndices!.includes(i)),
-      ...copyNewState(currentState, stateActions, cursor) as ValidJsonArray,
+      ...copyNewState(currentState, stateActions, cursor) as BasicArray,
     ];
   return currentState.map((e, i) => searchIndices!.includes(i)
     ? copyNewState(e, stateActions, { ...cursor })
     : e);
 }
 
-const deleteObjectValue = (currentState: ValidJsonObject, stateActions: StateAction[], type: string) => {
+const deleteObjectValue = (currentState: BasicRecord, stateActions: StateAction[], type: string) => {
   const stateActionsStr = stateActions.slice(0, stateActions.length - 1).map(sa => sa.name).join('.');
   libState.changeListeners
     .filter(l => l.actions.map(a => a.name).join('.').startsWith(stateActionsStr))
@@ -264,12 +264,12 @@ const deleteObjectValue = (currentState: ValidJsonObject, stateActions: StateAct
   return newState;
 }
 
-const copyObjectProperty = (currentState: ValidJson, cursor: Cursor, stateActions: StateAction[], type: string) => {
-  const currentStateRecord = (currentState ?? {} as ValidJsonObject) as ValidJsonObject;
+const copyObjectProperty = (currentState: BasicRecord, cursor: Cursor, stateActions: StateAction[], type: string) => {
+  const currentStateRecord = (currentState ?? {} as BasicRecord) as BasicRecord;
   return {
     ...currentStateRecord,
     [type]: copyNewState(
-      currentStateRecord[type as keyof typeof currentStateRecord] as ValidJson,
+      currentStateRecord[type as keyof typeof currentStateRecord],
       stateActions,
       cursor,
     )

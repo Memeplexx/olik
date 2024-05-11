@@ -1,5 +1,5 @@
 import { augmentations, libState } from './constant';
-import { Derivable, Derivation, DerivationCalculationInputs, DerivationKey, Readable, StateAction, Unsubscribe, ValidJsonObject } from './type';
+import { BasicRecord, Derivable, Derivation, DerivationCalculationInputs, DerivationKey, Readable, StateAction, Unsubscribe } from './type';
 import { enqueueMicroTask } from './utility';
 
 
@@ -88,7 +88,7 @@ export const derive = (key: string) => ({
           return this.$cleanup(listener, subscriptions);
         }
       }()) as Derivation<R>;
-      Object.keys(augmentations.derivation).forEach(name => (result as unknown as ValidJsonObject)[name] = augmentations.derivation[name](result));
+      Object.keys(augmentations.derivation).forEach(name => (result as unknown as BasicRecord)[name] = augmentations.derivation[name](result));
       return result;
     };
     return {

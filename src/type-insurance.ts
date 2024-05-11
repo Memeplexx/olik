@@ -280,6 +280,12 @@ const str = createStore({
   modal: null as 'confirmDeleteGroup' | 'confirmDeleteTag' | 'synonymOptions' | 'groupOptions' | null,
   bool: false,
   thing: {},
+
+  // $set: '',
+  //     set: new Set(),
+  //     map: new Map(),
+  //     thing: new class{}(),
+
   flatObj: {
     one: 'hello hello hello hello hello hello hello hello',
     two: 'world',
@@ -296,6 +302,7 @@ const str = createStore({
       // $set: '',
       // set: new Set(),
       // map: new Map(),
+      // thing: new class{}(),
 
       five: 'thing',
       three: [
@@ -317,6 +324,7 @@ const str = createStore({
   dat: new Date(),
   thingy: 'ddd',
   iii: new Array<Thingy>(),
+  // xxx: {noteId: 1, txt:''} as Thingy,
 })
 str.$patch({
   arrNested: [

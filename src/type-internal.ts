@@ -1,17 +1,16 @@
-import { DeleteNode, DevtoolsAction, OnChange, SetNewNode, StateAction, ValidJson, ValidJsonObject } from './type';
+import { DeleteNode, DevtoolsAction, OnChange, SetNewNode, StateAction, BasicRecord } from './type';
 
 
 
 export type StoreInternal 
-  = ValidJson
-  & SetNewNode
+  = SetNewNode
   & DeleteNode<1>
   & OnChange<unknown>
   & {
-    [key in keyof ValidJsonObject]: StoreInternal & ((arg: unknown) => StoreInternal)
+    [key in keyof BasicRecord]: StoreInternal & ((arg: unknown) => StoreInternal)
   }
   & {
-    $state: ValidJsonObject
+    $state: BasicRecord
   }
   & {
     $stateActions: StateAction[],

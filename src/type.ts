@@ -1,4 +1,3 @@
-import { anyLibProp } from "./constant";
 import { StoreInternal } from "./type-internal";
 
 export type FindOrFilter = 'isFind' | 'isFilter';
@@ -13,6 +12,10 @@ export type Brand<T, TBrand extends string> = T & { [brand]: TBrand };
 export type ThingOrArrayOfThings<T> = T | T[];
 
 export type Primitive = string | number | boolean;
+
+export type BasicRecord = Record<string, unknown>;
+
+export type BasicArray = Array<unknown>;
 
 export type PossiblyBrandedPrimitive = Primitive & { [brand]?: string };
 
@@ -33,26 +36,7 @@ export type DeepReadonly<T> = T extends Primitive | Date ? T : T extends Array<i
 export type DeepReadonlyObject<T> = { readonly [P in keyof T]: DeepReadonly<T[P]>; }
 export type DeepReadonlyArray<T> = ReadonlyArray<DeepReadonly<T>>;
 
-export type ValidJsonArray = Array<ValidJson>;
-export type ValidJson = ValidJsonObject | ValidJsonArray | Date | string | number | boolean | null;
-export type ValidJsonObject<T extends ValidJson = { [k: string]: unknown }> = { [K in keyof T]: T[K] }
-
-
-export type ValidJsonArrayForLib<T = ValidJson> = Array<T>;
-export type ValidJsonForLib = ValidJsonObject | ValidJsonArray | Date | string | number | boolean | null;
-export type ValidJsonObjectForLib<T = ValidJson> = {
-  [k in keyof T]:
-  k extends ValueOf<typeof anyLibProp> ? never
-  : T[k] extends Set<unknown> ? never
-  : T[k] extends WeakSet<object> ? never
-  : T[k] extends Map<unknown, unknown> ? never
-  : T[k] extends WeakMap<object, unknown> ? never
-  : T[k] extends Record<string, unknown> ? ValidJsonObjectForLib<T[k]>
-  : T[k]
-};
-
-
-export type StoreDef<S extends ValidJsonObject> = Store<S> & (S extends never ? unknown : StoreAugment<S>);
+export type StoreDef<S> = Store<S> & (S extends never ? unknown : StoreAugment<S>);
 
 export type ValueOf<T> = T[keyof T];
 
@@ -841,9 +825,9 @@ export type LibState = {
   store: undefined | StoreInternal,
   asyncUpdate: undefined | ((stateActions: StateAction[], prop: string, options: { cache?: number, eager?: unknown }, arg: unknown) => unknown),
   devtools: undefined | { dispatch: (arg: { stateActions: StateAction[], actionType?: string, payloadPaths?: Record<string, string> }) => unknown },
-  state: undefined | ValidJsonObject,
+  state: undefined | BasicRecord,
   changeListeners: ChangeListener[],
-  initialState: undefined | ValidJsonObject,
+  initialState: undefined | BasicRecord,
   disableDevtoolsDispatch?: boolean,
   derivations: Map<DerivationKey, unknown>,
   stacktraceError: null | Error,

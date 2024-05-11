@@ -1,13 +1,13 @@
 import { augmentations, errorMessages, libState } from './constant';
 import { readState } from './read';
-import { Readable, StateAction, Store, StoreAugment, StoreDef, ValidJsonObject, ValidJsonObjectForLib } from './type';
-import { comparatorsPropMap, updatePropMap } from './type-check';
+import { BasicRecord, Readable, StateAction, Store, StoreAugment, StoreDef } from './type';
+import { comparatorsPropMap, libPropMap, updatePropMap } from './type-check';
 import { StoreInternal } from './type-internal';
 import { constructTypeStrings } from './utility';
 import { setNewStateAndNotifyListeners } from './write-complete';
 
 
-export const createInnerStore = <S>(state: ValidJsonObjectForLib<S>) => ({
+export const createInnerStore = <S extends BasicRecord>(state: S) => ({
   usingAccessor: <C extends Readable<unknown>>(accessor: (store: Store<S>) => C): C & (C extends never ? unknown : StoreAugment<C>) => {
     if (libState.store)
       libState.store.$patchDeep(state);
@@ -22,7 +22,7 @@ export const createInnerStore = <S>(state: ValidJsonObjectForLib<S>) => ({
 
 const emptyObj = {} as StoreInternal;
 const { selection, core } = augmentations;
-const map = {...comparatorsPropMap, $at: true };
+const map = { ...comparatorsPropMap, $at: true };
 const recurseProxy = (stateActions?: StateAction[]): StoreInternal => new Proxy(emptyObj, {
   get: (_, prop: string) => {
     if ('$stateActions' === prop)
@@ -45,9 +45,10 @@ const recurseProxy = (stateActions?: StateAction[]): StoreInternal => new Proxy(
   }
 });
 
-export function createStore<S extends ValidJsonObject>(
-  initialState: ValidJsonObjectForLib<S>
+export function createStore<S extends BasicRecord>(
+  initialState: S
 ): StoreDef<S> {
+  validateState('', initialState);
   removeStaleCacheReferences(initialState);
   initializeLibState(initialState);
   return (libState.store = recurseProxy()) as unknown as StoreDef<S>;
@@ -94,13 +95,13 @@ const state = (stateActions: StateAction[], prop: string) => {
   return typeof (result) === 'undefined' ? null : result;
 }
 
-const initializeLibState = (initialState: ValidJsonObject) => {
+const initializeLibState = (initialState: BasicRecord) => {
   if (libState.initialState)
     return;
   libState.state = libState.initialState = initialState;
 }
 
-const removeStaleCacheReferences = (state: ValidJsonObject) => {
+const removeStaleCacheReferences = (state: BasicRecord) => {
   if (!state.cache)
     return;
   state.cache = Object.fromEntries(Object.entries(state.cache).filter(([, value]) => new Date(value).getTime() > Date.now()));
@@ -142,4 +143,18 @@ const processUpdateFunction = (stateActions: StateAction[], prop: string) => (ar
     stateActions.push(obj);
     setNewStateAndNotifyListeners(stateActions);
   }
+}
+
+export const validateState = (key: string | number, state: unknown): void => {
+  if (state === null || typeof state === 'string' || typeof state === 'number' || typeof state === 'boolean')
+    return;
+  if (typeof (state) === 'undefined' || typeof (state) === 'bigint' || typeof (state) === 'function' || typeof (state) === 'symbol' || state instanceof Set || state instanceof Map || state instanceof Promise || state instanceof Error || state instanceof RegExp)
+    throw new Error(errorMessages.INVALID_STATE_INPUT(key, state ?? 'undefined'));
+  if (Array.isArray(state))
+    return state.forEach((e, i) => validateState(i, e));
+  return Object.keys(state).forEach(key => {
+    if (key in libPropMap)
+      throw new Error(errorMessages.LIB_PROP_USED_IN_STATE(key));
+    validateState(key, state[key as keyof typeof state]);
+  });
 }

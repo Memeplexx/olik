@@ -1,10 +1,10 @@
 import { anyLibProp, comparators, concatenations, readFunctions, updateFunctions } from "./constant";
-import { Primitive, ValidJson, ValidJsonObject, ValueOf } from "./type";
+import { BasicRecord, Primitive, ValueOf } from "./type";
 import { StoreInternal } from "./type-internal";
 
 
 
-const emptyObject = {} as ValidJsonObject;
+const emptyObject = {} as BasicRecord;
 export const libPropMap = anyLibProp.reduce((acc, e) => { acc[e] = true; return acc; }, { ...emptyObject });
 export const readPropMap = readFunctions.reduce((acc, e) => { acc[e] = true; return acc; }, { ...emptyObject });
 export const updatePropMap = updateFunctions.reduce((acc, e) => { acc[e] = true; return acc; }, { ...emptyObject });
@@ -18,8 +18,8 @@ export const is = {
   boolean: (arg: unknown): arg is boolean => typeof (arg) === 'boolean',
   primitive: (arg: unknown): arg is Primitive => is.number(arg) || is.string(arg) || is.boolean(arg),
   function: <Input, Output>(arg: unknown): arg is ((a: Input) => Output) => typeof arg === 'function',
-  record: <T = ValidJson>(arg: unknown): arg is { [key: string]: T } => typeof arg === 'object' && !is.null(arg) && !is.array(arg) && !is.date(arg),
-  array: <T = ValidJson>(arg: unknown): arg is Array<T> => Array.isArray(arg),
+  record: <T>(arg: unknown): arg is { [key: string]: T } => typeof arg === 'object' && !is.null(arg) && !is.array(arg) && !is.date(arg),
+  array: <T>(arg: unknown): arg is Array<T> => Array.isArray(arg),
   null: (arg: unknown): arg is null => arg === null,
   undefined: (arg: unknown): arg is undefined => arg === undefined,
   storeInternal: (arg: unknown): arg is StoreInternal => is.record(arg) && !!arg['$stateActions'],
@@ -34,9 +34,8 @@ export const doThrow = () => { throw new Error(); }
 export const as = {
   string: (arg: unknown): string => is.string(arg) ? arg : doThrow(),
   number: (arg: unknown): number => is.number(arg) ? arg : doThrow(),
-  record: <T = ValidJson>(arg: unknown): { [key: string]: T } => is.record<T>(arg) ? arg : doThrow(),
-  array: <T = ValidJson>(arg: unknown): Array<T> => is.array<T>(arg) ? arg : doThrow(),
-  json: (arg: unknown): ValidJson => is.record(arg) || is.array(arg) || is.primitive(arg) || is.date(arg) || is.null(arg) ? arg : doThrow(),
+  record: <T>(arg: unknown): { [key: string]: T } => is.record<T>(arg) ? arg : doThrow(),
+  array: <T>(arg: unknown): Array<T> => is.array<T>(arg) ? arg : doThrow(),
   storeInternal: (arg: unknown): StoreInternal => is.storeInternal(arg) ? arg : doThrow(),
   anyUpdateFunction: (arg: unknown): ValueOf<typeof updateFunctions> => is.anyUpdateFunction(arg) ? arg : doThrow(),
 }

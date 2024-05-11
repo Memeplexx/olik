@@ -1,5 +1,5 @@
 import { comparisons } from './constant';
-import { StateAction, ValidJsonObject } from './type';
+import { StateAction, BasicRecord } from './type';
 import { comparatorsPropMap, libPropMap, readPropMap, updatePropMap } from './type-check';
 import { Cursor, QuerySpec } from './type-internal';
 
@@ -30,7 +30,7 @@ export const constructQuery = (
       return (e: unknown) => {
         let subProperty = e;
         for (let i = index; i < index + nextComparatorIndex; i++) {
-          subProperty = subProperty ? (subProperty as ValidJsonObject)[stateActions[i].name] : undefined;
+          subProperty = subProperty ? (subProperty as BasicRecord)[stateActions[i].name] : undefined;
         }
         const comparison = comparisons[comparatorName];
         if (!comparison) throw new Error();

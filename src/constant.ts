@@ -7,9 +7,10 @@ export const errorMessages = {
   AT_RETURNS_NO_MATCHES: (index: number) => `No array element at index ${index}`,
   FIND_RETURNS_NO_MATCHES: 'Could not find array element',
   AT_INDEX_OUT_OF_BOUNDS: (index: number) => `Index ${index} is out of bounds`,
-  INVALID_STATE_INPUT: (illegal: { toString(): string }) => `State must be serializable to JSON. Value of '${illegal.toString()}' is not permitted`,
+  INVALID_STATE_INPUT: (key: string | number, illegal: { toString(): string }) => `State must be serializable to JSON. Value of ${key === '' ? `'${illegal.toString()}'` : `{${key}: '${illegal.toString()}'}`} is not permitted`,
   ASYNC_UPDATES_NOT_ENABLED: 'Cannot perform an async update until you enable it. Please import and invoke `importOlikAsyncModule()` before creating your store',
   INVALID_PATCH_DEEP_STRUCTURE: 'Only Objects can be patched onto other objects',
+  LIB_PROP_USED_IN_STATE: (key: string) => `The key '${key}' is a reserved library property and cannot be used in the state`,
 } as const;
 
 export const libState: LibState = {
@@ -65,6 +66,6 @@ export const comparisons = {
   $isFalse: (val: unknown) => val === false,
   $isTruthy: (val: unknown) => !!val,
   $isFalsy: (val: unknown) => !val,
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
 } as const satisfies { [comparator in ValueOf<typeof comparators> & string]: (val: any, arg?: any) => boolean };
 

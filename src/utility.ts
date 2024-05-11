@@ -1,7 +1,7 @@
 import { augment } from './augment';
 import { libState, testState } from './constant';
 import { perf } from './performance';
-import { StateAction, Store, ValidJsonObject } from './type';
+import { StateAction, Store, BasicRecord } from './type';
 import { comparatorsPropMap, updatePropMap } from './type-check';
 import { StoreInternal } from './type-internal';
 
@@ -125,9 +125,9 @@ export const extractPayload = <T>(payloadIncoming: unknown): T => {
       return payload.map((p, i) => sanitizePayload(p as T, !path ? i.toString() : `${path}.${i}`)) as PayloadType<T>;
     if (typeof (payload) === 'object' && payload !== null)
       return Object.keys(payload).reduce((prev, key) => {
-        prev[key] = sanitizePayload((payload as ValidJsonObject)[key] as T, !path ? key.toString() : `${path}.${key.toString()}`);
+        prev[key] = sanitizePayload((payload as BasicRecord)[key] as T, !path ? key.toString() : `${path}.${key.toString()}`);
         return prev;
-      }, {} as ValidJsonObject) as PayloadType<T>;
+      }, {} as BasicRecord) as PayloadType<T>;
     throw new Error();
   }
   const payload = sanitizePayload(payloadIncoming as T, '');
