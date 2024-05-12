@@ -132,7 +132,7 @@ const patchDeep = (currentState: BasicRecord, payload: BasicRecord) => {
     if (!isRecord(state))
       return patch;
     if (!isRecord(patch))
-      throw new Error(errorMessages.INVALID_PATCH_DEEP_STRUCTURE);
+      throw new Error(errorMessages.INVALID_PATCH_DEEP_STRUCTURE(patch));
     return Object.entries(patch)
       .reduce((acc, [key, value]) => {
         if (!isRecord(value))

@@ -64,7 +64,7 @@ export type UpdatableObject<S, F extends FindOrFilter, Q extends QueryStatus, I 
   & DeleteNode<Depth>
   & Readable<F extends 'isFilter' ? S[] : S>
   & (Q extends 'notArray'
-    ? (SetNewNode & PatchObject<S> & Sett<S> & PatchDeep<S>)
+    ? (SetNewNode & PatchObject<S> & SetNode<S> & PatchDeep<S>)
     : F extends 'isFind' ? PatchArrayElement<S> & SetArrayElement<S> & PatchDeepArrayElement<S>
     : PatchArray<S> & SetArray<S, I> & PatchDeepArray<S>)
   & ({
@@ -120,7 +120,7 @@ export type UpdateOptions<H> = Cache & Eager<H>;
 export type UpdatablePrimitive<S, F extends FindOrFilter, Q extends QueryStatus, I extends ImmediateParentIsAnArray, Depth extends number> =
   & InvalidateCache
   & DeleteNode<Depth>
-  & (Q extends 'notArray' ? Sett<S> : F extends 'isFind' ? SetArrayElement<S> : SetArray<S, I>)
+  & (Q extends 'notArray' ? SetNode<S> : F extends 'isFind' ? SetArrayElement<S> : SetArray<S, I>)
   & (S extends number ? (F extends 'isFind' ? Add & Subtract : AddArray & SubtractArray) : unknown)
   & (S extends boolean ? (F extends 'isFind' ? Toggle : ToggleArray) : unknown)
   & Readable<F extends 'isFilter' ? S[] : S>
@@ -363,7 +363,7 @@ export interface SubtractArray {
   $subtract(toSubtract: number): void;
 }
 
-export interface Sett<S> {
+export interface SetNode<S> {
   /**
    * Update the selected node, by replacing it with the value returned by the supplied async function.
    */

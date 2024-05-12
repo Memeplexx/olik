@@ -90,7 +90,7 @@ export const toIsoStringInCurrentTz = (date: Date) => {
 
 export const constructTypeStrings = (stateActions: StateAction[], nested: boolean) => stateActions.map(sa => constructTypeString(sa, nested)).join('.');
 
-const map = {...updatePropMap, ...comparatorsPropMap, '$at': true};
+const map = { ...updatePropMap, ...comparatorsPropMap, '$at': true };
 export const constructTypeString = ({ name, arg }: StateAction, nested: boolean): string => {
   if (!(name in map))
     return name;

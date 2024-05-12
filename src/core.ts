@@ -53,7 +53,7 @@ export function createStore<S extends BasicRecord>(
   return (libState.store = recurseProxy()) as unknown as StoreDef<S>;
 }
 
-const onChange = (stateActions: StateAction[], prop: string) => (listener: (arg: unknown) => unknown) => {
+const onChange = (stateActions: StateAction[], name: string) => (listener: (arg: unknown) => unknown) => {
   const { changeListeners } = libState;
   const unsubscribe = () => {
     const changeListenerIndex = changeListeners.findIndex(cl => cl.path === path)!;
@@ -70,7 +70,7 @@ const onChange = (stateActions: StateAction[], prop: string) => (listener: (arg:
     listeners.push(listener);
   } else {
     changeListeners.push({
-      actions: [...stateActions, { name: prop }],
+      actions: [...stateActions, { name }],
       listeners: [listener],
       unsubscribe,
       cachedState: undefined,
@@ -80,7 +80,7 @@ const onChange = (stateActions: StateAction[], prop: string) => (listener: (arg:
   return { unsubscribe }
 }
 
-const state = (stateActions: StateAction[], prop: string) => {
+const state = (stateActions: StateAction[], name: string) => {
   const { state } = libState;
   const tryFetchResult = (stateActions: StateAction[]): unknown => {
     try {
@@ -90,7 +90,7 @@ const state = (stateActions: StateAction[], prop: string) => {
       return tryFetchResult(stateActions);
     }
   }
-  const result = tryFetchResult([...stateActions, { name: prop }]);
+  const result = tryFetchResult([...stateActions, { name }]);
   return typeof (result) === 'undefined' ? null : result;
 }
 
@@ -106,13 +106,13 @@ const removeStaleCacheReferences = (state: BasicRecord) => {
   state.cache = Object.fromEntries(Object.entries(state.cache).filter(([, value]) => new Date(value).getTime() > Date.now()));
 }
 
-const basicProp = (stateActions: StateAction[], prop: string) => {
-  stateActions.push({ name: prop });
+const basicProp = (stateActions: StateAction[], name: string) => {
+  stateActions.push({ name });
   return recurseProxy(stateActions);
 }
 
-const comparator = (stateActions: StateAction[], prop: string) => (arg?: unknown) => {
-  stateActions.push({ name: prop, arg });
+const comparator = (stateActions: StateAction[], name: string) => (arg?: unknown) => {
+  stateActions.push({ name, arg });
   return recurseProxy(stateActions);
 }
 
@@ -128,18 +128,15 @@ const invalidateCache = (stateActions: StateAction[]) => () => {
   }
 };
 
-const obj = { name: '', arg: undefined as unknown };
-const processUpdateFunction = (stateActions: StateAction[], prop: string) => (arg: unknown, options: { cache?: number, eager?: unknown }) => {
+const processUpdateFunction = (stateActions: StateAction[], name: string) => (arg: unknown, options: { cache?: number, eager?: unknown }) => {
   if (libState.devtools)
     libState.stacktraceError = new Error();
   if (typeof (arg) === 'function') {
     if (!libState.asyncUpdate)
       throw new Error(errorMessages.ASYNC_UPDATES_NOT_ENABLED);
-    return libState.asyncUpdate(stateActions, prop, options ?? {}, arg);
+    return libState.asyncUpdate(stateActions, name, options ?? {}, arg);
   } else {
-    obj.name = prop;
-    obj.arg = arg;
-    stateActions.push(obj);
+    stateActions.push({ name, arg });
     setNewStateAndNotifyListeners(stateActions);
   }
 }
