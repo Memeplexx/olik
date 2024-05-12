@@ -1,8 +1,7 @@
 import { augment } from './augment';
-import { libState, testState } from './constant';
+import { comparatorsPropMap, libState, testState, updatePropMap } from './constant';
 import { perf } from './performance';
 import { StateAction, Store, BasicRecord } from './type';
-import { comparatorsPropMap, updatePropMap } from './type-check';
 import { StoreInternal } from './type-internal';
 
 

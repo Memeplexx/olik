@@ -1,6 +1,5 @@
-import { comparisons } from './constant';
+import { comparatorsPropMap, comparisons, libPropMap, readPropMap, updatePropMap } from './constant';
 import { StateAction, BasicRecord } from './type';
-import { comparatorsPropMap, libPropMap, readPropMap, updatePropMap } from './type-check';
 import { Cursor, QuerySpec } from './type-internal';
 
 

@@ -1,7 +1,6 @@
-import { errorMessages, libState } from './constant';
+import { errorMessages, libState, updatePropMap } from './constant';
 import { constructQuery } from './query';
 import { BasicArray, BasicRecord, StateAction } from './type';
-import { updatePropMap } from './type-check';
 import { Cursor } from './type-internal';
 import { extractPayload } from './utility';
 

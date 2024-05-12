@@ -3,6 +3,5 @@ export * from './augment';
 export * from './utility';
 export * from './type';
 export * from './constant';
-export * from './type-check';
 export * from './read';
 export * from './write-complete';

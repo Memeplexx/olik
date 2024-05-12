@@ -1,7 +1,6 @@
-import { augmentations, errorMessages, libState } from './constant';
+import { augmentations, errorMessages, libState, comparatorsPropMap, libPropMap, updatePropMap } from './constant';
 import { readState } from './read';
 import { BasicRecord, Readable, StateAction, Store, StoreAugment, StoreDef } from './type';
-import { comparatorsPropMap, libPropMap, updatePropMap } from './type-check';
 import { StoreInternal } from './type-internal';
 import { constructTypeStrings } from './utility';
 import { setNewStateAndNotifyListeners } from './write-complete';

@@ -1,6 +1,6 @@
+import { libPropMap } from './constant';
 import { constructQuery } from './query';
 import { BasicArray, BasicRecord, StateAction } from './type';
-import { libPropMap } from './type-check';
 
 export const readState = (
   state: unknown, stateActions: StateAction[], cursor = { index: 0 }

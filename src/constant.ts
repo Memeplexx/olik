@@ -1,4 +1,4 @@
-import { Augmentations, LibState, ValueOf } from './type';
+import { Augmentations, BasicRecord, LibState, ValueOf } from './type';
 import { TestState } from './type-internal';
 
 
@@ -48,6 +48,13 @@ export const concatenations = ['$and', '$or', '$find', '$filter', '$distinct', '
 export const otherFunctions = ['$at', '$invalidateCache', '$stateActions'] as const;
 export const comparators = ['$eq', '$in', '$ni', '$gt', '$lt', '$gte', '$lte', '$match', '$contains', '$containsIgnoreCase', '$isContainedIn', '$isContainedInIgnoreCase', '$isTrue', '$isFalse', '$isTruthy', '$isFalsy'] as const;
 export const anyLibProp = [...updateFunctions, ...readFunctions, ...concatenations, ...comparators, ...otherFunctions] as const;
+
+const emptyObject = {} as BasicRecord;
+export const libPropMap = anyLibProp.reduce((acc, e) => { acc[e] = true; return acc; }, { ...emptyObject });
+export const readPropMap = readFunctions.reduce((acc, e) => { acc[e] = true; return acc; }, { ...emptyObject });
+export const updatePropMap = updateFunctions.reduce((acc, e) => { acc[e] = true; return acc; }, { ...emptyObject });
+export const comparatorsPropMap = comparators.reduce((acc, e) => { acc[e] = true; return acc; }, { ...emptyObject });
+export const concatPropMap = concatenations.reduce((acc, e) => { acc[e] = true; return acc; }, { ...emptyObject });
 
 export const comparisons = {
   $eq: (val: unknown, arg: unknown) => val === arg,
