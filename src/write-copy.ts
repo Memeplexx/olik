@@ -43,8 +43,6 @@ export const copyNewState = (
   switch (name) {
     case '$set':
       return set(extractPayload(stateAction.arg));
-    case '$setUnique':
-      return setUnique(extractPayload(stateAction.arg));
     case '$patch':
       return patch(currentState, extractPayload(stateAction.arg));
     case '$add':
@@ -63,6 +61,8 @@ export const copyNewState = (
       return push(currentState as BasicArray, extractPayload(stateAction.arg));
     case '$pushMany':
       return pushMany(currentState as BasicArray, extractPayload(stateAction.arg));
+    case '$setUnique':
+      return setUnique(extractPayload(stateAction.arg));
     case '$deDuplicate':
       return deDuplicate(currentState as BasicArray);
     case '$merge':
