@@ -3,12 +3,12 @@ import { test, expect, beforeEach } from 'vitest';
 import { resetLibraryState } from '../src/utility';
 import { testState } from '../src';
 import { Brand } from '../src/type';
-import { connectOlikDevtoolsToStore } from '../src/devtools';
+import { configureDevtools } from '../src/devtools';
 
 
 beforeEach(() => {
   resetLibraryState();
-  connectOlikDevtoolsToStore();
+  configureDevtools();
 })
 
 test('should merge a number', () => {

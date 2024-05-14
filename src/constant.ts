@@ -8,7 +8,7 @@ export const errorMessages = {
   FIND_RETURNS_NO_MATCHES: 'Could not find array element',
   AT_INDEX_OUT_OF_BOUNDS: (index: number) => `Index ${index} is out of bounds`,
   INVALID_STATE_INPUT: (key: string | number, illegal: { toString(): string }) => `State must be serializable to JSON. Value of ${key === '' ? `'${illegal.toString()}'` : `{${key}: '${illegal.toString()}'}`} is not permitted`,
-  ASYNC_UPDATES_NOT_ENABLED: 'Cannot perform an async update until you enable it. Please import and invoke `importOlikAsyncModule()` before creating your store',
+  ASYNC_UPDATES_NOT_ENABLED: 'Cannot perform an async update until you enable it. Please import and invoke `configureAsyncModule()` before creating your store',
   INVALID_PATCH_DEEP_STRUCTURE: (patch: unknown) => `Cannot patch an object with the supplied value '${patch}'. Only Objects can be patched onto other objects`,
   LIB_PROP_USED_IN_STATE: (key: string) => `The key '${key}' is a reserved library property and cannot be used in the state`,
 } as const;

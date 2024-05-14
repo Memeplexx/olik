@@ -1,18 +1,19 @@
 import { libState, testState } from './constant';
-import { DevtoolsAction } from './type';
-import { deserialize, extractPayload, isoDateRegexp } from './utility';
+import { DevtoolsAction, DevtoolsOptions, Readable } from './type';
+import { StoreInternal } from './type-internal';
+import { constructTypeStrings, deserialize, extractPayload, isoDateRegexp } from './utility';
 
 let initialized = false;
 const pendingActions = new Array<Omit<DevtoolsAction, 'source'>>();
 
-export function connectOlikDevtoolsToStore() {
+export function configureDevtools({ whitelist }: DevtoolsOptions = { whitelist: [] }) {
 
   if (libState.devtools)
     return;
 
   sendMessageToDevtools({
     actionType: "$load()",
-    stateActions: [],
+    stateActions: whitelist.map(w => ({ name: constructTypeStrings((w as StoreInternal).$stateActions, false) })),
   })
 
   pendingActions.push({
@@ -23,7 +24,7 @@ export function connectOlikDevtoolsToStore() {
 
   setupDevtools();
 
-  if (typeof (document) === 'undefined' || document.getElementById('olik-init')) 
+  if (typeof (document) === 'undefined' || document.getElementById('olik-init'))
     return;
 
   reactToDevtoolsInitialization();
@@ -31,6 +32,18 @@ export function connectOlikDevtoolsToStore() {
   listenToStateChangesFromDevtools();
 
   listenToActionDispatchesFromDevtools();
+}
+
+/**
+ * Add to list of paths that should be ignored in the action type list.
+ * This should be used when a specific update is done very frequently and you don't want to see it in the devtools.
+ * This is done to reduce 'noise' in the devtools in order to improve the debugging experience.
+ */
+export function addToWhitelist(whitelist: Readable<unknown>[]) {
+  sendMessageToDevtools({
+    actionType: "$addToWhitelist()",
+    stateActions: whitelist.map(w => ({ name: constructTypeStrings((w as StoreInternal).$stateActions, false) })),
+  })
 }
 
 const setupDevtools = () => {
@@ -74,7 +87,7 @@ const listenToStateChangesFromDevtools = () => {
   new MutationObserver(() => {
     libState.disableDevtoolsDispatch = true;
     libState.store!.$set(JSON.parse(olikStateDiv.innerHTML, (key, value) => {
-      if (typeof(value) === 'string' && isoDateRegexp.test(value))
+      if (typeof (value) === 'string' && isoDateRegexp.test(value))
         return new Date(value);
       return value;
     }));

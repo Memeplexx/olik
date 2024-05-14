@@ -136,8 +136,9 @@ const processUpdateFunction = (stateActions: StateAction[], name: string) => (ar
       throw new Error(errorMessages.ASYNC_UPDATES_NOT_ENABLED);
     return libState.asyncUpdate(stateActions, name, options ?? {}, arg);
   } else {
-    stateActions.push({ name, arg });
-    setNewStateAndNotifyListeners(stateActions);
+    // stateActions.push({ name, arg });
+    // setNewStateAndNotifyListeners(stateActions);
+    setNewStateAndNotifyListeners([...stateActions, { name, arg }]);
   }
 }
 

@@ -1,10 +1,10 @@
-import { connectOlikDevtoolsToStore } from '../src/devtools';
+import { configureDevtools } from '../src/devtools';
 import { deserialize, resetLibraryState } from '../src/utility';
 import { test, expect, beforeEach } from 'vitest';
 
 beforeEach(() => {
   resetLibraryState();
-  connectOlikDevtoolsToStore();
+  configureDevtools();
 })
 
 test('should handle null', () => {

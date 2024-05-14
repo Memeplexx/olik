@@ -842,3 +842,12 @@ export type DevtoolsAction = {
   stateActions: StateAction[];
   trace?: string;
 }
+
+export type DevtoolsOptions = {
+  /**
+   * A list of paths that should be ignored in the action type list.
+   * This should be used when a specific update is done very frequently and you don't want to see it in the devtools.
+   * This is done to reduce 'noise' in the devtools in order to improve the debugging experience.
+   */
+  whitelist: Array<Readable<unknown>>
+}

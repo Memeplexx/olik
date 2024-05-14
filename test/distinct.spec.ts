@@ -2,12 +2,12 @@
 import { beforeEach, expect, test } from 'vitest';
 import { testState } from '../src';
 import { createStore } from '../src/core';
-import { connectOlikDevtoolsToStore } from '../src/devtools';
+import { configureDevtools } from '../src/devtools';
 import { resetLibraryState } from '../src/utility';
 
 beforeEach(() => {
   resetLibraryState();
-  connectOlikDevtoolsToStore();
+  configureDevtools();
 })
 
 test('shoud de duplicate numbers', () => {

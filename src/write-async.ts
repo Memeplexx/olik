@@ -4,7 +4,7 @@ import { BasicArray, FutureState, StateAction } from './type';
 import { toIsoStringInCurrentTz } from './utility';
 import { setNewStateAndNotifyListeners } from './write-complete';
 
-export const importOlikAsyncModule = () => {
+export const configureAsyncModule = () => {
   libState.asyncUpdate = (
     stateActions: StateAction[], prop: string, options: { cache?: number, eager?: unknown }, arg: unknown
   ) => {

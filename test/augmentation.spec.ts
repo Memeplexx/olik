@@ -3,14 +3,14 @@ import { Observable } from 'rxjs';
 import { augment } from '../src/augment';
 import { createStore } from '../src/core';
 import { derive } from '../src/derive';
-import { importOlikAsyncModule } from '../src/write-async';
+import { configureAsyncModule } from '../src/write-async';
 import { resetLibraryState } from '../src/utility';
 import { test, expect, beforeEach } from 'vitest';
-import { connectOlikDevtoolsToStore } from '../src/devtools';
+import { configureDevtools } from '../src/devtools';
 
 beforeEach(() => {
   resetLibraryState();
-  connectOlikDevtoolsToStore();
+  configureDevtools();
 })
 
 test('should be able to augment a selection', () => {
@@ -57,7 +57,7 @@ test('should be able to augment a future on a core action', () => {
   })
   const state = { num: 42 };
   const store = createStore(state);
-  importOlikAsyncModule();
+  configureAsyncModule();
   const fetch = () => new Promise<number>(resolve => setTimeout(() => resolve(43), 5))
   const res = (store.num.$set(fetch) as unknown as { myThing: () => Promise<unknown> }).myThing();
   return res.then(r => {
@@ -73,7 +73,7 @@ test('should be able to augment a future on an array action', async () => {
   })
   const state = { array: [42] };
   const store = createStore(state);
-  importOlikAsyncModule();
+  configureAsyncModule();
   const fetch = () => new Promise<number[]>(resolve => setTimeout(() => resolve([43]), 5))
   const res = (store.array.$set(fetch) as unknown as { myThing: () => Promise<unknown> }).myThing();
   return res.then(r => {
@@ -89,7 +89,7 @@ test('should be able to augment a future on an array element action', async () =
   })
   const state = { array: [{ id: 1, num: 1 }] };
   const store = createStore(state);
-  importOlikAsyncModule();
+  configureAsyncModule();
   const fetch = () => new Promise<{ id: number, num: number }>(resolve => setTimeout(() => resolve({ id: 1, num: 2 }), 5));
   const res = (store.array.$find.id.$eq(1).$set(fetch) as unknown as { myThing: () => Promise<unknown> }).myThing();
   return res.then(r => {
@@ -103,7 +103,7 @@ test('should be able to augment an async', async () => {
   })
   const state = { thing: '' };
   const store = createStore(state);
-  importOlikAsyncModule();
+  configureAsyncModule();
   const fetch = () => new Observable<string>(observer => {
     observer.next('test');
     observer.complete();
