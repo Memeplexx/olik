@@ -107,13 +107,11 @@ const removeStaleCacheReferences = (state: BasicRecord) => {
 }
 
 const basicProp = (stateActions: StateAction[], name: string) => {
-  stateActions.push({ name });
-  return recurseProxy(stateActions);
+  return recurseProxy([...stateActions, { name }]);
 }
 
 const comparator = (stateActions: StateAction[], name: string) => (arg?: unknown) => {
-  stateActions.push({ name, arg });
-  return recurseProxy(stateActions);
+  return recurseProxy([...stateActions, { name, arg }]);
 }
 
 const invalidateCache = (stateActions: StateAction[]) => () => {
@@ -136,8 +134,6 @@ const processUpdateFunction = (stateActions: StateAction[], name: string) => (ar
       throw new Error(errorMessages.ASYNC_UPDATES_NOT_ENABLED);
     return libState.asyncUpdate(stateActions, name, options ?? {}, arg);
   } else {
-    // stateActions.push({ name, arg });
-    // setNewStateAndNotifyListeners(stateActions);
     setNewStateAndNotifyListeners([...stateActions, { name, arg }]);
   }
 }
