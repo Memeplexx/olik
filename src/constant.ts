@@ -42,7 +42,7 @@ export const augmentations: Augmentations = {
   async: promise => promise(),
 };
 
-export const updateFunctions = ['$set', '$setUnique', '$patch', '$patchDeep', '$delete', '$setNew', '$add', '$subtract', '$clear', '$push', '$pushMany', '$with', '$toggle', '$merge', '$deDuplicate', '$setKey'] as const;
+export const updateFunctions = ['$set', '$setUnique', '$patch', '$patchDeep', '$delete', '$setNew', '$add', '$subtract', '$clear', '$slice', '$push', '$pushMany', '$with', '$toggle', '$merge', '$deDuplicate', '$setKey'] as const;
 export const readFunctions = ['$onChange', '$state'] as const;
 export const concatenations = ['$and', '$or', '$find', '$filter', '$distinct', '$mergeMatching'] as const;
 export const otherFunctions = ['$at', '$invalidateCache', '$stateActions'] as const;

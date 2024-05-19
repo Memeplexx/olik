@@ -86,6 +86,7 @@ export type UpdatableArray<S extends ReadonlyArray<unknown>, F extends FindOrFil
     ) : (
       & DeleteNode<Depth>
       & Clear
+      & Slice
       & Push<S[0]>
       & PushMany<S>
       & SetArray<S, I>
@@ -241,6 +242,13 @@ export interface Clear {
    */
   $clear(): void,
   $clear(fn: AnyAsyncFn<unknown>, options?: UpdateOptions<unknown>): Future<unknown>;
+}
+
+export interface Slice {
+  /**
+   * Functionally similar to the array slice method.
+   */
+  $slice(arg: { start: number, end?: number }): void,
 }
 
 export interface Push<S> {

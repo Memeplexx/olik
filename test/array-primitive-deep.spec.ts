@@ -59,6 +59,14 @@ test('should be able to insert many primitives', () => {
   expect(store.$state).toEqual({ arr: [1, 2, 3, 4, 5, 6] });
 })
 
+test('should be able to slice', () => {
+  const store = createStore(state);
+  store.arr
+    .$slice({ start: 1, end: 2 })
+  expect(testState.currentActionType).toEqual('arr.$slice()');
+  expect(store.$state).toEqual({ arr: [2] });
+})
+
 test('should find an element and replace it', () => {
   const store = createStore(state);
   const payload = 9;

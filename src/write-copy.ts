@@ -56,6 +56,8 @@ export const copyNewState = (
       return patchDeep(currentState as BasicRecord, extractPayload(stateAction.arg));
     case '$clear':
       return clear();
+    case '$slice':
+      return slice(currentState as BasicArray, extractPayload(stateAction.arg));
     case '$push':
       return push(currentState as BasicArray, extractPayload(stateAction.arg));
     case '$pushMany':
@@ -72,6 +74,10 @@ export const copyNewState = (
 
 const deDuplicate = (currentState: BasicArray) => {
   return [...new Set(currentState)];
+}
+
+const slice = (currentState: BasicArray, payload: { start?: number, end?: number }) => {
+  return currentState.slice(payload.start, payload.end);
 }
 
 const push = (currentState: BasicArray, payload: unknown) => {
