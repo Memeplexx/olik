@@ -19,7 +19,6 @@ export const libState: LibState = {
   state: undefined,
   changeListeners: [],
   initialState: undefined,
-  derivations: new Map(),
   stacktraceError: null,
 }
 
@@ -35,7 +34,6 @@ export const testState: TestState = {
 
 export const augmentations: Augmentations = {
   selection: {},
-  future: {},
   derivation: {},
   core: {},
   async: promise => promise(),

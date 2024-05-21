@@ -14,8 +14,6 @@ export default defineConfig({
         index: './src/index.ts',
         devtools: './src/devtools.ts',
         derive: './src/derive.ts',
-        'async-write': './src/write-async.ts',
-        'async-query': './src/async-query.ts',
       },
       name: 'olik',
       fileName: 'olik',

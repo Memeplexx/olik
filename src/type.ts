@@ -122,7 +122,7 @@ export type UpdatablePrimitive<S, F extends FindOrFilter, Q extends QueryStatus,
 export type PayloadWithPotentialStore<T> = T | Readable<T> | (
   T extends PossiblyBrandedPrimitive ? never :
   T extends ReadonlyArray<infer R> ? ReadonlyArray<PayloadWithPotentialStore<R>> :
-  T extends Record<string, unknown> ? DeepReadonlyObject<({ [P in keyof T]: PayloadWithPotentialStore<T[P]> })>
+  T extends BasicRecord ? DeepReadonlyObject<({ [P in keyof T]: PayloadWithPotentialStore<T[P]> })>
   : never
 );
 
@@ -200,7 +200,7 @@ export type SetNewNode = {
    * Also note that you cannot insert primitives or arrays into the selected object.
    * The former has been enforced by the type system while the latter could not be.
    */
-  $setNew(insertion: Record<string, unknown>): void;
+  $setNew(insertion: BasicRecord): void;
 }
 
 export type Delete = {
@@ -611,18 +611,9 @@ export interface FutureState<C> {
   storeValue: C,
 }
 
-export interface Future<C> extends Promise<C> {
-  /**
-   * Gets the current status for the UI to consume
-   */
-  state: FutureState<C>,
-}
-
 export interface Augmentations {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   selection: { [name: string]: <C>(selection: Readable<C>) => (...args: any[]) => unknown },
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  future: { [name: string]: <C>(future: Future<C>) => (...args: any[]) => unknown };
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   derivation: { [name: string]: <R>(derivation: Derivation<R>) => (...args: any[]) => unknown }
   async: <C>(fnReturningFutureAugmentation: () => Promise<C>) => Promise<C>;
@@ -634,52 +625,6 @@ export interface RxjsObservable<C> {
 }
 
 export type AnyAsync<C> = RxjsObservable<C> | Promise<C>;
-
-export interface ReduxDevtoolsOptions {
-  /**
-   * Whether or not to display the 'trace' tab in the devtools.
-   * Set this to false for production builds because it negatively impacts performance.
-   */
-  traceActions?: boolean;
-  /**
-   * Limit the length of search args so because to prevent very long action types.  
-   * 
-   * For example, by default, the following action type:
-   * `todos.find.id.eq(c985ab52-6645-11ec-90d6-0242ac120003).delete()`
-   * will be abbreviated to
-   * `todos.find.id.eq(c985ab).delete()`  
-   * 
-   * Default value is `6`
-   */
-  limitSearchArgLength?: number;
-  /**
-   * Limit the length of payloads within the action type.  
-   * 
-   * For example, by default, the following action type:
-   * `todos.set({ one: 1, two: 2, three: 3, four: 4, five: 5, six: 6, seven: 7, eight: 8 })`
-   * could be abbreviated to
-   * `todos.set({ one: 1, two: 2, three: 3 })`  
-   * 
-   * Default value is `100`
-   */
-  limitPayloadArgLength?: number;
-  /**
-   * Sometimes actions with the same `type` may be dispatched many times in a short period.
-   * An example of this might be tracking the users mouse cursor position.
-   * To prevent these actions from spamming the debug logs, we can 'batch' those actions
-   * that have an identical `type` for a specific number of milliseconds.
-   * This effectively acts like a 'throttle' + 'debounce'.
-   * The default value is `0`.
-   */
-  batchActions?: number;
-}
-
-export interface ReduxDevtoolsOptionsRetroactive extends ReduxDevtoolsOptions {
-  /**
-   * The name of the store that you want to track
-   */
-  storeName: string;
-}
 
 export type BaseStore<S> = S extends never ? unknown : (S extends Array<unknown> ? UpdatableArray<S, 'isFilter', 'notQueried', 'yes', MaxRecursionDepth>
   : S extends object ? UpdatableObject<S, 'isFind', 'notArray', 'no', MaxRecursionDepth>
@@ -715,7 +660,6 @@ export type LibState = {
   changeListeners: ChangeListener[],
   initialState: undefined | BasicRecord,
   disableDevtoolsDispatch?: boolean,
-  derivations: Map<DerivationKey, unknown>,
   stacktraceError: null | Error,
 }
 

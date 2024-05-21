@@ -1,6 +1,6 @@
 {
   "name": "olik",
-  "version": "1.0.105",
+  "version": "1.0.106",
   "type": "module",
   "main": "./dist/olik.cjs",
   "module": "./dist/olik.js",
@@ -15,12 +15,6 @@
       ],
       "derive": [
         "dist/derive.d.ts"
-      ],
-      "async": [
-        "dist/write-async.d.ts"
-      ],
-      "async-query": [
-        "dist/async-query.d.ts"
       ]
     }
   },
@@ -36,14 +30,6 @@
     "./derive": {
       "import": "./dist/olik3.js",
       "require": "./dist/olik3.cjs"
-    },
-    "./async": {
-      "import": "./dist/olik4.js",
-      "require": "./dist/olik4.cjs"
-    },
-    "./async-query": {
-      "import": "./dist/olik5.js",
-      "require": "./dist/olik5.cjs"
     }
   },
   "files": [
