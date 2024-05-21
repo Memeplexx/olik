@@ -1,9 +1,9 @@
-import { augmentations, comparatorsPropMap, errorMessages, libPropMap, libState, updatePropMap } from './constant';
+import { augmentations, comparatorsPropMap, errorMessages, libPropMap, libState, testState, updatePropMap } from './constant';
 import { readState } from './read';
 import { BasicRecord, StateAction, StoreDef } from './type';
 import { StoreInternal } from './type-internal';
 import { constructTypeStrings } from './utility';
-import { setNewStateAndNotifyListeners } from './write-complete';
+import { copyNewState } from './write-copy';
 
 
 const emptyObj = {} as StoreInternal;
@@ -115,4 +115,38 @@ export const validateState = (key: string | number, state: unknown): void => {
       throw new Error(errorMessages.LIB_PROP_USED_IN_STATE(key));
     validateState(key, state[key as keyof typeof state]);
   });
+}
+
+const cursor = { index: 0 };
+const setNewStateAndNotifyListeners = (
+  stateActions: StateAction[]
+) => {
+  const { state: oldState, devtools, disableDevtoolsDispatch } = libState;
+  if (devtools && !disableDevtoolsDispatch) {
+    const type = constructTypeStrings(stateActions, true);
+    const typeOrig = constructTypeStrings(stateActions, false);
+    testState.currentActionType = type;
+    testState.currentActionTypeOrig = type !== typeOrig ? typeOrig : undefined;
+    testState.currentActionPayload = stateActions.at(-1)!.arg;
+  }
+  cursor.index = 0;
+  libState.state = copyNewState(oldState!, stateActions, cursor) as BasicRecord;
+  notifyChangeListeners(oldState!);
+  if (devtools && !disableDevtoolsDispatch)
+    devtools.dispatch({ stateActions, actionType: testState.currentActionType, payloadPaths: testState.currentActionPayloadPaths });
+}
+
+const notifyChangeListeners = (
+  oldState: BasicRecord,
+) => {
+  libState.changeListeners.forEach(listener => {
+    const { actions, cachedState } = listener;
+    const selectedOldState = cachedState !== undefined ? cachedState : readState(oldState, actions);
+    const selectedNewState = readState(libState.state, actions);
+    const arraysDoNotMatch = (Array.isArray(selectedOldState) && Array.isArray(selectedNewState)) && (selectedNewState.length !== selectedOldState.length || selectedOldState.some((el, i) => el !== selectedNewState[i]));
+    if (arraysDoNotMatch || selectedOldState !== selectedNewState) {
+      listener.cachedState = selectedNewState;
+      listener.listeners.forEach(listener => listener(selectedNewState));
+    }
+  })
 }

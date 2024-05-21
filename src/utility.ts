@@ -1,10 +1,8 @@
 import { augment } from './augment';
 import { comparatorsPropMap, libState, testState, updatePropMap } from './constant';
-import { StateAction, Store, BasicRecord } from './type';
+import { BasicRecord, StateAction } from './type';
 import { StoreInternal } from './type-internal';
 
-
-export const getStore = <S>() => libState.store as Store<S>;
 
 export const enqueueMicroTask = (fn: () => void) => Promise.resolve().then(fn);
 
@@ -73,17 +71,6 @@ export const deserialize = <R>(arg?: string | null): R => {
     // WE'VE RUN OUT OF OPTIONS, JUST RETURN THE STRING
     return <R>arg
   }
-}
-
-export const toIsoStringInCurrentTz = (date: Date) => {
-  const tzo = -date.getTimezoneOffset();
-  const dif = tzo >= 0 ? '+' : '-';
-  const pad = (num: number) => {
-    const norm = Math.floor(Math.abs(num));
-    return (norm < 10 ? '0' : '') + norm;
-  };
-  return date.getFullYear() + '-' + pad(date.getMonth() + 1) + '-' + pad(date.getDate()) + 'T' + pad(date.getHours())
-    + ':' + pad(date.getMinutes()) + ':' + pad(date.getSeconds()) + dif + pad(tzo / 60) + ':' + pad(tzo % 60);
 }
 
 export const constructTypeStrings = (stateActions: StateAction[], nested: boolean) => stateActions.map(sa => constructTypeString(sa, nested)).join('.');
