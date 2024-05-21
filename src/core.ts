@@ -86,8 +86,7 @@ const state = (stateActions: StateAction[], name: string) => {
     try {
       return readState(state, stateActions);
     } catch (e) {
-      stateActions.pop();
-      return tryFetchResult(stateActions);
+      return tryFetchResult([...stateActions.slice(0, -2), { name }]);
     }
   }
   const result = tryFetchResult([...stateActions, { name }]);
