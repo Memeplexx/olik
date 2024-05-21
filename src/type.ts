@@ -58,7 +58,6 @@ export type Rec<X, Depth extends number> = {
 
 
 export type UpdatableObject<S, F extends FindOrFilter, Q extends QueryStatus, I extends ImmediateParentIsAnArray, Depth extends number, NewDepth extends number = DecrementRecursion[Depth]> = Rec<
-  & InvalidateCache
   & DeleteNode<Depth>
   & Readable<F extends 'isFilter' ? S[] : S>
   & (Q extends 'notArray'
@@ -110,12 +109,10 @@ export type UpdatableArray<S extends ReadonlyArray<unknown>, F extends FindOrFil
         : AddArray
       )
     ))
-  & InvalidateCache
   & (S extends ReadonlyArray<PossiblyBrandedPrimitive> ? DeDuplicateArray<S> : unknown)
   , Depth>
 
 export type UpdatablePrimitive<S, F extends FindOrFilter, Q extends QueryStatus, I extends ImmediateParentIsAnArray, Depth extends number> =
-  & InvalidateCache
   & DeleteNode<Depth>
   & (Q extends 'notArray' ? SetNode<S> : F extends 'isFind' ? SetArrayElement<S> : SetArray<S, I>)
   & (S extends number ? (F extends 'isFind' ? Add & Subtract : AddArray & SubtractArray) : unknown)
@@ -190,13 +187,6 @@ export interface Unsubscribe {
    * Unsubscribe from the change listener that was previously added to the selected node.
    */
   unsubscribe: () => void,
-}
-
-export interface InvalidateCache {
-  /**
-   * Ensure that any data cached on the selected node is re-fetched the next time a request is made to asynchronously populate this node.
-   */
-  $invalidateCache: () => void,
 }
 
 export type SetNewNode = {
@@ -423,34 +413,6 @@ export type Derivable<S> = Read<S> & (
     $onChangeSync(changeListener: (state: DeepReadonly<S>) => void): Unsubscribe;
   }
 )
-
-export interface Cache {
-  /**
-   * Avoid unnecessary promise invocations by supplying the number of milliseconds that should elapse before the promise is invoked again.
-   * To un-do this, you can call `$invalidateCache()` on the node of the state tree, for example
-   * @example
-   * select.todos
-   *   .$invalidateCache();
-   * @example
-   * select.todos
-   *   .$find.id.$eq(2)
-   *   .$invalidateCache();
-   */
-  cache?: number;
-}
-
-export interface Eager<H> {
-  /**
-   * Allows you to set an initial value to update the store with.
-   * If the promise is rejected, this value will be reverted to what it was before the promise was invoked.
-   * @example
-   * const newUsername = 'Jeff';
-   * select.username
-   *   .$set(() => updateUsernameOnApi(newUsername), { eager: newUsername })
-   *   .catch(err => notifyUserOfError(err))
-   */
-  eager?: H extends AnyAsyncFn<infer W> ? W : never,
-}
 
 export type UpdatableAny<T, F extends FindOrFilter, Q extends QueryStatus, Depth extends number, NewDepth extends number = DecrementRecursion[Depth]> = Rec<
   T extends ReadonlyArray<unknown>

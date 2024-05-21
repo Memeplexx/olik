@@ -25,8 +25,6 @@ const recurseProxy = (stateActions?: StateAction[]): StoreInternal => new Proxy(
       return comparator(stateActions ?? [], prop);
     if ('$onChange' === prop)
       return onChange(stateActions ?? [], prop);
-    if ('$invalidateCache' === prop)
-      return invalidateCache(stateActions ?? []);
     return basicProp(stateActions ?? [], prop);
   }
 });
@@ -98,18 +96,6 @@ const basicProp = (stateActions: StateAction[], name: string) => {
 const comparator = (stateActions: StateAction[], name: string) => (arg?: unknown) => {
   return recurseProxy([...stateActions, { name, arg }]);
 }
-
-const invalidateCache = (stateActions: StateAction[]) => () => {
-  try {
-    setNewStateAndNotifyListeners([
-      { name: 'cache' },
-      { name: stateActions.map(sa => sa.name).join('.') },
-      { name: '$delete' },
-    ]);
-  } catch (e) {
-    /* This can happen if a cache has already expired */
-  }
-};
 
 const processUpdateFunction = (stateActions: StateAction[], name: string) => (arg: unknown, options: { cache?: number, eager?: unknown }) => {
   if (libState.devtools)

@@ -45,7 +45,7 @@ export const augmentations: Augmentations = {
 export const updateFunctions = ['$set', '$setUnique', '$patch', '$patchDeep', '$delete', '$setNew', '$add', '$subtract', '$clear', '$slice', '$push', '$pushMany', '$with', '$toggle', '$merge', '$deDuplicate', '$setKey'] as const;
 export const readFunctions = ['$onChange', '$state'] as const;
 export const concatenations = ['$and', '$or', '$find', '$filter', '$distinct', '$mergeMatching'] as const;
-export const otherFunctions = ['$at', '$invalidateCache', '$stateActions'] as const;
+export const otherFunctions = ['$at', '$stateActions'] as const;
 export const comparators = ['$eq', '$in', '$ni', '$gt', '$lt', '$gte', '$lte', '$match', '$contains', '$containsIgnoreCase', '$isContainedIn', '$isContainedInIgnoreCase', '$isTrue', '$isFalse', '$isTruthy', '$isFalsy'] as const;
 export const anyLibProp = [...updateFunctions, ...readFunctions, ...concatenations, ...comparators, ...otherFunctions] as const;
 
@@ -56,22 +56,21 @@ export const comparatorsPropMap = comparators.reduce((acc, e) => { acc[e] = true
 export const concatPropMap = concatenations.reduce((acc, e) => { acc[e] = true; return acc; }, {} as BasicRecord);
 
 export const comparisons = {
-  $eq: (val: unknown, arg: unknown) => val === arg,
-  $in: (val: unknown, arg: unknown) => (arg as Array<unknown>).includes(val),
-  $ni: (val: unknown, arg: unknown) => !(arg as Array<unknown>).includes(val),
-  $gt: (val: unknown, arg: unknown) => (val as number) > (arg as number),
-  $lt: (val: unknown, arg: unknown) => (val as number) < (arg as number),
-  $gte: (val: unknown, arg: unknown) => (val as number) >= (arg as number),
-  $lte: (val: unknown, arg: unknown) => (val as number) <= (arg as number),
-  $match: (val: unknown, arg: unknown) => (arg as RegExp).test(val as string),
-  $contains: (val: unknown, arg: unknown) => (val as Array<unknown>).includes(arg),
-  $containsIgnoreCase: (val: unknown, arg: unknown) => (val as string).toLowerCase().includes((arg as string).toLowerCase()),
-  $isContainedIn: (val: unknown, arg: unknown) => (arg as Array<unknown>).includes(val),
-  $isContainedInIgnoreCase: (val: unknown, arg: unknown) => (arg as string).toLowerCase().includes((val as string).toLowerCase()),
-  $isTrue: (val: unknown) => val === true,
-  $isFalse: (val: unknown) => val === false,
-  $isTruthy: (val: unknown) => !!val,
-  $isFalsy: (val: unknown) => !val,
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-} as const satisfies { [comparator in ValueOf<typeof comparators> & string]: (val: any, arg?: any) => boolean };
+  $eq: (val, arg) => val === arg,
+  $in: (val, arg) => (arg as Array<unknown>).includes(val),
+  $ni: (val, arg) => !(arg as Array<unknown>).includes(val),
+  $gt: (val, arg) => (val as number) > (arg as number),
+  $lt: (val, arg) => (val as number) < (arg as number),
+  $gte: (val, arg) => (val as number) >= (arg as number),
+  $lte: (val, arg) => (val as number) <= (arg as number),
+  $match: (val, arg) => (arg as RegExp).test(val as string),
+  $contains: (val, arg) => (val as Array<unknown>).includes(arg),
+  $containsIgnoreCase: (val, arg) => (val as string).toLowerCase().includes((arg as string).toLowerCase()),
+  $isContainedIn: (val, arg) => (arg as Array<unknown>).includes(val),
+  $isContainedInIgnoreCase: (val, arg) => (arg as string).toLowerCase().includes((val as string).toLowerCase()),
+  $isTrue: (val) => val === true,
+  $isFalse: (val) => val === false,
+  $isTruthy: (val) => !!val,
+  $isFalsy: (val) => !val,
+} as const satisfies { [comparator in ValueOf<typeof comparators> & string]: (val: unknown, arg?: unknown) => boolean };
 

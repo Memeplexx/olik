@@ -18,7 +18,6 @@ export const copyNewState = (
     if (!Array.isArray(currentState))
       switch (stateActions[cursor.index].name) {
         case '$delete':
-        case '$invalidateCache':
           return deleteObjectValue(currentState as BasicRecord, stateActions, name);
         case '$setKey':
           return setObjectKey(currentState as BasicRecord, cursor, stateActions, name);
