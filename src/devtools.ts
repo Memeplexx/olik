@@ -55,11 +55,10 @@ const setupDevtools = () => {
         stateActions: stateActions.map(sa => ({ ...sa, arg: extractPayload(sa.arg) })),
         trace: typeof (window) === 'undefined' ? '' : libState.stacktraceError?.stack,
       } as DevtoolsAction;
-      if (typeof (window) !== 'undefined' && !initialized) {
+      if (typeof (window) !== 'undefined' && !initialized)
         pendingActions.push(toSend);
-      } else {
+      else
         sendMessageToDevtools(toSend)
-      }
     },
   };
 };
@@ -70,9 +69,8 @@ const reactToDevtoolsInitialization = () => {
     style: 'display: none',
   }));
   new MutationObserver(async () => {
-    for (let i = 0; i < pendingActions.length; i++) {
+    for (let i = 0; i < pendingActions.length; i++)
       await new Promise(resolve => setTimeout(() => resolve(sendMessageToDevtools(pendingActions[i]))));
-    }
     pendingActions.length = 0;
     initialized = true;
   }).observe(olikInitDiv, { attributes: true, childList: true, subtree: true });
@@ -104,9 +102,8 @@ const listenToActionDispatchesFromDevtools = () => {
     const actionType = olikActionDiv.innerHTML;
     let subStore = libState.store!;
     const segments = JSON.parse(actionType) as string[];
-    if (segments[0] === 'store') {
+    if (segments[0] === 'store')
       segments.shift();
-    }
     segments.forEach(key => {
       const arg = key.match(/\(([^)]*)\)/)?.[1];
       const containsParenthesis = arg !== null && arg !== undefined;

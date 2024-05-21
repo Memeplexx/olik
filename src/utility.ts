@@ -1,6 +1,5 @@
 import { augment } from './augment';
 import { comparatorsPropMap, libState, testState, updatePropMap } from './constant';
-import { perf } from './performance';
 import { StateAction, Store, BasicRecord } from './type';
 import { StoreInternal } from './type-internal';
 
@@ -26,7 +25,6 @@ export const resetLibraryState = () => {
   libState.derivations = new Map();
   libState.devtools = undefined;
   augment({ async: promise => promise() });
-  perf.clear();
 };
 
 export const isoDateRegexp = new RegExp(/^\d{4}-[01]\d-[0-3]\dT[0-2]\d:[0-5]\d:[0-5]\d\.\d+([+-][0-2]\d:[0-5]\d|Z)$/);

@@ -15,7 +15,6 @@ export const errorMessages = {
 
 export const libState: LibState = {
   store: undefined,
-  asyncUpdate: undefined,
   devtools: undefined,
   state: undefined,
   changeListeners: [],

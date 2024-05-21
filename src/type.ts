@@ -635,8 +635,6 @@ export interface RxjsObservable<C> {
 
 export type AnyAsync<C> = RxjsObservable<C> | Promise<C>;
 
-export type AnyAsyncFn<C> = () => AnyAsync<C>;
-
 export interface ReduxDevtoolsOptions {
   /**
    * Whether or not to display the 'trace' tab in the devtools.
@@ -712,7 +710,6 @@ export type DevtoolsInstance = {
 
 export type LibState = {
   store: undefined | StoreInternal,
-  asyncUpdate: undefined | ((stateActions: StateAction[], prop: string, options: { cache?: number, eager?: unknown }, arg: unknown) => unknown),
   devtools: undefined | { dispatch: (arg: { stateActions: StateAction[], actionType?: string, payloadPaths?: Record<string, string> }) => unknown },
   state: undefined | BasicRecord,
   changeListeners: ChangeListener[],

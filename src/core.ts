@@ -97,16 +97,10 @@ const comparator = (stateActions: StateAction[], name: string) => (arg?: unknown
   return recurseProxy([...stateActions, { name, arg }]);
 }
 
-const processUpdateFunction = (stateActions: StateAction[], name: string) => (arg: unknown, options: { cache?: number, eager?: unknown }) => {
+const processUpdateFunction = (stateActions: StateAction[], name: string) => (arg: unknown) => {
   if (libState.devtools)
     libState.stacktraceError = new Error();
-  if (typeof (arg) === 'function') {
-    if (!libState.asyncUpdate)
-      throw new Error(errorMessages.ASYNC_UPDATES_NOT_ENABLED);
-    return libState.asyncUpdate(stateActions, name, options ?? {}, arg);
-  } else {
-    setNewStateAndNotifyListeners([...stateActions, { name, arg }]);
-  }
+  setNewStateAndNotifyListeners([...stateActions, { name, arg }]);
 }
 
 export const validateState = (key: string | number, state: unknown): void => {
