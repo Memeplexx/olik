@@ -721,21 +721,6 @@ export interface ReduxDevtoolsOptionsRetroactive extends ReduxDevtoolsOptions {
   storeName: string;
 }
 
-export interface EnableAsyncActionsArgs {
-  stateActions: StateAction[],
-  prop: string,
-  options: {
-    cache?: number,
-    eager?: unknown,
-  },
-  arg: unknown,
-}
-
-export interface EnableNestedStoreArgs {
-  storeName: string;
-  instanceId: string | number;
-}
-
 export type Store<S> = S extends never ? unknown : (S extends Array<unknown> ? UpdatableArray<S, 'isFilter', 'notQueried', 'yes', MaxRecursionDepth>
   : S extends object ? UpdatableObject<S, 'isFind', 'notArray', 'no', MaxRecursionDepth>
   : UpdatablePrimitive<S, 'isFind', 'notArray', 'no', MaxRecursionDepth>);
