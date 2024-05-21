@@ -15,7 +15,7 @@ export const copyNewState = (
   const name = stateAction.name;
   if (cursorIndex < stateActions.length - 1) {
     cursor.index++;
-    if (!Array.isArray(currentState)) {
+    if (!Array.isArray(currentState))
       switch (stateActions[cursor.index].name) {
         case '$delete':
         case '$invalidateCache':
@@ -25,7 +25,6 @@ export const copyNewState = (
         default:
           return copyObjectProperty(currentState as BasicRecord, cursor, stateActions, name);
       }
-    }
     switch (name) {
       case '$at':
         return atArray(currentState, cursor, stateActions, stateAction.arg as number);

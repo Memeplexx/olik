@@ -58,17 +58,16 @@ const onChange = (stateActions: StateAction[], name: string) => (listener: (arg:
   const unsubscribe = () => {
     const changeListenerIndex = changeListeners.findIndex(cl => cl.path === path)!;
     const { listeners } = changeListeners[changeListenerIndex];
-    if (listeners.length === 1) {
+    if (listeners.length === 1)
       changeListeners.splice(changeListenerIndex, 1);
-    } else {
+    else
       listeners.splice(listeners.findIndex(l => l === listener), 1);
-    }
   }
   const path = constructTypeStrings(stateActions, false); // double check how path is calculated!!!!!!!
   const listeners = changeListeners.find(cl => cl.path === path)?.listeners;
-  if (listeners) {
+  if (listeners)
     listeners.push(listener);
-  } else {
+  else
     changeListeners.push({
       actions: [...stateActions, { name }],
       listeners: [listener],
@@ -76,7 +75,6 @@ const onChange = (stateActions: StateAction[], name: string) => (listener: (arg:
       cachedState: undefined,
       path,
     })
-  }
   return { unsubscribe }
 }
 

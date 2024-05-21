@@ -20,9 +20,8 @@ export const setNewStateAndNotifyListeners = (
   cursor.index = 0;
   libState.state = copyNewState(oldState!, stateActions, cursor) as BasicRecord;
   notifyChangeListeners(oldState!);
-  if (devtools && !disableDevtoolsDispatch) {
+  if (devtools && !disableDevtoolsDispatch)
     devtools.dispatch({ stateActions, actionType: testState.currentActionType, payloadPaths: testState.currentActionPayloadPaths });
-  }
 }
 
 const notifyChangeListeners = (
@@ -36,11 +35,9 @@ const notifyChangeListeners = (
       listener.cachedState = selectedNewState;
       listener.listeners.forEach(listener => listener(selectedNewState));
     }
-    if ((Array.isArray(selectedOldState) && Array.isArray(selectedNewState))
-      && (selectedNewState.length !== selectedOldState.length || selectedOldState.some((el, i) => el !== selectedNewState[i]))) {
-        notify();
-    } else if (selectedOldState !== selectedNewState) {
+    if ((Array.isArray(selectedOldState) && Array.isArray(selectedNewState)) && (selectedNewState.length !== selectedOldState.length || selectedOldState.some((el, i) => el !== selectedNewState[i])))
       notify();
-    }
+    else if (selectedOldState !== selectedNewState)
+      notify();
   })
 }
