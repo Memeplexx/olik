@@ -36,7 +36,7 @@ export type DeepReadonly<T> = T extends Primitive | Date ? T : T extends Array<i
 export type DeepReadonlyObject<T> = { readonly [P in keyof T]: DeepReadonly<T[P]>; }
 export type DeepReadonlyArray<T> = ReadonlyArray<DeepReadonly<T>>;
 
-export type StoreDef<S> = Store<S> & (S extends never ? unknown : StoreAugment<S>);
+export type Store<S> = BaseStore<S> & (S extends never ? unknown : StoreAugment<S>);
 
 export type ValueOf<T> = T[keyof T];
 
@@ -64,13 +64,13 @@ export type UpdatableObject<S, F extends FindOrFilter, Q extends QueryStatus, I 
     ? (SetNewNode & PatchObject<S> & SetNode<S> & PatchDeep<S>)
     : F extends 'isFind' ? PatchArrayElement<S> & SetArrayElement<S> & PatchDeepArrayElement<S>
     : PatchArray<S> & SetArray<S, I> & PatchDeepArray<S>)
-  & ({
+  & {
     [K in keyof S]: (S[K] extends ReadonlyArray<unknown>
       ? UpdatableArray<S[K], 'isFilter', 'notQueried', 'no', NewDepth>
       : S[K] extends PossiblyBrandedPrimitive
       ? UpdatablePrimitive<S[K], F, Q, 'no', NewDepth>
       : UpdatableObject<S[K], F, Q, 'no', NewDepth>) & SetObjectKey
-  })
+  }
   , Depth>
 
 export type UpdatableArray<S extends ReadonlyArray<unknown>, F extends FindOrFilter, Q extends QueryStatus, I extends ImmediateParentIsAnArray, Depth extends number, NewDepth extends number = DecrementRecursion[Depth]> = Rec<
@@ -558,28 +558,28 @@ export interface Contains<Response> {
   /**
    * Whether the selection contains the supplied string
    */
-  $contains: (string: string | Store<string>) => Response
+  $contains: (string: string | BaseStore<string>) => Response
 }
 
 export interface ContainsIgnoreCase<Response> {
   /**
    * Whether the selection contains the supplied string ignoring case
    */
-  $containsIgnoreCase: (string: string | Store<string>) => Response
+  $containsIgnoreCase: (string: string | BaseStore<string>) => Response
 }
 
 export interface IsContainedIn<Response> {
   /**
    * Whether the supplied string is contains in the selection
    */
-  $isContainedIn: (string: string | Store<string>) => Response
+  $isContainedIn: (string: string | BaseStore<string>) => Response
 }
 
 export interface IsContainedInIgnoreCase<Response> {
   /**
    * Whether the supplied string is contains in the selection ignoring case
    */
-  $isContainedInIgnoreCase: (string: string | Store<string>) => Response
+  $isContainedInIgnoreCase: (string: string | BaseStore<string>) => Response
 }
 
 export type Searchable<T, S, F extends FindOrFilter, Depth extends number, NewDepth extends number = DecrementRecursion[Depth]> = Rec<{
@@ -681,7 +681,7 @@ export interface ReduxDevtoolsOptionsRetroactive extends ReduxDevtoolsOptions {
   storeName: string;
 }
 
-export type Store<S> = S extends never ? unknown : (S extends Array<unknown> ? UpdatableArray<S, 'isFilter', 'notQueried', 'yes', MaxRecursionDepth>
+export type BaseStore<S> = S extends never ? unknown : (S extends Array<unknown> ? UpdatableArray<S, 'isFilter', 'notQueried', 'yes', MaxRecursionDepth>
   : S extends object ? UpdatableObject<S, 'isFind', 'notArray', 'no', MaxRecursionDepth>
   : UpdatablePrimitive<S, 'isFind', 'notArray', 'no', MaxRecursionDepth>);
 

@@ -1,6 +1,6 @@
 import { augmentations, comparatorsPropMap, errorMessages, libPropMap, libState, testState, updatePropMap } from './constant';
 import { readState } from './read';
-import { BasicRecord, StateAction, StoreDef } from './type';
+import { BasicRecord, StateAction, Store } from './type';
 import { StoreInternal } from './type-internal';
 import { constructTypeStrings } from './utility';
 import { copyNewState } from './write-copy';
@@ -31,11 +31,11 @@ const recurseProxy = (stateActions?: StateAction[]): StoreInternal => new Proxy(
 
 export function createStore<S extends BasicRecord>(
   initialState: S
-): StoreDef<S> {
+): Store<S> {
   validateState('', initialState);
   removeStaleCacheReferences(initialState);
   initializeLibState(initialState);
-  return (libState.store = recurseProxy()) as unknown as StoreDef<S>;
+  return (libState.store = recurseProxy()) as unknown as Store<S>;
 }
 
 const onChange = (stateActions: StateAction[], name: string) => (listener: (arg: unknown) => unknown) => {
