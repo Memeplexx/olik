@@ -1,9 +1,9 @@
-import { DerivationKey, testState } from '../src';
-import { createInnerStore, createStore } from '../src/core';
+import { beforeEach, expect, test } from 'vitest';
+import { testState } from '../src';
+import { createStore } from '../src/core';
 import { derive } from '../src/derive';
 import { configureDevtools } from '../src/devtools';
 import { resetLibraryState } from '../src/utility';
-import { test, expect, beforeEach } from 'vitest';
 
 beforeEach(() => {
   resetLibraryState();
@@ -278,144 +278,6 @@ test('should cache results when derive() is called repeatedly', () => {
   d1();
   store.num.$add(1);
   expect(memoCalcCount).toEqual(1);
-})
-
-test('should create cache keys correctly', () => {
-  const store = createStore({
-    str: 'a',
-    obj: { num: 1 }
-  })
-  const childStore = createInnerStore({ inner: { val: 0 } }).usingAccessor(s => s.inner);
-  const parentDerivation = derive('one').$from(
-    store.str,
-    store.obj.num,
-  ).$withSync((str, num) => {
-    return str + num;
-  })
-  const childDerivation = derive('two').$from(
-    parentDerivation,
-    childStore.val,
-  ).$withSync((derivation, val) => {
-    return derivation + val
-  })
-  expect(childDerivation.$state).toEqual('a10');
-  expect((childDerivation as unknown as { $cacheKey: DerivationKey }).$cacheKey)
-    .toEqual({
-      key: 'two',
-      state: 'a10',
-      from: [
-        {
-          key: 'one',
-          state: 'a1',
-          from: [
-            {
-              key: 'str',
-              state: 'a',
-            },
-            {
-              key: 'obj.num',
-              state: 1,
-            }
-          ]
-        },
-        {
-          key: 'inner.val',
-          state: 0,
-        }
-      ]
-    })
-})
-
-test('should create cache keys correctly with a find()', () => {
-  const store = createStore({
-    str: 'a',
-    obj: { things: [{ id: 1, name: 'one' }] }
-  })
-  const childStore = createInnerStore({ inner: { val: 0 } }).usingAccessor(s => s.inner);
-  const parentDerivation = derive('one').$from(
-    store.str,
-    store.obj.things.$find.id.$eq(1).name,
-  ).$withSync((str, num) => {
-    return str + num;
-  })
-  const childDerivation = derive('two').$from(
-    parentDerivation,
-    childStore.val,
-  ).$withSync((derivation, val) => {
-    return derivation + val
-  })
-  expect(childDerivation.$state).toEqual('aone0');
-  expect((childDerivation as unknown as { $cacheKey: string }).$cacheKey)
-    .toEqual({
-      key: 'two',
-      state: 'aone0',
-      from: [
-        {
-          key: 'one',
-          state: 'aone',
-          from: [
-            {
-              key: 'str',
-              state: 'a',
-            },
-            {
-              key: 'obj.things.$find.id.$eq(1).name',
-              state: 'one',
-            }
-          ]
-        },
-        {
-          key: 'inner.val',
-          state: 0,
-        }
-      ]
-    })
-})
-
-test('should create cache keys correctly with a filter()', () => {
-  const store = createStore({
-    str: 'a',
-    obj: { things: [{ id: 1 }, { id: 2 }, { id: 3 }, { id: 4 }] }
-  })
-  const childStore = createInnerStore({ inner: { val: 0 } }).usingAccessor(s => s.inner);
-  const parentDerivation = derive('one').$from(
-    store.str,
-    store.obj.things.$filter.id.$lt(3).id,
-  ).$withSync((str, things) => {
-    return str + things.join('-');
-  })
-  const childDerivation = derive('two').$from(
-    parentDerivation,
-    childStore.val,
-  ).$withSync((derivation, val) => {
-    return derivation + val
-  })
-  expect(childDerivation.$state).toEqual('a1-20');
-  expect((childDerivation as unknown as { $cacheKey: string }).$cacheKey)
-    .toEqual({
-      key: 'two',
-      state: 'a1-20',
-      from: [
-        {
-          key: 'one',
-          state: 'a1-2',
-          from: [
-            {
-              key: 'str',
-              state: 'a',
-            },
-            {
-              key: 'obj.things.$filter.id.$lt(3).id',
-              state: [1, 2],
-            }
-          ]
-        },
-        {
-          key: 'inner.val',
-          state: 0,
-        }
-      ]
-    })
 })
 
 test('should work with async', async () => {

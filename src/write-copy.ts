@@ -153,14 +153,15 @@ const patchDeep = (currentState: BasicRecord, payload: BasicRecord) => {
 const updateArrayObjectProperties = (currentState: BasicArray, cursor: Cursor, stateActions: StateAction[]) => {
   cursor.index--;
   return currentState.map(element => {
-    if (element !== undefined) return {
-      ...element as BasicRecord,
-      ...copyNewState(
-        element ?? {} as BasicRecord,
-        stateActions,
-        { ...cursor }
-      ) as BasicRecord
-    };
+    if (element !== undefined)
+      return {
+        ...element as BasicRecord,
+        ...copyNewState(
+          element ?? {} as BasicRecord,
+          stateActions,
+          { ...cursor }
+        ) as BasicRecord
+      };
     return copyNewState(
       element,
       stateActions,

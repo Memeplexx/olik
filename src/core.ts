@@ -1,23 +1,10 @@
-import { augmentations, errorMessages, libState, comparatorsPropMap, libPropMap, updatePropMap } from './constant';
+import { augmentations, comparatorsPropMap, errorMessages, libPropMap, libState, updatePropMap } from './constant';
 import { readState } from './read';
-import { BasicRecord, Readable, StateAction, Store, StoreAugment, StoreDef } from './type';
+import { BasicRecord, StateAction, StoreDef } from './type';
 import { StoreInternal } from './type-internal';
 import { constructTypeStrings } from './utility';
 import { setNewStateAndNotifyListeners } from './write-complete';
 
-
-export const createInnerStore = <S extends BasicRecord>(state: S) => ({
-  usingAccessor: <C extends Readable<unknown>>(accessor: (store: Store<S>) => C): C & (C extends never ? unknown : StoreAugment<C>) => {
-    if (libState.store)
-      libState.store.$patchDeep(state);
-    const created = createStore(state);
-    libState.store = created as unknown as StoreInternal;
-    const store = libState.store as Store<S>;
-    return new Proxy({}, {
-      get: (_, prop: string) => accessor(store)[prop as keyof C]
-    }) as C & (C extends never ? unknown : StoreAugment<C>);
-  }
-})
 
 const emptyObj = {} as StoreInternal;
 const { selection, core } = augmentations;
