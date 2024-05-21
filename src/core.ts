@@ -118,7 +118,7 @@ export const validateState = (key: string | number, state: unknown): void => {
 }
 
 const cursor = { index: 0 };
-const setNewStateAndNotifyListeners = (
+export const setNewStateAndNotifyListeners = (
   stateActions: StateAction[]
 ) => {
   const { state: oldState, devtools, disableDevtoolsDispatch } = libState;
