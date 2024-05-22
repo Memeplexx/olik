@@ -16,7 +16,7 @@ const recurseProxy = (stateActions?: StateAction[]): StoreInternal => new Proxy(
     if ('$state' === prop)
       return !stateActions?.length ? libState.state : state(stateActions, prop);
     if (prop in updatePropMap)
-      return processUpdateFunction(stateActions ?? [], prop);
+      return update(stateActions ?? [], prop);
     if (prop in selection)
       return selection[prop](recurseProxy(stateActions ?? []));
     if (prop in core)
@@ -97,7 +97,7 @@ const comparator = (stateActions: StateAction[], name: string) => (arg?: unknown
   return recurseProxy([...stateActions, { name, arg }]);
 }
 
-const processUpdateFunction = (stateActions: StateAction[], name: string) => (arg: unknown) => {
+const update = (stateActions: StateAction[], name: string) => (arg: unknown) => {
   if (libState.devtools)
     libState.stacktraceError = new Error();
   setNewStateAndNotifyListeners([...stateActions, { name, arg }]);
@@ -117,9 +117,7 @@ export const validateState = (key: string | number, state: unknown): void => {
   });
 }
 
-export const setNewStateAndNotifyListeners = (
-  stateActions: StateAction[]
-) => {
+export const setNewStateAndNotifyListeners = (stateActions: StateAction[]) => {
   const { state: oldState, devtools, disableDevtoolsDispatch } = libState;
   if (devtools && !disableDevtoolsDispatch) {
     const type = constructTypeStrings(stateActions, true);
@@ -129,14 +127,13 @@ export const setNewStateAndNotifyListeners = (
     testState.currentActionPayload = stateActions.at(-1)!.arg;
   }
   libState.state = copyNewState(oldState!, stateActions, { index: 0 }) as BasicRecord;
-  notifyChangeListeners(oldState!);
+  if (libState.changeListeners.length)
+    notifyChangeListeners(oldState!);
   if (devtools && !disableDevtoolsDispatch)
     devtools.dispatch({ stateActions, actionType: testState.currentActionType, payloadPaths: testState.currentActionPayloadPaths });
 }
 
-const notifyChangeListeners = (
-  oldState: BasicRecord,
-) => {
+const notifyChangeListeners = (oldState: BasicRecord) => {
   libState.changeListeners.forEach(listener => {
     const { actions, cachedState } = listener;
     const selectedOldState = cachedState !== undefined ? cachedState : readState(oldState, actions);

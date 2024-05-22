@@ -11,8 +11,7 @@ export const copyNewState = (
   cursor: Cursor,
 ): unknown => {
   const cursorIndex = cursor.index;
-  const stateAction = stateActions[cursorIndex];
-  const name = stateAction.name;
+  const { name, arg } = stateActions[cursorIndex];
   if (cursorIndex < stateActions.length - 1) {
     cursor.index++;
     if (!Array.isArray(currentState))
@@ -26,7 +25,7 @@ export const copyNewState = (
       }
     switch (name) {
       case '$at':
-        return atArray(currentState, cursor, stateActions, stateAction.arg as number);
+        return atArray(currentState, cursor, stateActions, arg as number);
       case '$find':
         return findArray(currentState, cursor, stateActions);
       case '$filter':
@@ -39,33 +38,33 @@ export const copyNewState = (
   }
   switch (name) {
     case '$set':
-      return set(extractPayload(stateAction.arg));
+      return set(extractPayload(arg));
     case '$patch':
-      return patch(currentState, extractPayload(stateAction.arg));
+      return patch(currentState, extractPayload(arg));
     case '$add':
-      return add(currentState, extractPayload(stateAction.arg));
+      return add(currentState, extractPayload(arg));
     case '$subtract':
-      return subtract(currentState, extractPayload(stateAction.arg));
+      return subtract(currentState, extractPayload(arg));
     case '$toggle':
       return toggle(currentState);
     case '$setNew':
-      return setNew(currentState as BasicRecord, extractPayload(stateAction.arg));
+      return setNew(currentState as BasicRecord, extractPayload(arg));
     case '$patchDeep':
-      return patchDeep(currentState as BasicRecord, extractPayload(stateAction.arg));
+      return patchDeep(currentState as BasicRecord, extractPayload(arg));
     case '$clear':
       return clear();
     case '$slice':
-      return slice(currentState as BasicArray, extractPayload(stateAction.arg));
+      return slice(currentState as BasicArray, extractPayload(arg));
     case '$push':
-      return push(currentState as BasicArray, extractPayload(stateAction.arg));
+      return push(currentState as BasicArray, extractPayload(arg));
     case '$pushMany':
-      return pushMany(currentState as BasicArray, extractPayload(stateAction.arg));
+      return pushMany(currentState as BasicArray, extractPayload(arg));
     case '$setUnique':
-      return setUnique(extractPayload(stateAction.arg));
+      return setUnique(extractPayload(arg));
     case '$deDuplicate':
       return deDuplicate(currentState as BasicArray);
     case '$merge':
-      return merge(currentState as BasicArray, extractPayload(stateAction.arg));
+      return merge(currentState as BasicArray, extractPayload(arg));
   }
   throw new Error();
 }
