@@ -117,7 +117,6 @@ export const validateState = (key: string | number, state: unknown): void => {
   });
 }
 
-const cursor = { index: 0 };
 export const setNewStateAndNotifyListeners = (
   stateActions: StateAction[]
 ) => {
@@ -129,8 +128,7 @@ export const setNewStateAndNotifyListeners = (
     testState.currentActionTypeOrig = type !== typeOrig ? typeOrig : undefined;
     testState.currentActionPayload = stateActions.at(-1)!.arg;
   }
-  cursor.index = 0;
-  libState.state = copyNewState(oldState!, stateActions, cursor) as BasicRecord;
+  libState.state = copyNewState(oldState!, stateActions, { index: 0 }) as BasicRecord;
   notifyChangeListeners(oldState!);
   if (devtools && !disableDevtoolsDispatch)
     devtools.dispatch({ stateActions, actionType: testState.currentActionType, payloadPaths: testState.currentActionPayloadPaths });

@@ -130,3 +130,4 @@ test('Native Perf (deep)', () => {
   }
   console.log(`Native Perf (deep): ${performance.now() - before}`);
 })
+
