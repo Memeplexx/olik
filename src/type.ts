@@ -250,7 +250,7 @@ export interface PushMany<S> {
 
 export interface SetObjectKey {
   /**
-   * Update the selected object, by adding the supplied key-value pair.
+   * Change the key of the selected node.
    */
   $setKey(key: string): void;
 }
@@ -264,7 +264,7 @@ export interface PatchObject<S> {
 
 export interface PatchArrayElement<S> {
   /**
-   * Update the selected array element, using the supplied partial.
+   * Partially update the selected array element.
    */
   $patch(patch: PayloadWithPotentialStore<Partial<S>>): void;
 }
@@ -626,9 +626,7 @@ export interface RxjsObservable<C> {
 
 export type AnyAsync<C> = RxjsObservable<C> | Promise<C>;
 
-export type BaseStore<S> = S extends never ? unknown : (S extends Array<unknown> ? UpdatableArray<S, 'isFilter', 'notQueried', 'yes', MaxRecursionDepth>
-  : S extends object ? UpdatableObject<S, 'isFind', 'notArray', 'no', MaxRecursionDepth>
-  : UpdatablePrimitive<S, 'isFind', 'notArray', 'no', MaxRecursionDepth>);
+export type BaseStore<S> = UpdatableObject<S, 'isFind', 'notArray', 'no', MaxRecursionDepth>;
 
 // do NOT remove. Needed by framework-libraries
 // eslint-disable-next-line @typescript-eslint/no-unused-vars

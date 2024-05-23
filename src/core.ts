@@ -33,7 +33,6 @@ export function createStore<S extends BasicRecord>(
   initialState: S
 ): Store<S> {
   validateState('', initialState);
-  removeStaleCacheReferences(initialState);
   initializeLibState(initialState);
   return (libState.store = recurseProxy()) as unknown as Store<S>;
 }
@@ -64,29 +63,13 @@ const onChange = (stateActions: StateAction[], name: string) => (listener: (arg:
 }
 
 const state = (stateActions: StateAction[], name: string) => {
-  const { state } = libState;
-  const tryFetchResult = (stateActions: StateAction[]): unknown => {
-    try {
-      return readState(state, stateActions);
-    } catch (e) {
-      stateActions.splice(-2, 1);
-      return tryFetchResult(stateActions);
-    }
-  }
-  const result = tryFetchResult([...stateActions, { name }]);
-  return typeof (result) === 'undefined' ? null : result;
+  return readState(libState.state, [...stateActions, { name }]);
 }
 
 const initializeLibState = (initialState: BasicRecord) => {
   if (libState.initialState)
     return;
   libState.state = libState.initialState = initialState;
-}
-
-const removeStaleCacheReferences = (state: BasicRecord) => {
-  if (!state.cache)
-    return;
-  state.cache = Object.fromEntries(Object.entries(state.cache).filter(([, value]) => new Date(value).getTime() > Date.now()));
 }
 
 const basicProp = (stateActions: StateAction[], name: string) => {
@@ -128,20 +111,16 @@ export const setNewStateAndNotifyListeners = (stateActions: StateAction[]) => {
   }
   libState.state = copyNewState(oldState!, stateActions, { index: 0 }) as BasicRecord;
   if (libState.changeListeners.length)
-    notifyChangeListeners(oldState!);
+    libState.changeListeners.forEach(listener => {
+      const { actions, cachedState } = listener;
+      const selectedOldState = cachedState !== undefined ? cachedState : readState(oldState, actions);
+      const selectedNewState = readState(libState.state, actions);
+      const arraysDoNotMatch = (Array.isArray(selectedOldState) && Array.isArray(selectedNewState)) && (selectedNewState.length !== selectedOldState.length || selectedOldState.some((el, i) => el !== selectedNewState[i]));
+      if (arraysDoNotMatch || selectedOldState !== selectedNewState) {
+        listener.cachedState = selectedNewState;
+        listener.listeners.forEach(listener => listener(selectedNewState));
+      }
+    })
   if (devtools && !disableDevtoolsDispatch)
     devtools.dispatch({ stateActions, actionType: testState.currentActionType, payloadPaths: testState.currentActionPayloadPaths });
-}
-
-const notifyChangeListeners = (oldState: BasicRecord) => {
-  libState.changeListeners.forEach(listener => {
-    const { actions, cachedState } = listener;
-    const selectedOldState = cachedState !== undefined ? cachedState : readState(oldState, actions);
-    const selectedNewState = readState(libState.state, actions);
-    const arraysDoNotMatch = (Array.isArray(selectedOldState) && Array.isArray(selectedNewState)) && (selectedNewState.length !== selectedOldState.length || selectedOldState.some((el, i) => el !== selectedNewState[i]));
-    if (arraysDoNotMatch || selectedOldState !== selectedNewState) {
-      listener.cachedState = selectedNewState;
-      listener.listeners.forEach(listener => listener(selectedNewState));
-    }
-  })
 }

@@ -8,6 +8,15 @@ beforeEach(() => {
   resetLibraryState();
 })
 
+test('Native Perf', () => {
+  let state = { num: 0, str: '' };
+  const before = performance.now();
+  for (let i = 0; i < 1000; i++) {
+    state = { ...state, num: i };
+  }
+  console.log(`Native Perf: ${performance.now() - before}`);
+})
+
 test('Immer Perf', () => {
   let state = { num: 0, str: '' };
   const before = performance.now();

@@ -224,9 +224,9 @@ const findArray = (currentState: BasicArray, cursor: Cursor, stateActions: State
   let stateAction: StateAction;
   for (let i = cursorIndex - 1; i >= 0; i--) {
     const act = stateActions[i];
-    if ('$find' !== act.name) 
+    if ('$find' !== act.name)
       continue;
-    stateAction = act; 
+    stateAction = act;
     break;
   }
   stateAction!.searchIndices = [findIndex];
@@ -244,9 +244,10 @@ const filterArray = (currentState: BasicArray, cursor: Cursor, stateActions: Sta
   let stateAction: StateAction;
   for (let i = cursorIndex - 1; i >= 0; i--) {
     const act = stateActions[i];
-    if ('$filter' !== act.name) 
+    if ('$filter' !== act.name)
       continue;
-    stateAction = act; break;
+    stateAction = act;
+    break;
   }
   const searchIndices = stateAction!.searchIndices = currentState.map((e, i) => query(e) ? i : -1).filter(i => i !== -1);
   if ('$delete' === type)
