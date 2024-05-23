@@ -43,10 +43,10 @@ test('Olik Perf set', () => {
   const store = createStore(state);
   const before = performance.now();
   for (let i = 0; i < 1000; i++) {
-    // const listener = store.num.$onChange(() => {});
+    // const unsubscribe = store.num.$onChange(() => {});
     store.num.$set(i);
     store.$state;
-    // listener.unsubscribe();
+    // unsubscribe();
   }
   console.log(`Olik Perf set: ${performance.now() - before}`);
 })

@@ -27,12 +27,10 @@ export function derive<X extends Readable<unknown>[]>(...args: X) {
       const result = (new class {
         get $state() { return getValue(); }
         $invalidate = () => previousParams.length = 0;
-        $cleanup = (listener: (value: R) => unknown, subscriptions: Unsubscribe[]) => ({
-          unsubscribe: () => {
-            subscriptions.forEach(u => u.unsubscribe());
-            changeListeners.delete(listener);
-          }
-        })
+        $cleanup = (listener: (value: R) => unknown, subscriptions: Unsubscribe[]) => () => {
+          subscriptions.forEach(u => u());
+          changeListeners.delete(listener);
+        }
         $onChange = (listener: (value: R) => unknown) => {
           changeListeners.add(listener);
           let valueCalculated: boolean;

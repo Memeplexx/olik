@@ -182,12 +182,10 @@ export interface At<S extends ReadonlyArray<unknown>, NewDepth extends number> {
   $at: (index: number) => S[0] extends object ? UpdatableObject<S[0], 'isFind', 'notArray', 'no', NewDepth> : UpdatablePrimitive<S[0], 'isFind', 'notArray', 'no', NewDepth>
 }
 
-export interface Unsubscribe {
-  /**
-   * Unsubscribe from the change listener that was previously added to the selected node.
-   */
-  unsubscribe: () => void,
-}
+/**
+ * Unsubscribe from the change listener that was previously added to the selected node.
+ */
+export type Unsubscribe = () => void;
 
 export type SetNewNode = {
   /**
@@ -640,16 +638,12 @@ export interface ChangeListener {
   unsubscribe: () => void;
 }
 
-export type TraceElement = { functionName: string, fileName: string, lineNumber: number, columnNumber: number }
-
-export type OlikAction = { type: string, typeOrig?: string, payload?: unknown, payloadPaths?: Record<string, string> };
-
-export type DevtoolsInstance = {
-  init: (state: unknown) => unknown,
-  subscribe: (listener: (message: { type: string, payload: unknown, state?: unknown, source: string }) => unknown) => unknown,
-  unsubscribe: () => unknown,
-  send: (action: OlikAction, state: unknown, stateReader: (s: unknown) => unknown, mutator: string) => unknown
-}
+export type OlikAction = {
+  type: string,
+  typeOrig?: string,
+  payload?: unknown,
+  payloadPaths?: Record<string, string>
+};
 
 export type LibState = {
   store: undefined | StoreInternal,
@@ -660,8 +654,6 @@ export type LibState = {
   disableDevtoolsDispatch?: boolean,
   stacktraceError: null | Error,
 }
-
-export type DerivationKey = { key: string, state: unknown, from?: DerivationKey[] }
 
 export type DevtoolsAction = {
   actionType: string;

@@ -59,7 +59,7 @@ const onChange = (stateActions: StateAction[], name: string) => (listener: (arg:
       cachedState: undefined,
       path,
     })
-  return { unsubscribe }
+  return unsubscribe;
 }
 
 const state = (stateActions: StateAction[], name: string) => {

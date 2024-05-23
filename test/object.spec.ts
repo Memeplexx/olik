@@ -69,7 +69,7 @@ test('should listen to onChange events correctly', () => {
   let num1ChangeCount = 0;
   let num2ChangeCount = 0;
   store.$onChange(() => rootChangeCount++);
-  const l1 = store.num1.$onChange(() => num1ChangeCount++);
+  const unsubscribe = store.num1.$onChange(() => num1ChangeCount++);
   store.num2.$onChange(() => num2ChangeCount++);
   store.num1.$add(1);
   expect(num1ChangeCount).toEqual(1);
@@ -78,7 +78,7 @@ test('should listen to onChange events correctly', () => {
   expect(num1ChangeCount).toEqual(1);
   expect(num2ChangeCount).toEqual(1);
   expect(rootChangeCount).toEqual(2);
-  l1.unsubscribe();
+  unsubscribe();
   store.num1.$add(1);
   expect(num1ChangeCount).toEqual(1);
 })
