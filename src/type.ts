@@ -187,7 +187,7 @@ export interface At<S extends ReadonlyArray<unknown>, NewDepth extends number> {
  */
 export type Unsubscribe = () => void;
 
-export type SetNewNode = {
+export interface SetNewNode {
   /**
    * Insert an object into the selected object.  
    * 
@@ -201,7 +201,7 @@ export type SetNewNode = {
   $setNew(insertion: BasicRecord): void;
 }
 
-export type Delete = {
+export interface Delete {
   /**
    * Remove the selected node from its parent object.  
    * 
@@ -210,7 +210,7 @@ export type Delete = {
    * **not** from objects with a known structure, for example `{ num: number, str: string }`.
    */
   $delete(): void,
-};
+}
 
 export type DeleteNode<Depth extends number> = [Depth] extends [MaxRecursionDepth] ? unknown : Delete;
 
@@ -225,11 +225,16 @@ export interface Clear {
   $clear(): void,
 }
 
+export interface SliceArg {
+  start?: number,
+  end?: number,
+}
+
 export interface Slice {
   /**
    * Functionally similar to the array slice method.
    */
-  $slice(arg: { start: number, end?: number }): void,
+  $slice(arg: SliceArg): void,
 }
 
 export interface Push<S> {
@@ -638,14 +643,14 @@ export interface ChangeListener {
   unsubscribe: () => void;
 }
 
-export type OlikAction = {
+export interface OlikAction {
   type: string,
   typeOrig?: string,
   payload?: unknown,
   payloadPaths?: Record<string, string>
-};
+}
 
-export type LibState = {
+export interface LibState {
   store: undefined | StoreInternal,
   devtools: undefined | { dispatch: (arg: { stateActions: StateAction[], actionType?: string, payloadPaths?: Record<string, string> }) => unknown },
   state: undefined | BasicRecord,
@@ -655,7 +660,7 @@ export type LibState = {
   stacktraceError: null | Error,
 }
 
-export type DevtoolsAction = {
+export interface DevtoolsAction {
   actionType: string;
   payloadPaths?: Record<string, string>;
   source: string;
@@ -663,7 +668,7 @@ export type DevtoolsAction = {
   trace?: string;
 }
 
-export type DevtoolsOptions = {
+export interface DevtoolsOptions {
   /**
    * A list of paths that should be ignored in the action type list.
    * This should be used when a specific update is done very frequently and you don't want to see it in the devtools.

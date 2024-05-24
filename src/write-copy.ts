@@ -1,6 +1,6 @@
 import { errorMessages, libState, updatePropMap } from './constant';
 import { constructQuery } from './query';
-import { BasicArray, BasicRecord, StateAction } from './type';
+import { BasicArray, BasicRecord, SliceArg, StateAction } from './type';
 import { Cursor } from './type-internal';
 import { extractPayload } from './utility';
 
@@ -36,35 +36,36 @@ export const copyNewState = (
         return updateArrayObjectProperties(currentState, cursor, stateActions);
     }
   }
+  const payload = extractPayload(arg);
   switch (name) {
     case '$set':
-      return set(extractPayload(arg));
+      return set(payload);
     case '$patch':
-      return patch(currentState, extractPayload(arg));
+      return patch(currentState, payload as BasicRecord);
     case '$add':
-      return add(currentState, extractPayload(arg));
+      return add(currentState, payload as number);
     case '$subtract':
-      return subtract(currentState, extractPayload(arg));
+      return subtract(currentState, payload as number);
     case '$toggle':
       return toggle(currentState);
     case '$setNew':
-      return setNew(currentState as BasicRecord, extractPayload(arg));
+      return setNew(currentState as BasicRecord, payload as BasicRecord);
     case '$patchDeep':
-      return patchDeep(currentState as BasicRecord, extractPayload(arg));
+      return patchDeep(currentState as BasicRecord, payload as BasicRecord);
     case '$clear':
       return clear();
     case '$slice':
-      return slice(currentState as BasicArray, extractPayload(arg));
+      return slice(currentState as BasicArray, payload as SliceArg);
     case '$push':
-      return push(currentState as BasicArray, extractPayload(arg));
+      return push(currentState as BasicArray, payload);
     case '$pushMany':
-      return pushMany(currentState as BasicArray, extractPayload(arg));
+      return pushMany(currentState as BasicArray, payload as BasicArray);
     case '$setUnique':
-      return setUnique(extractPayload(arg));
+      return setUnique(payload as BasicArray);
     case '$deDuplicate':
       return deDuplicate(currentState as BasicArray);
     case '$merge':
-      return merge(currentState as BasicArray, extractPayload(arg));
+      return merge(currentState as BasicArray, payload);
   }
   throw new Error();
 }
@@ -73,7 +74,7 @@ const deDuplicate = (currentState: BasicArray) => {
   return [...new Set(currentState)];
 }
 
-const slice = (currentState: BasicArray, payload: { start?: number, end?: number }) => {
+const slice = (currentState: BasicArray, payload: SliceArg) => {
   return currentState.slice(payload.start, payload.end);
 }
 
