@@ -36,8 +36,8 @@ export const constructQuery = (
       }
     }
     const constructConcat = () => {
-      const type = stateActions[cursor.index].name;
-      return (type in updatePropMap || type in readPropMap || !(type in libPropMap)) ? '$last' : type as '$and' | '$or';
+      const { name } = stateActions[cursor.index];
+      return (name in updatePropMap || name in readPropMap || !(name in libPropMap)) ? '$last' : name as '$and' | '$or';
     }
     queries.push({
       query: constructQuery(),

@@ -5,7 +5,8 @@ import { BasicArray, BasicRecord, StateAction } from './type';
 export const readState = (
   state: unknown, stateActions: StateAction[], cursor = { index: 0 }
 ): unknown => {
-  const { name, arg } = stateActions[cursor.index];
+  const stateAction = stateActions[cursor.index];
+  const { name } = stateAction;
   if (Array.isArray(state) && !(name in libPropMap)) {
     return state.map((_, i) => readState(state[i], stateActions, { ...cursor }));
   }
@@ -18,7 +19,7 @@ export const readState = (
     return typeof (result) === 'undefined' ? state : result;
   }
   if (name === '$at') {
-    const result = readState((state as BasicRecord)[arg as number], stateActions, cursor);
+    const result = readState((state as BasicRecord)[stateAction.arg as number], stateActions, cursor);
     return typeof (result) === 'undefined' ? state : result;
   }
   if (name === '$distinct') {

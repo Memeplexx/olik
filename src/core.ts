@@ -120,18 +120,17 @@ export const setNewStateAndNotifyListeners = (stateActions: StateAction[]) => {
     testState.currentActionPayload = stateActions.at(-1)!.arg;
   }
   libState.state = copyNewState(oldState!, stateActions, { index: 0 }) as BasicRecord;
-  if (libState.changeListeners.length)
-    libState.changeListeners.forEach(listener => {
-      const { actions, cachedState } = listener;
-      const selectedOldState = cachedState !== undefined ? cachedState : readState(oldState, actions);
-      const selectedNewState = readState(libState.state, actions);
-      const arraysDoNotMatch = (Array.isArray(selectedOldState) && Array.isArray(selectedNewState)) 
-        && (selectedNewState.length !== selectedOldState.length || selectedOldState.some((el, i) => el !== selectedNewState[i]));
-      if (arraysDoNotMatch || selectedOldState !== selectedNewState) {
-        listener.cachedState = selectedNewState;
-        listener.listeners.forEach(listener => listener(selectedNewState));
-      }
-    })
+  libState.changeListeners.forEach(listener => {
+    const { actions, cachedState } = listener;
+    const selectedOldState = cachedState !== undefined ? cachedState : readState(oldState, actions);
+    const selectedNewState = readState(libState.state, actions);
+    const arraysDoNotMatch = (Array.isArray(selectedOldState) && Array.isArray(selectedNewState))
+      && (selectedNewState.length !== selectedOldState.length || selectedOldState.some((el, i) => el !== selectedNewState[i]));
+    if (arraysDoNotMatch || selectedOldState !== selectedNewState) {
+      listener.cachedState = selectedNewState;
+      listener.listeners.forEach(listener => listener(selectedNewState));
+    }
+  })
   if (devtools && !disableDevtoolsDispatch)
     devtools.dispatch({ stateActions, actionType: testState.currentActionType, payloadPaths: testState.currentActionPayloadPaths });
 }
