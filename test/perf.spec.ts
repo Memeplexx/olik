@@ -29,11 +29,11 @@ test('Immer Perf', () => {
 })
 
 test('Immutable Perf', () => {
-  const state = fromJS({ num: 0, str: '' });
+  const state = fromJS({ num: 0, str: '', sss: new Array<string>() });
   const before = performance.now();
   for (let i = 0; i < 1000; i++) {
-    state.set('num', i);
-    state.toJS();
+    const result = state.set('num', i);
+    result.toJS();
   }
   console.log(`Immutable Perf: ${performance.now() - before}`);
 })
@@ -111,8 +111,8 @@ test('Immutable Perf (deep)', () => {
   const state = fromJS({ arr });
   const before = performance.now();
   for (let i = 0; i < 1000; i++) {
-    state.updateIn(['arr', '0', 'id'], () => i)
-    state.toJS();
+    const r = state.updateIn(['arr', '0', 'id'], () => i)
+    r.toJS();
   }
   console.log(`Immutable Perf (deep): ${performance.now() - before}`);
 })
