@@ -37,7 +37,8 @@ export function derive<X extends Readable<unknown>[]>(...args: X) {
           const subscriptions = args.map(arg => arg.$onChange(() => {
             valueCalculated = false;
             enqueueMicroTask(() => { // wait for all other change listeners to fire
-              if (valueCalculated) { return; }
+              if (valueCalculated)
+                return;
               valueCalculated = true;
               listener(getValue());
             })

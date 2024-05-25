@@ -11,7 +11,8 @@ export const copyNewState = (
   cursor: Cursor,
 ): unknown => {
   const cursorIndex = cursor.index;
-  const { name, arg } = stateActions[cursorIndex];
+  const stateAction = stateActions[cursorIndex];
+  const { name } = stateAction;
   if (cursorIndex < stateActions.length - 1) {
     cursor.index++;
     if (!Array.isArray(currentState))
@@ -25,7 +26,7 @@ export const copyNewState = (
       }
     switch (name) {
       case '$at':
-        return atArray(currentState, cursor, stateActions, arg as number);
+        return atArray(currentState, cursor, stateActions, stateAction.arg as number);
       case '$find':
         return findArray(currentState, cursor, stateActions);
       case '$filter':
@@ -36,7 +37,7 @@ export const copyNewState = (
         return updateArrayObjectProperties(currentState, cursor, stateActions);
     }
   }
-  const payload = extractPayload(arg);
+  const payload = extractPayload(stateAction.arg);
   switch (name) {
     case '$set':
       return set(payload);
@@ -190,7 +191,7 @@ const mergeMatching = (currentState: BasicArray, cursor: Cursor, stateActions: S
   ];
 }
 
-const setObjectKey = (currentState: BasicRecord, cursor: Cursor, stateActions: StateAction[], type: string) => {
+const setObjectKey = (currentState: BasicRecord, cursor: Cursor, stateActions: StateAction[], name: string) => {
   let stateActionsStr = '';
   const length = stateActions.length;
   for (let i = 0; i < length - 1; i++) {
@@ -203,7 +204,7 @@ const setObjectKey = (currentState: BasicRecord, cursor: Cursor, stateActions: S
     .forEach(l => l.actions[l.actions.length - 2].name = arg);
   const payload = extractPayload<string>(arg);
   return Object.entries(currentState)
-    .reduce((acc, [key, value]) => { acc[key === type ? payload : key] = value; return acc; }, {} as BasicRecord);
+    .reduce((acc, [key, value]) => { acc[key === name ? payload : key] = value; return acc; }, {} as BasicRecord);
 }
 
 const atArray = (currentState: BasicArray, cursor: Cursor, stateActions: StateAction[], payload: number) => {
@@ -263,21 +264,21 @@ const filterArray = (currentState: BasicArray, cursor: Cursor, stateActions: Sta
     : e);
 }
 
-const deleteObjectValue = (currentState: BasicRecord, stateActions: StateAction[], type: string) => {
+const deleteObjectValue = (currentState: BasicRecord, stateActions: StateAction[], name: string) => {
   const stateActionsStr = stateActions.slice(0, stateActions.length - 1).map(sa => sa.name).join('.');
   libState.changeListeners
     .filter(l => l.actions.map(a => a.name).join('.').startsWith(stateActionsStr))
     .forEach(l => l.unsubscribe());
-  const { [type]: other, ...newState } = currentState;
+  const { [name]: other, ...newState } = currentState;
   return newState;
 }
 
-const copyObjectProperty = (currentState: BasicRecord, cursor: Cursor, stateActions: StateAction[], type: string) => {
+const copyObjectProperty = (currentState: BasicRecord, cursor: Cursor, stateActions: StateAction[], name: string) => {
   const currentStateRecord = (currentState ?? {} as BasicRecord) as BasicRecord;
   return {
     ...currentStateRecord,
-    [type]: copyNewState(
-      currentStateRecord[type as keyof typeof currentStateRecord],
+    [name]: copyNewState(
+      currentStateRecord[name as keyof typeof currentStateRecord],
       stateActions,
       cursor,
     )
