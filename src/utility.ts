@@ -19,6 +19,7 @@ export const resetLibraryState = () => {
   libState.state = undefined;
   libState.changeListeners = [];
   libState.initialState = undefined;
+  libState.disableDevtoolsDispatch = false;
   libState.devtools = undefined;
   augment({ async: promise => promise() });
 };

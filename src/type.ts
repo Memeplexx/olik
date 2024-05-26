@@ -656,6 +656,7 @@ export interface LibState {
   state: undefined | BasicRecord,
   changeListeners: ChangeListener[],
   initialState: undefined | BasicRecord,
+  disableDevtoolsDispatch?: boolean,
   stacktraceError: null | Error,
 }
 

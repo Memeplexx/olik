@@ -87,12 +87,12 @@ const comparator = (stateActions: StateAction[], name: string) => (arg?: unknown
 const update = (stateActions: StateAction[], name: string) => (arg: unknown) => {
   if (libState.devtools)
     libState.stacktraceError = new Error();
-  setNewStateAndNotifyListeners([...stateActions, { name, arg }], true);
+  setNewStateAndNotifyListeners([...stateActions, { name, arg }]);
 }
 
-export const setNewStateAndNotifyListeners = (stateActions: StateAction[], dispatchToDevtools: boolean) => {
-  const { state: oldState, devtools } = libState;
-  if (devtools && dispatchToDevtools) {
+export const setNewStateAndNotifyListeners = (stateActions: StateAction[]) => {
+  const { state: oldState, devtools, disableDevtoolsDispatch } = libState;
+  if (devtools && !disableDevtoolsDispatch) {
     const type = constructTypeStrings(stateActions, true);
     const typeOrig = constructTypeStrings(stateActions, false);
     testState.currentActionType = type;
@@ -111,7 +111,7 @@ export const setNewStateAndNotifyListeners = (stateActions: StateAction[], dispa
       listener.listeners.forEach(listener => listener(selectedNewState));
     }
   })
-  if (devtools && dispatchToDevtools)
+  if (devtools && !disableDevtoolsDispatch)
     devtools.dispatch({ stateActions, actionType: testState.currentActionType, payloadPaths: testState.currentActionPayloadPaths });
 }
 
