@@ -11,9 +11,9 @@ const { selection, core } = augmentations;
 const map = { ...comparatorsPropMap, $at: true };
 const recurseProxy = (stateActions?: StateAction[]): StoreInternal => new Proxy(emptyObj, {
   get: (_, prop: string) => {
-    if ('$stateActions' === prop)
+    if (prop === '$stateActions')
       return stateActions ?? [];
-    if ('$state' === prop)
+    if (prop === '$state')
       return !stateActions?.length ? libState.state : state(stateActions, prop);
     if (prop in updatePropMap)
       return update(stateActions ?? [], prop);
@@ -23,7 +23,7 @@ const recurseProxy = (stateActions?: StateAction[]): StoreInternal => new Proxy(
       return core[prop](recurseProxy(stateActions ?? []));
     if (prop in map)
       return comparator(stateActions ?? [], prop);
-    if ('$onChange' === prop)
+    if (prop === '$onChange')
       return onChange(stateActions ?? [], prop);
     return basicProp(stateActions ?? [], prop);
   }
