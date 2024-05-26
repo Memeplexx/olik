@@ -76,12 +76,6 @@ const state = (stateActions: StateAction[], name: string) => {
   return typeof (result) === 'undefined' ? null : result;
 }
 
-const initializeLibState = (initialState: BasicRecord) => {
-  if (libState.initialState)
-    return;
-  libState.state = libState.initialState = initialState;
-}
-
 const basicProp = (stateActions: StateAction[], name: string) => {
   return recurseProxy([...stateActions, { name }]);
 }
@@ -94,20 +88,6 @@ const update = (stateActions: StateAction[], name: string) => (arg: unknown) => 
   if (libState.devtools)
     libState.stacktraceError = new Error();
   setNewStateAndNotifyListeners([...stateActions, { name, arg }]);
-}
-
-export const validateState = (key: string | number, state: unknown): void => {
-  if (state === null || typeof state === 'string' || typeof state === 'number' || typeof state === 'boolean')
-    return;
-  if (typeof (state) === 'undefined' || typeof (state) === 'bigint' || typeof (state) === 'function' || typeof (state) === 'symbol' || state instanceof Set || state instanceof Map || state instanceof Promise || state instanceof Error || state instanceof RegExp)
-    throw new Error(errorMessages.INVALID_STATE_INPUT(key, state ?? 'undefined'));
-  if (Array.isArray(state))
-    return state.forEach((e, i) => validateState(i, e));
-  return Object.keys(state).forEach(key => {
-    if (key in libPropMap)
-      throw new Error(errorMessages.LIB_PROP_USED_IN_STATE(key));
-    validateState(key, state[key as keyof typeof state]);
-  });
 }
 
 export const setNewStateAndNotifyListeners = (stateActions: StateAction[]) => {
@@ -133,4 +113,24 @@ export const setNewStateAndNotifyListeners = (stateActions: StateAction[]) => {
   })
   if (devtools && !disableDevtoolsDispatch)
     devtools.dispatch({ stateActions, actionType: testState.currentActionType, payloadPaths: testState.currentActionPayloadPaths });
+}
+
+const initializeLibState = (initialState: BasicRecord) => {
+  if (libState.initialState)
+    return;
+  libState.state = libState.initialState = initialState;
+}
+
+export const validateState = (key: string | number, state: unknown): void => {
+  if (state === null || typeof state === 'string' || typeof state === 'number' || typeof state === 'boolean')
+    return;
+  if (typeof (state) === 'undefined' || typeof (state) === 'bigint' || typeof (state) === 'function' || typeof (state) === 'symbol' || state instanceof Set || state instanceof Map || state instanceof Promise || state instanceof Error || state instanceof RegExp)
+    throw new Error(errorMessages.INVALID_STATE_INPUT(key, state ?? 'undefined'));
+  if (Array.isArray(state))
+    return state.forEach((e, i) => validateState(i, e));
+  return Object.keys(state).forEach(key => {
+    if (key in libPropMap)
+      throw new Error(errorMessages.LIB_PROP_USED_IN_STATE(key));
+    validateState(key, state[key as keyof typeof state]);
+  });
 }
