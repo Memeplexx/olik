@@ -652,7 +652,7 @@ export interface OlikAction {
 
 export interface LibState {
   store: undefined | StoreInternal,
-  devtools: undefined | { dispatch: (arg: { stateActions: StateAction[], actionType?: string, payloadPaths?: Record<string, string> }) => unknown },
+  devtools: undefined | { dispatch: (arg: { stateActions: StateAction[], actionType?: string }) => unknown },
   state: undefined | BasicRecord,
   changeListeners: ChangeListener[],
   initialState: undefined | BasicRecord,

@@ -48,13 +48,20 @@ export function addToWhitelist(whitelist: Readable<unknown>[]) {
 
 const setupDevtools = () => {
   libState.devtools = {
-    dispatch: ({ stateActions, actionType, payloadPaths }) => {
+    dispatch: ({ stateActions, actionType }) => {
+      const payload = stateActions.at(-1)?.arg;
       const toSend = {
         actionType,
-        payloadPaths,
-        stateActions: stateActions.map(sa => ({ ...sa, arg: extractPayload(sa.arg) })),
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        payloadPaths: (extractPayload(payload) as any)?.$paths,
+        stateActions: stateActions.map(sa => {
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          const arg = (extractPayload(sa.arg) as any)?.$payload ?? sa.arg;
+          return { ...sa, arg }
+        }),
         trace: typeof (window) === 'undefined' ? '' : libState.stacktraceError?.stack,
       } as DevtoolsAction;
+      testState.currentActionPayloadPaths = toSend.payloadPaths;
       if (typeof (window) !== 'undefined' && !initialized)
         pendingActions.push(toSend);
       else

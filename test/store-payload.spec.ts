@@ -230,3 +230,9 @@ test('set object key', () => {
   expect(store.$state).toEqual({ sss: 'world', another: 'what' });
   expect(changed).toEqual('world');
 })
+
+test('', () => {
+  const store = createStore({ arr: [1, 2, 3] });
+  store.arr.$set(store.arr);
+  console.log(testState.currentActionPayloadPaths);
+})
