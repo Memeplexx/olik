@@ -10,81 +10,9 @@ beforeEach(() => {
   configureDevtools();
 })
 
-test('should be able include store object with patch', () => {
-  const store = createStore({ one: { two: 1, three: '' }, arr: [{ id: 1, text: 'element' }] });
-  store.one.$patch({
-    two: 2,
-    three: store.arr.$find.id.$eq(store.arr.$find.text.$eq('element').id).text
-  });
-  expect(store.$state).toEqual({ one: { two: 2, three: 'element' }, arr: [{ id: 1, text: 'element' }] });
-  expect(testState.currentActionPayloadPaths).toEqual({
-    'three': 'arr.$find.id.$eq( arr.$find.text.$eq("element").id = 1 ).text = "element"'
-  })
-})
-
-test('should be able include store object with set', () => {
-  const store = createStore({ one: { two: 1, three: '' }, arr: [{ id: 1, text: 'element' }] });
-  store.one.two.$set(store.arr.$find.id.$eq(store.arr.$find.text.$eq('element').id).id);
-  expect(testState.currentActionPayloadPaths).toEqual({
-    '': 'arr.$find.id.$eq( arr.$find.text.$eq("element").id = 1 ).id = 1'
-  });
-})
-
-test('should be able include store object with setNew', () => {
-  const store = createStore({ one: { two: 1, three: '' }, arr: [{ id: 1, text: 'element' }] });
-  store.one.$setNew({ x: store.arr.$find.id.$eq(store.arr.$find.text.$eq('element').id).id });
-  expect(testState.currentActionPayloadPaths).toEqual({
-    'x': 'arr.$find.id.$eq( arr.$find.text.$eq("element").id = 1 ).id = 1'
-  });
-})
-
-test('should be able include nested store object with set', () => {
-  const store = createStore({ one: { two: 1, three: '' }, arr: [{ id: 1, text: 'element' }] });
-  testState.logLevel = 'debug';
-  store.one.$set({
-    two: store.arr.$find.id.$eq(store.arr.$find.text.$eq('element').id).id,
-    three: store.arr.$find.id.$eq(store.arr.$find.text.$eq('element').id).text
-  });
-  expect(testState.currentActionPayloadPaths).toEqual({
-    'two': 'arr.$find.id.$eq( arr.$find.text.$eq("element").id = 1 ).id = 1',
-    'three': 'arr.$find.id.$eq( arr.$find.text.$eq("element").id = 1 ).text = "element"'
-  });
-})
-
-test('', () => {
-  const store = createStore({ arr: [{ id: 1, text: 'element' }], arr2: [{ id: 2, text: 'element2' }] });
-  store.arr.$set(store.arr2.$filter.id.$eq(2));
-  expect(testState.currentActionPayloadPaths).toEqual({ '': 'arr2.$filter.id.$eq(2) = [{"id":2,"text":"element2"}]' });
-})
-
-test('', () => {
-  const store = createStore({ arr: [{ id: 1, text: 'element' }], arr2: [{ id: 2, text: 'element2' }] });
-  store.arr.$filter.id.$eq(1).text.$set(store.arr2.$find.id.$eq(2).text);
-  expect(testState.currentActionPayloadPaths).toEqual({ '': 'arr2.$find.id.$eq(2).text = "element2"' });
-})
-
 test('', () => {
   const store = createStore({ hello: 'world' as string | null });
   store.hello.$set(null);
-})
-
-test('', () => {
-  const store = createStore({ arr: [{ id: 1, text: 'one' }, { id: 2, text: 'two' }, { id: 3, text: 'three' }] });
-  store.arr.$set(store.arr.$filter.id.$eq(1));
-})
-
-test('', () => {
-  const store = createStore({ arr: [1, 2, 3] });
-  store.arr.$merge(store.arr.$filter.$eq(2));
-})
-
-test('', () => {
-  const store = createStore({
-    arr: [{ id: 1, text: 'one' }, { id: 2, text: 'two' }, { id: 3, text: 'three' }],
-    arr2: [{ id: 1, text: 'one2' }]
-  });
-  store.arr.$mergeMatching.id.$with(store.arr2.$filter.id.$eq(1));
-  expect(store.arr.$state).toEqual([{ id: 1, text: 'one2' }, { id: 2, text: 'two' }, { id: 3, text: 'three' }]);
 })
 
 test('', () => {
@@ -93,53 +21,6 @@ test('', () => {
   });
   store.arr.$at(1).$delete();
   expect(store.arr.$state).toEqual([{ id: 1, text: 'one' }, { id: 3, text: 'three' }]);
-})
-
-test('', () => {
-  const store = createStore({
-    modal: null as 'confirmDeleteGroup' | 'confirmDeleteTag' | 'synonymOptions' | 'groupOptions' | null,
-    bool: false,
-    thing: {},
-    flatObj: {
-      one: 'hello hello hello hello hello hello hello hello',
-      two: 'world',
-      three: 'another',
-    },
-    num: 0,
-    obj: {
-      one: {
-        two: 'hello',
-        three: false,
-        four: 4
-      },
-      two: {
-        five: 'thing',
-        three: [
-          [1, 2, 3]
-        ]
-      }
-    },
-    arr: [
-      { id: 1, text: 'one' },
-      { id: 2, text: 'two' },
-      { id: 3, text: 'three' },
-    ],
-    arrNum: [1, 2, 3],
-    arrNested: [
-      [1, 2, 3],
-      [4, 5, 6],
-      [7, 8, 9]
-    ],
-    dat: new Date(),
-    thingy: 'ddd',
-  });
-  store.$patch({
-    arrNested: [
-      [
-        store.obj.one.four,
-      ]
-    ]
-  })
 })
 
 test('', () => {
@@ -229,10 +110,4 @@ test('set object key', () => {
   store.hello.$setKey('sss');
   expect(store.$state).toEqual({ sss: 'world', another: 'what' });
   expect(changed).toEqual('world');
-})
-
-test('', () => {
-  const store = createStore({ arr: [1, 2, 3] });
-  store.arr.$set(store.arr);
-  console.log(testState.currentActionPayloadPaths);
 })

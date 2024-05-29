@@ -29,7 +29,6 @@ export const testState: TestState = {
   currentActionType: undefined,
   currentActionPayload: undefined,
   currentActionTypeOrig: undefined,
-  currentActionPayloadPaths: undefined,
 }
 
 export const augmentations: Augmentations = {

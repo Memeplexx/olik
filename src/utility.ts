@@ -1,6 +1,6 @@
 import { augment } from './augment';
 import { comparatorsPropMap, libState, testState, updatePropMap } from './constant';
-import { BasicRecord, StateAction } from './type';
+import { StateAction } from './type';
 
 
 export const enqueueMicroTask = (fn: () => void) => Promise.resolve().then(fn);
@@ -13,7 +13,6 @@ export const resetLibraryState = () => {
   testState.currentActionType = undefined;
   testState.currentActionTypeOrig = undefined;
   testState.currentActionPayload = undefined;
-  testState.currentActionPayloadPaths = undefined;
   libState.store = undefined;
   libState.state = undefined;
   libState.changeListeners = [];
@@ -86,91 +85,4 @@ export const constructTypeString = ({ name, arg }: StateAction, nested: boolean)
     return `${name}( ${$stateActions.map(sa => constructTypeString(sa, nested)).join('.')} = ${JSON.stringify($state)} )`;
   }
   return `${name}(${JSON.stringify(arg)})`;
-}
-
-// type PayloadType<T> = { [key in keyof T]: T[key] extends StoreInternal ? T[key]['$state'] : PayloadType<T[key]> }
-// export const extractPayload = <T>(payloadIncoming: unknown): T => {
-//   if (typeof (payloadIncoming) !== 'object' || payloadIncoming === null || payloadIncoming instanceof Date)
-//     return payloadIncoming as T;
-//   testState.currentActionPayloadPaths = undefined;
-//   const payloadPaths = {} as Record<string, string>;
-//   const sanitizePayload = (payload: T, path: string): PayloadType<T> => {
-//     if (typeof (payload) !== 'object' || payload === null || payload instanceof Date)
-//       return payload as PayloadType<T>;
-//     const { $state, $stateActions } = payload as unknown as { $stateActions: StateAction[], $state: T };
-//     if ($stateActions) {
-//       payloadPaths[path] = `${$stateActions.map(sa => constructTypeString(sa, true)).join('.')} = ${JSON.stringify($state)}`;
-//       return $state as PayloadType<T>;
-//     }
-//     if (Array.isArray(payload))
-//       return payload.map((p, i) => sanitizePayload(p as T, !path ? i.toString() : `${path}.${i}`)) as PayloadType<T>;
-//     if (typeof (payload) === 'object' && payload !== null)
-//       return Object.keys(payload).reduce((prev, key) => {
-//         prev[key] = sanitizePayload((payload as BasicRecord)[key] as T, !path ? key.toString() : `${path}.${key.toString()}`);
-//         return prev;
-//       }, {} as BasicRecord) as PayloadType<T>;
-//     throw new Error();
-//   }
-//   const payload = sanitizePayload(payloadIncoming as T, '');
-//   if (Object.keys(payloadPaths).length)
-//     testState.currentActionPayloadPaths = payloadPaths;
-//   return payload as T;
-// }
-
-// export const extractPayload = (payloadIncoming: unknown) => {
-//   if (typeof (payloadIncoming) !== 'object' || payloadIncoming === null || payloadIncoming instanceof Date)
-//     return payloadIncoming;
-//   testState.currentActionPayloadPaths = undefined;
-//   const payloadPaths = {} as Record<string, string>;
-//   const sanitizePayload = (payload: unknown, path: string): unknown => {
-//     if (typeof (payload) !== 'object' || payload === null || payload instanceof Date)
-//       return payload;
-//     const { $state, $stateActions } = payload as unknown as { $stateActions: StateAction[], $state: T };
-//     if ($stateActions) {
-//       payloadPaths[path] = `${$stateActions.map(sa => constructTypeString(sa, true)).join('.')} = ${JSON.stringify($state)}`;
-//       return $state;
-//     }
-//     if (Array.isArray(payload))
-//       return payload.map((p, i) => sanitizePayload(p, !path ? i.toString() : `${path}.${i}`));
-//     if (typeof (payload) === 'object' && payload !== null)
-//       return Object.keys(payload).reduce((prev, key) => {
-//         prev[key] = sanitizePayload((payload as BasicRecord)[key] as T, !path ? key.toString() : `${path}.${key.toString()}`);
-//         return prev;
-//       }, {} as BasicRecord);
-//     throw new Error();
-//   }
-//   const payload = sanitizePayload(payloadIncoming, '');
-//   if (Object.keys(payloadPaths).length)
-//     testState.currentActionPayloadPaths = payloadPaths;
-//   return payload;
-// }
-
-export const extractPayload = (payloadIncoming: unknown) => {
-  if (typeof (payloadIncoming) !== 'object' || payloadIncoming === null || payloadIncoming instanceof Date)
-    return payloadIncoming;
-  const payloadPaths = {} as Record<string, string>;
-  const sanitizePayload = (payload: unknown, path: string): unknown => {
-    if (typeof (payload) !== 'object' || payload === null || payload instanceof Date)
-      return payload;
-    const { $state, $stateActions } = payload as unknown as { $stateActions: StateAction[], $state: unknown };
-    if ($stateActions) {
-      payloadPaths[path] = `${$stateActions.map(sa => constructTypeString(sa, true)).join('.')} = ${JSON.stringify($state)}`;
-      return $state;
-    }
-    if (Array.isArray(payload))
-      return payload.map((p, i) => sanitizePayload(p, !path ? i.toString() : `${path}.${i}`));
-    if (typeof (payload) === 'object' && payload !== null)
-      return Object.keys(payload).reduce((prev, key) => {
-        prev[key] = sanitizePayload((payload as BasicRecord)[key], !path ? key.toString() : `${path}.${key.toString()}`);
-        return prev;
-      }, {} as BasicRecord);
-    throw new Error();
-  }
-  const payload = sanitizePayload(payloadIncoming, '');
-  if (Object.keys(payloadPaths).length)
-    return {
-      $paths: payloadPaths,
-      $payload: payload,
-    }
-  return payload;
 }

@@ -1,7 +1,7 @@
 import { libState, testState } from './constant';
 import { DevtoolsAction, DevtoolsOptions, Readable } from './type';
 import { StoreInternal } from './type-internal';
-import { constructTypeStrings, deserialize, extractPayload, isoDateRegexp } from './utility';
+import { constructTypeStrings, deserialize, isoDateRegexp } from './utility';
 
 let initialized = false;
 const pendingActions = new Array<Omit<DevtoolsAction, 'source'>>();
@@ -49,19 +49,11 @@ export function addToWhitelist(whitelist: Readable<unknown>[]) {
 const setupDevtools = () => {
   libState.devtools = {
     dispatch: ({ stateActions, actionType }) => {
-      const payload = stateActions.at(-1)?.arg;
       const toSend = {
         actionType,
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        payloadPaths: (extractPayload(payload) as any)?.$paths,
-        stateActions: stateActions.map(sa => {
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          const arg = (extractPayload(sa.arg) as any)?.$payload ?? sa.arg;
-          return { ...sa, arg }
-        }),
+        stateActions: stateActions,
         trace: typeof (window) === 'undefined' ? '' : libState.stacktraceError?.stack,
       } as DevtoolsAction;
-      testState.currentActionPayloadPaths = toSend.payloadPaths;
       if (typeof (window) !== 'undefined' && !initialized)
         pendingActions.push(toSend);
       else

@@ -28,7 +28,6 @@ export type TestState = {
   currentActionType: undefined | string,
   currentActionTypeOrig: undefined | string,
   currentActionPayload: undefined | unknown,
-  currentActionPayloadPaths?: Record<string, string>,
 }
 
 export type Cursor = { index: number };

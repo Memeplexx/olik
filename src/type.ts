@@ -119,10 +119,10 @@ export type UpdatablePrimitive<S, F extends FindOrFilter, Q extends QueryStatus,
   & (S extends boolean ? (F extends 'isFind' ? Toggle : ToggleArray) : unknown)
   & Readable<F extends 'isFilter' ? S[] : S>
 
-export type PayloadWithPotentialStore<T> = T | Readable<T> | (
+export type Payload<T> = T | (
   T extends PossiblyBrandedPrimitive ? never :
-  T extends ReadonlyArray<infer R> ? ReadonlyArray<PayloadWithPotentialStore<R>> :
-  T extends BasicRecord ? DeepReadonlyObject<({ [P in keyof T]: PayloadWithPotentialStore<T[P]> })>
+  T extends ReadonlyArray<infer R> ? ReadonlyArray<Payload<R>> :
+  T extends BasicRecord ? DeepReadonlyObject<({ [P in keyof T]: Payload<T[P]> })>
   : never
 );
 
@@ -144,7 +144,7 @@ export interface MergePrimitive<S> {
   /**
    * Replace element(s) if they already exist or insert them if they don't
    */
-  $merge: (toMerge: PayloadWithPotentialStore<S | S[]>) => void,
+  $merge: (toMerge: Payload<S | S[]>) => void,
 }
 
 export interface Or<S extends ReadonlyArray<unknown>, F extends FindOrFilter, NewDepth extends number> {
@@ -262,21 +262,21 @@ export interface PatchObject<S> {
   /**
    * Update the selected object node, using the supplied partial.
    */
-  $patch(patch: Partial<PayloadWithPotentialStore<S>>): void;
+  $patch(patch: Payload<Partial<S>>): void;
 }
 
 export interface PatchArrayElement<S> {
   /**
    * Partially update the selected array element.
    */
-  $patch(patch: PayloadWithPotentialStore<Partial<S>>): void;
+  $patch(patch: Payload<Partial<S>>): void;
 }
 
 export interface PatchArray<S> {
   /**
    * Update all the selected array elements, using the supplied partial.
    */
-  $patch(patch: PayloadWithPotentialStore<Partial<S>>): void;
+  $patch(patch: Payload<Partial<S>>): void;
 }
 
 export interface Add {
@@ -325,28 +325,28 @@ export interface SetNode<S> {
   /**
    * Update the selected node, by replacing it with the supplied value.
    */
-  $set(replacement: PayloadWithPotentialStore<S>): void;
+  $set(replacement: Payload<S>): void;
 }
 
 export interface SetArrayElement<S> {
   /**
    * Update the selected array element, by replacing it with the supplied value.
    */
-  $set(replacement: PayloadWithPotentialStore<S>): void;
+  $set(replacement: Payload<S>): void;
 }
 
 export interface SetArray<S, I> {
   /**
    * Update the selected array elements, by replacing each element with the supplied value.
    */
-  $set(replacement: PayloadWithPotentialStore<I extends 'yes' ? S[] : S>): void;
+  $set(replacement: Payload<I extends 'yes' ? S[] : S>): void;
 }
 
 export interface SetUnique<S extends ReadonlyArray<PossiblyBrandedPrimitive>> {
   /**
    * Set array elements and only unique ones will be kept.
    */
-  $setUnique(replacement: PayloadWithPotentialStore<S>): void;
+  $setUnique(replacement: Payload<S>): void;
 }
 
 export interface PatchDeep<S> {
@@ -374,7 +374,7 @@ export interface With<T> {
   /**
    * The element or array of elements to merge
    */
-  $with(array: PayloadWithPotentialStore<T | T[]>): void,
+  $with(array: Payload<T | T[]>): void,
 }
 
 export interface InvalidateDerivation {
@@ -662,7 +662,6 @@ export interface LibState {
 
 export interface DevtoolsAction {
   actionType: string;
-  payloadPaths?: Record<string, string>;
   source: string;
   stateActions: StateAction[];
   trace?: string;

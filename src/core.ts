@@ -92,15 +92,13 @@ const update = (stateActions: StateAction[], name: string) => (arg: unknown) => 
 
 export const setNewStateAndNotifyListeners = (stateActions: StateAction[]) => {
   const { state: oldState, devtools, disableDevtoolsDispatch } = libState;
-  let actionType: string | undefined;
-  let currentActionTypeOrig: string | undefined;
-  let currentActionPayload: unknown;
   if (devtools && !disableDevtoolsDispatch) {
     const type = constructTypeStrings(stateActions, true);
     const typeOrig = constructTypeStrings(stateActions, false);
-    actionType = type;
-    currentActionTypeOrig = type !== typeOrig ? typeOrig : undefined;
-    currentActionPayload = stateActions.at(-1)!.arg;
+    testState.currentActionType = type;
+    testState.currentActionTypeOrig = type !== typeOrig ? typeOrig : undefined;
+    testState.currentActionPayload = stateActions.at(-1)!.arg;
+    devtools.dispatch({ stateActions, actionType: testState.currentActionType });
   }
   libState.state = copyNewState(oldState!, stateActions, { index: 0 }) as BasicRecord;
   libState.changeListeners.forEach(listener => {
@@ -114,12 +112,6 @@ export const setNewStateAndNotifyListeners = (stateActions: StateAction[]) => {
       listener.listeners.forEach(listener => listener(selectedNewState));
     }
   })
-  if (devtools && !disableDevtoolsDispatch) {
-    testState.currentActionType = actionType;
-    testState.currentActionTypeOrig = currentActionTypeOrig;
-    testState.currentActionPayload = currentActionPayload;
-    devtools.dispatch({ stateActions, actionType });
-  }
 }
 
 const initializeLibState = (initialState: BasicRecord) => {

@@ -2,7 +2,6 @@ import { errorMessages, libState, updatePropMap } from './constant';
 import { constructQuery } from './query';
 import { BasicArray, BasicRecord, SliceArg, StateAction } from './type';
 import { Cursor } from './type-internal';
-import { extractPayload } from './utility';
 
 
 export const copyNewState = (
@@ -37,8 +36,7 @@ export const copyNewState = (
         return updateArrayObjectProperties(currentState, cursor, stateActions);
     }
   }
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const payload = (extractPayload(stateAction.arg) as any)?.$payload ?? stateAction.arg;
+  const payload = stateAction.arg;
   switch (name) {
     case '$set':
       return set(payload);
@@ -203,10 +201,8 @@ const setObjectKey = (currentState: BasicRecord, cursor: Cursor, stateActions: S
   libState.changeListeners
     .filter(l => l.actions.map(a => a.name).join('.').startsWith(stateActionsStr))
     .forEach(l => l.actions[l.actions.length - 2].name = arg);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const payload = (extractPayload(arg) as any)?.$payload ?? arg;
   return Object.entries(currentState)
-    .reduce((acc, [key, value]) => { acc[key === name ? payload : key] = value; return acc; }, {} as BasicRecord);
+    .reduce((acc, [key, value]) => { acc[key === name ? arg : key] = value; return acc; }, {} as BasicRecord);
 }
 
 const atArray = (currentState: BasicArray, cursor: Cursor, stateActions: StateAction[], payload: number) => {
