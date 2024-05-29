@@ -270,3 +270,6 @@ const user = store.user.$state;
 store.user.$set(user);
 const todos = store.todos.$state;
 store.todos.$set(todos);
+
+
+store.todos.$onChangeImmediate

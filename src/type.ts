@@ -402,7 +402,12 @@ export interface OnChange<S> {
    * 
    * subscription.unsubscribe();
    */
-  $onChange(changeListener: (state: DeepReadonly<S>) => void): Unsubscribe;
+  $onChange(changeListener: (state: DeepReadonly<S>, previous: DeepReadonly<S>) => void): Unsubscribe;
+
+  /**
+   * Similar to $onChange, but the change listener is fired immediately with the current state.
+   */
+  $onChangeImmediate(changeListener: (state: DeepReadonly<S>, previous: DeepReadonly<S>) => void): Unsubscribe;
 }
 
 export interface Readable<S> extends Read<S>, OnChange<S> {
@@ -637,7 +642,7 @@ export interface StoreAugment<S> { }
 
 export interface ChangeListener {
   actions: StateAction[];
-  listeners: Array<(arg: unknown) => unknown>;
+  listeners: Array<(currentState: unknown, previousState: unknown) => unknown>;
   cachedState: unknown,
   path: string,
   unsubscribe: () => void;

@@ -26,3 +26,31 @@ test('', () => {
   expect((store.arr.$find.id.$eq(1) as any).i.$state).toEqual({ id: 1, text: 'hello' });
   expect((store.arr.$filter.id.$eq(1) as any).i.$state).toEqual([{ id: 1, text: 'hello' }]);
 })
+
+test('should react to $onChangeImmediate', () => {
+  const store  = createStore({ arr: [{ id: 1, text: 'hello' }], obj: { one: 'two' } });
+  let count = 0;
+  let val = '';
+  store.obj.one.$onChangeImmediate(e => {
+    count++;
+    val = e;
+  });
+  expect(count).toBe(1);
+  expect(val).toBe('two');
+})
+
+test('should $onChange with previous state', () => {
+  const store  = createStore({ arr: [{ id: 1, text: 'hello' }], obj: { one: 'two' } });
+  let count = 0;
+  let curr = '';
+  let prev = '';
+  store.obj.one.$onChange((e, p) => {
+    count++;
+    curr = e;
+    prev = p;
+  });
+  store.obj.one.$set('three');
+  expect(count).toBe(1);
+  expect(prev).toBe('two');
+  expect(curr).toBe('three');
+})

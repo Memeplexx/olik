@@ -23,15 +23,15 @@ export function derive<X extends Readable<unknown>[]>(...args: X) {
         previousResult = result;
         return result;
       }
-      const changeListeners = new Set<(value: R) => unknown>();
+      const changeListeners = new Set<(value: R, previous: R) => unknown>();
       const result = (new class {
         get $state() { return getValue(); }
         $invalidate = () => previousParams.length = 0;
-        $cleanup = (listener: (value: R) => unknown, subscriptions: Unsubscribe[]) => () => {
+        $cleanup = (listener: (value: R, previous: R) => unknown, subscriptions: Unsubscribe[]) => () => {
           subscriptions.forEach(u => u());
           changeListeners.delete(listener);
         }
-        $onChange = (listener: (value: R) => unknown) => {
+        doOnChange = (immediate: boolean) => (listener: (value: R, previous: R) => unknown) => {
           changeListeners.add(listener);
           let valueCalculated: boolean;
           const subscriptions = args.map(arg => arg.$onChange(() => {
@@ -40,11 +40,16 @@ export function derive<X extends Readable<unknown>[]>(...args: X) {
               if (valueCalculated)
                 return;
               valueCalculated = true;
-              listener(getValue());
+              listener(getValue(), previousResult as R);
             })
           }));
+          if (immediate) {
+            listener(getValue(), previousResult as R);
+          }
           return this.$cleanup(listener, subscriptions);
         }
+        $onChange = this.doOnChange(false);
+        $onChangeImmediate = this.doOnChange(true);
       }()) as Derivation<R>;
       Object.keys(augmentations.derivation).forEach(name => (result as unknown as BasicRecord)[name] = augmentations.derivation[name](result));
       return result;

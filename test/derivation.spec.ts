@@ -172,3 +172,28 @@ test('should work with async', async () => {
   expect(changeCount).toEqual(2);
   expect(derivation.$state).toEqual('p3');
 })
+
+test('should fire immediate change', () => {
+  const store = createStore({ arr: [1, 2, 3] });
+  let fired = 0;
+  store.arr.$onChangeImmediate(() => {
+    fired++;
+  });
+  expect(fired).toEqual(1); 
+})
+
+test('should fire on change with previous value', () => {
+  const store = createStore({ num: 0 });
+  let curr = -1;
+  let prev = 0;
+  store.num.$onChange((val, prevVal) => {
+    curr = val;
+    prev = prevVal;
+  });
+  store.num.$set(1);
+  expect(curr).toEqual(1);
+  expect(prev).toEqual(0);
+  store.num.$set(3);
+  expect(curr).toEqual(3);
+  expect(prev).toEqual(1);
+})

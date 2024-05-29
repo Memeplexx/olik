@@ -24,7 +24,9 @@ const recurseProxy = (stateActions?: StateAction[]): StoreInternal => new Proxy(
     if (prop in map)
       return comparator(stateActions ?? [], prop);
     if (prop === '$onChange')
-      return onChange(stateActions ?? [], prop);
+      return onChange(stateActions ?? [], prop, false);
+    if (prop === '$onChangeImmediate')
+      return onChange(stateActions ?? [], prop, true);
     return basicProp(stateActions ?? [], prop);
   }
 });
@@ -37,7 +39,7 @@ export function createStore<S extends BasicRecord>(
   return (libState.store = recurseProxy()) as unknown as Store<S>;
 }
 
-const onChange = (stateActions: StateAction[], name: string) => (listener: (arg: unknown) => unknown) => {
+const onChange = (stateActions: StateAction[], name: string, fireImmediately: boolean) => (listener: (current: unknown, previous: unknown) => unknown) => {
   const { changeListeners } = libState;
   const unsubscribe = () => {
     const changeListenerIndex = changeListeners.findIndex(cl => cl.path === path)!;
@@ -59,6 +61,10 @@ const onChange = (stateActions: StateAction[], name: string) => (listener: (arg:
       cachedState: undefined,
       path,
     })
+  if (fireImmediately) {
+    const s = state(stateActions, name);
+    listener(s, s);
+  }
   return unsubscribe;
 }
 
@@ -109,7 +115,7 @@ export const setNewStateAndNotifyListeners = (stateActions: StateAction[]) => {
       && (selectedNewState.length !== selectedOldState.length || selectedOldState.some((el, i) => el !== selectedNewState[i]));
     if (arraysDoNotMatch || selectedOldState !== selectedNewState) {
       listener.cachedState = selectedNewState;
-      listener.listeners.forEach(listener => listener(selectedNewState));
+      listener.listeners.forEach(listener => listener(selectedNewState, selectedOldState));
     }
   })
 }
