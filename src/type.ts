@@ -397,10 +397,11 @@ export interface OnChange<S> {
    * Please ensure that you unsubscribe once you're done listening for updates.
    * 
    * @example
-   * const subscription = select.todos
+   * const unsubscribe = select.todos
    *   .$onChange(todos => console.log(`There are now ${todos.length} todos in the store`));
    * 
-   * subscription.unsubscribe();
+   * // On done
+   * unsubscribe();
    */
   $onChange(changeListener: (state: DeepReadonly<S>, previous: DeepReadonly<S>) => void): Unsubscribe;
 
