@@ -40,9 +40,9 @@ export type Store<S> = BaseStore<S> & (S extends never ? unknown : StoreAugment<
 
 export type ValueOf<T> = T[keyof T];
 
-export type RepsertableObject<T, S> = With<T> & { [K in keyof S]: S[K] extends object ? RepsertableObject<T, S[K]> : RepsertablePrimitive<T> }
+export type MergeMatchingObject<T, S> = With<T> & { [K in keyof S]: S[K] extends object ? MergeMatchingObject<T, S[K]> : MergeMatchingPrimitive<T> }
 
-export interface RepsertablePrimitive<T> extends With<T> {
+export interface MergeMatchingPrimitive<T> extends With<T> {
 }
 
 export type DecrementRecursion = [-1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30];
@@ -137,7 +137,7 @@ export interface MergeMatching<S> {
   /**
    * Replace element(s) if they already exist or insert them if they don't
    */
-  $mergeMatching: { [K in keyof S]: S[K] extends object ? RepsertableObject<S, S> : RepsertablePrimitive<S> },
+  $mergeMatching: { [K in keyof S]: S[K] extends object ? MergeMatchingObject<S, S> : MergeMatchingPrimitive<S> },
 }
 
 export interface MergePrimitive<S> {
