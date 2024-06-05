@@ -177,11 +177,12 @@ const mergeMatching = (currentState: BasicArray, cursor: Cursor, stateActions: S
   const mergeArg = stateActions[cursor.index++].arg;
   const mergeArgState = (mergeArg as { $state: unknown }).$state ?? mergeArg;
   const mergeArgs = [...(Array.isArray(mergeArgState) ? mergeArgState : [mergeArgState])];
-  const query = (e: BasicRecord) => queryPaths.reduce((prev, curr) => prev[curr.name] as BasicRecord, e);
+  const queryPathsRev = queryPaths.map(qp => qp.name).join('.').split('.$and.').map(qp => qp.split('.'));
+  const query = (e: unknown) => queryPathsRev.map(queryPaths => queryPaths.reduce((prev, curr) => prev[curr] as BasicRecord, e as BasicRecord));
   return [
     ...currentState.map(existingElement => {
-      const existingElementProp = query(existingElement as BasicRecord);
-      const elementReplacement = mergeArgs.find(ma => query(ma as BasicRecord) === existingElementProp);
+      const existingElementProp = query(existingElement);
+      const elementReplacement = mergeArgs.find(ma => query(ma).every((r, i) => r === existingElementProp[i]));
       if (elementReplacement)
         mergeArgs.splice(mergeArgs.indexOf(elementReplacement), 1);
       return elementReplacement ?? existingElement;

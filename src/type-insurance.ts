@@ -273,3 +273,7 @@ store.todos.$set(todos);
 
 
 store.todos.$onChangeImmediate
+
+
+const strr = createStore({ arr: [{ id: 1, name: '', obj: { one: 1 } }] });
+strr.arr.$mergeMatching.id.$and.obj.one.$with({ id: 1, name: 'hello', obj: { one: 1 } });

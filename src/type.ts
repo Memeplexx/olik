@@ -40,10 +40,9 @@ export type Store<S> = BaseStore<S> & (S extends never ? unknown : StoreAugment<
 
 export type ValueOf<T> = T[keyof T];
 
-export type MergeMatchingObject<T, S> = With<T> & { [K in keyof S]: S[K] extends object ? MergeMatchingObject<T, S[K]> : MergeMatchingPrimitive<T> }
+export type MergeMatchingObject<T, S> = { [K in keyof S]: S[K] extends object ? MergeMatchingObject<T, S[K]> : MergeMatchingPrimitive<T> } & With<T>
 
-export interface MergeMatchingPrimitive<T> extends With<T> {
-}
+export type MergeMatchingPrimitive<T> = { $and: { [K in keyof T]: T[K] extends object ? MergeMatchingObject<T, T[K]> : MergeMatchingPrimitive<T> } } & With<T>;
 
 export type DecrementRecursion = [-1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30];
 export type LengthOfTuple<T extends number[]> = T extends { length: infer L } ? L : never;
@@ -370,7 +369,7 @@ export interface PatchDeepArray<S> {
   $patchDeep(patch: PatchDeepPayload<S>): void;
 }
 
-export interface With<T> {
+export type With<T> = {
   /**
    * The element or array of elements to merge
    */

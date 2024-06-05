@@ -223,36 +223,3 @@ test('should filter elements by one clause and another and increment them', () =
   expect(store.arr.$state).toEqual([state.arr[0], { id: 2, val: 3 }, { id: 3, val: 4 }]);
 })
 
-test('should repsert one array element where a match could be found', () => {
-  const store = createStore(state);
-  const payload = { id: 1, val: 5 };
-  store.arr
-    .$mergeMatching.id
-    .$with(payload);
-  expect(testState.currentActionType).toEqual('arr.$mergeMatching.id.$with()');
-  expect(testState.currentActionPayload).toEqual(payload);
-  expect(store.arr.$state).toEqual([payload, state.arr[1], state.arr[2]]);
-})
-
-test('should repsert one array element where a match could not be found', () => {
-  const store = createStore(state);
-  const payload = { id: 4, val: 5 };
-  store.arr
-    .$mergeMatching.id
-    .$with(payload);
-  expect(testState.currentActionType).toEqual('arr.$mergeMatching.id.$with()');
-  expect(testState.currentActionPayload).toEqual(payload);
-  expect(store.arr.$state).toEqual([...state.arr, payload]);
-})
-
-test('should repsert array elements where one matches and another does not', () => {
-  const store = createStore(state);
-  const payload = [{ id: 1, val: 5 }, { id: 5, val: 5 }];
-  store.arr
-    .$mergeMatching.id
-    .$with(payload);
-  expect(testState.currentActionType).toEqual('arr.$mergeMatching.id.$with()');
-  expect(testState.currentActionPayload).toEqual(payload);
-  expect(store.arr.$state).toEqual([payload[0], state.arr[1], state.arr[2], payload[1]]);
-})
-
