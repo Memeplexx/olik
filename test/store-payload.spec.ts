@@ -87,6 +87,12 @@ test('array indices on primitive', () => {
   expect(store.$state).toEqual({ arr: [1, 4, 3] });
 })
 
+test('array indices on primitive with negative number', () => {
+  const store = createStore({ arr: [1, 2, 3, 4, 5] });
+  store.arr.$at(-2).$set(99);
+  expect(store.$state).toEqual({ arr: [1, 2, 3, 99, 5] });
+})
+
 test('array indices of object', () => {
   const store = createStore({ arr: [{ id: 1, value: 'one' }, { id: 2, value: 'two' }, { id: 3, value: 'three' }] });
   store.arr.$at(1).value.$set('four');

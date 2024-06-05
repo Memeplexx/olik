@@ -66,7 +66,7 @@ test('Olik Perf setKey', () => {
   const state = { num: 0, str: '' };
   const store = createStore(state);
   const before = performance.now();
-  const arr = (new Array(1000)).fill(0).map((e, i) => i.toString());
+  const arr = new Array(1000).fill(0).map((e, i) => i.toString());
   for (const e of arr) {
     store.num.$setKey(e);
     store.$state;
@@ -95,7 +95,7 @@ test('Native Perf', () => {
 })
 
 test('Immer Perf (deep)', () => {
-  const arr = (new Array(100)).fill(0).map((e, i) => ({ id: i, val: '', obj: { num: 0 } }));
+  const arr = new Array(100).fill(0).map((e, i) => ({ id: i, val: '', obj: { num: 0 } }));
   let state = { arr };
   const before = performance.now();
   for (let i = 0; i < 1000; i++) {
@@ -107,7 +107,7 @@ test('Immer Perf (deep)', () => {
 })
 
 test('Immutable Perf (deep)', () => {
-  const arr = (new Array(100)).fill(0).map((e, i) => ({ id: i, val: '', obj: { num: 0 } }));
+  const arr = new Array(100).fill(0).map((e, i) => ({ id: i, val: '', obj: { num: 0 } }));
   const state = fromJS({ arr });
   const before = performance.now();
   for (let i = 0; i < 1000; i++) {

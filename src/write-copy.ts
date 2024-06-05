@@ -206,11 +206,12 @@ const setObjectKey = (currentState: BasicRecord, cursor: Cursor, stateActions: S
 }
 
 const atArray = (currentState: BasicArray, cursor: Cursor, stateActions: StateAction[], payload: number) => {
-  if ('undefined' === typeof (currentState[payload]))
+  const index = payload < 0 ? currentState.length + payload : payload;
+  if ('undefined' === typeof (currentState[index]))
     throw new Error(errorMessages.AT_INDEX_OUT_OF_BOUNDS(payload));
   if ('$delete' === stateActions[cursor.index].name)
-    return currentState.filter((_, i) => payload !== i);
-  return currentState.map((e, i) => i === payload
+    return currentState.filter((_, i) => index !== i);
+  return currentState.map((e, i) => i === index
     ? copyNewState(e, stateActions, cursor)
     : e);
 }
