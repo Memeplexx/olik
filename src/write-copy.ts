@@ -172,12 +172,12 @@ const updateArrayObjectProperties = (currentState: BasicArray, cursor: Cursor, s
 const mergeMatching = (currentState: BasicArray, cursor: Cursor, stateActions: StateAction[]) => {
   const cursorIndex = cursor.index;
   const nextUpdateIndex = stateActions.findIndex((sa, i) => i > cursorIndex && sa.name in updatePropMap) - cursorIndex;
-  const queryPaths = stateActions.slice(cursorIndex, cursorIndex + nextUpdateIndex);
+  const queryPaths = stateActions.map(sa => sa.name).slice(cursorIndex, cursorIndex + nextUpdateIndex);
   cursor.index += queryPaths.length;
   const mergeArg = stateActions[cursor.index++].arg;
   const mergeArgState = (mergeArg as { $state: unknown }).$state ?? mergeArg;
   const mergeArgs = [...(Array.isArray(mergeArgState) ? mergeArgState : [mergeArgState])];
-  const queryPathsRev = queryPaths.map(qp => qp.name).join('.').split('.$and.').map(qp => qp.split('.'));
+  const queryPathsRev = queryPaths.join('.').split('.$and.').map(qp => qp.split('.'));
   const query = (e: unknown) => queryPathsRev.map(queryPaths => queryPaths.reduce((prev, curr) => prev[curr] as BasicRecord, e as BasicRecord));
   return [
     ...currentState.map(existingElement => {

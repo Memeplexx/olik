@@ -3,9 +3,11 @@ import { test } from 'vitest';
 
 const iterations = 1000;
 
-const inputText = "This is a test with tag1 and another tag2. This text the brown includes some random words along with tag1, tag2, and maybe tag3. Here is some more text and some even more tag4 text. The end.";
+const inputText = `This is a test with tag1 and another tag2. This text the brown includes some random words along with tag1, tag2, 
+and maybe tag3. Here is some more text and some even more tag4 text. The end. Some more text yet more text tag5 and some more tag500,
+tag600, tag700, tag800, tag900, tag1000. Here is some more text. Here are some tags: tag1, tag2, tag3, tag4, tag5, tag6, tag7, tag8, tag9, tag10.`;
 
-const tags = new Array(1000).fill(0).map((_, i) => `tag${i + 1}`);
+const tags = new Array(5000).fill(0).map((_, i) => `tag${i + 1}`);
 
 
 class TrieNode {
