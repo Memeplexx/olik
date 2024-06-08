@@ -93,7 +93,6 @@ export type UpdatableArray<S extends ReadonlyArray<unknown>, F extends FindOrFil
       & Readable<F extends 'isFilter' ? S : S[0]>
       & OnChangeArray<S>
       & (S[0] extends ReadonlyArray<unknown> ? unknown : S[0] extends PossiblyBrandedPrimitive ? MergePrimitive<S[0]> : MergeMatching<S[0]>)
-      & (S extends ReadonlyArray<PossiblyBrandedPrimitive> ? SetUnique<S> : unknown)
       & (
         S[0] extends object
         ? (
@@ -109,7 +108,6 @@ export type UpdatableArray<S extends ReadonlyArray<unknown>, F extends FindOrFil
         : AddArray
       )
     ))
-  & (S extends ReadonlyArray<PossiblyBrandedPrimitive> ? DeDuplicateArray<S> : unknown)
   , Depth>
 
 export type UpdatablePrimitive<S, F extends FindOrFilter, Q extends QueryStatus, I extends ImmediateParentIsAnArray, Depth extends number> =
@@ -125,13 +123,6 @@ export type Payload<T> = T | (
   T extends BasicRecord ? DeepReadonlyObject<({ [P in keyof T]: Payload<T[P]> })>
   : never
 );
-
-export interface DeDuplicateArray<S> {
-  /**
-   * Remove duplicates from array
-   */
-  $deDuplicate: () => S,
-}
 
 export interface MergeMatching<S> {
   /**
@@ -342,13 +333,6 @@ export interface SetArray<S, I> {
   $set(replacement: Payload<I extends 'yes' ? S[] : S>): void;
 }
 
-export interface SetUnique<S extends ReadonlyArray<PossiblyBrandedPrimitive>> {
-  /**
-   * Set array elements and only unique ones will be kept.
-   */
-  $setUnique(replacement: Payload<S>): void;
-}
-
 export interface PatchDeep<S> {
   /**
    * Update the selected array elements, by recursively merging each element with the supplied value.
@@ -407,9 +391,9 @@ export interface OnChange<S> {
 }
 
 export interface OnChangeArray<S> {
-  $onInsert: (changeListener: (state: DeepReadonly<S>, previous: DeepReadonly<S>) => void) => Unsubscribe;
-  $onDelete: (changeListener: (state: DeepReadonly<S>, previous: DeepReadonly<S>) => void) => Unsubscribe;
-  $onUpdate: (changeListener: (state: DeepReadonly<S>, previous: DeepReadonly<S>) => void) => Unsubscribe;
+  $onInsertElements: (changeListener: (state: DeepReadonly<S>) => void) => Unsubscribe;
+  $onDeleteElements: (changeListener: (state: DeepReadonly<S>) => void) => Unsubscribe;
+  $onUpdateElements: (changeListener: (state: DeepReadonly<S>) => void) => Unsubscribe;
 }
 
 export interface Readable<S> extends Read<S>, OnChange<S> {

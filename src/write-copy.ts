@@ -60,18 +60,10 @@ export const copyNewState = (
       return push(currentState as BasicArray, payload);
     case '$pushMany':
       return pushMany(currentState as BasicArray, payload as BasicArray);
-    case '$setUnique':
-      return setUnique(payload as BasicArray);
-    case '$deDuplicate':
-      return deDuplicate(currentState as BasicArray);
     case '$merge':
       return merge(currentState as BasicArray, payload);
   }
   throw new Error();
-}
-
-const deDuplicate = (currentState: BasicArray) => {
-  return [...new Set(currentState)];
 }
 
 const slice = (currentState: BasicArray, payload: SliceArg) => {
@@ -106,10 +98,6 @@ const setNew = (currentState: BasicRecord, payload: BasicRecord) => {
 
 const set = (payload: unknown) => {
   return payload;
-}
-
-const setUnique = (payload: BasicArray) => {
-  return [...new Set(payload)];
 }
 
 const patch = (currentState: unknown, payload: BasicRecord) => {

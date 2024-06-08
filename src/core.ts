@@ -25,12 +25,12 @@ const recurseProxy = (stateActions?: StateAction[]): StoreInternal => new Proxy(
       return comparator(stateActions ?? [], prop);
     if (prop === '$onChange')
       return onChange(stateActions ?? [], prop);
-    if (prop === '$onInsert')
-      return onInsert(stateActions ?? [], prop);
-    if (prop === '$onUpdate')
-      return onUpdate(stateActions ?? [], prop);
-    if (prop === '$onDelete')
-      return onRemove(stateActions ?? [], prop);
+    if (prop === '$onInsertElements')
+      return onInsertElements(stateActions ?? [], prop);
+    if (prop === '$onUpdateElements')
+      return onUpdateElements(stateActions ?? [], prop);
+    if (prop === '$onDeleteElements')
+      return onRemoveElements(stateActions ?? [], prop);
     return basicProp(stateActions ?? [], prop);
   }
 });
@@ -43,15 +43,15 @@ export function createStore<S extends BasicRecord>(
   return (libState.store = recurseProxy()) as unknown as Store<S>;
 }
 
-const onInsert = (stateActions: StateAction[], name: string) => (listener: (current: unknown, previous: unknown) => unknown, options?: { fireImmediately?: boolean }) => {
+const onInsertElements = (stateActions: StateAction[], name: string) => (listener: (current: unknown, previous: unknown) => unknown, options?: { fireImmediately?: boolean }) => {
   return onChangeCommon(libState.insertListeners, stateActions, name, listener, options);
 }
 
-const onUpdate = (stateActions: StateAction[], name: string) => (listener: (current: unknown, previous: unknown) => unknown, options?: { fireImmediately?: boolean }) => {
+const onUpdateElements = (stateActions: StateAction[], name: string) => (listener: (current: unknown, previous: unknown) => unknown, options?: { fireImmediately?: boolean }) => {
   return onChangeCommon(libState.updateListeners, stateActions, name, listener, options);
 }
 
-const onRemove = (stateActions: StateAction[], name: string) => (listener: (current: unknown, previous: unknown) => unknown, options?: { fireImmediately?: boolean }) => {
+const onRemoveElements = (stateActions: StateAction[], name: string) => (listener: (current: unknown, previous: unknown) => unknown, options?: { fireImmediately?: boolean }) => {
   return onChangeCommon(libState.deleteListeners, stateActions, name, listener, options);
 }
 
