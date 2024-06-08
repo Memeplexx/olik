@@ -91,6 +91,7 @@ export type UpdatableArray<S extends ReadonlyArray<unknown>, F extends FindOrFil
       & Filter<S, NewDepth>
       & At<S, NewDepth>
       & Readable<F extends 'isFilter' ? S : S[0]>
+      & OnChangeArray<S>
       & (S[0] extends ReadonlyArray<unknown> ? unknown : S[0] extends PossiblyBrandedPrimitive ? MergePrimitive<S[0]> : MergeMatching<S[0]>)
       & (S extends ReadonlyArray<PossiblyBrandedPrimitive> ? SetUnique<S> : unknown)
       & (
@@ -405,6 +406,12 @@ export interface OnChange<S> {
   $onChange(changeListener: (state: DeepReadonly<S>, previous: DeepReadonly<S>) => void, options?: { fireImmediately?: boolean }): Unsubscribe;
 }
 
+export interface OnChangeArray<S> {
+  $onInsert: (changeListener: (state: DeepReadonly<S>, previous: DeepReadonly<S>) => void) => Unsubscribe;
+  $onDelete: (changeListener: (state: DeepReadonly<S>, previous: DeepReadonly<S>) => void) => Unsubscribe;
+  $onUpdate: (changeListener: (state: DeepReadonly<S>, previous: DeepReadonly<S>) => void) => Unsubscribe;
+}
+
 export interface Readable<S> extends Read<S>, OnChange<S> {
 }
 
@@ -655,9 +662,15 @@ export interface LibState {
   devtools: undefined | { dispatch: (arg: { stateActions: StateAction[], actionType?: string }) => unknown },
   state: undefined | BasicRecord,
   changeListeners: ChangeListener[],
+  insertListeners: ChangeListener[],
+  updateListeners: ChangeListener[],
+  deleteListeners: ChangeListener[],
   initialState: undefined | BasicRecord,
   disableDevtoolsDispatch?: boolean,
   stacktraceError: null | Error,
+  insertedElements: unknown[],
+  updatedElements: unknown[],
+  deletedElements: unknown[],
 }
 
 export interface DevtoolsAction {

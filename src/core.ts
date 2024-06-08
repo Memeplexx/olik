@@ -1,6 +1,6 @@
 import { augmentations, comparatorsPropMap, errorMessages, libPropMap, libState, testState, updatePropMap } from './constant';
 import { readState } from './read';
-import { BasicRecord, StateAction, Store } from './type';
+import { BasicRecord, ChangeListener, StateAction, Store } from './type';
 import { StoreInternal } from './type-internal';
 import { constructTypeStrings } from './utility';
 import { copyNewState } from './write-copy';
@@ -25,6 +25,12 @@ const recurseProxy = (stateActions?: StateAction[]): StoreInternal => new Proxy(
       return comparator(stateActions ?? [], prop);
     if (prop === '$onChange')
       return onChange(stateActions ?? [], prop);
+    if (prop === '$onInsert')
+      return onInsert(stateActions ?? [], prop);
+    if (prop === '$onUpdate')
+      return onUpdate(stateActions ?? [], prop);
+    if (prop === '$onDelete')
+      return onRemove(stateActions ?? [], prop);
     return basicProp(stateActions ?? [], prop);
   }
 });
@@ -37,33 +43,20 @@ export function createStore<S extends BasicRecord>(
   return (libState.store = recurseProxy()) as unknown as Store<S>;
 }
 
+const onInsert = (stateActions: StateAction[], name: string) => (listener: (current: unknown, previous: unknown) => unknown, options?: { fireImmediately?: boolean }) => {
+  return onChangeCommon(libState.insertListeners, stateActions, name, listener, options);
+}
+
+const onUpdate = (stateActions: StateAction[], name: string) => (listener: (current: unknown, previous: unknown) => unknown, options?: { fireImmediately?: boolean }) => {
+  return onChangeCommon(libState.updateListeners, stateActions, name, listener, options);
+}
+
+const onRemove = (stateActions: StateAction[], name: string) => (listener: (current: unknown, previous: unknown) => unknown, options?: { fireImmediately?: boolean }) => {
+  return onChangeCommon(libState.deleteListeners, stateActions, name, listener, options);
+}
+
 const onChange = (stateActions: StateAction[], name: string) => (listener: (current: unknown, previous: unknown) => unknown, options?: { fireImmediately?: boolean }) => {
-  const { changeListeners } = libState;
-  const unsubscribe = () => {
-    const changeListenerIndex = changeListeners.findIndex(cl => cl.path === path)!;
-    const { listeners } = changeListeners[changeListenerIndex];
-    if (listeners.length === 1)
-      changeListeners.splice(changeListenerIndex, 1);
-    else
-      listeners.splice(listeners.findIndex(l => l === listener), 1);
-  }
-  const path = constructTypeStrings(stateActions, false); // double check how path is calculated!!!!!!!
-  const listeners = changeListeners.find(cl => cl.path === path)?.listeners;
-  if (listeners)
-    listeners.push(listener);
-  else
-    changeListeners.push({
-      actions: [...stateActions, { name }],
-      listeners: [listener],
-      unsubscribe,
-      cachedState: undefined,
-      path,
-    })
-  if (options?.fireImmediately) {
-    const s = state(stateActions, name);
-    listener(s, s);
-  }
-  return unsubscribe;
+  return onChangeCommon(libState.changeListeners, stateActions, name, listener, options);
 };
 
 const state = (stateActions: StateAction[], name: string) => {
@@ -95,7 +88,7 @@ const update = (stateActions: StateAction[], name: string) => (arg: unknown) => 
 }
 
 export const setNewStateAndNotifyListeners = (stateActions: StateAction[]) => {
-  const { state: oldState, devtools, disableDevtoolsDispatch } = libState;
+  const { state: oldState, devtools, disableDevtoolsDispatch, insertListeners, updateListeners, deleteListeners } = libState;
   if (devtools && !disableDevtoolsDispatch) {
     const type = constructTypeStrings(stateActions, true);
     const typeOrig = constructTypeStrings(stateActions, false);
@@ -115,7 +108,25 @@ export const setNewStateAndNotifyListeners = (stateActions: StateAction[]) => {
       listener.cachedState = selectedNewState;
       listener.listeners.forEach(listener => listener(selectedNewState, selectedOldState));
     }
-  })
+  });
+  if (insertListeners.length)
+    fireArrayListeners(stateActions, insertListeners, libState.insertedElements);
+  if (updateListeners.length)
+    fireArrayListeners(stateActions, updateListeners, libState.updatedElements);
+  if (deleteListeners.length)
+    fireArrayListeners(stateActions, deleteListeners, libState.deletedElements);
+}
+
+const end = { ...updatePropMap, $mergeMatching: true, $filter: true, $find: true, $at: true } as BasicRecord;
+const fireArrayListeners = (stateActions: StateAction[], insertListeners: ChangeListener[], elements: unknown[]) => {
+  const stateActionsWithoutActions = stateActions.slice(0, stateActions.findIndex(e => end[e.name]));
+  const currentActionPath = constructTypeStrings(stateActionsWithoutActions, false);
+  insertListeners
+    .filter(listener => listener.path === currentActionPath)
+    .forEach(listener => listener.listeners.forEach(listener => {
+      listener(elements.slice(), null);
+    }));
+  elements.length = 0;
 }
 
 const initializeLibState = (initialState: BasicRecord) => {
@@ -137,3 +148,31 @@ export const validateState = (key: string | number, state: unknown): void => {
     validateState(key, state[key as keyof typeof state]);
   });
 }
+
+const onChangeCommon = (changeListeners: ChangeListener[], stateActions: StateAction[], name: string, listener: (current: unknown, previous: unknown) => unknown, options?: { fireImmediately?: boolean }) => {
+  const unsubscribe = () => {
+    const changeListenerIndex = changeListeners.findIndex(cl => cl.path === path)!;
+    const { listeners } = changeListeners[changeListenerIndex];
+    if (listeners.length === 1)
+      changeListeners.splice(changeListenerIndex, 1);
+    else
+      listeners.splice(listeners.findIndex(l => l === listener), 1);
+  }
+  const path = constructTypeStrings(stateActions, false); // double check how path is calculated!!!!!!!
+  const listeners = changeListeners.find(cl => cl.path === path)?.listeners;
+  if (listeners)
+    listeners.push(listener);
+  else
+    changeListeners.push({
+      actions: [...stateActions, { name }],
+      listeners: [listener],
+      unsubscribe,
+      cachedState: undefined,
+      path,
+    })
+  if (options?.fireImmediately) {
+    const s = state(stateActions, name);
+    listener(s, s);
+  }
+  return unsubscribe;
+};
