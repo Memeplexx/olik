@@ -402,12 +402,7 @@ export interface OnChange<S> {
    * // On done
    * unsubscribe();
    */
-  $onChange(changeListener: (state: DeepReadonly<S>, previous: DeepReadonly<S>) => void): Unsubscribe;
-
-  /**
-   * Similar to $onChange, but the change listener is fired immediately with the current state.
-   */
-  $onChangeImmediate(changeListener: (state: DeepReadonly<S>, previous: DeepReadonly<S>) => void): Unsubscribe;
+  $onChange(changeListener: (state: DeepReadonly<S>, previous: DeepReadonly<S>) => void, options?: { fireImmediately?: boolean }): Unsubscribe;
 }
 
 export interface Readable<S> extends Read<S>, OnChange<S> {

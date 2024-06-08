@@ -176,9 +176,9 @@ test('should work with async', async () => {
 test('should fire immediate change', () => {
   const store = createStore({ arr: [1, 2, 3] });
   let fired = 0;
-  store.arr.$onChangeImmediate(() => {
+  store.arr.$onChange(() => {
     fired++;
-  });
+  }, { fireImmediately: true });
   expect(fired).toEqual(1); 
 })
 

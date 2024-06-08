@@ -31,10 +31,10 @@ test('should react to $onChangeImmediate', () => {
   const store  = createStore({ arr: [{ id: 1, text: 'hello' }], obj: { one: 'two' } });
   let count = 0;
   let val = '';
-  store.obj.one.$onChangeImmediate(e => {
+  store.obj.one.$onChange(e => {
     count++;
     val = e;
-  });
+  }, { fireImmediately: true });
   expect(count).toBe(1);
   expect(val).toBe('two');
 })

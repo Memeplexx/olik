@@ -39,7 +39,7 @@ export const augmentations: Augmentations = {
 };
 
 export const updateFunctions = ['$set', '$setUnique', '$patch', '$patchDeep', '$delete', '$setNew', '$add', '$subtract', '$clear', '$slice', '$push', '$pushMany', '$with', '$toggle', '$merge', '$deDuplicate', '$setKey'] as const;
-export const readFunctions = ['$onChange', '$onChangeImmediate', '$state'] as const;
+export const readFunctions = ['$onChange', '$state'] as const;
 export const concatenations = ['$and', '$or', '$find', '$filter', '$distinct', '$mergeMatching'] as const;
 export const otherFunctions = ['$at', '$stateActions'] as const;
 export const comparators = ['$eq', '$in', '$ni', '$gt', '$lt', '$gte', '$lte', '$match', '$contains', '$containsIgnoreCase', '$isContainedIn', '$isContainedInIgnoreCase', '$isTrue', '$isFalse', '$isTruthy', '$isFalsy'] as const;

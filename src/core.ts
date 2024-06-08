@@ -24,9 +24,7 @@ const recurseProxy = (stateActions?: StateAction[]): StoreInternal => new Proxy(
     if (prop in map)
       return comparator(stateActions ?? [], prop);
     if (prop === '$onChange')
-      return onChange(stateActions ?? [], prop, false);
-    if (prop === '$onChangeImmediate')
-      return onChange(stateActions ?? [], prop, true);
+      return onChange(stateActions ?? [], prop);
     return basicProp(stateActions ?? [], prop);
   }
 });
@@ -39,7 +37,7 @@ export function createStore<S extends BasicRecord>(
   return (libState.store = recurseProxy()) as unknown as Store<S>;
 }
 
-const onChange = (stateActions: StateAction[], name: string, fireImmediately: boolean) => (listener: (current: unknown, previous: unknown) => unknown) => {
+const onChange = (stateActions: StateAction[], name: string) => (listener: (current: unknown, previous: unknown) => unknown, options?: { fireImmediately?: boolean }) => {
   const { changeListeners } = libState;
   const unsubscribe = () => {
     const changeListenerIndex = changeListeners.findIndex(cl => cl.path === path)!;
@@ -61,12 +59,12 @@ const onChange = (stateActions: StateAction[], name: string, fireImmediately: bo
       cachedState: undefined,
       path,
     })
-  if (fireImmediately) {
+  if (options?.fireImmediately) {
     const s = state(stateActions, name);
     listener(s, s);
   }
   return unsubscribe;
-}
+};
 
 const state = (stateActions: StateAction[], name: string) => {
   const { state } = libState;
