@@ -17,7 +17,7 @@ export const resetLibraryState = () => {
   libState.state = undefined;
   libState.changeListeners = [];
   libState.insertListeners = [];
-  libState.removeListeners = [];
+  libState.deleteListeners = [];
   libState.initialState = undefined;
   libState.disableDevtoolsDispatch = false;
   libState.devtools = undefined;

@@ -131,7 +131,7 @@ const subtract = (currentState: unknown, payload: number) => {
 }
 
 const clear = (currentState: BasicArray) => {
-  libState.deletedElements = currentState;
+  libState.deletedElements = currentState.slice();
   return [];
 }
 
@@ -266,7 +266,8 @@ const findArray = (currentState: BasicArray, cursor: Cursor, stateActions: State
       return !matchFound;
     });
   return currentState.map((e, i) => {
-    if (i === findIndex) {
+    const matchFound = findIndex === i;
+    if (matchFound) {
       const updated = copyNewState(e, stateActions, cursor);
       libState.updatedElements.push(updated);
       return updated;
