@@ -39,7 +39,7 @@ export const copyNewState = (
   const payload = stateAction.arg;
   switch (name) {
     case '$set':
-      return set(payload);
+      return set(currentState, payload);
     case '$patch':
       return patch(currentState, payload as BasicRecord);
     case '$add':
@@ -96,7 +96,11 @@ const setNew = (currentState: BasicRecord, payload: BasicRecord) => {
   return { ...currentState, ...payload };
 }
 
-const set = (payload: unknown) => {
+const set = (currentState: unknown, payload: unknown) => {
+  if (Array.isArray(currentState))
+    libState.deletedElements = currentState.slice();
+  if (Array.isArray(payload))
+    libState.insertListeners = payload.slice();
   return payload;
 }
 
