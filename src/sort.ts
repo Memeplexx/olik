@@ -12,37 +12,37 @@ export function configureSortModule() {
 
 const memoizeSortByPrimitive = (stateActions: StateAction[], name: SortOrder) => () => {
   const indexOfMemoizeSortBy = stateActions.findIndex(e => e.name === '$memoizeSort');
-  const changeListeners = new Array<Parameters<OnChange<DeepReadonlyArray<SortableProperty>>['$onChange']>[0]>;
+  type ChangeListener = Parameters<OnChange<DeepReadonlyArray<SortableProperty>>['$onChange']>[0];
+  const changeListeners = new Array<ChangeListener>;
   const subStore = stateActions.reduce((acc, e, index) => {
     if (index === indexOfMemoizeSortBy - 1)
       return (acc as BasicRecord)[e.name] as StoreInternal;
     return acc;
-  }, libState.store!);
-  const $state = (subStore.$state as unknown as DeepReadonlyArray<SortableProperty>).slice().sort((a, b) => {
+  }, libState.store!) as unknown as OnChangeArray<DeepReadonlyArray<SortableProperty>> & Read<DeepReadonlyArray<SortableProperty>>;
+  const $state = subStore.$state.slice().sort((a, b) => {
     const comparison = compare(a, b);
     return name === '$ascending' ? comparison : -comparison;
-  }) as Array<SortableProperty>;
+  });
   const onChange = (inserted: DeepReadonlyArray<SortableProperty>) => {
     const stateBefore = $state.slice();
     inserted.forEach(e => {
-      const index = binarySearchIndexForPrimitive($state, e, name as SortOrder);
+      const index = binarySearchIndexForPrimitive($state, e, name);
       if ($state[index] !== e)
         $state.splice(index, 0, e);
       changeListeners.forEach(cl => cl($state, stateBefore));
     });
   }
-  const primitiveSubStore = subStore as unknown as OnChangeArray<DeepReadonlyArray<SortableProperty>>;
-  const onInsert = primitiveSubStore.$onInsertElements(onChange)
-  const onUpdate = primitiveSubStore.$onUpdateElements(onChange);
-  const onDelete = primitiveSubStore.$onDeleteElements(deleted => {
+  const onInsert = subStore.$onInsertElements(onChange)
+  const onUpdate = subStore.$onUpdateElements(onChange);
+  const onDelete = subStore.$onDeleteElements(deleted => {
     const stateBefore = $state.slice();
     deleted.forEach(e => {
-      const index = binarySearchIndexForPrimitive($state, e, name as SortOrder);
+      const index = binarySearchIndexForPrimitive($state, e, name);
       $state.splice(index, 1);
       changeListeners.forEach(cl => cl($state, stateBefore));
     });
   });
-  const $onChange = (cl: (arg: DeepReadonlyArray<SortableProperty>, prev: DeepReadonlyArray<SortableProperty>) => void) => {
+  const $onChange = (cl: ChangeListener) => {
     changeListeners.push(cl);
     return () => changeListeners.splice(changeListeners.indexOf(cl), 1);
   };
@@ -63,7 +63,8 @@ const memoizeSortByObjectProperty = (stateActions: StateAction[], name: SortOrde
   const indexOfMemoizeSortBy = stateActions.findIndex(e => e.name === '$memoizeSortBy');
   const arrayKey = stateActions[indexOfMemoizeSortBy - 1].name;
   const propToSortBy = stateActions[indexOfMemoizeSortBy + 1].name;
-  const changeListeners = new Array<Parameters<OnChange<BasicRecord[]>['$onChange']>[0]>;
+  type ChangeListener = Parameters<OnChange<DeepReadonlyArray<BasicRecord>>['$onChange']>[0];
+  const changeListeners = new Array<ChangeListener>;
   const subStore = stateActions.reduce((acc, e) => {
     if (e.name === arrayKey)
       return (acc as BasicRecord)[e.name] as StoreInternal;
@@ -72,14 +73,14 @@ const memoizeSortByObjectProperty = (stateActions: StateAction[], name: SortOrde
   const $state = subStore.$state.slice().sort((a, b) => {
     const comparison = compare(a[propToSortBy], b[propToSortBy]);
     return name === '$ascending' ? comparison : -comparison;
-  }) as Array<BasicRecord>;
+  });
   const onChange = (inserted: DeepReadonlyArray<BasicRecord>) => {
     const stateBefore = $state.slice();
     inserted.forEach(e => {
-      const index = binarySearchIndexByProperty($state, e[propToSortBy], propToSortBy, name as SortOrder);
+      const index = binarySearchIndexByProperty($state, e[propToSortBy], propToSortBy, name);
       if ($state[index]?.[propToSortBy] !== e[propToSortBy])
         $state.splice(index, 0, e);
-      changeListeners.forEach(cl => cl($state as DeepReadonlyArray<BasicRecord>, stateBefore as DeepReadonlyArray<BasicRecord>));
+      changeListeners.forEach(cl => cl($state, stateBefore));
     })
   }
   const onInsert = subStore.$onInsertElements(onChange)
@@ -87,12 +88,12 @@ const memoizeSortByObjectProperty = (stateActions: StateAction[], name: SortOrde
   const onDelete = subStore.$onDeleteElements(deleted => {
     const stateBefore = $state.slice();
     deleted.forEach(e => {
-      const index = binarySearchIndexByProperty($state, e[propToSortBy], propToSortBy, name as SortOrder);
+      const index = binarySearchIndexByProperty($state, e[propToSortBy], propToSortBy, name);
       $state.splice(index, 1);
-      changeListeners.forEach(cl => cl($state as DeepReadonlyArray<BasicRecord>, stateBefore as DeepReadonlyArray<BasicRecord>));
+      changeListeners.forEach(cl => cl($state, stateBefore));
     });
   });
-  const $onChange = (cl: (arg: DeepReadonlyArray<BasicRecord>, prev: DeepReadonlyArray<BasicRecord>) => void) => {
+  const $onChange = (cl: ChangeListener) => {
     changeListeners.push(cl);
     return () => changeListeners.splice(changeListeners.indexOf(cl), 1);
   };
@@ -103,7 +104,7 @@ const memoizeSortByObjectProperty = (stateActions: StateAction[], name: SortOrde
     changeListeners.length = 0;
   }
   return {
-    $state: $state as DeepReadonlyArray<BasicRecord>,
+    $state,
     $onChange,
     $destroy
   };
