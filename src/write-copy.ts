@@ -100,7 +100,7 @@ const set = (currentState: unknown, payload: unknown) => {
   if (Array.isArray(currentState))
     libState.deletedElements = currentState.slice();
   if (Array.isArray(payload))
-    libState.insertListeners = payload.slice();
+    libState.insertedElements = payload.slice();
   return payload;
 }
 
