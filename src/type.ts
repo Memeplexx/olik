@@ -15,7 +15,7 @@ export type Primitive = string | number | boolean;
 
 export type BasicRecord = Record<string, unknown>;
 
-export type BasicArray = Array<unknown>;
+export type BasicArray<T = unknown> = Array<T>;
 
 export type PossiblyBrandedPrimitive = Primitive & { [brand]?: string };
 
@@ -80,6 +80,7 @@ export type UpdatableArray<S extends ReadonlyArray<unknown>, F extends FindOrFil
       & (F extends 'isFind' ? SetArrayElement<S[0]> & DeleteArrayElement<Depth> : DeleteArray<Depth>)
       & (S[0] extends ReadonlyArray<unknown> ? unknown : S[0] extends object ? UpdatableObject<S[0], F, Q, F extends 'isFind' ? 'no' : 'yes', NewDepth> : UpdatablePrimitive<S[0], F, Q, I, NewDepth>)
     ) : (
+      & (S[0] extends PossiblyBrandedPrimitive ? SortPrimitive<S[0]> : S[0] extends BasicRecord ? SortObject<S[0]> : unknown)
       & DeleteNode<Depth>
       & Clear
       & Slice
@@ -391,9 +392,43 @@ export interface OnChange<S> {
 }
 
 export interface OnChangeArray<S> {
+  /**
+   * Receive events whenever new array elements are inserted.
+   */
   $onInsertElements: (changeListener: (state: DeepReadonly<S>) => void) => Unsubscribe;
+  /**
+   * Receive events whenever array elements are deleted.
+   */
   $onDeleteElements: (changeListener: (state: DeepReadonly<S>) => void) => Unsubscribe;
+  /**
+   * Receive events whenever existing array elements are updated.
+   */
   $onUpdateElements: (changeListener: (state: DeepReadonly<S>) => void) => Unsubscribe;
+}
+
+export type SortableProperty = number | string | Date | { [brand]?: string };
+
+export type SortOrder = keyof SortType<BasicRecord>;
+
+export interface SortType<S extends BasicRecord | SortableProperty> {
+  $ascending: () => SortMemo<S>;
+  $descending: () => SortMemo<S>;
+}
+
+export type SortMemo<S extends BasicRecord | SortableProperty> = Read<S[]> & OnChange<S[]> & { $destroy: () => unknown };
+
+export interface SortPrimitive<S extends SortableProperty> {
+  /**
+   * Ensure that the selected array is sorted.
+   */
+  $memoizeSort: SortType<S>;
+}
+
+export interface SortObject<S extends BasicRecord> {
+  /**
+   * Define a memoized sorted array.
+   */
+  $memoizeSortBy: { [key in keyof S as S[key] extends (number | string | Date) ? key : never]: SortType<S> };
 }
 
 export interface Readable<S> extends Read<S>, OnChange<S> {
@@ -644,6 +679,10 @@ export interface OlikAction {
 export interface LibState {
   store: undefined | StoreInternal,
   devtools: undefined | { dispatch: (arg: { stateActions: StateAction[], actionType?: string }) => unknown },
+  sortModule: undefined | {
+    sortObject: ((stateActions: StateAction[], name: SortOrder) => () => SortMemo<BasicRecord>),
+    sortPrimitive: ((stateActions: StateAction[], name: SortOrder) => () => SortMemo<string | number | Date | { [brand]?: string }>),
+  },
   state: undefined | BasicRecord,
   changeListeners: ChangeListener[],
   insertListeners: ChangeListener[],

@@ -1,6 +1,6 @@
 {
   "name": "olik",
-  "version": "1.0.111",
+  "version": "1.0.112",
   "type": "module",
   "main": "./dist/olik.cjs",
   "module": "./dist/olik.js",
@@ -15,6 +15,9 @@
       ],
       "derive": [
         "dist/derive.d.ts"
+      ],
+      "sort": [
+        "dist/sort.d.ts"
       ]
     }
   },
@@ -30,6 +33,10 @@
     "./derive": {
       "import": "./dist/olik3.js",
       "require": "./dist/olik3.cjs"
+    },
+    "./sort": {
+      "import": "./dist/olik4.js",
+      "require": "./dist/olik4.cjs"
     }
   },
   "files": [

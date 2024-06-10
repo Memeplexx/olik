@@ -22,7 +22,7 @@ export function configureDevtools({ whitelist }: DevtoolsOptions = { whitelist: 
     trace: new Error().stack,
   });
 
-  setupDevtools();
+  libState.devtools = setupDevtools();
 
   if (typeof (document) === 'undefined' || document.getElementById('olik-init'))
     return;
@@ -46,21 +46,19 @@ export function addToWhitelist(whitelist: Readable<unknown>[]) {
   })
 }
 
-const setupDevtools = () => {
-  libState.devtools = {
-    dispatch: ({ stateActions, actionType }) => {
-      const toSend = {
-        actionType,
-        stateActions: stateActions,
-        trace: typeof (window) === 'undefined' ? '' : libState.stacktraceError?.stack,
-      } as DevtoolsAction;
-      if (typeof (window) !== 'undefined' && !initialized)
-        pendingActions.push(toSend);
-      else
-        sendMessageToDevtools(toSend)
-    },
-  };
-};
+const setupDevtools = () => ({
+  dispatch: ({ stateActions, actionType }) => {
+    const toSend = {
+      actionType,
+      stateActions: stateActions,
+      trace: typeof (window) === 'undefined' ? '' : libState.stacktraceError?.stack,
+    } as DevtoolsAction;
+    if (typeof (window) !== 'undefined' && !initialized)
+      pendingActions.push(toSend);
+    else
+      sendMessageToDevtools(toSend)
+  },
+} as typeof libState.devtools)
 
 const reactToDevtoolsInitialization = () => {
   const olikInitDiv = document.body.appendChild(Object.assign(document.createElement('div'), {

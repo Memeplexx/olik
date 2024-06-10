@@ -1,6 +1,6 @@
 import { augmentations, comparatorsPropMap, errorMessages, libPropMap, libState, testState, updatePropMap } from './constant';
 import { readState } from './read';
-import { BasicRecord, ChangeListener, StateAction, Store } from './type';
+import { BasicRecord, ChangeListener, SortOrder, StateAction, Store } from './type';
 import { StoreInternal } from './type-internal';
 import { constructTypeStrings } from './utility';
 import { copyNewState } from './write-copy';
@@ -31,6 +31,8 @@ const recurseProxy = (stateActions?: StateAction[]): StoreInternal => new Proxy(
       return onUpdateElements(stateActions ?? [], prop);
     if (prop === '$onDeleteElements')
       return onRemoveElements(stateActions ?? [], prop);
+    if (prop === '$ascending' || prop === '$descending')
+      return memoizeSortBy(stateActions ?? [], prop); 
     return basicProp(stateActions ?? [], prop);
   }
 });
@@ -59,6 +61,14 @@ const onChange = (stateActions: StateAction[], name: string) => (listener: (curr
   return onChangeCommon(libState.changeListeners, stateActions, name, listener, options);
 };
 
+const memoizeSortBy = (stateActions: StateAction[], name: SortOrder) => {
+  if (!libState.sortModule)
+    throw new Error(errorMessages.SORT_MODULE_NOT_CONFIGURED);
+  if (stateActions.some(sa => sa.name === '$memoizeSortBy'))
+    return libState.sortModule!.sortObject!(stateActions ?? [], name);
+  return libState.sortModule!.sortPrimitive!(stateActions ?? [], name);
+}
+
 const state = (stateActions: StateAction[], name: string) => {
   const { state } = libState;
   const tryFetchResult = (stateActions: StateAction[]): unknown => {
@@ -84,7 +94,7 @@ const comparator = (stateActions: StateAction[], name: string) => (arg?: unknown
 const update = (stateActions: StateAction[], name: string) => (arg: unknown) => {
   if (libState.devtools)
     libState.stacktraceError = new Error();
-  setNewStateAndNotifyListeners([...stateActions, { name, arg }]);
+  return setNewStateAndNotifyListeners([...stateActions, { name, arg }]);
 }
 
 export const setNewStateAndNotifyListeners = (stateActions: StateAction[]) => {
@@ -176,3 +186,4 @@ const onChangeCommon = (changeListeners: ChangeListener[], stateActions: StateAc
   }
   return unsubscribe;
 };
+

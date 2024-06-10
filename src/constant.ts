@@ -8,7 +8,7 @@ export const errorMessages = {
   FIND_RETURNS_NO_MATCHES: 'Could not find array element',
   AT_INDEX_OUT_OF_BOUNDS: (index: number) => `Index ${index} is out of bounds`,
   INVALID_STATE_INPUT: (key: string | number, illegal: { toString(): string }) => `State must be serializable to JSON. Value of ${key === '' ? `'${illegal.toString()}'` : `{${key}: '${illegal.toString()}'}`} is not permitted`,
-  ASYNC_UPDATES_NOT_ENABLED: 'Cannot perform an async update until you enable it. Please import and invoke `configureAsyncModule()` before creating your store',
+  SORT_MODULE_NOT_CONFIGURED: 'Cannot sort until you configure the sort module. Please import and invoke `configureSortModule()` before attempting to sort',
   INVALID_PATCH_DEEP_STRUCTURE: (patch: unknown) => `Cannot patch an object with the supplied value '${patch}'. Only Objects can be patched onto other objects`,
   LIB_PROP_USED_IN_STATE: (key: string) => `The key '${key}' is a reserved library property and cannot be used in the state`,
 } as const;
@@ -16,6 +16,7 @@ export const errorMessages = {
 export const libState: LibState = {
   store: undefined,
   devtools: undefined,
+  sortModule: undefined,
   state: undefined,
   changeListeners: [],
   initialState: undefined,
@@ -47,7 +48,7 @@ export const augmentations: Augmentations = {
 export const updateFunctions = ['$set', '$patch', '$patchDeep', '$delete', '$setNew', '$add', '$subtract', '$clear', '$slice', '$push', '$pushMany', '$with', '$toggle', '$merge', '$setKey'] as const;
 export const readFunctions = ['$onChange', '$state'] as const;
 export const concatenations = ['$and', '$or', '$find', '$filter', '$distinct', '$mergeMatching'] as const;
-export const otherFunctions = ['$at', '$stateActions'] as const;
+export const otherFunctions = ['$at', '$stateActions', '$memoizeSortBy'] as const;
 export const comparators = ['$eq', '$in', '$ni', '$gt', '$lt', '$gte', '$lte', '$match', '$contains', '$containsIgnoreCase', '$isContainedIn', '$isContainedInIgnoreCase', '$isTrue', '$isFalse', '$isTruthy', '$isFalsy'] as const;
 export const anyLibProp = [...updateFunctions, ...readFunctions, ...concatenations, ...comparators, ...otherFunctions] as const;
 

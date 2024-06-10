@@ -63,7 +63,7 @@ export const copyNewState = (
     case '$merge':
       return merge(currentState as BasicArray, payload);
   }
-  throw new Error();
+  throw new Error(`Unknown property: ${name}`);
 }
 
 const slice = (currentState: BasicArray, payload: SliceArg) => {
@@ -322,3 +322,21 @@ const copyObjectProperty = (currentState: BasicRecord, cursor: Cursor, stateActi
     )
   };
 }
+
+// const sortArrayAscending = (currentState: BasicArray<BasicRecord>, stateActions: StateAction[]) => {
+//   const objectProp = stateActions[stateActions.length - 2].name;
+//   const $state = currentState.slice().sort((a, b) => {
+//     const aVal = a[objectProp];
+//     const bVal = b[objectProp];
+//     if (aVal === bVal)
+//       return 0;
+//     return aVal < bVal ? 1 : -1;
+//   });
+//   return {
+//     $state,
+//     $onChange: () => {},
+//     $destroy: () => {}
+//   }
+// }
+
+// const sortArrayDescending = () => {}
