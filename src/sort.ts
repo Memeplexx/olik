@@ -5,97 +5,117 @@ import { StoreInternal } from "./type-internal";
 
 export function configureSortModule() {
   libState.sortModule = {
-    sortObject: memoizeSortByObjectProperty,
-    sortPrimitive: memoizeSortByPrimitive,
+    sortObject,
+    sortPrimitive,
   }
 }
 
-const memoizeSortByPrimitive = <T extends Array<SortableProperty>>(stateActions: StateAction[], name: SortOrder) => () => {
+const sortPrimitive = <T extends Array<SortableProperty>>(stateActions: StateAction[], name: SortOrder) => () => {
   const indexOfMemoizeSortBy = stateActions.findIndex(e => e.name === '$memoizeSort');
-  const changeListeners = new Array<Parameters<OnChange<DeepReadonlyArray<SortableProperty>>['$onChange']>[0]>;
+  const changeListeners = new Array<Parameters<OnChange<SortableProperty[]>['$onChange']>[0]>;
   const subStore = stateActions.reduce((acc, e, index) => {
     if (index === indexOfMemoizeSortBy - 1)
       return (acc as BasicRecord)[e.name] as StoreInternal;
     return acc;
   }, libState.store!) as unknown as OnChangeArray<T> & Read<T>;
-  const $state = subStore.$state.slice().sort((a, b) => {
+  let $state = subStore.$state.slice().sort((a, b) => {
     const comparison = compare(a, b);
     return name === '$ascending' ? comparison : -comparison;
   });
-  const onInsertOrUpdate = (inserted: DeepReadonlyArray<SortableProperty>) => inserted.forEach(e => {
-    const index = binarySearchIndexForPrimitive($state, e, name);
-    if ($state[index] !== e)
-      $state.splice(index, 0, e);
-    changeListeners.forEach(cl => cl($state, $state));
-  });
+  const onInsertOrUpdate = (inserted: DeepReadonlyArray<SortableProperty>) => {
+    const stateCopied = $state.slice();
+    inserted.forEach(e => {
+      const index = binarySearchIndexForPrimitive(stateCopied, e, name);
+      if (stateCopied[index] !== e)
+        stateCopied.splice(index, 0, e);
+      changeListeners.forEach(cl => cl(stateCopied, $state));
+    });
+    $state = stateCopied;
+  }
   const onInsert = subStore.$onInsertElements(onInsertOrUpdate)
   const onUpdate = subStore.$onUpdateElements(onInsertOrUpdate);
   const onDelete = subStore.$onDeleteElements(deleted => {
-    const stateBefore = $state.slice();
+    const stateCopied = $state.slice();
     deleted.forEach(e => {
-      const index = binarySearchIndexForPrimitive($state, e, name);
+      const index = binarySearchIndexForPrimitive(stateCopied, e, name);
       $state.splice(index, 1);
-      changeListeners.forEach(cl => cl($state, stateBefore));
+      changeListeners.forEach(cl => cl(stateCopied, $state));
     });
+    $state = stateCopied;
   });
-  return {
-    $state,
-    $onChange: cl => {
-      changeListeners.push(cl);
-      return () => changeListeners.splice(changeListeners.indexOf(cl), 1);
-    },
-    $destroy: () => {
-      onInsert();
-      onUpdate();
-      onDelete();
-      changeListeners.length = 0;
-    },
-  } as SortMemo<SortableProperty>;
+  return new Proxy({} as SortMemo<SortableProperty>, {
+    get: (_, prop: string) => {
+      if (prop === '$state')
+        return $state;
+      if (prop === '$onChange')
+        return (cl => {
+          changeListeners.push(cl);
+          return () => changeListeners.splice(changeListeners.indexOf(cl), 1);
+        }) as SortMemo<SortableProperty>['$onChange'];
+      if (prop === '$destroy')
+        return () => {
+          onInsert();
+          onUpdate();
+          onDelete();
+          changeListeners.length = 0;
+        }
+      }
+  });
 }
 
-const memoizeSortByObjectProperty = <T extends Array<BasicRecord>>(stateActions: StateAction[], name: SortOrder) => () => {
+const sortObject = <T extends Array<BasicRecord>>(stateActions: StateAction[], name: SortOrder) => () => {
   const indexOfMemoizeSortBy = stateActions.findIndex(e => e.name === '$memoizeSortBy');
   const arrayKey = stateActions[indexOfMemoizeSortBy - 1].name;
   const propToSortBy = stateActions[indexOfMemoizeSortBy + 1].name;
-  const changeListeners = new Array<Parameters<OnChange<DeepReadonlyArray<BasicRecord>>['$onChange']>[0]>;
+  const changeListeners = new Array<Parameters<OnChange<BasicRecord[]>['$onChange']>[0]>;
   const subStore = stateActions.reduce((acc, e) => {
     if (e.name === arrayKey)
       return (acc as BasicRecord)[e.name] as StoreInternal;
     return acc;
   }, libState.store!) as unknown as OnChangeArray<T> & Read<T>;
-  const $state = subStore.$state.slice().sort((a, b) => {
+  let $state = subStore.$state.slice().sort((a, b) => {
     const comparison = compare(a[propToSortBy], b[propToSortBy]);
     return name === '$ascending' ? comparison : -comparison;
   });
-  const onInsertOrUpdate = (inserted: DeepReadonlyArray<BasicRecord>) => inserted.forEach(e => {
-    const index = binarySearchIndexByProperty($state, e[propToSortBy], propToSortBy, name);
-    if ($state[index]?.[propToSortBy] !== e[propToSortBy])
-      $state.splice(index, 0, e);
-    changeListeners.forEach(cl => cl($state, $state));
-  })
+  const onInsertOrUpdate = (inserted: DeepReadonlyArray<BasicRecord>) => {
+    const stateCopied = $state.slice();
+    inserted.forEach(e => {
+      const index = binarySearchIndexByProperty(stateCopied, e[propToSortBy], propToSortBy, name);
+      if (stateCopied[index]?.[propToSortBy] !== e[propToSortBy])
+        stateCopied.splice(index, 0, e);
+      changeListeners.forEach(cl => cl(stateCopied, $state));
+    });
+    $state = stateCopied;
+  }
   const onInsert = subStore.$onInsertElements(onInsertOrUpdate)
   const onUpdate = subStore.$onUpdateElements(onInsertOrUpdate);
   const onDelete = subStore.$onDeleteElements(deleted => {
-    const stateBefore = $state.slice();
+    const stateCopied = $state.slice();
     deleted.forEach(e => {
-      const index = binarySearchIndexByProperty($state, e[propToSortBy], propToSortBy, name);
-      $state.splice(index, 1);
-      changeListeners.forEach(cl => cl($state, stateBefore));
+      const index = binarySearchIndexByProperty(stateCopied, e[propToSortBy], propToSortBy, name);
+      stateCopied.splice(index, 1);
+      changeListeners.forEach(cl => cl(stateCopied, $state));
     });
+    $state = stateCopied;
   });
-  return {
-    $state,
-    $onChange: cl => {
-      changeListeners.push(cl);
-      return () => changeListeners.splice(changeListeners.indexOf(cl), 1);
-    },
-    $destroy: () => {
-      onInsert();
-      onUpdate();
-      onDelete();
-      changeListeners.length = 0;
-    },
-  } as SortMemo<BasicRecord>;
+  return new Proxy({} as SortMemo<BasicRecord>, {
+    get: (_, prop: string) => {
+      if (prop === '$state')
+        return $state;
+      if (prop === '$onChange')
+        return (cl => {
+          changeListeners.push(cl);
+          return () => changeListeners.splice(changeListeners.indexOf(cl), 1);
+        }) as SortMemo<BasicRecord>['$onChange'];
+      if (prop === '$destroy')
+        return () => {
+          onInsert();
+          onUpdate();
+          onDelete();
+          changeListeners.length = 0;
+        }
+      }
+  });
 }
 
 const binarySearchIndexByProperty = <T>(array: T[], target: T[keyof T], property: keyof T, order: SortOrder) => {

@@ -1,6 +1,6 @@
 import { augmentations, comparatorsPropMap, errorMessages, libPropMap, libState, testState, updatePropMap } from './constant';
 import { readState } from './read';
-import { BasicRecord, ChangeListener, SortOrder, StateAction, Store } from './type';
+import { BasicRecord, ChangeListener, DeepReadonly, OnChange, SortOrder, StateAction, Store } from './type';
 import { StoreInternal } from './type-internal';
 import { constructTypeStrings } from './utility';
 import { copyNewState } from './write-copy';
@@ -45,21 +45,21 @@ export function createStore<S extends BasicRecord>(
   return (libState.store = recurseProxy()) as unknown as Store<S>;
 }
 
-const onInsertElements = (stateActions: StateAction[], name: string) => (listener: (current: unknown, previous: unknown) => unknown, options?: { fireImmediately?: boolean }) => {
-  return onChangeCommon(libState.insertListeners, stateActions, name, listener, options);
-}
+const onInsertElements = (stateActions: StateAction[], name: string) => ((listener, options) => {
+  return onChangeCommon(libState.insertListeners, stateActions, name)(listener, options);
+}) as OnChange<unknown>['$onChange'];
 
-const onUpdateElements = (stateActions: StateAction[], name: string) => (listener: (current: unknown, previous: unknown) => unknown, options?: { fireImmediately?: boolean }) => {
-  return onChangeCommon(libState.updateListeners, stateActions, name, listener, options);
-}
+const onUpdateElements = (stateActions: StateAction[], name: string) => ((listener, options) => {
+  return onChangeCommon(libState.updateListeners, stateActions, name)(listener, options);
+}) as OnChange<unknown>['$onChange'];
 
-const onRemoveElements = (stateActions: StateAction[], name: string) => (listener: (current: unknown, previous: unknown) => unknown, options?: { fireImmediately?: boolean }) => {
-  return onChangeCommon(libState.deleteListeners, stateActions, name, listener, options);
-}
+const onRemoveElements = (stateActions: StateAction[], name: string) => ((listener, options) => {
+  return onChangeCommon(libState.deleteListeners, stateActions, name)(listener, options);
+}) as OnChange<unknown>['$onChange'];
 
-const onChange = (stateActions: StateAction[], name: string) => (listener: (current: unknown, previous: unknown) => unknown, options?: { fireImmediately?: boolean }) => {
-  return onChangeCommon(libState.changeListeners, stateActions, name, listener, options);
-};
+const onChange = (stateActions: StateAction[], name: string) => ((listener, options) => {
+  return onChangeCommon(libState.changeListeners, stateActions, name)(listener, options);
+}) as OnChange<unknown>['$onChange'];
 
 const memoizeSortBy = (stateActions: StateAction[], name: SortOrder) => {
   if (!libState.sortModule)
@@ -116,7 +116,7 @@ export const setNewStateAndNotifyListeners = (stateActions: StateAction[]) => {
       && (selectedNewState.length !== selectedOldState.length || selectedOldState.some((el, i) => el !== selectedNewState[i]));
     if (arraysDoNotMatch || selectedOldState !== selectedNewState) {
       listener.cachedState = selectedNewState;
-      listener.listeners.forEach(listener => listener(selectedNewState, selectedOldState));
+      listener.listeners.forEach(listener => listener(selectedNewState as DeepReadonly<unknown>, selectedOldState as DeepReadonly<unknown>));
     }
   });
   if (insertListeners.length)
@@ -129,12 +129,14 @@ export const setNewStateAndNotifyListeners = (stateActions: StateAction[]) => {
 
 const end = { ...updatePropMap, $mergeMatching: true, $filter: true, $find: true, $at: true } as BasicRecord;
 const fireArrayListeners = (stateActions: StateAction[], insertListeners: ChangeListener[], elements: unknown[]) => {
+  if (elements.length === 0) return;
   const stateActionsWithoutActions = stateActions.slice(0, stateActions.findIndex(e => end[e.name]));
   const currentActionPath = constructTypeStrings(stateActionsWithoutActions, false);
   insertListeners
     .filter(listener => listener.path === currentActionPath)
     .forEach(listener => listener.listeners.forEach(listener => {
-      listener(elements.slice(), null);
+      const copied = elements.slice();
+      listener(copied, copied);
     }));
   elements.length = 0;
 }
@@ -159,7 +161,7 @@ export const validateState = (key: string | number, state: unknown): void => {
   });
 }
 
-const onChangeCommon = (changeListeners: ChangeListener[], stateActions: StateAction[], name: string, listener: (current: unknown, previous: unknown) => unknown, options?: { fireImmediately?: boolean }) => {
+const onChangeCommon = (changeListeners: ChangeListener[], stateActions: StateAction[], name: string) => ((listener, options) => {
   const unsubscribe = () => {
     const changeListenerIndex = changeListeners.findIndex(cl => cl.path === path)!;
     const { listeners } = changeListeners[changeListenerIndex];
@@ -181,9 +183,9 @@ const onChangeCommon = (changeListeners: ChangeListener[], stateActions: StateAc
       path,
     })
   if (options?.fireImmediately) {
-    const s = state(stateActions, name);
+    const s = state(stateActions, name) as DeepReadonly<unknown>;
     listener(s, s);
   }
   return unsubscribe;
-};
+}) as OnChange<unknown>['$onChange'];
 

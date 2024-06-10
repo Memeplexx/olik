@@ -670,7 +670,7 @@ export interface StoreAugment<S> { }
 
 export interface ChangeListener {
   actions: StateAction[];
-  listeners: Array<(currentState: unknown, previousState: unknown) => unknown>;
+  listeners: Array<(currentState: DeepReadonly<unknown>, previousState: DeepReadonly<unknown>) => unknown>;
   cachedState: unknown,
   path: string,
   unsubscribe: () => void;
