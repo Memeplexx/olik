@@ -415,7 +415,14 @@ export interface SortType<S extends BasicRecord | SortableProperty> {
   $descending: () => SortMemo<S>;
 }
 
-export type SortMemo<S extends BasicRecord | SortableProperty> = Read<S[]> & OnChange<S[]> & { $destroy: () => unknown };
+export type SortMemo<S extends BasicRecord | SortableProperty> = Read<S[]> & OnChange<S[]> & Destroy;
+
+export interface Destroy {
+  /**
+   * Unsubscribes from all updates to the store
+   */
+  $destroy: () => unknown;
+}
 
 export interface SortPrimitive<S extends SortableProperty> {
   /**
