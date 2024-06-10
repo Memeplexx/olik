@@ -80,7 +80,7 @@ export type UpdatableArray<S extends ReadonlyArray<unknown>, F extends FindOrFil
       & (F extends 'isFind' ? SetArrayElement<S[0]> & DeleteArrayElement<Depth> : DeleteArray<Depth>)
       & (S[0] extends ReadonlyArray<unknown> ? unknown : S[0] extends object ? UpdatableObject<S[0], F, Q, F extends 'isFind' ? 'no' : 'yes', NewDepth> : UpdatablePrimitive<S[0], F, Q, I, NewDepth>)
     ) : (
-      & (S[0] extends PossiblyBrandedPrimitive ? SortPrimitive<S[0]> : S[0] extends BasicRecord ? SortObject<S[0]> : unknown)
+      & (S[0] extends PossiblyBrandedPrimitive ? MemoizeSort<S[0]> : S[0] extends object ? MemoizeSortBy<S[0]> : unknown)
       & DeleteNode<Depth>
       & Clear
       & Slice
@@ -424,18 +424,18 @@ export interface Destroy {
   $destroy: () => unknown;
 }
 
-export interface SortPrimitive<S extends SortableProperty> {
+export interface MemoizeSort<S extends SortableProperty> {
   /**
    * Ensure that the selected array is sorted.
    */
   $memoizeSort: SortType<S>;
 }
 
-export interface SortObject<S extends BasicRecord> {
+export interface MemoizeSortBy<S extends object> {
   /**
    * Define a memoized sorted array.
    */
-  $memoizeSortBy: { [key in keyof S as S[key] extends (number | string | Date) ? key : never]: SortType<S> };
+  $memoizeSortBy: { [key in keyof S as S[key] extends SortableProperty ? key : never]: SortType<S> };
 }
 
 export interface Readable<S> extends Read<S>, OnChange<S> {
