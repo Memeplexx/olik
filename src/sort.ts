@@ -22,14 +22,12 @@ const memoizeSortByPrimitive = <T extends Array<SortableProperty>>(stateActions:
     const comparison = compare(a, b);
     return name === '$ascending' ? comparison : -comparison;
   });
-  const onInsertOrUpdate = (inserted: DeepReadonlyArray<SortableProperty>) => {
-    inserted.forEach(e => {
-      const index = binarySearchIndexForPrimitive($state, e, name);
-      if ($state[index] !== e)
-        $state.splice(index, 0, e);
-      changeListeners.forEach(cl => cl($state, $state));
-    });
-  }
+  const onInsertOrUpdate = (inserted: DeepReadonlyArray<SortableProperty>) => inserted.forEach(e => {
+    const index = binarySearchIndexForPrimitive($state, e, name);
+    if ($state[index] !== e)
+      $state.splice(index, 0, e);
+    changeListeners.forEach(cl => cl($state, $state));
+  });
   const onInsert = subStore.$onInsertElements(onInsertOrUpdate)
   const onUpdate = subStore.$onUpdateElements(onInsertOrUpdate);
   const onDelete = subStore.$onDeleteElements(deleted => {
@@ -69,15 +67,12 @@ const memoizeSortByObjectProperty = <T extends Array<BasicRecord>>(stateActions:
     const comparison = compare(a[propToSortBy], b[propToSortBy]);
     return name === '$ascending' ? comparison : -comparison;
   });
-  const onInsertOrUpdate = (inserted: DeepReadonlyArray<BasicRecord>) => {
-    const stateBefore = $state.slice();
-    inserted.forEach(e => {
-      const index = binarySearchIndexByProperty($state, e[propToSortBy], propToSortBy, name);
-      if ($state[index]?.[propToSortBy] !== e[propToSortBy])
-        $state.splice(index, 0, e);
-      changeListeners.forEach(cl => cl($state, stateBefore));
-    })
-  }
+  const onInsertOrUpdate = (inserted: DeepReadonlyArray<BasicRecord>) => inserted.forEach(e => {
+    const index = binarySearchIndexByProperty($state, e[propToSortBy], propToSortBy, name);
+    if ($state[index]?.[propToSortBy] !== e[propToSortBy])
+      $state.splice(index, 0, e);
+    changeListeners.forEach(cl => cl($state, $state));
+  })
   const onInsert = subStore.$onInsertElements(onInsertOrUpdate)
   const onUpdate = subStore.$onUpdateElements(onInsertOrUpdate);
   const onDelete = subStore.$onDeleteElements(deleted => {
@@ -115,25 +110,18 @@ const binarySearchIndexByProperty = <T>(array: T[], target: T[keyof T], property
       typeof array[mid][property] === 'number' ? array[mid][property] as number :
         String(array[mid][property]);
     if (midValue === targetValue)
-      return mid; // Target found
+      return mid;
     let comparison = 0;
     if (typeof targetValue === 'number' && typeof midValue === 'number')
       comparison = midValue < targetValue ? -1 : 1;
     else if (typeof targetValue === 'string' && typeof midValue === 'string')
       comparison = midValue.localeCompare(targetValue);
-    if (order === '$ascending') {
-      if (comparison < 0)
-        left = mid + 1;
-      else
-        right = mid;
-    } else {
-      if (comparison > 0)
-        left = mid + 1;
-      else
-        right = mid;
-    }
+    if (order === '$ascending')
+      if (comparison < 0) left = mid + 1; else right = mid;
+    else
+      if (comparison > 0) left = mid + 1; else right = mid;
   }
-  return left; // Target not found, return the insertion point
+  return left;
 }
 
 const binarySearchIndexForPrimitive = <T extends SortableProperty>(array: T[], target: T, order: SortOrder) => {
@@ -143,20 +131,13 @@ const binarySearchIndexForPrimitive = <T extends SortableProperty>(array: T[], t
     const mid = Math.floor((left + right) / 2);
     const comparison = compare(array[mid], target);
     if (comparison === 0)
-      return mid; // Target found
-    if (order === '$ascending') {
-      if (comparison < 0)
-        left = mid + 1;
-      else
-        right = mid;
-    } else {
-      if (comparison > 0)
-        left = mid + 1;
-      else
-        right = mid;
-    }
+      return mid;
+    if (order === '$ascending')
+      if (comparison < 0) left = mid + 1; else right = mid;
+    else
+      if (comparison > 0) left = mid + 1; else right = mid;
   }
-  return left; // Target not found, return the insertion point
+  return left;
 }
 
 const compare = <T>(a: T, b: T): number => {
