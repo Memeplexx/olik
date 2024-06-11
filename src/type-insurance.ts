@@ -277,3 +277,11 @@ store.todos.$set(todos);
 const strr = createStore({ arr: [{ id: 1, name: '', obj: { one: 1 } }] });
 strr.arr.$mergeMatching.id.$and.obj.one.$with({ id: 1, name: 'hello', obj: { one: 1 } });
 
+
+// const result = addCalculationsToStore(store, {
+//   sortedList: store.todos.$memoizeSortBy.id.$ascending(),
+//   things: derive(store.todos, store.user).$with((todos, user) => todos.find(t => t.id === user.age)!)
+// });
+
+// result.$calculated.
+// result.$calculated.sortedList.$state[0].;

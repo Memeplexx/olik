@@ -32,7 +32,7 @@ const recurseProxy = (stateActions?: StateAction[]): StoreInternal => new Proxy(
     if (prop === '$onDeleteElements')
       return onRemoveElements(stateActions ?? [], prop);
     if (prop === '$ascending' || prop === '$descending')
-      return memoizeSortBy(stateActions ?? [], prop); 
+      return memoizeSortBy(stateActions ?? [], prop);
     return basicProp(stateActions ?? [], prop);
   }
 });
@@ -119,12 +119,12 @@ export const setNewStateAndNotifyListeners = (stateActions: StateAction[]) => {
       listener.listeners.forEach(listener => listener(selectedNewState as DeepReadonly<unknown>, selectedOldState as DeepReadonly<unknown>));
     }
   });
-  if (insertListeners.length)
-    fireArrayListeners(stateActions, insertListeners, libState.insertedElements);
-  if (updateListeners.length)
-    fireArrayListeners(stateActions, updateListeners, libState.updatedElements);
   if (deleteListeners.length)
     fireArrayListeners(stateActions, deleteListeners, libState.deletedElements);
+  if (updateListeners.length)
+    fireArrayListeners(stateActions, updateListeners, libState.updatedElements);
+  if (insertListeners.length)
+    fireArrayListeners(stateActions, insertListeners, libState.insertedElements);
 }
 
 const end = { ...updatePropMap, $mergeMatching: true, $filter: true, $find: true, $at: true } as BasicRecord;

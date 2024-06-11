@@ -433,7 +433,11 @@ export interface MemoizeSort<S extends SortableProperty> {
 
 export interface MemoizeSortBy<S extends object> {
   /**
-   * Define a memoized sorted array.
+   * Create a sorted array which will be efficiently updated whenever the underlying array changes.
+   * @example
+   * 
+   * const sortedTodos = select.todos.$memoizeSortBy.dueDate.$descending();
+   * const state = sortedTodos.$state;
    */
   $memoizeSortBy: { [key in keyof S as S[key] extends SortableProperty ? key : never]: SortType<S> };
 }

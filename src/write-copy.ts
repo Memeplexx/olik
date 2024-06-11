@@ -98,9 +98,9 @@ const setNew = (currentState: BasicRecord, payload: BasicRecord) => {
 
 const set = (currentState: unknown, payload: unknown) => {
   if (typeof (payload) === 'object' && payload !== null) {
-    if (Array.isArray(currentState)) {
+    if (Array.isArray(currentState) && Array.isArray(payload)) {
       libState.deletedElements = currentState.slice();
-      libState.insertedElements = (payload as BasicArray).slice();
+      libState.insertedElements = payload.slice();
     } else {
       updateObjectInsertedAndDeletedElements(currentState as BasicRecord, payload as BasicRecord);
     }

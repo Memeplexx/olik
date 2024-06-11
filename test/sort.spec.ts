@@ -66,3 +66,11 @@ test('should sort by date correctly', () => {
   const sortedArr2 = store.arr.$memoizeSortBy.date.$descending();
   expect(sortedArr2.$state).toEqual([{ id: 3, date: new Date('2020-08-01') }, { id: 1, date: new Date('2020-06-01') }, { id: 2, date: new Date('2020-02-01') }]);
 })
+
+test('should sort array when entire array is replaced', () => {
+  const state = { arr: [{ id: 4, val: 0 }, { id: 5, val: 0 }] };
+  const store = createStore(state);
+  const sort = store.arr.$memoizeSortBy.id.$ascending();
+  store.arr.$set([{ id: 3, val: 0 }, { id: 5, val: 0 }, { id: 1, val: 0 }]);
+  expect(sort.$state).toEqual([{ id: 1, val: 0 }, { id: 3, val: 0 }, { id: 5, val: 0 }]);
+});
