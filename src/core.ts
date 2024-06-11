@@ -95,29 +95,6 @@ const onChange = (stateActions: StateAction[], name: string) => ((listener, opti
   return unsubscribe;
 }) as OnChange<unknown>['$onChange'];
 
-// const onChangeCommon = (stateActions: StateAction[], name: string) => ((listener) => {
-//   const unsubscribe = () => {
-//     const changeListenerIndex = changeArrayListeners.findIndex(cl => cl.path === path)!;
-//     const { listeners } = changeArrayListeners[changeListenerIndex];
-//     if (listeners.length === 1)
-//       changeArrayListeners.splice(changeListenerIndex, 1);
-//     else
-//       listeners.splice(listeners.findIndex(l => l === listener), 1);
-//   }
-//   const path = constructTypeStrings(stateActions, false); // double check how path is calculated!!!!!!!
-//   const listeners = changeArrayListeners.find(cl => cl.path === path)?.listeners;
-//   if (listeners)
-//     listeners.push(listener);
-//   else
-//     changeArrayListeners.push({
-//       actions: [...stateActions, { name }],
-//       listeners: [listener],
-//       unsubscribe,
-//       cachedState: undefined,
-//       path,
-//     })
-// })
-
 const memoizeSortBy = (stateActions: StateAction[], name: SortOrder) => {
   if (!libState.sortModule)
     throw new Error(errorMessages.SORT_MODULE_NOT_CONFIGURED);
