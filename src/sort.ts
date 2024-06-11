@@ -1,5 +1,5 @@
 import { libState } from "./constant";
-import { StateAction, BasicRecord, OnChangeArray, DeepReadonlyArray, SortableProperty, SortOrder, OnChange, Read, SortMemo } from "./type";
+import { StateAction, BasicRecord, OnChangeArray, SortableProperty, SortOrder, OnChange, Read, SortMemo } from "./type";
 import { StoreInternal } from "./type-internal";
 
 
@@ -17,30 +17,28 @@ const sortPrimitive = <T extends Array<SortableProperty>>(stateActions: StateAct
     if (index === indexOfMemoizeSortBy - 1)
       return (acc as BasicRecord)[e.name] as StoreInternal;
     return acc;
-  }, libState.store!) as unknown as OnChangeArray<T> & Read<T>;
+  }, libState.store!) as unknown as OnChangeArray<T[0]> & Read<T>;
   let $state = subStore.$state.slice().sort((a, b) => {
     const comparison = compare(a, b);
     return name === '$ascending' ? comparison : -comparison;
   });
-  const onInsertOrUpdate = (inserted: DeepReadonlyArray<SortableProperty>) => {
+  const onChangeArray = subStore.$onChangeArray(({ inserted, deleted, updated }) => {
     const stateCopied = $state.slice();
+    deleted.forEach(e => {
+      const index = binarySearchIndexForPrimitive(stateCopied, e, name);
+      stateCopied.splice(index, 1);
+    });
     inserted.forEach(e => {
       const index = binarySearchIndexForPrimitive(stateCopied, e, name);
       if (stateCopied[index] !== e)
         stateCopied.splice(index, 0, e);
-      changeListeners.forEach(cl => cl(stateCopied, $state));
     });
-    $state = stateCopied;
-  }
-  const onInsert = subStore.$onInsertElements(onInsertOrUpdate)
-  const onUpdate = subStore.$onUpdateElements(onInsertOrUpdate);
-  const onDelete = subStore.$onDeleteElements(deleted => {
-    const stateCopied = $state.slice();
-    deleted.forEach(e => {
+    updated.forEach(e => {
       const index = binarySearchIndexForPrimitive(stateCopied, e, name);
-      $state.splice(index, 1);
-      changeListeners.forEach(cl => cl(stateCopied, $state));
+      if (stateCopied[index] !== e)
+        stateCopied.splice(index, 0, e);
     });
+    changeListeners.forEach(cl => cl(stateCopied, $state));
     $state = stateCopied;
   });
   return new Proxy({} as SortMemo<SortableProperty>, {
@@ -54,9 +52,7 @@ const sortPrimitive = <T extends Array<SortableProperty>>(stateActions: StateAct
         }) as SortMemo<SortableProperty>['$onChange'];
       if (prop === '$destroy')
         return () => {
-          onInsert();
-          onUpdate();
-          onDelete();
+          onChangeArray();
           changeListeners.length = 0;
         }
       }
@@ -72,30 +68,28 @@ const sortObject = <T extends Array<BasicRecord>>(stateActions: StateAction[], n
     if (e.name === arrayKey)
       return (acc as BasicRecord)[e.name] as StoreInternal;
     return acc;
-  }, libState.store!) as unknown as OnChangeArray<T> & Read<T>;
+  }, libState.store!) as unknown as OnChangeArray<T[0]> & Read<T>;
   let $state = subStore.$state.slice().sort((a, b) => {
     const comparison = compare(a[propToSortBy], b[propToSortBy]);
     return name === '$ascending' ? comparison : -comparison;
   });
-  const onInsertOrUpdate = (inserted: DeepReadonlyArray<BasicRecord>) => {
-    const stateCopied = $state.slice();
-    inserted.forEach(e => {
-      const index = binarySearchIndexByProperty(stateCopied, e[propToSortBy], propToSortBy, name);
-      if (stateCopied[index]?.[propToSortBy] !== e[propToSortBy])
-        stateCopied.splice(index, 0, e);
-      changeListeners.forEach(cl => cl(stateCopied, $state));
-    });
-    $state = stateCopied;
-  }
-  const onInsert = subStore.$onInsertElements(onInsertOrUpdate)
-  const onUpdate = subStore.$onUpdateElements(onInsertOrUpdate);
-  const onDelete = subStore.$onDeleteElements(deleted => {
+  const onChangeArray = subStore.$onChangeArray(({ inserted, deleted, updated }) => {
     const stateCopied = $state.slice();
     deleted.forEach(e => {
       const index = binarySearchIndexByProperty(stateCopied, e[propToSortBy], propToSortBy, name);
       stateCopied.splice(index, 1);
-      changeListeners.forEach(cl => cl(stateCopied, $state));
     });
+    inserted.forEach(e => {
+      const index = binarySearchIndexByProperty(stateCopied, e[propToSortBy], propToSortBy, name);
+      if (stateCopied[index]?.[propToSortBy] !== e[propToSortBy])
+        stateCopied.splice(index, 0, e);
+    });
+    updated.forEach(e => {
+      const index = binarySearchIndexByProperty(stateCopied, e[propToSortBy], propToSortBy, name);
+      if (stateCopied[index]?.[propToSortBy] !== e[propToSortBy])
+        stateCopied.splice(index, 0, e);
+    });
+    changeListeners.forEach(cl => cl(stateCopied, $state));
     $state = stateCopied;
   });
   return new Proxy({} as SortMemo<BasicRecord>, {
@@ -109,9 +103,7 @@ const sortObject = <T extends Array<BasicRecord>>(stateActions: StateAction[], n
         }) as SortMemo<BasicRecord>['$onChange'];
       if (prop === '$destroy')
         return () => {
-          onInsert();
-          onUpdate();
-          onDelete();
+          onChangeArray();
           changeListeners.length = 0;
         }
       }
@@ -167,5 +159,5 @@ const compare = <T>(a: T, b: T): number => {
     return a.localeCompare(b);
   else if (a instanceof Date && b instanceof Date)
     return a.getTime() - b.getTime();
-  throw new Error('Unsupported type comparison');
+  throw new Error(`Unsupported type comparison: ${typeof(a)}  ${typeof(b)}`);
 };

@@ -34,7 +34,7 @@ export type PatchDeepPayload<T> =
 
 export type DeepReadonly<T> = T extends Primitive | Date ? T : T extends Array<infer R> ? DeepReadonlyArray<R> : DeepReadonlyObject<T>;
 export type DeepReadonlyObject<T> = { readonly [P in keyof T]: DeepReadonly<T[P]>; }
-export type DeepReadonlyArray<T> = ReadonlyArray<DeepReadonly<T>>;
+export type DeepReadonlyArray<T = unknown> = ReadonlyArray<DeepReadonly<T>>;
 
 export type Store<S> = BaseStore<S> & (S extends never ? unknown : StoreAugment<S>);
 
@@ -92,7 +92,7 @@ export type UpdatableArray<S extends ReadonlyArray<unknown>, F extends FindOrFil
       & Filter<S, NewDepth>
       & At<S, NewDepth>
       & Readable<F extends 'isFilter' ? S : S[0]>
-      & OnChangeArray<S>
+      & OnChangeArray<S[0]>
       & (S[0] extends ReadonlyArray<unknown> ? unknown : S[0] extends PossiblyBrandedPrimitive ? MergePrimitive<S[0]> : MergeMatching<S[0]>)
       & (
         S[0] extends object
@@ -393,17 +393,9 @@ export interface OnChange<S> {
 
 export interface OnChangeArray<S> {
   /**
-   * Receive events whenever new array elements are inserted.
+   * Receive events whenever array elements are inserted, deleted, or updated.
    */
-  $onInsertElements: (changeListener: (state: DeepReadonly<S>) => void) => Unsubscribe;
-  /**
-   * Receive events whenever array elements are deleted.
-   */
-  $onDeleteElements: (changeListener: (state: DeepReadonly<S>) => void) => Unsubscribe;
-  /**
-   * Receive events whenever existing array elements are updated.
-   */
-  $onUpdateElements: (changeListener: (state: DeepReadonly<S>) => void) => Unsubscribe;
+  $onChangeArray: (changeListener: (state: { inserted: DeepReadonlyArray<S>, deleted: DeepReadonlyArray<S>, updated: DeepReadonlyArray<S> }, previous: DeepReadonlyArray<S>) => void) => Unsubscribe;
 }
 
 export type SortableProperty = number | string | Date | { [brand]?: string };
@@ -680,6 +672,14 @@ export interface ChangeListener {
   unsubscribe: () => void;
 }
 
+export interface ChangeArrayListener {
+  actions: StateAction[];
+  listeners: Array<(currentState: { inserted: DeepReadonlyArray<unknown>, updated: DeepReadonlyArray<unknown>, deleted: DeepReadonlyArray<unknown> }, previousState: DeepReadonlyArray<unknown>) => unknown>;
+  cachedState: unknown,
+  path: string,
+  unsubscribe: () => void;
+}
+
 export interface OlikAction {
   type: string,
   typeOrig?: string,
@@ -696,15 +696,13 @@ export interface LibState {
   },
   state: undefined | BasicRecord,
   changeListeners: ChangeListener[],
-  insertListeners: ChangeListener[],
-  updateListeners: ChangeListener[],
-  deleteListeners: ChangeListener[],
+  changeArrayListeners: ChangeArrayListener[],
   initialState: undefined | BasicRecord,
   disableDevtoolsDispatch?: boolean,
   stacktraceError: null | Error,
-  insertedElements: unknown[],
-  updatedElements: unknown[],
-  deletedElements: unknown[],
+  insertedElements: Array<unknown>,
+  updatedElements: Array<unknown>,
+  deletedElements: Array<unknown>,
 }
 
 export interface DevtoolsAction {
