@@ -41,7 +41,7 @@ export const copyNewState = (
     case '$set':
       return set(currentState, payload);
     case '$patch':
-      return patch(currentState, payload as BasicRecord);
+      return patch(currentState as BasicRecord, payload as BasicRecord);
     case '$add':
       return add(currentState, payload as number);
     case '$subtract':
@@ -97,17 +97,34 @@ const setNew = (currentState: BasicRecord, payload: BasicRecord) => {
 }
 
 const set = (currentState: unknown, payload: unknown) => {
-  if (Array.isArray(currentState))
-    libState.deletedElements = currentState.slice();
-  if (Array.isArray(payload))
-    libState.insertedElements = payload.slice();
+  if (typeof (payload) === 'object' && payload !== null) {
+    if (Array.isArray(currentState)) {
+      libState.deletedElements = currentState.slice();
+      libState.insertedElements = (payload as BasicArray).slice();
+    } else {
+      updateObjectInsertedAndDeletedElements(currentState as BasicRecord, payload as BasicRecord);
+    }
+  }
   return payload;
 }
 
-const patch = (currentState: unknown, payload: BasicRecord) => {
+const patch = (currentState: BasicRecord, payload: BasicRecord) => {
   if (Array.isArray(currentState))
     return currentState.map(e => ({ ...e as BasicRecord, ...payload }));
+  updateObjectInsertedAndDeletedElements(currentState, payload);
   return { ...currentState as BasicRecord, ...payload };
+}
+
+const updateObjectInsertedAndDeletedElements = (currentState: BasicRecord, payload: BasicRecord) => {
+  Object.keys(payload)
+    .forEach(key => {
+      const payloadValue = payload[key];
+      if (!Array.isArray(payloadValue)) return;
+      libState.insertedElements = payloadValue.slice();
+      const currentStateItem = currentState[key];
+      if (!currentStateItem || !Array.isArray(currentStateItem)) return;
+      libState.deletedElements = currentStateItem.slice();
+    });
 }
 
 const add = (currentState: unknown, payload: number) => {
@@ -326,21 +343,3 @@ const copyObjectProperty = (currentState: BasicRecord, cursor: Cursor, stateActi
     )
   };
 }
-
-// const sortArrayAscending = (currentState: BasicArray<BasicRecord>, stateActions: StateAction[]) => {
-//   const objectProp = stateActions[stateActions.length - 2].name;
-//   const $state = currentState.slice().sort((a, b) => {
-//     const aVal = a[objectProp];
-//     const bVal = b[objectProp];
-//     if (aVal === bVal)
-//       return 0;
-//     return aVal < bVal ? 1 : -1;
-//   });
-//   return {
-//     $state,
-//     $onChange: () => {},
-//     $destroy: () => {}
-//   }
-// }
-
-// const sortArrayDescending = () => {}
