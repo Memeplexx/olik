@@ -74,3 +74,35 @@ test('should sort array when entire array is replaced', () => {
   store.arr.$set([{ id: 3, val: 0 }, { id: 5, val: 0 }, { id: 1, val: 0 }]);
   expect(sort.$state).toEqual([{ id: 1, val: 0 }, { id: 3, val: 0 }, { id: 5, val: 0 }]);
 });
+
+test('should sort array when an object containing an entire array is replaced', () => {
+  const state = { arr: [{ id: 4, val: 0 }, { id: 5, val: 0 }] };
+  const store = createStore(state);
+  const sort = store.arr.$memoizeSortBy.id.$ascending();
+  store.$set({ arr: [{ id: 3, val: 0 }, { id: 5, val: 0 }, { id: 1, val: 0 }] });
+  expect(sort.$state).toEqual([{ id: 1, val: 0 }, { id: 3, val: 0 }, { id: 5, val: 0 }]);
+});
+
+test('should sort array when an object containing an entire array is patched', () => {
+  const state = { arr: new Array<{ id: number, val: number }> };
+  const store = createStore(state);
+  const sort = store.arr.$memoizeSortBy.id.$ascending();
+  store.$patch({ arr: [{ id: 3, val: 0 }, { id: 5, val: 0 }, { id: 1, val: 0 }] });
+  expect(sort.$state).toEqual([{ id: 1, val: 0 }, { id: 3, val: 0 }, { id: 5, val: 0 }]);
+});
+
+
+
+// test('', () => {
+//   const store = createStore({
+//     arr1: [1, 2, 3],
+//     arr2: ['1', '2', '3']
+//   });
+//   // const arr1Before = store.arr1.$state; 
+//   const s1 = store.arr1.$memoizeSort.$ascending();
+  
+//   store.$set({
+//     arr1: [],
+//     arr2: []
+//   });
+// })

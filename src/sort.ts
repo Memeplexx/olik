@@ -11,13 +11,9 @@ export function configureSortModule() {
 }
 
 const sortPrimitive = <T extends Array<SortableProperty>>(stateActions: StateAction[], name: SortOrder) => () => {
-  const indexOfMemoizeSortBy = stateActions.findIndex(e => e.name === '$memoizeSort');
   const changeListeners = new Array<Parameters<OnChange<SortableProperty[]>['$onChange']>[0]>;
-  const subStore = stateActions.reduce((acc, e, index) => {
-    if (index === indexOfMemoizeSortBy - 1)
-      return (acc as BasicRecord)[e.name] as StoreInternal;
-    return acc;
-  }, libState.store!) as unknown as OnChangeArray<T[0]> & Read<T>;
+  const subStore = stateActions.slice(0, stateActions.findIndex(e => e.name === '$memoizeSort'))
+    .reduce((acc, e) => (acc as BasicRecord)[e.name] as StoreInternal, libState.store!) as unknown as OnChangeArray<T[0]> & Read<T>;
   let $state = subStore.$state.slice().sort((a, b) => {
     const comparison = compare(a, b);
     return name === '$ascending' ? comparison : -comparison;
@@ -61,14 +57,10 @@ const sortPrimitive = <T extends Array<SortableProperty>>(stateActions: StateAct
 
 const sortObject = <T extends Array<BasicRecord>>(stateActions: StateAction[], name: SortOrder) => () => {
   const indexOfMemoizeSortBy = stateActions.findIndex(e => e.name === '$memoizeSortBy');
-  const arrayKey = stateActions[indexOfMemoizeSortBy - 1].name;
   const propToSortBy = stateActions[indexOfMemoizeSortBy + 1].name;
   const changeListeners = new Array<Parameters<OnChange<BasicRecord[]>['$onChange']>[0]>;
-  const subStore = stateActions.reduce((acc, e) => {
-    if (e.name === arrayKey)
-      return (acc as BasicRecord)[e.name] as StoreInternal;
-    return acc;
-  }, libState.store!) as unknown as OnChangeArray<T[0]> & Read<T>;
+  const subStore = stateActions.slice(0, stateActions.findIndex(e => e.name === '$memoizeSortBy'))
+    .reduce((acc, e) => (acc as BasicRecord)[e.name] as StoreInternal, libState.store!) as unknown as OnChangeArray<T[0]> & Read<T>;
   let $state = subStore.$state.slice().sort((a, b) => {
     const comparison = compare(a[propToSortBy], b[propToSortBy]);
     return name === '$ascending' ? comparison : -comparison;

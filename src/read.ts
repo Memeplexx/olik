@@ -8,7 +8,10 @@ export const readState = (
   const stateAction = stateActions[cursor.index];
   const { name } = stateAction;
   if (Array.isArray(state) && !(name in libPropMap)) {
-    return state.map((_, i) => readState(state[i], stateActions, { ...cursor }));
+    if (cursor.index === stateActions.length - 1)
+      return state; // no need to copy this array
+    else
+      return state.map((_, i) => readState(state[i], stateActions, { ...cursor }));
   }
   cursor.index++;
   if (cursor.index === stateActions.length) {

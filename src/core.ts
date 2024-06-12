@@ -153,27 +153,26 @@ export const setNewStateAndNotifyListeners = (stateActions: StateAction[]) => {
       listener.listeners.forEach(listener => listener(selectedNewState as DeepReadonly<unknown>, selectedOldState as DeepReadonly<unknown>));
     }
   });
-  if (changeArrayListeners.length) {
-    const { insertedElements, updatedElements, deletedElements } = libState;
-    const stateActionsWithoutActions = stateActions.slice(0, stateActions.findIndex(e => end[e.name]));
-    const currentActionPath = constructTypeStrings(stateActionsWithoutActions, false);
-    changeArrayListeners
-      .filter(listener => listener.path === currentActionPath)
-      .forEach(listener => listener.listeners.forEach(listener => {
-        const stateBefore = readState(libState.state, stateActionsWithoutActions, { index: 0 });
-        listener({
+  const { insertedElements, updatedElements, deletedElements } = libState;
+  if (changeArrayListeners.length && (insertedElements.length || updatedElements.length || deletedElements.length)) {
+    changeArrayListeners.forEach(listener => {
+      const { actions, cachedState } = listener;
+      const selectedOldState = (cachedState !== undefined ? cachedState : readState(oldState, actions)) as DeepReadonlyArray<unknown>;
+      const selectedNewState = readState(libState.state, actions) as DeepReadonlyArray<unknown>;
+      if (selectedOldState !== selectedNewState || (selectedNewState.length !== selectedOldState.length || selectedOldState.some((el, i) => el !== selectedNewState[i]))) {
+        listener.cachedState = selectedNewState;
+        listener.listeners.forEach(listener => listener({
           inserted: insertedElements.slice() as DeepReadonlyArray<unknown>,
           updated: updatedElements.slice() as DeepReadonlyArray<unknown>,
           deleted: deletedElements.slice() as DeepReadonlyArray<unknown>
-        }, stateBefore as DeepReadonlyArray<unknown>)
-      }));
-    insertedElements.length = 0;
-    updatedElements.length = 0;
-    deletedElements.length = 0;
+        }, selectedOldState));
+      }
+    });
+    libState.insertedElements = [];
+    libState.updatedElements = [];
+    libState.deletedElements = [];
   }
 }
-
-const end = { ...updatePropMap, $mergeMatching: true, $filter: true, $find: true, $at: true } as BasicRecord;
 
 const initializeLibState = (initialState: BasicRecord) => {
   if (libState.initialState)

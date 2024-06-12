@@ -703,6 +703,11 @@ export interface LibState {
   insertedElements: Array<unknown>,
   updatedElements: Array<unknown>,
   deletedElements: Array<unknown>,
+  // updatedArrays: Map<Array<unknown>, {
+  //   inserted: Array<unknown>,
+  //   updated: Array<unknown>,
+  //   deleted: Array<unknown>,
+  // }>,
 }
 
 export interface DevtoolsAction {
