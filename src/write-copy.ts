@@ -1,7 +1,8 @@
-import { errorMessages, libState, testState, updatePropMap } from './constant';
+import { errorMessages, libState, updatePropMap } from './constant';
 import { constructQuery } from './query';
 import { BasicArray, BasicRecord, SliceArg, StateAction } from './type';
 import { Cursor } from './type-internal';
+import { constructTypeStrings } from './utility';
 
 
 export const copyNewState = (
@@ -39,9 +40,9 @@ export const copyNewState = (
   const payload = stateAction.arg;
   switch (name) {
     case '$set':
-      return set(currentState, payload);
+      return set(currentState, cursor, payload, stateActions);
     case '$patch':
-      return patch(currentState as BasicRecord, payload as BasicRecord);
+      return patch(currentState as BasicRecord, cursor, payload as BasicRecord, stateActions);
     case '$add':
       return add(currentState, payload as number);
     case '$subtract':
@@ -49,40 +50,50 @@ export const copyNewState = (
     case '$toggle':
       return toggle(currentState);
     case '$setNew':
-      return setNew(currentState as BasicRecord, payload as BasicRecord);
+      return setNew(currentState as BasicRecord, cursor, payload as BasicRecord, stateActions);
     case '$patchDeep':
       return patchDeep(currentState as BasicRecord, payload as BasicRecord);
     case '$clear':
-      return clear(currentState as BasicArray);
+      return clear(currentState as BasicArray, cursor, stateActions);
     case '$slice':
-      return slice(currentState as BasicArray, payload as SliceArg);
+      return slice(currentState as BasicArray, cursor, payload as SliceArg, stateActions);
     case '$push':
-      return push(currentState as BasicArray, payload);
+      return push(currentState as BasicArray, cursor, payload, stateActions);
     case '$pushMany':
-      return pushMany(currentState as BasicArray, payload as BasicArray);
+      return pushMany(currentState as BasicArray, cursor, payload as BasicArray, stateActions);
     case '$merge':
-      return merge(currentState as BasicArray, payload);
+      return merge(currentState as BasicArray, cursor, payload, stateActions);
   }
   throw new Error(`Unknown property: ${name}`);
 }
 
-const slice = (currentState: BasicArray, payload: SliceArg) => {
+const slice = (currentState: BasicArray, cursor: Cursor, payload: SliceArg, stateActions: StateAction[]) => {
+  const path = constructTypeStrings(stateActions.slice(0, cursor.index), false);
+  const deletedElements = new Array<unknown>();
+  libState.deletedElements.set(path, deletedElements);
+  if (payload.start)
+    deletedElements.push(...currentState.slice(0, payload.start));
+  if (payload.end)
+    deletedElements.push(...currentState.slice(payload.end));
   return currentState.slice(payload.start, payload.end);
 }
 
-const push = (currentState: BasicArray, payload: unknown) => {
-  libState.insertedElements = [payload];
+const push = (currentState: BasicArray, cursor: Cursor, payload: unknown, stateActions: StateAction[]) => {
+  const path = constructTypeStrings(stateActions.slice(0, cursor.index), false);
+  libState.insertedElements.set(path, [payload]);
   return [...currentState, payload];
 }
 
-const pushMany = (currentState: BasicArray, payload: BasicArray) => {
-  libState.insertedElements = payload;
+const pushMany = (currentState: BasicArray, cursor: Cursor, payload: BasicArray, stateActions: StateAction[]) => {
+  const path = constructTypeStrings(stateActions.slice(0, cursor.index), false);
+  libState.insertedElements.set(path, payload);
   return [...currentState, ...payload];
 }
 
-const merge = (currentState: BasicArray, payload: unknown) => {
+const merge = (currentState: BasicArray, cursor: Cursor, payload: unknown, stateActions: StateAction[]) => {
   const newElements = (Array.isArray(payload) ? payload : [payload]).filter(e => !currentState.includes(e));
-  libState.insertedElements = newElements;
+  const path = constructTypeStrings(stateActions.slice(0, cursor.index), false);
+  libState.insertedElements.set(path, newElements);
   return [...currentState, ...newElements];
 }
 
@@ -92,38 +103,41 @@ const toggle = (currentState: unknown) => {
   return !currentState;
 }
 
-const setNew = (currentState: BasicRecord, payload: BasicRecord) => {
+const setNew = (currentState: BasicRecord, cursor: Cursor, payload: BasicRecord, stateActions: StateAction[]) => {
+  updateObjectInsertedAndDeletedElements(currentState, cursor, payload, stateActions);
   return { ...currentState, ...payload };
 }
 
-const set = (currentState: unknown, payload: unknown) => {
+const set = (currentState: unknown, cursor: Cursor, payload: unknown, stateActions: StateAction[]) => {
   if (typeof (payload) === 'object' && payload !== null) {
     if (Array.isArray(currentState) && Array.isArray(payload)) {
-      libState.deletedElements = currentState.slice();
-      libState.insertedElements = payload.slice();
+      const path = constructTypeStrings(stateActions.slice(0, cursor.index), false);
+      libState.deletedElements.set(path, currentState.slice());
+      libState.insertedElements.set(path, payload.slice());
     } else {
-      updateObjectInsertedAndDeletedElements(currentState as BasicRecord, payload as BasicRecord);
+      updateObjectInsertedAndDeletedElements(currentState as BasicRecord, cursor, payload as BasicRecord, stateActions);
     }
   }
   return payload;
 }
 
-const patch = (currentState: BasicRecord, payload: BasicRecord) => {
+const patch = (currentState: BasicRecord, cursor: Cursor, payload: BasicRecord, stateActions: StateAction[]) => {
   if (Array.isArray(currentState))
     return currentState.map(e => ({ ...e as BasicRecord, ...payload }));
-  updateObjectInsertedAndDeletedElements(currentState, payload);
+  updateObjectInsertedAndDeletedElements(currentState, cursor, payload, stateActions);
   return { ...currentState as BasicRecord, ...payload };
 }
 
-const updateObjectInsertedAndDeletedElements = (currentState: BasicRecord, payload: BasicRecord) => {
+const updateObjectInsertedAndDeletedElements = (currentState: BasicRecord, cursor: Cursor, payload: BasicRecord, stateActions: StateAction[]) => {
+  const basePath = constructTypeStrings(stateActions.slice(0, cursor.index), false);
   Object.keys(payload)
     .forEach(key => {
+      const path = basePath === '' ? key : `${basePath}.${key}`;
+      const currentStateItem = currentState?.[key] ?? [];
       const payloadValue = payload[key];
-      if (!Array.isArray(payloadValue)) return;
-      libState.insertedElements = payloadValue.slice();
-      const currentStateItem = currentState[key];
-      if (!currentStateItem || !Array.isArray(currentStateItem)) return;
-      libState.deletedElements = currentStateItem.slice();
+      if (!Array.isArray(currentStateItem) || !Array.isArray(payloadValue)) return;
+      libState.insertedElements.set(path, payloadValue.slice());
+      libState.deletedElements.set(path, currentStateItem.slice());
     });
 }
 
@@ -139,8 +153,9 @@ const subtract = (currentState: unknown, payload: number) => {
   return currentState as number - payload;
 }
 
-const clear = (currentState: BasicArray) => {
-  libState.deletedElements = currentState.slice();
+const clear = (currentState: BasicArray, cursor: Cursor, stateActions: StateAction[]) => {
+  const path = constructTypeStrings(stateActions.slice(0, cursor.index), false);
+  libState.deletedElements.set(path, currentState.slice());
   return [];
 }
 
@@ -165,28 +180,31 @@ const patchDeep = (currentState: BasicRecord, payload: BasicRecord) => {
 
 const updateArrayObjectProperties = (currentState: BasicArray, cursor: Cursor, stateActions: StateAction[]) => {
   cursor.index--;
-  if (testState.logLevel === 'debug') {
-    console.log('!')
-  }
+  const path = constructTypeStrings(stateActions.slice(0, cursor.index), false);
+  const updatedElements = new Array<unknown>();
+  libState.updatedElements.set(path, updatedElements);
+  const newElements = new Array<unknown>();
+  libState.insertedElements.set(path, newElements);
   return currentState.map(element => {
     if (element !== undefined) {
-
-      const updatedElements = copyNewState(
+      const updatedEls = copyNewState(
         element ?? {} as BasicRecord,
         stateActions,
         { ...cursor }
       ) as BasicRecord;
-      libState.updatedElements.push(updatedElements);
+      updatedElements.push(updatedEls);
       return {
         ...element as BasicRecord,
-        ...updatedElements
+        ...updatedEls
       };
     }
-    return copyNewState(
+    const newEl = copyNewState(
       element,
       stateActions,
       { ...cursor }
     );
+    newElements.push(newEl);
+    return newEl;
   });
 }
 
@@ -199,17 +217,20 @@ const mergeMatching = (currentState: BasicArray, cursor: Cursor, stateActions: S
   const mergeArgs = [...(Array.isArray(mergeArg) ? mergeArg : [mergeArg])];
   const queryPathsRev = queryPaths.join('.').split('.$and.').map(qp => qp.split('.'));
   const query = (e: unknown) => queryPathsRev.map(queryPaths => queryPaths.reduce((prev, curr) => prev[curr] as BasicRecord, e as BasicRecord));
+  const path = constructTypeStrings(stateActions.slice(0, cursorIndex - 1), false);
+  const updatedElements = new Array<unknown>();
+  libState.updatedElements.set(path, updatedElements);
   const existingElementsUpdated = currentState.map(existingElement => {
     const existingElementProp = query(existingElement);
     const elementReplacement = mergeArgs.find(ma => query(ma).every((r, i) => r === existingElementProp[i]));
     if (elementReplacement) {
       mergeArgs.splice(mergeArgs.indexOf(elementReplacement), 1);
-      libState.updatedElements.push(elementReplacement);
+      updatedElements.push(elementReplacement);
       return elementReplacement;
     }
     return existingElement;
   });
-  libState.insertedElements.push(...mergeArgs);
+  libState.insertedElements.set(path, mergeArgs);
   return [
     ...existingElementsUpdated,
     ...mergeArgs
@@ -225,27 +246,35 @@ const setObjectKey = (currentState: BasicRecord, cursor: Cursor, stateActions: S
   }
   const arg = stateActions[cursor.index].arg as string;
   libState.changeListeners
-    .filter(l => l.actions.map(a => a.name).join('.').startsWith(stateActionsStr))
+    .filter(l => l.path.startsWith(stateActionsStr))
     .forEach(l => l.actions[l.actions.length - 2].name = arg);
   return Object.entries(currentState)
     .reduce((acc, [key, value]) => { acc[key === name ? arg : key] = value; return acc; }, {} as BasicRecord);
 }
 
 const atArray = (currentState: BasicArray, cursor: Cursor, stateActions: StateAction[], payload: number) => {
+  const cursorIndex = cursor.index;
   const index = payload < 0 ? currentState.length + payload : payload;
+  const path = constructTypeStrings(stateActions.slice(0, cursorIndex - 1), false);
   if ('undefined' === typeof (currentState[index]))
     throw new Error(errorMessages.AT_INDEX_OUT_OF_BOUNDS(payload));
-  if ('$delete' === stateActions[cursor.index].name)
+  if ('$delete' === stateActions[cursorIndex].name) {
+    const deletedElements = new Array<unknown>();
+    libState.deletedElements.set(path, deletedElements);
     return currentState.filter((e, i) => {
       const matchFound = index === i;
-      if (matchFound)
-        libState.deletedElements.push(e);
+      if (matchFound) {
+        deletedElements.push(e);
+      }
       return !matchFound;
     });
+  }
+  const updatedElements = new Array<unknown>();
+  libState.updatedElements.set(path, updatedElements);
   return currentState.map((e, i) => {
     if (i === index) {
       const updated = copyNewState(e, stateActions, cursor);
-      libState.updatedElements.push(updated);
+      updatedElements.push(updated);
       return updated;
     }
     return e;
@@ -253,6 +282,7 @@ const atArray = (currentState: BasicArray, cursor: Cursor, stateActions: StateAc
 }
 
 const findArray = (currentState: BasicArray, cursor: Cursor, stateActions: StateAction[]) => {
+  const cursorIndexBefore = cursor.index;
   const query = constructQuery(stateActions, cursor);
   const findIndex = currentState.findIndex(query);
   if (findIndex === -1)
@@ -267,18 +297,24 @@ const findArray = (currentState: BasicArray, cursor: Cursor, stateActions: State
     break;
   }
   stateAction!.searchIndices = [findIndex];
-  if ('$delete' === stateActions[cursorIndex].name)
+  const path = constructTypeStrings(stateActions.slice(0, cursorIndexBefore - 1), false);
+  if ('$delete' === stateActions[cursorIndex].name) {
+    const deletedList = new Array<unknown>();
+    libState.deletedElements.set(path, deletedList);
     return currentState.filter((e, i) => {
       const matchFound = findIndex === i;
       if (matchFound)
-        libState.deletedElements.push(e);
+        deletedList.push(e);
       return !matchFound;
     });
+  }
+  const updatedList = new Array<unknown>();
+  libState.updatedElements.set(path, updatedList);
   return currentState.map((e, i) => {
     const matchFound = findIndex === i;
     if (matchFound) {
       const updated = copyNewState(e, stateActions, cursor);
-      libState.updatedElements.push(updated);
+      updatedList.push(updated);
       return updated;
     }
     return e;
@@ -286,6 +322,7 @@ const findArray = (currentState: BasicArray, cursor: Cursor, stateActions: State
 }
 
 const filterArray = (currentState: BasicArray, cursor: Cursor, stateActions: StateAction[]) => {
+  const cursorIndexBefore = cursor.index;
   const query = constructQuery(stateActions, cursor);
   const cursorIndex = cursor.index;
   const type = stateActions[cursorIndex].name;
@@ -298,25 +335,31 @@ const filterArray = (currentState: BasicArray, cursor: Cursor, stateActions: Sta
     break;
   }
   const searchIndices = stateAction!.searchIndices = currentState.map((e, i) => query(e) ? i : -1).filter(i => i !== -1);
-  if ('$delete' === type)
+  const path = constructTypeStrings(stateActions.slice(0, cursorIndexBefore - 1), false);
+  if ('$delete' === type) {
+    const deletedElements = new Array<unknown>();
+    libState.deletedElements.set(path, deletedElements);
     return currentState.filter((e, i) => {
       const matchFound = searchIndices!.includes(i);
       if (matchFound)
-        libState.deletedElements.push(e);
+        deletedElements.push(e);
       return !matchFound;
     });
+  }
   if ('$set' === type) {
     const updated = copyNewState(currentState, stateActions, cursor) as BasicArray;
-    libState.updatedElements = updated;
+    libState.updatedElements.set(path, updated);
     return [
       ...currentState.filter((_, i) => !searchIndices!.includes(i)),
       ...updated,
     ];
   }
+  const updatedList = new Array<unknown>();
+  libState.updatedElements.set(path, updatedList);
   return currentState.map((e, i) => {
     if (searchIndices!.includes(i)) {
       const updated = copyNewState(e, stateActions, { ...cursor });
-      libState.updatedElements.push(updated);
+      updatedList.push(updated);
       return updated;
     }
     return e;
@@ -326,7 +369,7 @@ const filterArray = (currentState: BasicArray, cursor: Cursor, stateActions: Sta
 const deleteObjectValue = (currentState: BasicRecord, stateActions: StateAction[], name: string) => {
   const stateActionsStr = stateActions.slice(0, stateActions.length - 1).map(sa => sa.name).join('.');
   libState.changeListeners
-    .filter(l => l.actions.map(a => a.name).join('.').startsWith(stateActionsStr))
+    .filter(l => l.path.startsWith(stateActionsStr))
     .forEach(l => l.unsubscribe());
   const { [name]: other, ...newState } = currentState;
   return newState;

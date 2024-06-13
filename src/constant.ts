@@ -21,10 +21,11 @@ export const libState: LibState = {
   changeListeners: [],
   initialState: undefined,
   stacktraceError: null,
-  insertedElements: [],
-  updatedElements: [],
-  deletedElements: [],
+  insertedElements: new Map(),
+  updatedElements: new Map(),
+  deletedElements: new Map(),
   changeArrayListeners: [],
+  // updatedArrays: new Map(),
 }
 
 export const testState: TestState = {

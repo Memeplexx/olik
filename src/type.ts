@@ -80,7 +80,7 @@ export type UpdatableArray<S extends ReadonlyArray<unknown>, F extends FindOrFil
       & (F extends 'isFind' ? SetArrayElement<S[0]> & DeleteArrayElement<Depth> : DeleteArray<Depth>)
       & (S[0] extends ReadonlyArray<unknown> ? unknown : S[0] extends object ? UpdatableObject<S[0], F, Q, F extends 'isFind' ? 'no' : 'yes', NewDepth> : UpdatablePrimitive<S[0], F, Q, I, NewDepth>)
     ) : (
-      & (S[0] extends PossiblyBrandedPrimitive ? MemoizeSort<S[0]> : S[0] extends object ? MemoizeSortBy<S[0]> : unknown)
+      & (S[0] extends (object | SortableProperty) ? CreateSortedList<S[0]> : unknown)
       & DeleteNode<Depth>
       & Clear
       & Slice
@@ -400,11 +400,19 @@ export interface OnChangeArray<S> {
 
 export type SortableProperty = number | string | Date | { [brand]?: string };
 
-export type SortOrder = keyof SortType<BasicRecord>;
+export type SortOrder = keyof SortTypePrimitive<BasicRecord>;
 
-export interface SortType<S extends BasicRecord | SortableProperty> {
+export interface SortTypePrimitive<S extends SortableProperty | object> {
   $ascending: () => SortMemo<S>;
   $descending: () => SortMemo<S>;
+}
+
+export interface SortTypeObject<S extends object> {
+  $withId: { [k in keyof S]: SortedByName<S> }
+}
+
+export interface SortedByName<S extends object> {
+  $sortedBy: { [k in keyof S]: SortTypePrimitive<S> }
 }
 
 export type SortMemo<S extends BasicRecord | SortableProperty> = Read<S[]> & OnChange<S[]> & Destroy;
@@ -416,14 +424,7 @@ export interface Destroy {
   $destroy: () => unknown;
 }
 
-export interface MemoizeSort<S extends SortableProperty> {
-  /**
-   * Ensure that the selected array is sorted.
-   */
-  $memoizeSort: SortType<S>;
-}
-
-export interface MemoizeSortBy<S extends object> {
+export interface CreateSortedList<S extends SortableProperty | object> {
   /**
    * Create a sorted array which will be efficiently updated whenever the underlying array changes.
    * @example
@@ -431,7 +432,7 @@ export interface MemoizeSortBy<S extends object> {
    * const sortedTodos = select.todos.$memoizeSortBy.dueDate.$descending();
    * const state = sortedTodos.$state;
    */
-  $memoizeSortBy: { [key in keyof S as S[key] extends SortableProperty ? key : never]: SortType<S> };
+  $createSortedList: S extends object ? SortTypeObject<S> : SortTypePrimitive<S>;
 }
 
 export interface Readable<S> extends Read<S>, OnChange<S> {
@@ -700,14 +701,9 @@ export interface LibState {
   initialState: undefined | BasicRecord,
   disableDevtoolsDispatch?: boolean,
   stacktraceError: null | Error,
-  insertedElements: Array<unknown>,
-  updatedElements: Array<unknown>,
-  deletedElements: Array<unknown>,
-  // updatedArrays: Map<Array<unknown>, {
-  //   inserted: Array<unknown>,
-  //   updated: Array<unknown>,
-  //   deleted: Array<unknown>,
-  // }>,
+  insertedElements: Map<string, Array<unknown>>,
+  updatedElements: Map<string, Array<unknown>>,
+  deletedElements: Map<string, Array<unknown>>,
 }
 
 export interface DevtoolsAction {

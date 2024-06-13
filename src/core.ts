@@ -98,7 +98,7 @@ const onChange = (stateActions: StateAction[], name: string) => ((listener, opti
 const memoizeSortBy = (stateActions: StateAction[], name: SortOrder) => {
   if (!libState.sortModule)
     throw new Error(errorMessages.SORT_MODULE_NOT_CONFIGURED);
-  if (stateActions.some(sa => sa.name === '$memoizeSortBy'))
+  if (stateActions.some(sa => sa.name === '$withId'))
     return libState.sortModule!.sortObject!(stateActions ?? [], name);
   return libState.sortModule!.sortPrimitive!(stateActions ?? [], name);
 }
@@ -153,24 +153,26 @@ export const setNewStateAndNotifyListeners = (stateActions: StateAction[]) => {
       listener.listeners.forEach(listener => listener(selectedNewState as DeepReadonly<unknown>, selectedOldState as DeepReadonly<unknown>));
     }
   });
-  const { insertedElements, updatedElements, deletedElements } = libState;
-  if (changeArrayListeners.length && (insertedElements.length || updatedElements.length || deletedElements.length)) {
+  if (changeArrayListeners.length) {
+    const { insertedElements, updatedElements, deletedElements } = libState;
     changeArrayListeners.forEach(listener => {
+      const { path } = listener;
+      const inserted = (insertedElements.get(path) ?? []) as DeepReadonlyArray<unknown>;
+      const updated = (updatedElements.get(path) ?? []) as DeepReadonlyArray<unknown>;
+      const deleted = (deletedElements.get(path) ?? []) as DeepReadonlyArray<unknown>;
+      if (!inserted.length && !updated.length && !deleted.length)
+        return;
       const { actions, cachedState } = listener;
       const selectedOldState = (cachedState !== undefined ? cachedState : readState(oldState, actions)) as DeepReadonlyArray<unknown>;
       const selectedNewState = readState(libState.state, actions) as DeepReadonlyArray<unknown>;
-      if (selectedOldState !== selectedNewState || (selectedNewState.length !== selectedOldState.length || selectedOldState.some((el, i) => el !== selectedNewState[i]))) {
+      if (selectedOldState !== selectedNewState) {
         listener.cachedState = selectedNewState;
-        listener.listeners.forEach(listener => listener({
-          inserted: insertedElements.slice() as DeepReadonlyArray<unknown>,
-          updated: updatedElements.slice() as DeepReadonlyArray<unknown>,
-          deleted: deletedElements.slice() as DeepReadonlyArray<unknown>
-        }, selectedOldState));
+        listener.listeners.forEach(listener => listener({ inserted, updated, deleted }, selectedOldState));
       }
     });
-    libState.insertedElements = [];
-    libState.updatedElements = [];
-    libState.deletedElements = [];
+    insertedElements.clear();
+    updatedElements.clear();
+    deletedElements.clear();
   }
 }
 
