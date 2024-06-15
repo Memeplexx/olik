@@ -6,13 +6,20 @@ import { constructTypeStrings, deserialize, isoDateRegexp } from './utility';
 let initialized = false;
 const pendingActions = new Array<Omit<DevtoolsAction, 'source'>>();
 
+export function log(message: string) {
+  sendMessageToDevtools({
+    actionType: 'log',
+    stateActions: [{ name: message }],
+  })
+}
+
 export function configureDevtools({ whitelist }: DevtoolsOptions = { whitelist: [] }) {
 
   if (libState.devtools)
     return;
 
   sendMessageToDevtools({
-    actionType: "$load()",
+    actionType: '$load()',
     stateActions: whitelist.map(w => ({ name: constructTypeStrings((w as StoreInternal).$stateActions, false) })),
   })
 
@@ -41,7 +48,7 @@ export function configureDevtools({ whitelist }: DevtoolsOptions = { whitelist: 
  */
 export function addToWhitelist(whitelist: Readable<unknown>[]) {
   sendMessageToDevtools({
-    actionType: "$addToWhitelist()",
+    actionType: '$addToWhitelist()',
     stateActions: whitelist.map(w => ({ name: constructTypeStrings((w as StoreInternal).$stateActions, false) })),
   })
 }
@@ -58,6 +65,7 @@ const setupDevtools = () => ({
     else
       sendMessageToDevtools(toSend)
   },
+  log: (message: string) => sendMessageToDevtools({ actionType: '$log()', stateActions: [{ name: '$log', arg: message }] }),
 } as typeof libState.devtools)
 
 const reactToDevtoolsInitialization = () => {

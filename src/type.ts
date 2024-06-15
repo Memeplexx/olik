@@ -690,7 +690,7 @@ export interface OlikAction {
 
 export interface LibState {
   store: undefined | StoreInternal,
-  devtools: undefined | { dispatch: (arg: { stateActions: StateAction[], actionType?: string }) => unknown },
+  devtools: undefined | { dispatch: (arg: { stateActions: StateAction[], actionType?: string }) => unknown, log: (arg: string) => unknown },
   sortModule: undefined | {
     sortObject: ((stateActions: StateAction[], name: SortOrder) => () => SortMemo<BasicRecord>),
     sortPrimitive: ((stateActions: StateAction[], name: SortOrder) => () => SortMemo<string | number | Date | { [brand]?: string }>),
