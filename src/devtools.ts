@@ -6,9 +6,9 @@ import { constructTypeStrings, deserialize, isoDateRegexp } from './utility';
 let initialized = false;
 const pendingActions = new Array<Omit<DevtoolsAction, 'source'>>();
 
-export function log(message: string) {
+export function tag(message: string) {
   sendMessageToDevtools({
-    actionType: 'log',
+    actionType: 'tag()',
     stateActions: [{ name: message }],
   })
 }

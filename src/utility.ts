@@ -20,9 +20,6 @@ export const resetLibraryState = () => {
   libState.initialState = undefined;
   libState.disableDevtoolsDispatch = false;
   libState.devtools = undefined;
-  // libState.deletedElements = [];
-  // libState.updatedElements = [];
-  // libState.insertedElements = [];
   libState.updatedElements = new Map();
   augment({ async: promise => promise() });
 };
