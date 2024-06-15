@@ -1,17 +1,10 @@
 import { libState, testState } from './constant';
-import { DevtoolsAction, DevtoolsOptions, Readable } from './type';
+import { BasicRecord, DevtoolsAction, DevtoolsOptions, Readable } from './type';
 import { StoreInternal } from './type-internal';
-import { constructTypeStrings, deserialize, isoDateRegexp } from './utility';
+import { constructTypeStrings, deserialize, extractPayload, isoDateRegexp } from './utility';
 
 let initialized = false;
 const pendingActions = new Array<Omit<DevtoolsAction, 'source'>>();
-
-export function tag(message: string) {
-  sendMessageToDevtools({
-    actionType: 'tag()',
-    stateActions: [{ name: message }],
-  })
-}
 
 export function configureDevtools({ whitelist }: DevtoolsOptions = { whitelist: [] }) {
 
@@ -129,6 +122,11 @@ const sendMessageToDevtools = (action: Omit<DevtoolsAction, 'source'>) => {
     return testState.fakeDevtoolsMessage = action;
   window.postMessage({
     ...action,
+    stateActions: action.stateActions.map(sa => {
+      const arg = (extractPayload(sa.arg) as BasicRecord)?.$payload ?? sa.arg;
+      return { ...sa, arg }
+    }),
     source: 'olik-devtools-extension',
   }, location.origin)
 }
+

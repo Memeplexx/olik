@@ -1,6 +1,6 @@
 import { augment } from './augment';
 import { comparatorsPropMap, libState, testState, updatePropMap } from './constant';
-import { StateAction } from './type';
+import { BasicRecord, StateAction } from './type';
 
 
 export const enqueueMicroTask = (fn: () => void) => Promise.resolve().then(fn);
@@ -87,4 +87,34 @@ export const constructTypeString = ({ name, arg }: StateAction, nested: boolean)
     return `${name}( ${$stateActions.map(sa => constructTypeString(sa, nested)).join('.')} = ${JSON.stringify($state)} )`;
   }
   return `${name}(${JSON.stringify(arg)})`;
+}
+
+export const extractPayload = (payloadIncoming: unknown) => {
+  if (typeof (payloadIncoming) !== 'object' || payloadIncoming === null || payloadIncoming instanceof Date)
+    return payloadIncoming;
+  const payloadPaths = {} as Record<string, string>;
+  const sanitizePayload = (payload: unknown, path: string): unknown => {
+    if (typeof (payload) !== 'object' || payload === null || payload instanceof Date)
+      return payload;
+    const { $state, $stateActions } = payload as unknown as { $stateActions: StateAction[], $state: unknown };
+    if ($stateActions) {
+      payloadPaths[path] = `${$stateActions.map(sa => constructTypeString(sa, true)).join('.')} = ${JSON.stringify($state)}`;
+      return $state;
+    }
+    if (Array.isArray(payload))
+      return payload.map((p, i) => sanitizePayload(p, !path ? i.toString() : `${path}.${i}`));
+    if (typeof (payload) === 'object' && payload !== null)
+      return Object.keys(payload).reduce((prev, key) => {
+        prev[key] = sanitizePayload((payload as BasicRecord)[key], !path ? key.toString() : `${path}.${key.toString()}`);
+        return prev;
+      }, {} as BasicRecord);
+    throw new Error();
+  }
+  const payload = sanitizePayload(payloadIncoming, '');
+  if (Object.keys(payloadPaths).length)
+    return {
+      $paths: payloadPaths,
+      $payload: payload,
+    }
+  return payload;
 }
