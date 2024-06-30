@@ -80,7 +80,7 @@ export type UpdatableArray<S extends ReadonlyArray<unknown>, F extends FindOrFil
       & (F extends 'isFind' ? SetArrayElement<S[0]> & DeleteArrayElement<Depth> : DeleteArray<Depth>)
       & (S[0] extends ReadonlyArray<unknown> ? unknown : S[0] extends object ? UpdatableObject<S[0], F, Q, F extends 'isFind' ? 'no' : 'yes', NewDepth> : UpdatablePrimitive<S[0], F, Q, I, NewDepth>)
     ) : (
-      & (S[0] extends (object | SortableProperty) ? CreateSortedList<S[0]> : unknown)
+      & (S[0] extends (object | SortableProperty) ? DeriveSortedList<S[0]> : unknown)
       & DeleteNode<Depth>
       & Clear
       & Slice
@@ -424,7 +424,7 @@ export interface Destroy {
   $destroy: () => unknown;
 }
 
-export interface CreateSortedList<S extends SortableProperty | object> {
+export interface DeriveSortedList<S extends SortableProperty | object> {
   /**
    * Create a sorted array which will be efficiently updated whenever the underlying array changes.
    * @example
@@ -432,7 +432,7 @@ export interface CreateSortedList<S extends SortableProperty | object> {
    * const sortedTodos = select.todos.$memoizeSortBy.dueDate.$descending();
    * const state = sortedTodos.$state;
    */
-  $createSortedList: S extends object ? SortTypeObject<S> : SortTypePrimitive<S>;
+  $deriveSortedList: S extends object ? SortTypeObject<S> : SortTypePrimitive<S>;
 }
 
 export interface Readable<S> extends Read<S>, OnChange<S> {

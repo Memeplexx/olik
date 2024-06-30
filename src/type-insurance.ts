@@ -285,6 +285,5 @@ strr.arr.$mergeMatching.id.$and.obj.one.$with({ id: 1, name: 'hello', obj: { one
 
 // result.$calculated.
 // result.$calculated.sortedList.$state[0].;
-// strr.arr.$createSortedList.name.$ascending.usingId.id();
 
-strr.arr.$createSortedList.$withId.id.$sortedBy.name.$ascending();
+strr.arr.$deriveSortedList.$withId.id.$sortedBy.name.$ascending();

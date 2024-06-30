@@ -12,7 +12,7 @@ export function configureSortModule() {
 
 const sortPrimitive = <T extends Array<SortableProperty>>(stateActions: StateAction[], name: SortOrder) => () => {
   const changeListeners = new Array<Parameters<OnChange<SortableProperty[]>['$onChange']>[0]>;
-  const subStore = stateActions.slice(0, stateActions.findIndex(e => e.name === '$createSortedList'))
+  const subStore = stateActions.slice(0, stateActions.findIndex(e => e.name === '$deriveSortedList'))
     .reduce((acc, e) => (acc as BasicRecord)[e.name] as StoreInternal, libState.store!) as unknown as OnChangeArray<T[0]> & Read<T>;
   let $state = subStore.$state.slice().sort((a, b) => {
     const comparison = compare(a, b);
@@ -56,7 +56,7 @@ const sortPrimitive = <T extends Array<SortableProperty>>(stateActions: StateAct
 }
 
 const sortObject = <T extends Array<BasicRecord>>(stateActions: StateAction[], name: SortOrder) => () => {
-  const indexOfMemoizeSortBy = stateActions.findIndex(e => e.name === '$createSortedList');
+  const indexOfMemoizeSortBy = stateActions.findIndex(e => e.name === '$deriveSortedList');
   const idProp = stateActions[indexOfMemoizeSortBy + 2].name;
   const propToSortBy = stateActions[indexOfMemoizeSortBy + 4].name;
   const changeListeners = new Array<Parameters<OnChange<BasicRecord[]>['$onChange']>[0]>;
