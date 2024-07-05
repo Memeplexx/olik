@@ -39,6 +39,8 @@ export const copyNewState = (
   }
   const payload = stateAction.arg;
   switch (name) {
+    case '$nullify':
+      return nullify();
     case '$set':
       return set(currentState, cursor, payload, stateActions);
     case '$patch':
@@ -108,6 +110,10 @@ const setNew = (currentState: BasicRecord, cursor: Cursor, payload: BasicRecord,
   return { ...currentState, ...payload };
 }
 
+const nullify = () => {
+  return null;
+}
+
 const set = (currentState: unknown, cursor: Cursor, payload: unknown, stateActions: StateAction[]) => {
   if (typeof (payload) === 'object' && payload !== null) {
     if (Array.isArray(currentState) && Array.isArray(payload)) {
@@ -153,10 +159,13 @@ const subtract = (currentState: unknown, payload: number) => {
   return currentState as number - payload;
 }
 
-const clear = (currentState: BasicArray, cursor: Cursor, stateActions: StateAction[]) => {
-  const path = constructTypeStrings(stateActions.slice(0, cursor.index), false);
-  libState.deletedElements.set(path, currentState.slice());
-  return [];
+const clear = (currentState: unknown, cursor: Cursor, stateActions: StateAction[]) => {
+  if (Array.isArray(currentState)) {
+    const path = constructTypeStrings(stateActions.slice(0, cursor.index), false);
+    libState.deletedElements.set(path, currentState.slice());
+    return [];
+  }
+  return '';
 }
 
 const patchDeep = (currentState: BasicRecord, payload: BasicRecord) => {

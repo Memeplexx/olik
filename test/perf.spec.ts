@@ -141,18 +141,13 @@ test('Native Perf (deep)', () => {
 })
 
 test('sort performance', () => {
-  function shuffleArray<T>(array: T[]): T[] {
-    for (let i = array.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [array[i], array[j]] = [array[j], array[i]];
-    }
-    return array;
-}
+
   const elements = new Array(100000).fill(0).map((_, i) => ({ id: i, val: i }));
-  const arraysShuffled = new Array(1).fill(0).map(() => shuffleArray([...elements]));
+  const elementsShuffled = elements.slice().sort(() => Math.random() - 0.5);
   const before = performance.now();
-  // console.log(arraysShuffled[0].slice(0, 10));
-  arraysShuffled.forEach(e => e.sort((a, b) => a.id - b.id));
-  // console.log(arraysShuffled[0].slice(0, 10));
-  console.log(`Sort: ${performance.now() - before}`);
+  elementsShuffled.sort((a, b) => a.id - b.id);
+  console.log(`Sort full: ${performance.now() - before}`);
+  elementsShuffled.push({id: 4, val: 4});
+  elementsShuffled.sort((a, b) => a.id - b.id);
+  console.log(`Sort after push: ${performance.now() - before}`);
 })

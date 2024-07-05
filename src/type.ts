@@ -68,7 +68,9 @@ export type UpdatableObject<S, F extends FindOrFilter, Q extends QueryStatus, I 
       ? UpdatableArray<S[K], 'isFilter', 'notQueried', 'no', NewDepth>
       : S[K] extends PossiblyBrandedPrimitive
       ? UpdatablePrimitive<S[K], F, Q, 'no', NewDepth>
-      : UpdatableObject<S[K], F, Q, 'no', NewDepth>) & SetObjectKey
+      : UpdatableObject<S[K], F, Q, 'no', NewDepth>)
+    & SetObjectKey
+    & (null extends S[K] ? Nullify : unknown)
   }
   , Depth>
 
@@ -87,7 +89,7 @@ export type UpdatableArray<S extends ReadonlyArray<unknown>, F extends FindOrFil
       & Push<S[0]>
       & PushMany<S>
       & SetArray<S, I>
-      & (S[0] extends boolean ? ToggleArray : unknown)
+      & (S[0] extends boolean ? ToggleBooleanArray : unknown)
       & Find<S, NewDepth>
       & Filter<S, NewDepth>
       & At<S, NewDepth>
@@ -101,21 +103,24 @@ export type UpdatableArray<S extends ReadonlyArray<unknown>, F extends FindOrFil
           & { [K in keyof S[0]]:
             (S[0][K] extends ReadonlyArray<unknown>
               ? UpdatableArray<S[0][K], 'isFilter', 'notQueried', 'no', NewDepth>
-              : S[0][K] extends PossiblyBrandedPrimitive
-              ? UpdatablePrimitive<S[0][K], F, Q, 'no', NewDepth>
-              : UpdatableObject<S[0][K], F, Q, 'no', NewDepth>)
+              : (S[0][K] extends PossiblyBrandedPrimitive
+                ? UpdatablePrimitive<S[0][K], F, Q, 'no', NewDepth>
+                : UpdatableObject<S[0][K], F, Q, 'no', NewDepth>)
+            )
           }
         )
         : AddArray
       )
     ))
+  & (null extends S[0] ? Nullify : unknown)
   , Depth>
 
 export type UpdatablePrimitive<S, F extends FindOrFilter, Q extends QueryStatus, I extends ImmediateParentIsAnArray, Depth extends number> =
   & DeleteNode<Depth>
   & (Q extends 'notArray' ? SetNode<S> : F extends 'isFind' ? SetArrayElement<S> : SetArray<S, I>)
   & (S extends number ? (F extends 'isFind' ? Add & Subtract : AddArray & SubtractArray) : unknown)
-  & (S extends boolean ? (F extends 'isFind' ? Toggle : ToggleArray) : unknown)
+  & (S extends boolean ? (F extends 'isFind' ? ToggleBoolean : ToggleBooleanArray) : unknown)
+  & (S extends string ? ClearString : unknown)
   & Readable<F extends 'isFilter' ? S[] : S>
 
 export type Payload<T> = T | (
@@ -124,6 +129,14 @@ export type Payload<T> = T | (
   T extends BasicRecord ? DeepReadonlyObject<({ [P in keyof T]: Payload<T[P]> })>
   : never
 );
+
+export interface ClearString {
+  $clear: () => void,
+}
+
+export interface Nullify {
+  $nullify: () => void,
+}
 
 export interface MergeMatching<S> {
   /**
@@ -171,7 +184,10 @@ export interface At<S extends ReadonlyArray<unknown>, NewDepth extends number> {
   /**
    * Get array index
    */
-  $at: (index: number) => S[0] extends object ? UpdatableObject<S[0], 'isFind', 'notArray', 'no', NewDepth> : UpdatablePrimitive<S[0], 'isFind', 'notArray', 'no', NewDepth>
+  $at: (index: number) => (S[0] extends object
+    ? UpdatableObject<S[0], 'isFind', 'notArray', 'no', NewDepth>
+    : UpdatablePrimitive<S[0], 'isFind', 'notArray', 'no', NewDepth>)
+    & (null extends S[0] ? Nullify : unknown)
 }
 
 /**
@@ -285,7 +301,7 @@ export interface Subtract {
   $subtract(toSubtract: number): void;
 }
 
-export interface Toggle {
+export interface ToggleBoolean {
   /**
    * Update the selected boolean, by inverting it
    */
@@ -299,7 +315,7 @@ export interface AddArray {
   $add(addTo: number): void;
 }
 
-export interface ToggleArray {
+export interface ToggleBooleanArray {
   /**
    * Update the selected boolean, by inverting it
    */
@@ -690,7 +706,7 @@ export interface OlikAction {
 
 export interface LibState {
   store: undefined | StoreInternal,
-  devtools: undefined | { dispatch: (arg: { stateActions: StateAction[], actionType?: string }) => unknown, log: (arg: string) => unknown },
+  devtools: undefined | { dispatch: (arg: { stateActions: StateAction[], actionType?: string }) => unknown },
   sortModule: undefined | {
     sortObject: ((stateActions: StateAction[], name: SortOrder) => () => SortMemo<BasicRecord>),
     sortPrimitive: ((stateActions: StateAction[], name: SortOrder) => () => SortMemo<string | number | Date | { [brand]?: string }>),

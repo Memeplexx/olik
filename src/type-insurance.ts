@@ -287,3 +287,21 @@ strr.arr.$mergeMatching.id.$and.obj.one.$with({ id: 1, name: 'hello', obj: { one
 // result.$calculated.sortedList.$state[0].;
 
 strr.arr.$deriveSortedList.$withId.id.$sortedBy.name.$ascending();
+
+
+{
+  const store = createStore({
+    num: 0,
+    str: '',
+    num2: null as number | null,
+    arr: [null, 2, 3],
+    arr2: [[null, 1]]
+  });
+  
+  store.num2.$nullify();
+  store.arr.$find.$eq(null).$nullify();
+  store.arr.$filter.$eq(null).$nullify();
+  store.arr.$at(0).$nullify();
+}
+
+
