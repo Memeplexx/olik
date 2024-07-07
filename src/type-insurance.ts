@@ -302,6 +302,8 @@ strr.arr.$deriveSortedList.$withId.id.$sortedBy.name.$ascending();
   store.arr.$find.$eq(null).$nullify();
   store.arr.$filter.$eq(null).$nullify();
   store.arr.$at(0).$nullify();
+
+  store.$reset();
 }
 
 

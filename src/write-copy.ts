@@ -1,5 +1,6 @@
 import { errorMessages, libState, updatePropMap } from './constant';
 import { constructQuery } from './query';
+import { readState } from './read';
 import { BasicArray, BasicRecord, SliceArg, StateAction } from './type';
 import { Cursor } from './type-internal';
 import { constructTypeStrings } from './utility';
@@ -65,8 +66,15 @@ export const copyNewState = (
       return pushMany(currentState as BasicArray, cursor, payload as BasicArray, stateActions);
     case '$merge':
       return merge(currentState as BasicArray, cursor, payload, stateActions);
+    case '$reset':
+      return reset(stateActions);
   }
   throw new Error(`Unknown property: ${name}`);
+}
+
+const reset = (stateActions: StateAction[]) => {
+  // TODO: implement deleted elements?
+  return readState(libState.initialState, stateActions);
 }
 
 const slice = (currentState: BasicArray, cursor: Cursor, payload: SliceArg, stateActions: StateAction[]) => {

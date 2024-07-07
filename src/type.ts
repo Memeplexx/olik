@@ -72,6 +72,7 @@ export type UpdatableObject<S, F extends FindOrFilter, Q extends QueryStatus, I 
     & SetObjectKey
     & (null extends S[K] ? Nullify : unknown)
   }
+  & Reset
   , Depth>
 
 export type UpdatableArray<S extends ReadonlyArray<unknown>, F extends FindOrFilter, Q extends QueryStatus, I extends ImmediateParentIsAnArray, Depth extends number, NewDepth extends number = DecrementRecursion[Depth]> = Rec<
@@ -113,6 +114,7 @@ export type UpdatableArray<S extends ReadonlyArray<unknown>, F extends FindOrFil
       )
     ))
   & (null extends S[0] ? Nullify : unknown)
+  & Reset
   , Depth>
 
 export type UpdatablePrimitive<S, F extends FindOrFilter, Q extends QueryStatus, I extends ImmediateParentIsAnArray, Depth extends number> =
@@ -122,6 +124,7 @@ export type UpdatablePrimitive<S, F extends FindOrFilter, Q extends QueryStatus,
   & (S extends boolean ? (F extends 'isFind' ? ToggleBoolean : ToggleBooleanArray) : unknown)
   & (S extends string ? ClearString : unknown)
   & Readable<F extends 'isFilter' ? S[] : S>
+  & Reset
 
 export type Payload<T> = T | (
   T extends PossiblyBrandedPrimitive ? never :
@@ -136,6 +139,10 @@ export interface ClearString {
 
 export interface Nullify {
   $nullify: () => void,
+}
+
+export interface Reset {
+  $reset: () => void,
 }
 
 export interface MergeMatching<S> {
