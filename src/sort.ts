@@ -21,18 +21,16 @@ const sortPrimitive = <T extends Array<SortableProperty>>(stateActions: StateAct
   const onChangeArray = subStore.$onChangeArray(({ inserted, deleted, updated }) => {
     const stateCopied = $state.slice();
     deleted.forEach(e => {
-      const index = binarySearchIndexForPrimitive(stateCopied, e, name);
+      const index = stateCopied.findIndex(sa => sa === e);
       stateCopied.splice(index, 1);
     });
     inserted.forEach(e => {
-      const index = binarySearchIndexForPrimitive(stateCopied, e, name);
-      if (stateCopied[index] !== e)
-        stateCopied.splice(index, 0, e);
+      const index = searchForInsertionIndexWithinScalarArray(stateCopied, e, name);
+      stateCopied.splice(index, 0, e);
     });
     updated.forEach(e => {
-      const index = binarySearchIndexForPrimitive(stateCopied, e, name);
-      if (stateCopied[index] !== e)
-        stateCopied.splice(index, 0, e);
+      const index = stateCopied.findIndex(sa => sa === e);
+      stateCopied.splice(index, 1, e);
     });
     changeListeners.forEach(cl => cl(stateCopied, $state));
     $state = stateCopied;
@@ -69,18 +67,17 @@ const sortObject = <T extends Array<BasicRecord>>(stateActions: StateAction[], n
   const onChangeArray = subStore.$onChangeArray(({ inserted, deleted, updated }) => {
     const stateCopied = $state.slice();
     deleted.forEach(e => {
-      const index = binarySearchIndexByProperty(stateCopied, e[propToSortBy], propToSortBy, name);
+      const index = stateCopied.findIndex(sa => sa[idProp] === e[idProp]);
       stateCopied.splice(index, 1);
     });
     inserted.forEach(e => {
-      const index = binarySearchIndexByProperty(stateCopied, e[propToSortBy], propToSortBy, name);
-      if (stateCopied[index]?.[propToSortBy] !== e[propToSortBy])
-        stateCopied.splice(index, 0, e);
+      const index = searchForInsertionIndexWithinObjectArray(stateCopied, e[propToSortBy], propToSortBy, name);
+      stateCopied.splice(index, 0, e);
     });
-    updated.forEach(e => stateCopied.forEach((sa, i) => {
-      if (sa[idProp] !== e[idProp]) return;
-      stateCopied[i] = e;
-    }));
+    updated.forEach(e => {
+      const index = stateCopied.findIndex(sa => sa[idProp] === e[idProp]);
+      stateCopied.splice(index, 1, e);
+    });
     changeListeners.forEach(cl => cl(stateCopied, $state));
     $state = stateCopied;
   });
@@ -102,49 +99,31 @@ const sortObject = <T extends Array<BasicRecord>>(stateActions: StateAction[], n
   });
 }
 
-const binarySearchIndexByProperty = <T>(array: T[], target: T[keyof T], property: keyof T, order: SortOrder) => {
-  let left = 0;
-  let right = array.length;
-  const targetValue = target instanceof Date ? target.getTime() :
-    typeof target === 'number' ? target :
-      String(target);
-  while (left < right) {
-    const mid = Math.floor((left + right) / 2);
-    const midValue = array[mid][property] instanceof Date ? (array[mid][property] as Date).getTime() :
-      typeof array[mid][property] === 'number' ? array[mid][property] as number :
-        String(array[mid][property]);
-    if (midValue === targetValue)
-      return mid;
-    let comparison = 0;
-    if (typeof targetValue === 'number' && typeof midValue === 'number')
-      comparison = midValue < targetValue ? -1 : 1;
-    else if (typeof targetValue === 'string' && typeof midValue === 'string')
-      comparison = midValue.localeCompare(targetValue);
-    if (order === '$ascending')
-      if (comparison < 0) left = mid + 1; else right = mid;
-    else
-      if (comparison > 0) left = mid + 1; else right = mid;
+const searchForInsertionIndexWithinObjectArray = <T>(array: T[], target: T[keyof T], property: keyof T, order: SortOrder) => {
+  for (let i = 0, j = array.length - 1; i < array.length; i++, j--) {
+    const index = order === '$ascending' ? i : j;
+    const a = array[index][property]
+    const b = target;
+    const result = compare(a, b);
+    if (order === '$ascending' ? result > 0 : result < 0)
+      return index;
   }
-  return left;
+  return array.length;
 }
 
-const binarySearchIndexForPrimitive = <T extends SortableProperty>(array: T[], target: T, order: SortOrder) => {
-  let left = 0;
-  let right = array.length;
-  while (left < right) {
-    const mid = Math.floor((left + right) / 2);
-    const comparison = compare(array[mid], target);
-    if (comparison === 0)
-      return mid;
-    if (order === '$ascending')
-      if (comparison < 0) left = mid + 1; else right = mid;
-    else
-      if (comparison > 0) left = mid + 1; else right = mid;
+const searchForInsertionIndexWithinScalarArray = <T extends SortableProperty>(array: T[], target: T, order: SortOrder) => {
+  for (let i = 0, j = array.length - 1; i < array.length; i++, j--) {
+    const index = order === '$ascending' ? i : j;
+    const a = array[index]
+    const b = target;
+    const result = compare(a, b);
+    if (order === '$ascending' ? result > 0 : result < 0)
+      return index;
   }
-  return left;
+  return array.length;
 }
 
-const compare = <T>(a: T, b: T): number => {
+function compare<T>(a: T, b: T): number {
   if (typeof a === 'number' && typeof b === 'number')
     return a - b;
   else if (typeof a === 'string' && typeof b === 'string')
@@ -152,4 +131,4 @@ const compare = <T>(a: T, b: T): number => {
   else if (a instanceof Date && b instanceof Date)
     return a.getTime() - b.getTime();
   throw new Error(`Unsupported type comparison: ${typeof(a)}  ${typeof(b)}`);
-};
+}

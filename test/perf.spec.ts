@@ -141,7 +141,6 @@ test('Native Perf (deep)', () => {
 })
 
 test('sort performance', () => {
-
   const elements = new Array(100000).fill(0).map((_, i) => ({ id: i, val: i }));
   const elementsShuffled = elements.slice().sort(() => Math.random() - 0.5);
   const before = performance.now();
@@ -150,4 +149,12 @@ test('sort performance', () => {
   elementsShuffled.push({id: 4, val: 4});
   elementsShuffled.sort((a, b) => a.id - b.id);
   console.log(`Sort after push: ${performance.now() - before}`);
+})
+
+test('find performance', () => {
+  const elements = new Array(1000000).fill(0).map((_, i) => ({ id: i, val: i }));
+  const elementsShuffled = elements.slice().sort(() => Math.random() - 0.5);
+  const before = performance.now();
+  elementsShuffled.find(e => e.id === 999999);
+  console.log(`Find: ${performance.now() - before}`);
 })

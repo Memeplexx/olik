@@ -92,35 +92,17 @@ test('should sort array when an object containing an entire array is patched', (
 });
 
 test('', () => {
-  const store = createStore({ arr: [{id: 1, val: 'one'}, {id: 2, val: 'two'}] });
-  // const m = store.arr.$memoizeSortBy.id.$ascending();
+  const store = createStore({ arr: [{ id: 1, val: 'one' }, { id: 2, val: 'two' }] });
   const m = store.arr.$deriveSortedList.$withId.id.$sortedBy.id.$ascending();
-  // m.$onChange(() => {});
   store.arr.$find.id.$eq(1).val.$set('three');
-  // store.arr.$find.id.$eq(1).$set({id: 1, val: 'three'});
-  // store.arr.$set([{id: 3, val: 'three'}, {id: 1, val: 'one'}, {id: 2, val: 'two'}]);
-  console.log(m.$state);
+  expect(m.$state).toEqual([ { id: 1, val: 'three' }, { id: 2, val: 'two' } ]);
 })
-
 
 test('', () => {
-  const store = createStore({ notes: [{id: 1, title: 'note 1', dateUpdated: new Date('2020-01-01')}, {id: 2, title: 'note 2', dateUpdated: new Date('2020-01-02')}] });
-  const s1 = store.notes.$deriveSortedList.$withId.id.$sortedBy.dateUpdated.$ascending();
-  store.notes.$find.id.$eq(1).dateUpdated.$set(new Date());
-  console.log(s1.$state);
+  const store = createStore({ notes: [{ id: 1, num: 1 }, { id: 2, num: 2 }, { id: 3, num: 3 }] });
+  const s1 = store.notes.$deriveSortedList.$withId.id.$sortedBy.num.$descending();
+  store.notes.$find.id.$eq(2).num.$set(3);
+  expect(s1.$state).toEqual([ { id: 3, num: 3 }, { id: 2, num: 3 }, { id: 1, num: 1 } ]);
+  store.notes.$find.id.$eq(3).$delete();
+  expect(s1.$state).toEqual([ { id: 2, num: 3 }, { id: 1, num: 1 } ]);
 })
-
-
-// test('', () => {
-//   const store = createStore({
-//     arr1: [1, 2, 3],
-//     arr2: ['1', '2', '3']
-//   });
-//   // const arr1Before = store.arr1.$state; 
-//   const s1 = store.arr1.$createSortedList.$ascending();
-  
-//   store.$set({
-//     arr1: [],
-//     arr2: []
-//   });
-// })
