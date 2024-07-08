@@ -434,21 +434,21 @@ export interface OnInsert<S> {
   /**
    * Receive events whenever array elements are inserted.
    */
-  $insert: ((changeListener: (state: DeepReadonly<S>, previous: DeepReadonly<S>) => void) => Unsubscribe) & Readable<S>
+  $inserted: ((changeListener: (state: DeepReadonly<S>, previous: DeepReadonly<S>) => void) => Unsubscribe) & Readable<S>
 }
 
 export interface OnDelete<S> {
   /**
    * Receive events whenever array elements are deleted.
    */
-  $delete: ((changeListener: (state: DeepReadonly<S>, previous: DeepReadonly<S>) => void) => Unsubscribe) & Readable<S>
+  $deleted: ((changeListener: (state: DeepReadonly<S>, previous: DeepReadonly<S>) => void) => Unsubscribe) & Readable<S>
 }
 
 export interface OnUpdate<S> {
   /**
    * Receive events whenever array elements are updated.
    */
-  $update: ((changeListener: (state: DeepReadonly<S>, previous: DeepReadonly<S>) => void) => Unsubscribe) & Readable<S>
+  $updated: ((changeListener: (state: DeepReadonly<S>, previous: DeepReadonly<S>) => void) => Unsubscribe) & Readable<S>
 }
 
 export type SortableProperty = number | string | Date | { [brand]?: string };

@@ -65,7 +65,7 @@ const onArray = (stateActions: StateAction[], name: string) => {
           path,
         })
       return unsubscribe;
-    }) as OnChangeArray<unknown>['$onArray']['$insert'];
+    }) as OnChangeArray<unknown>['$onArray']['$inserted'];
     return new Proxy(toProxy, {
       get: (_, prop: string) => {
         if (prop === '$onChange') {
@@ -75,7 +75,7 @@ const onArray = (stateActions: StateAction[], name: string) => {
             const entry = libState.changeArrayListenerToListenerMap.get(listener)!;
             entry.push(listener);
             return toProxy(listener)
-          }) as OnChangeArray<unknown>['$onArray']['$insert']
+          }) as OnChangeArray<unknown>['$onArray']['$inserted']
         }
         if (prop === '$state') {
           const result = libState.changedArrayPayloads.get(path);
@@ -86,9 +86,9 @@ const onArray = (stateActions: StateAction[], name: string) => {
     })
   }
   return ({
-    $insert: construct(libState.changeArrayInsertListeners, true),
-    $delete: construct(libState.changeArrayDeleteListeners),
-    $update: construct(libState.changeArrayUpdateListeners),
+    $inserted: construct(libState.changeArrayInsertListeners, true),
+    $deleted: construct(libState.changeArrayDeleteListeners),
+    $updated: construct(libState.changeArrayUpdateListeners),
   }) as OnChangeArray<unknown>['$onArray'];
 }
 
@@ -190,8 +190,8 @@ export const setNewStateAndNotifyListeners = (stateActions: StateAction[]) => {
       const selectedNewState = readState(libState.state, actions) as DeepReadonlyArray<unknown>;
       if (selectedOldState !== selectedNewState) {
         listener.cachedState = selectedNewState;
-        listener.listeners.forEach(listener => listener(payload, selectedOldState));
         listener.listeners.forEach(cl => {
+          cl(payload, selectedOldState)
           const listeners = libState.changeArrayListenerToListenerMap.get(cl)!;
           if (listeners) {
             libState.changedArrayPayloads.set(path, payload);
