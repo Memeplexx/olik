@@ -3,7 +3,6 @@ import { BasicRecord, Derivation, DerivationCalculationInputs, Readable, Unsubsc
 import { enqueueMicroTask } from './utility';
 
 
-
 export function derive<X extends Readable<unknown>[]>(...args: X) {
   let previousParams = new Array<unknown>();
   let previousResult = null as unknown;

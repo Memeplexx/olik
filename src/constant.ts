@@ -24,8 +24,11 @@ export const libState: LibState = {
   insertedElements: new Map(),
   updatedElements: new Map(),
   deletedElements: new Map(),
-  changeArrayListeners: [],
-  // updatedArrays: new Map(),
+  changeArrayDeleteListeners: [],
+  changeArrayInsertListeners: [],
+  changeArrayUpdateListeners: [],
+  changeArrayListenerToListenerMap: new Map(),
+  changedArrayPayloads: new Map(),
 }
 
 export const testState: TestState = {

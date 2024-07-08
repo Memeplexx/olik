@@ -16,11 +16,15 @@ export const resetLibraryState = () => {
   libState.store = undefined;
   libState.state = undefined;
   libState.changeListeners = [];
-  libState.changeArrayListeners = [];
+  libState.changeArrayDeleteListeners = [];
+  libState.changeArrayInsertListeners = [];
+  libState.changeArrayUpdateListeners = [];
   libState.initialState = undefined;
   libState.disableDevtoolsDispatch = false;
   libState.devtools = undefined;
   libState.updatedElements = new Map();
+  libState.changeArrayListenerToListenerMap = new Map();
+  libState.changedArrayPayloads = new Map();
   augment({ async: promise => promise() });
 };
 

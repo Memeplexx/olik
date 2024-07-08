@@ -179,7 +179,7 @@ test('should fire immediate change', () => {
   store.arr.$onChange(() => {
     fired++;
   }, { fireImmediately: true });
-  expect(fired).toEqual(1); 
+  expect(fired).toEqual(1);
 })
 
 test('should fire on change with previous value', () => {
@@ -196,4 +196,37 @@ test('should fire on change with previous value', () => {
   store.num.$set(3);
   expect(curr).toEqual(3);
   expect(prev).toEqual(1);
+})
+
+test('should get state from $onArray.$insert', async () => {
+  const store = createStore({ arr: [{ id: 1, val: 'one' }, { id: 2, val: 'two' }, { id: 3, val: 'three' }] });
+  const d = derive(
+    store.arr.$onArray.$insert
+  ).$with((xx) => {
+    return xx[0].id;
+  });
+  expect(d.$state).toEqual(1);
+})
+
+test('should get $onChange from $onArray.$insert', async () => {
+  const store = createStore({ arr: [{ id: 1, val: 'one' }, { id: 2, val: 'two' }, { id: 3, val: 'three' }] });
+  let changed!: number;
+  derive(
+    store.arr.$onArray.$insert
+  ).$with((xx) => {
+    return xx[0].id;
+  }).$onChange(x => {
+    changed = x;
+  });
+  store.arr.$push({ id: 4, val: 'four' });
+  await new Promise(resolve => setTimeout(() => resolve(null)));
+  expect(changed).toEqual(4);
+
+
+  // derive(
+  //   store.arr.$onArray.$insert
+  // ).$with((xx) => {
+  //   return xx;
+  // }).$onChange(x => {
+  // });
 })

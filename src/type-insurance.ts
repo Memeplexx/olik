@@ -305,5 +305,3 @@ strr.arr.$deriveSortedList.$withId.id.$sortedBy.name.$ascending();
 
   store.$reset();
 }
-
-
