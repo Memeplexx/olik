@@ -252,3 +252,17 @@ test('should get $onChange from $onArray.$update', async () => {
   await new Promise(resolve => setTimeout(() => resolve(null)));
   expect(changed).toEqual('twoo');
 })
+
+test('should work with an accumulator', async () => {
+  const store = createStore({ arr: [{ id: 1, val: 'one' }, { id: 2, val: 'two' }, { id: 3, val: 'three' }] });
+  const d = derive(
+    store.arr,
+  ).$withAccumulator(new Map<number, string>(), (map, arr) => {
+    map.set(arr.at(-1)!.id, arr.at(-1)!.val);
+    return map;
+  });
+  store.arr.$push({ id: 4, val: 'four' });
+  expect(d.$state).toEqual(new Map([[4, 'four']]));
+  store.arr.$push({ id: 5, val: 'five' });
+  expect(d.$state).toEqual(new Map([[4, 'four'], [5, 'five']]));
+})
