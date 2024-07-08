@@ -221,12 +221,34 @@ test('should get $onChange from $onArray.$insert', async () => {
   store.arr.$push({ id: 4, val: 'four' });
   await new Promise(resolve => setTimeout(() => resolve(null)));
   expect(changed).toEqual(4);
+})
 
+test('should get $onChange from $onArray.$delete', async () => {
+  const store = createStore({ arr: [{ id: 1, val: 'one' }, { id: 2, val: 'two' }, { id: 3, val: 'three' }] });
+  let changed!: number;
+  derive(
+    store.arr.$onArray.$delete
+  ).$with((xx) => {
+    return xx[0].id;
+  }).$onChange(x => {
+    changed = x;
+  });
+  store.arr.$find.id.$eq(2).$delete();
+  await new Promise(resolve => setTimeout(() => resolve(null)));
+  expect(changed).toEqual(2);
+})
 
-  // derive(
-  //   store.arr.$onArray.$insert
-  // ).$with((xx) => {
-  //   return xx;
-  // }).$onChange(x => {
-  // });
+test('should get $onChange from $onArray.$update', async () => {
+  const store = createStore({ arr: [{ id: 1, val: 'one' }, { id: 2, val: 'two' }, { id: 3, val: 'three' }] });
+  let changed!: string;
+  derive(
+    store.arr.$onArray.$update
+  ).$with((xx) => {
+    return xx[0].val;
+  }).$onChange(x => {
+    changed = x;
+  });
+  store.arr.$find.id.$eq(2).val.$set('twoo');
+  await new Promise(resolve => setTimeout(() => resolve(null)));
+  expect(changed).toEqual('twoo');
 })

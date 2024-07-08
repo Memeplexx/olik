@@ -36,6 +36,15 @@ export type DeepReadonly<T> = T extends Primitive | Date ? T : T extends Array<i
 export type DeepReadonlyObject<T> = { readonly [P in keyof T]: DeepReadonly<T[P]>; }
 export type DeepReadonlyArray<T = unknown> = ReadonlyArray<DeepReadonly<T>>;
 
+export type UnwrapDeepReadonly<T> = T extends Primitive | Date
+  ? T
+  : T extends ReadonlyArray<infer R>
+  ? UnwrapDeepReadonlyArray<R>
+  : T extends DeepReadonlyObject<infer U>
+  ? { [P in keyof U]: UnwrapDeepReadonly<U[P]> }
+  : T;
+export type UnwrapDeepReadonlyArray<T = unknown> = Array<UnwrapDeepReadonly<T>>;
+
 export type Store<S> = BaseStore<S> & (S extends never ? unknown : StoreAugment<S>);
 
 export type ValueOf<T> = T[keyof T];
@@ -677,10 +686,12 @@ export type DerivationCalculationInputs<T extends ReadonlyArray<Derivable<unknow
   [K in keyof T]: DerivationCalculationInput<T[K]>;
 }
 
-// export interface Derivation<R> extends Read<R>, OnChange<R>, InvalidateDerivation {
-// }
-export interface Derivation<R> extends Read<R>, OnChange<R>, InvalidateDerivation {
+export interface Derivation<R> extends Read<UnwrapDeepReadonly<R>>, OnChange<UnwrapDeepReadonly<R>>, InvalidateDerivation {
 }
+// export interface Derivation<R> extends InvalidateDerivation {
+//   $state: R,
+//   $onChange: (arg: (a: R) => void) => Unsubscribe
+// }
 
 export interface FutureState<C> {
   isLoading: boolean,
