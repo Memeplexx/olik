@@ -91,6 +91,61 @@ test('should react to onInsert and update events on merge matching', () => {
   expect(updated).toEqual([{ id: 1, text: 'thing' }]);
 });
 
+test('should react to update events on set', () => {
+  const store = createStore({ obj: { one: 'hello', two: 'world' } });
+  let updated!: Partial<{ one: string, two: string }>;
+  store.obj.$onObject.$propertyUpdated(e => {
+    updated = e;
+  });
+  store.obj.one.$set('another');
+  expect(updated).toEqual({ one: 'another' });
+})
+
+test('should react to update events on patch', () => {
+  const store = createStore({ obj: { one: 'hello', two: 'world' } });
+  let updated!: Partial<{ one: string, two: string }>;
+  store.obj.$onObject.$propertyUpdated(e => {
+    updated = e;
+  });
+  store.obj.$patch({ one: 'another' });
+  expect(updated).toEqual({ one: 'another' });
+})
+
+test('should react to insert events on setNew', () => {
+  const store = createStore({ obj: { one: 'hello', two: 'world' } });
+  let inserted!: Partial<{ one: string, two: string }>;
+  store.obj.$onObject.$insertedInto(e => {
+    inserted = e;
+  });
+  store.obj.$setNew({ three: 'another' });
+  expect(inserted).toEqual({ three: 'another' });
+})
+
+test('should react to delete events on delete', () => {
+  const store = createStore({ obj: { one: 'hello', two: 'world' } });
+  let deleted!: Partial<{ one: string, two: string }>;
+  store.obj.$onObject.$deletedFrom(e => {
+    deleted = e;
+  });
+  store.obj.one.$delete();
+  expect(deleted).toEqual({ one: 'hello' });
+})
+
+test('should react to delete and insert events on setKey', () => {
+  const store = createStore({ obj: { one: 'hello', two: 'world' } });
+  let deleted!: Partial<{ one: string, two: string }>;
+  let inserted!: Partial<{ one: string, two: string }>;
+  store.obj.$onObject.$deletedFrom(e => {
+    deleted = e;
+  });
+  store.obj.$onObject.$insertedInto(e => {
+    inserted = e;
+  });
+  store.obj.one.$setKey('three');
+  expect(deleted).toEqual({ one: 'hello' });
+  expect(inserted).toEqual({ three: 'hello' });
+})
+
 test('should react to onUpdate when filtered', () => {
   const store = createStore({ arr: [{ id: 1, text: 'one' }, { id: 2, text: 'two' }], obj: { one: 'two' } });
   let updated!: DeepReadonlyArray<{ id: number, text: string }>;

@@ -19,7 +19,7 @@ export const copyNewState = (
     if (!Array.isArray(currentState))
       switch (stateActions[cursor.index].name) {
         case '$delete':
-          return deleteObjectValue(currentState as BasicRecord, stateActions, name);
+          return deleteObjectValue(currentState as BasicRecord, stateActions, name, cursor);
         case '$setKey':
           return setObjectKey(currentState as BasicRecord, cursor, stateActions, name);
         default:
@@ -114,7 +114,7 @@ const toggle = (currentState: unknown) => {
 }
 
 const setNew = (currentState: BasicRecord, cursor: Cursor, payload: BasicRecord, stateActions: StateAction[]) => {
-  updateObjectInsertedAndDeletedElements(currentState, cursor, payload, stateActions);
+  updateObjectInsertedAndDeletedElements(currentState, cursor, payload, stateActions, true);
   return { ...currentState, ...payload };
 }
 
@@ -131,6 +131,9 @@ const set = (currentState: unknown, cursor: Cursor, payload: unknown, stateActio
     } else {
       updateObjectInsertedAndDeletedElements(currentState as BasicRecord, cursor, payload as BasicRecord, stateActions);
     }
+  } else {
+    const basePath = constructTypeStrings(stateActions.slice(0, cursor.index - 1), false);
+    libState.updatedProperties.set(basePath, { [stateActions.at(-2)!.name]: payload });
   }
   return payload;
 }
@@ -142,7 +145,7 @@ const patch = (currentState: BasicRecord, cursor: Cursor, payload: BasicRecord, 
   return { ...currentState as BasicRecord, ...payload };
 }
 
-const updateObjectInsertedAndDeletedElements = (currentState: BasicRecord, cursor: Cursor, payload: BasicRecord, stateActions: StateAction[]) => {
+const updateObjectInsertedAndDeletedElements = (currentState: BasicRecord, cursor: Cursor, payload: BasicRecord, stateActions: StateAction[], newObjectProp = false) => {
   const basePath = constructTypeStrings(stateActions.slice(0, cursor.index), false);
   Object.keys(payload)
     .forEach(key => {
@@ -153,6 +156,10 @@ const updateObjectInsertedAndDeletedElements = (currentState: BasicRecord, curso
       libState.insertedElements.set(path, payloadValue.slice());
       libState.deletedElements.set(path, currentStateItem.slice());
     });
+  if (newObjectProp)
+    libState.insertedProperties.set(basePath, payload);
+  else 
+    libState.updatedProperties.set(basePath, payload);
 }
 
 const add = (currentState: unknown, payload: number) => {
@@ -265,6 +272,9 @@ const setObjectKey = (currentState: BasicRecord, cursor: Cursor, stateActions: S
   libState.changeListeners
     .filter(l => l.path.startsWith(stateActionsStr))
     .forEach(l => l.actions[l.actions.length - 2].name = arg);
+  const path = constructTypeStrings(stateActions.slice(0, cursor.index - 1), false);
+  libState.deletedProperties.set(path, { [name]: currentState[name] });
+  libState.insertedProperties.set(path, {[arg]: currentState[name]});
   return Object.entries(currentState)
     .reduce((acc, [key, value]) => { acc[key === name ? arg : key] = value; return acc; }, {} as BasicRecord);
 }
@@ -383,12 +393,14 @@ const filterArray = (currentState: BasicArray, cursor: Cursor, stateActions: Sta
   });
 }
 
-const deleteObjectValue = (currentState: BasicRecord, stateActions: StateAction[], name: string) => {
+const deleteObjectValue = (currentState: BasicRecord, stateActions: StateAction[], name: string, cursor: Cursor) => {
   const stateActionsStr = stateActions.slice(0, stateActions.length - 1).map(sa => sa.name).join('.');
   libState.changeListeners
     .filter(l => l.path.startsWith(stateActionsStr))
     .forEach(l => l.unsubscribe());
   const { [name]: other, ...newState } = currentState;
+  const basePath = constructTypeStrings(stateActions.slice(0, cursor.index - 1), false);
+  libState.deletedProperties.set(basePath, { [name]: other });
   return newState;
 }
 

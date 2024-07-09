@@ -146,7 +146,7 @@ test('sort performance', () => {
   const before = performance.now();
   elementsShuffled.sort((a, b) => a.id - b.id);
   console.log(`Sort full: ${performance.now() - before}`);
-  elementsShuffled.push({id: 4, val: 4});
+  elementsShuffled.push({ id: 4, val: 4 });
   elementsShuffled.sort((a, b) => a.id - b.id);
   console.log(`Sort after push: ${performance.now() - before}`);
 })

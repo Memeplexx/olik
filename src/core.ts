@@ -43,103 +43,76 @@ export function createStore<S extends BasicRecord>(
   return (libState.store = recurseProxy()) as unknown as Store<S>;
 }
 
-const onArray = (stateActions: StateAction[], name: string) => {
-  const path = constructTypeStrings(stateActions, false); // double check how path is calculated!!!!!!!
-  const construct = (changeArrayListeners: ChangeListener[], isInsert = false) => {
-    const toProxy = (listener => {
-      const unsubscribe = () => {
-        const changeListenerIndex = changeArrayListeners.findIndex(cl => cl.path === path)!;
-        const { listeners } = changeArrayListeners[changeListenerIndex];
-        if (listeners.length === 1)
-          changeArrayListeners.splice(changeListenerIndex, 1);
-        else
-          listeners.splice(listeners.findIndex(l => l === listener), 1);
-      }
-      const listeners = changeArrayListeners.find(cl => cl.path === path)?.listeners;
-      if (listeners)
-        listeners.push(listener);
+const construct = (
+  changeListeners: ChangeListener[], 
+  stateActions: StateAction[], 
+  listenerToListenerMap: Map<ChangeListenerFn<unknown>, ChangeListenerFn<unknown>[]>, 
+  payloads: Map<string, unknown>, 
+  name: string, 
+  path: string, 
+  defaultVal: unknown,
+  isInsert = false
+) => {
+  const toProxy = (listener => {
+    const unsubscribe = () => {
+      const changeListenerIndex = changeListeners.findIndex(cl => cl.path === path)!;
+      const { listeners } = changeListeners[changeListenerIndex];
+      if (listeners.length === 1)
+        changeListeners.splice(changeListenerIndex, 1);
       else
-        changeArrayListeners.push({
-          actions: [...stateActions, { name }],
-          listeners: [listener],
-          unsubscribe,
-          cachedState: undefined,
-          path,
-        })
-      return unsubscribe;
-    }) as (changeListener: ChangeListenerFn<unknown>) => Unsubscribe;
-    return new Proxy(toProxy, {
-      get: (_, prop: string) => {
-        if (prop === '$onChange')
-          return (listener => {
-            if (!libState.changeArrayListenerToListenerMap.has(listener))
-              libState.changeArrayListenerToListenerMap.set(listener, []);
-            const entry = libState.changeArrayListenerToListenerMap.get(listener)!;
-            entry.push(listener);
-            return toProxy(listener)
-          }) as (changeListener: ChangeListenerFn<unknown>) => Unsubscribe
-        if (prop === '$state') {
-          const result = libState.changedArrayPayloads.get(path);
-          if (result !== undefined) return result;
-          return isInsert ? state(stateActions, '$state') : [];
-        }
+        listeners.splice(listeners.findIndex(l => l === listener), 1);
+    }
+    const listeners = changeListeners.find(cl => cl.path === path)?.listeners;
+    if (listeners)
+      listeners.push(listener);
+    else
+      changeListeners.push({
+        actions: [...stateActions, { name }],
+        listeners: [listener],
+        unsubscribe,
+        cachedState: undefined,
+        path,
+      })
+    return unsubscribe;
+  }) as (changeListener: ChangeListenerFn<unknown>) => Unsubscribe;
+  return new Proxy(toProxy, {
+    get: (_, prop: string) => {
+      if (prop === '$onChange')
+        return (listener => {
+          if (!listenerToListenerMap.has(listener))
+            listenerToListenerMap.set(listener, []);
+          const entry = listenerToListenerMap.get(listener)!;
+          entry.push(listener);
+          return toProxy(listener)
+        }) as (changeListener: ChangeListenerFn<unknown>) => Unsubscribe
+      if (prop === '$state') {
+        const result = payloads.get(path);
+        if (result !== undefined) return result;
+        return isInsert ? state(stateActions, '$state') : defaultVal;
       }
-    })
-  }
+    }
+  })
+}
+
+const onArray = (stateActions: StateAction[], name: string) => {
+  const path = constructTypeStrings(stateActions, false);
+  const constructInner = (changeListeners: ChangeListener[], isInsert = false) =>
+    construct(changeListeners, stateActions, libState.changeArrayListenerToListenerMap, libState.changedArrayPayloads, name, path, [], isInsert);
   return ({
-    $inserted: construct(libState.changeArrayInsertListeners, true),
-    $deleted: construct(libState.changeArrayDeleteListeners),
-    $updated: construct(libState.changeArrayUpdateListeners),
+    $inserted: constructInner(libState.changeArrayInsertListeners, true),
+    $deleted: constructInner(libState.changeArrayDeleteListeners),
+    $updated: constructInner(libState.changeArrayUpdateListeners),
   }) as OnArray<unknown>['$onArray'];
 }
 
 const onObject = (stateActions: StateAction[], name: string) => {
-  const path = constructTypeStrings(stateActions, false); // double check how path is calculated!!!!!!!
-  const construct = (changeObjectListeners: ChangeListener<BasicRecord>[], isInsert = false) => {
-    const toProxy = (listener => {
-      const unsubscribe = () => {
-        const changeListenerIndex = changeObjectListeners.findIndex(cl => cl.path === path)!;
-        const { listeners } = changeObjectListeners[changeListenerIndex];
-        if (listeners.length === 1)
-          changeObjectListeners.splice(changeListenerIndex, 1);
-        else
-          listeners.splice(listeners.findIndex(l => l === listener), 1);
-      }
-      const listeners = changeObjectListeners.find(cl => cl.path === path)?.listeners;
-      if (listeners)
-        listeners.push(listener);
-      else
-        changeObjectListeners.push({
-          actions: [...stateActions, { name }],
-          listeners: [listener],
-          unsubscribe,
-          cachedState: undefined,
-          path,
-        })
-      return unsubscribe;
-    }) as (changeListener: ChangeListenerFn<unknown>) => Unsubscribe
-    return new Proxy(toProxy, {
-      get: (_, prop: string) => {
-        if (prop === '$onChange')
-          return (listener => {
-            if (!libState.changeObjectListenerToListenerMap.has(listener))
-              libState.changeObjectListenerToListenerMap.set(listener, []);
-            const entry = libState.changeObjectListenerToListenerMap.get(listener)!;
-            entry.push(listener);
-            return toProxy(listener)
-          }) as (changeListener: ChangeListenerFn<unknown>) => Unsubscribe
-        if (prop === '$state') {
-          const result = libState.changedObjectPayloads.get(path);
-          if (result !== undefined) return result;
-          return isInsert ? state(stateActions, '$state') : {};
-        }
-      }
-    })
-  }
+  const path = constructTypeStrings(stateActions, false);
+  const constructInner = ( changeListeners: ChangeListener[],isInsert = false) => 
+    construct(changeListeners, stateActions, libState.changeObjectListenerToListenerMap, libState.changedObjectPayloads, name, path, {}, isInsert);
   return ({
-    $insertedInto: construct(libState.changeObjectInsertListeners, true),
-    $deletedFrom: construct(libState.changeObjectDeleteListeners),
-    $propertyUpdated: construct(libState.changeObjectUpdateListeners),
+    $insertedInto: constructInner(libState.changeObjectInsertListeners, true),
+    $deletedFrom: constructInner(libState.changeObjectDeleteListeners),
+    $propertyUpdated: constructInner(libState.changeObjectUpdateListeners),
   }) as OnObject<unknown>['$onObject'];
 }
 
@@ -153,7 +126,7 @@ const onChange = (stateActions: StateAction[], name: string) => ((listener, opti
     else
       listeners.splice(listeners.findIndex(l => l === listener), 1);
   }
-  const path = constructTypeStrings(stateActions, false); // double check how path is calculated!!!!!!!
+  const path = constructTypeStrings(stateActions, false);
   const listeners = changeListeners.find(cl => cl.path === path)?.listeners;
   if (listeners)
     listeners.push(listener);
@@ -256,7 +229,7 @@ export const setNewStateAndNotifyListeners = (stateActions: StateAction[]) => {
   onPartialChange(libState.deletedElements, changeArrayDeleteListeners, libState.changeArrayListenerToListenerMap, libState.changedArrayPayloads);
   onPartialChange(libState.insertedProperties, changeObjectInsertListeners, libState.changeObjectListenerToListenerMap, libState.changedObjectPayloads);
   onPartialChange(libState.updatedProperties, changeObjectUpdateListeners, libState.changeObjectListenerToListenerMap, libState.changedObjectPayloads);
-  onPartialChange(libState.deletedElements, changeObjectDeleteListeners, libState.changeObjectListenerToListenerMap, libState.changedObjectPayloads);
+  onPartialChange(libState.deletedProperties, changeObjectDeleteListeners, libState.changeObjectListenerToListenerMap, libState.changedObjectPayloads);
 }
 
 const initializeLibState = (initialState: BasicRecord) => {
