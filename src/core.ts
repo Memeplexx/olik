@@ -1,6 +1,6 @@
 import { augmentations, comparatorsPropMap, errorMessages, libPropMap, libState, testState, updatePropMap } from './constant';
 import { readState } from './read';
-import { BasicRecord, ChangeListener, DeepReadonly, DeepReadonlyArray, OnChange, OnArray, SortOrder, StateAction, Store } from './type';
+import { BasicRecord, ChangeListener, DeepReadonly, OnChange, OnArray, SortOrder, StateAction, Store, OnObject, ChangeListenerFn, Unsubscribe } from './type';
 import { StoreInternal } from './type-internal';
 import { constructTypeStrings } from './utility';
 import { copyNewState } from './write-copy';
@@ -27,6 +27,8 @@ const recurseProxy = (stateActions?: StateAction[]): StoreInternal => new Proxy(
       return onChange(stateActions ?? [], prop);
     if (prop === '$onArray')
       return onArray(stateActions ?? [], prop);
+    if (prop === '$onObject')
+      return onObject(stateActions ?? [], prop);
     if (prop === '$ascending' || prop === '$descending')
       return memoizeSortBy(stateActions ?? [], prop);
     return basicProp(stateActions ?? [], prop);
@@ -65,18 +67,17 @@ const onArray = (stateActions: StateAction[], name: string) => {
           path,
         })
       return unsubscribe;
-    }) as OnArray<unknown>['$onArray']['$inserted'];
+    }) as (changeListener: ChangeListenerFn<unknown>) => Unsubscribe;
     return new Proxy(toProxy, {
       get: (_, prop: string) => {
-        if (prop === '$onChange') {
+        if (prop === '$onChange')
           return (listener => {
             if (!libState.changeArrayListenerToListenerMap.has(listener))
               libState.changeArrayListenerToListenerMap.set(listener, []);
             const entry = libState.changeArrayListenerToListenerMap.get(listener)!;
             entry.push(listener);
             return toProxy(listener)
-          }) as OnArray<unknown>['$onArray']['$inserted']
-        }
+          }) as (changeListener: ChangeListenerFn<unknown>) => Unsubscribe
         if (prop === '$state') {
           const result = libState.changedArrayPayloads.get(path);
           if (result !== undefined) return result;
@@ -90,6 +91,56 @@ const onArray = (stateActions: StateAction[], name: string) => {
     $deleted: construct(libState.changeArrayDeleteListeners),
     $updated: construct(libState.changeArrayUpdateListeners),
   }) as OnArray<unknown>['$onArray'];
+}
+
+const onObject = (stateActions: StateAction[], name: string) => {
+  const path = constructTypeStrings(stateActions, false); // double check how path is calculated!!!!!!!
+  const construct = (changeObjectListeners: ChangeListener<BasicRecord>[], isInsert = false) => {
+    const toProxy = (listener => {
+      const unsubscribe = () => {
+        const changeListenerIndex = changeObjectListeners.findIndex(cl => cl.path === path)!;
+        const { listeners } = changeObjectListeners[changeListenerIndex];
+        if (listeners.length === 1)
+          changeObjectListeners.splice(changeListenerIndex, 1);
+        else
+          listeners.splice(listeners.findIndex(l => l === listener), 1);
+      }
+      const listeners = changeObjectListeners.find(cl => cl.path === path)?.listeners;
+      if (listeners)
+        listeners.push(listener);
+      else
+        changeObjectListeners.push({
+          actions: [...stateActions, { name }],
+          listeners: [listener],
+          unsubscribe,
+          cachedState: undefined,
+          path,
+        })
+      return unsubscribe;
+    }) as (changeListener: ChangeListenerFn<unknown>) => Unsubscribe
+    return new Proxy(toProxy, {
+      get: (_, prop: string) => {
+        if (prop === '$onChange')
+          return (listener => {
+            if (!libState.changeObjectListenerToListenerMap.has(listener))
+              libState.changeObjectListenerToListenerMap.set(listener, []);
+            const entry = libState.changeObjectListenerToListenerMap.get(listener)!;
+            entry.push(listener);
+            return toProxy(listener)
+          }) as (changeListener: ChangeListenerFn<unknown>) => Unsubscribe
+        if (prop === '$state') {
+          const result = libState.changedObjectPayloads.get(path);
+          if (result !== undefined) return result;
+          return isInsert ? state(stateActions, '$state') : {};
+        }
+      }
+    })
+  }
+  return ({
+    $insertedInto: construct(libState.changeObjectInsertListeners, true),
+    $deletedFrom: construct(libState.changeObjectDeleteListeners),
+    $propertyUpdated: construct(libState.changeObjectUpdateListeners),
+  }) as OnObject<unknown>['$onObject'];
 }
 
 const onChange = (stateActions: StateAction[], name: string) => ((listener, options) => {
@@ -158,7 +209,7 @@ const update = (stateActions: StateAction[], name: string) => (arg: unknown) => 
 }
 
 export const setNewStateAndNotifyListeners = (stateActions: StateAction[]) => {
-  const { state: oldState, devtools, disableDevtoolsDispatch, changeArrayInsertListeners, changeArrayDeleteListeners, changeArrayUpdateListeners } = libState;
+  const { state: oldState, devtools, disableDevtoolsDispatch, changeArrayInsertListeners, changeArrayDeleteListeners, changeArrayUpdateListeners, changeObjectInsertListeners, changeObjectDeleteListeners, changeObjectUpdateListeners } = libState;
   if (devtools && !disableDevtoolsDispatch) {
     const type = constructTypeStrings(stateActions, true);
     const typeOrig = constructTypeStrings(stateActions, false);
@@ -179,32 +230,33 @@ export const setNewStateAndNotifyListeners = (stateActions: StateAction[]) => {
       listener.listeners.forEach(listener => listener(selectedNewState as DeepReadonly<unknown>, selectedOldState as DeepReadonly<unknown>));
     }
   });
-  const construct = (elements: Map<string, unknown[]>, listeners: ChangeListener[]) => {
+  const onPartialChange = (elements: Map<string, unknown>, listeners: ChangeListener[], map: Map<ChangeListenerFn<unknown>, ChangeListenerFn<unknown>[]>, payloads: Map<string, unknown>) => {
     listeners.forEach(listener => {
       const { path } = listener;
-      const payload = (elements.get(path) ?? []) as DeepReadonlyArray<unknown>;
-      if (!payload.length)
-        return;
+      const payload = (elements.get(path) ?? []);
+      if (Array.isArray(payload) && !payload.length) return;
+      if (!Array.isArray(payload) && !Object.keys(payload).length) return;
       const { actions, cachedState } = listener;
-      const selectedOldState = (cachedState !== undefined ? cachedState : readState(oldState, actions)) as DeepReadonlyArray<unknown>;
-      const selectedNewState = readState(libState.state, actions) as DeepReadonlyArray<unknown>;
-      if (selectedOldState !== selectedNewState) {
-        listener.cachedState = selectedNewState;
-        listener.listeners.forEach(cl => {
-          cl(payload, selectedOldState)
-          const listeners = libState.changeArrayListenerToListenerMap.get(cl)!;
-          if (listeners) {
-            libState.changedArrayPayloads.set(path, payload);
-            listeners.forEach(l => l(payload, {}))
-          }
-        })
-      }
+      const selectedOldState = (cachedState !== undefined ? cachedState : readState(oldState, actions));
+      const selectedNewState = readState(libState.state, actions);
+      if (selectedOldState === selectedNewState) return;
+      listener.cachedState = selectedNewState;
+      listener.listeners.forEach(listener => {
+        listener(payload, selectedOldState as DeepReadonly<unknown>);
+        const listeners = map.get(listener)!;
+        if (!listeners) return;
+        payloads.set(path, payload);
+        listeners.forEach(l => l(payload, {}))
+      })
     });
     elements.clear();
   }
-  construct(libState.insertedElements, changeArrayInsertListeners);
-  construct(libState.updatedElements, changeArrayUpdateListeners);
-  construct(libState.deletedElements, changeArrayDeleteListeners);
+  onPartialChange(libState.insertedElements, changeArrayInsertListeners, libState.changeArrayListenerToListenerMap, libState.changedArrayPayloads);
+  onPartialChange(libState.updatedElements, changeArrayUpdateListeners, libState.changeArrayListenerToListenerMap, libState.changedArrayPayloads);
+  onPartialChange(libState.deletedElements, changeArrayDeleteListeners, libState.changeArrayListenerToListenerMap, libState.changedArrayPayloads);
+  onPartialChange(libState.insertedProperties, changeObjectInsertListeners, libState.changeObjectListenerToListenerMap, libState.changedObjectPayloads);
+  onPartialChange(libState.updatedProperties, changeObjectUpdateListeners, libState.changeObjectListenerToListenerMap, libState.changedObjectPayloads);
+  onPartialChange(libState.deletedElements, changeObjectDeleteListeners, libState.changeObjectListenerToListenerMap, libState.changedObjectPayloads);
 }
 
 const initializeLibState = (initialState: BasicRecord) => {

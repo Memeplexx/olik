@@ -82,9 +82,10 @@ export type UpdatableObject<S, F extends FindOrFilter, Q extends QueryStatus, I 
       : UpdatableObject<S[K], F, Q, 'no', NewDepth>)
     & SetObjectKey
     & (null extends S[K] ? Nullify : unknown)
-    & OnObject<S[K]>
   }
+  & (S extends BasicRecord ? OnObject<S> : unknown)
   & Reset
+  
   , Depth>
 
 export type UpdatableArray<S extends ReadonlyArray<unknown>, F extends FindOrFilter, Q extends QueryStatus, I extends ImmediateParentIsAnArray, Depth extends number, NewDepth extends number = DecrementRecursion[Depth]> = Rec<
@@ -214,7 +215,7 @@ export interface At<S extends ReadonlyArray<unknown>, NewDepth extends number> {
  */
 export type Unsubscribe = () => void;
 
-export type ChangeListenerFn<S> = (state: DeepReadonly<S>, previous: DeepReadonly<S>) => void;
+export type ChangeListenerFn<S = unknown> = (state: DeepReadonly<S>, previous: DeepReadonly<S>) => void;
 
 export interface SetNewNode {
   /**
@@ -435,11 +436,32 @@ export interface OnArray<S> {
   $onArray: OnInsert<S> & OnDelete<S> & OnUpdate<S>;
 }
 
-export interface OnObject<S> {
+export interface OnObject<S = BasicRecord> {
   /**
    * Receive events whenever object properties are inserted, deleted, or updated.
    */
-  $onObjectProperty: OnInsert<S> & OnDelete<S> & OnUpdate<S>;
+  $onObject: InsertedInto<S> & DeletedFrom<S> & PropertyUpdated<S>;
+}
+
+export interface InsertedInto<S = BasicRecord> {
+  /**
+   * Receive events whenever elements are inserted.
+   */
+  $insertedInto: ((changeListener: ChangeListenerFn<Partial<S>>) => Unsubscribe) & Readable<S>
+}
+
+export interface DeletedFrom<S = BasicRecord> {
+  /**
+   * Receive events whenever elements are deleted.
+   */
+  $deletedFrom: ((changeListener: ChangeListenerFn<Partial<S>>) => Unsubscribe) & Readable<S>
+}
+
+export interface PropertyUpdated<S = BasicRecord> {
+  /**
+   * Receive events whenever elements are updated.
+   */
+  $propertyUpdated: ((changeListener: ChangeListenerFn<Partial<S>>) => Unsubscribe) & Readable<S>
 }
 
 export interface OnInsert<S> {
@@ -727,9 +749,9 @@ export type BaseStore<S> = UpdatableObject<S, 'isFind', 'notArray', 'no', MaxRec
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 export interface StoreAugment<S> { }
 
-export interface ChangeListener {
+export interface ChangeListener<T = unknown> {
   actions: StateAction[];
-  listeners: Array<(currentState: DeepReadonly<unknown>, previousState: DeepReadonly<unknown>) => unknown>;
+  listeners: Array<ChangeListenerFn<T>>;
   cachedState: unknown,
   path: string,
   unsubscribe: () => void;
@@ -754,14 +776,22 @@ export interface LibState {
   changeArrayInsertListeners: ChangeListener[],
   changeArrayUpdateListeners: ChangeListener[],
   changeArrayDeleteListeners: ChangeListener[],
+  changeObjectInsertListeners: ChangeListener[],
+  changeObjectUpdateListeners: ChangeListener[],
+  changeObjectDeleteListeners: ChangeListener[],
   initialState: undefined | BasicRecord,
   disableDevtoolsDispatch?: boolean,
   stacktraceError: null | Error,
   insertedElements: Map<string, Array<unknown>>,
   updatedElements: Map<string, Array<unknown>>,
   deletedElements: Map<string, Array<unknown>>,
-  changeArrayListenerToListenerMap: Map<ChangeListener['listeners'][0], ChangeListener['listeners']>,
+  insertedProperties: Map<string, BasicRecord>,
+  updatedProperties: Map<string, BasicRecord>,
+  deletedProperties: Map<string, BasicRecord>,
+  changeArrayListenerToListenerMap: Map<ChangeListenerFn<unknown>, Array<ChangeListenerFn<unknown>>>,
   changedArrayPayloads: Map<string, DeepReadonlyArray<unknown>>,
+  changeObjectListenerToListenerMap: Map<ChangeListenerFn<unknown>, Array<ChangeListenerFn<unknown>>>,
+  changedObjectPayloads: Map<string, DeepReadonlyObject<unknown>>,
 }
 
 export interface DevtoolsAction {

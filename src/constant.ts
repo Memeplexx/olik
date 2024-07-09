@@ -27,8 +27,16 @@ export const libState: LibState = {
   changeArrayDeleteListeners: [],
   changeArrayInsertListeners: [],
   changeArrayUpdateListeners: [],
+  insertedProperties: new Map(),
+  updatedProperties: new Map(),
+  deletedProperties: new Map(),
+  changeObjectDeleteListeners: [],
+  changeObjectInsertListeners: [],
+  changeObjectUpdateListeners: [],
   changeArrayListenerToListenerMap: new Map(),
   changedArrayPayloads: new Map(),
+  changeObjectListenerToListenerMap: new Map(),
+  changedObjectPayloads: new Map(),
 }
 
 export const testState: TestState = {
