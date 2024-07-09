@@ -1,5 +1,5 @@
 import { libState } from "./constant";
-import { StateAction, BasicRecord, SortableProperty, SortOrder, OnChange, Read, SortMemo, OnChangeArray } from "./type";
+import { StateAction, BasicRecord, SortableProperty, SortOrder, OnChange, Read, SortMemo, OnArray } from "./type";
 import { StoreInternal } from "./type-internal";
 
 
@@ -13,7 +13,7 @@ export function configureSortModule() {
 const sortPrimitive = <T extends Array<SortableProperty>>(stateActions: StateAction[], name: SortOrder) => () => {
   const changeListeners = new Array<Parameters<OnChange<SortableProperty[]>['$onChange']>[0]>;
   const subStore = stateActions.slice(0, stateActions.findIndex(e => e.name === '$deriveSortedList'))
-    .reduce((acc, e) => (acc as BasicRecord)[e.name] as StoreInternal, libState.store!) as unknown as OnChangeArray<T> & Read<T>;
+    .reduce((acc, e) => (acc as BasicRecord)[e.name] as StoreInternal, libState.store!) as unknown as OnArray<T> & Read<T>;
   let $state = subStore.$state.slice().sort((a, b) => {
     const comparison = compare(a, b);
     return name === '$ascending' ? comparison : -comparison;
@@ -62,7 +62,7 @@ const sortObject = <T extends Array<BasicRecord>>(stateActions: StateAction[], n
   const propToSortBy = stateActions[indexOfMemoizeSortBy + 4].name;
   const changeListeners = new Array<Parameters<OnChange<BasicRecord[]>['$onChange']>[0]>;
   const subStore = stateActions.slice(0, indexOfMemoizeSortBy)
-    .reduce((acc, e) => (acc as BasicRecord)[e.name] as StoreInternal, libState.store!) as unknown as OnChangeArray<T> & Read<T>;
+    .reduce((acc, e) => (acc as BasicRecord)[e.name] as StoreInternal, libState.store!) as unknown as OnArray<T> & Read<T>;
   let $state = subStore.$state.slice().sort((a, b) => {
     const comparison = compare(a[propToSortBy], b[propToSortBy]);
     return name === '$ascending' ? comparison : -comparison;

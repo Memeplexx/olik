@@ -82,6 +82,7 @@ export type UpdatableObject<S, F extends FindOrFilter, Q extends QueryStatus, I 
       : UpdatableObject<S[K], F, Q, 'no', NewDepth>)
     & SetObjectKey
     & (null extends S[K] ? Nullify : unknown)
+    & OnObject<S[K]>
   }
   & Reset
   , Depth>
@@ -106,7 +107,7 @@ export type UpdatableArray<S extends ReadonlyArray<unknown>, F extends FindOrFil
       & Filter<S, NewDepth>
       & At<S, NewDepth>
       & Readable<F extends 'isFilter' ? S : S[0]>
-      & OnChangeArray<S>
+      & OnArray<S>
       & (S[0] extends ReadonlyArray<unknown> ? unknown : S[0] extends PossiblyBrandedPrimitive ? MergePrimitive<S[0]> : MergeMatching<S[0]>)
       & (
         S[0] extends object
@@ -212,6 +213,8 @@ export interface At<S extends ReadonlyArray<unknown>, NewDepth extends number> {
  * Unsubscribe from the change listener that was previously added to the selected node.
  */
 export type Unsubscribe = () => void;
+
+export type ChangeListenerFn<S> = (state: DeepReadonly<S>, previous: DeepReadonly<S>) => void;
 
 export interface SetNewNode {
   /**
@@ -422,35 +425,42 @@ export interface OnChange<S> {
    * // On done
    * unsubscribe();
    */
-  $onChange: (changeListener: (state: DeepReadonly<S>, previous: DeepReadonly<S>) => void, options?: { fireImmediately?: boolean }) => Unsubscribe;
+  $onChange: (changeListener: ChangeListenerFn<S>, options?: { fireImmediately?: boolean }) => Unsubscribe;
 }
 
-export interface OnChangeArray<S> {
+export interface OnArray<S> {
   /**
    * Receive events whenever array elements are inserted, deleted, or updated.
    */
   $onArray: OnInsert<S> & OnDelete<S> & OnUpdate<S>;
 }
 
+export interface OnObject<S> {
+  /**
+   * Receive events whenever object properties are inserted, deleted, or updated.
+   */
+  $onObjectProperty: OnInsert<S> & OnDelete<S> & OnUpdate<S>;
+}
+
 export interface OnInsert<S> {
   /**
-   * Receive events whenever array elements are inserted.
+   * Receive events whenever elements are inserted.
    */
-  $inserted: ((changeListener: (state: DeepReadonly<S>, previous: DeepReadonly<S>) => void) => Unsubscribe) & Readable<S>
+  $inserted: ((changeListener: ChangeListenerFn<S>) => Unsubscribe) & Readable<S>
 }
 
 export interface OnDelete<S> {
   /**
-   * Receive events whenever array elements are deleted.
+   * Receive events whenever elements are deleted.
    */
-  $deleted: ((changeListener: (state: DeepReadonly<S>, previous: DeepReadonly<S>) => void) => Unsubscribe) & Readable<S>
+  $deleted: ((changeListener: ChangeListenerFn<S>) => Unsubscribe) & Readable<S>
 }
 
 export interface OnUpdate<S> {
   /**
-   * Receive events whenever array elements are updated.
+   * Receive events whenever elements are updated.
    */
-  $updated: ((changeListener: (state: DeepReadonly<S>, previous: DeepReadonly<S>) => void) => Unsubscribe) & Readable<S>
+  $updated: ((changeListener: ChangeListenerFn<S>) => Unsubscribe) & Readable<S>
 }
 
 export type SortableProperty = number | string | Date | { [brand]?: string };

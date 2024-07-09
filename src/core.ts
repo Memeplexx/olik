@@ -1,6 +1,6 @@
 import { augmentations, comparatorsPropMap, errorMessages, libPropMap, libState, testState, updatePropMap } from './constant';
 import { readState } from './read';
-import { BasicRecord, ChangeListener, DeepReadonly, DeepReadonlyArray, OnChange, OnChangeArray, SortOrder, StateAction, Store } from './type';
+import { BasicRecord, ChangeListener, DeepReadonly, DeepReadonlyArray, OnChange, OnArray, SortOrder, StateAction, Store } from './type';
 import { StoreInternal } from './type-internal';
 import { constructTypeStrings } from './utility';
 import { copyNewState } from './write-copy';
@@ -65,7 +65,7 @@ const onArray = (stateActions: StateAction[], name: string) => {
           path,
         })
       return unsubscribe;
-    }) as OnChangeArray<unknown>['$onArray']['$inserted'];
+    }) as OnArray<unknown>['$onArray']['$inserted'];
     return new Proxy(toProxy, {
       get: (_, prop: string) => {
         if (prop === '$onChange') {
@@ -75,7 +75,7 @@ const onArray = (stateActions: StateAction[], name: string) => {
             const entry = libState.changeArrayListenerToListenerMap.get(listener)!;
             entry.push(listener);
             return toProxy(listener)
-          }) as OnChangeArray<unknown>['$onArray']['$inserted']
+          }) as OnArray<unknown>['$onArray']['$inserted']
         }
         if (prop === '$state') {
           const result = libState.changedArrayPayloads.get(path);
@@ -89,7 +89,7 @@ const onArray = (stateActions: StateAction[], name: string) => {
     $inserted: construct(libState.changeArrayInsertListeners, true),
     $deleted: construct(libState.changeArrayDeleteListeners),
     $updated: construct(libState.changeArrayUpdateListeners),
-  }) as OnChangeArray<unknown>['$onArray'];
+  }) as OnArray<unknown>['$onArray'];
 }
 
 const onChange = (stateActions: StateAction[], name: string) => ((listener, options) => {
