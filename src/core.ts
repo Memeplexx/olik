@@ -182,7 +182,10 @@ const update = (stateActions: StateAction[], name: string) => (arg: unknown) => 
 }
 
 export const setNewStateAndNotifyListeners = (stateActions: StateAction[]) => {
-  const { state: oldState, devtools, disableDevtoolsDispatch, changeArrayInsertListeners, changeArrayDeleteListeners, changeArrayUpdateListeners, changeObjectInsertListeners, changeObjectDeleteListeners, changeObjectUpdateListeners } = libState;
+  const { state: oldState, devtools, disableDevtoolsDispatch, 
+    changeArrayInsertListeners, changeArrayDeleteListeners, changeArrayUpdateListeners, 
+    changeObjectInsertListeners, changeObjectDeleteListeners, changeObjectUpdateListeners 
+  } = libState;
   if (devtools && !disableDevtoolsDispatch) {
     const type = constructTypeStrings(stateActions, true);
     const typeOrig = constructTypeStrings(stateActions, false);
@@ -224,12 +227,18 @@ export const setNewStateAndNotifyListeners = (stateActions: StateAction[]) => {
     });
     elements.clear();
   }
-  onPartialChange(libState.insertedElements, changeArrayInsertListeners, libState.changeArrayListenerToListenerMap, libState.changedArrayPayloads);
-  onPartialChange(libState.updatedElements, changeArrayUpdateListeners, libState.changeArrayListenerToListenerMap, libState.changedArrayPayloads);
-  onPartialChange(libState.deletedElements, changeArrayDeleteListeners, libState.changeArrayListenerToListenerMap, libState.changedArrayPayloads);
-  onPartialChange(libState.insertedProperties, changeObjectInsertListeners, libState.changeObjectListenerToListenerMap, libState.changedObjectPayloads);
-  onPartialChange(libState.updatedProperties, changeObjectUpdateListeners, libState.changeObjectListenerToListenerMap, libState.changedObjectPayloads);
-  onPartialChange(libState.deletedProperties, changeObjectDeleteListeners, libState.changeObjectListenerToListenerMap, libState.changedObjectPayloads);
+  if (changeArrayInsertListeners.length)
+    onPartialChange(libState.insertedElements, changeArrayInsertListeners, libState.changeArrayListenerToListenerMap, libState.changedArrayPayloads);
+  if (changeArrayUpdateListeners.length)
+    onPartialChange(libState.updatedElements, changeArrayUpdateListeners, libState.changeArrayListenerToListenerMap, libState.changedArrayPayloads);
+  if (changeArrayDeleteListeners.length)
+    onPartialChange(libState.deletedElements, changeArrayDeleteListeners, libState.changeArrayListenerToListenerMap, libState.changedArrayPayloads);
+  if (changeObjectInsertListeners.length)
+    onPartialChange(libState.insertedProperties, changeObjectInsertListeners, libState.changeObjectListenerToListenerMap, libState.changedObjectPayloads);
+  if (changeObjectUpdateListeners.length)
+    onPartialChange(libState.updatedProperties, changeObjectUpdateListeners, libState.changeObjectListenerToListenerMap, libState.changedObjectPayloads);
+  if (changeObjectDeleteListeners.length)
+    onPartialChange(libState.deletedProperties, changeObjectDeleteListeners, libState.changeObjectListenerToListenerMap, libState.changedObjectPayloads);
 }
 
 const initializeLibState = (initialState: BasicRecord) => {
