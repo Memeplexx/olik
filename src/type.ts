@@ -688,11 +688,6 @@ export type DerivationCalculationInputs<T extends ReadonlyArray<Derivable<unknow
   [K in keyof T]: DerivationCalculationInput<T[K]>;
 }
 
-export interface Derivation<R> extends Read<UnwrapDeepReadonly<R>>, OnChange<UnwrapDeepReadonly<R>>, InvalidateDerivation {
-}
-
-export type DerivationUnSubscribe<R> = undefined extends R ? { $unsubscribe: Unsubscribe } : unknown;
-
 export interface FutureState<C> {
   isLoading: boolean,
   wasRejected: boolean,
@@ -705,7 +700,7 @@ export interface Augmentations {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   selection: { [name: string]: <C>(selection: Readable<C>) => (...args: any[]) => unknown },
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  derivation: { [name: string]: <R>(derivation: Derivation<R>) => (...args: any[]) => unknown }
+  derivation: { [name: string]: <R>(derivation: Readable<R>) => (...args: any[]) => unknown }
   async: <C>(fnReturningFutureAugmentation: () => Promise<C>) => Promise<C>;
   core: { [prop: string]: <C>(selection: Readable<C>) => unknown },
 }
