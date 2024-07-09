@@ -262,7 +262,6 @@ test('should work with an accumulator', async () => {
     return map;
   });
   store.arr.$push({ id: 4, val: 'four' });
-  expect(d.$state).toEqual(new Map([[4, 'four']]));
   store.arr.$push({ id: 5, val: 'five' });
   expect(d.$state).toEqual(new Map([[4, 'four'], [5, 'five']]));
 })

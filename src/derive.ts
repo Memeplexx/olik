@@ -1,5 +1,5 @@
 import { augmentations } from './constant';
-import { BasicRecord, Derivation, DerivationCalculationInputs, Readable, Unsubscribe } from './type';
+import { BasicRecord, Derivation, DerivationCalculationInputs, DerivationUnSubscribe, Readable, Unsubscribe } from './type';
 import { enqueueMicroTask } from './utility';
 
 
@@ -21,39 +21,42 @@ export function derive<X extends Readable<unknown>[]>(...args: X) {
       previousResult = result;
       return result;
     }
-    const changeListeners = new Set<(value: R, previous: R) => unknown>();
-    const result = (new class {
-      get $state() { return getValue(); }
-      $invalidate = () => previousParams.length = 0;
-      $cleanup = (listener: (value: R, previous: R) => unknown, subscriptions: Unsubscribe[]) => () => {
-        subscriptions.forEach(u => u());
-        changeListeners.delete(listener);
-      }
-      doOnChange = (immediate: boolean) => (listener: (value: R, previous: R) => unknown) => {
-        changeListeners.add(listener);
-        let valueCalculated: boolean;
-        const subscriptions = args.map(arg => arg.$onChange(() => {
-          valueCalculated = false;
-          enqueueMicroTask(() => { // wait for all other change listeners to fire
-            if (valueCalculated)
-              return;
-            valueCalculated = true;
-            listener(getValue(), previousResult as R);
-          })
-        }));
-        if (immediate) {
+    const changeListeners = new Set<(value: R, previous: R) => void>();
+    const $cleanup = (listener: (value: R, previous: R) => void, subscriptions: Unsubscribe[]) => () => {
+      subscriptions.forEach(u => u());
+      changeListeners.delete(listener);
+    }
+    const $onChange = (listener: (value: R, previous: R) => void) => {
+      changeListeners.add(listener);
+      let valueCalculated: boolean;
+      const subscriptions = args.map(arg => arg.$onChange(() => {
+        valueCalculated = false;
+        enqueueMicroTask(() => { // wait for all other change listeners to fire
+          if (valueCalculated)
+            return;
+          valueCalculated = true;
           listener(getValue(), previousResult as R);
-        }
-        return this.$cleanup(listener, subscriptions);
-      }
-      $onChange = this.doOnChange(false);
-      $onChangeImmediate = this.doOnChange(true);
-    }()) as Derivation<R>;
+        })
+      }));
+      return $cleanup(listener, subscriptions);
+    }
+    const $onChangeImmediate = (listener: (value: R, previous: R) => void) => {
+      changeListeners.add(listener);
+      const subscriptions = args.map(arg => arg.$onChange(() => listener(getValue(), previousResult as R)));
+      return $cleanup(listener, subscriptions);
+    }
+    const result = {
+      get $state() { return getValue(); },
+      $invalidate: () => previousParams.length = 0,
+      $onChange,
+      $onChangeImmediate,
+      $unsubscribe: accumulator !== undefined ? $onChangeImmediate(() => {}) : () => null,
+    } as Derivation<R> & DerivationUnSubscribe<R>;
     Object.keys(augmentations.derivation).forEach(name => (result as unknown as BasicRecord)[name] = augmentations.derivation[name](result));
     return result;
   }
   return {
     $with: <R>(calculation: (...inputs: DerivationCalculationInputs<X>) => R) => $with(undefined, calculation) as Derivation<R>,
-    $withAccumulator: $with as <R>(accumulator: R, calculation: (accumulator: R, ...inputs: DerivationCalculationInputs<X>) => R) => Derivation<R>
+    $withAccumulator: $with as <R>(accumulator: R, calculation: (accumulator: R, ...inputs: DerivationCalculationInputs<X>) => R) => Derivation<R> & DerivationUnSubscribe<R>
   }
 }

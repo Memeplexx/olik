@@ -688,10 +688,8 @@ export type DerivationCalculationInputs<T extends ReadonlyArray<Derivable<unknow
 
 export interface Derivation<R> extends Read<UnwrapDeepReadonly<R>>, OnChange<UnwrapDeepReadonly<R>>, InvalidateDerivation {
 }
-// export interface Derivation<R> extends InvalidateDerivation {
-//   $state: R,
-//   $onChange: (arg: (a: R) => void) => Unsubscribe
-// }
+
+export type DerivationUnSubscribe<R> = undefined extends R ? { $unsubscribe: Unsubscribe } : unknown;
 
 export interface FutureState<C> {
   isLoading: boolean,

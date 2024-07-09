@@ -158,3 +158,10 @@ test('find performance', () => {
   elementsShuffled.find(e => e.id === 999999);
   console.log(`Find: ${performance.now() - before}`);
 })
+
+test('stringify performance', () => {
+  const elements = new Array(100000).fill(0).map((_, i) => ({ id: i, val: i }));
+  const before = performance.now();
+  JSON.stringify(elements);
+  console.log(`stringify: ${performance.now() - before}`);
+});
