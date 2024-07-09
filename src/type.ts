@@ -19,6 +19,8 @@ export type BasicArray<T = unknown> = Array<T>;
 
 export type PossiblyBrandedPrimitive = Primitive & { [brand]?: string };
 
+export type Mutable = Exclude<object | unknown[], number | string | boolean | undefined | null | symbol | bigint >;
+
 export type SerializableState = {
   [P: string]: SerializableState | ReadonlyArray<SerializableState | Primitive | null> | Primitive | null;
 }

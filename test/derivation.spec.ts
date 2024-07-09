@@ -259,7 +259,6 @@ test('should work with an accumulator', async () => {
     store.arr,
   ).$withAccumulator(new Map<number, string>(), (map, arr) => {
     map.set(arr.at(-1)!.id, arr.at(-1)!.val);
-    return map;
   });
   store.arr.$push({ id: 4, val: 'four' });
   store.arr.$push({ id: 5, val: 'five' });
