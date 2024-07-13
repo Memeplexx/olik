@@ -1,6 +1,6 @@
 {
   "name": "olik",
-  "version": "1.0.129",
+  "version": "1.0.130",
   "type": "module",
   "main": "./dist/olik.cjs",
   "module": "./dist/olik.js",

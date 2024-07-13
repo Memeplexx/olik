@@ -1,6 +1,6 @@
 import { comparatorsPropMap as comparatorsPropMapImported, comparisons as comparisonsImported, libPropMap as libPropMapImported, readPropMap as readPropMapImported, updatePropMap as updatePropMapImported } from './constant';
 import { StateAction, BasicRecord } from './type';
-import { Cursor, QuerySpec } from './type-internal';
+import { Cursor, QuerySpec } from './type';
 
 const comparatorsPropMap = comparatorsPropMapImported;
 const comparisons = comparisonsImported;

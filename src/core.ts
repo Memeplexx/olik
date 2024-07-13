@@ -26,7 +26,7 @@ const constructTypeStrings = constructTypeStringsImported;
 const emptyObj = {};
 const { selection, core } = augmentations;
 const map = { ...comparatorsPropMap, $at: true };
-const recurseProxy = (stateActions?: StateAction[]) => new Proxy(emptyObj, {
+const recurseProxy = (stateActions?: StateAction[]): BasicRecord => new Proxy(emptyObj, {
   get: (_, prop: string) => {
     if (prop === '$stateActions')
       return stateActions ?? [];
@@ -35,9 +35,9 @@ const recurseProxy = (stateActions?: StateAction[]) => new Proxy(emptyObj, {
     if (prop in updatePropMap)
       return update(stateActions ?? [], prop);
     if (prop in selection)
-      return selection[prop](recurseProxy(stateActions ?? []) as Readable<unknown>);
+      return selection[prop](recurseProxy(stateActions ?? []) as unknown as Readable<unknown>);
     if (prop in core)
-      return core[prop](recurseProxy(stateActions ?? []) as Readable<unknown>);
+      return core[prop](recurseProxy(stateActions ?? []) as unknown as Readable<unknown>);
     if (prop in map)
       return comparator(stateActions ?? [], prop);
     if (prop === '$onChange')
