@@ -1,5 +1,3 @@
-import { StoreInternal } from "./type-internal";
-
 export type FindOrFilter = 'isFind' | 'isFilter';
 
 export type QueryStatus = 'notQueried' | 'queried' | 'notArray';
@@ -433,56 +431,56 @@ export interface OnArray<S> {
   /**
    * Receive events whenever array elements are inserted, deleted, or updated.
    */
-  $onArray: OnInsert<S> & OnDelete<S> & OnUpdate<S>;
+  $onArray: ElementsInserted<S> & ElementsDeleted<S> & ElementsUpdated<S>;
 }
 
 export interface OnObject<S = BasicRecord> {
   /**
    * Receive events whenever object properties are inserted, deleted, or updated.
    */
-  $onObject: InsertedInto<S> & DeletedFrom<S> & PropertyUpdated<S>;
+  $onObject: PropertiesInserted<S> & PropertiesDeleted<S> & PropertiesUpdated<S>;
 }
 
-export interface InsertedInto<S = BasicRecord> {
+export interface PropertiesInserted<S = BasicRecord> {
   /**
    * Receive events whenever elements are inserted.
    */
-  $insertedInto: ((changeListener: ChangeListenerFn<Partial<S>>) => Unsubscribe) & Readable<S>
+  $propertiesInserted: ((changeListener: ChangeListenerFn<Partial<S>>) => Unsubscribe) & Readable<S>
 }
 
-export interface DeletedFrom<S = BasicRecord> {
+export interface PropertiesDeleted<S = BasicRecord> {
   /**
    * Receive events whenever elements are deleted.
    */
-  $deletedFrom: ((changeListener: ChangeListenerFn<Partial<S>>) => Unsubscribe) & Readable<S>
+  $propertiesDeleted: ((changeListener: ChangeListenerFn<Partial<S>>) => Unsubscribe) & Readable<S>
 }
 
-export interface PropertyUpdated<S = BasicRecord> {
+export interface PropertiesUpdated<S = BasicRecord> {
   /**
    * Receive events whenever elements are updated.
    */
-  $propertyUpdated: ((changeListener: ChangeListenerFn<Partial<S>>) => Unsubscribe) & Readable<S>
+  $propertiesUpdated: ((changeListener: ChangeListenerFn<Partial<S>>) => Unsubscribe) & Readable<S>
 }
 
-export interface OnInsert<S> {
+export interface ElementsInserted<S> {
   /**
    * Receive events whenever elements are inserted.
    */
-  $inserted: ((changeListener: ChangeListenerFn<S>) => Unsubscribe) & Readable<S>
+  $elementsInserted: ((changeListener: ChangeListenerFn<S>) => Unsubscribe) & Readable<S>
 }
 
-export interface OnDelete<S> {
+export interface ElementsDeleted<S> {
   /**
    * Receive events whenever elements are deleted.
    */
-  $deleted: ((changeListener: ChangeListenerFn<S>) => Unsubscribe) & Readable<S>
+  $elementsDeleted: ((changeListener: ChangeListenerFn<S>) => Unsubscribe) & Readable<S>
 }
 
-export interface OnUpdate<S> {
+export interface ElementsUpdated<S> {
   /**
    * Receive events whenever elements are updated.
    */
-  $updated: ((changeListener: ChangeListenerFn<S>) => Unsubscribe) & Readable<S>
+  $elementsUpdated: ((changeListener: ChangeListenerFn<S>) => Unsubscribe) & Readable<S>
 }
 
 export type SortableProperty = number | string | Date | { [brand]?: string };
@@ -765,7 +763,7 @@ export interface OlikAction {
 }
 
 export interface LibState {
-  store: undefined | StoreInternal,
+  store: undefined | BasicRecord,
   devtools: undefined | { dispatch: (arg: { stateActions: StateAction[], actionType?: string }) => unknown },
   sortModule: undefined | {
     sortObject: ((stateActions: StateAction[], name: SortOrder) => () => SortMemo<BasicRecord>),
@@ -809,3 +807,24 @@ export interface DevtoolsOptions {
    */
   whitelist: Array<Readable<unknown>>
 }
+
+export interface StateActions {
+  $stateActions: StateAction[],
+}
+
+export interface QuerySpec {
+  query: (e: unknown) => boolean,
+  concat: '$and' | '$or' | '$last'
+}
+
+export type TestState = {
+  logLevel: 'debug' | 'none',
+  isTest: boolean,
+  fakeDevtoolsMessage: null | Omit<DevtoolsAction, 'source'>,
+  currentActionType: undefined | string,
+  currentActionTypeOrig: undefined | string,
+  currentActionPayload: undefined | unknown,
+}
+
+export type Cursor = { index: number };
+

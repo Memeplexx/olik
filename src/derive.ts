@@ -71,7 +71,7 @@ export function derive<X extends Readable<unknown>[]>(...args: X) {
       $onChange,
       $destroy: $onChange(() => {})
     };
-    Object.keys(augmentations.derivation).forEach(name => (result as unknown as BasicRecord)[name] = augmentations.derivation[name](result as Readable<R>));
+    Object.keys(augmentations.derivation).forEach(name => (result as BasicRecord)[name] = augmentations.derivation[name](result as Readable<R>));
     return result;
   }
   return {

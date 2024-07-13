@@ -1,5 +1,5 @@
 import { Augmentations, BasicRecord, LibState, ValueOf } from './type';
-import { TestState } from './type-internal';
+import { TestState } from './type';
 
 
 

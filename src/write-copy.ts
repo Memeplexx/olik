@@ -1,10 +1,17 @@
-import { errorMessages, libState, updatePropMap } from './constant';
-import { constructQuery } from './query';
-import { readState } from './read';
+import { errorMessages as errorMessagesImported, libState as libStateImported, updatePropMap as updatePropMapImported } from './constant';
+import { constructQuery as constructQueryImported } from './query';
+import { readState as readStateImported } from './read';
 import { BasicArray, BasicRecord, SliceArg, StateAction } from './type';
-import { Cursor } from './type-internal';
-import { constructTypeStrings } from './utility';
+import { Cursor } from './type';
+import { constructTypeStrings as constructTypeStringsImported } from './utility';
 
+
+const libState = libStateImported;
+const updatePropMap = updatePropMapImported;
+const errorMessages = errorMessagesImported;
+const constructQuery = constructQueryImported;
+const constructTypeStrings = constructTypeStringsImported;
+const readState = readStateImported;
 
 export const copyNewState = (
   currentState: unknown,
@@ -344,7 +351,8 @@ const findArray = (currentState: BasicArray, cursor: Cursor, stateActions: State
     break;
   }
   stateAction!.searchIndices = [findIndex];
-  const path = (!libState.changeArrayDeleteListeners.length && !libState.changeArrayUpdateListeners.length) ? '' : constructTypeStrings(stateActions.slice(0, cursorIndexBefore - 1), false);
+  const path = (!libState.changeArrayDeleteListeners.length && !libState.changeArrayUpdateListeners.length) 
+    ? '' : constructTypeStrings(stateActions.slice(0, cursorIndexBefore - 1), false);
   if ('$delete' === stateActions[cursorIndex].name) {
     const deletedList = new Array<unknown>();
     if (libState.changeArrayDeleteListeners.length)
@@ -384,7 +392,8 @@ const filterArray = (currentState: BasicArray, cursor: Cursor, stateActions: Sta
     break;
   }
   const searchIndices = stateAction!.searchIndices = currentState.map((e, i) => query(e) ? i : -1).filter(i => i !== -1);
-  const path = (!libState.changeArrayDeleteListeners.length && !libState.changeArrayUpdateListeners.length) ? '' : constructTypeStrings(stateActions.slice(0, cursorIndexBefore - 1), false);
+  const path = (!libState.changeArrayDeleteListeners.length && !libState.changeArrayUpdateListeners.length) 
+    ? '' : constructTypeStrings(stateActions.slice(0, cursorIndexBefore - 1), false);
   if ('$delete' === type) {
     const deletedElements = new Array<unknown>();
     if (libState.changeArrayDeleteListeners.length)

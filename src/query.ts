@@ -1,7 +1,12 @@
-import { comparatorsPropMap, comparisons, libPropMap, readPropMap, updatePropMap } from './constant';
+import { comparatorsPropMap as comparatorsPropMapImported, comparisons as comparisonsImported, libPropMap as libPropMapImported, readPropMap as readPropMapImported, updatePropMap as updatePropMapImported } from './constant';
 import { StateAction, BasicRecord } from './type';
 import { Cursor, QuerySpec } from './type-internal';
 
+const comparatorsPropMap = comparatorsPropMapImported;
+const comparisons = comparisonsImported;
+const libPropMap = libPropMapImported;
+const readPropMap = readPropMapImported;
+const updatePropMap = updatePropMapImported;
 
 const andOrMap = { $and: true, $or: true };
 const recurseArray = [] as QuerySpec[];

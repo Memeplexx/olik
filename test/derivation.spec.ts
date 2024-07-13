@@ -201,7 +201,7 @@ test('should fire on change with previous value', () => {
 test('should get state from $onArray.$inserted', async () => {
   const store = createStore({ arr: [{ id: 1, val: 'one' }, { id: 2, val: 'two' }, { id: 3, val: 'three' }] });
   const d = derive(
-    store.arr.$onArray.$inserted
+    store.arr.$onArray.$elementsInserted
   ).$with((xx) => {
     return xx[0].id;
   });
@@ -212,7 +212,7 @@ test('should get $onChange from $onArray.$inserted', async () => {
   const store = createStore({ arr: [{ id: 1, val: 'one' }, { id: 2, val: 'two' }, { id: 3, val: 'three' }] });
   let changed!: number;
   derive(
-    store.arr.$onArray.$inserted
+    store.arr.$onArray.$elementsInserted
   ).$with((xx) => {
     return xx[0].id;
   }).$onChange(x => {
@@ -227,7 +227,7 @@ test('should get $onChange from $onArray.$delete', async () => {
   const store = createStore({ arr: [{ id: 1, val: 'one' }, { id: 2, val: 'two' }, { id: 3, val: 'three' }] });
   let changed!: number;
   derive(
-    store.arr.$onArray.$deleted
+    store.arr.$onArray.$elementsDeleted
   ).$with((xx) => {
     return xx[0].id;
   }).$onChange(x => {
@@ -242,7 +242,7 @@ test('should get $onChange from $onArray.$update', async () => {
   const store = createStore({ arr: [{ id: 1, val: 'one' }, { id: 2, val: 'two' }, { id: 3, val: 'three' }] });
   let changed!: string;
   derive(
-    store.arr.$onArray.$updated
+    store.arr.$onArray.$elementsUpdated
   ).$with((xx) => {
     return xx[0].val;
   }).$onChange(x => {

@@ -1,7 +1,11 @@
 import { augment } from './augment';
-import { comparatorsPropMap, libState, testState, updatePropMap } from './constant';
+import { comparatorsPropMap, libState as libStateImported, testState as testStateImported, updatePropMap as updatePropMapImported } from './constant';
 import { StateAction } from './type';
 
+
+const libState = libStateImported;
+const testState = testStateImported;
+const updatePropMap = updatePropMapImported;
 
 export const enqueueMicroTask = (fn: () => void) => Promise.resolve().then(fn);
 

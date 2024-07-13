@@ -1,6 +1,5 @@
 import { libState } from "./constant";
 import { StateAction, BasicRecord, SortableProperty, SortOrder, OnChange, Read, SortMemo, OnArray } from "./type";
-import { StoreInternal } from "./type-internal";
 
 
 export function configureSortModule() {
@@ -13,24 +12,24 @@ export function configureSortModule() {
 const sortPrimitive = <T extends Array<SortableProperty>>(stateActions: StateAction[], name: SortOrder) => () => {
   const changeListeners = new Array<Parameters<OnChange<SortableProperty[]>['$onChange']>[0]>;
   const subStore = stateActions.slice(0, stateActions.findIndex(e => e.name === '$deriveSortedList'))
-    .reduce((acc, e) => (acc as BasicRecord)[e.name] as StoreInternal, libState.store!) as unknown as OnArray<T> & Read<T>;
+    .reduce((acc, e) => (acc as BasicRecord)[e.name] as BasicRecord, libState.store!) as unknown as OnArray<T> & Read<T>;
   let $state = subStore.$state.slice().sort((a, b) => {
     const comparison = compare(a, b);
     return name === '$ascending' ? comparison : -comparison;
   });
-  const onArrayInsert = subStore.$onArray.$inserted(inserted => {
+  const onArrayInsert = subStore.$onArray.$elementsInserted(inserted => {
     const stateCopied = $state.slice();
     inserted.forEach(e => stateCopied.splice(searchForInsertionIndexWithinScalarArray(stateCopied, e, name), 0, e));
     changeListeners.forEach(cl => cl(stateCopied, $state));
     $state = stateCopied;
   });
-  const onArrayDelete = subStore.$onArray.$deleted(deleted => {
+  const onArrayDelete = subStore.$onArray.$elementsDeleted(deleted => {
     const stateCopied = $state.slice();
     deleted.forEach(e => stateCopied.splice(stateCopied.findIndex(sa => sa === e), 1));
     changeListeners.forEach(cl => cl(stateCopied, $state));
     $state = stateCopied;
   });
-  const onArrayUpdate = subStore.$onArray.$updated(updated => {
+  const onArrayUpdate = subStore.$onArray.$elementsUpdated(updated => {
     const stateCopied = $state.slice();
     updated.forEach(e => stateCopied.splice(stateCopied.findIndex(sa => sa === e), 1, e));
     changeListeners.forEach(cl => cl(stateCopied, $state));
@@ -62,24 +61,24 @@ const sortObject = <T extends Array<BasicRecord>>(stateActions: StateAction[], n
   const propToSortBy = stateActions[indexOfMemoizeSortBy + 4].name;
   const changeListeners = new Array<Parameters<OnChange<BasicRecord[]>['$onChange']>[0]>;
   const subStore = stateActions.slice(0, indexOfMemoizeSortBy)
-    .reduce((acc, e) => (acc as BasicRecord)[e.name] as StoreInternal, libState.store!) as unknown as OnArray<T> & Read<T>;
+    .reduce((acc, e) => (acc as BasicRecord)[e.name] as BasicRecord, libState.store!) as unknown as OnArray<T> & Read<T>;
   let $state = subStore.$state.slice().sort((a, b) => {
     const comparison = compare(a[propToSortBy], b[propToSortBy]);
     return name === '$ascending' ? comparison : -comparison;
   });
-  const onArrayInsert = subStore.$onArray.$inserted(inserted => {
+  const onArrayInsert = subStore.$onArray.$elementsInserted(inserted => {
     const stateCopied = $state.slice();
     inserted.forEach(e => stateCopied.splice(searchForInsertionIndexWithinObjectArray(stateCopied, e[propToSortBy], propToSortBy, name), 0, e));
     changeListeners.forEach(cl => cl(stateCopied, $state));
     $state = stateCopied;
   });
-  const onArrayDelete = subStore.$onArray.$deleted(deleted => {
+  const onArrayDelete = subStore.$onArray.$elementsDeleted(deleted => {
     const stateCopied = $state.slice();
     deleted.forEach(e => stateCopied.splice(stateCopied.findIndex(sa => sa[idProp] === e[idProp]), 1));
     changeListeners.forEach(cl => cl(stateCopied, $state));
     $state = stateCopied;
   });
-  const onArrayUpdate = subStore.$onArray.$updated(updated => {
+  const onArrayUpdate = subStore.$onArray.$elementsUpdated(updated => {
     const stateCopied = $state.slice();
     updated.forEach(e => stateCopied.splice(stateCopied.findIndex(sa => sa[idProp] === e[idProp]), 1, e));
     changeListeners.forEach(cl => cl(stateCopied, $state));

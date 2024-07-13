@@ -1,6 +1,6 @@
 import { libState, testState } from './constant';
-import { BasicRecord, DevtoolsAction, DevtoolsOptions, Readable, StateAction } from './type';
-import { StoreInternal } from './type-internal';
+import { BasicRecord, DevtoolsAction, DevtoolsOptions, Readable, SetNode, StateAction } from './type';
+import { StateActions } from './type';
 import { constructTypeString, constructTypeStrings, deserialize, isoDateRegexp } from './utility';
 
 let initialized = false;
@@ -13,7 +13,7 @@ export function configureDevtools({ whitelist }: DevtoolsOptions = { whitelist: 
 
   sendMessageToDevtools({
     actionType: '$load()',
-    stateActions: whitelist.map(w => ({ name: constructTypeStrings((w as StoreInternal).$stateActions, false) })),
+    stateActions: whitelist.map(w => ({ name: constructTypeStrings((w as unknown as StateActions).$stateActions, false) })),
   })
 
   pendingActions.push({
@@ -42,7 +42,7 @@ export function configureDevtools({ whitelist }: DevtoolsOptions = { whitelist: 
 export function addToWhitelist(whitelist: Readable<unknown>[]) {
   sendMessageToDevtools({
     actionType: '$addToWhitelist()',
-    stateActions: whitelist.map(w => ({ name: constructTypeStrings((w as StoreInternal).$stateActions, false) })),
+    stateActions: whitelist.map(w => ({ name: constructTypeStrings((w as unknown as StateActions).$stateActions, false) })),
   })
 }
 
@@ -81,7 +81,7 @@ const listenToStateChangesFromDevtools = () => {
   }));
   new MutationObserver(() => {
     libState.disableDevtoolsDispatch = true;
-    libState.store!.$set(JSON.parse(olikStateDiv.innerHTML, (key, value) => {
+    (libState.store as unknown as SetNode<unknown>).$set(JSON.parse(olikStateDiv.innerHTML, (key, value) => {
       if (typeof (value) === 'string' && isoDateRegexp.test(value))
         return new Date(value);
       return value;
@@ -107,10 +107,10 @@ const listenToActionDispatchesFromDevtools = () => {
       if (containsParenthesis) {
         const functionName = key.split('(')[0];
         const typedArg = deserialize(arg);
-        const functionToCall = subStore[functionName];
+        const functionToCall = subStore[functionName] as (arg: unknown) => BasicRecord;
         subStore = functionToCall(typedArg);
       } else {
-        subStore = subStore[key];
+        subStore = subStore[key] as BasicRecord;
       }
     })
   }).observe(olikActionDiv, { attributes: true, childList: true, subtree: true });

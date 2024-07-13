@@ -1,15 +1,32 @@
-import { augmentations, comparatorsPropMap, errorMessages, libPropMap, libState, testState, updatePropMap } from './constant';
-import { readState } from './read';
-import { BasicRecord, ChangeListener, DeepReadonly, OnChange, OnArray, SortOrder, StateAction, Store, OnObject, ChangeListenerFn, Unsubscribe } from './type';
-import { StoreInternal } from './type-internal';
-import { constructTypeStrings } from './utility';
-import { copyNewState } from './write-copy';
+import { 
+  augmentations as augmentationsImported, 
+  comparatorsPropMap as comparatorsPropMapImported, 
+  errorMessages as errorMessagesImported, 
+  libPropMap as libPropMapImported, 
+  libState as libStateImported, 
+  testState as testStateImported, 
+  updatePropMap as updatePropMapImported 
+} from './constant';
+import { readState as readStateImported } from './read';
+import { BasicRecord, ChangeListener, DeepReadonly, OnChange, OnArray, SortOrder, StateAction, Store, OnObject, ChangeListenerFn, Unsubscribe, Readable } from './type';
+import { constructTypeStrings as constructTypeStringsImported } from './utility';
+import { copyNewState as copyNewStateImported } from './write-copy';
 
+const libState = libStateImported;
+const augmentations = augmentationsImported;
+const comparatorsPropMap = comparatorsPropMapImported;
+const errorMessages = errorMessagesImported;
+const libPropMap = libPropMapImported;
+const testState = testStateImported;
+const updatePropMap = updatePropMapImported;
+const readState = readStateImported;
+const copyNewState = copyNewStateImported;
+const constructTypeStrings = constructTypeStringsImported;
 
-const emptyObj = {} as StoreInternal;
+const emptyObj = {};
 const { selection, core } = augmentations;
 const map = { ...comparatorsPropMap, $at: true };
-const recurseProxy = (stateActions?: StateAction[]): StoreInternal => new Proxy(emptyObj, {
+const recurseProxy = (stateActions?: StateAction[]) => new Proxy(emptyObj, {
   get: (_, prop: string) => {
     if (prop === '$stateActions')
       return stateActions ?? [];
@@ -18,9 +35,9 @@ const recurseProxy = (stateActions?: StateAction[]): StoreInternal => new Proxy(
     if (prop in updatePropMap)
       return update(stateActions ?? [], prop);
     if (prop in selection)
-      return selection[prop](recurseProxy(stateActions ?? []));
+      return selection[prop](recurseProxy(stateActions ?? []) as Readable<unknown>);
     if (prop in core)
-      return core[prop](recurseProxy(stateActions ?? []));
+      return core[prop](recurseProxy(stateActions ?? []) as Readable<unknown>);
     if (prop in map)
       return comparator(stateActions ?? [], prop);
     if (prop === '$onChange')
@@ -99,9 +116,9 @@ const onArray = (stateActions: StateAction[], name: string) => {
   const constructInner = (changeListeners: ChangeListener[], isInsert = false) =>
     construct(changeListeners, stateActions, libState.changeArrayListenerToListenerMap, libState.changedArrayPayloads, name, path, [], isInsert);
   return ({
-    $inserted: constructInner(libState.changeArrayInsertListeners, true),
-    $deleted: constructInner(libState.changeArrayDeleteListeners),
-    $updated: constructInner(libState.changeArrayUpdateListeners),
+    $elementsInserted: constructInner(libState.changeArrayInsertListeners, true),
+    $elementsDeleted: constructInner(libState.changeArrayDeleteListeners),
+    $elementsUpdated: constructInner(libState.changeArrayUpdateListeners),
   }) as OnArray<unknown>['$onArray'];
 }
 
@@ -110,9 +127,9 @@ const onObject = (stateActions: StateAction[], name: string) => {
   const constructInner = ( changeListeners: ChangeListener[],isInsert = false) => 
     construct(changeListeners, stateActions, libState.changeObjectListenerToListenerMap, libState.changedObjectPayloads, name, path, {}, isInsert);
   return ({
-    $insertedInto: constructInner(libState.changeObjectInsertListeners, true),
-    $deletedFrom: constructInner(libState.changeObjectDeleteListeners),
-    $propertyUpdated: constructInner(libState.changeObjectUpdateListeners),
+    $propertiesInserted: constructInner(libState.changeObjectInsertListeners, true),
+    $propertiesDeleted: constructInner(libState.changeObjectDeleteListeners),
+    $propertiesUpdated: constructInner(libState.changeObjectUpdateListeners),
   }) as OnObject<unknown>['$onObject'];
 }
 
@@ -182,11 +199,11 @@ const update = (stateActions: StateAction[], name: string) => (arg: unknown) => 
 }
 
 export const setNewStateAndNotifyListeners = (stateActions: StateAction[]) => {
-  const { state: oldState, devtools, disableDevtoolsDispatch, 
+  const { state: oldState, devtools, 
     changeArrayInsertListeners, changeArrayDeleteListeners, changeArrayUpdateListeners, 
     changeObjectInsertListeners, changeObjectDeleteListeners, changeObjectUpdateListeners 
   } = libState;
-  if (devtools && !disableDevtoolsDispatch) {
+  if (devtools && !libState.disableDevtoolsDispatch) {
     const type = constructTypeStrings(stateActions, true);
     const typeOrig = constructTypeStrings(stateActions, false);
     testState.currentActionType = type;
@@ -206,7 +223,12 @@ export const setNewStateAndNotifyListeners = (stateActions: StateAction[]) => {
       listener.listeners.forEach(listener => listener(selectedNewState as DeepReadonly<unknown>, selectedOldState as DeepReadonly<unknown>));
     }
   });
-  const onPartialChange = (elements: Map<string, unknown>, listeners: ChangeListener[], map: Map<ChangeListenerFn<unknown>, ChangeListenerFn<unknown>[]>, payloads: Map<string, unknown>) => {
+  const onPartialChange = (
+    elements: Map<string, unknown>, 
+    listeners: ChangeListener[], 
+    map: Map<ChangeListenerFn<unknown>, ChangeListenerFn<unknown>[]>, 
+    payloads: Map<string, unknown>
+  ) => {
     listeners.forEach(listener => {
       const { path } = listener;
       const payload = (elements.get(path) ?? []);
@@ -254,9 +276,9 @@ export const validateState = (key: string | number, state: unknown): void => {
     throw new Error(errorMessages.INVALID_STATE_INPUT(key, state ?? 'undefined'));
   if (Array.isArray(state))
     return state.forEach((e, i) => validateState(i, e));
-  return Object.keys(state).forEach(key => {
+  return (Object.keys(state) as Array<keyof typeof state>).forEach(key => {
     if (key in libPropMap)
       throw new Error(errorMessages.LIB_PROP_USED_IN_STATE(key));
-    validateState(key, state[key as keyof typeof state]);
+    validateState(key, state[key]);
   });
 }

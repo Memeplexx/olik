@@ -59,7 +59,7 @@ test('should $onChange with previous state', () => {
 test('should react to onInsert events on push', () => {
   const store = createStore({ arr: [{ id: 1, text: 'hello' }], obj: { one: 'two' } });
   let inserted!: DeepReadonlyArray<{ id: number, text: string }>;
-  store.arr.$onArray.$inserted(e => {
+  store.arr.$onArray.$elementsInserted(e => {
     inserted = e;
   });
   store.arr.$push({ id: 2, text: 'world' });
@@ -69,7 +69,7 @@ test('should react to onInsert events on push', () => {
 test('should react to onInsert events on merge', () => {
   const store = createStore({ arr: [1, 2, 3, 4], obj: { one: 'two' } });
   let inserted!: DeepReadonlyArray<number>;
-  store.arr.$onArray.$inserted(e => {
+  store.arr.$onArray.$elementsInserted(e => {
     inserted = e;
   });
   store.arr.$merge([3, 4, 5, 6]);
@@ -79,11 +79,11 @@ test('should react to onInsert events on merge', () => {
 test('should react to onInsert and update events on merge matching', () => {
   const store = createStore({ arr: [{ id: 1, text: 'hello' }], obj: { one: 'two' } });
   let inserted!: DeepReadonlyArray<{ id: number, text: string }>;
-  store.arr.$onArray.$inserted(e => {
+  store.arr.$onArray.$elementsInserted(e => {
     inserted = e;
   });
   let updated!: DeepReadonlyArray<{ id: number, text: string }>;
-  store.arr.$onArray.$updated(e => {
+  store.arr.$onArray.$elementsUpdated(e => {
     updated = e;
   });
   store.arr.$mergeMatching.id.$with([{ id: 1, text: 'thing' }, { id: 9, text: 'hello' }]);
@@ -94,7 +94,7 @@ test('should react to onInsert and update events on merge matching', () => {
 test('should react to update events on set', () => {
   const store = createStore({ obj: { one: 'hello', two: 'world' } });
   let updated!: Partial<{ one: string, two: string }>;
-  store.obj.$onObject.$propertyUpdated(e => {
+  store.obj.$onObject.$propertiesUpdated(e => {
     updated = e;
   });
   store.obj.one.$set('another');
@@ -104,7 +104,7 @@ test('should react to update events on set', () => {
 test('should react to update events on patch', () => {
   const store = createStore({ obj: { one: 'hello', two: 'world' } });
   let updated!: Partial<{ one: string, two: string }>;
-  store.obj.$onObject.$propertyUpdated(e => {
+  store.obj.$onObject.$propertiesUpdated(e => {
     updated = e;
   });
   store.obj.$patch({ one: 'another' });
@@ -114,7 +114,7 @@ test('should react to update events on patch', () => {
 test('should react to insert events on setNew', () => {
   const store = createStore({ obj: { one: 'hello', two: 'world' } });
   let inserted!: Partial<{ one: string, two: string }>;
-  store.obj.$onObject.$insertedInto(e => {
+  store.obj.$onObject.$propertiesInserted(e => {
     inserted = e;
   });
   store.obj.$setNew({ three: 'another' });
@@ -124,7 +124,7 @@ test('should react to insert events on setNew', () => {
 test('should react to delete events on delete', () => {
   const store = createStore({ obj: { one: 'hello', two: 'world' } });
   let deleted!: Partial<{ one: string, two: string }>;
-  store.obj.$onObject.$deletedFrom(e => {
+  store.obj.$onObject.$propertiesDeleted(e => {
     deleted = e;
   });
   store.obj.one.$delete();
@@ -135,10 +135,10 @@ test('should react to delete and insert events on setKey', () => {
   const store = createStore({ obj: { one: 'hello', two: 'world' } });
   let deleted!: Partial<{ one: string, two: string }>;
   let inserted!: Partial<{ one: string, two: string }>;
-  store.obj.$onObject.$deletedFrom(e => {
+  store.obj.$onObject.$propertiesDeleted(e => {
     deleted = e;
   });
-  store.obj.$onObject.$insertedInto(e => {
+  store.obj.$onObject.$propertiesInserted(e => {
     inserted = e;
   });
   store.obj.one.$setKey('three');
@@ -149,7 +149,7 @@ test('should react to delete and insert events on setKey', () => {
 test('should react to onUpdate when filtered', () => {
   const store = createStore({ arr: [{ id: 1, text: 'one' }, { id: 2, text: 'two' }], obj: { one: 'two' } });
   let updated!: DeepReadonlyArray<{ id: number, text: string }>;
-  store.arr.$onArray.$updated(e => {
+  store.arr.$onArray.$elementsUpdated(e => {
     updated = e;
   });
   store.arr.$filter.id.$eq(2).$set([{ id: 2, text: 'three' }]);
@@ -159,7 +159,7 @@ test('should react to onUpdate when filtered', () => {
 test('should react to onUpdate when find', () => {
   const store = createStore({ arr: [{ id: 1, text: 'one' }, { id: 2, text: 'two' }], obj: { one: 'two' } });
   let updated!: DeepReadonlyArray<{ id: number, text: string }>;
-  store.arr.$onArray.$updated(e => {
+  store.arr.$onArray.$elementsUpdated(e => {
     updated = e;
   });
   store.arr.$find.id.$eq(2).$set({ id: 2, text: 'three' });
@@ -169,7 +169,7 @@ test('should react to onUpdate when find', () => {
 test('should react to onUpdate when find object property', () => {
   const store = createStore({ arr: [{ id: 1, text: 'one' }, { id: 2, text: 'two' }], obj: { one: 'two' } });
   let updated!: DeepReadonlyArray<{ id: number, text: string }>;
-  store.arr.$onArray.$updated(e => {
+  store.arr.$onArray.$elementsUpdated(e => {
     updated = e;
   });
   store.arr.$find.id.$eq(2).text.$set('three');
@@ -179,7 +179,7 @@ test('should react to onUpdate when find object property', () => {
 test('should react to onUpdate when filtered object property', () => {
   const store = createStore({ arr: [{ id: 1, text: 'one' }, { id: 2, text: 'two' }], obj: { one: 'two' } });
   let updated!: DeepReadonlyArray<{ id: number, text: string }>;
-  store.arr.$onArray.$updated(e => {
+  store.arr.$onArray.$elementsUpdated(e => {
     updated = e;
   });
   store.arr.$filter.id.$eq(2).text.$set('three');
@@ -189,7 +189,7 @@ test('should react to onUpdate when filtered object property', () => {
 test('should react to deleted elements when filtered', () => {
   const store = createStore({ arr: [{ id: 1, text: 'one' }, { id: 2, text: 'two' }], obj: { one: 'two' } });
   let deleted!: DeepReadonlyArray<{ id: number, text: string }>;
-  store.arr.$onArray.$deleted(e => {
+  store.arr.$onArray.$elementsDeleted(e => {
     deleted = e;
   });
   store.arr.$filter.id.$eq(2).$delete();
@@ -199,7 +199,7 @@ test('should react to deleted elements when filtered', () => {
 test('should react to deleted elements when found', () => {
   const store = createStore({ arr: [{ id: 1, text: 'one' }, { id: 2, text: 'two' }], obj: { one: 'two' } });
   let deleted!: DeepReadonlyArray<{ id: number, text: string }>;
-  store.arr.$onArray.$deleted(e => {
+  store.arr.$onArray.$elementsDeleted(e => {
     deleted = e;
   });
   store.arr.$find.id.$eq(2).$delete();
@@ -209,7 +209,7 @@ test('should react to deleted elements when found', () => {
 test('should react to deleted at', () => {
   const store = createStore({ arr: [{ id: 1, text: 'one' }, { id: 2, text: 'two' }], obj: { one: 'two' } });
   let deleted!: DeepReadonlyArray<{ id: number, text: string }>;
-  store.arr.$onArray.$deleted(e => {
+  store.arr.$onArray.$elementsDeleted(e => {
     deleted = e;
   });
   store.arr.$at(1).$delete();
@@ -219,7 +219,7 @@ test('should react to deleted at', () => {
 test('should react to updated at', () => {
   const store = createStore({ arr: [{ id: 1, text: 'one' }, { id: 2, text: 'two' }], obj: { one: 'two' } });
   let updated!: DeepReadonlyArray<{ id: number, text: string }>;
-  store.arr.$onArray.$updated(e => {
+  store.arr.$onArray.$elementsUpdated(e => {
     updated = e;
   });
   store.arr.$at(1).text.$set('three');
@@ -229,7 +229,7 @@ test('should react to updated at', () => {
 test('should react to clear', () => {
   const store = createStore({ arr: [{ id: 1, text: 'one' }, { id: 2, text: 'two' }], obj: { one: 'two' } });
   let deleted!: DeepReadonlyArray<{ id: number, text: string }>;
-  store.arr.$onArray.$deleted(e => {
+  store.arr.$onArray.$elementsDeleted(e => {
     deleted = e;
   });
   store.arr.$clear();
